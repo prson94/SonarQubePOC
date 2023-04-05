@@ -1239,16 +1239,7 @@ namespace d360.model
 							inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID 
 							and I.SubjectAssetTypeID = R.SubjectAssetTypeID 
 							and I.ObjectAssetID = R.ObjectAssetID and I.SubjectAssetID = 0;
-				end
-
-				--check reverse if subject/object type are the same
-				update	R
-				set		R.ID =	I.ID,
-						R.[uid] = I.[uid]
-				from	#Relationships R
-						inner join IntersectType T on T.ID = R.IntersectTypeID and T.SubjectAssetTypeID = T.ObjectAssetTypeID
-						inner join [Intersect] I on I.IntersectTypeID = R.IntersectTypeID and I.SubjectAssetID = R.ObjectAssetID and I.ObjectAssetID = R.SubjectAssetID
-				where	R.ID is null;
+				end				
 
 				drop table if exists #tempdatasmy;
 
