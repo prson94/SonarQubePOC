@@ -76,6 +76,7 @@
     <Compile Include="ExtensionsTests\QueueSourceTests.cs" />
     <Compile Include="FilterParserTests\FieldValidatorsTests.cs" />
     <Compile Include="FieldTests\ShowInColumnTests.cs" />
+    <Compile Include="FilterParserTests\RegexFilterExpressionParserTests.cs" />
     <Compile Include="FilterParserTests\RuleResultTests.cs" />
     <Compile Include="HelperTests\ComplexFieldsHelper.cs" />
     <Compile Include="HelperTests\DecimalFieldValidatorTests.cs" />
