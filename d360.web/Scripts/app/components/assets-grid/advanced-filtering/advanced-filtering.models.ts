@@ -510,7 +510,7 @@ export class AdvancedFilterFieldCondition {
 			const operation: string = this.getOperatorString();
 			const value: string = this.getValue();
 			const isDataCatalog = (window.location.href ?? "").toLowerCase().endsWith("datacatalog");
-			if (isDataCatalog && (this.operator === "Contains" || this.operator === "NotContains")) {
+			if (isDataCatalog && this.field.toLocaleLowerCase() === "displaypath" && (this.operator === "Contains" || this.operator === "NotContains")) {
 				return `(${this.field}Segment ${operation} ${value})`;
 			}
 
