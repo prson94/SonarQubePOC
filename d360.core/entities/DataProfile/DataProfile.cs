@@ -120,6 +120,9 @@ namespace d360.core.entities
 		[DataMember]
 		public bool? IsAuthorizedForPopularity { get; set; }
 
+		[DataMember]
+		public DateTime? SourceLastModified { get; set; }
+
 
 		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
@@ -330,6 +333,9 @@ namespace d360.core.entities
 		[DataMember(Name = "isAuthorizedForPopularity")]
 		public bool? IsAuthorizedForPopularity { get; set; }
 
+		[DataMember(Name = "sourceLastModified")]
+		public DateTime? SourceLastModified { get; set; }
+
 		public DataProfileModel() { }
 
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
@@ -370,10 +376,11 @@ namespace d360.core.entities
             uniqueCount = profile.UniqueCount;
 			PopularityCount = profile.PopularityCount;	
 			IsAuthorizedForPopularity = profile.IsAuthorizedForPopularity;
+			SourceLastModified = profile.SourceLastModified;
 
 
-            //populate sample details
-            Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>
+			//populate sample details
+			Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>
             {
                 var results = samples
                     .Where((s) => s.SampleType.Equals(key, StringComparison.InvariantCultureIgnoreCase))

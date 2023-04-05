@@ -1024,6 +1024,7 @@ namespace d360.model.DataAccessLayer
 								,ADP.DecimalSeparator
 								,ADP.PopularityCount
 								,ADP.IsAuthorizedForPopularity
+								,ADP.SourceLastModified
 							from 
 								AssetDataProfile ADP
 								{(!string.IsNullOrWhiteSpace(joinSql) ? joinSql : "")}

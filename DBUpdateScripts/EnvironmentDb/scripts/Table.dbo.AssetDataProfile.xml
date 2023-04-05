@@ -266,4 +266,36 @@
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v16">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+					 AND name = 'SourceLastModified'
+			)
+			BEGIN
+
+				ALTER TABLE [dbo].[AssetDataProfile] ADD [SourceLastModified] DATETIME NULL		
+
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [dbo].[AssetDataProfile] 
+		DROP 
+			COLUMN IF EXISTS [SourceLastModified]
+
+		]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>
