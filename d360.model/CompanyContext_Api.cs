@@ -4745,7 +4745,7 @@ where	T.ExecutionID = @ExecutionID
 											inner join FieldType FT ON FT.ID = EF.FieldTypeID AND FT.IsPartOfKey = 1
 											left join Field F on F.AssetId = EA.AssetId and F.FieldTypeID = FT.ID
 											WHERE EF.ExecutionID = @ExecutionID AND EF.ItemNumber between @beginItemNumber and @endItemNumber
-											    and (F.FormattedValue <> EF.FieldValue or (F.FormattedValue is null and EF.FieldValue is not null)))
+											    and (F.FormattedValue <> EF.FieldValue COLLATE SQL_Latin1_General_CP1_CS_AS or (F.FormattedValue is null and EF.FieldValue is not null)))
 
 											declare @updatedHierarcyRelationships int = (
 																		select COUNT(*) from api.ExecutionItemDependentChange EIDC
