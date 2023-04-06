@@ -5492,8 +5492,23 @@ where v.id = {0}", id)).FirstOrDefault();
 
 			}
 
-			//var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
 			var sql = $" select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = @typeName and [objectId] = @typeId)";
+
+			if (objectType.ToLowerInvariant().EndsWith("type"))
+			{
+				sql = $@";with assetTypeHierarchy as (
+						select ID as AssetTypeId from AssetType where object = @typeName and ObjectID = @typeId
+						union all
+						select itd.SubjectAssetTypeID as AssetTypeId from IntersectTypeDetail itd, assetTypeHierarchy
+						where itd.ObjectAssetTypeID = assetTypeHierarchy.AssetTypeId
+						)
+						select TOP 1 D.Title from assetTypeHierarchy
+						inner join AssetType AT on AT.ID = AssetTypeId
+						outer apply (select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = AT.Object and [objectId] = AT.ObjectID))D(Title)
+						where D.Title IS NOT NULL
+						order by AT.ID ASC";
+			}
+
 			var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });
 
 			return res.FirstOrDefault();
