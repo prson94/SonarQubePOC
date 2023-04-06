@@ -5496,6 +5496,7 @@ where v.id = {0}", id)).FirstOrDefault();
 
 			if (objectType.ToLowerInvariant().EndsWith("type"))
 			{
+				//we need to run site titles throught all parents as any parent may be part of custom folder with different name
 				sql = $@";with assetTypeHierarchy as (
 							select ID as AssetTypeId, 0 as [Level] from AssetType where object = @typeName and ObjectID = @typeId
 							union all
