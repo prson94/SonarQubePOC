@@ -111,9 +111,9 @@ export class HeaderBreadcrumbService extends BaseObservableService {
         this.buildFromStorageSource.next(this.getBreadcrumbsFromStorage());
     }
 
-    getAreaName(objectType: string, objectId: number): Observable<string> {
+    getAreaName(objectType: string, objectId: number, uid: string = ''): Observable<string> {
         return this.http
-            .get(`api/breadcrumb/getArea?objectType=${objectType}&objectId=${objectId}&uid=`)
+			.get(`api/breadcrumb/getArea?objectType=${objectType}&objectId=${objectId}&uid=${uid}`)
             .pipe(
                 map((response) => <string>response),
                 catchError((err) => this.handleError(err))

@@ -1313,7 +1313,7 @@ export class BaseComponent {
 
 			let index = 0;
 			this.breadcrumbsService
-				.getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
+				.getAreaName('ArtifactType', NaN, data.Artifact.AssetTypeUid)
 				.subscribe((result) => {
 					var currentAreaName = result;
 					const currentFolderName = currentAreaName ? currentAreaName : folderTitle;
