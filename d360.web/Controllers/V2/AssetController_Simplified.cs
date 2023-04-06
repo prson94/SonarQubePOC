@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -222,13 +223,13 @@ namespace d360.web.Controllers.V2
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
 
-				var filters = Regex.Matches(advancedFilterString, @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)");
+				var filters = FilterExpressionRegexParser.ParseFullFilterExpression(advancedFilterString);
 				if (filters.Count > 0)
 				{
 					int parameterIndex = 1;
 					foreach (Match filterGrp in filters)
 					{
-						var filterMatch = Regex.Match(filterGrp.Value, @"^([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*]+)$");
+						var filterMatch = FilterExpressionRegexParser.ParseSingleFilterExpression(filterGrp);
 						if (filterMatch.Success && filterMatch.Groups.Count == 4)
 						{
 							var filterProperty = filterMatch.Groups[1].Value;
