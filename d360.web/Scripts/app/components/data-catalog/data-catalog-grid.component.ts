@@ -15,6 +15,7 @@ import { PredicatesService } from '../../services/predicates.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SidePanelService } from '../../services/side-panel.service';
+import { GridSortData } from '../../services/state.service';
 import { AppConstants } from '../../static/constants';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldType } from '../assets-grid/advanced-filtering/advanced-filtering.models';
@@ -41,6 +42,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 	destroy = new Subject<void>();
 	assetSearchSub: Subscription;
 	totalRecords = 0;
+	gridSortData: GridSortData;
 
 	isContainsSearchDefault: boolean = false;
 	simpleSearchText: string = '';
@@ -68,6 +70,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 
 		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
+		this.gridSortData = new GridSortData("DataCatalog");
 
 		this.subjectLoadGrid.pipe(
 			debounceTime(300))
@@ -86,6 +89,12 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 		this.secondaryNavService.clearItems();
 		this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, 'gov-data-catalog-icon-white', null);
 
+	}
+
+	onSort() {
+		this.gridSortData.sortField = this.dataTable.sortField;
+		this.gridSortData.sortOrder = this.dataTable.sortOrder;
+		this.gridSortData.save();
 	}
 
 	ngOnDestroy() {
@@ -134,7 +143,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			}
 		}
 
-		if (this.dataTable.sortField) {
+		if (this.dataTable.sortField && this.columns.some(x => (x.apiProperty as string).toLocaleLowerCase() === this.dataTable.sortField.toLocaleLowerCase())) {
 			if (this.dataTable.sortOrder > 0) {
 				params['_order'] = `asc(${this.dataTable.sortField})`;
 			}

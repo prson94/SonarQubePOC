@@ -11,8 +11,8 @@ export class ArtifactTypeFilters {
 	artifactTypeUid: string;
 	simpleTextFilter: string;
 	currentPageNumber: number = 0;
-	//sortField: string = "";
-	//sortOrder: SortOrder = SortOrder.None;
+	sortField: string = "";
+	sortOrder: SortOrder = SortOrder.None;
 	filters: GridFilterExpression[] = [];
 	relationships: GridRelationshipFilterExpression[] = [];
 	owners: GridOwnerFilter;
