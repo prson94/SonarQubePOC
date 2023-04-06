@@ -5497,10 +5497,10 @@ where v.id = {0}", id)).FirstOrDefault();
 			if (objectType.ToLowerInvariant().EndsWith("type"))
 			{
 				sql = $@";with assetTypeHierarchy as (
-						select ID as AssetTypeId from AssetType where object = @typeName and ObjectID = @typeId
-						union all
-						select itd.SubjectAssetTypeID as AssetTypeId from IntersectTypeDetail itd, assetTypeHierarchy
-						where itd.ObjectAssetTypeID = assetTypeHierarchy.AssetTypeId
+							select ID as AssetTypeId, 0 as [Level] from AssetType where object = @typeName and ObjectID = @typeId
+							union all
+							select itd.SubjectAssetTypeID as AssetTypeId, Level + 1 as [Level] from IntersectTypeDetail itd, assetTypeHierarchy
+							where itd.ObjectAssetTypeID = assetTypeHierarchy.AssetTypeId and [Level] < 10
 						)
 						select TOP 1 D.Title from assetTypeHierarchy
 						inner join AssetType AT on AT.ID = AssetTypeId

@@ -116,7 +116,10 @@ namespace d360.core.entities
 	public class AssetTypeApiViewModel : BaseObject
 	{
 		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-		public Guid uid { get; set; }
+		public Guid uid { get; set; }		
+		
+		[DataMember]
+		public Guid? ParentUid { get; set; }
 
 		[DataMember]
 		public int? ID { get; set; }
