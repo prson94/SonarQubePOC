@@ -4458,7 +4458,7 @@ where an.Uid = fam.uid)
 								A.CreatedOn,
 								A.UpdatedOn,
 								ACJ.ColorJson as Color,
-								{(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+								{(assetType.Class == AssetTypeClass.Reference ? "A.Icon," : "")}
 								Node.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
 								{string.Join(",\n", fieldColumns.GetStatements())}
 						from    Asset A
