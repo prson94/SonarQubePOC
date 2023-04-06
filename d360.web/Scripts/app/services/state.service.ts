@@ -38,7 +38,6 @@ export class GridSortData {
 
 	constructor(key: string) {
 		this.key = key;
-
 		let sortData = {};
 		let sortDataString = window.localStorage.getItem("GridSortData");
 		if (sortDataString !== null) {
