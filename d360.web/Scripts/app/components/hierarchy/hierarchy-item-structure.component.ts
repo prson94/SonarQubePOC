@@ -843,7 +843,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				uriParams._direction = this.gridSortData.sortOrder === 1 ? 'ASC' : 'DESC';
 			}
 			if (this.gridSortData.sortField && this.columns.some((f) => f.datafield === this.gridSortData.sortField)) {
-				var field = this.columns.filter((f) => f.datafield === this.gridSortData.sortField)[0];
+				const field = this.columns.filter((f) => f.datafield === this.gridSortData.sortField)[0];
 				uriParams._order = field["apiName"];
 			}
 			else {

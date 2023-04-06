@@ -39,7 +39,7 @@ export class GridSortData {
 	constructor(key: string) {
 		this.key = key;
 		let sortData = {};
-		let sortDataString = window.localStorage.getItem("GridSortData");
+		const sortDataString = window.localStorage.getItem("GridSortData");
 		if (sortDataString !== null) {
 			sortData = JSON.parse(sortDataString);
 		}
@@ -51,7 +51,7 @@ export class GridSortData {
 
 	save() {
 		let sortData = {};
-		let sortDataString = window.localStorage.getItem("GridSortData");
+		const sortDataString = window.localStorage.getItem("GridSortData");
 		if (sortDataString !== null) {
 			sortData = JSON.parse(sortDataString);
 		}

@@ -143,7 +143,7 @@ export class DataCatalogGridComponent extends AssetGridBaseComponent implements 
 			}
 		}
 
-		if (this.dataTable.sortField && this.columns.some(x => (x.apiProperty as string).toLocaleLowerCase() === this.dataTable.sortField.toLocaleLowerCase())) {
+		if (this.dataTable.sortField && this.columns.some((x) => (x.apiProperty as string).toLocaleLowerCase() === this.dataTable.sortField.toLocaleLowerCase())) {
 			if (this.dataTable.sortOrder > 0) {
 				params['_order'] = `asc(${this.dataTable.sortField})`;
 			}
