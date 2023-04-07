@@ -112,9 +112,9 @@ namespace d360.web.Controllers.V2
 		/// Retrieves assets across types that are categorized using special relationships.
 		/// </summary>
 		/// <remarks>
-		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq 'Redmond'`.
+		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq Redmond`.
 		///*  For comparison operators on Text fields you can use eq (equal), ne (not equal), ct (contains), nct (not contains)
-		///*  For comparison operators on List fields you can use in (in) and nin (not in)
+		///*  If you wish to use search using parentheses (), you will need to add a backslash symbol in front. For example: `city eq \(Redmond\)`.
 		///     
 		///Example :
 		///     

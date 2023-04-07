@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Dom;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +17,39 @@ namespace d360.model.helpers.filters
 		private readonly List<TokenMatch> Tokens = new List<TokenMatch>();
 		private readonly string FilterExpressionString;
 		private string FilterExpressionStringParsed;
+		private readonly Dictionary<string, string> escapeCharMap = new Dictionary<string, string>();
 		public FilterExpressionTokenizer(string value)
 		{
-			this.FilterExpressionString = value;
+			escapeCharMap.Add("(", "#escaped_character_1");
+			escapeCharMap.Add(")", "#escaped_character_2");
+
+			this.FilterExpressionString = EscapeString(value);
 
 			if (!IsValid(this.FilterExpressionString))
 			{
 				throw new Exception("Not valid filter expression");
 			}
+
+		}
+
+		private string EscapeString(string str)
+		{
+			escapeCharMap.ForEach(x =>
+			{
+				str = str.Replace("\\" + x.Key, x.Value);
+			});
+
+			return str;
+		}
+
+		private string NormalizeString(string str)
+		{
+			escapeCharMap.ForEach(x =>
+			{
+				str = str.Replace(x.Value, x.Key);
+			});
+
+			return str;
 		}
 
 		public List<TokenMatch> GetTokens()
@@ -70,13 +96,6 @@ namespace d360.model.helpers.filters
 					Match = str.Substring(startIdx, length).Trim()
 				};
 
-				string[] splitExpression = Regex.Split(tokenMatch.Match, MatchOperators.ToString()).Select(x => x.Trim()).ToArray();
-				tokenMatch.Token = new TokenizerObject
-				{
-					Field = splitExpression[0],
-					Operator = splitExpression[1],
-					Value = splitExpression[2]
-				};
 				this.Tokens.Add(tokenMatch);
 
 				matchIdx++;
@@ -87,6 +106,19 @@ namespace d360.model.helpers.filters
 			{
 				FilterExpressionStringParsed = FilterExpressionStringParsed.Replace(token.Match, token.TokenString);
 			});
+
+			this.Tokens.ForEach((token) =>
+			{
+				token.Match = NormalizeString(token.Match);
+				string[] splitExpression = Regex.Split(token.Match, MatchOperators.ToString()).Select(x => x.Trim()).ToArray();
+				token.Token = new TokenizerObject
+				{
+					Field = splitExpression[0],
+					Operator = splitExpression[1],
+					Value = splitExpression[2]
+				};
+			} 
+			);
 		}
 
 		public bool IsValid(string str)

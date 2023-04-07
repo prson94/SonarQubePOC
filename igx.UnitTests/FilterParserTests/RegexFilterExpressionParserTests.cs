@@ -9,6 +9,8 @@ namespace igx.UnitTests.RegexFilterExpressionParserTests.cs
 	{
 		[Theory]
 		[InlineData("FieldType ct fieldValue", "##expressionMatch1")]
+		[InlineData("(displayValue ct \\(banana\\)anana)", "(##expressionMatch1)")]
+		[InlineData("displayValue ct \\(banana\\)anana", "##expressionMatch1")]
 		[InlineData("f1 ct f2 or f3 ct f4", "##expressionMatch1 or ##expressionMatch2")]
 		[InlineData("(f1 ct f2) or f3 ct f4", "(##expressionMatch1) or ##expressionMatch2")]
 		[InlineData("f1 ct f2 or (f3 ct f4)", "##expressionMatch1 or (##expressionMatch2)")]
@@ -62,6 +64,7 @@ namespace igx.UnitTests.RegexFilterExpressionParserTests.cs
 		[InlineData("Field Type ct 1,2test", "Field Type", "ct", "1,2test")]
 		[InlineData("Field Type ct 1/2test", "Field Type", "ct", "1/2test")]
 		[InlineData("Field Type ct 1?2test", "Field Type", "ct", "1?2test")]
+		[InlineData("(displayValue ct \\(banana\\)anana)", "displayValue", "ct", "(banana)anana")]
 		[InlineData("Field Type ct test!\"£$% ^&*_ +}{~@:?><test", "Field Type", "ct", "test!\"£$% ^&*_ +}{~@:?><test")]
 		[InlineData("Field Type ct \"£$% ^&*_ +}{~@:?><", "Field Type", "ct", "\"£$% ^&*_ +}{~@:?><")]
 		[InlineData("Field Type ct ~`!@#$%^&*_-+={}[]|\\:;<,>.?/", "Field Type", "ct", "~`!@#$%^&*_-+={}[]|\\:;<,>.?/")]
