@@ -185,7 +185,7 @@ namespace d360.web.Controllers.V2
 			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
-			sql = "select p.Id, p.Name from [Predicate] p where p.[Type] = 5 and exists (select 1 from IntersectType where PredicateId = p.Id)";
+			sql = $"select p.Id, p.Name from [Predicate] p where p.[Type] = {(int)PredicateType.CatalogBrowse}";
 			var predicates = Company.Query<PredValue>(sql).ToList();
 
 			#region Add columns
@@ -222,19 +222,20 @@ namespace d360.web.Controllers.V2
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
+				
+				var tokenParser = new FilterExpressionTokenizer(advancedFilterString);
+				var filters = tokenParser.GetTokens();
 
-				var filters = FilterExpressionRegexParser.ParseFullFilterExpression(advancedFilterString);
 				if (filters.Count > 0)
 				{
 					int parameterIndex = 1;
-					foreach (Match filterGrp in filters)
+					foreach (TokenMatch filterMatch in filters)
 					{
-						var filterMatch = FilterExpressionRegexParser.ParseSingleFilterExpression(filterGrp);
-						if (filterMatch.Success && filterMatch.Groups.Count == 4)
+						if (filterMatch != null)
 						{
-							var filterProperty = filterMatch.Groups[1].Value;
-							var filterOperation = filterMatch.Groups[2].Value;
-							var filterValue = filterMatch.Groups[3].Value;
+							var filterProperty = filterMatch.Token.Field;
+							var filterOperation = filterMatch.Token.Operator;
+							var filterValue = filterMatch.Token.Value;
 							var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 							if (column != null)
 							{
@@ -327,7 +328,7 @@ namespace d360.web.Controllers.V2
 
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										PredicateId = predicate.Id,
 										Where = $"fr.p{parameterIndex} = 1",
@@ -338,7 +339,7 @@ namespace d360.web.Controllers.V2
 								{
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
@@ -446,7 +447,7 @@ namespace d360.web.Controllers.V2
 									//build where query using hierarchy temp table and filteres assets temp table
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = $@"
@@ -479,7 +480,7 @@ namespace d360.web.Controllers.V2
 
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = query

@@ -1,20 +1,121 @@
-﻿using System;
+﻿using AngleSharp.Dom;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace d360.model.helpers.filters
 {
-	public static class FilterExpressionRegexParser
+	public class FilterExpressionTokenizer
 	{
-		private static readonly string filterExpressionRegex = @"([\w\s\-\/\:]+)\s(ct|eq|in|nct|neq|nin|ne)\s([\w\s\>\-\/\:\,\*\!\£\$\%\^\&\.\?\@\{\}\#\;\+\>\=\<\\\""\~\`\[\]\|]+)";
-		public static MatchCollection ParseFullFilterExpression(string advancedFilterString)
+		private readonly Regex MatchOperators = new Regex(@"( ct | eq | in | nct | neq | nin | ne )");
+		private readonly Regex MatchExpressionStart = new Regex(@"( and | or |\()");
+		private readonly Regex MatchExpressionEnd = new Regex(@"( and | or |\))");
+
+		private readonly List<TokenMatch> Tokens = new List<TokenMatch>();
+		private readonly string FilterExpressionString;
+		private string FilterExpressionStringParsed;
+		public FilterExpressionTokenizer(string value)
 		{
-			return Regex.Matches(advancedFilterString, filterExpressionRegex);
+			this.FilterExpressionString = value;
+
+			if (!IsValid(this.FilterExpressionString))
+			{
+				throw new Exception("Not valid filter expression");
+			}
 		}
-		public static Match ParseSingleFilterExpression(Match filterGrp)
+
+		public List<TokenMatch> GetTokens()
 		{
-			return Regex.Match(filterGrp.Value, $"^{filterExpressionRegex}");
+			this.Tokenize(this.FilterExpressionString);
+			return this.Tokens;
+		}
+
+		public string GetFilterExpressionStringParsed()
+		{
+			if (string.IsNullOrEmpty(this.FilterExpressionStringParsed))
+			{
+				throw new Exception("Make sure that filter expression is not empty and that GetTokens() has been executed");
+			}
+			return this.FilterExpressionStringParsed;
+		}
+
+		public void Tokenize(string str)
+		{
+
+			int lastVisitedIndex = 0;
+			MatchCollection matches = MatchOperators.Matches(str);
+			int matchIdx = 1;
+			foreach (Match match in matches)
+			{
+				var operatorIndex = match.Index;
+
+				var prevSubstring = str.Substring(lastVisitedIndex, operatorIndex - lastVisitedIndex);
+				MatchCollection startMatches = MatchExpressionStart.Matches(prevSubstring);
+
+				var startIdx = startMatches.Count > 0 ? startMatches.Cast<Match>().Max(x => x.Index + x.Value.Length) + lastVisitedIndex : lastVisitedIndex;
+
+				var nextSubString = str.Substring(operatorIndex);
+				MatchCollection endMatches = MatchExpressionEnd.Matches(nextSubString);
+				var endIdx = endMatches.Count > 0 ? endMatches.Cast<Match>().Min(x => x.Index) + operatorIndex : str.Length;
+
+				var length = endIdx - startIdx;
+
+				lastVisitedIndex = endIdx;
+				var tokenMatch = new TokenMatch
+				{
+					MatchIdx = matchIdx,
+					TokenString = "##expressionMatch" + matchIdx,
+					Match = str.Substring(startIdx, length).Trim()
+				};
+
+				string[] splitExpression = Regex.Split(tokenMatch.Match, MatchOperators.ToString()).Select(x => x.Trim()).ToArray();
+				tokenMatch.Token = new TokenizerObject
+				{
+					Field = splitExpression[0],
+					Operator = splitExpression[1],
+					Value = splitExpression[2]
+				};
+				this.Tokens.Add(tokenMatch);
+
+				matchIdx++;
+			}
+
+			FilterExpressionStringParsed = str;
+			this.Tokens.ForEach(token =>
+			{
+				FilterExpressionStringParsed = FilterExpressionStringParsed.Replace(token.Match, token.TokenString);
+			});
+		}
+
+		public bool IsValid(string str)
+		{
+			int parenthesisCount = 0;
+			foreach (char c in str)
+			{
+				if (c == '(') parenthesisCount++;
+				if (c == ')') parenthesisCount--;
+			}
+
+			return parenthesisCount == 0;
 		}
 	}
+
+	public class TokenMatch
+	{
+		public int MatchIdx { get; set; }
+		public string TokenString { get; set; }
+		public string Match { get; set; }
+
+		public TokenizerObject Token { get; set; }
+	}
+
+	public class TokenizerObject
+	{
+		public string Field { get; set; }
+		public string Operator { get; set; }
+		public string Value { get; set; }
+	}
+
 }
