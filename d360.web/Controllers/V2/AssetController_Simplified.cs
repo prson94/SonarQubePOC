@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
-				
+
 				var tokenParser = new FilterExpressionTokenizer(advancedFilterString);
 				var filters = tokenParser.GetTokens();
 
@@ -728,7 +728,11 @@ namespace d360.web.Controllers.V2
 					//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
 					foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
 					{
-						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(","\\(").Replace(")","\\)"), cwhere.Where))
+						{
+							throw new Exception("Invalid filter expression");
+						}
+						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where);
 					}
 				}
 

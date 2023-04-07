@@ -68,6 +68,7 @@ namespace igx.UnitTests.RegexFilterExpressionParserTests.cs
 		[InlineData("Field Type ct test!\"£$% ^&*_ +}{~@:?><test", "Field Type", "ct", "test!\"£$% ^&*_ +}{~@:?><test")]
 		[InlineData("Field Type ct \"£$% ^&*_ +}{~@:?><", "Field Type", "ct", "\"£$% ^&*_ +}{~@:?><")]
 		[InlineData("Field Type ct ~`!@#$%^&*_-+={}[]|\\:;<,>.?/", "Field Type", "ct", "~`!@#$%^&*_-+={}[]|\\:;<,>.?/")]
+		[InlineData("Field Type ct ~`!@#$%^&*_-+={}[]\\(\\)|\\:;<,>.?/", "Field Type", "ct", "~`!@#$%^&*_-+={}[]()|\\:;<,>.?/")]
 		[InlineData("Platform eq Airtable", "Platform", "eq", "Airtable")] //case when keyword or is in field value without space!
 		[InlineData("neq|nin|ne eq ct|eq|in|nct|", "neq|nin|ne", "eq", "ct|eq|in|nct|")] //case when keywords ct|eq|in|nct|neq|nin|ne is in field value
 		public void FullFilterExpressionSingle(string expression, string m1, string m2, string m3)
