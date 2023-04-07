@@ -5,7 +5,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { escape } from "lodash-es";
+import { StringHelpers } from '../../../static/string-helpers';
 
 @Component({
     selector: 'd3s-dynamic-field-value',
@@ -109,11 +109,9 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         return this.fieldValue !== '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 
-    private formatAsPath(): string {
-        const replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
-        return replacement;
+	private formatAsPath(): string {
+		return StringHelpers.formatAsPathString(this.fieldValue);
     }
-
 
     private columnDataType(column: GridColumn): string {
         var fields = this.fields.filter((x) => x.name === column.datafield);

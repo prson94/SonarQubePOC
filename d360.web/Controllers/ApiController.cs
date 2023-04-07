@@ -63,7 +63,7 @@ namespace d360.web.Controllers
 			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
 			if (pathDefinition?.AssetTypeUid == null)
 			{
-				var sql = "select graph.GetPathByAssetId(@id, ' <i class=\"fa fa-angle-right\"></i> ', ' / ')";
+				var sql = "select graph.GetPathByAssetId(@id, ' > ', ' / ')";
 				var result = await Company.Connection.QuerySingleOrDefaultAsync<string>(sql, new { id = assetId }).ConfigureAwait(false);
 				result = result ?? string.Empty;
 				return result;
