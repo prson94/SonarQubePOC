@@ -24,7 +24,7 @@ import { GridDefinitionService } from "../../services/grid-definition.service";
 import { ArtifactService } from "../../services/artifacts.service";
 import { AssetService } from "../../services/asset.service";
 import { PermissionsService } from "../../services/permissions.service";
-import { StateService } from "../../services/state.service";
+import { GridSortData, StateService } from "../../services/state.service";
 import { HeaderActionsService } from "../../services/header-actions.service";
 import { AssetTypeExportTemplate } from "../../models/artifact-type.model";
 import { BaseComponent } from "../shared/base.component";
@@ -149,6 +149,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	initialLoadInterval: any;
 	destroy = new Subject<void>();
 	isDescriptionVisible: boolean = false;
+
+	gridSortData: GridSortData;
 
 	get exportTooltip(): string {
 		return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
@@ -356,6 +358,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	getFieldsDefinition() {
+		this.gridSortData = new GridSortData("AssetGrid_" + this.assetTypeApiModel.uid);
+
 		this.gridDefinitionService.getGridDefinition(this.assetTypeApiModel.uid, "ArtifactType").subscribe(
 			(result) => {
 				this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
@@ -391,7 +395,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	}
 
 	getFieldAPINameByOldName(oldname: string) {
-		return this.fields.find((x) => x.name === oldname).apiName;
+		return this.fields.find((x) => x.name === oldname)?.apiName ?? null;
 	}
 
 	_oldParamsJSON: string = '';
@@ -406,8 +410,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		params._includeProfilingCheck = true;
 		params.usecachedfilters = true;
 
-		if (this.stateService.artifactTypeFilters.sortField) {
-			params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
+		if (this.gridSortData.sortField && this.getFieldAPINameByOldName(this.gridSortData.sortField) !== null) {
+			params._order = this.getFieldAPINameByOldName(this.gridSortData.sortField);
 			params.useTypeLevelDefaultSorts = false;
 		}
 		else {
@@ -415,7 +419,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 			delete params['_order'];
 		}
 
-		if (this.stateService.artifactTypeFilters.sortOrder !== SortOrder.None) { params._direction = this.stateService.artifactTypeFilters.sortOrder === SortOrder.Ascending ? "asc" : "desc"; }
+		if (this.gridSortData.sortOrder !== SortOrder.None) {
+			params._direction = this.gridSortData.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+		}
 		else {
 			delete params['_direction'];
 		}
@@ -694,8 +700,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		//event.sortField = Field name to sort with
 		//event.sortOrder = Sort order as number, 1 for asc and -1 for dec
 		//filters: FilterMetadata object having field as key and filter value, filter matchMode as value  
-		this.stateService.artifactTypeFilters.sortOrder = event.sortOrder;
-		this.stateService.artifactTypeFilters.sortField = event.sortField == null ? "" : event.sortField;
+		this.gridSortData.sortOrder = event.sortOrder;
+		this.gridSortData.sortField = event.sortField == null ? "" : event.sortField;
+		this.gridSortData.save();
 		this.rowsPerPage = event.rows;
 		this.stateService.artifactTypeFilters.currentPageNumber = event.first / event.rows;
 		this.getData();

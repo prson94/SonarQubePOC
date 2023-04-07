@@ -46,6 +46,7 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { GridSortData } from '../../services/state.service';
 
 /*global $localize*/
 
@@ -71,6 +72,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	@Input() assetTypeUid: string;
 
 	@ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
+	gridSortData: GridSortData;
 
 	@HostListener('document:keydown.arrowup', ['$event'])
 	@HostListener('document:keydown.arrowdown', ['$event'])
@@ -218,6 +220,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				break;
 		}
 
+		this.gridSortData = new GridSortData("HierarchyTree_" + this.assetTypeUid);
 		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
 
 		const uriParams: any = {};
@@ -809,6 +812,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 	}
 
 	onSort() {
+		this.gridSortData.sortField = this.treeTable.sortField;
+		this.gridSortData.sortOrder = this.treeTable.sortOrder;
+		this.gridSortData.save();
+
 		setTimeout(() => this.loadNodes(), 20);
 	}
 
@@ -833,10 +840,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 			};
 
 			if (this.treeTable) {
-				uriParams._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
+				uriParams._direction = this.gridSortData.sortOrder === 1 ? 'ASC' : 'DESC';
 			}
-			if (this.treeTable && this.treeTable._sortField && this.treeTable._sortField !== "") {
-				var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
+			if (this.gridSortData.sortField && this.columns.some((f) => f.datafield === this.gridSortData.sortField)) {
+				const field = this.columns.filter((f) => f.datafield === this.gridSortData.sortField)[0];
 				uriParams._order = field["apiName"];
 			}
 			else {

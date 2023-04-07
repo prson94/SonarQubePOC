@@ -35,10 +35,12 @@
 			 [customSort]="true"
 			 (onLazyLoad)="subjectLoadGrid.next('onLazyLoad');"
 			 [totalRecords]="totalRecords"
-			 (onPage)="setRowsPerPage($event)">
+			 (onPage)="setRowsPerPage($event)"
+			 [sortField]="gridSortData.sortField"
+			 [sortOrder]="gridSortData.sortOrder">
 		<ng-template pTemplate="header">
 			<tr>
-				<th *ngFor="let col of columns" [pSortableColumn]="col.apiProperty">
+				<th *ngFor="let col of columns" [pSortableColumn]="col.apiProperty" (click)="onSort()">
 					<ng-container>{{col.columnName}}</ng-container>
 					<d3s-sortIcon [field]="col.apiProperty"></d3s-sortIcon>
 				</th>
