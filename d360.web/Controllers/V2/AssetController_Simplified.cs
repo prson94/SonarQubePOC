@@ -730,7 +730,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(","\\(").Replace(")","\\)"), cwhere.Where))
 						{
-							throw new Exception("Invalid filter expression");
+							throw new FilterExpressionParserException("Invalid filter expression");
 						}
 						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where);
 					}

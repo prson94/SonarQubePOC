@@ -27,7 +27,7 @@ namespace d360.model.helpers.filters
 
 			if (!IsValid(this.FilterExpressionString))
 			{
-				throw new Exception("Not valid filter expression");
+				throw new FilterExpressionParserException("Not valid filter expression");
 			}
 
 		}
@@ -62,7 +62,7 @@ namespace d360.model.helpers.filters
 		{
 			if (string.IsNullOrEmpty(this.FilterExpressionStringParsed))
 			{
-				throw new Exception("Make sure that filter expression is not empty and that GetTokens() has been executed");
+				throw new FilterExpressionParserException("Make sure that filter expression is not empty and that GetTokens() has been executed");
 			}
 			return this.FilterExpressionStringParsed;
 		}
@@ -117,7 +117,7 @@ namespace d360.model.helpers.filters
 					Operator = splitExpression[1],
 					Value = splitExpression[2]
 				};
-			} 
+			}
 			);
 		}
 
@@ -126,8 +126,14 @@ namespace d360.model.helpers.filters
 			int parenthesisCount = 0;
 			foreach (char c in str)
 			{
-				if (c == '(') parenthesisCount++;
-				if (c == ')') parenthesisCount--;
+				if (c == '(')
+				{
+					parenthesisCount++;
+				}
+				if (c == ')')
+				{
+					parenthesisCount--;
+				}
 			}
 
 			return parenthesisCount == 0;
