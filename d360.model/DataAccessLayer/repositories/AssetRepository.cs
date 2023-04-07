@@ -1782,7 +1782,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					A.CreatedOn,
 					{(isForTreeGrid ? "LVL.Level as 'Level'," : "")}
 					{(includeParent ? parentFieldSQL : "")}
-					{(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+					{(assetType.Class == AssetTypeClass.Reference ? "A.Icon," : "")}
 					{(includeColor ? "ACJ.ColorJson as Color," : "")}
 					{(includeProfilingCheck ? profilingCheckFields : "")}
 					{(includeSegments ? "Node.Segments," : "")}
@@ -2156,15 +2156,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			var typesToAvoid = new List<string>() {
 				DataType.ComplexRelationLookup.ToString(),
 				DataType.DataTableSelect.ToString()
-			};
-
-			//add default fields
-			if (assetType.Class == AssetTypeClass.Reference)
-			{
-				fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-				fields.Add(new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
-				includeAssetUrl = false;
-			}
+			};			
 
 			string ParentAssetTypeUidHeading = "Parent";
 
@@ -2200,6 +2192,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = ParentAssetTypeUidHeading });
 				fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = assetType.Name + " UID" });
 			}
+
+			//add default fields
+			if (assetType.Class == AssetTypeClass.Reference)
+			{
+				var colourIndex = fields.FindIndex(x => x.Name.ToLower() == "code") + 1;				
+				fields.Insert(colourIndex, new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
+				includeAssetUrl = false;
+			}			
+
 			var rowData = results.items.ToList();
 
 			var document = new SLDocument();
