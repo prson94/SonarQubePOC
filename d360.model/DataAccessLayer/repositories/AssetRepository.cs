@@ -194,6 +194,24 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "_includeParent".ToLowerInvariant()))
+				{
+					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "_includeParent".ToLowerInvariant()).Value;
+					if (bool.TryParse(includeString, out bool include))
+					{
+						extraJoins += @$" outer apply (
+										select top 1 at.uid from IntersectTypeDetail itd 
+										inner join AssetType at on at.ID = itd.SubjectAssetTypeID
+										where itd.objectassettypeid = a.id and itd.predicatetype in (3,4)
+									)Parent  ";
+						extraColumns += @", Parent.uid as ParentUid ";
+					}
+					else
+					{
+						throw new ArgumentException(AssetTypeErrors.InvalidValueincludedashboardflag, includeString);
+					}
+				}
+
 				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeLegacyData".ToLowerInvariant()))
 				{
 					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeLegacyData".ToLowerInvariant()).Value;
