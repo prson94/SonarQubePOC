@@ -647,6 +647,8 @@ namespace d360.extensions.search
              * To estimate the limit of fields in the index, we count the number of field types and add 20%
              * We are not indexing all field types, and field types with the same name are mapped to the same elastic field
              * If the number of field types is too high, then count the distinct field names and add 80%.
+             * Because each field dynamically added in elasticSearch will be added as BOTh a text and keyword,
+             * the counts form the database are doubled (count + 20% = 2.4, count + 80% = 3.6)
              * Under no circumstance should we set limit higher than 30,000
              * https://www.elastic.co/guide/en/elasticsearch/reference/6.8/mapping.html#mapping-limit-settings
              */
@@ -656,8 +658,8 @@ namespace d360.extensions.search
                             ELSE a.total
                         END
                         FROM (
-                            SELECT FLOOR(COUNT(*) * 1.2) AS total,
-                                    FLOOR(COUNT(DISTINCT [Name]) * 1.8) AS dist
+                            SELECT FLOOR(COUNT(*) * 2.4) AS total,
+                                    FLOOR(COUNT(DISTINCT [Name]) * 3.6) AS dist
                             FROM [dbo].[FieldType]
                         ) a;";
 			return context.Query<int>(sql).FirstOrDefault();
