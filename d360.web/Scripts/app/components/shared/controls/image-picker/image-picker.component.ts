@@ -156,7 +156,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 		this.hasError = false;
 		if (this.file && this.file.type && this.allowedExtensions.indexOf(this.file.type) === -1) {
 			this.hasError = true;
-			this.validationMessage = $localize`Invalid file type. Allowed extenstions are ${this.allowedExtensions}`;
+			this.validationMessage = this.invalidFormatMessage;
 		}
 		else {
 			var reader = new FileReader();
