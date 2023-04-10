@@ -508,12 +508,14 @@ export class AdvancedFilterFieldCondition {
 		}
 		else {
 			const operation: string = this.getOperatorString();
-			const value: string = this.getValue();
+			let value: string = this.getValue();
 			const isDataCatalog = (window.location.href ?? "").toLowerCase().endsWith("datacatalog");
+			if (isDataCatalog) {
+				value = value.split('(').join("\\(").split(')').join('\\)');
+			}
 			if (isDataCatalog && this.field.toLocaleLowerCase() === "displaypath" && (this.operator === "Contains" || this.operator === "NotContains")) {
 				return `(${this.field}Segment ${operation} ${value})`;
 			}
-
 			return `(${this.field} ${operation} ${value})`;
 		}
 	}

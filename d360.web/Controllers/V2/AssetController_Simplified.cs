@@ -112,9 +112,9 @@ namespace d360.web.Controllers.V2
 		/// Retrieves assets across types that are categorized using special relationships.
 		/// </summary>
 		/// <remarks>
-		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq 'Redmond'`.
+		///Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example: `city eq Redmond`.
 		///*  For comparison operators on Text fields you can use eq (equal), ne (not equal), ct (contains), nct (not contains)
-		///*  For comparison operators on List fields you can use in (in) and nin (not in)
+		///*  If you wish to use search using parentheses (), you will need to add a backslash symbol in front. For example: `city eq \(Redmond\)`.
 		///     
 		///Example :
 		///     
@@ -185,7 +185,7 @@ namespace d360.web.Controllers.V2
 			List<string> whereStatements = new List<string>();
 
 			// Get relevant predicates.
-			sql = "select p.Id, p.Name from [Predicate] p where p.[Type] = 5 and exists (select 1 from IntersectType where PredicateId = p.Id)";
+			sql = $"select p.Id, p.Name from [Predicate] p where p.[Type] = {(int)PredicateType.CatalogBrowse}";
 			var predicates = Company.Query<PredValue>(sql).ToList();
 
 			#region Add columns
@@ -223,18 +223,19 @@ namespace d360.web.Controllers.V2
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
 
-				var filters = FilterExpressionRegexParser.ParseFullFilterExpression(advancedFilterString);
+				var tokenParser = new FilterExpressionTokenizer(advancedFilterString);
+				var filters = tokenParser.GetTokens();
+
 				if (filters.Count > 0)
 				{
 					int parameterIndex = 1;
-					foreach (Match filterGrp in filters)
+					foreach (TokenMatch filterMatch in filters)
 					{
-						var filterMatch = FilterExpressionRegexParser.ParseSingleFilterExpression(filterGrp);
-						if (filterMatch.Success && filterMatch.Groups.Count == 4)
+						if (filterMatch != null)
 						{
-							var filterProperty = filterMatch.Groups[1].Value;
-							var filterOperation = filterMatch.Groups[2].Value;
-							var filterValue = filterMatch.Groups[3].Value;
+							var filterProperty = filterMatch.Token.Field;
+							var filterOperation = filterMatch.Token.Operator;
+							var filterValue = filterMatch.Token.Value;
 							var column = columns.FirstOrDefault(c => c.ApiName.ToLowerInvariant() == filterProperty.ToLowerInvariant());
 							if (column != null)
 							{
@@ -327,7 +328,7 @@ namespace d360.web.Controllers.V2
 
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										PredicateId = predicate.Id,
 										Where = $"fr.p{parameterIndex} = 1",
@@ -338,7 +339,7 @@ namespace d360.web.Controllers.V2
 								{
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = $@"select distinct ObjectAssetId from dbo.CatalogBrowseObject cbo where cbo.ObjectDisplayValue {operation} @p{parameterIndex}"
@@ -446,7 +447,7 @@ namespace d360.web.Controllers.V2
 									//build where query using hierarchy temp table and filteres assets temp table
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = $@"
@@ -479,7 +480,7 @@ namespace d360.web.Controllers.V2
 
 									catalogWheres.Add(new CatalogWhere
 									{
-										TokenExpression = filterGrp.Value,
+										TokenExpression = filterMatch.Match,
 										PropertyName = $"p{parameterIndex}",
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = query
@@ -727,7 +728,11 @@ namespace d360.web.Controllers.V2
 					//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
 					foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
 					{
-						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression, cwhere.Where);
+						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(","\\(").Replace(")","\\)"), cwhere.Where))
+						{
+							throw new FilterExpressionParserException("Invalid filter expression");
+						}
+						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where);
 					}
 				}
 
