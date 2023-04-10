@@ -26,7 +26,7 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
     <IISExpressSSLPort>
-    </IISExpressSSLPort>
+	</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -2044,6 +2044,7 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <TypeScriptCompile Include="Scripts\bootstrap.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.prod.ts" />
     <TypeScriptCompile Include="Scripts\environments\environment.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
