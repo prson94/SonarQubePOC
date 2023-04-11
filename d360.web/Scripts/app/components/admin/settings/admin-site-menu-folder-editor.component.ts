@@ -249,10 +249,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 		if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
 			const path: string = this.folderModel.Icon["path"];
-			if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
+			if (this.folderModel.ImageIconUrl !== null && path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
 				folder.ImageIconUrl = this.folderModel.ImageIconUrl;
 				folder.Icon = null;
 				folder.IconPayload = null;
+			} else if (path === folder.IconPayload) {
+				folder.Icon = null;
 			}
 		}
 
