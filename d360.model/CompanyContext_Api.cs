@@ -1958,7 +1958,7 @@ namespace d360.model
                                     if (decimal.TryParse(fieldValue, out decimal fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaximumValueCheck, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaximumValueCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
                                 else
@@ -1966,7 +1966,7 @@ namespace d360.model
                                     if (fieldValue.Length > fieldType.MaximumLength.Value)
                                     {
                                         success = false;
-                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaxmiumLengthCheck, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
+                                        errorMessages.Add(string.Format(CompanyContextApiError.NumericMaxmiumLengthCheck, fieldName, fieldType.MaximumLength.Value.ToString(decimalFormatString)));
                                     }
                                 }
                             }

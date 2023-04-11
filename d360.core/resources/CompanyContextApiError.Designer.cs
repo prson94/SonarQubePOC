@@ -286,7 +286,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} must be a valid whole number, greater than {0} and less than {2}.
+        ///   Looks up a localized string similar to {0} must be a valid whole number, greater than {1} and less than {2}.
         /// </summary>
         public static string ValidateNumberFieldRange {
             get {
