@@ -65,7 +65,7 @@ stages:
   dependsOn: []
   jobs:
   - job: BundleScripts
-    displayName: "Bundle scripts"
+    displayName: "Bundle Scripts"
     timeoutInMinutes: 0
     cancelTimeoutInMinutes: 5
     variables:
@@ -75,13 +75,24 @@ stages:
     steps:
     - checkout: self
     - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/dist
+      displayName: 'Create UI Output Directory'
+    - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/remote
+      displayName: 'Create Remote Output Directory'
     - script: yarn
       workingDirectory: 'd360.web'
+      displayName: 'Run Yarn Install'
     - script: yarn run build-dev-ops-prod-linux
       workingDirectory: 'd360.web'
+      displayName: 'Run build-dev-ops-prod-linux'
+    - script: yarn run build-fed-linux
+      workingDirectory: 'd360.web'
+      displayName: 'Run build-fed-linux'
     - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/dist
-      displayName: 'Publish bundled scripts for later use'
+      displayName: 'Publish bundled UI scripts for later use'
       artifact: dist
+    - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/remote
+      displayName: 'Publish bundled Remote scripts for later use'
+      artifact: remote
 - stage: BUILD
   displayName: 'Build solution'
   dependsOn:
@@ -99,11 +110,19 @@ stages:
     - checkout: devops
     - download: current
       artifact: dist
+    - download: current
+      artifact: remote
     - task: CopyFiles@2
-      displayName: 'Copy bundled scripts'
+      displayName: 'Copy bundled UI scripts'
       inputs:
         sourceFolder: $(Pipeline.Workspace)
         contents: 'dist/**'
+        targetFolder: $(Build.Repository.LocalPath)/govern/d360.web/Scripts/
+    - task: CopyFiles@2
+      displayName: 'Copy bundled Remote scripts'
+      inputs:
+        sourceFolder: $(Pipeline.Workspace)
+        contents: 'remote/**'
         targetFolder: $(Build.Repository.LocalPath)/govern/d360.web/Scripts/
     - template: build/steps/step-t4-transform.yml@templates
     - template: build/steps/step-dotnet-build.yml@templates

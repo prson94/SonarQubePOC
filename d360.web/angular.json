@@ -42,7 +42,6 @@
         "build": {
           "builder": "ngx-build-plus:browser",
           "options": {
-            "deployUrl": "/Scripts/dist/chunks/",
             "outputPath": "Scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",
