@@ -15,6 +15,7 @@ import { TooltipInfo } from '../../models/tooltip-info.model';
 import { TooltipSingletonService } from '../../services/tooltip-singleton.service';
 import { Subject, Subscription } from "rxjs";
 import { debounceTime } from "rxjs/operators";
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-preview-tooltip',
@@ -228,8 +229,8 @@ export class PreviewTooltipComponent {
         return this.align === 'left';
     }
 
-    public navigate(e: any, url: string) {
-        this.router.navigateByUrl(url);
+	public navigate(e: any, url: string) {
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
         e.preventDefault();
     }
 }

@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { FavoriteViewModel } from '../../../models/favorite.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
 import { FavoritesManagementService } from './FavoritesManagementService';
 
@@ -64,8 +65,8 @@ export class SiteMenuShowFavoritesPanelComponent {
         return (window.innerHeight - 80) + 'px';
     }
 
-    openFavorite(f: FavoriteViewModel) {
-        this.router.navigateByUrl(f.Route, { state: { "invalidateKey": true } });
+	openFavorite(f: FavoriteViewModel) {
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(f.Route), { state: { "invalidateKey": true } });
         this.activeItemChanged.emit(undefined);
     }
 }

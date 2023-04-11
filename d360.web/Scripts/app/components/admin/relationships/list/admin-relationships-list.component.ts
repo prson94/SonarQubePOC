@@ -208,7 +208,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(this.federateUrl(url));
 		}
 	}
 

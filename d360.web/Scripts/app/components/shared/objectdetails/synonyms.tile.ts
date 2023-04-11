@@ -181,7 +181,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     }
 
     protected navigate(url: string) {
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+		this.router.navigateByUrl(this.federateUrl(SiteUrlHelpers.convertClassicUrl(url)));
     }
 
     synonymClicked($event, data: any, type: string) {

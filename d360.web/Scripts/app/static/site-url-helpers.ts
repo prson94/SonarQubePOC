@@ -1,5 +1,8 @@
-﻿declare var CompanySettings;
+﻿/* eslint-disable no-var */
+declare var CompanySettings;
 declare var ResourceHomePage;
+declare var FederationUrlPrefix;
+/* eslint-enable */
 
 export class SiteUrlHelpers {
 
@@ -246,5 +249,13 @@ export class SiteUrlHelpers {
 
             return url;
         }
-    }
+	}
+
+	public static federateUrl(url: string): string {
+		let prefix: string = (typeof FederationUrlPrefix === "undefined") ? "data-governance" : FederationUrlPrefix;
+		if (!url.startsWith("/") && prefix.length > 0) {
+			prefix += "/";
+		}
+		return prefix + url;
+	}
 }

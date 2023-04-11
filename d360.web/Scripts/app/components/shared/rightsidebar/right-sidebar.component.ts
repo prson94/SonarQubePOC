@@ -29,6 +29,7 @@ import { filter } from "rxjs/operators";
 import { SearchDetail } from '../../../models/search-result.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 declare var CurrentResourceID;
 
@@ -502,7 +503,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (this.currentObject.Uid) {
             const scoreItems = this.items.filter((x) => x.title === 'Scoring');
 			if (scoreItems.length === 1) {
-				this.router.navigateByUrl(`/asset/${(this.currentObject.Uid as string).toLowerCase()}/score/${scoreType}`);
+				this.router.navigateByUrl(SiteUrlHelpers.federateUrl(`/asset/${(this.currentObject.Uid as string).toLowerCase()}/score/${scoreType}`));
             }
         }
     }

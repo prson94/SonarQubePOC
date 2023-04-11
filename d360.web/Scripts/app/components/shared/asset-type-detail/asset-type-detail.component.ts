@@ -15,6 +15,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeApiModel } from '../../../models/asset.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'ig-asset-type-detail',
@@ -93,8 +94,8 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
             window.open(url, '_blank');
             return;
         }
-        else {
-            this.router.navigateByUrl(url);
+		else {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
             return;
         }
     }

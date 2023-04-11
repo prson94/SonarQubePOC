@@ -18,6 +18,7 @@ import { AssetTypeListSidePanelWrapperComponent } from "./asset-type-list-sidepa
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
 import { StateService } from "../../../../services/state.service";
 import { PopupMenu } from "../../../shared/controls/popup-menu/popup-menu.component";
+import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 
 /*global $localize*/
 // eslint-disable-next-line no-var
@@ -179,7 +180,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			window.open(url, "_blank");
 		}
 		else {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
 		}
 	}
 

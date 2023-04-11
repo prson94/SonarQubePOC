@@ -3,6 +3,7 @@ import { FollowingDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { FormHelper } from '../../models/form.model';
 import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-resource-following-grid-tile',
@@ -41,8 +42,8 @@ export class ResourceFollowingGridTile implements OnInit, OnChanges {
     }
 
     navigate(e: any) {
-        const url = e.data.Url;
-        this.router.navigateByUrl(url);
+		const url = e.data.Url;
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
 
     }
 }

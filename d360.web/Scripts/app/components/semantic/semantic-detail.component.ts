@@ -152,7 +152,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
             if (newTab) {
                 window.open(url, '_blank');
             } else {
-                this.router.navigateByUrl(url);
+				this.router.navigateByUrl(this.federateUrl(url));
             }
         }
     }
@@ -163,7 +163,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
             if (newTab) {
                 window.open(url, '_blank');
             } else {
-                this.router.navigateByUrl(url);
+				this.router.navigateByUrl(this.federateUrl(url));
             }
         }
     }

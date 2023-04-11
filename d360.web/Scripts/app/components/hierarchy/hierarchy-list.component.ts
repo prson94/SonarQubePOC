@@ -128,6 +128,6 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     }
 
     showAsset(asset: AssetTypeApiModel) {
-        this.router.navigateByUrl(`/assets/${asset.uid}`);
+		this.router.navigateByUrl(this.federateUrl(`/assets/${asset.uid}`));
     }
 }

@@ -150,7 +150,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
 	public openResource(event) {
-		this.router.navigateByUrl(SiteUrlHelpers.getUserUrl(event.uid));
+		this.router.navigateByUrl(this.federateUrl(SiteUrlHelpers.getUserUrl(event.uid)));
     }
 
     public export() {

@@ -45,8 +45,8 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
 
     private doSelect(group) {
         this.assetService.getAssetLegacyUri(group.Uid).subscribe((uri) => {
-                this.router.navigateByUrl(uri);
-            });
+			this.router.navigateByUrl(this.federateUrl(uri));
+        });
        
     }
 }

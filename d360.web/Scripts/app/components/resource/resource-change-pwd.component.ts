@@ -37,6 +37,6 @@ export class ResourceChangePwdComponent extends BaseComponent implements OnInit 
     }
 
     public onCloseEvent() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_HOME_ROOT}`);
+		this.router.navigateByUrl(this.federateUrl(`${SiteUrlHelpers.SITE_URL_HOME_ROOT}`));
     }
 }

@@ -59,7 +59,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 
 	navigateToUrl(url, $event: MouseEvent) {
 		if (url) {
-			this.router.navigateByUrl(url);
+			this.router.navigateByUrl(this.federateUrl(url));
 		}
 		else if (!this.expanded) {
 			this.onCategoryExpand($event);

@@ -19,6 +19,7 @@ import { TypeaheadSearchService } from '../../../services/typeahead-search.servi
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
@@ -169,7 +170,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     selectItem() {
-        this.router.navigateByUrl(this.result.Url);
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(this.result.Url));
     }
     
     nodeSelect(event, panel) {
@@ -200,7 +201,9 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     navigateToLink(url: string, res?: any) {
-        if (url && url.length > 0) { this.router.navigateByUrl(url); }
+		if (url && url.length > 0) {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
+		}
     }
 
     hasLink(url: string) {

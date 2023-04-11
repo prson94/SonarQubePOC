@@ -94,7 +94,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     }
 
     navigate(item: ShoppingCartListItem) {
-        this.router.navigateByUrl(item.Url);
+		this.router.navigateByUrl(this.federateUrl(item.Url));
     }
 }
 

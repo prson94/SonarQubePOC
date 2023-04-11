@@ -174,6 +174,6 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 	open($event: PointerEvent, uid: string) {
 		$event.preventDefault();
 		const url = `/admin/configuration/WorkflowActions/${uid}/fields`;
-		this.router.navigateByUrl(url);
+		this.router.navigateByUrl(this.federateUrl(url));
 	}
 }

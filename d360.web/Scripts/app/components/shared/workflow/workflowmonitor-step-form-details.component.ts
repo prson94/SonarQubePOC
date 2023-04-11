@@ -75,7 +75,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     doSelect() {
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`);
+		this.router.navigateByUrl(this.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`));
 
     }
 }

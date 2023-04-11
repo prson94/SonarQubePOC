@@ -2,6 +2,7 @@
 import { Router } from '@angular/router';
 import { DetailField } from '../../../../models/object-detail.model';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-color-display',
@@ -75,7 +76,7 @@ export class ColorDisplayComponent implements OnInit {
             this.linkClickInterceptor.sendEvent(e, this.field, url, this.valueIndex);
             return;
         }
-        this.router.navigateByUrl(url);
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
         e.preventDefault();
     }
 }

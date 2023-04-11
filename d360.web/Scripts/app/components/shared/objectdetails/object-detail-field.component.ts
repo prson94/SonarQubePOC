@@ -27,7 +27,7 @@ export class ObjectDetailFieldComponent {
     }
 
     navigate(url: string) {
-        this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(SiteUrlHelpers.convertClassicUrl(url)));
     }
     private GetJSON(value: string) {
         try {

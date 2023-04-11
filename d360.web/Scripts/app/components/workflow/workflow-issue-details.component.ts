@@ -124,9 +124,11 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
     }
 
     private openIssue(issue) {
-        if (issue.WorkflowItemID > 0)
-            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);}
-        else
-            {this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`);}
+		if (issue.WorkflowItemID > 0) {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`));
+		}
+		else {
+			this.router.navigateByUrl(SiteUrlHelpers.federateUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_VIEW_ITEM}/3/${issue.WorkflowID}`));
+		}
     }
 }

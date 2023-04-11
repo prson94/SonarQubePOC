@@ -376,7 +376,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         var needsReroute = this.assetTypeUid !== this.allocation.assetTypeUid;
         if (needsReroute) {
             var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.allocation.assetTypeUid + '/' + this.allocation.uid;
-            this.router.navigateByUrl(url);
+			this.router.navigateByUrl(this.federateUrl(url));
         }
     }
 

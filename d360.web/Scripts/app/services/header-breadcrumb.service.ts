@@ -10,6 +10,7 @@ import { SiteNav } from '../models/site-menu.model';
 import { AssetStyleService } from './asset-style.service';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 @Injectable({ providedIn: 'root' })
 export class HeaderBreadcrumbService extends BaseObservableService {
@@ -53,8 +54,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     SiteNavItemsCache: SiteNav[];
     // Service message commands
 
-    reRouteFromBreadcrumbs(url: string) {
-        this.router.navigateByUrl(url);
+	reRouteFromBreadcrumbs(url: string) {
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
     }
 
     getCurrentUrl(): string {

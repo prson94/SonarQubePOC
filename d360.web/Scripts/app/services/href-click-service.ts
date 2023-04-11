@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
+import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
@@ -44,7 +45,7 @@ export class LinkClickInterceptor {
             var event = origEvent["from-context-method"] ?? "";
 
             if (event === "open") {
-                this.router.navigateByUrl(url);
+				this.router.navigateByUrl(SiteUrlHelpers.federateUrl(url));
                 return;
             }
 

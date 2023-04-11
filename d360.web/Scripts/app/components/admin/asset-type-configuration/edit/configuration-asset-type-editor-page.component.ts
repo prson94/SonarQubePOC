@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { AssetTypeClass } from "../../../../models/asset.model";
 import { AssetService } from "../../../../services/asset.service";
 import { StateService } from "../../../../services/state.service";
+import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 
 @Component({
     selector: "d3s-configuration-asset-type-editor-page",
@@ -78,7 +79,7 @@ export class ConfigurationAssetTypeEditorPageComponent {
     }
 
     goBack() {
-        this.router.navigateByUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`);
+		this.router.navigateByUrl(SiteUrlHelpers.federateUrl(`/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}`));
     }
     
     get formTitle() {
