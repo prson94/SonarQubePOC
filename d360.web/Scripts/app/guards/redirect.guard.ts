@@ -7,7 +7,7 @@ import { CompanySettingsService } from '../services/settings.service';
 
 declare var ResourceHomePage;
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class RedirectGuard implements CanActivate {
     constructor(
         protected settingsService: CompanySettingsService,

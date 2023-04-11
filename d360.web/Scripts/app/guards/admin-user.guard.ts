@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AdminUserGuard implements CanActivate {
     constructor(protected authenticationService: AuthenticationService, protected router: Router) { }
 

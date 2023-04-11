@@ -65,7 +65,7 @@ export class GridSortData {
 	}
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class StateService {
 	constructor() {
 		this.artifactTypeFilters = new ArtifactTypeFilters();
