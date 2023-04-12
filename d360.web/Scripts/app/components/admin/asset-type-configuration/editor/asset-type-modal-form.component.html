@@ -21,6 +21,7 @@
 				  [formGroup]="assetTypeForm"
 				  [style.height.px]="modalFormMaxHeight"
 				  [style.overflow]="'auto'">
+
 				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="General" i18n-title>
 					<div inputs>
 						<div class="form-group">
@@ -269,6 +270,39 @@
 						</div>
 					</div>
 				</ig-property-group>
+
+				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="Security" i18n-title>
+					<div inputs>
+						<div class="form-group">
+							<div class="row">
+								<div class="field-col">
+									<div class="flex">
+										<div class="flex-col">
+											<div class="flex">
+												<label for="isDefaultReadAccessEnabled" class="ig-label" i18n>Default Read Access</label>
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="If enabled, users without any responsibilities will see this asset type by default."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</div>
+											<ig-switch [attr.name]="'isDefaultReadAccessEnabled'"
+													   [formControlName]="'isDefaultReadAccessEnabled'"
+													   [formControl]="assetTypeForm.controls['isDefaultReadAccessEnabled']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="100"
+													   trueLabel="True"
+													   falseLabel="False"
+													   [igDataCy]="'Asset_Type_Modal_Field_isDefaultReadAccessEnabled'"></ig-switch>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+
 				<ig-property-group [showHeaderLine]="false" *ngIf="showStylesPropertyGroup" [igformGroup]="assetTypeForm" title="Styles" i18n-title>
 					<div inputs>
 						<div class="form-group">

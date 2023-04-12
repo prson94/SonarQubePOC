@@ -86,31 +86,10 @@ namespace d360.core.entities
 		
 		[DataMember]
 		public string DescriptionButtonName { get; set; }
+
+		[DataMember]
+		public int DefaultPermissions { get; set; } = (int)Permission.ReadAsset;
 	}
-
-	public class AssetTypeBrowserApiViewModel
-	{
-		public Guid uid { get; set; }
-
-		public string Name { get; set; }
-
-		private int _ClassID;
-
-		public int ClassID
-		{
-			get => _ClassID;
-			set
-			{
-				_ClassID = value;
-				Class = ((AssetTypeClass)_ClassID).AsInfoModel();
-			}
-		}
-
-		public AssetTypeClassInfo Class { get; set; }
-
-		public string Path { get; set; }
-	}
-
 
 	[DataContract(Namespace = NAMESPACE)]
 	public class AssetTypeApiViewModel : BaseObject
@@ -219,7 +198,10 @@ namespace d360.core.entities
 		
 		[DataMember]
 		public bool IsDescriptionVisibleByDefault { get; set; }
-		
+
+		[DataMember]
+		public bool IsDefaultReadAccessEnabled { get; set; }
+
 		[DataMember]
 		public string DescriptionButtonName { get; set; }		
 		
