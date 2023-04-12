@@ -5,14 +5,114 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Function.dbo.UserAssetPermissions-v5">
+  <changeSet author="Puneet Gupta" id="Function.dbo.UserAssetPermissions-v6">
     <comment>GOV-10280</comment>
     <comment>GOV-10511</comment>
     <comment>GOV-13993</comment>
+    <comment>GOV-21275</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[UserAssetPermissions] 
+(	
+	@ResourceID int, 
+	@AssetTypeID int
+)
+RETURNS TABLE  with Schemabinding
+AS
+RETURN 
+(
+	With AssetRule as
+	(
+		select a.AssetTypeID,
+			   rasset.AssetID,
+			   rasset.RuleID
+		from  [dbo].[asset] a
+		inner join [dbo].[ResponsibilityRuleResultAsset] rasset 
+		on (rasset.AssetID = a.ID)
+		where a.AssetTypeID = @AssetTypeID
+		union all 
+		select att.ID as AssetTypeID,
+			   rasset.AssetID,
+			   rasset.RuleID
+		from  [dbo].[assettype] att
+		inner join [dbo].[ResponsibilityRuleResultAsset] rasset
+		on (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID)
+		where att.ID = @AssetTypeID
+	)
+	select	rel.PermissionsBitMask,
+			rasset.AssetID,
+			rasset.AssetTypeID
+	from	AssetRule rasset
+			inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
+			inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+	where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID 
+	union all 
+	select	rel.PermissionsBitMask,
+			rasset.AssetID,
+			rasset.AssetTypeID
+	from	AssetRule rasset
+			inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+		    inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+		    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+		    inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+		    inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
+	where	RG.ResourceID = @resourceId
+	union all 
+	select	rr.PermissionsBitMask,
+			oride.AssetID,
+			a.AssetTypeID
+	from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+			inner join [dbo].asset a on (a.id = oride.assetID)
+			inner join [dbo].assettype att on (att.id = a.assettypeid)
+			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
+			inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
+	where	a.AssetTypeID = @AssetTypeID and RES.ResourceID = @ResourceID							
+	union all 
+	select	rr.PermissionsBitMask,
+			oride.AssetID,
+			a.AssetTypeID
+	from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+			inner join [dbo].asset a on (a.id = oride.assetID)
+			inner join [dbo].assettype att on (att.id = a.assettypeid)
+			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
+			inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
+			inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
+	where	a.AssetTypeID = @AssetTypeID and RG.ResourceID = @ResourceID
+	union all
+	--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
+	--AssetID is NULL to prevent these virtual rules from blocking read permissions
+	select	2 as PermissionsBitMask,
+			null as AssetID,
+			att.id as AssetTypeID
+	from	[dbo].[responsibilitytyperelationrule] r
+			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+			and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and att.id = @AssetTypeID
+	union all
+	select	2 as PermissionsBitMask,
+			null as AssetID,
+			att.id as AssetTypeID
+	from	[dbo].[responsibilitytyperelationrule] r
+			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+			inner join [dbo].[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+			inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
+			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+			and RG.ResourceID = @ResourceID and att.id = @AssetTypeID
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 		<![CDATA[
 CREATE OR ALTER FUNCTION [dbo].[UserAssetPermissions] 
 (	
@@ -60,7 +160,7 @@ RETURN
 		    inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
 		    inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
 	where	RG.ResourceID = @resourceId
-	union 
+	union
 	select	rr.PermissionsBitMask,
 			oride.AssetID,
 			a.AssetTypeID
@@ -107,91 +207,6 @@ RETURN
 			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
 	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
 			and RG.ResourceID = @ResourceID and att.id = @AssetTypeID
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER FUNCTION [dbo].[UserAssetPermissions] 
-(	
-	@ResourceID int, 
-	@AssetTypeID int
-)
-RETURNS TABLE  with Schemabinding
-AS
-RETURN 
-(
-	With AssetRule as
-	(
-		select a.AssetTypeID,
-			   rasset.AssetID,
-			   rasset.RuleID
-		from  [dbo].[asset] a
-		inner join [dbo].[ResponsibilityRuleResultAsset] rasset 
-		on (rasset.AssetID = a.ID)
-		where a.AssetTypeID = @AssetTypeID
-		union 
-		select att.ID as AssetTypeID,
-			   rasset.AssetID,
-			   rasset.RuleID
-		from  [dbo].[assettype] att
-		inner join [dbo].[ResponsibilityRuleResultAsset] rasset
-		on (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID)
-		where att.ID = @AssetTypeID
-	)
-	select	rel.PermissionsBitMask,
-			rasset.AssetID,
-			rasset.AssetTypeID
-	from	AssetRule rasset
-			inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
-			inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
-	where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID 
-	union
-	select	rel.PermissionsBitMask,
-			rasset.AssetID,
-			rasset.AssetTypeID
-	from	AssetRule rasset
-			inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
-		    inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-		    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
-		    inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
-		    inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
-	where	RG.ResourceID = @resourceId
-	union
-	select	rel.PermissionsBitMask,
-		    rasset.AssetID,
-			rasset.AssetTypeID
-	from	AssetRule rasset
-			inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
-		    inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
-		    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource  on (r.id = rresource.RuleID)
-		    inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
-		    inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID
-	where	RD.ResourceID = @ResourceID 
-	union 
-	select	rr.PermissionsBitMask,
-			oride.AssetID,
-			a.AssetTypeID
-	from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
-			inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
-			inner join [dbo].asset a on (a.id = oride.assetID)
-			inner join [dbo].assettype att on (att.id = a.assettypeid)
-			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
-			inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
-	where	a.AssetTypeID = @AssetTypeID and RES.ResourceID = @ResourceID							
-	union 
-	select	rr.PermissionsBitMask,
-			oride.AssetID,
-			a.AssetTypeID
-	from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
-			inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
-			inner join [dbo].asset a on (a.id = oride.assetID)
-			inner join [dbo].assettype att on (att.id = a.assettypeid)
-			inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
-			inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
-			inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
-	where	a.AssetTypeID = @AssetTypeID and RG.ResourceID = @ResourceID
 )
 ]]>
 	</rollback>

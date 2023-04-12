@@ -2276,7 +2276,8 @@ namespace d360.web.Controllers.V2
 								insert into #ReadAssets
 								select AssetID,AssetTypeID 
 								from dbo.UserAssetPermissions(@userId,@parentAssetTypeId) 
-								where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+								where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0
+								group by AssetID,AssetTypeID; 
 		
 								if exists (select 1 from #ReadAssets where assettypeid = @parentAssetTypeId and assetid = 0)
 									begin
