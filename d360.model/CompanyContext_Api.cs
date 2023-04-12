@@ -465,7 +465,8 @@ namespace d360.model
 										from api.Execution E
 										cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
 										where E.ExecutionID = @executionID
-										and usrper.PermissionsBitMask & @p = @p;
+										and usrper.PermissionsBitMask & @p = @p
+										group by usrper.AssetID;
 
 										create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
 
@@ -5396,10 +5397,27 @@ where	T.ExecutionID = @ExecutionID
                         #endregion
                     }
 
-                    #region Validate subjects/objects
+					#region Validate subjects/objects
+
+					string intersectTempTableQuery = string.Empty;
+					string intersectCheckJoin = "left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID ";
+
+					bool useTempTablesForIntersects = import.Count() > 500;
+
+					if (useTempTablesForIntersects)
+					{
+						intersectTempTableQuery = @$"drop table if exists #tempIntersects
+										select I.Id, I.SubjectAssetID, I.ObjectAssetID
+										into #tempIntersects
+										from [IntersectType] IT 
+										inner join [Intersect] I on I.IntersectTypeID = IT.ID
+										where IT.uid = @uid";
+
+						intersectCheckJoin = "left join #tempIntersects I on I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID ";
+					}
 
                     sw.Restart();
-                    Connection.Execute(@"
+                    Connection.Execute($@"
 										declare @sc int,
 												@stid int,
 												@oc int,
@@ -5423,6 +5441,8 @@ where	T.ExecutionID = @ExecutionID
 										from	api.ExecutionRelationship T
 												inner join [Intersect] I on abs(I.IntersectTypeId) = @it and I.Uid = T.Uid
 										where	T.ExecutionID = @ExecutionID and T.Uid Is not null;
+										
+										{intersectTempTableQuery}
 
 										update	T
 										set		T.SubjectAssetID = coalesce(S.ID, 0),
@@ -5434,7 +5454,7 @@ where	T.ExecutionID = @ExecutionID
 												left join Asset S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
 												left join Asset O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
 												left join IntersectType IT on IT.uid = @uid
-												left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID 
+												{intersectCheckJoin}
 											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
 
 										if @sc = 9 and @stid = 0
@@ -8875,9 +8895,10 @@ where   ER.ExecutionID = @ExecutionID
 								if @IsAdministrator = 0
 								begin
 									-- check on insert
-									update	EAR
-									set		EAR.Success = 0,
-											EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
+									drop table if exists #temppremissionpost;
+
+									select EAR.ExecutionID, EAR.ItemNumber
+									into #temppremissionpost
 									from    api.ExecutionAssetResult EAR
 											inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
 																			and E.ExecutionID = @executionID and EAR.Success is null and UPPER(E.Method)='POST'
@@ -8898,13 +8919,25 @@ where   ER.ExecutionID = @ExecutionID
 												) 
 												and 
 												P.PermissionsBitMask & @p <> @p
-											)			                                    
-										
-									-- Check on update
+											)
+									group by EAR.ExecutionID, EAR.ItemNumber;
+
+									create clustered index IX_temppremissionpost on #temppremissionpost(ExecutionID,ItemNumber)
+
 									update	EAR
 									set		EAR.Success = 0,
-											EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
-									from    api.ExecutionAssetResult EAR                                                
+											EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
+									from    api.ExecutionAssetResult EAR
+											inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
+																			and E.ExecutionID = @executionID and EAR.Success is null and UPPER(E.Method)='POST'
+											inner join #temppremissionpost S on S.ExecutionID = EAR.ExecutionID and S.ItemNumber = EAR.ItemNumber;
+										
+									-- Check on update
+									drop table if exists #temppremissionput;
+
+									select EAR.ExecutionID, EAR.ItemNumber
+									into #temppremissionput
+									from  api.ExecutionAssetResult EAR                                                
 									inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and EAR.Success is null and UPPER(E.Method)='PUT'
 									inner join AssetResult AR on AR.uid =EAR.Uid
 									inner join Asset A on A.uid = AR.OwningAssetUid
@@ -8923,6 +8956,16 @@ where   ER.ExecutionID = @ExecutionID
 										and 
 										P.PermissionsBitMask & @p <> @p
 									)
+									group by EAR.ExecutionID, EAR.ItemNumber;
+
+									create clustered index IX_temppremissionput on #temppremissionput(ExecutionID,ItemNumber)
+
+									update	EAR
+									set		EAR.Success = 0,
+											EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
+									from    api.ExecutionAssetResult EAR                                                
+									inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and EAR.Success is null and UPPER(E.Method)='PUT'
+									inner join #temppremissionput S on S.ExecutionID = EAR.ExecutionID and S.ItemNumber = EAR.ItemNumber;
 								end
 
 								-- check Uid on Put
@@ -9376,14 +9419,15 @@ where   ER.ExecutionID = @ExecutionID
 								declare @IsAdministrator bit = 0
 								select	@IsAdministrator = IsAdministrator
 								from	reporting.Global_Resource
-								where	ResourceID = @ResourceID                                    
+								where	ResourceID = @ResourceID;
 
 								if @IsAdministrator = 0
 								begin
-									update	DAR
-									set		DAR.Success = 0,
-											DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
-									from    api.ExecutionDeleteAssetResult DAR                                                
+									drop table if exists #temppremissiondel;
+									
+									select DAR.ExecutionID, DAR.ItemNumber
+									into #temppremissiondel
+									from    api.ExecutionDeleteAssetResult DAR
 									inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
 									left join AssetResult AR on DAR.Uid = AR.uid 
 									left join Asset A on AR.OwningAssetUid = A.Uid									
@@ -9402,7 +9446,16 @@ where   ER.ExecutionID = @ExecutionID
 										and 
 										P.PermissionsBitMask & @p <> @p
 									)
-												
+									group by DAR.ExecutionID, DAR.ItemNumber
+
+									create clustered index IX_temppremissiondel on #temppremissiondel(ExecutionID,ItemNumber)
+
+									update	DAR
+									set		DAR.Success = 0,
+											DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+									from    api.ExecutionDeleteAssetResult DAR                                                
+									inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
+									inner join #temppremissiondel S on S.ExecutionID = DAR.ExecutionID and S.ItemNumber = DAR.ItemNumber;
 								end
 																		
 								-- check Owning Asset Uid

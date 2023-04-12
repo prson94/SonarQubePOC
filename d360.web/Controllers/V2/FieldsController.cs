@@ -246,7 +246,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var existingIntersectTypes = new List<IntersectType>();
-			if (model.Fields.Any(f => f.Type.Relationship != null))
+			if (model.Fields.Any(f => f?.Type?.Relationship != null))
 			{
 				foreach(var field in model.Fields.Where(f=>f.Type.Relationship != null))
 				{
@@ -2276,7 +2276,8 @@ namespace d360.web.Controllers.V2
 								insert into #ReadAssets
 								select AssetID,AssetTypeID 
 								from dbo.UserAssetPermissions(@userId,@parentAssetTypeId) 
-								where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+								where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0
+								group by AssetID,AssetTypeID; 
 		
 								if exists (select 1 from #ReadAssets where assettypeid = @parentAssetTypeId and assetid = 0)
 									begin

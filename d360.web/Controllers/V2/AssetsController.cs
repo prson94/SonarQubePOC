@@ -155,11 +155,14 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
-			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty)
+			if (assetTypeUid != null && assetTypeUid.Value != Guid.Empty && assetTypeUid.ToString().ToLower() != "0000000a-0000-0000-0000-000000000009")
 			{
 				if (assetTypes.Count() == 0)
 				{
-					throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
+					if (!Company.Any<AssetType>(x => x.uid == assetTypeUid.Value))
+					{
+						throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
+					}
 				}
 			}
 

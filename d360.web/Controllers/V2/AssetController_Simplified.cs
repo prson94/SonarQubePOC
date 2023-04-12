@@ -773,7 +773,10 @@ namespace d360.web.Controllers.V2
 					while @typeid is not null
 					begin
 						insert into #NoReadAssets
-						select AssetID,AssetTypeID,PermissionsBitMask from dbo.UserAssetPermissions(@userId,@typeid) where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0; 
+						select AssetID,AssetTypeID,PermissionsBitMask 
+						from dbo.UserAssetPermissions(@userId,@typeid) 
+						where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0
+						group by AssetID,AssetTypeID,PermissionsBitMask; 
 
 						delete top (1) from @assetTypeIds
 						set @typeid = (select top 1 id from @assetTypeIds)

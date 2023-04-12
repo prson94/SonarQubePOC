@@ -58,24 +58,7 @@ namespace igx.functions.consumption
 							{
 								companyConnection.Open();
 
-								#region Get updated resources
-
-								var resources = await cnn.ExecuteReaderAsync(
-								sql: @"select R.ID as ResourceID, 
-											R.FirstName, 
-											R.LastName, 
-											C.LastLoggedInOn, 
-											R.Email, 
-											C.[State], 
-											C.IsAdministrator,
-											R.[uid],
-											R.UpdatedOn
-										from [Resource] R 
-										inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
-								param: new { c.CompanyID });
 								var updatedResourceIDs = new HashSet<int>();
-
-								#endregion
 
 								#region Insert/Update Logic
 
@@ -107,38 +90,65 @@ namespace igx.functions.consumption
 
 										using (DataTable table = PrepareSourceTable(bulkCopy))
 										{
-											while (resources.Read())
+											using (var resources = await cnn.ExecuteReaderAsync(
+											sql: @"select R.ID as ResourceID, 
+													R.FirstName, 
+													R.LastName, 
+													C.LastLoggedInOn, 
+													R.Email, 
+													C.[State], 
+													C.IsAdministrator,
+													R.[uid],
+													R.UpdatedOn
+												from [Resource] R 
+												inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
+												param: new { c.CompanyID }))
 											{
-												var resourceId = resources.GetInt32("ResourceID");
-												updatedResourceIDs.Add(resourceId);
-
-												var row = table.NewRow();
-
-												row["ResourceID"] = resourceId;
-												row["FirstName"] = resources["FirstName"];
-												row["LastName"] = resources["LastName"];
-												row["LastLoggedInOn"] = resources["LastLoggedInOn"];
-												row["Email"] = resources["Email"];
-												row["State"] = resources["State"];
-												row["IsAdministrator"] = resources["IsAdministrator"];
-												row["uid"] = resources["uid"];
-												row["UpdatedOn"] = resources["UpdatedOn"];
-
-												table.Rows.Add(row);
-
-												//We read rows from DataReader and then send them to the server by 5000 items chanks.
-												if (table.Rows.Count % 5000 == 0)
+												try
 												{
-													await bulkCopy.WriteToServerAsync(table);
-													table.Rows.Clear();
+													while (resources.Read())
+													{
+														var resourceId = resources.GetInt32("ResourceID");
+														updatedResourceIDs.Add(resourceId);
+
+														var row = table.NewRow();
+
+														row["ResourceID"] = resourceId;
+														row["FirstName"] = resources["FirstName"];
+														row["LastName"] = resources["LastName"];
+														row["LastLoggedInOn"] = resources["LastLoggedInOn"];
+														row["Email"] = resources["Email"];
+														row["State"] = resources["State"];
+														row["IsAdministrator"] = resources["IsAdministrator"];
+														row["uid"] = resources["uid"];
+														row["UpdatedOn"] = resources["UpdatedOn"];
+
+														table.Rows.Add(row);
+
+														//We read rows from DataReader and then send them to the server by 5000 items chanks.
+														if (table.Rows.Count % 5000 == 0)
+														{
+															await bulkCopy.WriteToServerAsync(table);
+															table.Rows.Clear();
+														}
+													}
+											
+													await resources.CloseAsync();
+											
+													if (table.Rows.Count > 0)
+													{
+														await bulkCopy.WriteToServerAsync(table);
+													}
 												}
-											}
-											
-											await resources.CloseAsync();
-											
-											if (table.Rows.Count > 0)
-											{
-												await bulkCopy.WriteToServerAsync(table);
+												catch (Exception ex)
+												{
+													if (!resources.IsClosed)
+													{
+														await resources.CloseAsync();
+													}
+													CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+													throw resolveToRealException(ex);
+												}
 											}
 										}
 									}
@@ -295,6 +305,15 @@ namespace igx.functions.consumption
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 
 			return table;
+		}
+
+		internal Exception resolveToRealException(Exception ex)
+		{
+			while (ex.Message.ToLowerInvariant().Contains("inner exception for"))
+			{
+				ex = ex.InnerException;
+			}
+			return ex;
 		}
 	}
 }
