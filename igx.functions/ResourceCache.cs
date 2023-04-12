@@ -309,7 +309,7 @@ namespace igx.functions.consumption
 
 		internal Exception resolveToRealException(Exception ex)
 		{
-			while (ex.Message.ToLower().Contains("inner exception for"))
+			while (ex.Message.ToLowerInvariant().Contains("inner exception for"))
 			{
 				ex = ex.InnerException;
 			}
