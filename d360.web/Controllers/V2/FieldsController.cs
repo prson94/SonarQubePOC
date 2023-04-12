@@ -246,7 +246,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var existingIntersectTypes = new List<IntersectType>();
-			if (model.Fields.Any(f => f.Type.Relationship != null))
+			if (model.Fields.Any(f => f?.Type?.Relationship != null))
 			{
 				foreach(var field in model.Fields.Where(f=>f.Type.Relationship != null))
 				{
