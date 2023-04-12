@@ -5402,7 +5402,7 @@ where	T.ExecutionID = @ExecutionID
 					string intersectTempTableQuery = string.Empty;
 					string intersectCheckJoin = "left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID ";
 
-					bool useTempTablesForIntersects = import.Count() > 0;
+					bool useTempTablesForIntersects = import.Count() > 500;
 
 					if (useTempTablesForIntersects)
 					{
