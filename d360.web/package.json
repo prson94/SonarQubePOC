@@ -11,7 +11,7 @@
     "buildFed": "SET FEDERATION_BUILD=TRUE && node_modules\\.bin\\ng build --configuration=production --localize --output-path=Scripts/remote",
     "build-fed-linux": "export FEDERATION_BUILD=TRUE && node_modules/.bin/ng build --configuration=production --localize --output-path=Scripts/remote",
     "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --localize --configuration=production && node ./remove-hash-angular.js",
-    "build-dev-ops-prod-linux": "node ./replace.timestamp.js && node_modules/.bin/ng build --localize --configuration=production && node ./remove-hash-angular.js && yarn run build-fed-linux",
+    "build-dev-ops-prod-linux": "node ./replace.timestamp.js && node_modules/.bin/ng build --localize --configuration=production && node ./remove-hash-angular.js",
     "build-local-debug": "ng build --localize --watch --progress",
     "build-local-debug-no-localization": "ng build --configuration=en --watch --progress",
     "updateBuild": "node ./replace.timestamp.js",
