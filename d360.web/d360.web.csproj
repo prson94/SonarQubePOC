@@ -1847,6 +1847,7 @@
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="Scripts\dist\**\*.js" />
+    <Content Include="Scripts\remote\**\*.js" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
