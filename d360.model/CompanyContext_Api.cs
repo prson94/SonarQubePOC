@@ -5397,10 +5397,27 @@ where	T.ExecutionID = @ExecutionID
                         #endregion
                     }
 
-                    #region Validate subjects/objects
+					#region Validate subjects/objects
+
+					string intersectTempTableQuery = string.Empty;
+					string intersectCheckJoin = "left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID ";
+
+					bool useTempTablesForIntersects = import.Count() > 500;
+
+					if (useTempTablesForIntersects)
+					{
+						intersectTempTableQuery = @$"drop table if exists #tempIntersects
+										select I.Id, I.SubjectAssetID, I.ObjectAssetID
+										into #tempIntersects
+										from [IntersectType] IT 
+										inner join [Intersect] I on I.IntersectTypeID = IT.ID
+										where IT.uid = @uid";
+
+						intersectCheckJoin = "left join #tempIntersects I on I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID ";
+					}
 
                     sw.Restart();
-                    Connection.Execute(@"
+                    Connection.Execute($@"
 										declare @sc int,
 												@stid int,
 												@oc int,
@@ -5424,6 +5441,8 @@ where	T.ExecutionID = @ExecutionID
 										from	api.ExecutionRelationship T
 												inner join [Intersect] I on abs(I.IntersectTypeId) = @it and I.Uid = T.Uid
 										where	T.ExecutionID = @ExecutionID and T.Uid Is not null;
+										
+										{intersectTempTableQuery}
 
 										update	T
 										set		T.SubjectAssetID = coalesce(S.ID, 0),
@@ -5435,7 +5454,7 @@ where	T.ExecutionID = @ExecutionID
 												left join Asset S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
 												left join Asset O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
 												left join IntersectType IT on IT.uid = @uid
-												left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectAssetId= S.ID and I.ObjectAssetId = O.ID 
+												{intersectCheckJoin}
 											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
 
 										if @sc = 9 and @stid = 0
