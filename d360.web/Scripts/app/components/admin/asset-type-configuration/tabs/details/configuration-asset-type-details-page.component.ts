@@ -2,7 +2,6 @@ import { Component } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { IOutputData } from "angular-split";
 import { AssetTypeClass } from "../../../../../models/asset.model";
-import { AssetTypeService } from "../../../../../services/asset-type.service";
 import { LinkClickInterceptor } from "../../../../../services/href-click-service";
 import { SidePanelService } from "../../../../../services/side-panel.service";
 

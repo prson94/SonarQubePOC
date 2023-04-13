@@ -1,14 +1,12 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { IOutputData } from 'angular-split';
+import { Subscription } from 'rxjs';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
 import { BaseComponent } from '../../../shared/base.component';
-
-/*global $localize*/
 
 @Component({
 	selector: 'd3s-relationship-type-detail-page',
@@ -18,7 +16,7 @@ import { BaseComponent } from '../../../shared/base.component';
 })
 export class RelationshipTypeDetailPageComponent extends BaseComponent implements OnInit, OnDestroy {
 	relationshipTypeUid: string = '';
-	private sub: any;
+	private sub: Subscription;
 
 	uid: string;
 	assetType: { Name: string };
@@ -34,8 +32,7 @@ export class RelationshipTypeDetailPageComponent extends BaseComponent implement
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService,
-		public sidePanelService: SidePanelService,
-		private linkClickInterceptor: LinkClickInterceptor
+		public sidePanelService: SidePanelService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;

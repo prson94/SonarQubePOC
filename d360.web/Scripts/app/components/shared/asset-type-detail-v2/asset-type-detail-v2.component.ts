@@ -66,7 +66,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 		this.isModalVisible = false;
 
 	}
-	onEditSaveFinished($event) {
+	onEditSaveFinished() {
 		this.load();
 	}
 	constructor(

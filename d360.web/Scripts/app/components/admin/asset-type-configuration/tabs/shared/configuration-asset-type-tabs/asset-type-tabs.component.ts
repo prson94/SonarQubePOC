@@ -2,6 +2,7 @@ import { Component, Input } from "@angular/core";
 import { AssetTypeClass } from "../../../../../../models/asset.model";
 import { Tab } from "../../../../../shared/tabs/tabs.models";
 
+/*global $localize*/
 
 @Component({
     selector: "d3s-configuration-asset-type-tabs",
