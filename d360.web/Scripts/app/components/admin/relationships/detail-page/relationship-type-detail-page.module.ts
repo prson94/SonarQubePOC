@@ -8,6 +8,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { SidePanelModule } from '../../../shared/sidepanel/side-panel.module';
 import { AngularSplitModule } from 'angular-split';
 import { RelationshipTypeDetailModule } from '../relationship-type-detail/relationship-type-detail.module';
+import { AssetPreviewModule } from '../../../shared/asset-preview/asset-preview.module';
 
 const routes: Routes = [
 	{ path: '', component: RelationshipTypeDetailPageComponent },
@@ -25,7 +26,8 @@ const routes: Routes = [
 		RouterModule.forChild(routes),
 		SidePanelModule,
 		AngularSplitModule,
-		RelationshipTypeDetailModule
+		RelationshipTypeDetailModule,
+		AssetPreviewModule
 	],
 	exports: [
 		RelationshipTypeDetailPageComponent

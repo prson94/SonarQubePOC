@@ -68,7 +68,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 
 
 	open(newTab: boolean = false) {
-		const url = `/admin/relationships/${this.relationshipType.Uid}/fields`;
+		const url = `/admin/relationships/${this.relationshipType.Uid}/details`;
 		if (newTab) {
 			window.open(url, "_blank");
 		}
