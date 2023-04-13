@@ -16,11 +16,12 @@ import { HeaderModule } from './components/shared/header/header.module';
 import { NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
 
 import { DialogModule } from 'primeng/dialog';
-import { CompanySettingsService } from './services/settings.service';
+import { SettingsProviderService } from '@precisely/prism-ng/govern';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 import { AngularSplitModule } from 'angular-split';
 import { FeatureFlagsInitService } from './services/feature-flags-init.service';
+import { forkJoin } from "rxjs";
 
 export function localeIdFactory() {
     return navigator.language;
@@ -30,8 +31,8 @@ export function featureFlagServiceInitializer(provider: FeatureFlagsInitService)
     return () => provider.initialize();
 }
 
-export function settingsInitializer(provider: CompanySettingsService) {
-    return () => provider.loadSettings().then((r) => { provider.loadApplicationSettings(); });
+export function settingsInitializer(provider: SettingsProviderService) {
+	return () => forkJoin(provider.loadSettings(), provider.loadApplicationSettings());
 }
 
 export function localeInitializer(localeId: string) {                  
@@ -107,7 +108,7 @@ export function localeInitializer(localeId: string) {
             provide: APP_INITIALIZER,
             multi: true,
             useFactory: settingsInitializer,
-            deps: [CompanySettingsService]
+			deps: [SettingsProviderService]
         },
         NumberOfRowsByCategoryServiceInitializer,
         { provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },

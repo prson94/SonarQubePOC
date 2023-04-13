@@ -10,36 +10,57 @@ import {
 import { AuthenticationProperties } from "../models/authentication-properties.model";
 import { SelectItem } from "primeng/api";
 import { JsonResult } from "../models/jsonresult.model";
-import { HttpClient, HttpContext, HttpHeaders } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { catchError, map, tap } from "rxjs/operators";
 import { Observable, of } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
-import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
+import { SettingsProviderService } from "@precisely/prism-ng/govern";
 
 @Injectable({
 	providedIn: 'root'
 })
 export class CompanySettingsService extends BaseObservableService {
-	appSettings: AppSettingModel[] = null;
-	settings: SettingsGetModel[] = null;
+	private _appSettings: AppSettingModel[] = null;
+	private _settings: SettingsGetModel[] = null;
+
+	get appSettings(): AppSettingModel[] {
+		if (!this._appSettings) {
+			this._appSettings = this.settingsProvider.appSettings;
+		}
+		return this._appSettings;
+	}
+
+	get settings(): SettingsGetModel[] {
+		if (!this._settings) {
+			this._settings = this.settingsProvider.settings;
+			// now parse read-only value and load into each model
+			this._settings.forEach((s) => {
+				if (s.BooleanSetting) {
+					s.ScalarValue = s.BooleanSetting.Value;
+				}
+				else if (s.GuidSetting) {
+					s.ScalarValue = s.GuidSetting.Value;
+				}
+				else if (s.NumberSetting) {
+					s.ScalarValue = s.NumberSetting.Value;
+				}
+				else if (s.StringSetting) {
+					s.ScalarValue = s.StringSetting.Value;
+				}
+				else {
+					s.ScalarValue = null;
+				}
+			});
+		}
+		return this._settings;
+	}
+
 	settingToUpdate: SettingsPutModel[] = [];
 
-	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
-
-	loadApplicationSettings() {
-		//HelpBaseUri
-		return new Promise((resolve, reject) => {
-			this.http
-				.get(
-					'/api/v2/environment/appsettings',
-					{ context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-				).subscribe((r) => {
-					this.appSettings = <AppSettingModel[]>r;
-					resolve(true);
-				});
-		});
+	constructor(private http: HttpClient, messagesService: MessagesObservableService, private settingsProvider: SettingsProviderService) {
+		super(messagesService);
 	}
 
 	SetGovernUidSettings(setting: string) {
@@ -52,35 +73,8 @@ export class CompanySettingsService extends BaseObservableService {
 
 	}
 
-	loadSettings() {
-		return new Promise((resolve, reject) => {
-			this.http
-				.get(
-					'/api/v2/environment/settings',
-					{ context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-				).subscribe((r) => {
-					this.settings = <SettingsGetModel[]>r;
-					// now parse read-only value and load into each model
-					this.settings.forEach((s) => {
-						if (s.BooleanSetting) {
-							s.ScalarValue = s.BooleanSetting.Value;
-						}
-						else if (s.GuidSetting) {
-							s.ScalarValue = s.GuidSetting.Value;
-						}
-						else if (s.NumberSetting) {
-							s.ScalarValue = s.NumberSetting.Value;
-						}
-						else if (s.StringSetting) {
-							s.ScalarValue = s.StringSetting.Value;
-						}
-						else {
-							s.ScalarValue = null;
-						}
-					});
-					resolve(true);
-				});
-		});
+	reloadSettings(): void {
+		this._settings = null;
 	}
 
 	getSettings(): Observable<SettingsGetModel[]> {
