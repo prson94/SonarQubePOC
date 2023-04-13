@@ -28,6 +28,10 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 import { FieldTypeForm } from './field-type-form/field-type.form';
 import { FieldDefinitionComponent } from './field-definition.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { SidePanelModule } from '../sidepanel/side-panel.module';
+import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
+import { AngularSplitModule } from 'angular-split';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -55,7 +59,10 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         SharedModule,
         TableModule,
         TooltipModule,
-        RadioButtonModule
+		RadioButtonModule,
+		SidePanelModule,
+		AngularSplitModule,
+		SearchFieldModule
     ],
     declarations: [
         FieldTypeForm,

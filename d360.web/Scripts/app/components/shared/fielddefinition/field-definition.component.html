@@ -1,180 +1,223 @@
-﻿<div *ngIf="!isLoading">
-    <div>
-        <header>
-            <ng-container *ngIf="showTitle">{{title}}</ng-container>
-            <d3s-tile-actions *ngIf="!isEditing && !isDeleting"
-                              [hasAdd]="showAddButton"
-                              [dataCyPrefix]="dataCyPrefix"
-                              (addClick)="add()"
-                              [hasFilterMode]="true"
-                              [(filterMode)]="showSimpleFilter">
-            </d3s-tile-actions>
-        </header>
-    </div>
-    <div *ngIf="isEditing">
-        <d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
-                             [actionTypeUid]="actionTypeUid"
-                             [assetTypeUid]="assetTypeUid"
-                             [relationshipTypeUid]="relationshipTypeUid"
-                             [objectType]="objectType"
-                             [objectID]="objectID"
-                             [objectName]="objectName"
-                             [showIsListable]="showIsListable"
-                             [showIsPartOfKey]="showIsPartOfKey"
-                             [showPersistInFilters]="showPersistInFilters"
-                             [showAddToSearch]="showAddToSearch"
-                             [showShowInDetailTile]="showShowInDetailTile"
-                             [showDisplayInColumn]="showDisplayInColumn"
-                             [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
-                             [allowSingleSegmentPath]="allowSingleSegmentPath"
-                             [fields]="fieldDefinitions"
-                             (onCancel)="cancel()"
-                             (onComplete)="editComplete($event)"></d3s-field-type-form>
-    </div>
-    <d3s-delete-form *ngIf="isDeleting"
-                     [callback]="theDeleteCallback"
-                     [itemId]="selectedRow?.Name"
-                     [method]="'callback'"
-                     i18n-prompt
-                     prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
-                     (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
-    <div *ngIf="!isEditing && !isDeleting">
-        <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error" i18n>Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-        <p-table
-            #dt
-            class="p-datatable-fielddefinition"
-            [value]="fieldDisplayModel"
-            selectionMode="single"
-            [loading]="isLoading"
-            loadingIcon="fa fa-spinner"
-            [metaKeySelection]="true"
-            [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
-            [(selection)]="selectedRow"
-            [scrollable]="objectType == 'GroupType' ? false : true"
-            scrollWidth="100%"
-            scrollHeight="300px">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th [pSortableColumn]="'FriendlyName'" style="flex: 1 1 20%">
-                        <ng-container i18n>Field</ng-container>
-                        <d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'FieldType'" style="flex: 1 1 15%">
-                        <ng-container i18n>Type</ng-container>
-                    </th>
-                    <th [pSortableColumn]="'Category'" style="flex: 1 1 15%">
-                        <ng-container i18n>Category</ng-container>
-                        <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'DisplayInColumn'" style="flex: 1 1 12%" *ngIf="showDisplayInColumn">
-                        <ng-container i18n>Display in Column?</ng-container>
-                        <d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'IsListable'" style="flex: 1 1 12%" *ngIf="showIsListable">
-                        <ng-container i18n>Listable?</ng-container>
-                        <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'IsRequired'" style="flex: 1 1 12%">
-                        <ng-container i18n>Required?</ng-container>
-                        <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'IsPartOfKey'" style="flex: 1 1 9%" *ngIf="showIsPartOfKey">
-                        <ng-container i18n>Key?</ng-container>
-                        <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'ShowIfEmpty'" style="flex: 1 1 12%">
-                        <ng-container i18n>Show if Empty?</ng-container>
-                        <d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'SortOrder'" style="flex: 1 1 12%">
-                        <ng-container i18n>Sort</ng-container>
-                        <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
-                    </th>
-                    <th [pSortableColumn]="'SortByAscending'" style="flex: 1 1 21%; min-width:75px">
-                        <ng-container i18n>Sort by Ascending/&#8203;Descending</ng-container>
-                        <d3s-sortIcon [field]="'SortByAscending'"></d3s-sortIcon>
-                    </th>
-                    <th style="flex: 0 0 30px"></th>
-                    <th style="flex: 0 0 30px"></th>
-                    <th style="flex: 0 0 30px" *ngIf="showEditButton"></th>
-                    <th style="flex: 0 0 30px" *ngIf="showDeleteButton"></th>
-                </tr>
-                <tr [hidden]="showSimpleFilter">
-                    <th style="flex: 1 1 20%"><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th style="flex: 1 1 15%"><d3s-column-filter [field]="'FieldType'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th style="flex: 1 1 15%"><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th style="flex: 1 1 12%" *ngIf="showDisplayInColumn"></th>
-                    <th style="flex: 1 1 12%" *ngIf="showIsListable"></th>
-                    <th style="flex: 1 1 12%"></th>
-                    <th style="flex: 1 1 9%" *ngIf="showIsPartOfKey"></th>
-                    <th style="flex: 1 1 12%"></th>
-                    <th style="flex: 1 1 12%"></th>
-                    <th style="flex: 1 1 21%; min-width:75px"><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
-                    <th style="flex: 0 0 30px"></th>
-                    <th style="flex: 0 0 30px"></th>
-                    <th style="flex: 0 0 30px" *ngIf="showEditButton"></th>
-                    <th style="flex: 0 0 30px" *ngIf="showDeleteButton"></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="isEditing=showEditButton;" style="word-wrap: break-word" [pSelectableRow]="item">
-                    <td style="flex: 1 1 20%">{{item.FriendlyName}}</td>
-                    <td style="flex: 1 1 15%">{{item.FieldType}}</td>
-                    <td style="flex: 1 1 15%">{{item.Category}}</td>
-                    <td style="flex: 1 1 12%" *ngIf="showDisplayInColumn">
-                        <span><i *ngIf="item?.DisplayInColumn" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item?.DisplayInColumn" class="fa fa-times disabled" title="False"></i></span>
-                    </td>
-                    <td style="flex: 1 1 12%" *ngIf="showIsListable">
-                        <span><i *ngIf="item?.IsListable" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item?.IsListable" class="fa fa-times disabled" title="False"></i></span>
-                    </td>
-                    <td style="flex: 1 1 12%">
-                        <span><i *ngIf="item?.IsRequired" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item?.IsRequired" class="fa fa-times disabled" title="False"></i></span>
-                    </td>
-                    <td style="flex: 1 1 9%" *ngIf="showIsPartOfKey">
-                        <span><i *ngIf="item?.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item?.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
-                    </td>
-                    <td style="flex: 1 1 12%">
-                        <span><i *ngIf="item?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
-                    </td>
-                    <td style="flex: 1 1 12%"><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
-                    <td style="flex: 1 1 21%; min-width: 75px "><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? ascendingLabel : descendingLabel}}</ng-container></td>
-                    <td style="flex: 0 0 30px">
-                        <div class="RowTools">
-                            <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">
-                                <i class="fa fa-caret-up"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td style="flex: 0 0 30px">
-                        <div class="RowTools">
-                            <a (click)="moveDown(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveDown'">
-                                <i class="fa fa-caret-down"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td style="flex: 0 0 30px" *ngIf="showEditButton">
-                        <div class="RowTools">
-                            <a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Edit'">
-                                <i class="fa fa-pencil"></i>
-                            </a>
-                        </div>
-                    </td>
-                    <td style="flex: 0 0 30px" *ngIf="showDeleteButton">
-                        <div class="RowTools" *ngIf="showDeleteButtonByFieldType(item)">
-                            <a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Remove'">
-                                <i class="fa fa-trash-o"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+﻿<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
+		  [class.side-panel-close]="!sidePanelOpen"
+		  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+		  unit="pixel"
+		  direction="horizontal"
+		  class="col s12 split"
+		  style="display: flex">
+	<as-split-area class="tile tile-detail main-panel field-type-grid">
+		<ng-template [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
+	</as-split-area>
+	<as-split-area [size]="getSidePanelWidth()"
+				   [minSize]="getSidePanelMinWidth()"
+				   [maxSize]="getSidePanelMaxWidth()"
+				   class="tile tile-detail side-panel">
+		<side-panel [selectedItem]="selectedItem"
+					[setMinMaxWidth]="false"
+					[storageKey]="sidePanelStorageKey"
+					[expanded]="true"
+					[showEmptyOverlay]="!selectedItem"
+					(expandedChange)="sidePanelOpen=$event"
+					hasDetail="true">
+			<ng-container *ngIf="sidePanelOpen">
+				<ng-container *ngIf="selectedItem">
+					here is field data
+				</ng-container>
+			</ng-container>
+		</side-panel>
+	</as-split-area>
+</as-split>
+
+
+<ng-template #fieldGridTemplate>
+	<div class="grid-actions-header column-layout">
+		<div class="grid-actions-header-row">
+			<div class="simple-search">
+				<ig-search-field mode="Keypress"
+								 (onSearch)="dt.filterGlobal($event, 'contains')"
+								 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
+				</ig-search-field>
+			</div>
+			<div class="grid-action-buttons">
+				<button igButton
+						[attr.data-cy]="'FieldType_Add'"
+						pTooltip="Create new Field Type"
+						i18n-pTooltip
+						tooltipPosition="top"
+						tooltipStyleClass="ig-tooltip"
+						class="ig-button-primary"
+						icon="fa-plus"
+						[igDataCy]="'FieldType_Add'">
+				</button>
+			</div>
+		</div>
+		<div class="grid-actions-header-row">
+			<!--<advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>-->
+		</div>
+	</div>
+	<div>
+		<div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error" i18n>Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
+		<p-table #dt
+				 class="p-datatable-fielddefinition"
+				 [value]="fieldDisplayModel"
+				 selectionMode="single"
+				 [loading]="isLoading"
+				 loadingIcon="fa fa-spinner"
+				 [metaKeySelection]="true"
+				 [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
+				 [(selection)]="selectedRow"
+				 [scrollable]="objectType == 'GroupType' ? false : true"
+				 scrollWidth="100%"
+				 scrollHeight="300px">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'FriendlyName'" style="flex: 1 1 20%">
+						<ng-container i18n>Field</ng-container>
+						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'FieldType'" style="flex: 1 1 15%">
+						<ng-container i18n>Type</ng-container>
+					</th>
+					<th [pSortableColumn]="'Category'" style="flex: 1 1 15%">
+						<ng-container i18n>Category</ng-container>
+						<d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'DisplayInColumn'" style="flex: 1 1 12%" *ngIf="showDisplayInColumn">
+						<ng-container i18n>Display in Column?</ng-container>
+						<d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'IsListable'" style="flex: 1 1 12%" *ngIf="showIsListable">
+						<ng-container i18n>Listable?</ng-container>
+						<d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'IsRequired'" style="flex: 1 1 12%">
+						<ng-container i18n>Required?</ng-container>
+						<d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'IsPartOfKey'" style="flex: 1 1 9%" *ngIf="showIsPartOfKey">
+						<ng-container i18n>Key?</ng-container>
+						<d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'ShowIfEmpty'" style="flex: 1 1 12%">
+						<ng-container i18n>Show if Empty?</ng-container>
+						<d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'SortOrder'" style="flex: 1 1 12%">
+						<ng-container i18n>Sort</ng-container>
+						<d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'SortByAscending'" style="flex: 1 1 21%; min-width:75px">
+						<ng-container i18n>Sort by Ascending/&#8203;Descending</ng-container>
+						<d3s-sortIcon [field]="'SortByAscending'"></d3s-sortIcon>
+					</th>
+					<th style="flex: 0 0 30px"></th>
+					<th style="flex: 0 0 30px"></th>
+					<th style="flex: 0 0 30px" *ngIf="showEditButton"></th>
+					<th style="flex: 0 0 30px" *ngIf="showDeleteButton"></th>
+				</tr>
+				<tr [hidden]="showSimpleFilter">
+					<th style="flex: 1 1 20%"><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
+					<th style="flex: 1 1 15%"><d3s-column-filter [field]="'FieldType'" [datatype]="'text'"></d3s-column-filter></th>
+					<th style="flex: 1 1 15%"><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
+					<th style="flex: 1 1 12%" *ngIf="showDisplayInColumn"></th>
+					<th style="flex: 1 1 12%" *ngIf="showIsListable"></th>
+					<th style="flex: 1 1 12%"></th>
+					<th style="flex: 1 1 9%" *ngIf="showIsPartOfKey"></th>
+					<th style="flex: 1 1 12%"></th>
+					<th style="flex: 1 1 12%"></th>
+					<th style="flex: 1 1 21%; min-width:75px"><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
+					<th style="flex: 0 0 30px"></th>
+					<th style="flex: 0 0 30px"></th>
+					<th style="flex: 0 0 30px" *ngIf="showEditButton"></th>
+					<th style="flex: 0 0 30px" *ngIf="showDeleteButton"></th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr (dblclick)="isEditing=showEditButton;" style="word-wrap: break-word" [pSelectableRow]="item">
+					<td style="flex: 1 1 20%">{{item.FriendlyName}}</td>
+					<td style="flex: 1 1 15%">{{item.FieldType}}</td>
+					<td style="flex: 1 1 15%">{{item.Category}}</td>
+					<td style="flex: 1 1 12%" *ngIf="showDisplayInColumn">
+						<span><i *ngIf="item?.DisplayInColumn" class="fa fa-check enabled" title="True"></i></span>
+						<span><i *ngIf="!item?.DisplayInColumn" class="fa fa-times disabled" title="False"></i></span>
+					</td>
+					<td style="flex: 1 1 12%" *ngIf="showIsListable">
+						<span><i *ngIf="item?.IsListable" class="fa fa-check enabled" title="True"></i></span>
+						<span><i *ngIf="!item?.IsListable" class="fa fa-times disabled" title="False"></i></span>
+					</td>
+					<td style="flex: 1 1 12%">
+						<span><i *ngIf="item?.IsRequired" class="fa fa-check enabled" title="True"></i></span>
+						<span><i *ngIf="!item?.IsRequired" class="fa fa-times disabled" title="False"></i></span>
+					</td>
+					<td style="flex: 1 1 9%" *ngIf="showIsPartOfKey">
+						<span><i *ngIf="item?.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
+						<span><i *ngIf="!item?.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
+					</td>
+					<td style="flex: 1 1 12%">
+						<span><i *ngIf="item?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
+						<span><i *ngIf="!item?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
+					</td>
+					<td style="flex: 1 1 12%"><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
+					<td style="flex: 1 1 21%; min-width: 75px "><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? ascendingLabel : descendingLabel}}</ng-container></td>
+					<td style="flex: 0 0 30px">
+						<div class="RowTools">
+							<a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">
+								<i class="fa fa-caret-up"></i>
+							</a>
+						</div>
+					</td>
+					<td style="flex: 0 0 30px">
+						<div class="RowTools">
+							<a (click)="moveDown(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveDown'">
+								<i class="fa fa-caret-down"></i>
+							</a>
+						</div>
+					</td>
+					<td style="flex: 0 0 30px" *ngIf="showEditButton">
+						<div class="RowTools">
+							<a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Edit'">
+								<i class="fa fa-pencil"></i>
+							</a>
+						</div>
+					</td>
+					<td style="flex: 0 0 30px" *ngIf="showDeleteButton">
+						<div class="RowTools" *ngIf="showDeleteButtonByFieldType(item)">
+							<a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Remove'">
+								<i class="fa fa-trash-o"></i>
+							</a>
+						</div>
+					</td>
+				</tr>
+			</ng-template>
+		</p-table>
+	</div>
+</ng-template>
+
+
+<div *ngIf="isEditing">
+	<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
+						 [actionTypeUid]="actionTypeUid"
+						 [assetTypeUid]="assetTypeUid"
+						 [relationshipTypeUid]="relationshipTypeUid"
+						 [objectType]="objectType"
+						 [objectID]="objectID"
+						 [objectName]="objectName"
+						 [showIsListable]="showIsListable"
+						 [showIsPartOfKey]="showIsPartOfKey"
+						 [showPersistInFilters]="showPersistInFilters"
+						 [showAddToSearch]="showAddToSearch"
+						 [showShowInDetailTile]="showShowInDetailTile"
+						 [showDisplayInColumn]="showDisplayInColumn"
+						 [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
+						 [allowSingleSegmentPath]="allowSingleSegmentPath"
+						 [fields]="fieldDefinitions"
+						 (onCancel)="cancel()"
+						 (onComplete)="editComplete($event)"></d3s-field-type-form>
 </div>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<d3s-delete-form *ngIf="isDeleting"
+				 [callback]="theDeleteCallback"
+				 [itemId]="selectedRow?.Name"
+				 [method]="'callback'"
+				 i18n-prompt
+				 prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
+				 (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>

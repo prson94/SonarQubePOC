@@ -9,12 +9,15 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
 
 /*global $localize*/
 
 @Component({
 	selector: 'd3s-field-definition-tile',
 	templateUrl: './field-definition.component.html',
+	styleUrls: ['field-definition.component.less'],
 	providers: [FieldsObservableService]
 })
 
@@ -65,12 +68,20 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	ascendingLabel: string = $localize`Ascending`;
 	descendingLabel: string = $localize`Descending`;
 
+
+	sidePanelStorageKey: string = '';
+	selectedItem: Record<string, object>;
+
+	sidePanelOpen = false;
+	selectedForInfoPanel: unknown;
+
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
 		private messagesService: MessagesObservableService,
-		protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		public sidePanelService: SidePanelService,
 	) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
@@ -82,6 +93,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.isEditing = false;
 				this.isAdding = false;
 				this.isDeleting = false;
+				this.sidePanelStorageKey = "field_type_side_panel_" + this.assetTypeUid + this.actionTypeUid + this.relationshipTypeUid;
 			}
 		}
 		if (this.assetTypeUid) {
@@ -163,8 +175,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		let foundKeyField = false;
 		if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
 			this.fieldDisplayModel.forEach((d) => {
-				if (!d.SortOrder)
-					{d.SortOrder = 0;}
+				if (!d.SortOrder) { d.SortOrder = 0; }
 				if (d.IsPartOfKey) {
 					foundKeyField = true;
 				}
@@ -183,10 +194,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	CheckObjectType() {
 		if (this.assetTypeClass) {
 			return [AssetTypeClass.BusinessAsset,
-				AssetTypeClass.TechnicalAsset,
-				AssetTypeClass.Policy,
-				AssetTypeClass.Model,
-				AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
+			AssetTypeClass.TechnicalAsset,
+			AssetTypeClass.Policy,
+			AssetTypeClass.Model,
+			AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
 		}
 	}
 	getDisplayTypeName(name: string): string {
@@ -287,8 +298,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
 				if (items.length === 1) {
 					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index > 0 && index < this.fieldDisplayModel.length)
-						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];}
+					if (index > 0 && index < this.fieldDisplayModel.length) { [this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]]; }
 				}
 			}
 		);
@@ -301,8 +311,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
 				if (items.length === 1) {
 					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index >= 0 && index < this.fieldDisplayModel.length - 1)
-						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];}
+					if (index >= 0 && index < this.fieldDisplayModel.length - 1) { [this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]]; }
 				}
 			}
 		);
@@ -315,13 +324,28 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
-			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole')
-				{return false;}
+			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole') { return false; }
 		}
 
 		if (fdm.FieldType === "System") {
-			return false; 
+			return false;
 		}
 		return true;
+	}
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 }
