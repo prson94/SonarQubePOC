@@ -55,7 +55,7 @@ const routes: Routes = [
 	{ path: "semantics/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },
 	{ path: "tag", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
-	{ path: "admin/relationships", data: { type: 'relationship' }, loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
+	{ path: "admin/relationships/:assetTypeUid/fields", data: { type: 'relationship' }, loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 	{ path: "dataCatalog", loadChildren: () => import("./components/data-catalog/data-catalog.module").then((m) => m.DataCatalogModule) },
 
 	{
