@@ -45,6 +45,7 @@ import { LinkClickInterceptor } from "../../services/href-click-service";
 import { AssetTypeApiModel } from "../../models/asset.model";
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
+import { StringConstants } from '../../static/string-constants';
 
 /*global $localize*/
 
@@ -360,7 +361,18 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	getFieldsDefinition() {
 		this.gridSortData = new GridSortData("AssetGrid_" + this.assetTypeApiModel.uid);
 
-		this.gridDefinitionService.getGridDefinition(this.assetTypeApiModel.uid, "ArtifactType").subscribe(
+		let ObjType = StringConstants.ObjectArtifactType;
+		if (this.assetTypeApiModel.Class.ID == 2) {
+			ObjType = StringConstants.ObjectTaxonomyType;
+		}
+		else if (this.assetTypeApiModel.Class.ID == 6) {
+			ObjType = StringConstants.ObjectPolicyType;
+		}
+		else if (this.assetTypeApiModel.Class.ID == 7) {
+			ObjType = StringConstants.ObjectRuleType;
+		}
+
+		this.gridDefinitionService.getGridDefinition(this.assetTypeApiModel.uid, ObjType).subscribe(
 			(result) => {
 				this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
 				this.filtercolumns = result.FilterColumns;
