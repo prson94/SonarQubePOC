@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild } from '@angular/core';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
@@ -76,9 +76,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	sidePanelStorageKey: string = '';
 	selectedItem: Record<string, object>;
 
+
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
-
+	columnWidthMinSize = 300;
+	tableWidth = 0;
+	@ViewChild('dt', { static: false }) tableEl: any;
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
@@ -172,8 +175,18 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.PersistInFilters = field.Type[type]?.IsPrimaryFilter ?? false;
 						return displayField;
 					});
+
+
+					this.fieldDisplayModel.forEach((item) => {
+						const menuItems = [];
+						menuItems.push({ "title": $localize`View Information`, callback: () => { console.log("here"); } });
+						item["MenuItems"] = menuItems;
+					});
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
+
+					this.tableWidth = this.tableEl.el.nativeElement.getBoundingClientRect().width;
 				}
+
 				this.checkKeyFields();
 				this.selectedRow = null;
 				this.isLoading = false;

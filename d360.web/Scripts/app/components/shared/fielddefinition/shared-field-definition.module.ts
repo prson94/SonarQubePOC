@@ -33,6 +33,7 @@ import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
 import { AngularSplitModule } from 'angular-split';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
@@ -64,7 +65,8 @@ import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/adva
 		SidePanelModule,
 		AngularSplitModule,
 		SearchFieldModule,
-		AdvancedFiltersModule
+		AdvancedFiltersModule,
+		PopupMenuModule
     ],
     declarations: [
         FieldTypeForm,
