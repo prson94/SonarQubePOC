@@ -21,6 +21,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 	isLoading: boolean = false;
 	relationshipType: RelationshipType;
 	hasEdit: boolean = false;
+	showEditor: boolean = false;
 
 	formattedRelationshipTypeName: string = "";
 	constructor(
@@ -82,5 +83,14 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 
 	editClick() {
 		this.sidePanelService.editClick(this.relationshipType);
+	}
+
+	closeEditor() {
+		this.showEditor = false;
+	}
+
+	onSaveRelationship() {
+		this.closeEditor();
+		this.loadData();
 	}
 }

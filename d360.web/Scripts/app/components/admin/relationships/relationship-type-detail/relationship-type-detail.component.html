@@ -2,7 +2,7 @@
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
 	<div *ngIf="isDetailsPage" class="header-edit-button">
-		<button igButton class="ig-button-primary" icon="fa-pencil" label="Edit" i18n-label (click)="isModalVisible = true"></button>
+		<button igButton class="ig-button-primary" icon="fa-pencil" label="Edit" i18n-label (click)="showEditor = true"></button>
 	</div>
 
 	<div *ngIf="!isLoading && !isDetailsPage" class="asset-detail-header">
@@ -116,3 +116,11 @@
 	</div>
 
 </div>
+
+
+<d3s-admin-relationships-editor  *ngIf="relationshipType && isDetailsPage"
+								[isModalVisible]="showEditor"
+								[relationshipTypeUid]="relationshipType.Uid"
+								(onSave)="onSaveRelationship()"
+								(closeClick)="closeEditor()">
+</d3s-admin-relationships-editor>

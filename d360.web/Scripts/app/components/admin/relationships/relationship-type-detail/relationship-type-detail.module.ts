@@ -4,6 +4,7 @@ import { RelationshipTypeDetailComponent } from './relationship-type-detail.comp
 import { PropertyGroupModule } from '../../../shared/controls/property-group/property-group.component';
 import { CoreModule } from '../../../shared/core.module';
 import { DirectivesModule } from '../../../../directives/directives.module';
+import { AdminRelationshipEditorModule } from '../list/admin-relationship-editor.module';
 
 
 
@@ -15,7 +16,8 @@ import { DirectivesModule } from '../../../../directives/directives.module';
 		CommonModule,
 		CoreModule,
 		PropertyGroupModule,
-		DirectivesModule
+		DirectivesModule,
+		AdminRelationshipEditorModule
 	],
 	exports: [
 		RelationshipTypeDetailComponent
