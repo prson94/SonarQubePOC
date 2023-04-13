@@ -21,8 +21,9 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     @Input() count: number;
     @Input() searchText: string;
     @Output() activeChange = new EventEmitter();
-	numberLoading: boolean;
-	noReadTooltip: string = $localize`You do not have read access to this type`;
+    numberLoading: boolean;
+    /*global $localize*/
+    noReadTooltip: string = $localize`You do not have read access to this type`;
 
     constructor(
         private menuService: SiteMenuService,
