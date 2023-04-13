@@ -59,6 +59,7 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
 import { TooltipModule } from 'primeng/tooltip';
 import { AdminRelationshipEditorModule } from '../relationships/list/admin-relationship-editor.module';
 import { AdminRelationshipsModule } from '../relationships/admin-relationships.module';
+import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/configuration-asset-type-details-page.component';
 
 @NgModule({
     imports: [
@@ -118,7 +119,8 @@ import { AdminRelationshipsModule } from '../relationships/admin-relationships.m
         ConfigurationAssetTypeLogPageComponent,
         ConfigurationAssetTypeBreadcrumbsComponent,
         ConfigurationAssetTypeListTabsComponent,
-        ConfigurationAssetTypeConnectorLabelsPageComponent,
+		ConfigurationAssetTypeConnectorLabelsPageComponent,
+		ConfigurationAssetTypeDetailsPageComponent,
         GovernanceRolesComponent,
 		ConfigurationAssetTypeLevelsPageComponent,
 		AdminLevelListComponent,

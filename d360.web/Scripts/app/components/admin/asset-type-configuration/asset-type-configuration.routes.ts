@@ -14,6 +14,7 @@ import { featuresToTypeClasses } from './shared/featuresToTypeClasses';
 import { GovernanceRolesComponent } from './governanceRoles/governance-roles.component';
 import { ConfigurationAssetTypeConnectorLabelsPageComponent } from './connectorLabels/configuration-asset-type-connector-labels-page.component';
 import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configuration-asset-type-levels-page.component';
+import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/configuration-asset-type-details-page.component';
 
 
 abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
@@ -149,9 +150,14 @@ export const assetTypeConfigurationRoutes: Routes = [
 		component: ConfigurationAssetTypeLevelsPageComponent,
 		canActivate: [WhenCanSeeLevelsGuard]
 	},
+	{
+		path: ':typeClass/:uid/details',
+		component: ConfigurationAssetTypeDetailsPageComponent,
+		canActivate: [WhenCanAccessBasicFeaturesGuard]
+	},
     {
         path: ':typeClass',
         component: ConfigurationAssetTypeListPageComponent,
         canActivate: [WhenCanAccessBasicFeaturesGuard]
-    },
+	}
 ];

@@ -14,7 +14,12 @@ export class ConfigurationAssetTypeTabsComponent {
 
     get tabs(): Tab[] {
         const baseUrl = `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}/${this.uid}`;
-        return [
+		return [
+			{
+				url: `${baseUrl}/details`,
+				title: $localize`Details`,
+				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
+			},
             {
                 url: `${baseUrl}/fields`,
 				title: $localize`Field Definition`,

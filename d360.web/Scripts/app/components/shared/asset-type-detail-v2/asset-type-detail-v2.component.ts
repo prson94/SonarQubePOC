@@ -47,6 +47,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	@Input() controlsOptions: ControlsOptions = { showEdit: true, showOpen: OpenBehaviour.NEW_TAB };
 	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
+	@Input() isDetailsPage: boolean = false;
+
 	assetTypeModel: AssetTypeApiModel;
 	categories: AssetTypeDetailCategory[] = [];
 	subscription: Subscription;
