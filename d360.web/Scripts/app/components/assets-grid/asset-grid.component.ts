@@ -362,13 +362,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		this.gridSortData = new GridSortData("AssetGrid_" + this.assetTypeApiModel.uid);
 
 		let ObjType = StringConstants.ObjectArtifactType;
-		if (this.assetTypeApiModel.Class.ID == 2) {
+		if (this.assetTypeApiModel.Class.ID === 2) {
 			ObjType = StringConstants.ObjectTaxonomyType;
 		}
-		else if (this.assetTypeApiModel.Class.ID == 6) {
+		else if (this.assetTypeApiModel.Class.ID === 6) {
 			ObjType = StringConstants.ObjectPolicyType;
 		}
-		else if (this.assetTypeApiModel.Class.ID == 7) {
+		else if (this.assetTypeApiModel.Class.ID === 7) {
 			ObjType = StringConstants.ObjectRuleType;
 		}
 
