@@ -169,6 +169,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        public static string DetailsTab {
+            get {
+                return ResourceManager.GetString("DetailsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Diagram Assets.
         /// </summary>
         public static string DiagramAssetsPage {

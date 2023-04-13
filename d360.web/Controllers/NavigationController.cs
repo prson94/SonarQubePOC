@@ -116,7 +116,7 @@ namespace d360.web.Controllers
 					SortOrder = 0,
 					Icon = "gov-data-catalog-icon",
 					ShouldDisplay = true,
-					NavigationItems = new List<NavigationItem>() 
+					NavigationItems = new List<NavigationItem>()
 
 				}).ToList();
 			}
@@ -413,7 +413,7 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(model.Folder.IconPayload))
 				{
-					if(!model.Folder.IconPayload.IsValidImageData())
+					if (!model.Folder.IconPayload.IsValidImageData())
 					{
 						return new JsonNetResult
 						{
@@ -1211,8 +1211,10 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
 					responseModel.IntersectTypeUid = model.IntersectTypeUid.Value;
 					responseModel.ObjectID = model.ObjectId ?? 0;
+					responseModel.TypeName = Company.Query<string>("select name from IntersectTypeDetail where uid = @uid ", new { uid = model.IntersectTypeUid.Value }).FirstOrDefault();
 					responseModel.DisplayValue = PageNames.RelationshipsTab;
-					responseModel.MainTabTitle = PageNames.RelationshipsTabTitle;
+					responseModel.MainTabTitle = PageNames.DetailsTab;
+					responseModel.MainTabUrl = $"admin/relationships/{model.IntersectTypeUid.Value}/details";
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1226,7 +1228,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabUrl = "admin/configuration/WorkflowActions";
 					responseModel.Items.HasAudit = true;
 
-					responseModel.AssetTypeUid = Company.IssueTypes.Where(x => x.ID == model.ObjectId).Select(x=> x.uid).FirstOrDefault();
+					responseModel.AssetTypeUid = Company.IssueTypes.Where(x => x.ID == model.ObjectId).Select(x => x.uid).FirstOrDefault();
 				}
 				else if (model.ResponsibilityTypeUid.HasValue)
 				{

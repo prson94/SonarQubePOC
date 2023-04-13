@@ -153,6 +153,9 @@
   <data name="DefinitionTab" xml:space="preserve">
     <value>Definition</value>
   </data>
+  <data name="DetailsTab" xml:space="preserve">
+    <value>Details</value>
+  </data>
   <data name="DiagramAssetsPage" xml:space="preserve">
     <value>Diagram Assets</value>
   </data>
