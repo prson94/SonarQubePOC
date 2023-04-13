@@ -51,11 +51,9 @@ const routes: Routes = [
 	{ path: "asset/:uid/relationships", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
 	{ path: "asset/:assetUid", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	{ path: "assets/:assetTypeUid/fields", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
-	{ path: "admin/predicate", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "semantics/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },
 	{ path: "tag", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
-	{ path: "admin/relationships/:assetTypeUid/fields", data: { type: 'relationship' }, loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 	{ path: "dataCatalog", loadChildren: () => import("./components/data-catalog/data-catalog.module").then((m) => m.DataCatalogModule) },
 
 	{
