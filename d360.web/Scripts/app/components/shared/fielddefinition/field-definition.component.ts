@@ -4,13 +4,16 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldDisplayModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
+import { FieldDisplayModel, FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { Observable, of } from 'rxjs';
+import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 
 /*global $localize*/
 
@@ -59,6 +62,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	public dataCyPrefix: string = 'FieldType_';
 	private fieldDefinitions = new Array<FieldTypeAPIModelField>();
 	private fieldDisplayModel = new Array<FieldDisplayModel>();
+	private nonFilteredFieldDisplayModel = new Array<FieldDisplayModel>();
 	private selectedRow = new FieldDisplayModel();
 	assetTypeClass: AssetTypeClass;
 
@@ -82,6 +86,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService,
 		public sidePanelService: SidePanelService,
+		private uiAdvancedFiltering: UiAdvancedFiltering
 	) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
@@ -147,18 +152,27 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						const type = this.currentFieldType(field);
 						displayField.Name = field.Name;
 						displayField.FriendlyName = field.FriendlyName;
-						displayField.Category = field.Category;
+						displayField.Category = field.Category ?? $localize`General`;
 						displayField.FieldType = this.getDisplayTypeName(type);
-						displayField.DisplayInColumn = field.Type[type].DisplayInColumn;
+						displayField.DisplayInColumn = field.Type[type].DisplayInColumn ?? false;
 						displayField.IsListable = field.Type[type].IsListable;
-						displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
+						displayField.IsPartOfKey = field.Type[type].IsPartOfKey ?? false;
 						displayField.SortOrder = field.Type[type].SortOrder;
 						displayField.SortByAscending = field.Type[type].SortByAscending;
 						displayField.ColumnOrder = field.Type[type].ColumnOrder;
-						displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
+						displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty ?? false;
 						displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
+
+						displayField.DisplayDescription = field.Type[type]?.Description?.Display ?? "";
+						displayField.FormDescription = field.Type[type]?.Description?.Form ?? "";
+						displayField.AddToSearchResults = field.Type[type]?.Search?.AddToResult ?? false;
+						displayField.AllowMultipleItems = field.Type[type]?.List?.AllowMultipleValues ?? false;
+						displayField.EditableOnUI = field.Type[type]?.IsEditable ?? false;
+						displayField.ShowInDetailsTab = field.Type[type]?.IsDisplayable ?? false;
+						displayField.PersistInFilters = field.Type[type]?.IsPrimaryFilter ?? false;
 						return displayField;
 					});
+					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 				}
 				this.checkKeyFields();
 				this.selectedRow = null;
@@ -347,5 +361,160 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
+
+	filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
+		{
+			Name: 'FriendlyName',
+			FriendlyName: $localize`Field Name`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'Name',
+			FriendlyName: $localize`API Name`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'Category',
+			FriendlyName: $localize`Category`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'DisplayDescription',
+			FriendlyName: $localize`Display Description`,
+			Type: new FieldType("Text"),
+			Category: ""
+		},
+		{
+			Name: 'FormDescription',
+			FriendlyName: $localize`Form Description`,
+			Type: new FieldType("Text"),
+			Category: ""
+		},
+		{
+			Name: 'IsListable',
+			FriendlyName: $localize`Listable`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'AddToSearchResults',
+			FriendlyName: $localize`Add to Search Results`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'AllowMultipleItems',
+			FriendlyName: $localize`Allow Multiple Items`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'EditableOnUI',
+			FriendlyName: $localize`Editable On UI`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'IsPartOfKey',
+			FriendlyName: $localize`Key Field`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'IsRequired',
+			FriendlyName: $localize`Required`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'ShowInDetailsTab',
+			FriendlyName: $localize`Show In Details Tab`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'DisplayInColumn',
+			FriendlyName: $localize`Display In Column`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'ShowIfEmpty',
+			FriendlyName: $localize`Show If Empty`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'PersistInFilters',
+			FriendlyName: $localize`Persist In Filters`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'FieldType',
+			Type: new FieldType("Lookup"),
+			FriendlyName: $localize`Type`,
+			Category: "",
+			ValueLoader: this.getFilterValuesForFieldType.bind(this),
+			RemovePopulatedOperator: true
+		},
+	]);
+
+	getFilterValuesForFieldType(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+		const types: string[] = [
+			$localize`True/False`,
+			$localize`Relation Lookup`,
+			$localize`Counter`,
+			$localize`Date`,
+			$localize`Date Time`,
+			$localize`Decimal`,
+			$localize`Field from Relationship`,
+			$localize`Html`,
+			$localize`JSON`,
+			$localize`JsonElement`,
+			$localize`Link`,
+			$localize`List`,
+			$localize`Number`,
+			$localize`Ownership Lookup`,
+			$localize`Asset Path`,
+			$localize`Reference Item List from Relationship`,
+			$localize`Relationship`,
+			$localize`Score`,
+			$localize`Tag`,
+			$localize`Simple Text`,
+			$localize`System`];
+
+		if (types.length === 1 && types[0] === '') {
+			return of({
+				items: [],
+				count: 0
+			});
+		} else {
+			return of({
+				items: types,
+				count: types.length
+			});
+		}
+	}
+
+	advancedFiltersChanged(event: Filters): void {
+		this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
 	}
 }

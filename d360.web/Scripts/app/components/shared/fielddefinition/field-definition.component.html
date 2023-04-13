@@ -52,7 +52,11 @@
 			</div>
 		</div>
 		<div class="grid-actions-header-row">
-			<!--<advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>-->
+			<advanced-filtering *ngIf="!isLoading"
+								[loadIdentifier]="'FieldType'"
+								[fieldsObserver]="filterFieldList$"
+								(onChange)="advancedFiltersChanged($event)">
+			</advanced-filtering>
 		</div>
 	</div>
 	<div>
@@ -72,7 +76,7 @@
 			<ng-template pTemplate="header">
 				<tr>
 					<th [pSortableColumn]="'FriendlyName'" style="flex: 1 1 20%">
-						<ng-container i18n>Field</ng-container>
+						<ng-container i18n>Field Name</ng-container>
 						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'FieldType'" style="flex: 1 1 15%">

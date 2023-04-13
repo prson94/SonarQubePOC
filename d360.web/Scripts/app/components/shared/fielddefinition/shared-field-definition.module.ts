@@ -32,6 +32,7 @@ import { SidePanelModule } from '../sidepanel/side-panel.module';
 import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
 import { AngularSplitModule } from 'angular-split';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 
 @NgModule({
     imports: [
@@ -62,7 +63,8 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 		RadioButtonModule,
 		SidePanelModule,
 		AngularSplitModule,
-		SearchFieldModule
+		SearchFieldModule,
+		AdvancedFiltersModule
     ],
     declarations: [
         FieldTypeForm,
