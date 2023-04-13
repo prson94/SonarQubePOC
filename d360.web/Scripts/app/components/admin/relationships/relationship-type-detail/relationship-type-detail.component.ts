@@ -15,6 +15,7 @@ import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 })
 export class RelationshipTypeDetailComponent implements OnChanges {
 	@Input() relationshipTypeUid: string;
+	@Input() isDetailsPage: boolean = false;
 	@Output() onLinkClicked = new EventEmitter();
 
 	isLoading: boolean = false;

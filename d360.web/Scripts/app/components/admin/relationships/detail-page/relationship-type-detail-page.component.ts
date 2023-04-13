@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RelationshipType } from '../../../../models/relationship.model';
+import { IOutputData } from 'angular-split';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { RelationshipsService } from '../../../../services/relationships.service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
@@ -20,11 +20,22 @@ export class RelationshipTypeDetailPageComponent extends BaseComponent implement
 	relationshipTypeUid: string = '';
 	private sub: any;
 
+	uid: string;
+	assetType: { Name: string };
+
+	sidePanelStorageKey: string = '';
+	selectedItem: Record<string, object>;
+
+	sidePanelOpen = false;
+	selectedForInfoPanel: unknown;
+
 	constructor(
 		private route: ActivatedRoute,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
-		protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		public sidePanelService: SidePanelService,
+		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
@@ -43,8 +54,32 @@ export class RelationshipTypeDetailPageComponent extends BaseComponent implement
 			(params) => {
 				this.relationshipTypeUid = this.baseIntersectTypeUid = params['uid'];
 				this.buildSecondaryNavigation({ intersectTypeUid: this.relationshipTypeUid });
+				this.sidePanelStorageKey = "side_panel_relationship_type_Details_" + this.relationshipTypeUid;
 				this.isLoading = false;
 			}
 		);
+	}
+
+	onLinkClicked($event) {
+		if ($event) {
+			this.selectedItem = $event;
+			this.sidePanelService.setSidePanelState({ expanded: true });
+		}
+	}
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 }

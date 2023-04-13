@@ -1,1 +1,32 @@
-detail page
+<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
+		  [class.side-panel-close]="!sidePanelOpen"
+		  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+		  unit="pixel"
+		  direction="horizontal"
+		  class="col s12 split"
+		  style="display: flex">
+	<as-split-area class="tile tile-detail main-panel">
+		<d3s-relationship-type-detail [isDetailsPage]="true" [relationshipTypeUid]="relationshipTypeUid" (onLinkClicked)="onLinkClicked($event)"></d3s-relationship-type-detail>
+	</as-split-area>
+	<as-split-area [size]="getSidePanelWidth()"
+				   [minSize]="getSidePanelMinWidth()"
+				   [maxSize]="getSidePanelMaxWidth()"
+				   class="tile tile-detail side-panel">
+		<side-panel [selectedItem]="selectedItem"
+					[setMinMaxWidth]="false"
+					[storageKey]="sidePanelStorageKey"
+					[expanded]="true"
+					[showEmptyOverlay]="!selectedItem"
+					(expandedChange)="sidePanelOpen=$event"
+					hasDetail="true">
+			<ng-container *ngIf="sidePanelOpen">
+				<ng-container *ngIf="selectedItem">
+					<asset-preview [assetUid]="selectedItem.uid"
+								   [assetType]="selectedItem.type"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
+				</ng-container>
+			</ng-container>
+		</side-panel>
+	</as-split-area>
+</as-split>
