@@ -153,7 +153,7 @@
                         </ng-template>
 
                     </td>                    
-                    <td class="asset-grid-tools" #assetGridTools style="width: 30px">
+                    <td class="asset-grid-tools" #assetGridTools>
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>

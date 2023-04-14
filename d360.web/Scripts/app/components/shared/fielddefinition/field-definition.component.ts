@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
@@ -14,6 +14,7 @@ import { IOutputData } from 'angular-split';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { Observable, of } from 'rxjs';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
+import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 
 /*global $localize*/
 
@@ -21,7 +22,8 @@ import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.ser
 	selector: 'd3s-field-definition-tile',
 	templateUrl: './field-definition.component.html',
 	styleUrls: ['field-definition.component.less'],
-	providers: [FieldsObservableService]
+	providers: [FieldsObservableService],
+	encapsulation: ViewEncapsulation.None
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
@@ -60,10 +62,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() allowSingleSegmentPath: boolean = true;
 
 	public dataCyPrefix: string = 'FieldType_';
-	private fieldDefinitions = new Array<FieldTypeAPIModelField>();
+	fieldDefinitions = new Array<FieldTypeAPIModelField>();
 	private fieldDisplayModel = new Array<FieldDisplayModel>();
 	private nonFilteredFieldDisplayModel = new Array<FieldDisplayModel>();
-	private selectedRow = new FieldDisplayModel();
+	selectedRow = new FieldDisplayModel();
 	assetTypeClass: AssetTypeClass;
 
 	private theDeleteCallback: Function;
@@ -79,7 +81,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
-	columnWidthMinSize = 300;
+	columnWidthMinSize = 150;
 	tableWidth = 0;
 	@ViewChild('dt', { static: false }) tableEl: any;
 	constructor(
@@ -178,9 +180,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 
 					this.fieldDisplayModel.forEach((item) => {
-						const menuItems = [];
-						menuItems.push({ "title": $localize`View Information`, callback: () => { console.log("here"); } });
-						item["MenuItems"] = menuItems;
+						const menuItems : PopupMenuItem[] = [];
+						menuItems.push({ title: $localize`View Information`, callback: () => { console.log("here"); } });
+						menuItems.push({ title: $localize`Edit`, callback: () => { this.edit(item); } });
+						menuItems.push({ title: $localize`Delete`, callback: () => { console.log("here"); } });
+						item.MenuItems = menuItems;
+						console.log(item.MenuItems);
 					});
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 
@@ -256,13 +261,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "System": return $localize`System`;
 		}
 	}
-	edit(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === name);
-		this.isEditing = true;
-		this.isDeleting = false;
-		this.isAdding = false;
-		this.onEdit.emit();
-	}
+
 
 	add(): void {
 		this.selectedRow = null;
@@ -318,8 +317,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		);
 
 	}
-	moveUp(field) {
-
+	moveUp(field: FieldDisplayModel) {
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
 			(r) => {
 				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
@@ -331,8 +329,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		);
 	}
 
-	moveDown(field) {
-
+	moveDown(field: FieldDisplayModel) {
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
 			(r) => {
 				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
@@ -342,6 +339,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 			}
 		);
+	}
+
+	edit(field: FieldDisplayModel): void {
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);
+		this.isEditing = true;
+		this.isDeleting = false;
+		this.isAdding = false;
+		this.onEdit.emit();
 	}
 
 	cancel() {

@@ -3,11 +3,22 @@
 
   .table-wrapper {
     padding: 12px;
+    position: relative;
 
-    tr {
+    .p-datatable-wrapper {
+      max-height: calc(100vh - 326px);
+    }
+
+    td.grid-tools-column {
+      padding-left: 0;
+      width: 30px;
+      position: sticky;
+      right: -1px;
+      z-index: 1;
+
       .token-popup-menu {
         button {
-          background: transparent;
+          background: white;
         }
       }
     }

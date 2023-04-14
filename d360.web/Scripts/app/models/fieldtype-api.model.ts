@@ -1,4 +1,5 @@
-﻿
+﻿import { PopupMenuItem } from "../components/shared/controls/popup-menu/popup-menu.component";
+
 export class FieldTypeAPIModel {
 	Action: string;
 	Fields: FieldTypeAPIModelField[];
@@ -152,6 +153,8 @@ export class FieldDisplayModel {
 	EditableOnUI: boolean;
 	ShowInDetailsTab: boolean;
 	PersistInFilters: boolean;
+
+	MenuItems: PopupMenuItem[] = [];
 }
 
 export interface ICommonOptions {

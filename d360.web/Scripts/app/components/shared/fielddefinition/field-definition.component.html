@@ -77,7 +77,7 @@
 						<ng-container i18n>Field Name</ng-container>
 						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'FieldType'">
+					<th [style.min-width.px]="200" [pSortableColumn]="'FieldType'">
 						<ng-container i18n>Type</ng-container>
 					</th>
 					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'Category'">
@@ -195,7 +195,7 @@
 					</td>
 					<td><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
 					<td><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? ascendingLabel : descendingLabel}}</ng-container></td>
-					<td style="padding-left:0" #assetGridTools>
+					<td class="grid-tools-column" #assetGridTools>
 						<div [style.left]="tableWidth" class="token-popup-menu" *ngIf="item.MenuItems">
 							<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
 							<ig-popup-menu [items]="item.MenuItems"
@@ -241,7 +241,6 @@
 		</p-table>
 	</div>
 </ng-template>
-
 
 <div *ngIf="isEditing">
 	<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
