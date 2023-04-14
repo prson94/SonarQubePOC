@@ -22,8 +22,6 @@ import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-workflow-raise-issue',
     template: `
@@ -87,7 +85,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private issueTypes: WorkflowIssueType[] = [];
     private actionMessage: string = "";
     private searchSub: ISubscription;
-    private resourceId: number = CurrentResourceID;
+    private resourceId: number;
     private resourceUid: any;
 
     constructor(
@@ -109,7 +107,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.actionMessage = this.getStringSetting(CompanySettingEnum.ActionMessage);
     }
 
-    ngOnInit() {
+	ngOnInit() {
+		this.resourceId = this.settingsService.CurrentResourceID;
         this.setBrowserTitle(this.titleService, $localize`Take Action`);
 		this.showHideFollow(false);
 		

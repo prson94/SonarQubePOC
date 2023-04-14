@@ -233,7 +233,7 @@ export class CompanySettingsService extends BaseObservableService {
 
 	private _currentResourceID: number | undefined;
 	get CurrentResourceID(): number {
-		if (this._currentResourceID === undefined) {
+		if (typeof this._currentResourceID === "undefined") {
 			if (typeof CurrentResourceID === "undefined") {
 				firstValueFrom(this.getUserVariables()).then((res) => this._currentResourceID = res.CurrentResourceID);
 			} else {
