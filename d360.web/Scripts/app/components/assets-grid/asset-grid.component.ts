@@ -1,5 +1,5 @@
 import { of as observableOf, Subject, Subscription } from "rxjs";
-import { debounce, debounceTime, delay, distinctUntilChanged, map, mergeMap, takeUntil } from "rxjs/operators";
+import { debounceTime, delay, distinctUntilChanged, map, mergeMap, takeUntil } from "rxjs/operators";
 import {
 	ChangeDetectionStrategy,
 	ChangeDetectorRef,
@@ -412,7 +412,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 	_oldParamsJSON: string = '';
 	getParams() {
-		debugger;
 		const autoDisplayParentSetting = this.assetTypeApiModel.AutoDisplayParent === null || (typeof this.assetTypeApiModel.AutoDisplayParent === 'undefined') ? true : this.assetTypeApiModel.AutoDisplayParent;
 		var params = new V2ApiFilters();
 		params._includeParent = this.assetTypeApiModel.ParentUid ? autoDisplayParentSetting : true;
