@@ -273,6 +273,8 @@ namespace d360.core.entities
         public string MenuID { get; set; }
         
         public bool ShowChildren { get; set; }
+
+		public bool Disabled { get; set; }
         
         public List<NavigationItem> Items { get; set; }
     }

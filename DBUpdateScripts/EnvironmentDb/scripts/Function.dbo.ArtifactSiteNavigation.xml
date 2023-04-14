@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.dbo.ArtifactNgSiteNavigation-v4">
-  <comment>GOV-20714</comment>
+  <changeSet author="TKlok" id="Function.dbo.ArtifactSiteNavigation-v1">
+  <comment>GOV-21033 - this function replaces ArtifactNgSiteNavigation</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter function [dbo].[ArtifactNgSiteNavigation](@id int)
+create or alter function [dbo].[ArtifactSiteNavigation](@id int, @NoReadAssetTypes dbo.ids readonly)
 returns xml
 with returns null on null input
 begin 
@@ -22,12 +22,18 @@ begin
 			url,
 			'Menu_AT' + cast(id as varchar(15)) as menuID,
 			0 as feature,
-			case when @@nestlevel > 24 then null else  dbo.ArtifactNgSiteNavigation(id) end as items
+			disabled,
+			case when @@nestlevel > 24 then null else  dbo.ArtifactSiteNavigation(id, @NoReadAssetTypes) end as items
 	from	(				
 			select	T.ID as ID,
 					[dbo].[XMLRemoveInValidChar](T.Name) Name,
-					AUrl.[Url] as [Url]
+					AUrl.[Url] as [Url],
+					case when nr.id is not null
+						then 1
+						else 0
+						end as disabled
 			from	AssetType T 
+					left join @NoReadAssetTypes nr on nr.id = t.id
 					outer apply (
 							select	IT.SubjectAssetTypeID
 							from	IntersectType IT 
@@ -43,33 +49,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter function [dbo].[ArtifactNgSiteNavigation](@id int)
-returns xml
-with returns null on null input
-begin 
-	return 
-	(
-	select	name,
-			url,
-			'Menu_AT' + cast(id as varchar(15)) as menuID,
-			0 as feature,
-			case when @@nestlevel > 24 then null else  dbo.ArtifactNgSiteNavigation(id) end as items
-	from	(				
-			select	T.ID as ID,
-						T.Name,
-						AUrl.[Url] as [Url]
-			from	AssetType T 
-					outer apply (
-							select	IT.SubjectAssetTypeID
-							from	IntersectType IT 
-									inner join [Predicate] P on IT.ObjectAssetTypeID = T.ID and P.ID = IT.PredicateID and P.Type = 3
-							) IT
-					cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
-			where	IT.SubjectAssetTypeID = @id
-			) BG order by name
-			for xml path('nav'), type
-	)
-end
+
 		]]>
 	</rollback>
   </changeSet>

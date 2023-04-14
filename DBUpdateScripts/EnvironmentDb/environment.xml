@@ -276,7 +276,7 @@
 	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
-	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
+	<include file="scripts/Function.dbo.ArtifactSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetWithAssetsByTypeUserCantRead.xml"/>

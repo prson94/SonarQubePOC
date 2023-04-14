@@ -1,7 +1,8 @@
 ﻿export class SiteMenuItem {
     Name: string;
     Url: string;
-    Items: SiteMenuItem[];
+	Items: SiteMenuItem[];
+	Disabled?: boolean = false;
     ShowChildren?: boolean = false;
     IsLink: boolean;
     count: number;

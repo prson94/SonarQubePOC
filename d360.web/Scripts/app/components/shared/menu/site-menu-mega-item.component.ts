@@ -7,22 +7,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',
-    template: ` 
-                <a (click)="itemClick()" [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null}" [igDataCy]="'PrimaryNav_' + item.Name">
-                    <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}">
-                        <div class="caret" (click)="handleArrowClick($event)">
-                            <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
-                        </div>
-                        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}">
-                            <d3s-highlight-search-text [text]="item.Name" [highlight]="searchText"></d3s-highlight-search-text>
-                        </div>
-                        <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
-                    </div>
-                </a>
-                <div *ngIf="item.ShowChildren">
-                    <d3s-site-menu-mega-item [category] = "category" [parentUrl]="item.Url" *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>                
-                </div>
-                `,
+    templateUrl: './site-menu-mega-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -37,6 +22,8 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     @Input() searchText: string;
     @Output() activeChange = new EventEmitter();
     numberLoading: boolean;
+    /*global $localize*/
+    noReadTooltip: string = $localize`You do not have read access to this type`;
 
     constructor(
         private menuService: SiteMenuService,
@@ -79,8 +66,8 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         }
     }
 
-    itemClick() {
-        if (this.item.Url == null)
+	itemClick() {
+		if (this.item.Url == null || this.item.Disabled)
             {return;}
 
         if (this.item.IsLink) {
