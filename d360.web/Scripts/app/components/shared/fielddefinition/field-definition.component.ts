@@ -180,7 +180,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 
 					this.fieldDisplayModel.forEach((item) => {
-						const menuItems : PopupMenuItem[] = [];
+						const menuItems = [];
 						menuItems.push({ title: $localize`View Information`, callback: () => { console.log("here"); } });
 						menuItems.push({ title: $localize`Edit`, callback: () => { this.edit(item); } });
 						menuItems.push({ title: $localize`Delete`, callback: () => { console.log("here"); } });
