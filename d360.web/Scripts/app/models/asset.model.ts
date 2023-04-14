@@ -90,6 +90,7 @@ export class AssetType {
     Description: string;
 	IsDescriptionEnabled: boolean;
 	IsDescriptionVisibleByDefault: boolean;
+	IsDefaultReadAccessEnabled: boolean;
 	DescriptionButtonName: string;
     DisplayFormat: string;
     ParentUid: string;
@@ -133,6 +134,7 @@ export class AssetTypeApiModel {
     count: number = 0; //not currently loaded from API.
 	IsDescriptionEnabled: boolean;
 	IsDescriptionVisibleByDefault: boolean;
+	IsDefaultReadAccessEnabled: boolean;
 	DescriptionButtonName: string;
     Levels: AssetTypeLevelApiModel[];
     IconStyle: IconStyle;

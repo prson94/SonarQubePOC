@@ -142,6 +142,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	private sortCategories(categories: AssetTypeDetailCategory[]): AssetTypeDetailCategory[] {
 		const priority = [
 			$localize`General`,
+			$localize`Security`,
 			$localize`Styles`,
 			$localize`Grammatic Type Allocation`,
 			$localize`System Fields`
@@ -212,6 +213,17 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						}]
 				);
 			}
+		}
+
+		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset && assetTypeModel.Class.ID !== AssetTypeClass.Reference) {
+			this.addFieldsToCategory($localize`Security`, [
+				{
+					name: $localize`Default Read Access`,
+					type: AssetTypeDetailFieldType.BOOL,
+					value: assetTypeModel.IsDefaultReadAccessEnabled,
+					tooltip: $localize`If enabled, users without any responsibilities will see this asset type by default.`
+				}
+			]);
 		}
 
 		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === assetTypeModel?.IconStyle?.BackColor.toLowerCase());

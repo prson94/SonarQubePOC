@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="ALadchenko" id="Table.dbo.AssetType-v8">
+  <changeSet author="Pappas" id="Table.dbo.AssetType-v9">
+    <comment>GOV-15702</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -37,6 +38,7 @@ BEGIN
 		[AutoDisplayParent] [bit] constraint DF_AssetType_AutoDisplayParent default(0) NOT NULL,
 		[FlowObjectType] int null,
 		CanEditParent bit constraint DF_AssetType_CanEditParent default(1) not null, 
+		DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null,
 		CONSTRAINT [PK_AssetType] PRIMARY KEY CLUSTERED ( [ID] ASC ),
 		CONSTRAINT [AssetType_Object_ObjectId] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
 	)
@@ -90,6 +92,13 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 			IsDescriptionEnabled bit constraint [DF_AssetType_IsDescriptionEnabled] default(1) not null,
 			IsDescriptionVisibleByDefault bit constraint [DF_AssetType_IsDescriptionVisibleByDefault] default(0) not null,
 			DescriptionButtonName varchar(50) null
+	  END
+
+	  IF COL_LENGTH('dbo.AssetType', 'DefaultPermissions') IS NULL
+	  BEGIN
+		 alter table dbo.AssetType
+		 add
+			DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null
 	  END
 	  ]]>
     </sql>

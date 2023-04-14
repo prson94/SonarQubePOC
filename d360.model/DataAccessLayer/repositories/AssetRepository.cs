@@ -323,6 +323,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 									,A.IsDescriptionEnabled
 									,A.IsDescriptionVisibleByDefault
 									,A.DescriptionButtonName
+									,cast(iif(A.DefaultPermissions = 1, 1, 0) as bit) as IsDefaultReadAccessEnabled
 									{extraColumns} 
 									,P.[Path]
 									,AT.IconBackColor as BackColor
@@ -1692,6 +1693,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
 				{(includeParentQuery ? parentApplySQL : "")}
 				{(!excludeFilterQueries || !containsAnyFilter ? whereSql : "where A.AssetTypeID = @assettypeid")}";
+				//and (
+				//	T.DefaultPermissions = 1 or 
+				//	@isAdmin = 1 or
+				//	( T.DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
+				//)";
 			};
 
 			var filteredResultsTempTable = "";
@@ -2951,12 +2957,16 @@ where an.Uid = fam.uid)
 			}
 
 			var countSql = $@"
-							select	count(1)
-							from	AssetPath N
-							inner join Asset A on A.Id = N.Id
-							inner join AssetType AT on AT.Id = A.AssetTypeId
-							where	N.DisplayPath like @phrase {prefilterSql}
-							";
+select	count(1)
+from	AssetPath N
+		inner join Asset A on A.Id = N.Id
+		inner join AssetType [AT] on AT.Id = A.AssetTypeId
+where	N.DisplayPath like @phrase {prefilterSql}
+		and (
+			[AT].DefaultPermissions = 1 or 
+			@isAdmin = 1 or
+			( T.DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
+		)";
 
 			var sql = $@"
 							select	A.Uid,
@@ -2966,9 +2976,14 @@ where an.Uid = fam.uid)
 									N.Segments as SegmentsXml
 							from	AssetPath N
 									inner join Asset A on A.Id = N.Id
-									inner join AssetType AT on AT.ID = A.AssetTypeID
+									inner join AssetType [AT] on AT.ID = A.AssetTypeID
 									left join AssetTypeStyle S on S.ID = AT.ID
 							where	N.DisplayPath like @phrase {prefilterSql}
+									and (
+										[AT].DefaultPermissions = 1 or 
+										@isAdmin = 1 or
+										( T.DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
+									)
 							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 							";
@@ -2983,6 +2998,8 @@ where an.Uid = fam.uid)
 				model.pageSize = 250;
 			}
 
+			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+			dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 			dbArgs.Add("@pageNum", model.pageNum - 1);
 			dbArgs.Add("@pageSize", model.pageSize);
 
@@ -3101,7 +3118,8 @@ where an.Uid = fam.uid)
 						CanEditParent = model.CanEditParent,
 						IsDescriptionEnabled = model.IsDescriptionEnabled,
 						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
-						DescriptionButtonName = model.DescriptionButtonName
+						DescriptionButtonName = model.DescriptionButtonName,
+						DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0
 					};
 					CompanyContext.Add(at);
 
@@ -3137,7 +3155,8 @@ where an.Uid = fam.uid)
 						CanEditParent = model.CanEditParent,
 						IsDescriptionEnabled = model.IsDescriptionEnabled,
 						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
-						DescriptionButtonName = model.DescriptionButtonName
+						DescriptionButtonName = model.DescriptionButtonName,
+						DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0
 					};
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
@@ -3345,6 +3364,10 @@ where an.Uid = fam.uid)
 					assetType.Description = model.Description;
 					assetType.IsDescriptionEnabled = model.IsDescriptionEnabled;
 					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
+					if (model.Class != AssetTypeClass.Diagram && model.Class != AssetTypeClass.Reference && model.Class != AssetTypeClass.User && model.Class != AssetTypeClass.Group)
+					{
+						assetType.DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0;
+					}
 					assetType.DescriptionButtonName = model.DescriptionButtonName;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
 					assetType.AutoDisplayParent = model.AutoDisplayParent;

@@ -136,6 +136,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
 			isDescriptionCollapsedByDefault: [true],
+			isDefaultReadAccessEnabled: [true],
 			backgroundColor: [null],
 			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
@@ -160,6 +161,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
 		this.assetTypeForm.controls['isDescriptionCollapsedByDefault'].setValue(true);
+		this.assetTypeForm.controls['isDefaultReadAccessEnabled'].setValue(true);
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
@@ -197,6 +199,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["description"].setValue(assetType.Description);
 				this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
+				this.assetTypeForm.controls["isDefaultReadAccessEnabled"].setValue(assetType.IsDefaultReadAccessEnabled);
 
 				if (!assetType.DescriptionButtonName) {
 					this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
@@ -301,6 +304,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.Description = this.assetTypeForm.get("description").value;
 		model.IsDescriptionEnabled = this.assetTypeForm.get("isDescriptionEnabled").value;
 		model.DescriptionButtonName = this.assetTypeForm.get("descriptionButtonName").value;
+		model.IsDefaultReadAccessEnabled = this.assetTypeForm.get("isDefaultReadAccessEnabled").value;
 
 		//ui label is `Collapsed by default` so we need to revert this boolean here
 		model.IsDescriptionVisibleByDefault = !this.assetTypeForm.get("isDescriptionCollapsedByDefault").value;

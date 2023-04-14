@@ -107,6 +107,9 @@ namespace d360.core.entities
 		[DataMember]
 		public bool IsDescriptionVisibleByDefault { get; set; }
 
+		[DataMember]
+		public bool IsDefaultReadAccessEnabled { get; set; }
+
 		[DataMember, MaxLength(50, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
 		public string DescriptionButtonName { get; set; }
 
