@@ -26,8 +26,6 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
-declare var CurrentResourceID;
-
 @Component({
 	selector: 'd3s-rule-list',
 	providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService, DataProfileService],
@@ -107,7 +105,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 				this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleType.ID, this.baseAssetTypeUid);
 				this.setObjectInfo('RuleType', this.ruleType.ID);
 
-				this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
+				this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + this.settingsService.CurrentResourceID;
 
 				this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
 					this.headerBreadcrumbService.clearBreadcrumbs();

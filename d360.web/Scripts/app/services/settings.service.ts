@@ -12,11 +12,14 @@ import { SelectItem } from "primeng/api";
 import { JsonResult } from "../models/jsonresult.model";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { catchError, map, tap } from "rxjs/operators";
-import { Observable, of } from "rxjs";
+import { Observable, of, firstValueFrom } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
 import { SettingsProviderService } from "@precisely/prism-ng/govern";
+
+// eslint-disable-next-line no-var
+declare var CurrentResourceID;
 
 @Injectable({
 	providedIn: 'root'
@@ -226,6 +229,18 @@ export class CompanySettingsService extends BaseObservableService {
 				map((res) => res as JsonResult),
 				catchError((err) => this.handleError(err))
 			);
+	}
+
+	private _currentResourceID: number | undefined;
+	get CurrentResourceID(): number {
+		if (this._currentResourceID === undefined) {
+			if (typeof CurrentResourceID === "undefined") {
+				firstValueFrom(this.getUserVariables()).then((res) => this._currentResourceID = res.CurrentResourceID);
+			} else {
+				this._currentResourceID = +CurrentResourceID;
+			}
+		}
+		return this._currentResourceID;
 	}
 
 }

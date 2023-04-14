@@ -1,8 +1,7 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
+import { CompanySettingsService } from "../../services/settings.service";
 import { CountObject } from '../../models/resource.model';
-
-declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-resource-responsibility-tile',
@@ -51,7 +50,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
     isMe = false;
     showFilter: boolean = true;
 
-    constructor(private resourcesService: ResourcesService) { }
+	constructor(private resourcesService: ResourcesService, protected settingsService: CompanySettingsService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['resourceId'] && this.resourceId > 0) {this.resource = null;}
@@ -72,7 +71,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
         if (this.resource != null)
             {this.resourceId = this.resource.ResourceID;}
 
-        this.isMe = (this.resourceId === CurrentResourceID);
+		this.isMe = (this.resourceId === this.settingsService.CurrentResourceID);
 
         this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeUid)
             .subscribe((r) => {

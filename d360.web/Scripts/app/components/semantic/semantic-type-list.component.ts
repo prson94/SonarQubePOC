@@ -28,8 +28,6 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-semantic-list',
     templateUrl: './semantic-type-list.component.html',
@@ -180,7 +178,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     ngOnInit() {
 
-        this.sidePanelStorageKey = 'SemanticTypes_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'SemanticTypes_' + this.settingsService.CurrentResourceID;
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);

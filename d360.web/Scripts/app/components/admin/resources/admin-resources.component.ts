@@ -8,8 +8,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-admin-resources',
     templateUrl: './admin-resources.component.html'
@@ -21,7 +19,7 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
     showSidePanel: boolean = true;
     sidePanelOpen: boolean = false;
     sidePanelTab: string = 'detail';
-    sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;
+	sidePanelStorageKey: string = 'Admin_User_list_' + this.settingsService.CurrentResourceID;
 
     constructor(
         public sidePanelService: SidePanelService,

@@ -31,8 +31,6 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
@@ -191,13 +189,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.searchDetails = null;
         this.items = [];
 		this.buttons = [];
-		if (typeof CurrentResourceID === "undefined") {
-			this.settingsService.getUserVariables().subscribe((res) => {
-				this.currentResouceID = res.CurrentResourceID;
-			});
-		} else {
-			this.currentResouceID = +CurrentResourceID;
-		}
+		this.currentResouceID = this.settingsService.CurrentResourceID
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             (item) => {
                 this.items.push(item);

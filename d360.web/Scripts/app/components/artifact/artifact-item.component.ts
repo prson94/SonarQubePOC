@@ -24,8 +24,6 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
-declare var CurrentResourceID;
-
 @Component({
 	selector: 'd3s-artifact-item',
 	templateUrl: './artifact-item.component.html',
@@ -115,7 +113,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
 					this.buildSecondaryNavigation({ assetUid: this.artifact.Uid, DisplayValue: this.artifact.DisplayValue });
 
-					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
+					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + this.settingsService.CurrentResourceID;
 
 					this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 					if (this.featureFlagService.variation<boolean>(FeatureFlags.DataProfilingUiFlag)) {

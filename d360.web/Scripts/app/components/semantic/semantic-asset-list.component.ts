@@ -15,8 +15,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-semantic-asset-list',
     templateUrl: './semantic-asset-list.component.html',
@@ -57,7 +55,7 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
         this.route.params.subscribe((params) => {
             const uid = params['semanticTypeUid'];
 
-            this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + CurrentResourceID;
+			this.sidePanelStorageKey = 'SemanticTypes_' + uid + '_' + this.settingsService.CurrentResourceID;
 			this.headerBreadcrumbService.setCurrentObjectInfo('SemanticType', uid);
 			this.logSemanticAction(UsageAction.View, uid);
             this.getData(uid);

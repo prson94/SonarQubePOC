@@ -18,8 +18,6 @@ import { SecondaryNavService } from './right-sidebar.service';
 import { CompanySettingsService } from './settings.service';
 import { WebAnalyticsService } from './web-analytics.service';
 
-declare var CurrentResourceID;
-
 @Injectable({
   providedIn: 'root'
 })
@@ -71,7 +69,7 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
           folderName = '#Technical';
           this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
-        this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + CurrentResourceID;
+        this.sidePanelStorageKey = 'list_' + AssetTypeClass[artifactType.Class] + '_' + this.settingsService.CurrentResourceID;
         return this.headerBreadcrumbService.getFolderTitle(folderName);
       }),
     ).subscribe((folderTitle: string) => {

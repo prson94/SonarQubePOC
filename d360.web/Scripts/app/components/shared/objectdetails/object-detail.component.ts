@@ -9,9 +9,8 @@ import {
 } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from "../../../services/settings.service";
 import { AssetService } from '../../../services/asset.service';
-
-declare var CurrentResourceID;
 
 @Component({
     selector: 'object-detail',
@@ -45,6 +44,7 @@ export class ObjectDetailComponent implements OnChanges {
     constructor(private objectDetailService: ObjectDetailService,
         protected messagesService: MessagesObservableService,
         private assetService: AssetService,
+		protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -165,7 +165,7 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     get storageKey(): string {
-        return `asset_detail_${CurrentResourceID}_${this.assetTypeUID}`;
+		return `asset_detail_${this.settingsService.CurrentResourceID}_${this.assetTypeUID}`;
     }
 
     private loadCategory() {

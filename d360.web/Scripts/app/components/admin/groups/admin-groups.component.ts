@@ -35,7 +35,6 @@ import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { SortOrder } from '../../../models/enums.model';
 
-declare var CurrentResourceID;
 @Component({
     selector: 'd3s-admin-groups',
     providers: [GroupService],
@@ -125,7 +124,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 		this.baseAssetTypeUid = this.groupTypeUid;
 		this.buildSecondaryNavigationForAssetTypeUid(this.groupTypeUid);
 
-        this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'list_' + AssetTypeClass.Group + '_' + this.settingsService.CurrentResourceID;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
             this.linkClickInterceptor.handleEvent(this, ev);

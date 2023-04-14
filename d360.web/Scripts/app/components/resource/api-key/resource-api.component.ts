@@ -5,8 +5,6 @@ import { ResourcesService } from '../../../services/resources.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-resource-api',
     templateUrl: 'resource-api.component.html',

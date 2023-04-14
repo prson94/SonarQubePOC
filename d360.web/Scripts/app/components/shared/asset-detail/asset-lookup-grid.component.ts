@@ -23,8 +23,6 @@ import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { StringConstants } from "../../../static/string-constants";
 import { Table } from "primeng/table";
 
-declare var CurrentResourceID;
-
 @Component({
     selector: "ig-asset-lookup-grid",
     templateUrl: "./asset-lookup-grid.component.html",
@@ -102,7 +100,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         if (this.isReferenceListFromRelationship) {
             this.lookupField = (this.data as any);
 
-            const show = localStorage.getItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`);
+			const show = localStorage.getItem(`lookup_description_${this.settingsService.CurrentResourceID}_${this.lookupField.fieldTypeId}`);
             if (show == null) {
                 this.showDescription = this.lookupField.showDescription;
             } else {
@@ -303,7 +301,7 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
 
     toggleShowDescription() {
         this.showDescription = !this.showDescription;
-        localStorage.setItem(`lookup_description_${CurrentResourceID}_${this.lookupField.fieldTypeId}`, this.showDescription.toString());
+		localStorage.setItem(`lookup_description_${this.settingsService.CurrentResourceID}_${this.lookupField.fieldTypeId}`, this.showDescription.toString());
     }
 
     onFiltersLoaded() {

@@ -25,8 +25,6 @@ import { Subscription } from 'rxjs';
 import { GenericMessageService } from '../../../services/generic-message.service';
 import { GenericMessageType } from '../../../models/generic-message.model';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-tag-view',
     templateUrl: './d3s-tag-view.html',
@@ -466,9 +464,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         tagElements.filter = Array.prototype.filter;
         var showDelete = tagElements.filter((te) => te.children[0].innerText.trim() === tag.Value.trim());
         if (showDelete.length === 1) {
-            if (createdBy === CurrentResourceID)
+			if (createdBy === this.settingsService.CurrentResourceID)
                 {this.showDeleteOption = true;}
-            if (createdBy !== CurrentResourceID) {
+			if (createdBy !== this.settingsService.CurrentResourceID) {
                 tagElements.forEach((e) => {
                     if (e.children[0].innerText.trim() === tag.Value.trim()) {
                         e.children[1].parentElement.removeChild(e.children[1]);
