@@ -419,7 +419,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 		}
 
 		if (!item.hasCheckbox) {
-			this.onSelect.emit({ value: item.title, event: $event });
+			this.onSelect.emit({ value: item.title, action: item.action, event: $event });
 			this.toggle();
 			this.reset();
 		}
@@ -432,7 +432,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 					x.isSelected = false;
 				});
 				item.isSelected = true;
-				this.onSelect.emit({ value: item.title, isSelected: item.isSelected, event: $event });
+				this.onSelect.emit({ value: item.title, action: item.action, isSelected: item.isSelected, event: $event });
 			}
 		}
 		else {
@@ -447,7 +447,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 			}
 
 			item.isChecked = !item.isChecked;
-			this.onSelect.emit({ value: item.title, isChecked: item.isChecked, event: $event });
+			this.onSelect.emit({ value: item.title, action: item.action, isChecked: item.isChecked, event: $event });
 		}
 	}
 
@@ -636,6 +636,7 @@ export enum PopupMenuLocation {
 
 export class PopupMenuItem {
 	title?: string;
+	action?: string;
 	icon?: string;
 	items?: PopupMenuItem[];
 	disabled?: boolean = false;

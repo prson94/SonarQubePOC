@@ -17,6 +17,7 @@ import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.ser
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { cloneDeep } from 'lodash-es';
 import { Table } from 'primeng/table';
+import { withDisabledInitialNavigation } from '@angular/router';
 
 /*global $localize*/
 
@@ -185,9 +186,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 					this.fieldDisplayModel.forEach((item) => {
 						const menuItems = [];
-						menuItems.push({ title: $localize`View Information`, callback: () => { console.log("here"); } });
-						menuItems.push({ title: $localize`Edit`, callback: () => { this.edit(item); } });
-						menuItems.push({ title: $localize`Delete`, callback: () => { console.log("here"); } });
+						menuItems.push({ title: $localize`View Information`, action: 'info' });
+						menuItems.push({ title: $localize`Edit`, action: 'edit' });
+						menuItems.push({ title: $localize`Delete`, action: 'delete' });
+						menuItems.push({ title: $localize`Move To Top`, action: 'movetop' });
+						menuItems.push({ title: $localize`Move Up`, action: 'moveup' });
+						menuItems.push({ title: $localize`Move Down`, action: 'movedown' });
+						menuItems.push({ title: $localize`Move To Bottom`, action: 'movebottom' });
+
 						item.MenuItems = menuItems;
 					});
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
@@ -201,6 +207,30 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.cdRef.markForCheck();
 			}
 		);
+	}
+
+	onMenuItemSelect(item: FieldDisplayModel, $event) {
+		switch ($event.action) {
+			case 'info': window.alert("info");
+				break;
+			case 'edit': window.alert("edit");
+				break;
+			case 'delete': window.alert("delete");
+				break;
+			case 'movetop':
+				this.moveToPosition(item, 0);
+				break;
+			case 'moveup':
+				this.moveUp(item);
+				break;
+			case 'movedown':
+				this.moveDown(item);
+				break;
+			case 'movebottom':
+				this.moveToPosition(item, this.nonFilteredFieldDisplayModel.length);
+				break;
+		}
+		console.log();
 	}
 
 	get currentUid(): string {
@@ -323,8 +353,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 	onRowReorder($event) {
 		const dropIndex = $event.dropIndex;
-
-		var moveField = this.fieldDisplayModel[dropIndex];
+		const dragIndex = $event.dragIndex;
+		var moveField = this.fieldDisplayModel[dragIndex];
 		if (moveField) {
 			this.moveToPosition(moveField, dropIndex + 1);
 		}
