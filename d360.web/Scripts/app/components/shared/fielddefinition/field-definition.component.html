@@ -70,9 +70,13 @@
 				 [metaKeySelection]="true"
 				 [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder','DisplayInColumn']"
 				 [(selection)]="selectedRow"
+				 [reorderableColumns]="true"
+				 (onRowReorder)="onRowReorder($event)"
 				 responsiveLayout="scroll">
 			<ng-template pTemplate="header">
 				<tr>
+					<th class="reorder-cell"></th>
+
 					<th [style.min-width.px]="200" [pSortableColumn]="'FriendlyName'">
 						<ng-container i18n>Field Name</ng-container>
 						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
@@ -114,22 +118,15 @@
 					</th>
 					<th></th>
 				</tr>
-				<tr [hidden]="showSimpleFilter">
-					<th><d3s-column-filter [field]="'FriendlyName'" [datatype]="'text'"></d3s-column-filter></th>
-					<th><d3s-column-filter [field]="'FieldType'" [datatype]="'text'"></d3s-column-filter></th>
-					<th><d3s-column-filter [field]="'Category'" [datatype]="'text'"></d3s-column-filter></th>
-					<th></th>
-					<th></th>
-					<th></th>
-					<th></th>
-					<th></th>
-					<th></th>
-					<th><d3s-column-filter [field]="'SortOrder'" [datatype]="'text'"></d3s-column-filter></th>
-					<th></th>
-				</tr>
 			</ng-template>
-			<ng-template pTemplate="body" let-item>
-				<tr (dblclick)="isEditing=showEditButton;" style="word-wrap: break-word" [pSelectableRow]="item">
+			<ng-template pTemplate="body" let-item let-index="rowIndex">
+				<tr (dblclick)="isEditing=showEditButton;"
+					(ondragenter)="dragEnter()"
+					style="word-wrap: break-word"
+					[pSelectableRow]="item">
+					<td [pReorderableRow]="index" class="reorder-cell">
+						<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
+					</td>
 					<td>{{item.FriendlyName}}</td>
 					<td>{{item.FieldType}}</td>
 					<td>{{item.Category}}</td>

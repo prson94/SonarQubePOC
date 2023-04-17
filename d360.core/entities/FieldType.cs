@@ -1258,6 +1258,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string Direction { get; set; }
+
+		[DataMember]
+		public int? Position { get; set; }
 	}
 
 	/// <summary>

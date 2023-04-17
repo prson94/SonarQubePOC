@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
@@ -15,6 +15,8 @@ import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPI
 import { Observable, of } from 'rxjs';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
+import { cloneDeep } from 'lodash-es';
+import { Table } from 'primeng/table';
 
 /*global $localize*/
 
@@ -23,7 +25,8 @@ import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 	templateUrl: './field-definition.component.html',
 	styleUrls: ['field-definition.component.less'],
 	providers: [FieldsObservableService],
-	encapsulation: ViewEncapsulation.None
+	encapsulation: ViewEncapsulation.None,
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
@@ -83,7 +86,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	selectedForInfoPanel: unknown;
 	columnWidthMinSize = 150;
 	tableWidth = 0;
-	@ViewChild('dt', { static: false }) tableEl: any;
+	@ViewChild('dt', { static: false }) tableEl: Table;
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
@@ -91,7 +94,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService,
 		public sidePanelService: SidePanelService,
-		private uiAdvancedFiltering: UiAdvancedFiltering
+		private uiAdvancedFiltering: UiAdvancedFiltering,
+		private cdRef: ChangeDetectorRef
 	) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
@@ -185,7 +189,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						menuItems.push({ title: $localize`Edit`, callback: () => { this.edit(item); } });
 						menuItems.push({ title: $localize`Delete`, callback: () => { console.log("here"); } });
 						item.MenuItems = menuItems;
-						console.log(item.MenuItems);
 					});
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 
@@ -195,6 +198,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.checkKeyFields();
 				this.selectedRow = null;
 				this.isLoading = false;
+				this.cdRef.markForCheck();
 			}
 		);
 	}
@@ -317,29 +321,62 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		);
 
 	}
+	onRowReorder($event) {
+		const dropIndex = $event.dropIndex;
+
+		var moveField = this.fieldDisplayModel[dropIndex];
+		if (moveField) {
+			this.moveToPosition(moveField, dropIndex + 1);
+		}
+	}
+
+	dragEnter() {
+		console.log("here");
+	}
+
 	moveUp(field: FieldDisplayModel) {
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
-			(r) => {
-				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
-				if (items.length === 1) {
-					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index > 0 && index < this.fieldDisplayModel.length) { [this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]]; }
-				}
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.isLoading = false;
+				this.cdRef.markForCheck();
 			}
 		);
 	}
 
 	moveDown(field: FieldDisplayModel) {
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
-			(r) => {
-				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
-				if (items.length === 1) {
-					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index >= 0 && index < this.fieldDisplayModel.length - 1) { [this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]]; }
-				}
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.isLoading = false;
+				this.cdRef.markForCheck();
 			}
 		);
 	}
+
+	moveToPosition(field: FieldDisplayModel, position: number) {
+		this.isLoading = true;
+		this.fieldsService.moveToPosition(this.currentUid, field.Name, position).subscribe(
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.isLoading = false;
+				this.cdRef.markForCheck();
+			}
+		);
+	}
+
 
 	edit(field: FieldDisplayModel): void {
 		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);

@@ -3,7 +3,7 @@ import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
-import { FieldDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
+import { FieldDefinition, FieldTypeColumnDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -355,7 +355,23 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 map((response) => response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	moveToPosition(typeUid: string, fieldTypeName: string, positionIdx: number): Observable<FieldTypeColumnDefinition[]>{
+		const model = {
+			TypeUid: typeUid,
+			FieldTypename: fieldTypeName,
+			Direction: "positional",
+			Position: positionIdx
+		};
+		return this
+			.http
+			.post(`api/v2/fields/move`, model)
+			.pipe(
+				map((response) => <FieldTypeColumnDefinition[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getCascadingListFieldValues(
         fieldTypeId: number,

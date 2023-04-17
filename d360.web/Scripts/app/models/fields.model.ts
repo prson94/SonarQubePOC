@@ -33,6 +33,11 @@ export class FieldDefinition {
     ExtOrder: number;
 }
 
+export class FieldTypeColumnDefinition {
+	ColumnOrder: number;
+	Name: string;
+}
+
 export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
     FieldType: FieldTypeAPIModelField;    

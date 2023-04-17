@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
 				{
 					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value.ToString()));
 				}
-			}			
+			}
 
 			if (model.RelationshipTypeUid.HasValue)
 			{
@@ -238,7 +238,7 @@ namespace d360.web.Controllers.V2
 			#region Validation
 
 			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-			var ExistingIntersectID = new List<Tuple<string, Guid>>();					
+			var ExistingIntersectID = new List<Tuple<string, Guid>>();
 
 			if (model.AssetTypeUid.HasValue)
 			{
@@ -248,13 +248,13 @@ namespace d360.web.Controllers.V2
 			var existingIntersectTypes = new List<IntersectType>();
 			if (model.Fields.Any(f => f?.Type?.Relationship != null))
 			{
-				foreach(var field in model.Fields.Where(f=>f.Type.Relationship != null))
+				foreach (var field in model.Fields.Where(f => f.Type.Relationship != null))
 				{
 					existingIntersectTypes.AddRange(Company.IntersectTypes.Where(i => field.Type.Relationship.IntersectTypeUid == i.uid));
-				}				
+				}
 			}
-					
-			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);			
+
+			var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID, existingIntersects: existingIntersectTypes);
 
 			if (validationStatus.StatusCode != HttpStatusCode.OK)
 			{
@@ -685,7 +685,7 @@ namespace d360.web.Controllers.V2
 				   .Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
 							   && x.PredicateType != PredicateType.InterTypeHierarchy
 							  );
-				
+
 				var subject_relationships = relationships.Where(i => i.SubjectUid == AssetTypeUid).Select(i => new
 				{
 					title = $"{i.PredicateName} {i.ObjectAssetTypePath}",
@@ -894,7 +894,7 @@ namespace d360.web.Controllers.V2
 
 				if (assetTypeUid != null)
 				{
-					var assetType  = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+					var assetType = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
 					if (assetType != null)
 					{
 						var atID = assetType.ID;
@@ -1058,60 +1058,60 @@ namespace d360.web.Controllers.V2
 				DataType.Score.ToString(),
 			};
 
-				int id;
-				Dictionary<string, string> list = new Dictionary<string, string>();
+			int id;
+			Dictionary<string, string> list = new Dictionary<string, string>();
 
-				//special case for reference list
-				if (Enum.TryParse(identifier, out SystemObjects type))
-				{
-					id = 0;
-				}
-				else if (Guid.TryParse(identifier, out Guid Uid))
-				{
-					var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
-					Enum.TryParse(item.Object, out type);
-					id = item.ObjectID;
-					list = Company.GetFieldTypesByObject(type, id)
-						.Where(i => !excludedFieldTypes.Contains(i.Type))
-						.Select(i => new { i.ID, i.Name })
-						.ToDictionary(i => i.Name, i => i.Name);
+			//special case for reference list
+			if (Enum.TryParse(identifier, out SystemObjects type))
+			{
+				id = 0;
+			}
+			else if (Guid.TryParse(identifier, out Guid Uid))
+			{
+				var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
+				Enum.TryParse(item.Object, out type);
+				id = item.ObjectID;
+				list = Company.GetFieldTypesByObject(type, id)
+					.Where(i => !excludedFieldTypes.Contains(i.Type))
+					.Select(i => new { i.ID, i.Name })
+					.ToDictionary(i => i.Name, i => i.Name);
 
-				}
-				else
-				{
-					throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidValueMessage, identifier));
-				}
+			}
+			else
+			{
+				throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidValueMessage, identifier));
+			}
 
-				switch (type)
-				{
-					case SystemObjects.ArtifactType:
-						list.Add("ID", "ID");
-						break;
-					case SystemObjects.PolicyType:
+			switch (type)
+			{
+				case SystemObjects.ArtifactType:
+					list.Add("ID", "ID");
+					break;
+				case SystemObjects.PolicyType:
+					list.Add("TextPath", "TextPath");
+					break;
+				case SystemObjects.Resource:
+				case SystemObjects.ResourceType:
+					list.Add("First Name", "FirstName");
+					list.Add("Last Name", "LastName");
+					list.Add("Email", "Email");
+					break;
+				case SystemObjects.TaxonomyType:
+					if (id == 0)
+					{
+						list.Add("Name", "Name");
+					}
+					else
+					{
 						list.Add("TextPath", "TextPath");
-						break;
-					case SystemObjects.Resource:
-					case SystemObjects.ResourceType:
-						list.Add("First Name", "FirstName");
-						list.Add("Last Name", "LastName");
-						list.Add("Email", "Email");
-						break;
-					case SystemObjects.TaxonomyType:
-						if (id == 0)
-						{
-							list.Add("Name", "Name");
-						}
-						else
-						{
-							list.Add("TextPath", "TextPath");
-						}
-						break;
-					default:
-						//do nothing.
-						break;
-				}
+					}
+					break;
+				default:
+					//do nothing.
+					break;
+			}
 
-				return Ok(list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
+			return Ok(list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
 		}
 
 		/// <summary>
@@ -1931,21 +1931,81 @@ namespace d360.web.Controllers.V2
 						(currentPosition > 0 ? currentPosition - 1 : 0) :
 						(currentPosition < maxPosition ? currentPosition + 1 : maxPosition);
 
-					fieldToMove.ColumnOrder = newPosition;
+					string whereQuery = "";
+					int typeId = -1;
 
-					var fieldFromMove = list.OrderBy(x => x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
-
-					if (fieldFromMove != null && fieldFromMove.ID != 0)
+					if (assetType != null)
 					{
-						fieldFromMove.ColumnOrder = currentPosition;
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+						whereQuery = "where AssetTypeID = @typeId";
+						typeId = assetType.ID;
+					}
+					else if (intersectType != null)
+					{
+						whereQuery = "where IntersectTypeID = @typeId";
+						typeId = intersectType.ID;
+					}
+					else if (actionType != null)
+					{
+						whereQuery = "where IssueTypeID = @typeId";
+						typeId = actionType.ID;
+					}
+
+					if (model.Direction == "positional")
+					{
+						newPosition = model.Position.Value;
+						string updatePositionSQL = $@"
+
+							if @fieldPosition = 1
+							begin
+								--math doesnt work correct when trying to put field at the top
+								set @fieldPosition = 0
+							end
+
+							drop table if exists #temp_order_old
+							select id,Name, CAST(ColumnOrder as decimal(18,3)) as ColumnOrder, ROW_NUMBER() OVER(ORDER BY ColumnOrder ASC) - 1 AS RowIndexOld
+							into #temp_order_old
+							from Fieldtype {whereQuery}
+
+							update #temp_order_old set ColumnOrder = ColumnOrder - 0.1
+							where RowIndexOld = @fieldPosition - 1
+
+							update #temp_order_old set ColumnOrder = @fieldPosition - 1
+							where ID = @fieldTypeID
+
+							drop table if exists #temp_order_new
+							select id,Name, ColumnOrder, RowIndexOld, ROW_NUMBER() OVER(ORDER BY ColumnOrder ASC) - 1 AS RowIndexNew
+							into #temp_order_new
+							from #temp_order_old 
+
+							merge dbo.FieldType FT
+							using (select * from #temp_order_new) as Source
+							on FT.ID = Source.Id
+							when matched then
+							update set FT.ColumnOrder = Source.RowIndexNew;
+							";
+						Company.Database.Connection.Query(updatePositionSQL, new { fieldTypeID, fieldPosition = newPosition, typeId });
+
 					}
 					else
 					{
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+						fieldToMove.ColumnOrder = newPosition;
+
+						var fieldFromMove = list.OrderBy(x => x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+
+						if (fieldFromMove != null && fieldFromMove.ID != 0)
+						{
+							fieldFromMove.ColumnOrder = currentPosition;
+							Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+						}
+						else
+						{
+							Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+						}
 					}
 
-					return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.FieldMovedSuccessfully);
+					var updatedOrdering = Company.Database.Connection.Query($@"select Name, ColumnOrder from Fieldtype {whereQuery}", new { typeId }).ToList();
+
+					return Request.CreateResponse(HttpStatusCode.OK, updatedOrdering);
 				}
 				else
 				{
@@ -2200,7 +2260,7 @@ namespace d360.web.Controllers.V2
 					return Request.CreateResponse(HttpStatusCode.OK, data);
 				}
 
-				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);				
+				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);
 
 				//list items for parent field
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
@@ -2364,7 +2424,7 @@ namespace d360.web.Controllers.V2
 						}
 					}
 
-					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid, userId = Company.CurrentResourceID});
+					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter, assetUid, userId = Company.CurrentResourceID });
 					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
@@ -2444,7 +2504,7 @@ namespace d360.web.Controllers.V2
 					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
 									select 
 										ObjectId as value,
-									{(fieldType.UseDisplayFormat? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
+									{(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
 									from Asset A
 									{(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}									 
 									where a.AssetTypeID = @assetTypeId {whereQuery}
@@ -2552,10 +2612,10 @@ namespace d360.web.Controllers.V2
 							order by text asc
 							{pagingQuery};
 
-							select {selectStatement} from #tempResults V {colorjoin};";					
+							select {selectStatement} from #tempResults V {colorjoin};";
 
 					if (fieldType.LookupObjectType == SystemObjects.ReferenceItem.ToString() || fieldType.LookupObjectType == SystemObjects.ReferenceItemType.ToString())
-					{						
+					{
 						var refvalues = Company.Connection.Query<dynamic>($"exec [GetReferenceItemValues] {fieldType.LookupObjectID}, 0, 0, 1 ").ToList();
 
 						Dictionary<int, int> values = new Dictionary<int, int>();
@@ -2588,7 +2648,7 @@ namespace d360.web.Controllers.V2
 								{colorjoin}
 							order by 
 								O.Value;";
-						
+
 					}
 				}
 				query = $@"
@@ -2597,7 +2657,7 @@ namespace d360.web.Controllers.V2
 						{countQuery}
 						";
 
-				var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues, refListOrder });				
+				var results = Company.Connection.QueryMultiple(query, new { fieldTypeId, skip, take, filter, fieldType.AllowAllLabel, parentValues, refListOrder });
 
 				if (!isForAssetForm)
 				{
