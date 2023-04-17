@@ -213,9 +213,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		switch ($event.action) {
 			case 'info': window.alert("info");
 				break;
-			case 'edit': window.alert("edit");
+			case 'edit':
+				this.edit(item);
 				break;
-			case 'delete': window.alert("delete");
+			case 'delete':
+				this.delete(item.Name);
 				break;
 			case 'movetop':
 				this.moveToPosition(item, 0);
@@ -230,7 +232,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.moveToPosition(item, this.nonFilteredFieldDisplayModel.length);
 				break;
 		}
-		console.log();
 	}
 
 	get currentUid(): string {
@@ -341,12 +342,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					if (index >= 0 && index < this.fieldDisplayModel.length) {
 						this.fieldDisplayModel.splice(index, 1);
 					}
-
+					this.load();
 					this.onFieldsChanged.emit();
 				} else {
 					this.isDeleting = false;
 					this.checkKeyFields();
 				}
+				this.cdRef.markForCheck();
 			}
 		);
 
@@ -358,10 +360,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (moveField) {
 			this.moveToPosition(moveField, dropIndex + 1);
 		}
-	}
-
-	dragEnter() {
-		console.log("here");
 	}
 
 	moveUp(field: FieldDisplayModel) {

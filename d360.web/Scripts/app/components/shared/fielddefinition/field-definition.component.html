@@ -6,7 +6,37 @@
 		  class="col s12 split"
 		  style="display: flex">
 	<as-split-area class="tile tile-detail main-panel field-type-grid">
-		<ng-template [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
+		<ng-template *ngIf="!isEditing && !isDeleting" [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
+
+		<div *ngIf="isEditing">
+			<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
+								 [actionTypeUid]="actionTypeUid"
+								 [assetTypeUid]="assetTypeUid"
+								 [relationshipTypeUid]="relationshipTypeUid"
+								 [objectType]="objectType"
+								 [objectID]="objectID"
+								 [objectName]="objectName"
+								 [showIsListable]="showIsListable"
+								 [showIsPartOfKey]="showIsPartOfKey"
+								 [showPersistInFilters]="showPersistInFilters"
+								 [showAddToSearch]="showAddToSearch"
+								 [showShowInDetailTile]="showShowInDetailTile"
+								 [showDisplayInColumn]="showDisplayInColumn"
+								 [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
+								 [allowSingleSegmentPath]="allowSingleSegmentPath"
+								 [fields]="fieldDefinitions"
+								 (onCancel)="cancel()"
+								 (onComplete)="editComplete($event)"></d3s-field-type-form>
+		</div>
+
+		<d3s-delete-form *ngIf="isDeleting"
+						 [callback]="theDeleteCallback"
+						 [itemId]="selectedRow?.Name"
+						 [method]="'callback'"
+						 i18n-prompt
+						 prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
+						 (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
+
 	</as-split-area>
 	<as-split-area [size]="getSidePanelWidth()"
 				   [minSize]="getSidePanelMinWidth()"
@@ -46,6 +76,7 @@
 						tooltipPosition="top"
 						tooltipStyleClass="ig-tooltip"
 						class="ig-button-primary"
+						(click)="add()"
 						icon="fa-plus"
 						[igDataCy]="'FieldType_Add'">
 				</button>
@@ -238,31 +269,3 @@
 		</p-table>
 	</div>
 </ng-template>
-
-<div *ngIf="isEditing">
-	<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
-						 [actionTypeUid]="actionTypeUid"
-						 [assetTypeUid]="assetTypeUid"
-						 [relationshipTypeUid]="relationshipTypeUid"
-						 [objectType]="objectType"
-						 [objectID]="objectID"
-						 [objectName]="objectName"
-						 [showIsListable]="showIsListable"
-						 [showIsPartOfKey]="showIsPartOfKey"
-						 [showPersistInFilters]="showPersistInFilters"
-						 [showAddToSearch]="showAddToSearch"
-						 [showShowInDetailTile]="showShowInDetailTile"
-						 [showDisplayInColumn]="showDisplayInColumn"
-						 [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
-						 [allowSingleSegmentPath]="allowSingleSegmentPath"
-						 [fields]="fieldDefinitions"
-						 (onCancel)="cancel()"
-						 (onComplete)="editComplete($event)"></d3s-field-type-form>
-</div>
-<d3s-delete-form *ngIf="isDeleting"
-				 [callback]="theDeleteCallback"
-				 [itemId]="selectedRow?.Name"
-				 [method]="'callback'"
-				 i18n-prompt
-				 prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
-				 (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
