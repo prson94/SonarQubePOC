@@ -153,7 +153,8 @@
 			<ng-template pTemplate="body" let-item let-index="rowIndex">
 				<tr (dblclick)="isEditing=showEditButton;"
 					(ondragenter)="dragEnter()"
-					style="word-wrap: break-word"
+					(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectedRow = item;"
+					style="word-wrap: break-word; position:relative;"
 					[pSelectableRow]="item">
 					<td [pReorderableRow]="index" class="reorder-cell">
 						<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
@@ -231,39 +232,13 @@
 										   #tokenMenu
 										   [tabIndex]="1"></ig-popup-menu>
 						</div>
-
+					</td>
+					<td style="width:0;">
 						<button class="ig-float-popup-container" #floatButton>
 							<ig-popup-menu [items]="item.MenuItems" (onSelect)="onMenuItemSelect(item,$event)" #floatMenu [tabIndex]="1"></ig-popup-menu>
 						</button>
 					</td>
-					<!--<td style="flex: 0 0 30px">
-						<div class="RowTools">
-							<a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">
-								<i class="fa fa-caret-up"></i>
-							</a>
-						</div>
-					</td>
-					<td style="flex: 0 0 30px">
-						<div class="RowTools">
-							<a (click)="moveDown(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveDown'">
-								<i class="fa fa-caret-down"></i>
-							</a>
-						</div>
-					</td>
-					<td style="flex: 0 0 30px" *ngIf="showEditButton">
-						<div class="RowTools">
-							<a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Edit'">
-								<i class="fa fa-pencil"></i>
-							</a>
-						</div>
-					</td>
-					<td style="flex: 0 0 30px" *ngIf="showDeleteButton">
-						<div class="RowTools" *ngIf="showDeleteButtonByFieldType(item)">
-							<a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Remove'">
-								<i class="fa fa-trash-o"></i>
-							</a>
-						</div>
-					</td>-->
+
 				</tr>
 			</ng-template>
 		</p-table>
