@@ -1,7 +1,11 @@
-<div class="asset-detail side-panel-detail no-padding">
+<div class="asset-detail side-panel-detail {{isDetailsPage ? 'details-page' : 'no-padding'}}">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-	<div *ngIf="!isLoading" class="asset-detail-header">
+	<div *ngIf="isDetailsPage" class="header-edit-button">
+		<button igButton class="ig-button-primary" icon="fa-pencil" label="Edit" i18n-label (click)="showEditor = true"></button>
+	</div>
+
+	<div *ngIf="!isLoading && !isDetailsPage" class="asset-detail-header">
 		<div class="asset-name">{{formattedRelationshipTypeName}}</div>
 		<div class="class-name" i18n>Relationship Type</div>
 
@@ -18,7 +22,7 @@
 		<ig-property-group i18n-title title="General">
 			<div inputs>
 				<div class="form-group">
-					<div class="row">
+					<div class="row wd30">
 						<label class="ig-label" i18n>Relationships Exist</label>
 						<div class="ig-value">
 							<ng-container *ngIf="relationshipType.HasRelationships; else falseTemplate">
@@ -31,7 +35,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row" *ngIf="relationshipType.TotalRelationshipCount > 0">
+					<div class="row wd30" *ngIf="relationshipType.TotalRelationshipCount > 0">
 						<label class="ig-label" i18n>Number of Relationships</label>
 						<span>
 							{{relationshipType.TotalRelationshipCount}}
@@ -55,13 +59,13 @@
 							{{getAssetTypeClassFriendlyName(relationshipType.Object.Class)}}: {{relationshipType.Object.Name}}
 						</span>
 					</div>
-					<div class="row">
+					<div class="row wd30">
 						<label class="ig-label" i18n>Subject Cardinality</label>
 						<span>
 							{{relationshipType.Subject.Cardinality}}
 						</span>
 					</div>
-					<div class="row">
+					<div class="row wd30">
 						<label class="ig-label" i18n>Object Cardinality</label>
 						<span>
 							{{relationshipType.Object.Cardinality}}
@@ -112,3 +116,11 @@
 	</div>
 
 </div>
+
+
+<d3s-admin-relationships-editor  *ngIf="relationshipType && isDetailsPage"
+								[isModalVisible]="showEditor"
+								[relationshipTypeUid]="relationshipType.Uid"
+								(onSave)="onSaveRelationship()"
+								(closeClick)="closeEditor()">
+</d3s-admin-relationships-editor>

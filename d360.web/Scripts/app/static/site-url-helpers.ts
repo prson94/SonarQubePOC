@@ -209,7 +209,7 @@ export class SiteUrlHelpers {
 
     // getAssetTypeConfigurationUrl - Generates the url for a configuration page of an object based on its type
     static getAssetTypeConfigurationUrl(type: string, uid: string): string {
-        return `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${type}/${uid}/fields`;
+        return `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${type}/${uid}/details`;
     }
 
 	// getAssetTypeUrl - Generates the url for an object based on its type

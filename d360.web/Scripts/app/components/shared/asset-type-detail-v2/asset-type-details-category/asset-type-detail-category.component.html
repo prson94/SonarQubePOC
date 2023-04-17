@@ -1,5 +1,5 @@
 ﻿<div class="row">
-    <div *ngFor="let field of category.fields" class="category-column">
+    <div *ngFor="let field of category.fields" class="category-column column-{{getStrippedName(field.name)}}">
         <ig-asset-type-detail-field [field]="field"></ig-asset-type-detail-field>
     </div>
 </div>

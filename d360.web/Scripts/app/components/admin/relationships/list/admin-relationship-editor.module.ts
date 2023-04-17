@@ -56,7 +56,8 @@ import { TooltipModule } from 'primeng/tooltip';
 		RelationshipTypeDeleteComponent
     ],
     exports: [
-        AdminRelationshipsListComponent,
+		AdminRelationshipsListComponent,
+		AdminRelationshipsEditor
     ],
     providers: [
 

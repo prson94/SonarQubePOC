@@ -9,6 +9,7 @@ import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
+import { D3SModal } from "../../../shared/modal/gov-modal.component";
 
 /*global $localize*/
 
@@ -42,6 +43,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	flowObjectTypes: SelectItem[] = [];
 
+	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
@@ -176,7 +178,6 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			if (this.changeFormSub) {
 				this.changeFormSub.unsubscribe();
 			}
-
 			this.isLoading = true;
 
 			forkJoin(
@@ -250,9 +251,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 						this.isEditFormUpdated = true;
 					});
 				}, 200);
-
 				this.isLoading = false;
-
 			});
 		}
 		else {

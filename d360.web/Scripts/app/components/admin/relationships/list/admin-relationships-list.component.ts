@@ -203,7 +203,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	}
 
 	open(uid: string, newTab: boolean = false) {
-		const url = `/admin/relationships/${uid}/fields`;
+		const url = `/admin/relationships/${uid}/details`;
 		if (newTab) {
 			window.open(url, "_blank");
 		}

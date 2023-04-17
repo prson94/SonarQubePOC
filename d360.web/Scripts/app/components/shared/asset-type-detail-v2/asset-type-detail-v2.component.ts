@@ -47,6 +47,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	@Input() controlsOptions: ControlsOptions = { showEdit: true, showOpen: OpenBehaviour.NEW_TAB };
 	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
+	@Input() isDetailsPage: boolean = false;
+
 	assetTypeModel: AssetTypeApiModel;
 	categories: AssetTypeDetailCategory[] = [];
 	subscription: Subscription;
@@ -57,6 +59,16 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	isAdmin: boolean;
 	isLoading: boolean;
 
+	formParentName: string = '';
+	isModalVisible: boolean = false;
+
+	onEditFormClose() {
+		this.isModalVisible = false;
+
+	}
+	onEditSaveFinished() {
+		this.load();
+	}
 	constructor(
 		private router: Router,
 		private assetTypeService: AssetTypeService,
@@ -228,8 +240,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
 		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === assetTypeModel?.IconStyle?.BackColor.toLowerCase());
 		const backColorValue = {
-				title: (defColor ? defColor.value : $localize`Custom`),
-				value: assetTypeModel?.IconStyle?.BackColor
+			title: (defColor ? defColor.value : $localize`Custom`),
+			value: assetTypeModel?.IconStyle?.BackColor
 		};
 
 		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset) {

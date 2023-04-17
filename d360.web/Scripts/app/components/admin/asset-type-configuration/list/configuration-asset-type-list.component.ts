@@ -175,7 +175,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	open(uid: string, newTab: boolean = false) {
-		const url = `${this.baseUrl}/${uid}/fields`;
+		const url = `${this.baseUrl}/${uid}/details`;
 		if (newTab) {
 			window.open(url, "_blank");
 		}

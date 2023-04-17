@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { RelationshipType } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
@@ -15,11 +15,13 @@ import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 })
 export class RelationshipTypeDetailComponent implements OnChanges {
 	@Input() relationshipTypeUid: string;
+	@Input() isDetailsPage: boolean = false;
 	@Output() onLinkClicked = new EventEmitter();
 
 	isLoading: boolean = false;
 	relationshipType: RelationshipType;
 	hasEdit: boolean = false;
+	showEditor: boolean = false;
 
 	formattedRelationshipTypeName: string = "";
 	constructor(
@@ -66,7 +68,7 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 
 
 	open(newTab: boolean = false) {
-		const url = `/admin/relationships/${this.relationshipType.Uid}/fields`;
+		const url = `/admin/relationships/${this.relationshipType.Uid}/details`;
 		if (newTab) {
 			window.open(url, "_blank");
 		}
@@ -81,5 +83,14 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 
 	editClick() {
 		this.sidePanelService.editClick(this.relationshipType);
+	}
+
+	closeEditor() {
+		this.showEditor = false;
+	}
+
+	onSaveRelationship() {
+		this.closeEditor();
+		this.loadData();
 	}
 }

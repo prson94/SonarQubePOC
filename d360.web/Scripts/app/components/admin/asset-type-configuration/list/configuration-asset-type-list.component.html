@@ -78,6 +78,7 @@
 						<tr #treetableRows
 							[ttSelectableRow]="rowNode"
 							[attr.data-uid]="item.uid"
+							(dblclick)="open(item.uid)"
 							(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectRow(item.uid);"
 							[igDataCy]="(tabTitle | replaceString : ' ' : '_') + '_Row_' + item.uid">
 							<td>
