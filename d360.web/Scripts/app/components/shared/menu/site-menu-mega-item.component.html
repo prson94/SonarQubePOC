@@ -1,0 +1,20 @@
+﻿<a
+    (click)="itemClick()"
+    [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null, 'menu-item-disabled':item.Disabled }"
+    [igDataCy]="'PrimaryNav_' + item.Name"
+    [pTooltip]="item.Disabled ? noReadTooltip : null"
+    [tooltipPosition]="item.Disabled ? 'right' : null"
+    [tooltipStyleClass]="item.Disabled ? 'ig-tooltip' : null">
+    <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}">
+        <div class="caret" (click)="handleArrowClick($event)">
+            <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
+        </div>
+        <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}">
+            <d3s-highlight-search-text [text]="item.Name" [highlight]="searchText"></d3s-highlight-search-text>
+        </div>
+        <div *ngIf="count > 0 && !item.Disabled" class="d3s-badge pull-right">{{count}}</div>
+    </div>
+</a>
+<div *ngIf="item.ShowChildren">
+    <d3s-site-menu-mega-item [category]="category" [parentUrl]="item.Url" *ngFor="let sub of item.Items" [item]="sub" [level]="level + 1" [searchText]="searchText" [active]="active" [count]="sub.count" (activeChange)="active=$event;activeChange.emit(active);"></d3s-site-menu-mega-item>
+</div>

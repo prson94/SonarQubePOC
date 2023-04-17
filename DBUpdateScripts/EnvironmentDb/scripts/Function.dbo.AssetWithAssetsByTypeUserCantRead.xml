@@ -5,17 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v2">
+  <changeSet author="Pappas" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v3">
+    <comment>GOV-15702</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-Create or Alter FUNCTION [dbo].[AssetWithAssetsByTypeUserCantRead]
+CREATE OR ALTER FUNCTION [dbo].[AssetWithAssetsByTypeUserCantRead]
 (		        
 	@ResourceID int
 )
-RETURNS TABLE  with Schemabinding
+RETURNS TABLE
 AS
 RETURN 
 (
@@ -58,6 +59,16 @@ RETURN
 				inner join [dbo].ResourceGroup RG on RG.GroupID = G.ID           							
 			where
 				RR.PermissionsBitMask & 1 = 0 and RG.ResourceID =  @ResourceID
+		union all
+			select	
+				A.ID as AssetID, A.AssetTypeID
+			from
+				dbo.Asset A
+				inner join dbo.AssetType T on T.ID = A.AssetTypeID
+			where	
+				T.DefaultPermissions = 0 
+				and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
+				and exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
 	)
 ]]>
     </sql>    
