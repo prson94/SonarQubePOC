@@ -189,7 +189,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 							displayField.LookupDisplayFormat = field.Type[type].Format.Display;
 							displayField.LookupEditFormat = field.Type[type].Format.Edit;
 						}
-
 						displayField.FieldTypeREF = field;
 						return displayField;
 					});
@@ -632,5 +631,41 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			element = element.parentElement;
 		}
 		return false;
+	}
+
+	hasPartOfKey(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasRequired(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasDisplayInColumn(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasShowIfEmpty(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'Json', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasIsListable(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
 	}
 }

@@ -11,8 +11,6 @@
 	</div>
 
 	<div *ngIf="!isLoading && currentType" class="asset-detail-tabs">
-		{{currentType}}
-
 		<ig-property-group i18n-title title="General" [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
@@ -99,7 +97,7 @@
 						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
-					<div class="row">
+					<div class="row" *ngIf="['Text'].indexOf(currentType) > -1">
 						<label class="ig-label" i18n>Validation Pattern</label>
 						<div class="ig-value">
 							{{fieldType.FieldTypeREF.Type[currentType].Validation.Pattern ?? '---'}}
@@ -108,15 +106,21 @@
 					<div class="row">
 						<label class="ig-label" i18n *ngIf="currentType === 'Text'">Minimum Length</label>
 						<label class="ig-label" i18n *ngIf="currentType !== 'Text'">Minimum Value</label>
-						<div class="ig-value">
+						<div class="ig-value" *ngIf="currentType === 'Text'">
 							{{fieldType.FieldTypeREF.Type[currentType].Validation.MinimumLength ?? '---' }}
+						</div>
+						<div class="ig-value" *ngIf="currentType !== 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MinimumValue ?? '---' }}
 						</div>
 					</div>
 					<div class="row">
 						<label class="ig-label" i18n *ngIf="currentType === 'Text'">Maximum Length</label>
 						<label class="ig-label" i18n *ngIf="currentType !== 'Text'">Maximum Value</label>
-						<div class="ig-value">
+						<div class="ig-value" *ngIf="currentType === 'Text'">
 							{{fieldType.FieldTypeREF.Type[currentType].Validation.MaximumLength ?? '---' }}
+						</div>
+						<div class="ig-value" *ngIf="currentType !== 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MaximumValue ?? '---' }}
 						</div>
 					</div>
 					<div class="row" *ngIf="currentType === 'Decimal'">
@@ -140,12 +144,31 @@
 						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
-					<div class="row">
-						<label class="ig-label" i18n>Default Value</label>
-						<div class="ig-value">
-							{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}
+					<ng-container *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+						<div class="row">
+							<label class="ig-label" i18n>Default Value (Link Name)</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue?.Text ?? '---'}}
+
+							</div>
 						</div>
-					</div>
+						<div class="row">
+							<label class="ig-label" i18n>Default Value (Link Url)</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue?.Url ?? '---'}}
+
+							</div>
+						</div>
+					</ng-container>
+
+					<ng-template #nonLinkField>
+						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+							<label class="ig-label" i18n>Default Value</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}
+							</div>
+						</div>
+					</ng-template>
 					<div class="row" *ngIf="currentType === 'Lookup'">
 						<label class="ig-label" i18n>
 							Allow ALL Value Selection

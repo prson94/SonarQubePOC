@@ -162,70 +162,55 @@
 					<td [pReorderableRow]="index" class="reorder-cell">
 						<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
 					</td>
-					<td>{{item.FriendlyName}}</td>
+					<td>{{item.FriendlyName}} ({{item.FieldTypeValue}})</td>
 					<td>{{item.FieldType}}</td>
 					<td>{{item.Category}}</td>
 					<td>
-						<div class="ig-value">
-							<ng-container *ngIf="item.IsPartOfKey; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
+						<ng-container *ngIf="hasPartOfKey(item); else noValue"
+									  [ngTemplateOutlet]="booleanFieldTemplate"
+									  [ngTemplateOutletContext]="{value:item.IsPartOfKey}">
+						</ng-container>
+						<ng-template #noValue>
+							---
+						</ng-template>
 					</td>
 					<td>
-						<div class="ig-value">
-							<ng-container *ngIf="item.IsRequired; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
+						<ng-container *ngIf="hasRequired(item); else noValue"
+									  [ngTemplateOutlet]="booleanFieldTemplate"
+									  [ngTemplateOutletContext]="{value:item.IsRequired}">
+						</ng-container>
+						<ng-template #noValue>
+							---
+						</ng-template>
 					</td>
 					<td>
-						<div class="ig-value">
-							<ng-container *ngIf="item.DisplayInColumn; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
+						<ng-container *ngIf="hasDisplayInColumn(item); else noValue"
+									  [ngTemplateOutlet]="booleanFieldTemplate"
+									  [ngTemplateOutletContext]="{value:item.DisplayInColumn}">
+						</ng-container>
+						<ng-template #noValue>
+							---
+						</ng-template>
 					</td>
 					<td>
-						<div class="ig-value">
-							<ng-container *ngIf="item.ShowIfEmpty; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
+						<ng-container *ngIf="hasShowIfEmpty(item); else noValue"
+									  [ngTemplateOutlet]="booleanFieldTemplate"
+									  [ngTemplateOutletContext]="{value:item.ShowIfEmpty}">
+						</ng-container>
+						<ng-template #noValue>
+							---
+						</ng-template>
 					</td>
 					<td>
-						<div class="ig-value">
-							<ng-container *ngIf="item.IsListable; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
+						<ng-container *ngIf="hasIsListable(item); else noValue"
+									  [ngTemplateOutlet]="booleanFieldTemplate"
+									  [ngTemplateOutletContext]="{value:item.IsListable}">
+						</ng-container>
+						<ng-template #noValue>
+							---
+						</ng-template>
 					</td>
-					<td><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
+					<td><ng-container *ngIf="item.IsListable">{{item.SortOrder ?? '---'}}</ng-container></td>
 					<td><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? ascendingLabel : descendingLabel}}</ng-container></td>
 					<td class="grid-tools-column" #assetGridTools>
 						<div [style.left]="tableWidth" class="token-popup-menu" *ngIf="item.MenuItems">
@@ -245,5 +230,19 @@
 				</tr>
 			</ng-template>
 		</p-table>
+	</div>
+</ng-template>
+
+
+<ng-template #booleanFieldTemplate let-value='value' let-field='field'>
+	<div class="ig-value">
+		<ng-container *ngIf="value; else falseTemplate">
+			<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+			<ng-container i18n>True</ng-container>
+		</ng-container>
+		<ng-template #falseTemplate>
+			<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+			<ng-container i18n>False</ng-container>
+		</ng-template>
 	</div>
 </ng-template>
