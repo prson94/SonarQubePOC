@@ -435,45 +435,93 @@
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group i18n-title title="System Fields">
+
+
+		<ig-property-group i18n-title
+						   title="Settings"
+						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
-					<!--<div class="row">
-						<label class="ig-label" i18n>
-							UID
-							<i class="fa fa-copy" [copy-clipboard]="relationshipType.Uid"></i>
-						</label>
-						<div>
-							{{relationshipType.Uid}}
+					<div class="row">
+						<label class="ig-label" i18n>Editable on UI</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.EditableOnUI; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
 						</div>
 					</div>
-					<div class="row" *ngIf="relationshipType.CreatedOn">
-						<label class="ig-label" i18n>Date Created</label>
-						<span>
-							{{ relationshipType.CreatedOn | date:'d MMM yyyy' }}
-						</span>
+					<div class="row">
+						<label class="ig-label" i18n>Key Field</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsPartOfKey; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
 					</div>
-					<div class="row" *ngIf="relationshipType.UpdatedOn">
-						<label class="ig-label" i18n>Date Last Modified</label>
-						<span>
-							{{ relationshipType.UpdatedOn | date:'d MMM yyyy' }}
-						</span>
+					<div class="row">
+						<label class="ig-label" i18n>Required</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsRequired; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
 					</div>
-					<div class="row" *ngIf="relationshipType.CreatedByName">
-						<label class="ig-label" i18n>Created By</label>
-						<a (click)="resourceClicked(relationshipType.CreatedByUid)">
-							{{ relationshipType.CreatedByName }}
-						</a>
+					<div class="row">
+						<label class="ig-label" i18n>Show in Details Tab</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.ShowInDetailsTab; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
 					</div>
-					<div class="row" *ngIf="relationshipType.UpdatedByName">
-						<label class="ig-label" i18n>Last Modified by</label>
-						<a (click)="resourceClicked(relationshipType.UpdatedByUid)">
-							{{ relationshipType.UpdatedByName }}
-						</a>
-					</div>-->
+					<div class="row">
+						<label class="ig-label" i18n>Display in Column</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.DisplayInColumn; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Show if Empty</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.ShowIfEmpty; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
 
 				</div>
-
 			</div>
 		</ig-property-group>
 	</div>
