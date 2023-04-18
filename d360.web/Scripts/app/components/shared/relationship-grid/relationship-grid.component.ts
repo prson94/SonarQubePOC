@@ -470,6 +470,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             params["_listcolorsasjson"] = true;
         }
 
+        if (this.isReferenceType) {
+            params["_showReferenceListTypeData"] = true;
+        }
+
         return params;
     }
 

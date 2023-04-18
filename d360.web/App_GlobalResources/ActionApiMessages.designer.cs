@@ -367,6 +367,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationship Type with Uid {0} not allowed subject and object both side with reference type..
+        /// </summary>
+        public static string RelationshipReftypeBothSideNotAllowed {
+            get {
+                return ResourceManager.GetString("RelationshipReftypeBothSideNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Relationship Type with Uid {0} could not be found..
         /// </summary>
         public static string RelationShipTypeUidNotFound {
