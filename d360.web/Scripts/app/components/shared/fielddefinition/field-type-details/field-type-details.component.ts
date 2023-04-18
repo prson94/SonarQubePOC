@@ -29,4 +29,40 @@ export class FieldTypeDetailsComponent implements OnInit, OnChanges {
 	editClick() {
 
 	}
+
+	hasPartOfKey() {
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasRequired() {
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasDisplayInColumn() {
+		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasShowIfEmpty() {
+		const excludeTypes: string[] = ['Path', 'Json', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasIsListable() {
+		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
 }

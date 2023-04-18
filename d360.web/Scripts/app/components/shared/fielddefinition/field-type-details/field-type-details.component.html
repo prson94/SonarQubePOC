@@ -465,6 +465,19 @@
 						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
+					<div class="row" *ngIf="hasIsListable()">
+						<label class="ig-label" i18n>Is Listable</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsListable; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
 					<div class="row">
 						<label class="ig-label" i18n>Editable on UI</label>
 						<div class="ig-value">
@@ -478,7 +491,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="hasPartOfKey()">
 						<label class="ig-label" i18n>Key Field</label>
 						<div class="ig-value">
 							<ng-container *ngIf="fieldType.IsPartOfKey; else falseTemplate">
@@ -491,7 +504,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="hasRequired()">
 						<label class="ig-label" i18n>Required</label>
 						<div class="ig-value">
 							<ng-container *ngIf="fieldType.IsRequired; else falseTemplate">
@@ -517,7 +530,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="hasDisplayInColumn()">
 						<label class="ig-label" i18n>Display in Column</label>
 						<div class="ig-value">
 							<ng-container *ngIf="fieldType.DisplayInColumn; else falseTemplate">
@@ -530,7 +543,7 @@
 							</ng-template>
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="hasShowIfEmpty()">
 						<label class="ig-label" i18n>Show if Empty</label>
 						<div class="ig-value">
 							<ng-container *ngIf="fieldType.ShowIfEmpty; else falseTemplate">
@@ -543,7 +556,6 @@
 							</ng-template>
 						</div>
 					</div>
-
 				</div>
 			</div>
 		</ig-property-group>
