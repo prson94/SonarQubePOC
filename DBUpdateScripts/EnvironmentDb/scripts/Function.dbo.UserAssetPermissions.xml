@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.UserAssetPermissions-v7">
+  <changeSet author="Pappas" id="Function.dbo.UserAssetPermissions-v7.1">
     <comment>GOV-15702</comment>
 	<comment>GOV-21275</comment>
     <sql dbms="mssql"
@@ -117,7 +117,7 @@ RETURN
 	where	
 		T.DefaultPermissions = 0 
 		and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
-		and exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
+		and not exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
 )
 		]]>
     </sql>

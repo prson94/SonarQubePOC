@@ -209,10 +209,28 @@ namespace d360.model.DataAccessLayer
 					Create Clustered Index IX_TempNoPermissionObjects on #TempNoPermissionObjects(AssetID,AssetTypeID);
 
 					Insert into #TempNoPermissionObjects
-					select distinct AssetID,AssetTypeID
-					from ResponsibilityDetail 
-					where abs(ResourceID) = @ResourceID and ((PermissionsBitMask & @permission) = 0)
-					option(recompile)";
+	select distinct 
+			AssetID,
+			AssetTypeID
+	from	ResponsibilityDetail 
+	where	ResourceID = @ResourceID 
+			and ((PermissionsBitMask & @permission) = 0)
+	option(recompile)
+
+	insert into #TempNoPermissionObjects
+	select	
+		A.ID as AssetID,
+		A.AssetTypeID
+	from
+		dbo.Asset A
+		inner join dbo.AssetType T on T.ID = A.AssetTypeID
+		left join #TempNoPermissionObjects e on e.AssetID = A.ID and e.AssetTypeID = A.AssetTypeID
+	where	
+		e.AssetID is null
+		and T.DefaultPermissions = 0 
+		and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
+		and not exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
+	option(recompile)";
 
 				dbArgs.Add("@CurrentResourceID", companyContext.CurrentResourceID);
 				dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
