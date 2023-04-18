@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -209,11 +210,19 @@ namespace d360.model.DataAccessLayer
 				{
 					pageSize = 250;
 				}
-			}			
+			}
 
+			StringBuilder additionalApply = new StringBuilder();
 			if (parameters.Any(q => q.Key.ToLower() == "resolvevalues"))
 			{
 				resolveUIDetails = true;
+				additionalApply.AppendLine(@"outer apply (
+													select	top 1 
+															Name from IntersectTypeDetail IT where IT.Id = IT.Id
+													) ITName ");
+				additionalApply.AppendLine(@"outer apply (
+											select top 1 Name from AssetType where uid = JSON_VALUE(FT.Definition,'$.AssetTypeUid') and FT.Type = 'Path'
+										)PathType ");
 			}
 
 			if (pageNumber < 0)
@@ -290,6 +299,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'FieldFromRelationship' then FT.SortByAscending else null end as 'Type.ComputedRelationshipField.SortByAscending',
 										case when FT.Type = 'FieldFromRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipField.Description.Display',
 										case when FT.Type = 'FieldFromRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipField.IntersectTypeUid',
+										{(resolveUIDetails ? "case when FT.Type = 'FieldFromRelationship' then ITName.Name else null end as 'Type.ComputedRelationshipField.IntersectTypeName'," : "")}
 										case when FT.Type = 'FieldFromRelationship' then LFT.Name else null end as 'Type.ComputedRelationshipField.FieldTypeName',
 										case when FT.Type = 'FieldFromRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipField.IsDisplayable',
 										case when FT.Type = 'FieldFromRelationship' then FT.IsListable else null end as 'Type.ComputedRelationshipField.IsListable',
@@ -340,6 +350,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'RefListRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipReferenceList.ColumnOrder',
 										case when FT.Type = 'RefListRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipReferenceList.Description.Display',
 										case when FT.Type = 'RefListRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeUid',
+										{(resolveUIDetails ? "case when FT.Type = 'RefListRelationship' then ITName.Name else null end as 'Type.ComputedRelationshipReferenceList.IntersectTypeName'," : "")}
 										case when FT.Type = 'RefListRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipReferenceList.IsDisplayable',
 										case when FT.Type = 'RefListRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipReferenceList.ShowIfEmpty',
 										case when FT.Type = 'RefListRelationship' then coalesce(JSON_VALUE(FT.Definition,'$.DisplayRefListDescription'),'true') else null end as 'Type.ComputedRelationshipReferenceList.DisplayRefListDescription',
@@ -535,6 +546,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Path' then FT.IsListable else null end as 'Type.Path.IsListable',
 										case when FT.Type = 'Path' then FT.DisplayInColumn else null end as 'Type.Path.DisplayInColumn', 
                                         case when FT.Type = 'Path' then JSON_VALUE(FT.Definition,'$.AssetTypeUid') else null end as 'Type.Path.Definition.AssetTypeUid',
+										{(resolveUIDetails ? "case when FT.Type = 'Path' then PathType.Name else null end as 'Type.Path.Definition.AssetTypeName'," : "")}
 
 										case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 										case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
@@ -680,10 +692,8 @@ namespace d360.model.DataAccessLayer
 															and Object = FT.LookupObjectType 
 															and ObjectID = try_cast(FT.DefaultValue as int)
 													) DFA 
-										outer apply (
-													select	top 1 
-															Name from IntersectTypeDetail IT where IT.Id = IT.Id
-													) ITName 
+										{additionalApply.ToString()}
+
 								{whereClause}
 								{orderByClause}
 								offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only

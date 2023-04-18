@@ -369,6 +369,7 @@ export class ComputedRelationshipReferenceList implements ICommonOptions {
 	Description: DisplayOnlyDescription = new DisplayOnlyDescription();
 	Definition: ComputedRelationshipReferenceListDefinition = new ComputedRelationshipReferenceListDefinition();
 	IntersectTypeUid?: string;
+	IntersectTypeName?: string;
 	IsDisplayable: boolean = true;
 	ShowIfEmpty: boolean = false;
 	Validation: BooleanValidation = new BooleanValidation();
@@ -533,6 +534,7 @@ export class Path implements ICommonOptions {
 
 export class PathDefinition {
 	AssetTypeUid: string = null;
+	AssetTypeName: string = null;
 }
 
 export class Tag implements ICommonOptions {

@@ -223,6 +223,9 @@ namespace d360.core.entities
 	{
 		[DataMember]
 		public Guid? AssetTypeUid { get; set; }
+
+		[DataMember]
+		public string AssetTypeName { get; set; }
 	}
 
 	public class FieldTypeDescriptionApiViewModel_DisplayForm : FieldTypeDescriptionApiViewModel_Display
@@ -456,6 +459,8 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Guid IntersectTypeUid { get; set; }
+		[DataMember]
+		public string IntersectTypeName { get; set; }
 
 		[DataMember]
 		public bool IsDisplayable { get; set; }
