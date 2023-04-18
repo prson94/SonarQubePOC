@@ -422,7 +422,7 @@
             <div class="row">
                 <div class="col s3">
                     <div id='MinimumLengthTip'
-                         class="FieldName" i18n>Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName" i18n>Minimum {{currentType == 'Text' ? "Length" : "Value"}}</div>
                     <input *ngIf="currentType == 'Text'; else minNumberinput" name="minLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}} "

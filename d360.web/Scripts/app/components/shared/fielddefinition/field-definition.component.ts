@@ -164,6 +164,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.FriendlyName = field.FriendlyName;
 						displayField.Category = field.Category ?? $localize`General`;
 						displayField.FieldType = this.getDisplayTypeName(type);
+						displayField.FieldTypeValue = type;
 						displayField.DisplayInColumn = field.Type[type].DisplayInColumn ?? false;
 						displayField.IsListable = field.Type[type].IsListable;
 						displayField.IsPartOfKey = field.Type[type].IsPartOfKey ?? false;
@@ -180,6 +181,16 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.EditableOnUI = field.Type[type]?.IsEditable ?? false;
 						displayField.ShowInDetailsTab = field.Type[type]?.IsDisplayable ?? false;
 						displayField.PersistInFilters = field.Type[type]?.IsPrimaryFilter ?? false;
+
+						displayField.ColumnWidth = field.Type[type]?.ColumnWidth;
+
+						if (type === 'Lookup') {
+							displayField.LookupTypeName = field.Type[type].List.Class + ": " + field.Type[type].List.TypeName;
+							displayField.LookupDisplayFormat = field.Type[type].Format.Display;
+							displayField.LookupEditFormat = field.Type[type].Format.Edit;
+						}
+
+						displayField.FieldTypeREF = field;
 						return displayField;
 					});
 

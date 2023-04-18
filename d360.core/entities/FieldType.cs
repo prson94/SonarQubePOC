@@ -393,6 +393,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Guid IntersectTypeUid { get; set; }
+		
+		[DataMember]
+		public string IntersectTypeName { get; set; }
 
 		[DataMember]
 		public string FieldTypeName { get; set; }
@@ -686,6 +689,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool AllowMultipleValues { get; set; }
+
+		[DataMember]
+		public string TypeName { get; set; }
 	}
 	public class FieldTypeDataTypeLookupApiViewModel : FieldTypeEditableApiViewModel
 	{
@@ -783,6 +789,9 @@ namespace d360.core.entities
 		public Guid IntersectTypeUid { get; set; }
 
 		[DataMember]
+		public string IntersectTypeName { get; set; }
+
+		[DataMember]
 		public int? ColumnOrder { get; set; }
 
 		[DataMember]
@@ -817,7 +826,7 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool UseDisplayFormat { get; set; }
-		
+
 		[DataMember]
 		public bool IsSubject { get; set; }
 	}

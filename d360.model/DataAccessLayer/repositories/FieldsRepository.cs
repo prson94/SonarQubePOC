@@ -45,6 +45,8 @@ namespace d360.model.DataAccessLayer
 			int pageNumber = 1;
 			int pageSize = 250;
 
+			bool resolveUIDetails = false;
+
 			var whereClause = "";
 			string orderByClause = " order by FT.ID, FT.Name ";
 
@@ -207,6 +209,11 @@ namespace d360.model.DataAccessLayer
 				{
 					pageSize = 250;
 				}
+			}			
+
+			if (parameters.Any(q => q.Key.ToLower() == "resolvevalues"))
+			{
+				resolveUIDetails = true;
 			}
 
 			if (pageNumber < 0)
@@ -481,6 +488,7 @@ namespace d360.model.DataAccessLayer
 											when FT.Type = 'Lookup' and LookupOT.Uid is null and FT.LookupObjectID <> 0 then 0 
 											else null 
 										end as 'Type.Lookup.List.Class',
+										{(resolveUIDetails ? "case when FT.Type = 'Lookup' then LookupOT.[Name] else null end as 'Type.Lookup.List.TypeName'," : "")}
 										case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
 										case when FT.Type = 'Lookup' then (select Name from FieldType where ID = FT.ParentFieldTypeID) else null end as 'Type.Lookup.ParentFieldTypeName',
 										case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
@@ -535,6 +543,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.DisplayDescription else null end as 'Type.Relationship.Description.Display',
 										case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
 										case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
+										{(resolveUIDetails ? "case when FT.Type = 'Relationship' then ITName.Name else null end as 'Type.Relationship.IntersectTypeName'," : "")}
 										case when FT.Type = 'Relationship' then FT.IsRequired else null end as 'Type.Relationship.Validation.IsRequired',
 										case when FT.Type = 'Relationship' then FT.IsDisplayable else null end as 'Type.Relationship.IsDisplayable',
 										case when FT.Type = 'Relationship' then FT.IsEditable else null end as 'Type.Relationship.IsEditable',
@@ -671,6 +680,10 @@ namespace d360.model.DataAccessLayer
 															and Object = FT.LookupObjectType 
 															and ObjectID = try_cast(FT.DefaultValue as int)
 													) DFA 
+										outer apply (
+													select	top 1 
+															Name from IntersectTypeDetail IT where IT.Id = IT.Id
+													) ITName 
 								{whereClause}
 								{orderByClause}
 								offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only

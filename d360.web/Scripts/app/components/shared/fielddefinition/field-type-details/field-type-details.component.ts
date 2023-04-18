@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
 
 @Component({
@@ -6,12 +6,26 @@ import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
 	templateUrl: './field-type-details.component.html',
 	styleUrls: ['./field-type-details.component.less']
 })
-export class FieldTypeDetailsComponent implements OnInit {
+export class FieldTypeDetailsComponent implements OnInit, OnChanges {
 	@Input() fieldType: FieldDisplayModel;
 
+	isLoading: boolean = true;
+
+	ascendingLabel: string = $localize`Ascending`;
+	descendingLabel: string = $localize`Descending`;
+	currentType: string = '';
 	constructor() { }
+
+	ngOnChanges(changes: SimpleChanges): void {
+		this.isLoading = true;
+		this.currentType = this.fieldType.FieldTypeValue;
+		this.isLoading = false;
+	}
 
 	ngOnInit(): void {
 	}
 
+	editClick() {
+
+	}
 }

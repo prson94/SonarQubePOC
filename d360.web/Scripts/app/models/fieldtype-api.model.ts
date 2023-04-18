@@ -137,6 +137,7 @@ export class FieldDisplayModel {
 	FriendlyName: string;
 	Category: string;
 	FieldType: string;
+	FieldTypeValue: string;
 	DisplayInColumn: boolean;
 	IsListable: boolean;
 	IsPartOfKey: boolean;
@@ -145,6 +146,7 @@ export class FieldDisplayModel {
 	SortOrder: number;
 	SortByAscending: boolean;
 	ColumnOrder: number;
+	ColumnWidth: number;
 
 	DisplayDescription: string;
 	FormDescription: string;
@@ -154,7 +156,12 @@ export class FieldDisplayModel {
 	ShowInDetailsTab: boolean;
 	PersistInFilters: boolean;
 
+	LookupTypeName: string;
+	LookupDisplayFormat: string;
+	LookupEditFormat: string;
+
 	MenuItems: PopupMenuItem[] = [];
+	FieldTypeREF: FieldTypeAPIModelField;
 }
 
 export interface ICommonOptions {
@@ -202,6 +209,7 @@ export class Boolean implements ICommonOptions {
 	IsPrimaryFilter: boolean = false;
 	ShowIfEmpty: boolean = false;
 	IntersectTypeUid?: string;
+	IntersectTypeName?: string;
 	Validation: BooleanValidation = new BooleanValidation();
 	Search: Search = new Search();
 	DisplayInColumn: boolean = false;
@@ -502,6 +510,7 @@ export class List {
 	Uid: string = undefined;
 	Class: string = undefined;
 	AllowMultipleValues: boolean = undefined;
+	TypeName: string = undefined;
 }
 
 export class Path implements ICommonOptions {
