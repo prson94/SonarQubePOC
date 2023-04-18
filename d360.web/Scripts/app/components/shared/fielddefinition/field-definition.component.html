@@ -46,12 +46,15 @@
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"
-					[showEmptyOverlay]="!selectedItem"
+					[showEmptyOverlay]="!selectedItem && !selectedRow"
 					(expandedChange)="sidePanelOpen=$event"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedItem">
 					here is field data
+				</ng-container>
+				<ng-container *ngIf="selectedRow">
+					<d3s-field-type-details [fieldType]="selectedRow"></d3s-field-type-details>
 				</ng-container>
 			</ng-container>
 		</side-panel>

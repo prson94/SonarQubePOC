@@ -34,6 +34,7 @@ import { AngularSplitModule } from 'angular-split';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { FieldTypeDetailModule } from './field-type-details/field-type-details.module';
 
 @NgModule({
     imports: [
@@ -66,7 +67,8 @@ import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 		AngularSplitModule,
 		SearchFieldModule,
 		AdvancedFiltersModule,
-		PopupMenuModule
+		PopupMenuModule,
+		FieldTypeDetailModule
     ],
     declarations: [
         FieldTypeForm,
