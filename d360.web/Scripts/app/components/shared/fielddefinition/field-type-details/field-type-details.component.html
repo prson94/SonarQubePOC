@@ -198,6 +198,12 @@
 							{{fieldType.FieldTypeREF.Type[currentType].Increment ?? '---'}}
 						</div>
 					</div>
+					<div class="row" *ngIf="currentType === 'Score'">
+						<label class="ig-label" i18n>Score</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].ScoreType ?? '---'}}
+						</div>
+					</div>
 				</div>
 			</div>
 		</ig-property-group>

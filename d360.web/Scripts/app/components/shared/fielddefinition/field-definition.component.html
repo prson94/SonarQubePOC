@@ -42,18 +42,15 @@
 				   [minSize]="getSidePanelMinWidth()"
 				   [maxSize]="getSidePanelMaxWidth()"
 				   class="tile tile-detail side-panel">
-		<side-panel [selectedItem]="selectedItem || selectedRow"
+		<side-panel [selectedItem]="selectedRow"
 					[setMinMaxWidth]="false"
 					[storageKey]="sidePanelStorageKey"
 					[expanded]="true"
-					[showEmptyOverlay]="!selectedItem && !selectedRow"
+					[showEmptyOverlay]="!selectedRow?.Name"
 					(expandedChange)="sidePanelOpen=$event"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
-				<ng-container *ngIf="selectedItem">
-					here is field data
-				</ng-container>
-				<ng-container *ngIf="selectedRow">
+				<ng-container *ngIf="selectedRow?.Name">
 					<d3s-field-type-details [fieldType]="selectedRow"></d3s-field-type-details>
 				</ng-container>
 			</ng-container>
