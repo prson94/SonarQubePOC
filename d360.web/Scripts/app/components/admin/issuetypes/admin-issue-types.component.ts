@@ -12,8 +12,6 @@ import { Router } from '@angular/router';
 import { SidePanelService } from '../../../services/side-panel.service';
 
 /*global $localize*/
-// eslint-disable-next-line no-var
-declare var CurrentResourceID;
 
 @Component({
 	selector: 'd3s-admin-issue-types',
@@ -37,7 +35,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 	}
 
 	get sidePanelStorageKey() {
-		return 'configuration_workflow_actions_' + CurrentResourceID;
+		return 'configuration_workflow_actions_' + this.settingsService.CurrentResourceID;
 	}
 
 	constructor(

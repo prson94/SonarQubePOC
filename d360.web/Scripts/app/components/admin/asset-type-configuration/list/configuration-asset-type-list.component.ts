@@ -21,8 +21,6 @@ import { PopupMenu } from "../../../shared/controls/popup-menu/popup-menu.compon
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
 
 /*global $localize*/
-// eslint-disable-next-line no-var
-declare var CurrentResourceID;
 
 @Component({
 	selector: "d3s-configuration-asset-type-list",
@@ -78,7 +76,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	}
 
 	get sidePanelStorageKey() {
-		return 'configuration_' + this.assetTypeClass + '_' + CurrentResourceID;
+		return 'configuration_' + this.assetTypeClass + '_' + this.settingsService.CurrentResourceID;
 	}
 
 	load(preselectedUid: string = null) {

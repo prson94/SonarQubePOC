@@ -23,8 +23,6 @@ import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 
-declare var CurrentResourceID;
-
 /*global $localize*/
 
 @Component({
@@ -99,7 +97,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 			this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 		}
 
-		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeApiModel.Class.Value] + '_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeApiModel.Class.Value] + '_' + this.settingsService.CurrentResourceID;
 
 		this.headerBreadcrumbService.getFolderTitle(folderName).then((res) => {
 			this.headerBreadcrumbService.clearBreadcrumbs();

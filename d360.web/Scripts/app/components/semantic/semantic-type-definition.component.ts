@@ -19,8 +19,6 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'semantic-definition',
     templateUrl: './semantic-type-definition.component.html',
@@ -81,7 +79,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             this.isLoading = true;
             this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
                 this.semanticType = s.items[0];
-                this.sidePanelStorageKey = 'Semantic_Definition' + this.semanticType + '_' + CurrentResourceID;
+				this.sidePanelStorageKey = 'Semantic_Definition' + this.semanticType + '_' + this.settingsService.CurrentResourceID;
                 this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {
                     this.semanticAssetsCount = result.total;
                     this.displayBreadCrumbs();

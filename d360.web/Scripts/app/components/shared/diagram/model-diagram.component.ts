@@ -27,7 +27,6 @@ import { IOutputData } from 'angular-split';
 import { forkJoin } from 'rxjs';
 
 declare var window: any;
-declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-model-diagram',
@@ -76,7 +75,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-info-circle menu-icon' }
         );
 
-		this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'detail_' + AssetTypeClass.Model + '_' + this.settingsService.CurrentResourceID;
 		setTimeout(() => this.initializeDiagram(), 50);
     }
 

@@ -6,8 +6,6 @@ import { Router } from "@angular/router";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { CompanySettingEnum } from "../../../models/settings.model";
 
-declare var CurrentResourceID;
-
 @Component({
     selector: "d3s-social-comment",
     templateUrl: "./social-comment.component.html",
@@ -46,8 +44,8 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.isDeletable = this.isAdmin || (this.comment.CreatedBy === CurrentResourceID);
-        this.isEditable = this.comment.CreatedBy === CurrentResourceID;
+		this.isDeletable = this.isAdmin || (this.comment.CreatedBy === this.settingsService.CurrentResourceID);
+		this.isEditable = this.comment.CreatedBy === this.settingsService.CurrentResourceID;
         this.isPostingDisabled = this.settingsService.getSettingById(CompanySettingEnum.DisableCommunityPosting).BooleanSetting.Value;
         this.calculateVotes();
     }

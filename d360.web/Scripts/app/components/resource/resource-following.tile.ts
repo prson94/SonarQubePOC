@@ -4,8 +4,6 @@ import { CountObject } from '../../models/resource.model';
 import { BaseComponent } from '../shared/base.component';
 import { CompanySettingsService } from '../../services/settings.service';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-resource-following-tile',    
     templateUrl: './resource-following.tile.html',
@@ -47,7 +45,7 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
         if (this.resource != null)
             {this.resourceId = this.resource.ResourceID;}
 
-        this.isMe = (this.resourceId === CurrentResourceID);
+		this.isMe = (this.resourceId === this.settingsService.CurrentResourceID);
 
         this.resourcesService.getFollowingBreakdownByResource(this.resourceId)
             .subscribe((r) => {

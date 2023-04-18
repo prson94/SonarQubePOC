@@ -17,11 +17,6 @@ import { trimStart } from "lodash-es";
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
-declare var CurrentResourceID;
-declare var SingleSignOn;
-declare var ResourceName;
-declare var ResourceEmail;
-
 @Component({
     selector: 'd3s-header-mini-menu',
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (mouseenter)="show(item)" (mouseleave)="hide(item)" >

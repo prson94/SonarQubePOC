@@ -26,13 +26,12 @@ import { ResourcesService } from '../../../services/resources.service';
 import { Subscription } from 'rxjs';
 import { GroupService } from '../../../services/group.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { CompanySettingsService } from "../../../services/settings.service";
 import { ProcessService } from '../../../services/process.service';
 import { Group } from '../../../models/group.model';
 import { StringConstants } from '../../../static/string-constants';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { mergeMap } from "rxjs/operators";
-
-declare var CurrentResourceID;
 
 @Component({
     selector: 'ig-asset-detail',
@@ -113,6 +112,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         private processService: ProcessService,
         private assetService: AssetService,
         private resourceService: ResourcesService,
+		protected settingsService: CompanySettingsService,
         private groupService: GroupService,
         private linkClickInterceptor: LinkClickInterceptor,
         private authService: AuthenticationService,
@@ -364,7 +364,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get storageKey(): string {
-        return `asset_detail_${CurrentResourceID}_${this.assetTypeUID}`;
+		return `asset_detail_${this.settingsService.CurrentResourceID}_${this.assetTypeUID}`;
     }
 
     private loadCategory() {

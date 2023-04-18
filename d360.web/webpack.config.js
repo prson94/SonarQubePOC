@@ -33,9 +33,11 @@ module.exports = {
 			exposes: {
 				'./HomeModule': 'Scripts/app/components/home/home.module.ts',
 				'./SearchModule': 'Scripts/app/components/search/search.module.ts',
+				'./AssetModule': 'Scripts/app/components/asset/asset.module.ts',
 				'./AssetsBaseModule': 'Scripts/app/components/assets-base/assets-base.module.ts',
 				'./HierarchyModule': 'Scripts/app/components/hierarchy/hierarchy.module.ts',
-				'./DataCatalogModule': 'Scripts/app/components/data-catalog/data-catalog.module.ts'
+				'./DataCatalogModule': 'Scripts/app/components/data-catalog/data-catalog.module.ts',
+				'./RightsidebarModule': 'Scripts/app/components/shared/rightsidebar/right-sidebar.module'
 			},
 			shared: {
 				...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', includeSecondaries: true }),

@@ -17,8 +17,6 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { map } from 'rxjs/operators';
 import { CompanySettingsService } from '../../services/settings.service';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-workflow-new-detail',
     templateUrl: 'workflow-new-details.component.html',
@@ -70,7 +68,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.stepId = +params['stepId'];
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
-            this.isMe = this.resourceID ? this.resourceID === CurrentResourceID : true;
+			this.isMe = this.resourceID ? this.resourceID === this.settingsService.CurrentResourceID : true;
             this.authenticationService.checkCurrentUserAdmin().subscribe((x) => {
                 this.isAdmin = x;
             });
@@ -122,7 +120,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
         if (this.selection != null) {
             this.bulkReassignModel = new BulkWorkflowReassignModel();
             this.bulkReassignModel.ItemStepIDs = this.selection.map((i) => i.ItemStepID);
-            this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
+			this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? this.settingsService.CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
             const noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse"; }).length;

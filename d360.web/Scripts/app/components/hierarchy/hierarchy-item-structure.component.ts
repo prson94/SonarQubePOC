@@ -50,8 +50,6 @@ import { GridSortData } from '../../services/state.service';
 
 /*global $localize*/
 
-declare var CurrentResourceID;
-
 @Component({
 	selector: 'd3s-hierarchy-item-structure',
 	providers: [
@@ -221,7 +219,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		}
 
 		this.gridSortData = new GridSortData("HierarchyTree_" + this.assetTypeUid);
-		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + CurrentResourceID;
+		this.sidePanelStorageKey = 'list_' + AssetTypeClass[this.assetTypeClass] + '_' + this.settingsService.CurrentResourceID;
 
 		const uriParams: any = {};
 

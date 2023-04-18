@@ -14,7 +14,6 @@ import { ResourceApiModel } from '../../models/resource.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 
-declare var CurrentResourceID;
 declare var SingleSignOn;
 
 enum PageMode {
@@ -97,7 +96,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     const showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
                     this.showAllUsersAPIKey = (this.resource.IsAdministrator || showApi);
 
-                    if (this.resourceId.toString() === CurrentResourceID.toString()) {
+					if (this.resourceId.toString() === this.settingsService.CurrentResourceID.toString()) {
                         this.isMe = true;
                     } else {
                         this.isMe = false;
