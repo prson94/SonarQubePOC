@@ -14,12 +14,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <div class="row"
              *ngIf="!isLoading">
             <div class="col s12">
-                <div class="tile tile-detail">
                     <d3s-field-definition-tile [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
                                                [allowSingleSegmentPath]="false"
                                                [title]="objectName"></d3s-field-definition-tile>
-                </div>
             </div>
         </div>
     `,

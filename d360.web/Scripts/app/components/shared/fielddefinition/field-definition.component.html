@@ -51,7 +51,7 @@
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="selectedRow?.Name">
-					<d3s-field-type-details [fieldType]="selectedRow"></d3s-field-type-details>
+					<d3s-field-type-details [fieldType]="selectedRow" (onEdit)="edit(selectedRow)"></d3s-field-type-details>
 				</ng-container>
 			</ng-container>
 		</side-panel>
@@ -64,11 +64,23 @@
 		<div class="grid-actions-header-row">
 			<div class="simple-search">
 				<ig-search-field mode="Keypress"
-								 (onSearch)="dt.filterGlobal($event, 'contains')"
+								 [(ngModel)]="simpleFilter"
+								 (onSearch)="dt.filterGlobal($event, 'contains'); this.updateMenuItems();"
 								 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
 				</ig-search-field>
 			</div>
 			<div class="grid-action-buttons">
+				<button igButton
+						[attr.data-cy]="'FieldType_Reset'"
+						pTooltip="Reset to default view. Resseting will clear any search, filter or sorting applied."
+						i18n-pTooltip
+						tooltipPosition="top"
+						tooltipStyleClass="ig-tooltip"
+						(click)="reset()"
+						icon="fa-rotate-left"
+						[disabled]="!isReorderingLocked"
+						[igDataCy]="'FieldType_Reset'">
+				</button>
 				<button igButton
 						[attr.data-cy]="'FieldType_Add'"
 						pTooltip="Create new Field Type"
@@ -83,7 +95,7 @@
 			</div>
 		</div>
 		<div class="grid-actions-header-row">
-			<advanced-filtering *ngIf="!isLoading"
+			<advanced-filtering #advancedFilter *ngIf="!isLoading"
 								[loadIdentifier]="'FieldType'"
 								[fieldsObserver]="filterFieldList$"
 								(onChange)="advancedFiltersChanged($event)">
@@ -108,42 +120,43 @@
 				<tr>
 					<th class="reorder-cell"></th>
 
-					<th [style.min-width.px]="200" [pSortableColumn]="'FriendlyName'">
+					<th [style.min-width.px]="200" [pSortableColumn]="'FriendlyName'" (click)="updateMenuItems()">
 						<ng-container i18n>Field Name</ng-container>
 						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="200" [pSortableColumn]="'FieldType'">
+					<th [style.min-width.px]="200" [pSortableColumn]="'FieldType'" (click)="updateMenuItems()">
 						<ng-container i18n>Type</ng-container>
+						<d3s-sortIcon [field]="'FieldType'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'Category'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'Category'" (click)="updateMenuItems()">
 						<ng-container i18n>Category</ng-container>
 						<d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsPartOfKey'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsPartOfKey'" (click)="updateMenuItems()">
 						<ng-container i18n>Key Field</ng-container>
 						<d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsRequired'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsRequired'" (click)="updateMenuItems()">
 						<ng-container i18n>Required</ng-container>
 						<d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'DisplayInColumn'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'DisplayInColumn'" (click)="updateMenuItems()">
 						<ng-container i18n>Display in Column</ng-container>
 						<d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'ShowIfEmpty'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'ShowIfEmpty'" (click)="updateMenuItems()">
 						<ng-container i18n>Show if Empty</ng-container>
 						<d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsListable'" *ngIf="showIsListable">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'IsListable'" *ngIf="showIsListable" (click)="updateMenuItems()">
 						<ng-container i18n>Listable</ng-container>
 						<d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'SortOrder'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'SortOrder'" (click)="updateMenuItems()">
 						<ng-container i18n>Sort Order</ng-container>
 						<d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
 					</th>
-					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'SortByAscending'">
+					<th [style.min-width.px]="columnWidthMinSize" [pSortableColumn]="'SortByAscending'" (click)="updateMenuItems()">
 						<ng-container i18n>Sort by</ng-container>
 						<d3s-sortIcon [field]="'SortByAscending'"></d3s-sortIcon>
 					</th>
@@ -157,9 +170,14 @@
 					style="word-wrap: break-word; position:relative;"
 					[pSelectableRow]="item">
 					<td [pReorderableRow]="index" class="reorder-cell">
-						<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
+						<span *ngIf="!isReorderingLocked" class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
+						<span *ngIf="isReorderingLocked"
+							  class="reorder-icon"
+							  pTooltip="{{reorderingLockedText}}"
+							  tooltipPosition="top"
+							  tooltipStyleClass="ig-tooltip"></span>
 					</td>
-					<td>{{item.FriendlyName}} ({{item.FieldTypeValue}})</td>
+					<td>{{item.FriendlyName}}</td>
 					<td>{{item.FieldType}}</td>
 					<td>{{item.Category}}</td>
 					<td>

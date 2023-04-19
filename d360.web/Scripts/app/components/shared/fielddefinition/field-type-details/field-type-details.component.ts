@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
 
 @Component({
@@ -7,27 +7,21 @@ import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
 	styleUrls: ['./field-type-details.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
-export class FieldTypeDetailsComponent implements OnInit, OnChanges {
+export class FieldTypeDetailsComponent implements OnChanges {
 	@Input() fieldType: FieldDisplayModel;
-
-	isLoading: boolean = true;
+	@Output() onEdit = new EventEmitter();
 
 	ascendingLabel: string = $localize`Ascending`;
 	descendingLabel: string = $localize`Descending`;
 	currentType: string = '';
 	constructor() { }
 
-	ngOnChanges(changes: SimpleChanges): void {
-		this.isLoading = true;
+	ngOnChanges(): void {
 		this.currentType = this.fieldType.FieldTypeValue;
-		this.isLoading = false;
-	}
-
-	ngOnInit(): void {
 	}
 
 	editClick() {
-
+		this.onEdit.emit();
 	}
 
 	hasPartOfKey() {

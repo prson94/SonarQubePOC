@@ -1,7 +1,5 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
-
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FieldDisplayModel, FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
@@ -14,10 +12,9 @@ import { IOutputData } from 'angular-split';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { Observable, of } from 'rxjs';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
-import { PopupMenu, PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
-import { cloneDeep } from 'lodash-es';
+import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
 import { Table } from 'primeng/table';
-import { withDisabledInitialNavigation } from '@angular/router';
+import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 
 /*global $localize*/
 
@@ -82,12 +79,20 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	sidePanelStorageKey: string = '';
 	selectedItem: Record<string, object>;
 
-
 	sidePanelOpen = false;
 	selectedForInfoPanel: unknown;
 	columnWidthMinSize = 150;
 	tableWidth = 0;
+
+	advancedFilters: Filters;
+	simpleFilter: string;
+
+	isReorderingLocked: boolean = false;
+	reorderingLockedText: string = $localize`Items can be rearranged only in the default view. Use the reset button to clear any search, filter, or sorting applied.`;
+
 	@ViewChild('dt', { static: false }) tableEl: Table;
+	@ViewChild('advancedFilter', { static: false }) advFilter: AdvancedFilteringComponent;
+
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
@@ -125,8 +130,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			this.load();
 		}
 	}
-
-
 
 	load(): void {
 		if (this.relationshipTypeUid === "IntersectType") {
@@ -193,19 +196,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						return displayField;
 					});
 
-
-					this.fieldDisplayModel.forEach((item) => {
-						const menuItems = [];
-						menuItems.push({ title: $localize`View Information`, action: 'info' });
-						menuItems.push({ title: $localize`Edit`, action: 'edit' });
-						menuItems.push({ title: $localize`Delete`, action: 'delete' });
-						menuItems.push({ title: $localize`Move To Top`, action: 'movetop' });
-						menuItems.push({ title: $localize`Move Up`, action: 'moveup' });
-						menuItems.push({ title: $localize`Move Down`, action: 'movedown' });
-						menuItems.push({ title: $localize`Move To Bottom`, action: 'movebottom' });
-
-						item.MenuItems = menuItems;
-					});
+					this.updateMenuItems();
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 
 					this.tableWidth = this.tableEl.el.nativeElement.getBoundingClientRect().width;
@@ -221,7 +212,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	onMenuItemSelect(item: FieldDisplayModel, $event) {
 		switch ($event.action) {
-			case 'info': window.alert("info");
+			case 'info':
+				this.selectedRow = item;
+				this.sidePanelService.setSidePanelState({ expanded: true });
 				break;
 			case 'edit':
 				this.edit(item);
@@ -242,6 +235,63 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.moveToPosition(item, this.nonFilteredFieldDisplayModel.length);
 				break;
 		}
+	}
+
+	reset() {
+		this.simpleFilter = "";
+		this.advFilter.clearFilters();
+		this.tableEl.reset();
+		this.load();
+	}
+
+	private updateMenuItems() {
+		let position = 0;
+		const keyFieldsCount = this.fieldDisplayModel.filter((x) => x.IsPartOfKey).length;
+
+		this.isReorderingLocked = (typeof this.simpleFilter !== 'undefined' && this.simpleFilter !== '')
+			|| (this.advancedFilters && this.advancedFilters.filter !== '');
+
+		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null);
+
+		this.fieldDisplayModel.forEach((item) => {
+			position++;
+			const menuItems = [];
+			menuItems.push({ title: $localize`View Information`, action: 'info' });
+			menuItems.push({ title: $localize`Edit`, action: 'edit' });
+
+			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
+
+			if (this.fieldDisplayModel.length > 1) {
+				if (keyFieldsCount === 1 && item.IsPartOfKey) {
+					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`You cannot delete this field. There must be at least one key field defined.` });
+				}
+				else if (isDiagramAssetPage && ['Name', 'StepNo', 'GovernanceRole'].indexOf(item.Name) > -1) {
+					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Default fields cannot be deleted.` });
+				}
+				else {
+					menuItems.push({ title: $localize`Delete`, action: 'delete' });
+				}
+
+				let positionDisabled = false;
+				let positionTooltip = '';
+
+				if (this.isReorderingLocked) {
+					positionDisabled = true;
+					positionTooltip = this.reorderingLockedText;
+				}
+
+				if (position != 1) {
+					menuItems.push({ title: $localize`Move To Top`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movetop' });
+					menuItems.push({ title: $localize`Move Up`, disabled: positionDisabled, tooltip: positionTooltip, action: 'moveup' });
+				}
+				if (position != this.fieldDisplayModel.length) {
+					menuItems.push({ title: $localize`Move Down`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movedown' });
+					menuItems.push({ title: $localize`Move To Bottom`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movebottom' });
+				}
+			}
+
+			item.MenuItems = menuItems;
+		});
 	}
 
 	get currentUid(): string {
@@ -610,7 +660,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	advancedFiltersChanged(event: Filters): void {
+		this.advancedFilters = event;
 		this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
+		this.updateMenuItems();
 	}
 
 

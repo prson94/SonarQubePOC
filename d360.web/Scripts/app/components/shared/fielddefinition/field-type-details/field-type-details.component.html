@@ -1,7 +1,7 @@
 <div class="asset-detail side-panel-detail no-padding">
-	<d3s-loading [isLoading]="isLoading"></d3s-loading>
+	<d3s-loading></d3s-loading>
 
-	<div *ngIf="!isLoading" class="asset-detail-header">
+	<div class="asset-detail-header">
 		<div class="asset-name">{{fieldType.FriendlyName}}</div>
 		<div class="class-name" i18n>Field</div>
 
@@ -10,7 +10,7 @@
 		</div>
 	</div>
 
-	<div *ngIf="!isLoading && currentType" class="asset-detail-tabs">
+	<div *ngIf="currentType" class="asset-detail-tabs">
 		<ig-property-group i18n-title title="General" [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">

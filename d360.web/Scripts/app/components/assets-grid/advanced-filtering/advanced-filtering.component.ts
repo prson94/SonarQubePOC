@@ -146,7 +146,35 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.router.routeReuseStrategy.shouldReuseRoute = function () {
             return false;
         };
-    }
+	}
+
+	public clearFilters() {
+		this.conditions.filters = [];
+		this.conditions.connector = " and ";
+		this.filterMenu[2].isChecked = true;
+		this.filterMenu[3].isChecked = false;
+
+		this.clearFiltersStorage();
+		this.fields.forEach((field) => {
+			if (field.Type) {
+				var key = Object.keys(field.Type)[0];
+				var isDefaultFilter = false;
+				if (Object.keys(field.Type).some((x) => x === key)) {
+					isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+				}
+
+				if (isDefaultFilter === true) {
+					var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+					defaultFilter.field = field.Name;
+					defaultFilter.isDefaultFilter = true;
+					defaultFilter.isNew = true;
+					this.conditions.filters.push(defaultFilter);
+				}
+			}
+		});
+		this.onItemChange();
+		this.cdRef.markForCheck();
+	}
 
     customDoCheck() {
         var allHaveField = this.conditions.filters.filter((x) => x.field).length === this.conditions.filters.length;
