@@ -1,5 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, ViewEncapsulation } from '@angular/core';
 import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-field-type-details',
@@ -14,7 +16,6 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	ascendingLabel: string = $localize`Ascending`;
 	descendingLabel: string = $localize`Descending`;
 	currentType: string = '';
-	constructor() { }
 
 	ngOnChanges(): void {
 		this.currentType = this.fieldType.FieldTypeValue;

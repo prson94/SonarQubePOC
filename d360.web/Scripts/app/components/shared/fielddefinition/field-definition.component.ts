@@ -168,29 +168,29 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.Category = field.Category ?? $localize`General`;
 						displayField.FieldType = this.getDisplayTypeName(type);
 						displayField.FieldTypeValue = type;
-						displayField.DisplayInColumn = field.Type[type].DisplayInColumn ?? false;
-						displayField.IsListable = field.Type[type].IsListable;
-						displayField.IsPartOfKey = field.Type[type].IsPartOfKey ?? false;
-						displayField.SortOrder = field.Type[type].SortOrder;
-						displayField.SortByAscending = field.Type[type].SortByAscending;
-						displayField.ColumnOrder = field.Type[type].ColumnOrder;
-						displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty ?? false;
-						displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
+						displayField.DisplayInColumn = field.Type[`${type}`].DisplayInColumn ?? false;
+						displayField.IsListable = field.Type[`${type}`].IsListable;
+						displayField.IsPartOfKey = field.Type[`${type}`].IsPartOfKey ?? false;
+						displayField.SortOrder = field.Type[`${type}`].SortOrder;
+						displayField.SortByAscending = field.Type[`${type}`].SortByAscending;
+						displayField.ColumnOrder = field.Type[`${type}`].ColumnOrder;
+						displayField.ShowIfEmpty = field.Type[`${type}`].ShowIfEmpty ?? false;
+						displayField.IsRequired = field.Type[`${type}`].Validation != null ? field.Type[`${type}`].Validation.IsRequired : false;
 
-						displayField.DisplayDescription = field.Type[type]?.Description?.Display ?? "";
-						displayField.FormDescription = field.Type[type]?.Description?.Form ?? "";
-						displayField.AddToSearchResults = field.Type[type]?.Search?.AddToResult ?? false;
-						displayField.AllowMultipleItems = field.Type[type]?.List?.AllowMultipleValues ?? false;
-						displayField.EditableOnUI = field.Type[type]?.IsEditable ?? false;
-						displayField.ShowInDetailsTab = field.Type[type]?.IsDisplayable ?? false;
-						displayField.PersistInFilters = field.Type[type]?.IsPrimaryFilter ?? false;
+						displayField.DisplayDescription = field.Type[`${type}`]?.Description?.Display ?? "";
+						displayField.FormDescription = field.Type[`${type}`]?.Description?.Form ?? "";
+						displayField.AddToSearchResults = field.Type[`${type}`]?.Search?.AddToResult ?? false;
+						displayField.AllowMultipleItems = field.Type[`${type}`]?.List?.AllowMultipleValues ?? false;
+						displayField.EditableOnUI = field.Type[`${type}`]?.IsEditable ?? false;
+						displayField.ShowInDetailsTab = field.Type[`${type}`]?.IsDisplayable ?? false;
+						displayField.PersistInFilters = field.Type[`${type}`]?.IsPrimaryFilter ?? false;
 
-						displayField.ColumnWidth = field.Type[type]?.ColumnWidth;
+						displayField.ColumnWidth = field.Type[`${type}`]?.ColumnWidth;
 
 						if (type === 'Lookup') {
-							displayField.LookupTypeName = field.Type[type].List.Class + ": " + field.Type[type].List.TypeName;
-							displayField.LookupDisplayFormat = field.Type[type].Format.Display;
-							displayField.LookupEditFormat = field.Type[type].Format.Edit;
+							displayField.LookupTypeName = field.Type[`${type}`].List.Class + ": " + field.Type[`${type}`].List.TypeName;
+							displayField.LookupDisplayFormat = field.Type[`${type}`].Format.Display;
+							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
 						}
 						displayField.FieldTypeREF = field;
 						return displayField;
@@ -210,6 +210,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		);
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	onMenuItemSelect(item: FieldDisplayModel, $event) {
 		switch ($event.action) {
 			case 'info':
@@ -253,6 +255,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null);
 
+		// ignore complexity codacy issue
+		// eslint-disable-next-line
 		this.fieldDisplayModel.forEach((item) => {
 			position++;
 			const menuItems = [];
@@ -280,11 +284,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					positionTooltip = this.reorderingLockedText;
 				}
 
-				if (position != 1) {
+				if (position !== 1) {
 					menuItems.push({ title: $localize`Move To Top`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movetop' });
 					menuItems.push({ title: $localize`Move Up`, disabled: positionDisabled, tooltip: positionTooltip, action: 'moveup' });
 				}
-				if (position != this.fieldDisplayModel.length) {
+				if (position !== this.fieldDisplayModel.length) {
 					menuItems.push({ title: $localize`Move Down`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movedown' });
 					menuItems.push({ title: $localize`Move To Bottom`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movebottom' });
 				}
@@ -416,7 +420,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	onRowReorder($event) {
 		const dropIndex = $event.dropIndex;
 		const dragIndex = $event.dragIndex;
-		var moveField = this.fieldDisplayModel[dragIndex];
+		const moveField = this.fieldDisplayModel[`${dragIndex}`];
 		if (moveField) {
 			this.moveToPosition(moveField, dropIndex + 1);
 		}
@@ -427,7 +431,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
 			(orderedColumns) => {
 				orderedColumns.forEach((ft) => {
-					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
@@ -442,7 +446,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
 			(orderedColumns) => {
 				orderedColumns.forEach((ft) => {
-					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
@@ -457,7 +461,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.fieldsService.moveToPosition(this.currentUid, field.Name, position).subscribe(
 			(orderedColumns) => {
 				orderedColumns.forEach((ft) => {
-					this.fieldDisplayModel.find(f => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
@@ -622,7 +626,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		},
 	]);
 
-	getFilterValuesForFieldType(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+	getFilterValuesForFieldType(): Observable<LookupValuesAPIModel> {
 		const types: string[] = [
 			$localize`True/False`,
 			$localize`Relation Lookup`,

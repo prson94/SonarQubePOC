@@ -54,7 +54,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
 		return this
 			.http
-			.get<any>(`api/v2/fields?${url}&resolveValues=true`)
+			.get<Record<string, object>>(`api/v2/fields?${url}&resolveValues=true`)
 			.pipe(
 				map((response) => <FieldTypeAPIModelField[]>response.items),
 				catchError((err) => this.handleError(err))

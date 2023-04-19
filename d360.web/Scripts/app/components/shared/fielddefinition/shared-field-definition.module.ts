@@ -29,7 +29,6 @@ import { FieldTypeForm } from './field-type-form/field-type.form';
 import { FieldDefinitionComponent } from './field-definition.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { SidePanelModule } from '../sidepanel/side-panel.module';
-import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
 import { AngularSplitModule } from 'angular-split';
 import { SearchFieldModule } from '../controls/search-field/search-field.component';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';

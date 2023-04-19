@@ -295,7 +295,6 @@ export class UiAdvancedFiltering {
 		};
 
 		filters.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
-			console.log(filterOption.operator);
 			if (filterOptions.hasOwnProperty(filterOption.operator)) {
 				filterOptions[filterOption.operator](filterOption);
 			} else {
