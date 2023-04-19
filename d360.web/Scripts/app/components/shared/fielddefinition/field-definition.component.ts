@@ -9,7 +9,7 @@ import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { Observable, of } from 'rxjs';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
