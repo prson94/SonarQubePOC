@@ -1,11 +1,12 @@
 ﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { BaseComponent } from '../base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
+import { BaseComponent } from '../../../shared/base.component';
+
 
 @Component({
-    selector: 'd3s-raise-issue-button',
+    selector: 'd3s-raise-issue',
     template: `           
         <button type="button" igButton class="ig-button-accent" (click)="raiseIssue()" i18n>Take Action</button>
         `,
@@ -17,7 +18,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class RaiseIssueButtonComponent extends BaseComponent {
+export class RaiseIssueComponent extends BaseComponent {
 
     constructor(
         protected settingsService: CompanySettingsService,
