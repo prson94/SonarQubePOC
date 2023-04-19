@@ -6,6 +6,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CoreModule } from "../../../shared/core.module";
 import { PopupMenuModule } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { RaiseIssueComponent } from "./raise-issue.component";
+import { ActionModalFormModule } from "./action-form/action-modal-form.module";
 
 @NgModule({
 	imports: [
@@ -16,6 +17,7 @@ import { RaiseIssueComponent } from "./raise-issue.component";
 		//d3s                
 		CoreModule,
 		PopupMenuModule,
+		ActionModalFormModule
 	],
 	declarations: [
 		RaiseIssueComponent

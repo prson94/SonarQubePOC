@@ -1,0 +1,13 @@
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
+		   [showTitle]="false"
+		   (onClose)="close()"
+		   [isVisible]="isModalVisible">
+	<div class="editor-container">
+		form here
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Close" (click)="close()"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-primary" label="Submit" (click)="save()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+</d3s-modal>
