@@ -26,7 +26,62 @@ export class RaiseIssueComponent extends BaseComponent {
         super(settingsService);
     }
 
-    public raiseIssue() {
-		this.router.navigateByUrl(this.federateUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`));
-    }
+	load() {
+		if (typeof this.resourceUid === 'undefined') {
+			return;
+		}
+		this.isLoading = true;
+
+		const params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
+		if (this.assetUid) {
+			params._assetUid = this.assetUid;
+			params._resourceUid = this.resourceUid;
+
+		} else if (this.assetTypeUid) {
+			params._assetTypeUid = this.assetTypeUid;
+			params._resourceUid = this.resourceUid;
+		}
+
+		this.workflowService.getWorkflowIssueTypes(null, null, params)
+			.subscribe((result) => {
+				this.issueTypes = result;
+				this.popupMenu = [];
+				this.issueTypes.forEach((issue) => {
+					this.popupMenu.push({ title: issue.Name, callback: () => { this.openIssueType(issue); } });
+
+				})
+				this.isLoading = false;
+				this.cdRef.markForCheck();
+			});
+	}
+
+	openIssueType(issue) {
+		this.isModalVisible = true;
+		this.selected = issue;
+		this.cdRef.markForCheck();
+	}
+
+	onSave($event) {
+		const action: ActionEditorModel = new ActionEditorModel();
+		action.Fields = $event.item;
+		delete action.Fields['IssueTypeID'];
+
+		if (this.assetUid) {
+			action.AssetUid = this.assetUid;
+		} else {
+			action.AssetTypeUid = this.assetTypeUid;
+		}
+
+		this.workflowService.raiseIssues($event.actionTypeUid, action)
+			.subscribe((res) => {
+				this.showMessageForApiResponse(this.messagesService, res);
+				this.close();
+				this.cdRef.markForCheck();
+			});
+	}
+
+	close() {
+		this.selected = null;
+		this.isModalVisible = false;
+	}
 }

@@ -1,4 +1,4 @@
-﻿<ng-container *ngIf="assetUid || assetTypeUid">
+﻿<ng-container *ngIf="(assetUid || assetTypeUid) && issueTypes && issueTypes.length > 0">
 	<button type="button" igButton class="ig-button-accent" (click)="menu.toggle($event)" i18n>Take Action</button>
 	<ig-popup-menu [items]="popupMenu" #menu [tabIndex]="10"></ig-popup-menu>
 </ng-container>
