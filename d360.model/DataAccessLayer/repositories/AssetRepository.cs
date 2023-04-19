@@ -2965,7 +2965,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		and (
 			[AT].DefaultPermissions = 1 or 
 			@isAdmin = 1 or
-			( T.DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
+			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
 		)";
 
 			var sql = $@"
@@ -2982,7 +2982,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 									and (
 										[AT].DefaultPermissions = 1 or 
 										@isAdmin = 1 or
-										( T.DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
+										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) )
 									)
 							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
