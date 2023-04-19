@@ -9,11 +9,9 @@
 					{{assetTypePath}}
 				</div>
 			</div>
-			<ig-form-feedback-badges
-				class="ig-form-feedback-badges"
-				[igformGroup]="form"
-				[inputContainer]="formElement"
-			>
+			<ig-form-feedback-badges class="ig-form-feedback-badges"
+									 [igformGroup]="form"
+									 [inputContainer]="formElement">
 			</ig-form-feedback-badges>
 		</div>
 		<ng-template #loading>
@@ -22,7 +20,7 @@
 		<div class="row" *ngIf="isInError">
 			<div class="err-message">{{isInErrorMessage}}</div>
 		</div>
-		<div *ngIf="!isLoading && form; else loading" class="row" 
+		<div *ngIf="!isLoading && form; else loading" class="row"
 			 style="position: relative; min-height: calc(100% - 61px);">
 			<div class="form-instructions" *ngIf="hasDirections">
 				{{directions}}
@@ -63,9 +61,9 @@
 						</ig-property-group>
 					</ng-template>
 				</div>
-				
+
 				<div class="action-buttons-placeholder"></div>
-				
+
 				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
 					<button igButton
 							type="button"
@@ -77,7 +75,7 @@
 							(click)="closeClick.emit();">
 					</button>
 					<div class="flex-grow"></div>
-					<button *ngIf="!selection"
+					<button *ngIf="!selection && objectType !== 'Issue'"
 							type="button"
 							class="ig-button-secondary"
 							[igDataCy]="'Asset_Modal_Button_Another'"
@@ -91,12 +89,24 @@
 							(click)="onSubmit(true)">
 					</button>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					<button type="submit"
+					<button *ngIf="objectType !== 'Issue'"
+							type="submit"
 							class="ig-button-primary"
 							[igDataCy]="'Asset_Modal_Button_Save'"
 							igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
 							label="{{saveButtonLabel}}"
 							tooltip="{{saveButtonLabel}}"
+							[loading]="savingInProgress && !savingInProgressWithAddNew">
+					</button>
+					<button *ngIf="objectType === 'Issue'"
+							type="submit"
+							class="ig-button-primary"
+							[igDataCy]="'Asset_Modal_Button_Save'"
+							igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
+							i18n-label
+							i18n-tooltip
+							label="Submit"
+							tooltip="Submit"
 							[loading]="savingInProgress && !savingInProgressWithAddNew">
 					</button>
 				</div>

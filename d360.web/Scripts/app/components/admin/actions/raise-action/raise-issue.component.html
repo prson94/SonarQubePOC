@@ -3,4 +3,7 @@
 	<ig-popup-menu [items]="popupMenu" #menu [tabIndex]="10"></ig-popup-menu>
 </ng-container>
 
-<action-modal-form [isModalVisible]="isModalVisible" [uid]="selectedUid" (onClose)="selectedUid=null; isModalVisible=false;"></action-modal-form>
+<action-modal-form [isModalVisible]="isModalVisible"
+				   [issueType]="selected"
+				   (onSave)="onSave($event)"
+				   (onClose)="close()"></action-modal-form>

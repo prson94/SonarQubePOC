@@ -8,6 +8,7 @@ import { EditorModule } from 'primeng/editor';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeTableModule } from 'primeng/treetable';
 import { DirectivesModule } from '../../../../../directives/directives.module';
+import { AssetEditorModule } from '../../../../shared/asset-editor/asset-editor.module';
 import { IgColorPickerModule } from '../../../../shared/controls/color-picker/color-picker.module';
 import { ColorSelectorModule } from '../../../../shared/controls/color-selector/color-selector.component';
 import { FormFeedbackBadgesModule } from '../../../../shared/controls/form-feedback-badges/form-feedback-badges.component';
@@ -43,7 +44,8 @@ import { ActionModalFormComponent } from './action-modal-form.component';
 		ColorSelectorModule,
 		IgColorPickerModule,
 		IconPickerModule,
-		IgNumberFieldModule
+		IgNumberFieldModule,
+		AssetEditorModule
 	],
 	declarations: [
 		ActionModalFormComponent

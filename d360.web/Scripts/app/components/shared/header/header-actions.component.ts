@@ -144,6 +144,8 @@ export class HeaderActionsComponent {
 
 				setTimeout(() => { this.calculateControlWidth(); }, 250);
 
+				this.assetTypeUid = this.assetUid = null;
+
 				if (this.uri.toLowerCase().startsWith("asset/")) {
 					this.assetUid = this.uri.toLowerCase().replace("asset/", "");
 				}
