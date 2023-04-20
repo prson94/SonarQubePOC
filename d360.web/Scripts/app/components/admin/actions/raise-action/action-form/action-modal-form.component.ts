@@ -18,6 +18,7 @@ export class ActionModalFormComponent implements OnChanges {
 	@Output() onSave = new EventEmitter();
 	@Input() hasSidePanel: boolean = false;
 
+	editorDecription: string;
 	selection: any = null;
 	constructor(
 		private cdRef: ChangeDetectorRef
@@ -26,6 +27,7 @@ export class ActionModalFormComponent implements OnChanges {
 
 	ngOnChanges(changes: SimpleChanges): void {
 		this.cdRef.markForCheck();
+		this.editorDecription = this.issueType.Description;
 	}
 
 	close() {

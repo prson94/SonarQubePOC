@@ -40,6 +40,14 @@
 				  [formGroup]="form"
 				  #assetForm>
 				<div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+					<ig-property-group *ngIf="editorDecription"
+									   i18n-title
+									   title="Description">
+						<div inputs class="inputs-wrapper">
+							<div class="row" [innerHtml]="editorDecription"></div>
+						</div>
+					</ig-property-group>
+
 					<ng-template ngFor
 								 let-category
 								 [ngForOf]="categories">

@@ -90,6 +90,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	@Input() hidePath: boolean = false;
 	@Input() showActions: boolean = true;
 	@Input() useSidePanel: boolean = true;
+	@Input() editorDecription: string = '';
 
 	@Input() useModelBinding: boolean = false;
 	@Input() dataModel: any = null;
@@ -438,6 +439,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.fields = result;
 
 			this.fields.forEach((f) => {
+				if (this.objectType === 'Issue' && f.FieldType === 'Lookup') {
+					this.useSidePanel = true;
+				}
+
 				if (f.Category == null) {
 					currentCategory = "";
 					if (f.FieldName && f.FieldName.toLowerCase() === 'parentuid') {

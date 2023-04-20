@@ -75,6 +75,7 @@ export class RaiseIssueComponent extends BaseComponent implements OnChanges {
 		}
 
 		this.isLoading = true;
+		this.hasSidePanel = false;
 
 		const params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
 		if (this.assetUid) {
