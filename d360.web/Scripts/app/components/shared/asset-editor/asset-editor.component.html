@@ -113,7 +113,7 @@
 			</form>
 		</div>
 	</div>
-	<div class="side-panel" *ngIf="useSidePanel && sidePanelOpen">
+	<div class="side-panel {{(!sidePanelOpen ? 'side-panel-collapsed' : '')}}" *ngIf="useSidePanel">
 		<side-panel [expanded]="sidePanelOpen"
 					(expandedChange)="onSidePanelExpansionChange($event)"
 					[panelApplies]="panelApplies"
