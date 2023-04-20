@@ -120,6 +120,7 @@
 					[(selectedPanel)]="sidePanelTab"
 					[height]="'calc(100vh - 152px)'"
 					closeIcon="fa-close"
+					[showEmptyOverlay]="!selectedAsset && !selectedReferenceItem && !selectedTag"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="sidePanelTab === 'detail'">

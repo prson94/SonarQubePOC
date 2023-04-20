@@ -1113,6 +1113,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		return 'Artifact';
 	}
 
+	selectionChangeSub: Subscription;
 	onSidePanelSelectionChange(selection: { objectID: string, fieldName: string }): void {
 		if (!isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
@@ -1121,7 +1122,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 				this.sidePanelLoading = true;
 				this.selectedAsset = this.selectedTag = null;
 				this.selectedReferenceItem = this.selectedReferenceItem || { uid: null, url: null };
-				this.objectDetailService.getObject(
+
+				if (this.selectionChangeSub) {
+					this.selectionChangeSub.unsubscribe();
+				}
+
+				this.selectionChangeSub = this.objectDetailService.getObject(
 					+selection.objectID,
 					objectType
 				).subscribe((details) => {
@@ -1131,6 +1137,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 						url: details.UID ? `${details.Url},${details.UID}` : null
 					};
 					this.sidePanelLoading = false;
+					this.ref.markForCheck();
 				});
 			} else {
 				this.selectedReferenceItem = this.selectedTag = null;
