@@ -1,5 +1,10 @@
 ﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { Breadcrumb } from '../../../../models/breadcrumb.model';
+import { ActionEditorModel, WorkflowIssueType } from '../../../../models/workflow.model';
+import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { BaseComponent } from '../../../shared/base.component';
@@ -18,24 +23,64 @@ import { BaseComponent } from '../../../shared/base.component';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class RaiseIssueComponent extends BaseComponent {
+export class RaiseIssueComponent extends BaseComponent implements OnChanges {
+	@Input() assetUid: string;
+	@Input() assetTypeUid: string;
+	resourceUid: string;
+	isModalVisible: boolean = false;
+	selected: WorkflowIssueType;
+	issueTypes: WorkflowIssueType[] = [];
+	popupMenu = [];
+	subBreadcrumb: Subscription;
+	breadCrumbs: Breadcrumb[] = [];
+	hasSidePanel: boolean = false;
 
-    constructor(
-        protected settingsService: CompanySettingsService,
-        private router: Router) {
-        super(settingsService);
-    }
+	constructor(
+		protected settingsService: CompanySettingsService,
+		private workflowService: WorkflowService,
+		private cdRef: ChangeDetectorRef,
+		private messagesService: MessagesObservableService,
+		private breadcrumbService: HeaderBreadcrumbService) {
+		super(settingsService);
+
+		this.settingsService.getUserVariables().subscribe((res) => {
+			this.resourceUid = res.CurrentResourceUid;
+			this.load();
+		});
+
+		if (this.subBreadcrumb) {
+			this.subBreadcrumb.unsubscribe();
+		}
+		this.breadCrumbs = [];
+		this.subBreadcrumb = this.breadcrumbService.breadcrumbs$.subscribe((b) => {
+			this.breadCrumbs.push(b);
+		});
+
+	}
+	ngOnChanges(changes: SimpleChanges): void {
+		if (changes) {
+			if (changes.assetUid && changes.assetUid.currentValue !== changes.assetUid.previousValue) {
+				this.load();
+			}
+			if (changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
+				this.load();
+			}
+			this.breadCrumbs = [];
+		}
+	}
 
 	load() {
 		if (typeof this.resourceUid === 'undefined') {
 			return;
 		}
+
 		this.isLoading = true;
 
 		const params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
 		if (this.assetUid) {
 			params._assetUid = this.assetUid;
 			params._resourceUid = this.resourceUid;
+			this.hasSidePanel = true;
 
 		} else if (this.assetTypeUid) {
 			params._assetTypeUid = this.assetTypeUid;

@@ -5,5 +5,7 @@
 
 <action-modal-form [isModalVisible]="isModalVisible"
 				   [issueType]="selected"
+				   [hasSidePanel]="hasSidePanel"
+				   [breadCrumbs]="breadCrumbs"
 				   (onSave)="onSave($event)"
 				   (onClose)="close()"></action-modal-form>

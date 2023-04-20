@@ -4,9 +4,20 @@
 			<div class="form-header">
 				{{title}}
 				<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
-				<div class="sub-header" *ngIf="!isLoading && !hidePath">
+				<div class="sub-header" *ngIf="!isLoading && !hidePath && objectType !== 'Issue'">
 					<span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
 					{{assetTypePath}}
+				</div>
+				<div class="sub-header sub-header-breadcrumbs" *ngIf="objectType === 'Issue'">
+					<span class="sub-header-breadcrumb" *ngIf="breadCrumbs.length > 0" i18n>Associated with:</span>&nbsp;
+					<div class="sub-header-breadcrumb" *ngFor="let breadcrumb of breadCrumbs;last as isLast">
+						<ng-container *ngIf="isLast && breadcrumb.link.startsWith('asset/'); else typeBreadcrumb">
+							<a href="#" (click)="onHeaderBreadcrumbClick($event, breadcrumb)">{{breadcrumb.text}}</a>
+						</ng-container>
+						<ng-template #typeBreadcrumb>
+							{{breadcrumb.text}} <span *ngIf="!isLast"> > </span>
+						</ng-template>
+					</div>
 				</div>
 			</div>
 			<ig-form-feedback-badges class="ig-form-feedback-badges"

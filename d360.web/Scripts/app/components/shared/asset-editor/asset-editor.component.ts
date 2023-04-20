@@ -45,6 +45,7 @@ import { FieldsObservableService } from "../../../services/fieldsObservable.serv
 import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
+import { Breadcrumb } from "../../../models/breadcrumb.model";
 
 @Component({
 	selector: 'asset-editor',
@@ -88,11 +89,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	@Input() useV2ApiLink: boolean = false;
 	@Input() hidePath: boolean = false;
 	@Input() showActions: boolean = true;
+	@Input() useSidePanel: boolean = true;
 
 	@Input() useModelBinding: boolean = false;
 	@Input() dataModel: any = null;
 
 	@Input() assetTypePath: string = '[AssetTypePath]';
+	@Input() breadCrumbs: Breadcrumb[] = [];
 
 	@Output() modelChanged = new EventEmitter();
 	@Output() closeClick = new EventEmitter();
@@ -133,7 +136,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	hasUpdateFormChanged: boolean = false;
 
 	isProcessSidePanel: boolean = false;
-	useSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
@@ -271,7 +273,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.action = this.newActionName;
 		}
 
-		this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+		if (this.objectType !== 'Issue') {
+			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+		}
 
 		if (this.useSidePanel) {
 			this.getAssetTypeDetails().subscribe((result) => {
@@ -1160,6 +1164,16 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.sidePanelSelection = null;
 		}
 		this.sidePanelOpen = expanded;
+	}
+
+	onHeaderBreadcrumbClick($event: MouseEvent, breadcrumb: Breadcrumb) {
+		$event.preventDefault();
+		$event.stopPropagation();
+
+		this.selectedReferenceItem = this.selectedTag = null;
+		this.selectedAsset = { type: this.objectType };
+		this.selectedAsset.uid = breadcrumb.link.replace("asset/", "");
+		this.sidePanelOpen = true;
 	}
 
 }

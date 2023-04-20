@@ -4,13 +4,14 @@
 		   [isVisible]="isModalVisible">
 	<asset-editor #dynamicEditor
 				  *ngIf="isModalVisible"
+				  [breadCrumbs]="breadCrumbs"
 				  [objectType]="'Issue'"
 				  [title]="issueType.Name"
 				  [selection]="selection"
 				  [objectTypeUid]="issueType.Uid"
 				  (saveClick)="save($event)"
 				  (closeClick)="close()"
-				  [useSidePanel]="true"
+				  [useSidePanel]="hasSidePanel"
 				  [showAsModal]="true"
 				  [loadOnInit]="true"
 				  [isV2API]="true"></asset-editor>

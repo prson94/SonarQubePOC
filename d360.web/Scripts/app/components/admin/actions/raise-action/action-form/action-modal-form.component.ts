@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from "@angular/core";
+import { Breadcrumb } from "../../../../../models/breadcrumb.model";
 import { WorkflowIssueType } from "../../../../../models/workflow.model";
 /*global $localize*/
 
@@ -12,9 +13,10 @@ import { WorkflowIssueType } from "../../../../../models/workflow.model";
 export class ActionModalFormComponent implements OnChanges {
 	@Input() isModalVisible: boolean = false;
 	@Input() issueType: WorkflowIssueType;
-
+	@Input() breadCrumbs: Breadcrumb[] = [];
 	@Output() onClose = new EventEmitter();
 	@Output() onSave = new EventEmitter();
+	@Input() hasSidePanel: boolean = false;
 
 	selection: any = null;
 	constructor(
