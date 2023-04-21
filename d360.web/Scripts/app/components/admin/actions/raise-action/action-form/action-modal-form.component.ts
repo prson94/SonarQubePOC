@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, ViewEncapsulation } from "@angular/core";
 import { Breadcrumb } from "../../../../../models/breadcrumb.model";
 import { WorkflowIssueType } from "../../../../../models/workflow.model";
 
