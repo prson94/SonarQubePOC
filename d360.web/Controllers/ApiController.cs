@@ -1510,11 +1510,16 @@ namespace d360.web.Controllers
 				declare @assetid int = (select top 1 id from asset where uid = @assetuid)
 				declare @assettypeid int = (select top 1 id from AssetType where uid = @assetTypeuid)
 
+				if @assetid is not null and @assettypeid is null
+				begin
+					set @assettypeid = (select top 1 AssetTypeID from asset where id = @assetid)
+				end
+
 				declare @results table (Id int, FollowTypeID int)
 				if @assettypeid is not null and @assetid is null
 				begin
 					insert into @results
-					select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid
+					select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @CurrentResourceID
 				end
 
 				if @assetid is not null
@@ -1526,11 +1531,11 @@ namespace d360.web.Controllers
 					if not exists (select top 1 1 from @results)
 					begin
 						insert into @results
-						select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid
+						select ID, FollowTypeID  from [Follow] F where F.AssetTypeID = @assettypeid and F.ResourceID = @CurrentResourceID
 					end
 
 				end
-				select * from @results", new { assetTypeUid, assetUid })).FirstOrDefault();
+				select * from @results", new { assetTypeUid, assetUid, Company.CurrentResourceID })).FirstOrDefault();
 
 			return new { 
 				isFollowing = followType != null, 
