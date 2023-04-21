@@ -2136,7 +2136,6 @@ namespace d360.web.Controllers.V2
 
 				int fieldTypeId = -1;
 				string fieldObject = "";
-				int fieldObjectID = 0;
 				int id = -1;
 
 				var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
@@ -2147,21 +2146,18 @@ namespace d360.web.Controllers.V2
 					if (actionTypeID > 0)
 					{
 						fieldObject = "IssueType";
-						fieldObjectID = actionTypeID;
 						id = actionTypeID;
 					}
 					else
 					{
 						var itType = Company.IntersectTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 						fieldObject = "IntersectType";
-						fieldObjectID = itType.ID;
 						id = itType.ID;
 					}
 				}
 				else
 				{
 					fieldObject = atype.Object;
-					fieldObjectID = atype.ObjectID;
 					id = atype.ID;
 				}
 

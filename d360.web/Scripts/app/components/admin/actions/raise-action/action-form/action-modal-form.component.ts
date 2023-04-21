@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from "@angular/core";
 import { Breadcrumb } from "../../../../../models/breadcrumb.model";
 import { WorkflowIssueType } from "../../../../../models/workflow.model";
-/*global $localize*/
 
 @Component({
 	selector: "action-modal-form",
@@ -19,15 +18,15 @@ export class ActionModalFormComponent implements OnChanges {
 	@Input() hasSidePanel: boolean = false;
 
 	editorDecription: string;
-	selection: any = null;
+	selection: Record<string, object> = null;
 	constructor(
 		private cdRef: ChangeDetectorRef
 	) {
 	}
 
-	ngOnChanges(changes: SimpleChanges): void {
+	ngOnChanges(): void {
 		this.cdRef.markForCheck();
-		this.editorDecription = this.issueType.Description;
+		this.editorDecription = this.issueType?.Description;
 	}
 
 	close() {

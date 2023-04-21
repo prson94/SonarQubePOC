@@ -112,7 +112,7 @@ export class EditorDefinitionService extends BaseObservableService {
 		typeUid: string,
 		objectType: string
 	): Observable<EditorField[]> {
-		let uri = `/form/dynamiceditor/new/uid/${typeUid}/type/${objectType}`;
+		const uri = `/form/dynamiceditor/new/uid/${typeUid}/type/${objectType}`;
 
 		return this.http.get(uri).pipe(
 			map((response) => <EditorField[]>response),

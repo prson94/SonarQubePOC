@@ -1,26 +1,19 @@
-﻿import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Breadcrumb } from '../../../../models/breadcrumb.model';
 import { ActionEditorModel, WorkflowIssueType } from '../../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
-import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
+import { WorkflowService } from '../../../../services/workflow.service';
 import { BaseComponent } from '../../../shared/base.component';
 
 
 @Component({
-    selector: 'd3s-raise-issue',
-    template: `           
-        <button type="button" igButton class="ig-button-accent" (click)="raiseIssue()" i18n>Take Action</button>
-        `,
-    styles: [`
-        :host{
-            float:right;
-        }
-    `],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+	selector: 'd3s-raise-issue',
+	templateUrl: 'raise-issue.component.html',
+	styleUrls: ['raise-issue.component.less'],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class RaiseIssueComponent extends BaseComponent implements OnChanges {
@@ -94,8 +87,7 @@ export class RaiseIssueComponent extends BaseComponent implements OnChanges {
 				this.popupMenu = [];
 				this.issueTypes.forEach((issue) => {
 					this.popupMenu.push({ title: issue.Name, callback: () => { this.openIssueType(issue); } });
-
-				})
+				});
 				this.isLoading = false;
 				this.cdRef.markForCheck();
 			});
