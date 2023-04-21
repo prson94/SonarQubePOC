@@ -9,7 +9,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField, RelationshipLookupDefinition } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Injectable({
@@ -532,6 +532,19 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			.get(url)
 			.pipe(
 				map((response) => <FieldTypeAPIModelField[]>response["items"]),
+				catchError((err) => this.handleError(err))
+			);
+
+	}
+
+	getComplexFieldDefinition(assetTypeUid: string, fieldName: string): Observable<RelationshipLookupDefinition> {
+		const url = `api/v2/fields/${assetTypeUid}/relationLookupDetails/${fieldName}`;
+
+		return this
+			.http
+			.get(url)
+			.pipe(
+				map((response) => <RelationshipLookupDefinition>response),
 				catchError((err) => this.handleError(err))
 			);
 

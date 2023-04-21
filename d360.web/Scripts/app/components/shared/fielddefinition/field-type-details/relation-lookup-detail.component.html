@@ -1,0 +1,75 @@
+<d3s-loading [isLoading]="loading"></d3s-loading>
+<div class="relation-lookup-detail" *ngIf="!loading">
+
+	<div class="row" *ngFor="let rel of definition.relationships; let i = index">
+		<label class="ig-label" i18n>Relationship Type {{i+1}}</label>
+		<div class="ig-value">
+			<ng-container *ngIf="rel.Direction === 1">{{rel.PredicateName}} {{rel.ObjectName}} (->)</ng-container>
+			<ng-container *ngIf="rel.Direction === 2">{{rel.PredicateInverse}} {{rel.SubjectName}} {{'(<-)'}}</ng-container>
+			<ng-container *ngIf="rel.Direction === 3">{{rel.RelationshipTypeName}} {{'(<->)'}}</ng-container>
+		</div>
+	</div>
+
+	<div class="row" *ngIf="referencedFields.length > 0">
+		<label class="ig-label" i18n>Reference Column</label>
+		<div class="ig-value">
+			<ul>
+				<li *ngFor="let field of referencedFields;">{{field.FieldTypeName}}</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row" *ngIf="filterFields.length > 0">
+		<label class="ig-label" i18n>Filter</label>
+		<div class="ig-value">
+			<ul>
+				<li *ngFor="let field of filterFields;">{{field.FieldTypeName}}: {{field.Filter}}</li>
+			</ul>
+		</div>
+	</div>
+	<div class="row" *ngIf="sortFields.length > 0">
+		<label class="ig-label" i18n>Sort</label>
+		<div class="ig-value">
+			<ul>
+				<li *ngFor="let field of sortFields;">{{field.FieldTypeName}}: <span i18n>Ascending</span></li>
+			</ul>
+		</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Hide Table Search</label>
+		<div class="ig-value">
+			<ng-container [ngTemplateOutlet]="booleanFieldTemplate"
+						  [ngTemplateOutletContext]="{value:definition.details.hideFilter}">
+			</ng-container>
+		</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Hide Table Column Headers</label>
+		<div class="ig-value">
+			<ng-container [ngTemplateOutlet]="booleanFieldTemplate"
+						  [ngTemplateOutletContext]="{value:definition.details.hideHeader}">
+			</ng-container>
+		</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Hide Table Footer</label>
+		<div class="ig-value">
+			<ng-container [ngTemplateOutlet]="booleanFieldTemplate"
+						  [ngTemplateOutletContext]="{value:definition.details.hideFooter}">
+			</ng-container>
+		</div>
+	</div>
+</div>
+
+
+<ng-template #booleanFieldTemplate let-value='value' let-field='field'>
+	<div class="ig-value">
+		<ng-container *ngIf="value; else falseTemplate">
+			<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+			<ng-container i18n>True</ng-container>
+		</ng-container>
+		<ng-template #falseTemplate>
+			<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+			<ng-container i18n>False</ng-container>
+		</ng-template>
+	</div>
+</ng-template>

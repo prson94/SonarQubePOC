@@ -163,6 +163,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					this.fieldDisplayModel = data.map((field) => {
 						const displayField = new FieldDisplayModel();
 						const type = this.currentFieldType(field);
+						displayField.AssetTypeUid = field["AssetTypeUid"];
 						displayField.Name = field.Name;
 						displayField.FriendlyName = field.FriendlyName;
 						displayField.Category = field.Category ?? $localize`General`;

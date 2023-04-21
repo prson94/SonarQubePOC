@@ -1,6 +1,4 @@
 <div class="asset-detail side-panel-detail no-padding">
-	<d3s-loading></d3s-loading>
-
 	<div class="asset-detail-header">
 		<div class="asset-name">{{fieldType.FriendlyName}}</div>
 		<div class="class-name" i18n>Field</div>
@@ -371,6 +369,17 @@
 							</div>
 						</div>
 					</ng-container>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group *ngIf="['ComputedRelationshipLookup'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Relation Lookup"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<d3s-relation-lookup-detail [fieldName]="fieldType.Name" [assetTypeUid]="fieldType.AssetTypeUid"></d3s-relation-lookup-detail>
 				</div>
 			</div>
 		</ig-property-group>

@@ -133,6 +133,7 @@ export class FieldType {
 }
 
 export class FieldDisplayModel {
+	AssetTypeUid: string;
 	Name: string;
 	FriendlyName: string;
 	Category: string;
@@ -599,6 +600,45 @@ export class Score implements ICommonOptions {
 	Search: Search = new Search();
 	DisplayInColumn: boolean = false;
 }
+
+export class RelationshipLookupDefinition {
+	relationships: RelationshipLookupRelationshipDefinition[]
+	fields: RelationshipLookupFieldDefinition[]
+	details: Details
+}
+
+export class RelationshipLookupRelationshipDefinition {
+	RelationType: number
+	Direction: number
+	AssetTypeUid: string
+	IntersectTypeUid: string
+	SubjectName: string
+	PredicateName: string
+	PredicateInverse: string
+	ObjectName: string
+	RelationshipTypeName: string;
+}
+
+export class RelationshipLookupFieldDefinition {
+	AssetTypeUid: string
+	FieldTypeID: number
+	FieldTypeName: string
+	Filter: string
+	OverrideDisplayName: any
+	DisplayOrder: number
+	SortOrder: number
+	Show: boolean
+	Width: any
+	RelationIndex: number
+	RelationshipTypeName?: string
+}
+
+export class Details {
+	hideHeader: boolean
+	hideFooter: boolean
+	hideFilter: boolean
+}
+
 
 export class FieldTypeHelper {
 	public static getFieldType(field: FieldType): string {

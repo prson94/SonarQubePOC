@@ -6,6 +6,7 @@ import { FieldTypeDetailsComponent } from './field-type-details.component';
 import { PropertyGroupModule } from '../../controls/property-group/property-group.component';
 import { PipesModule } from '../../../../pipes/pipes.module';
 import { CoreModule } from '../../core.module';
+import { RelationLookupDetailComponent } from './relation-lookup-detail.component';
 
 
 @NgModule({
@@ -18,7 +19,8 @@ import { CoreModule } from '../../core.module';
 		TooltipModule
 	],
 	declarations: [
-		FieldTypeDetailsComponent
+		FieldTypeDetailsComponent,
+		RelationLookupDetailComponent
 	],
 	exports: [
 		FieldTypeDetailsComponent

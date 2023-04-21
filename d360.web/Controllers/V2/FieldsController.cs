@@ -3205,5 +3205,85 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Retrieves complex relation lookup definition for asset type uid and field name. Used in field type side panel
+		/// </summary>
+		/// <returns>Returns a relation lookup definition</returns>        
+		/// <param name="assetTypeUid">Uid of the asset types</param>
+		/// <param name="fieldName">Field name</param>
+		[
+			HttpGet,
+			Route("{assetTypeUid:Guid}/relationLookupDetails/{fieldName}"),
+			 SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset uid and field name.", typeof(List<FieldTypesApiViewModel>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public HttpResponseMessage GetRelationLookupDetails(Guid assetTypeUid, string fieldName)
+		{
+			var prefix = "Fields.GetRelationLookupDetails => ";
+			try
+			{
+				string sql = $@"
+declare @fieldTypeId int = (select ft.ID from AssetType 
+inner join fieldtype ft on ft.name = @fieldname and ft.assettypeid = AssetType.ID
+where uid = @assettypeuid)
+
+declare @hideHeader bit;
+declare @hideFooter bit;
+declare @hideFilter bit;
+declare @definition nvarchar(max);
+
+select @hideHeader = HideHeader, @hideFooter = HideFooter, @hideFilter = HideFilter, @definition = [Definition] from FieldTypeLookup where @fieldTypeId = FieldTypeID
+
+
+SELECT Parsed.*, ITD.SubjectName, ITD.PredicateName, ITD.PredicateInverse, ITD.ObjectName, ITD.Name AS RelationshipTypeName
+FROM OPENJSON(@definition,'$.Relations') WITH (
+    RelationType int '$.RelationType',
+    Direction int '$.Direction',
+    AssetTypeUid uniqueidentifier '$.AssetTypeUid',
+    IntersectTypeUid uniqueidentifier '$.IntersectTypeUid'
+    ) Parsed
+inner join IntersectTypeDetail ITD ON ITD.uid = Parsed.IntersectTypeUid
+
+
+SELECT Parsed.*, RelName.name as RelationshipTypeName
+FROM OPENJSON(@definition,'$.Fields') WITH (
+AssetTypeUid uniqueidentifier '$.AssetTypeUid',
+FieldTypeID int '$.FieldTypeID',
+FieldTypeName nvarchar(max) '$.FieldTypeName',
+[Filter] nvarchar(max) '$.Filter',
+OverrideDisplayName nvarchar(max) '$.OverrideDisplayName',
+DisplayOrder int '$.DisplayOrder',
+SortOrder int '$.SortOrder',
+Show bit '$.Show',
+Width nvarchar(max) '$.Width',
+RelationIndex int '$.RelationIndex'
+) Parsed
+outer apply (select top 1 ITD.Name from IntersectTypeDetail ITD WHERE ITD.ID = Parsed.FieldTypeId and Parsed.FieldTypeName like 'Related Item%') RelName(name)
+
+
+select @hideHeader as hideHeader, @hideFooter as hideFooter, @hideFilter as hideFilter";
+
+				var reader = Company.Database.Connection.QueryMultiple(sql, new { assetTypeUid, fieldName });
+
+				var response = new
+				{
+					relationships = reader.Read<dynamic>(),
+					fields = reader.Read<dynamic>(),
+					details = reader.Read<dynamic>().FirstOrDefault(),
+				};
+
+				return Request.CreateResponse(HttpStatusCode.OK, response);
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> { { "Endpoint Method", prefix } });
+
+				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+			}
+		}
 	}
 }
