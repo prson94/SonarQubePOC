@@ -1,12 +1,12 @@
 ﻿import {
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    SimpleChanges,
-    ViewChild
+	ChangeDetectorRef,
+	Component,
+	Input,
+	OnChanges,
+	OnDestroy,
+	OnInit,
+	SimpleChanges,
+	ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
@@ -17,129 +17,139 @@ import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
-import { takeUntil } from 'rxjs/operators';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 
 @Component({
-    selector: 'd3s-reference-item-list',
-    templateUrl: './reference-item-list.component.html',
-    providers: [AssetService, GridDefinitionService]
+	selector: 'd3s-reference-item-list',
+	templateUrl: './reference-item-list.component.html',
+	providers: [AssetService, GridDefinitionService]
 })
 
 export class ReferenceItemGridComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
+	subjectLoadGrid = new Subject<boolean>();
 
-    constructor(
-        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private assetService: AssetService,
-        private gridDefinitionService: GridDefinitionService,
-        protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
-    ) {
-        super(settingsService);
-    }
+	constructor(
+		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
+		private assetService: AssetService,
+		private gridDefinitionService: GridDefinitionService,
+		protected settingsService: CompanySettingsService,
+		private cdRef: ChangeDetectorRef
+	) {
+		super(settingsService);
 
-    @Input() assetTypeUid: string;
-    @Input() typeName: string;
-    @Input() hasAdd: boolean = false;
-    @Input() readOnly: boolean = false;
-    @Input() isForAssetDetailPage: boolean = false;
-    @Input() highlightUid: string = '';
+		this.subjectLoadGrid.pipe(
+			debounceTime(300))
+			.subscribe(() => {
+				this.getDataDebounced();
+			});
+	}
 
-    public rowsPerPage: number;
-    private sortField: string;
-    private items: any[] = [];
-    private totalRecords: number = 10000;
-    private destroy = new Subject<void>();
+	@Input() assetTypeUid: string;
+	@Input() typeName: string;
+	@Input() hasAdd: boolean = false;
+	@Input() readOnly: boolean = false;
+	@Input() isForAssetDetailPage: boolean = false;
+	@Input() highlightUid: string = '';
 
-    columns: GridColumn[] = [];
-    fields: GridField[] = [];
+	public rowsPerPage: number;
+	private sortField: string;
+	private items: any[] = [];
+	private totalRecords: number = 10000;
+	private destroy = new Subject<void>();
 
-    private selected: any;
-    showEditor: boolean = false;
-    showDelete: boolean = false;
-    private getAssetSub: Subscription;
-    @ViewChild('dt', { static: false }) table: Table;
+	columns: GridColumn[] = [];
+	fields: GridField[] = [];
 
-    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, };
+	private selected: any;
+	showEditor: boolean = false;
+	showDelete: boolean = false;
+	private getAssetSub: Subscription;
+	@ViewChild('dt', { static: false }) table: Table;
+
+	private loadParams = { _loadPermissionDetails: true, _includeParent: true, _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, };
 
 
-    add() {
-        this.selected = null;
-        this.showEditor = true;
-    }
+	add() {
+		this.selected = null;
+		this.showEditor = true;
+	}
 
-    exportMessage: string = '';
-    private title: string = 'Items';
+	exportMessage: string = '';
+	private title: string = 'Items';
 
-    ngOnInit() {
-        this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
-        this.setRowsPerPage();
-        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage, this.title);
-    }
+	ngOnInit() {
+		this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
+		this.setRowsPerPage();
+		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage, this.title);
+	}
 
-    setRowsPerPage(): void {
-        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-            takeUntil(this.destroy)
-        ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage[this.title];
-        });
-    }
+	setRowsPerPage(): void {
+		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+			takeUntil(this.destroy)
+		).subscribe((rowsPerPage) => {
+			this.rowsPerPage = rowsPerPage[this.title];
+		});
+	}
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
-            this.load();            
-            this.loadParams._direction = 'ASC';
-            this.loadParams._pageNum = 1;
-            this.loadParams._pageSize = 10;
-            this.loadParams.useGraphForParent = true;
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes.assetTypeUid && changes.assetTypeUid.currentValue !== changes.assetTypeUid.previousValue) {
+			this.load();
+			this.loadParams._direction = 'ASC';
+			this.loadParams._pageNum = 1;
+			this.loadParams._pageSize = 10;
+			this.loadParams.useGraphForParent = true;
 			this.loadParams._listColorsAsJSON = true;
-            delete this.loadParams['_simpleFilter'];
-            delete this.loadParams['_filter'];
-        }
+			delete this.loadParams['_simpleFilter'];
+			delete this.loadParams['_filter'];
+		}
 
-        if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue && this.highlightUid) {
-            var highlightedAsset = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
-            if (highlightedAsset && highlightedAsset[0]) {
-                this.selected = highlightedAsset[0];
-            }
-            else {
-                this.load();
-            }
-        }
-    }
-    ngOnDestroy() {
-        this.getAssetSub.unsubscribe();
-        this.destroy.next();
-        this.destroy.complete();
-    }
+		if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue && this.highlightUid) {
+			var highlightedAsset = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
+			if (highlightedAsset && highlightedAsset[0]) {
+				this.selected = highlightedAsset[0];
+			}
+			else {
+				this.load();
+			}
+		}
+	}
+	ngOnDestroy() {
+		this.getAssetSub.unsubscribe();
+		this.destroy.next();
+		this.destroy.complete();
+	}
 
-    private load() {
-        if (!this.assetTypeUid)
-            {return;}
+	private load() {
+		if (!this.assetTypeUid) { return; }
 
-        this.isLoading = true;
+		this.isLoading = true;
 
-        this.gridDefinitionService.getGridDefinition(this.assetTypeUid, 'ReferenceItemType').subscribe(
-            (result) => {
-                this.columns = result.Columns;
-                this.fields = result.Fields;
-                this.loadItems();
-            }
-        );
-    }
+		this.gridDefinitionService.getGridDefinition(this.assetTypeUid, 'ReferenceItemType').subscribe(
+			(result) => {
+				this.columns = result.Columns;
+				this.fields = result.Fields;
+				this.loadItems();
+			}
+		);
+	}
 
-    private loadItems() {
-        if (this.getAssetSub) {
-            this.getAssetSub.unsubscribe();
-        }
+	private loadItems() {
+		this.subjectLoadGrid.next(true);
+	}
 
-        this.loadParams.useGraphForParent = false;
+	getDataDebounced() {
+		if (this.getAssetSub) {
+			this.getAssetSub.unsubscribe();
+		}
 
-        if (this.highlightUid) {
-            this.loadParams["_pageWithAsset"] = this.highlightUid;
-        }
+		this.loadParams.useGraphForParent = false;
 
-        this.isLoading = true;
-        this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe((result) => {
+		if (this.highlightUid) {
+			this.loadParams["_pageWithAsset"] = this.highlightUid;
+		}
+
+		this.isLoading = true;
+		this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe((result) => {
 			this.items = result.items;
 
 			this.items.forEach((asset) => {
@@ -151,46 +161,45 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 				}
 			});
 
-            this.totalRecords = result.total;
+			this.totalRecords = result.total;
 
-            if (this.items.length > 0) {
-                this.selected = this.items[0];
-            }
+			if (this.items.length > 0) {
+				this.selected = this.items[0];
+			}
 
-            if (this.highlightUid) {
-                var highlighted = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
-                if (highlighted) {
-                    this.selected = highlighted[0];
-                }
+			if (this.highlightUid) {
+				var highlighted = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
+				if (highlighted) {
+					this.selected = highlighted[0];
+				}
 
-                setTimeout(() => {
-                    if (this.table) {
-                        this.table.first = (+result.pageSize) * (+result.pageNum - 1);
-                        this.highlightUid = null;
-                        delete this.loadParams["_pageWithAsset"];
-                        this.cdRef.markForCheck();
-                    }
-                }, 100);
-            }
+				setTimeout(() => {
+					if (this.table) {
+						this.table.first = (+result.pageSize) * (+result.pageNum - 1);
+						this.highlightUid = null;
+						delete this.loadParams["_pageWithAsset"];
+						this.cdRef.markForCheck();
+					}
+				}, 100);
+			}
 
-            if (this.totalRecords < 1000) {
-                this.loadParams.useGraphForParent = false;
-            }
-            this.isLoading = false;
-            this.cdRef.detectChanges();
-        },
-            (err) => {
-                this.items = [];
-                this.totalRecords = 0;
-                this.isLoading = false;
-                this.cdRef.detectChanges();
-            });
+			if (this.totalRecords < 1000) {
+				this.loadParams.useGraphForParent = false;
+			}
+			this.isLoading = false;
+			this.cdRef.detectChanges();
+		},
+			(err) => {
+				this.items = [];
+				this.totalRecords = 0;
+				this.isLoading = false;
+				this.cdRef.detectChanges();
+			});
+	}
 
-    }
-
-    private loadAssets(event) {
-        if (event) {
-			let sort = event.sortField;			
+	private loadAssets(event) {
+		if (event) {
+			let sort = event.sortField;
 
 			if (!event.sortField || event.sortField === '') {
 				delete this.loadParams['_order'];
@@ -206,49 +215,49 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
 				this.loadParams['_order'] = sort;
 			}
-            
-            if (event.globalFilter && event.globalFilter.length > 0) {
-                this.loadParams['_simpleFilter'] = event.globalFilter;
-            }
-            else {
-                delete this.loadParams['_simpleFilter'];
-            }
 
-            var advancedFilter = AdvancedFiltersHelper.parseFiltersFromTableFilters(event.filters, this.fields);
-            if (advancedFilter.length > 0) {
-                this.loadParams['_filter'] = advancedFilter;
-            }
-            else {
-                delete this.loadParams['_filter'];
-            }
+			if (event.globalFilter && event.globalFilter.length > 0) {
+				this.loadParams['_simpleFilter'] = event.globalFilter;
+			}
+			else {
+				delete this.loadParams['_simpleFilter'];
+			}
 
-			
-			
-            this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
-
-            this.loadParams._pageSize = +event.rows;
-            this.loadParams._pageNum = (+event.first / +event.rows) + 1;
-        }
-
-        this.loadItems();
-    }
+			var advancedFilter = AdvancedFiltersHelper.parseFiltersFromTableFilters(event.filters, this.fields);
+			if (advancedFilter.length > 0) {
+				this.loadParams['_filter'] = advancedFilter;
+			}
+			else {
+				delete this.loadParams['_filter'];
+			}
 
 
 
-    private export() {
-        this.assetService.downloadAssetsExcel(this.assetTypeUid, this.loadParams, this.typeName);
-    }
+			this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
 
-    public onDeleted() {
-        this.items = this.items.filter((x) => x.AssetUid !== this.selected.AssetUid);
-        this.selected = null;
-        this.showDelete = false;
-    }
+			this.loadParams._pageSize = +event.rows;
+			this.loadParams._pageNum = (+event.first / +event.rows) + 1;
+		}
 
-    public saveReferenceItem(event) {
+		this.loadItems();
+	}
+
+
+
+	private export() {
+		this.assetService.downloadAssetsExcel(this.assetTypeUid, this.loadParams, this.typeName);
+	}
+
+	public onDeleted() {
+		this.items = this.items.filter((x) => x.AssetUid !== this.selected.AssetUid);
+		this.selected = null;
+		this.showDelete = false;
+	}
+
+	public saveReferenceItem(event) {
 		this.showEditor = false;
-    }
-    private canExportRecords() {
-        return this.totalRecords <= this.maxExportRows;
-    }
+	}
+	private canExportRecords() {
+		return this.totalRecords <= this.maxExportRows;
+	}
 }

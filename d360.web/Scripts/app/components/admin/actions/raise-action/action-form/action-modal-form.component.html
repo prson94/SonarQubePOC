@@ -1,0 +1,19 @@
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor large-dialog action-form-editor"
+		   [showTitle]="false"
+		   (onClose)="close()"
+		   [isVisible]="isModalVisible">
+	<asset-editor #dynamicEditor
+				  *ngIf="isModalVisible"
+				  [breadCrumbs]="breadCrumbs"
+				  [editorDecription]="editorDecription"
+				  [objectType]="'Issue'"
+				  [title]="issueType.Name"
+				  [selection]="selection"
+				  [objectTypeUid]="issueType.Uid"
+				  (saveClick)="save($event)"
+				  (closeClick)="close()"
+				  [useSidePanel]="hasSidePanel"
+				  [showAsModal]="true"
+				  [loadOnInit]="true"
+				  [isV2API]="true"></asset-editor>
+</d3s-modal>

@@ -2,7 +2,6 @@
 import { RouterModule, Routes } from '@angular/router';
 import { WorkflowComponent } from './workflow.component';
 import { WorkflowFormComponent } from './workflow-form.component';
-import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 
@@ -11,9 +10,6 @@ const routes: Routes = [
         path: '',
         component: WorkflowComponent,
         children: [
-            {
-                path: 'raiseissue', component: WorkflowRaiseIssueComponent
-            },  
             {
                 path: 'workflowlistnew/:workflowTypeId/:version/:stepId/:fromMail', component: WorkflowNewDetailComponent
             }, 

@@ -4,16 +4,25 @@
 			<div class="form-header">
 				{{title}}
 				<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
-				<div class="sub-header" *ngIf="!isLoading && !hidePath">
+				<div class="sub-header" *ngIf="!isLoading && !hidePath && objectType !== 'Issue'">
 					<span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
 					{{assetTypePath}}
 				</div>
+				<div class="sub-header sub-header-breadcrumbs" *ngIf="objectType === 'Issue'">
+					<span class="sub-header-breadcrumb" *ngIf="breadCrumbs.length > 0" i18n>Associated with:</span>&nbsp;
+					<div class="sub-header-breadcrumb" *ngFor="let breadcrumb of breadCrumbs;last as isLast">
+						<ng-container *ngIf="isLast && breadcrumb.link.startsWith('asset/'); else typeBreadcrumb">
+							<a href="#" (click)="onHeaderBreadcrumbClick($event, breadcrumb)">{{breadcrumb.text}}</a>
+						</ng-container>
+						<ng-template #typeBreadcrumb>
+							{{breadcrumb.text}} <span *ngIf="!isLast"> > </span>
+						</ng-template>
+					</div>
+				</div>
 			</div>
-			<ig-form-feedback-badges
-				class="ig-form-feedback-badges"
-				[igformGroup]="form"
-				[inputContainer]="formElement"
-			>
+			<ig-form-feedback-badges class="ig-form-feedback-badges"
+									 [igformGroup]="form"
+									 [inputContainer]="formElement">
 			</ig-form-feedback-badges>
 		</div>
 		<ng-template #loading>
@@ -22,7 +31,7 @@
 		<div class="row" *ngIf="isInError">
 			<div class="err-message">{{isInErrorMessage}}</div>
 		</div>
-		<div *ngIf="!isLoading && form; else loading" class="row" 
+		<div *ngIf="!isLoading && form; else loading" class="row"
 			 style="position: relative; min-height: calc(100% - 61px);">
 			<div class="form-instructions" *ngIf="hasDirections">
 				{{directions}}
@@ -31,6 +40,14 @@
 				  [formGroup]="form"
 				  #assetForm>
 				<div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+					<ig-property-group *ngIf="editorDecription"
+									   i18n-title
+									   title="Description">
+						<div inputs class="inputs-wrapper">
+							<div class="row" [innerHtml]="editorDecription"></div>
+						</div>
+					</ig-property-group>
+
 					<ng-template ngFor
 								 let-category
 								 [ngForOf]="categories">
@@ -63,9 +80,9 @@
 						</ig-property-group>
 					</ng-template>
 				</div>
-				
+
 				<div class="action-buttons-placeholder"></div>
-				
+
 				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
 					<button igButton
 							type="button"
@@ -77,7 +94,7 @@
 							(click)="closeClick.emit();">
 					</button>
 					<div class="flex-grow"></div>
-					<button *ngIf="!selection"
+					<button *ngIf="!selection && objectType !== 'Issue'"
 							type="button"
 							class="ig-button-secondary"
 							[igDataCy]="'Asset_Modal_Button_Another'"
@@ -91,7 +108,8 @@
 							(click)="onSubmit(true)">
 					</button>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					<button type="submit"
+					<button *ngIf="objectType !== 'Issue'"
+							type="submit"
 							class="ig-button-primary"
 							[igDataCy]="'Asset_Modal_Button_Save'"
 							igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
@@ -99,17 +117,29 @@
 							tooltip="{{saveButtonLabel}}"
 							[loading]="savingInProgress && !savingInProgressWithAddNew">
 					</button>
+					<button *ngIf="objectType === 'Issue'"
+							type="submit"
+							class="ig-button-primary"
+							[igDataCy]="'Asset_Modal_Button_Save'"
+							igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
+							i18n-label
+							i18n-tooltip
+							label="Submit"
+							tooltip="Submit"
+							[loading]="savingInProgress && !savingInProgressWithAddNew">
+					</button>
 				</div>
 			</form>
 		</div>
 	</div>
-	<div class="side-panel" *ngIf="useSidePanel && sidePanelOpen">
+	<div class="side-panel {{(!sidePanelOpen ? 'side-panel-collapsed' : '')}}" *ngIf="useSidePanel">
 		<side-panel [expanded]="sidePanelOpen"
 					(expandedChange)="onSidePanelExpansionChange($event)"
 					[panelApplies]="panelApplies"
 					[(selectedPanel)]="sidePanelTab"
 					[height]="'calc(100vh - 152px)'"
 					closeIcon="fa-close"
+					[showEmptyOverlay]="!selectedAsset && !selectedReferenceItem && !selectedTag"
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen">
 				<ng-container *ngIf="sidePanelTab === 'detail'">
