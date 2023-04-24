@@ -12,7 +12,8 @@ import {
     Input,
     OnInit,
     Output,
-    ViewChild
+    ViewChild,
+    ViewEncapsulation
 } from '@angular/core';
 import {
     AssetBrowserAlert,
@@ -79,7 +80,9 @@ declare var window: any;
         ResponsibilityService,
         ObjectStatisticsService,
     ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	styles: [`.as-split-gutter { height: calc(100vh - 264px) !important; }`],
+	encapsulation: ViewEncapsulation.None
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Input() readonly = true;
