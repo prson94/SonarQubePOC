@@ -252,7 +252,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     changeTypeChanged(event) {
-        this.model.Event.ChangeType = event;
+        this.model.Event.ChangeType = +event;
         this.showAddCondition = false;
 
         this.loadContextualFields();
