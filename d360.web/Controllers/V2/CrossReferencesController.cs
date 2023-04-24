@@ -276,7 +276,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> Put(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
+        public async Task<HttpResponseMessage> PutByXrefUid(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -315,7 +315,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> Put(Guid uid, AssetCrossReference model)
+        public async Task<HttpResponseMessage> PutByUid(Guid uid, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -385,7 +385,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource, string type)
+        public async Task<HttpResponseMessage> DeleteByDataSourceAndType(string dataSource, string type)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
