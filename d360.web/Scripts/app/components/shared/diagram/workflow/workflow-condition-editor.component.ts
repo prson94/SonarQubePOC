@@ -218,7 +218,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
             }
         } else if (this.selectedField.split('|')[0] === 'FormInput') {
-            const input = this.formFields.find((f) => f['@id'] === this.selectedField.split('|')[2] && f['@stepId'] === this.selectedField.split('|')[1]);
+debugger;
+            const input = this.formFields.find((f) => f['@id'] === this.selectedField.split('|')[2] && +f['@stepId'] === +this.selectedField.split('|')[1]);
 
             this.selectedType = input['@type'].toLowerCase();
 
