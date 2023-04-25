@@ -5497,17 +5497,32 @@ where v.id = {0}", id)).FirstOrDefault();
 			if (objectType.ToLowerInvariant().EndsWith("type"))
 			{
 				//we need to run site titles throught all parents as any parent may be part of custom folder with different name
-				sql = $@";with assetTypeHierarchy as (
-							select ID as AssetTypeId, 0 as [Level] from AssetType where object = @typeName and ObjectID = @typeId
-							union all
-							select itd.SubjectAssetTypeID as AssetTypeId, Level + 1 as [Level] from IntersectTypeDetail itd, assetTypeHierarchy
-							where itd.ObjectAssetTypeID = assetTypeHierarchy.AssetTypeId and [Level] < 10
+				sql = $@"declare @assetTypeId int = (select top 1 ID from AssetType where object = @typeName and ObjectID = @typeId);
+
+						declare @hierarchy table (assetTypeId int);
+
+						insert into @hierarchy (assetTypeId)
+						select @assetTypeId
+
+						;with cte as (
+						select IT.SubjectAssetTypeID as AssetTypeId, 0 as [Level] from [IntersectType] IT 
+						inner join [Predicate] P on P.ID = IT.PredicateID
+						where IT.ObjectAssetTypeID = @assetTypeId and P.Type IN (3,4)
+						union all
+						select IT2.SubjectAssetTypeID as AssetTypeId,  Level + 1 as [Level] from cte, [IntersectType] IT2
+						inner join [Predicate] P2 on P2.ID = IT2.PredicateID
+						where IT2.ObjectAssetTypeID = cte.AssetTypeId and P2.Type IN (3,4) and [Level] < 10
 						)
-						select TOP 1 D.Title from assetTypeHierarchy
-						inner join AssetType AT on AT.ID = AssetTypeId
+						insert into @hierarchy (assetTypeId)
+						select AssetTypeId from cte
+
+
+						select TOP 1 D.Title from @hierarchy h
+						inner join AssetType AT on AT.ID = h.assetTypeId
 						outer apply (select Title FROM [dbo].[SiteNav] WHERE ID = (Select top 1 ParentID FROM [dbo].[SiteNav] WHERE [Object] = AT.Object and [objectId] = AT.ObjectID))D(Title)
 						where D.Title IS NOT NULL
-						order by AT.ID ASC";
+						order by AT.ID ASC
+						option(Recompile)";
 			}
 
 			var res = await Company.QueryAsync<string>(sql, new { typeName = new DbString { Value = objectType.ToString(), IsFixedLength = true, Length = 30, IsAnsi = true }, typeId = objectId });
