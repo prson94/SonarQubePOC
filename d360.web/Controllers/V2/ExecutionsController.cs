@@ -957,7 +957,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 		]
-		public async Task<IHttpActionResult> GetLoads(Guid loadUid)
+		public async Task<IHttpActionResult> GetLoadByUid(Guid loadUid)
 		{
 			List<string> v2ApiActions = new List<string> { "P", "R", "U" };
 			string countSql = "";
@@ -1132,6 +1132,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
+		
 		/// <summary>
 		/// Creates a new Bulk load.
 		/// </summary>

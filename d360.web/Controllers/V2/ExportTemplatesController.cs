@@ -71,7 +71,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
 			SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> Get(string assetTypeUID)
+		public async Task<IHttpActionResult> GetByAssetType(string assetTypeUID)
 		{
 			if (Guid.TryParse(assetTypeUID, out var assetTypeId))
 			{

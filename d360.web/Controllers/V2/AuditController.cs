@@ -202,7 +202,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
 		]
-		public async Task<IHttpActionResult> GetAuditAsync(Guid assetUid)
+		public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
 		{
 			var prefix = "Audit.GetAuditAsync => ";
 

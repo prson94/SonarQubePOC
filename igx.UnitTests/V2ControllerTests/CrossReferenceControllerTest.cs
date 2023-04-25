@@ -167,7 +167,7 @@ namespace igx.UnitTests.V2ControllerTests
 
             try
             {
-                res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
+                res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
                 Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
@@ -178,11 +178,11 @@ namespace igx.UnitTests.V2ControllerTests
 
             dataSource = type = externalId = "not-empty";
             xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
-            res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
+            res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             xRef.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.Put(uid, dataSource, type, externalId, xRef);
+            res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
 
@@ -196,7 +196,7 @@ namespace igx.UnitTests.V2ControllerTests
 
             try
             {
-                res = await crossReferencesController.Put(uid, xRef);
+                res = await crossReferencesController.PutByUid(uid, xRef);
                 Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
@@ -206,12 +206,12 @@ namespace igx.UnitTests.V2ControllerTests
             xRef.DataSource = xRef.Type = xRef.ExternalID = "not-empty";
 
             xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
-            res = await crossReferencesController.Put(uid, xRef);
+            res = await crossReferencesController.PutByUid(uid, xRef);
 
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
             xRef.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.Put(uid, xRef);
+            res = await crossReferencesController.PutByUid(uid, xRef);
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
         [Fact]
@@ -260,7 +260,7 @@ namespace igx.UnitTests.V2ControllerTests
 
             try
             {
-                res = await crossReferencesController.DeleteByDataSource(string.Empty, type);
+                res = await crossReferencesController.DeleteByDataSourceAndType(string.Empty, type);
                 Assert.True(false, XMsg.ExceptionExpected);
             }
             catch (HttpResponseException ex)
@@ -268,11 +268,11 @@ namespace igx.UnitTests.V2ControllerTests
                 Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
             }
 
-            res = await crossReferencesController.DeleteByDataSource("random invalid string", "type");
+            res = await crossReferencesController.DeleteByDataSourceAndType("random invalid string", "type");
 
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
 
-            res = await crossReferencesController.DeleteByDataSource(DataConstants.ValidDataSource, "type");
+            res = await crossReferencesController.DeleteByDataSourceAndType(DataConstants.ValidDataSource, "type");
 
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
