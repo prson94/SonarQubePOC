@@ -272,7 +272,7 @@
 					</div>
 				</ig-property-group>
 
-				<ig-property-group [showHeaderLine]="false" [igformGroup]="assetTypeForm" title="Security" i18n-title>
+				<ig-property-group [showHeaderLine]="false" *ngIf="assetTypeSupportsDefaultSecurity" [igformGroup]="assetTypeForm" title="Security" i18n-title>
 					<div inputs>
 						<div class="form-group">
 							<div class="row">
