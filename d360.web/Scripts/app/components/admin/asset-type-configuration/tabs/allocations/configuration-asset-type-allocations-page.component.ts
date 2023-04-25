@@ -5,7 +5,8 @@ import { AssetTypeService } from "../../../../../services/asset-type.service";
 
 @Component({
     selector: "d3s-configuration-asset-type-allocations-page",
-    templateUrl: './configuration-asset-type-allocations-page.component.html'
+	templateUrl: './configuration-asset-type-allocations-page.component.html',
+	styles: [`.allocation-tab { padding: 16px; }`]
 })
 export class ConfigurationAssetTypeAllocationsPageComponent {
     assetTypeClass: AssetTypeClass;
