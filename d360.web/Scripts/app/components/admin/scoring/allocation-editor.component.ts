@@ -18,6 +18,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AllocationService } from '../../../services/allocations.service';
 import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from '../../../services/settings.service';
+import { HelpService } from "../../../services/help.service";
 
 @Component({
 	selector: 'allocation-editor',
@@ -65,11 +66,12 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 		private allocationService: AllocationService,
 		protected messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService,
+		private helpService: HelpService,
 		private elementRef: ElementRef,
 		private cdRef: ChangeDetectorRef) {
 		super(settingsService);
 
-		this.scoringHelpPage = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
+		this.scoringHelpPage = this.helpService.getHelpUrl("GOV-0005");
 		this.resetForm();
 	}
 

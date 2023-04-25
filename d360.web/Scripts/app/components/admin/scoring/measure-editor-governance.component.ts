@@ -29,6 +29,7 @@ import { FieldCondition } from '../../../models/field-condition-grid.models';
 import { cloneDeep, debounce } from "lodash-es";
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { HelpService } from '../../../services/help.service';
 
 @Component({
     selector: 'governance-measure-editor',
@@ -90,10 +91,11 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         protected fieldsService: FieldsObservableService,
-        protected fb: UntypedFormBuilder,
+		protected fb: UntypedFormBuilder,
+		protected helpService: HelpService,
         protected cdRef: ChangeDetectorRef
-    ) {
-        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
+	) {
+		super(fieldsService, metricsService, messagesService, settingsService, helpService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
