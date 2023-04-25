@@ -408,7 +408,7 @@ namespace d360.model
 					)
 					select * into #AssetRule from cte;
 
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	rel.PermissionsBitMask,
 								rasset.AssetID,
 								rasset.AssetTypeID
@@ -419,7 +419,7 @@ namespace d360.model
 						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} 
 						option (recompile);
 
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	rel.PermissionsBitMask,
 								rasset.AssetID,
 								rasset.AssetTypeID
@@ -432,7 +432,7 @@ namespace d360.model
 						where	RG.ResourceID = @{userParam}
 						option (recompile);
 
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	rr.PermissionsBitMask,
 								oride.AssetID,
 								a.AssetTypeID
@@ -445,7 +445,7 @@ namespace d360.model
 						where	a.AssetTypeID = @{typeParam} and RES.ResourceID = @{userParam}	
 						option (recompile);
 
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	rr.PermissionsBitMask,
 								oride.AssetID,
 								a.AssetTypeID
@@ -461,7 +461,7 @@ namespace d360.model
 	
 						--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
 						--AssetID is NULL to prevent these virtual rules from blocking read permissions
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	2 as PermissionsBitMask,
 								null as AssetID,
 								att.id as AssetTypeID
@@ -473,7 +473,7 @@ namespace d360.model
 								and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} and att.id = @{typeParam}
 						option (recompile);
 	
-						insert into #{tempTableName}
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
 						select	2 as PermissionsBitMask,
 								null as AssetID,
 								att.id as AssetTypeID

@@ -728,7 +728,7 @@ namespace d360.web.Controllers.V2
 					//order by TokenExpression to avoid wrong replacement in similiar expressions i.w. field ct test and field ct testing
 					foreach (var cwhere in catalogWheres.OrderByDescending(x => x.TokenExpression.Length))
 					{
-						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(","\\(").Replace(")","\\)"), cwhere.Where))
+						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where))
 						{
 							throw new FilterExpressionParserException("Invalid filter expression");
 						}
@@ -748,7 +748,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			string permissionTempTableSql = "";
-
+			Company.CurrentResourceIsAdmin = true;
 			if (!Company.CurrentResourceIsAdmin)
 			{
 				permissionTempTableSql = $@"
@@ -758,9 +758,6 @@ namespace d360.web.Controllers.V2
 						AssetTypeID bigint,
 						PermissionsBitMask int
 					)
-
-					create index cix_permissionAssetId on #NoReadAssets(Assetid);
-
 
 					declare @assetTypeIds table (id int, PermissionsBitMask int)
 					insert into @assetTypeIds
@@ -772,9 +769,12 @@ namespace d360.web.Controllers.V2
 					set @typeid = (select top 1 id from @assetTypeIds)
 					while @typeid is not null
 					begin
+
+						{Company.GetUserPermissionQuery("PermissionAssets", "userId", "typeid")}
+
 						insert into #NoReadAssets
 						select AssetID,AssetTypeID,PermissionsBitMask 
-						from dbo.UserAssetPermissions(@userId,@typeid) 
+						from #PermissionAssets 
 						where ((PermissionsBitMask & {((int)Permission.ReadAsset)})) = 0
 						group by AssetID,AssetTypeID,PermissionsBitMask; 
 
@@ -788,10 +788,12 @@ namespace d360.web.Controllers.V2
 
 					insert into #NoReadAssets
 					select a.ID, ati.id, ati.PermissionsBitMask from @assetTypeIds ati
-					inner join asset a on a.AssetTypeID = ati.id";
+					inner join asset a on a.AssetTypeID = ati.id
+
+					create index ix_noreadassets_assetid on #NoReadAssets(AssetId)";
 
 				dbArgs.Add("userId", Company.CurrentResourceID);
-				whereStatements.Add("not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)");
+				whereStatements.Add("nra.AssetId is null");
 			}
 
 
@@ -801,6 +803,7 @@ namespace d360.web.Controllers.V2
 				select {{0}}
 				from
 				dbo.CatalogBrowseObject S
+				{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
 				{(!string.IsNullOrEmpty(simpleFilterTempTable) ? "inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = s.ObjectAssetID" : "")}
 				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement).Distinct())}
@@ -821,10 +824,15 @@ namespace d360.web.Controllers.V2
 				string where = "";
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					where = " where not exists (select AssetID from #NoReadAssets where AssetID = S.ObjectAssetID)";
+					where = " where nra.AssetId is null";
 				}
 
-				countSql = $@"select COUNT(distinct S.ObjectAssetID) from dbo.CatalogBrowseSubject S {where} option(recompile)";
+				countSql = $@"
+					select COUNT(distinct S.ObjectAssetID) 
+					from dbo.CatalogBrowseSubject S 
+					{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
+					{where} 
+					option(recompile)";
 
 				if (!string.IsNullOrEmpty(simpleFilterTempTable))
 				{
@@ -832,6 +840,7 @@ namespace d360.web.Controllers.V2
 						select COUNT(distinct S.ObjectAssetID) 
 						from dbo.CatalogBrowseSubject S
 						inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = S.ObjectAssetID
+						{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 						{where}
 						option(recompile)";
 				}
