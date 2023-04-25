@@ -287,8 +287,15 @@ namespace d360.extensions.search
             }
             else
             {
-                _source.ClearIndex(_companyID, assetClass.ToString());
-                bool processByAssetType = false;
+				try
+				{
+					_source.ClearIndex(_companyID, assetClass.ToString());
+				}
+				catch (Exception e)
+				{
+					_messages.Add($"Exception caught clearing index for Asset Category {assetClass}: {e.Message}");
+				}
+				bool processByAssetType = false;
                 int assettypeclass = (int)assetClass;
 
                 long assetCount = CreatePendingDBLog(assetClass, null);
@@ -332,10 +339,16 @@ namespace d360.extensions.search
                 else
                 {
                     UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
-                    IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
-                    _source.AddToIndex(models);
-                }
-            }
+					try { 
+						IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
+						_source.AddToIndex(models);
+					}
+					catch (Exception e)
+					{
+						_messages.Add($"Exception caught indexing Asset Category {assetClass}: {e.Message}");
+					}
+				}
+			}
 
             if (_messages.Any())
             {
