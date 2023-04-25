@@ -689,6 +689,22 @@ delete from [dbo].[HelpResource] where [Url] = 'Default.htm#b-release-notes/what
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+<changeSet author="TKlok" id="Data.Corrections.GOV-20302">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/User-guide' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/Administration' and [isSystem] = 1;
+delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Latest-release' and [isSystem] = 1;
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
 
 

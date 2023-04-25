@@ -15,6 +15,7 @@ import { Observable } from "rxjs";
 import { environment } from '../../../../environments/environment';
 import { AuthenticationService } from "../../../services/authentication.service";
 import { HelpMenu } from "../../../models/helpmenu.model";
+import { HelpService } from "../../../services/help.service";
 
 @Component({
     selector: 'd3s-header-help',
@@ -59,7 +60,8 @@ export class HeaderHelpComponent implements OnInit {
     constructor(
         private ref: ChangeDetectorRef,
         private settingService: CompanySettingsService,
-        private helpMenuService: HelpMenuService,
+		private helpMenuService: HelpMenuService,
+		private helpService: HelpService,
         protected resourceService: ResourcesService,
         protected authenticationService: AuthenticationService,
     ) { }
@@ -67,9 +69,17 @@ export class HeaderHelpComponent implements OnInit {
 
     ngOnInit(): void {
         this.helpMenuService.getHelpMenuItems()
-            .subscribe((r) => {
-                this.items = r;
-                this.items.sort((a, b) => (a.order < b.order ? -1 : 1));
+			.subscribe((r) => {
+				const helpItems = r
+					.map((h) => {
+						if (h.isSystem && h.Url.startsWith("GOV-")) {
+							return { ...h, Url: this.helpService.getHelpUrl(h.Url) };
+						} else {
+							return h;
+						}
+					})
+					.sort((a, b) => (a.order < b.order ? -1 : 1));
+				this.items = helpItems;
             });
         this.authenticationService.checkCurrentUserAdmin().subscribe((a) => {
             this.isAdmin = a;

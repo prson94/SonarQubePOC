@@ -18,6 +18,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { cloneDeep, debounce } from "lodash-es";
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { HelpService } from '../../../services/help.service';
 
 @Component({
     selector: 'external-measure-editor',
@@ -49,11 +50,12 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        protected fieldsService: FieldsObservableService,
+		protected fieldsService: FieldsObservableService,
+		protected helpService: HelpService,
         protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
-    ) {
-        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
+	) {
+		super(fieldsService, metricsService, messagesService, settingsService, helpService, cdRef);
     }
 
     ngOnChanges(changes: SimpleChanges): void {

@@ -1231,40 +1231,11 @@ select	r.uid as ResourceUid,
 		]
 		public async Task<IHttpActionResult> GetHelpMenuItems()
 		{
-			const string supportUrl = "https://community.precisely.com/home";
-			const string aboutUrl = "about";
-			var baseUrl = ConfigurationManager.AppSettings["FluidTopicBaseUri"].ToString();
-			var helpLocale = "en-US";
-
 			try
 			{
 				var items = Company.HelpResources.ToList();
-				List<HelpMenuItem> helpItems = new List<HelpMenuItem>();
 
-				foreach (var item in items)
-				{
-					HelpMenuItem help = new HelpMenuItem();
-					help.ID = item.ID;
-					help.Description = item.Description;
-					help.Name = item.Name;
-					if (item.isSystem && (item.Url != aboutUrl && item.Url != supportUrl))
-					{
-						help.Url = baseUrl + helpLocale + "/" + item.Url;
-					}
-					else
-					{
-						help.Url = item.Url;
-					}
-					help.order = item.order;
-					help.visibility = item.visibility;
-					help.uid = (Guid)item.uid;
-					help.isEditable = item.isEditable;
-					help.isSystem = item.isSystem;
-
-					helpItems.Add(help);
-				}
-
-				var response = Request.CreateResponse(HttpStatusCode.OK, helpItems);
+				var response = Request.CreateResponse(HttpStatusCode.OK, items);
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
 			}
 			catch (Exception e)

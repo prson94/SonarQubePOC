@@ -20,6 +20,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ScoreService } from '../../../services/score.service';
+import { HelpService } from '../../../services/help.service';
 
 @Component({
     selector: 'measure-list',
@@ -147,10 +148,11 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private allocationService: AllocationService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        private scoreService: ScoreService) {
+		private scoreService: ScoreService,
+		private helpService: HelpService) {
         super(settingsService);
 
-		this.helpUri = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
+		this.helpUri = this.helpService.getHelpUrl("GOV-0005");
     }
 
     delayedReload = debounce(() => {
