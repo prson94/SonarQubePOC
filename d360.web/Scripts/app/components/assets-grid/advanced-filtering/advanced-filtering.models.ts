@@ -599,6 +599,11 @@ export class AdvancedFilterFieldConditionCollection {
 						queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
 					}
 					else {
+						stringArr = stringArr.map((x) => encodeURIComponent(x));
+						const isDataCatalog = (window.location.href ?? "").toLowerCase().endsWith("datacatalog");
+						if (isDataCatalog) {
+							stringArr = stringArr.map((x) => x.split('(').join("\\(").split(')').join('\\)'));
+						}
 						if (cond.operator.toString() === "Equals") {
 							queries.push(`(${cond.field} eq '${(stringArr.join(' > '))}')`);
 						}
