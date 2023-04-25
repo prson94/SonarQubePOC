@@ -812,18 +812,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			if ((restrictions.HasAssetRestriction && !useAsAdmin) || restrictions.HasAssetPermission)
 			{
-				populatePremissionAssetTableSQL = @"
-											drop table if exists #PermissiondAssets;
-											create table #PermissiondAssets(
-												AssetId int,
-												AssetTypeID bigint,
-												PermissionsBitMask int
-											)
-
-											create index cix_permissionAssetId on #PermissiondAssets(Assetid);
-
-											insert into #PermissiondAssets
-											select AssetID,AssetTypeID,PermissionsBitMask from dbo.UserAssetPermissions(@userId,@assetTypeId); ";
+				populatePremissionAssetTableSQL = CompanyContext.GetUserPermissionQuery("PermissiondAssets", "userId", "assettypeid");
 
 				if (restrictions.HasAssetRestriction && !useAsAdmin)
 				{
@@ -2180,7 +2169,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			var typesToAvoid = new List<string>() {
 				DataType.ComplexRelationLookup.ToString(),
 				DataType.DataTableSelect.ToString()
-			};			
+			};
 
 			string ParentAssetTypeUidHeading = "Parent";
 
@@ -2220,10 +2209,10 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			//add default fields
 			if (assetType.Class == AssetTypeClass.Reference)
 			{
-				var colourIndex = fields.FindIndex(x => x.Name.ToLower() == "code") + 1;				
+				var colourIndex = fields.FindIndex(x => x.Name.ToLower() == "code") + 1;
 				fields.Insert(colourIndex, new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
 				includeAssetUrl = false;
-			}			
+			}
 
 			var rowData = results.items.ToList();
 
@@ -3021,22 +3010,22 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			assetTypeID = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == assetTypeUid)?.ID ?? 0;
 			//Use same output format as FieldsController._FieldTypesByObject to preserve compatability
 			return CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID)
-				.OrderBy(x=> x.FriendlyName)
+				.OrderBy(x => x.FriendlyName)
 				.Select(i => new
-			{
-				i.FriendlyName,
-				i.Category,
-				i.DisplayDescription,
-				i.FormDescription,
-				i.ID,
-				i.IsListable,
-				i.IsRequired,
-				i.ColumnOrder,
-				i.SortOrder,
-				i.SortByAscending,
-				i.Type,
-				i.Name
-			}).ToList();
+				{
+					i.FriendlyName,
+					i.Category,
+					i.DisplayDescription,
+					i.FormDescription,
+					i.ID,
+					i.IsListable,
+					i.IsRequired,
+					i.ColumnOrder,
+					i.SortOrder,
+					i.SortByAscending,
+					i.Type,
+					i.Name
+				}).ToList();
 		}
 
 		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
