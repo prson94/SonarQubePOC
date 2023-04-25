@@ -13,7 +13,7 @@ export class HelpService {
 	private fluidServer: string = "";
 	private fluidVersion: string = "";
 
-	private _fluidUrlPattern = new RegExp("^(.*)\/r\/Data360-Govern\/(.*)\/$");
+	private _fluidUrlPattern = new RegExp("^(.*)/r/Data360-Govern/(.*)\/$");
 	//No translated "Preview" help pages, so for non-English, use Latest
 	private _fluidVersionLanguage = {
 		"Preview": {
