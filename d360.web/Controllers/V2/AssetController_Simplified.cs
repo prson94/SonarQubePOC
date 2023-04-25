@@ -748,7 +748,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			string permissionTempTableSql = "";
-			Company.CurrentResourceIsAdmin = true;
+
 			if (!Company.CurrentResourceIsAdmin)
 			{
 				permissionTempTableSql = $@"
