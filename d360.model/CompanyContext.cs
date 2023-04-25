@@ -1234,6 +1234,14 @@ from	IntersectType I
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
+				if (subjectUid.HasValue)
+				{
+					var IsReferenceClass = Filter<AssetType>(i => i.uid.ToString().ToLowerInvariant() == subjectUid.Value.ToString().ToLowerInvariant() && i.Class == AssetTypeClass.Reference).Count();
+					if (IsReferenceClass > 0)
+					{
+						limitToClasses.Remove(AssetTypeClass.Reference);
+					}
+				}
 				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
 			}
 

@@ -126,6 +126,7 @@ namespace d360.model.DataAccessLayer
 			bool orderByAssetPath = false;
 			bool listColorsAsJSON = false;
 			bool includeLegacyData = false;
+			bool showReferenceListTypeData = false;
 
 			string _orderBy = "I.IntersectTypeID,I.ID";
 			string _orderDirection = "asc";
@@ -341,6 +342,10 @@ namespace d360.model.DataAccessLayer
 				{
 					bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "includelegacydata").Value, out includeLegacyData);
 				}
+				if (queryParamsList.Any(k => k.Key.ToLower() == "_showreferencelisttypedata"))
+				{
+					bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_showreferencelisttypedata").Value, out showReferenceListTypeData);
+				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
 				{
 					State state;
@@ -400,7 +405,7 @@ namespace d360.model.DataAccessLayer
 														insert into @filteredIntersect(ID)
 														select I.ID 
 														from [Intersect] I
-														where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) and I.subjectAssetID = 0
+														where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) {(showReferenceListTypeData ? "" : " and I.subjectAssetID = 0 ")}
 														option (recompile);
 
 														set @AddInnerIntersect = 1;
@@ -411,7 +416,7 @@ namespace d360.model.DataAccessLayer
 														from @filteredIntersect fi
 														where not exists (select 1  
 																		 from [Intersect] I
-																		 where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) and I.subjectAssetID = 0
+																		 where I.subjectAssetTypeID = cast(@SubjAssetTypeID as int) {(showReferenceListTypeData ? "" : " and I.subjectAssetID = 0")}
 																		 and i.id = fi.id)
 														option (recompile);
 													end
@@ -472,7 +477,7 @@ namespace d360.model.DataAccessLayer
 														insert into @filteredIntersect(ID)
 														select I.ID 
 														from [Intersect] I
-														where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int)  and I.ObjectAssetID = 0
+														where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int)  {(showReferenceListTypeData ? "" : "and I.ObjectAssetID = 0")}
 														option (recompile);
 														set @AddInnerIntersect = 1;
 													end
@@ -482,7 +487,7 @@ namespace d360.model.DataAccessLayer
 														from @filteredIntersect fi
 														where not exists (select 1  
 																		 from [Intersect] I
-																		 where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int) and I.ObjectAssetID = 0
+																		 where I.ObjectAssetTypeID = cast(@ObjAssetTypeID as int) {(showReferenceListTypeData ? "" : " and I.ObjectAssetID = 0 ")}
 																		 and i.id = fi.id)
 														option (recompile);
 													end
@@ -613,13 +618,14 @@ namespace d360.model.DataAccessLayer
 							from [Intersect] I
 							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
 							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.SubjectAssetTypeID = cast(@assetTypeId as int) and I.SubjectAssetID = 0
+							where I.SubjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.SubjectAssetID = 0 ")}
+
 							union all
 							select I.SubjectAssetTypeID AssetTypeID
 							from [Intersect] I
 							{(AddInnerIntersect ? "inner join @filteredIntersect fI on I.ID = fI.ID" : "")}
 							{(AddInnerIntersectType ? "inner join @filteredIntersectTypes fit on fit.id = I.Intersecttypeid" : "")}
-							where I.ObjectAssetTypeID = cast(@assetTypeId as int) and I.ObjectAssetID = 0
+							where I.ObjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? " " : " and I.ObjectAssetID = 0 ")}
 							) a
 							)
 							select rsdata.AssetTypeID,ATPath.[Path]
@@ -647,7 +653,7 @@ namespace d360.model.DataAccessLayer
 							left join AssetPath AP on AP.Id = I.ObjectAssetID
 							left join AssetType OT2 on OT2.ID = I.ObjectAssetTypeID 
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.ObjectAssetTypeID
-							where I.SubjectAssetTypeID = cast(@assetTypeId as int) and I.SubjectAssetID = 0
+							where I.SubjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.SubjectAssetID = 0 ")}
 							option(recompile);
 
 							insert into #filteredIntersectAssets
@@ -663,7 +669,7 @@ namespace d360.model.DataAccessLayer
 							left join AssetType ST2 on ST2.ID = I.SubjectAssetTypeID
 							Left outer join #filteredIntersectAssets fia on fia.id = I.ID
 							left join #tempassettypedata  ATPath on ATPath.AssetTypeID = I.SubjectAssetTypeID
-							where fia.id is null and I.ObjectAssetTypeID = cast(@assetTypeId as int) and I.ObjectAssetID = 0
+							where fia.id is null and I.ObjectAssetTypeID = cast(@assetTypeId as int) {(showReferenceListTypeData ? "" : " and I.ObjectAssetID = 0 ")}
 							option(recompile);
 							";
 						}

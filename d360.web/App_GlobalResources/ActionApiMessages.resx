@@ -219,6 +219,9 @@
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
     <value>The field you specified for sorting ({0}) could not be found.</value>
   </data>
+  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
+    <value>Relationship Type with Uid {0} not allowed subject and object both side with reference type.</value>
+  </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Relationship Type with Uid {0} could not be found.</value>
   </data>

@@ -1202,6 +1202,14 @@ namespace d360.web.Controllers.V2
 			{
 				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
 			}
+			else
+			{
+				if (intersectType.SubjectClass == intersectType.ObjectClass && intersectType.SubjectClass == AssetTypeClass.Reference)
+				{
+					throw new ForbiddenBusinessLayerException(string.Format(ActionApiMessages.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
+				}
+			}
+
 
 			if (relationships == null)
 			{
