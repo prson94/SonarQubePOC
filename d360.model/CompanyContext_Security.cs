@@ -378,6 +378,140 @@ namespace d360.model
 			return HasAssetTypePermission(assetType.Object, assetTypeId, permission);
 		}
 
+		//this derives from SQL Function dbo.UserAssetPermissions which performs slower as we cannot utilize some sql optimizations on sql functions
+		public string GetUserPermissionQuery(string tempTableName = "PermissiondAssets", string userParam = "ResourceID", string typeParam = "AssetTypeID")
+		{
+			return $@"drop table if exists #{tempTableName};
+					create table #{tempTableName}(
+						AssetId int,
+						AssetTypeID bigint,
+						PermissionsBitMask int
+					)
+
+					drop table if exists #AssetRule;
+					with cte as (
+					select a.AssetTypeID,
+								   rasset.AssetID,
+								   rasset.RuleID
+							from  [dbo].[asset] a
+							inner join [dbo].[ResponsibilityRuleResultAsset] rasset 
+							on (rasset.AssetID = a.ID)
+							where a.AssetTypeID = @{typeParam}
+							union all 
+							select att.ID as AssetTypeID,
+								   rasset.AssetID,
+								   rasset.RuleID
+							from  [dbo].[assettype] att
+							inner join [dbo].[ResponsibilityRuleResultAsset] rasset
+							on (rasset.AssetID = 0 and rasset.AssetTypeID = @{typeParam})
+							where att.ID = @{typeParam}
+					)
+					select * into #AssetRule from cte;
+
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	rel.PermissionsBitMask,
+								rasset.AssetID,
+								rasset.AssetTypeID
+						from	#AssetRule rasset
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} 
+						option (recompile);
+
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	rel.PermissionsBitMask,
+								rasset.AssetID,
+								rasset.AssetTypeID
+						from	#AssetRule rasset
+								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
+								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
+						where	RG.ResourceID = @{userParam}
+						option (recompile);
+
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	rr.PermissionsBitMask,
+								oride.AssetID,
+								a.AssetTypeID
+						from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+								inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+								inner join [dbo].asset a on (a.id = oride.assetID)
+								inner join [dbo].assettype att on (att.id = a.assettypeid)
+								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
+								inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
+						where	a.AssetTypeID = @{typeParam} and RES.ResourceID = @{userParam}	
+						option (recompile);
+
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	rr.PermissionsBitMask,
+								oride.AssetID,
+								a.AssetTypeID
+						from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+								inner join [dbo].ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID  
+								inner join [dbo].asset a on (a.id = oride.assetID)
+								inner join [dbo].assettype att on (att.id = a.assettypeid)
+								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
+								inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
+								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @{typeParam}		
+						where	a.AssetTypeID = @{typeParam} and RG.ResourceID = @{userParam}
+						option (recompile);
+	
+						--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
+						--AssetID is NULL to prevent these virtual rules from blocking read permissions
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	2 as PermissionsBitMask,
+								null as AssetID,
+								att.id as AssetTypeID
+						from	[dbo].[responsibilitytyperelationrule] r
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+								and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} and att.id = @{typeParam}
+						option (recompile);
+	
+						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+						select	2 as PermissionsBitMask,
+								null as AssetID,
+								att.id as AssetTypeID
+						from	[dbo].[responsibilitytyperelationrule] r
+								inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
+								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+								inner join [dbo].[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+								inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
+								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
+						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
+								and RG.ResourceID = @{userParam} and att.id = @{typeParam}
+						option (recompile);
+	
+						if not exists(select 1 from reporting.Global_Resource where ResourceID = @{userParam} and IsAdministrator = 1)
+						begin
+							drop table if exists #resourceResponsibilities
+		
+							select * 
+							into #resourceResponsibilities
+							from dbo.ResponsibilityDetail where ResourceID = @{userParam}
+
+							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
+
+							insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
+							select	
+								0 as PermissionsBitMask,
+								A.ID as AssetID,
+								A.AssetTypeID
+							from
+								dbo.Asset A
+								inner join dbo.AssetType T on T.ID = A.AssetTypeID and T.ID = @{typeParam}
+							where	
+								T.DefaultPermissions = 0 
+								and not exists(select 1 from #resourceResponsibilities where AssetID = A.ID)
+								option (recompile);
+						end";
+		}
+
 		public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)
 		{
 			List<AssetMeasureModel> structuredMeasures = null;
