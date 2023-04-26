@@ -338,7 +338,9 @@ export class UiAdvancedFiltering {
 		});
 		return result;
 	}
-
+	
+	// ignore complexity codacy issue
+        // eslint-disable-next-line
 	isGivenValueEqualToSearchValue(givenValue: string, searchValue: string | string[] | LookupOption[], options: AdvancedFilterFieldCondition): boolean {
 		if (options.fieldType === 'Path') {
 			const givenPath: string[] = givenValue.split(' : ');
