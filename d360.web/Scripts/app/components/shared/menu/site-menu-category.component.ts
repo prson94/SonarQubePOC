@@ -7,7 +7,6 @@
 	Input,
 	OnChanges,
 	Output,
-	SimpleChanges,
 	TemplateRef,
 	ViewChild
 } from '@angular/core';
