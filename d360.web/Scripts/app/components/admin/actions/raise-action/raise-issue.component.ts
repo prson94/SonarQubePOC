@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Breadcrumb } from '../../../../models/breadcrumb.model';
 import { ActionEditorModel, WorkflowIssueType } from '../../../../models/workflow.model';
@@ -14,6 +14,7 @@ import { BaseComponent } from '../../../shared/base.component';
 	templateUrl: 'raise-issue.component.html',
 	styleUrls: ['raise-issue.component.less'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	encapsulation: ViewEncapsulation.None
 })
 
 export class RaiseIssueComponent extends BaseComponent implements OnChanges {
