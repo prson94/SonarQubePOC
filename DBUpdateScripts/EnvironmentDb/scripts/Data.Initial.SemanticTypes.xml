@@ -2398,4 +2398,22 @@
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Data.Initial.SemanticTypes-v4">
+	<comment>GOV-20838</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+INSERT [dbo].[Semantic] ([Qualifier], [EffectiveDate], [Name], [Description], [Threshold], [Status], [Priority], [Source], [MatchType], [BaseType], [RegularExpression], [ValidValues], [InvalidValues], [ValidLocales], [MinimumSamples], [HeaderFilter], [HeaderFilterConfidence], [Minimum], [Maximum], [MinMaxPresent], [JsonPayload], [CreatedBy], [CreatedOn], [UpdatedBy], [UpdatedOn], [TransactionId], [Uid]) 
+VALUES 
+(N'COMPANY_NAME', CAST(N'2023-04-26T12:25:58.417' AS DateTime), N'Company Name', N'Company Name', 95, 2, 380, 1, 4, 4, NULL, NULL, NULL, N'["en","nl"]', NULL, NULL, NULL, NULL, NULL, NULL, N'{"headerRegExps":["^(?i)(company|business|dba|organization|company.?name|business.?name|dba.?name|organization.?name|org.?name|vendor.?name)$","^.*(?i)(company.?name|business.?name|organization.?name|dba.?name).*$"],"headerRegExpConfidence":[99,90],"regExpsToMatch":[".+","\\p{IsAlphabetic}+"]}', 94, CAST(N'2023-04-26T12:25:58.417' AS DateTime), 94, CAST(N'2023-04-26T12:25:58.417' AS DateTime), N'17xunes9c8', N'c9d073a1-3669-4f9c-836c-13b11fc83618')
+,(N'FULL_ADDRESS_EN', CAST(N'2023-04-26T12:25:58.397' AS DateTime), N'Full Address (English Language)', N'Full Address (English Language)', 90, 2, 75, 1, 4, 4, NULL, NULL, NULL, N'["en-CA","en-US"]', NULL, NULL, NULL, NULL, NULL, NULL, N'{"headerRegExps":[".*(?i)(address)",".*(?i)(addr|location).*"],"headerRegExpConfidence":[99,95]}', 94, CAST(N'2023-04-26T12:25:58.397' AS DateTime), 94, CAST(N'2023-04-26T12:25:58.397' AS DateTime), N'17xunes9c8', N'beb97cbb-7271-473f-b9ed-8b80ed805a00')
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>   
 </databaseChangeLog>
