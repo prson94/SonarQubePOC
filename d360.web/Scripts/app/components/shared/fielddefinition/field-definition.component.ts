@@ -2,7 +2,7 @@
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldDisplayModel, FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
+import { FieldColumnPosition, FieldDisplayModel, FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
@@ -196,7 +196,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.FieldTypeREF = field;
 						return displayField;
 					});
-
+					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
 					this.updateMenuItems();
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
 
@@ -226,7 +226,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.delete(item.Name);
 				break;
 			case 'movetop':
-				this.moveToPosition(item, 0);
+				this.moveToTop(item);
 				break;
 			case 'moveup':
 				this.moveUp(item);
@@ -235,7 +235,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.moveDown(item);
 				break;
 			case 'movebottom':
-				this.moveToPosition(item, this.nonFilteredFieldDisplayModel.length);
+				this.moveToLast(item);
 				break;
 		}
 	}
@@ -254,8 +254,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.isReorderingLocked = (typeof this.simpleFilter !== 'undefined' && this.simpleFilter !== '')
 			|| (this.advancedFilters && this.advancedFilters.filter !== '');
 
-		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null);
-
+		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null && this.tableEl.sortField !== 'ColumnOrder');
 		// ignore complexity codacy issue
 		// eslint-disable-next-line
 		this.fieldDisplayModel.forEach((item) => {
@@ -297,6 +296,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 			item.MenuItems = menuItems;
 		});
+
+		this.cdRef.markForCheck();
 	}
 
 	get currentUid(): string {
@@ -418,13 +419,42 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		);
 
 	}
-	onRowReorder($event) {
-		const dropIndex = $event.dropIndex;
-		const dragIndex = $event.dragIndex;
-		const moveField = this.fieldDisplayModel[`${dragIndex}`];
-		if (moveField) {
-			this.moveToPosition(moveField, dropIndex + 1);
-		}
+
+	moveToTop(field: FieldDisplayModel) {
+		let idx = this.fieldDisplayModel.indexOf(field);
+		this.fieldDisplayModel.unshift(this.fieldDisplayModel.splice(idx, 1)[0]);
+
+		const position: FieldColumnPosition[] = [];
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
+	}
+
+	moveToLast(field: FieldDisplayModel) {
+		let idx = this.fieldDisplayModel.indexOf(field);
+		this.fieldDisplayModel.push(this.fieldDisplayModel.splice(idx, 1)[0]);
+
+		const position: FieldColumnPosition[] = [];
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
+	}
+
+	onRowReorder() {
+		const position: FieldColumnPosition[] = [];
+		let idx = 0;
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
 	}
 
 	moveUp(field: FieldDisplayModel) {
@@ -436,7 +466,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
-				this.isLoading = false;
+				this.load();
 				this.cdRef.markForCheck();
 			}
 		);
@@ -451,13 +481,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
-				this.isLoading = false;
+				this.load();
 				this.cdRef.markForCheck();
 			}
 		);
 	}
 
-	moveToPosition(field: FieldDisplayModel, position: number) {
+	moveToPosition(field: FieldDisplayModel, position: FieldColumnPosition[]) {
 		this.isLoading = true;
 		this.fieldsService.moveToPosition(this.currentUid, field.Name, position).subscribe(
 			(orderedColumns) => {
@@ -466,7 +496,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				});
 				this.tableEl.sortField = "ColumnOrder";
 				this.tableEl.sortSingle();
-				this.isLoading = false;
+				this.load();
 				this.cdRef.markForCheck();
 			}
 		);

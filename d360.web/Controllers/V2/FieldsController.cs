@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -1936,54 +1937,35 @@ namespace d360.web.Controllers.V2
 
 					if (assetType != null)
 					{
-						whereQuery = "where AssetTypeID = @typeId";
+						whereQuery = " AssetTypeID = @typeId";
 						typeId = assetType.ID;
 					}
 					else if (intersectType != null)
 					{
-						whereQuery = "where IntersectTypeID = @typeId";
+						whereQuery = " IntersectTypeID = @typeId";
 						typeId = intersectType.ID;
 					}
 					else if (actionType != null)
 					{
-						whereQuery = "where IssueTypeID = @typeId";
+						whereQuery = " IssueTypeID = @typeId";
 						typeId = actionType.ID;
 					}
 
 					if (model.Direction == "positional")
 					{
-						newPosition = model.Position.Value;
-						string updatePositionSQL = $@"
+						var dbArgs = new DynamicParameters();
+						dbArgs.Add("typeId", typeId);
+						StringBuilder stringBuilder	= new StringBuilder();
+						int idx = 0;
+						foreach (var field in model.Position)
+						{
+							dbArgs.Add("ft_name_" + idx, field.ApiName);
+							dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
+							stringBuilder.AppendLine($@"update FieldType set ColumnOrder = @ft_value_{idx} where {whereQuery} and Name = @ft_name_{idx};");
+							idx++;
+						}
 
-							if @fieldPosition = 1
-							begin
-								--math doesnt work correct when trying to put field at the top
-								set @fieldPosition = 0
-							end
-
-							drop table if exists #temp_order_old
-							select id,Name, CAST(ColumnOrder as decimal(18,3)) as ColumnOrder, ROW_NUMBER() OVER(ORDER BY ColumnOrder ASC) - 1 AS RowIndexOld
-							into #temp_order_old
-							from Fieldtype {whereQuery}
-
-							update #temp_order_old set ColumnOrder = ColumnOrder - 0.1
-							where RowIndexOld = @fieldPosition - 1
-
-							update #temp_order_old set ColumnOrder = @fieldPosition - 1
-							where ID = @fieldTypeID
-
-							drop table if exists #temp_order_new
-							select id,Name, ColumnOrder, RowIndexOld, ROW_NUMBER() OVER(ORDER BY ColumnOrder ASC) - 1 AS RowIndexNew
-							into #temp_order_new
-							from #temp_order_old 
-
-							merge dbo.FieldType FT
-							using (select * from #temp_order_new) as Source
-							on FT.ID = Source.Id
-							when matched then
-							update set FT.ColumnOrder = Source.RowIndexNew;
-							";
-						Company.Database.Connection.Query(updatePositionSQL, new { fieldTypeID, fieldPosition = newPosition, typeId });
+						Company.Database.Connection.Query(stringBuilder.ToString(), dbArgs);
 
 					}
 					else
@@ -2003,7 +1985,7 @@ namespace d360.web.Controllers.V2
 						}
 					}
 
-					var updatedOrdering = Company.Database.Connection.Query($@"select Name, ColumnOrder from Fieldtype {whereQuery}", new { typeId }).ToList();
+					var updatedOrdering = Company.Database.Connection.Query($@"select Name, ColumnOrder from Fieldtype where {whereQuery}", new { typeId }).ToList();
 
 					return Request.CreateResponse(HttpStatusCode.OK, updatedOrdering);
 				}

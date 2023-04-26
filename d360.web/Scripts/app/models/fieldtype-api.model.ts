@@ -165,6 +165,11 @@ export class FieldDisplayModel {
 	FieldTypeREF: FieldTypeAPIModelField;
 }
 
+export class FieldColumnPosition {
+	ApiName: string;
+	ColumnOrder: number;
+}
+
 export interface ICommonOptions {
 	ColumnOrder: number;
 	ColumnWidth: number;

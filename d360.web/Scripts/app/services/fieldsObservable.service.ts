@@ -9,7 +9,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
-import { FieldTypeAPIModel, FieldTypeAPIModelField, RelationshipLookupDefinition } from '../models/fieldtype-api.model';
+import { FieldColumnPosition, FieldTypeAPIModel, FieldTypeAPIModelField, RelationshipLookupDefinition } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
 @Injectable({
@@ -342,12 +342,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			);
 	}
 
-	moveToPosition(typeUid: string, fieldTypeName: string, positionIdx: number): Observable<FieldTypeColumnDefinition[]> {
+	moveToPosition(typeUid: string, fieldTypeName: string, position: FieldColumnPosition[]): Observable<FieldTypeColumnDefinition[]> {
 		const model = {
 			TypeUid: typeUid,
 			FieldTypename: fieldTypeName,
 			Direction: "positional",
-			Position: positionIdx
+			Position: position
 		};
 		return this
 			.http

@@ -1274,7 +1274,13 @@ namespace d360.core.entities
 		public string Direction { get; set; }
 
 		[DataMember]
-		public int? Position { get; set; }
+		public List<FieldColumnPosition> Position { get; set; }
+	}
+
+	public class FieldColumnPosition
+	{
+		public string ApiName { get; set; }
+		public string ColumnOrder { get; set; }
 	}
 
 	/// <summary>
