@@ -27,7 +27,6 @@ import { MultiSelectModule } from "primeng/multiselect";
 import { TooltipModule } from "primeng/tooltip";
 
 import { AssetGridCustomExportComponent } from "./asset-grid-custom-export.component";
-import { AssetGridTopLevelListComponent } from "./asset-grid-top-level-list.component";
 import { AssetGridComponent } from "./asset-grid.component";
 import { SharedAssetScoreModule } from "../shared/asset-score/shared-asset-score.module";
 import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.module";
@@ -77,13 +76,11 @@ import { InfoTooltipModule } from "../shared/tooltip/info-tooltip.component";
     ],
     declarations: [
         AssetGridCustomExportComponent,
-        AssetGridComponent,
-        AssetGridTopLevelListComponent
+        AssetGridComponent
     ],
     exports: [
         AssetGridCustomExportComponent,
-        AssetGridComponent,
-        AssetGridTopLevelListComponent
+        AssetGridComponent
     ],
     providers: [
                 

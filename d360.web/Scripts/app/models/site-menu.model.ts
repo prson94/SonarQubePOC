@@ -6,7 +6,8 @@
     ShowChildren?: boolean = false;
     IsLink: boolean;
     count: number;
-    Breadcrumbs?: string[];
+	Breadcrumbs?: string[];
+	Description?: string;
 }
 
 export class SiteMenu {
@@ -20,7 +21,8 @@ export class SiteMenu {
     ngUrl: string;
     FullURL: string;
     Icon: string;
-    Title: string;
+	Title: string;
+	Description: string;
 }
 
 export class SiteMenuModel {
