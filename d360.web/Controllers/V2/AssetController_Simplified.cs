@@ -222,9 +222,17 @@ namespace d360.web.Controllers.V2
 			if (queryParams.Any(q => q.Key == "_filter"))
 			{
 				advancedFilterString = queryParams.Where(q => q.Key == "_filter").Select(s => s.Value).FirstOrDefault();
+				List<TokenMatch> filters = new List<TokenMatch>();
 
-				var tokenParser = new FilterExpressionTokenizer(advancedFilterString);
-				var filters = tokenParser.GetTokens();
+				try
+				{
+					var tokenParser = new FilterExpressionTokenizer(advancedFilterString);
+					filters = tokenParser.GetTokens();
+				}
+				catch (FilterExpressionParserException ex)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
+				}
 
 				if (filters.Count > 0)
 				{
@@ -491,6 +499,10 @@ namespace d360.web.Controllers.V2
 						parameterIndex++;
 					}
 				}
+				else
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
+				}
 			}
 
 			if (queryParams.Any(q => q.Key == "_simpleFilter"))
@@ -730,7 +742,7 @@ namespace d360.web.Controllers.V2
 					{
 						if (advancedFilterString == advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where))
 						{
-							throw new FilterExpressionParserException("Invalid filter expression");
+							return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, ApiMessages.InvalidFilterExpressionUsedMessage));
 						}
 						advancedFilterString = advancedFilterString.Replace(cwhere.TokenExpression.Replace("(", "\\(").Replace(")", "\\)"), cwhere.Where);
 					}
