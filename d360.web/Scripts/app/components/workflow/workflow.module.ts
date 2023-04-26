@@ -17,7 +17,6 @@ import { WorkflowComponent } from './workflow.component';
 import { WorkflowIssueDetailsComponent } from './workflow-issue-details.component';
 import { WorkflowFormComponent } from './workflow-form.component';
 import { WorkflowBulkFormComponent } from './workflow-bulk-form.component';
-import { WorkflowRaiseIssueComponent } from './workflow-raise-issue.component';
 import { WorkflowViewDetailsComponent } from './workflow-view-details.component';
 import { WorkflowNewDetailComponent } from './workflow-new-details.component';
 import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.component';
@@ -84,7 +83,6 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         WorkflowComponent,                
         WorkflowIssueDetailsComponent,
         WorkflowFormComponent,        
-        WorkflowRaiseIssueComponent,
         WorkflowViewDetailsComponent,        
         WorkflowNewDetailComponent,
         WorkflowBulkFormComponent,
@@ -92,7 +90,6 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         WorkflowFormFieldsComponent,
     ],
     exports: [                        
-        WorkflowRaiseIssueComponent,           
         WorkflowComponent,        
         WorkflowIssueDetailsComponent,
         WorkflowNewDetailComponent,

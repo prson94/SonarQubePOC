@@ -22,7 +22,6 @@ import { HeaderFavoritesComponent } from './header-favorites.component';
 import { HeaderFollowComponent } from './header-follow.component';
 import { HeaderHelpComponent } from './header-help.component';
 import { HeaderComponent } from './header.component';
-import { RaiseIssueButtonComponent } from './raise-issue-button.component';
 import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
@@ -37,6 +36,7 @@ import { HeaderLanguageSettingComponent } from './header-language-setting.compon
 import { IgMessageBoxModule } from '../controls/message-box/message-box.module';
 import { DropdownModule } from 'primeng/dropdown';
 import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
+import { RaiseIssueModule } from '../../admin/actions/raise-action/raise-issue.module';
 
 
 @NgModule({
@@ -63,7 +63,8 @@ import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 		DropdownModule,
 
 		TooltipModule,
-		IgMessageBoxModule
+		IgMessageBoxModule,
+		RaiseIssueModule
     ],
     declarations: [
         HeaderActionsComponent,
@@ -73,7 +74,6 @@ import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
         HeaderFavoritesComponent,
         HeaderFollowComponent,
         HeaderComponent,
-        RaiseIssueButtonComponent,
         HeaderShoppingCartComponent,
         HeaderHomePageComponent,
         HeaderProfileComponent,

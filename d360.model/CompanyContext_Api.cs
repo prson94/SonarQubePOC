@@ -7089,7 +7089,7 @@ where	T.ExecutionID = @ExecutionID
             });
             Connection.Execute(predicateCheckSql, new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 
-            Connection.Execute(@"
+            Connection.Execute($@"
 								update  api.ExecutionRelationshipType
 								set     Message = coalesce(Message+' ', '') + 'PredicateUid is missing / incorrect format.'
 								where   ExecutionID = @ExecutionID 
@@ -7138,6 +7138,14 @@ where	T.ExecutionID = @ExecutionID
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID 
 								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+								Update  ER 
+								set     Success = 0, 
+										Message = 'Both ObjectUid, SubjectUid must not be Reference type.' 
+								from    [api].[ExecutionRelationshipType] ER 
+										inner join AssetType AST on AST.UID = ER.ObjectUID 
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null
+								and ER.ObjectClass = ER.SubjectClass and ER.SubjectClass = {(int)AssetTypeClass.Reference};
 
 								update  ER 
 								set     PredicateID = P.ID 

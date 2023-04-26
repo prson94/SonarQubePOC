@@ -18,6 +18,7 @@ import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from "../../services/feature-flags.enum";
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { HelpService } from '../../services/help.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
 
@@ -71,7 +72,8 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
-        private featureFlagService: LaunchDarklyService,
+		private featureFlagService: LaunchDarklyService,
+		private helpService: HelpService
     ) {
         super(settingsService);   
 
@@ -82,7 +84,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
 
     ngOnInit() {
         this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
-		this.semanticHelpURL = this.getHelpUrl("Data360-Govern-Help/User-guide/Semantic-types/Creating-semantic-types");
+		this.semanticHelpURL = this.helpService.getHelpUrl("GOV-0002");
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

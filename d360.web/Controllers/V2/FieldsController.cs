@@ -2196,22 +2196,28 @@ namespace d360.web.Controllers.V2
 
 				int fieldTypeId = -1;
 				string fieldObject = "";
-				int fieldObjectID = 0;
 				int id = -1;
 
 				var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 
 				if (atype == null)
 				{
-					var itType = Company.IntersectTypes.FirstOrDefault(x => x.uid == assetTypeUid);
-					fieldObject = "IntersectType";
-					fieldObjectID = itType.ID;
-					id = itType.ID;
+					var actionTypeID = Company.IssueTypes.Where(x => x.uid == assetTypeUid).Select(x => x.ID).FirstOrDefault();
+					if (actionTypeID > 0)
+					{
+						fieldObject = "IssueType";
+						id = actionTypeID;
+					}
+					else
+					{
+						var itType = Company.IntersectTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+						fieldObject = "IntersectType";
+						id = itType.ID;
+					}
 				}
 				else
 				{
 					fieldObject = atype.Object;
-					fieldObjectID = atype.ObjectID;
 					id = atype.ID;
 				}
 
@@ -2643,7 +2649,7 @@ namespace d360.web.Controllers.V2
 								{selectStatement} 
 							from 
 								#tempResults V 
-								inner join 
+								left join 
 								OPENJSON(@refListOrder) O on O.[Key] = V.Value							
 								{colorjoin}
 							order by 

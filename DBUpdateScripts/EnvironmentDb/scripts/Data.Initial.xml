@@ -198,7 +198,7 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="TKlok" id="Data.Initial.HelpMenu-v5">
+  <changeSet author="TKlok" id="Data.Initial.HelpMenu-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -209,22 +209,22 @@ if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'about' and [isS
 	  insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibility],[order],[isSystem])
 	  values('About Data360 Govern','About Data360','about',NEWID(),0,1,4,1)
 	end
-	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/User-guide' and [isSystem] = 1)
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'GOV-0001' and [isSystem] = 1)
 	begin
 		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibility],[order],[isSystem])
-		values('User Guide','User Guide','Data360-Govern-Help/User-guide',NEWID(),0,1,0,1)
+		values('User Guide','User Guide','GOV-0001',NEWID(),0,1,0,1)
 	end
 
-	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/Administration' and [isSystem] = 1)
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'GOV-0003' and [isSystem] = 1)
 	begin
 		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibility],[order],[isSystem])
-		values('Admin Guide','Admin Guide','Data360-Govern-Help/Administration',NEWID(),0,1,1,1)
+		values('Admin Guide','Admin Guide','GOV-0003',NEWID(),0,1,1,1)
 	end
 
-	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Latest-release' and [isSystem] = 1)
+	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'GOV-0008' and [isSystem] = 1)
 	begin
 		insert into [dbo].[HelpResource]([Name],[Description],[Url],[uid],[isEditable],[visibility],[order],[isSystem])
-		values('Whats New','Whats New','Data360-Govern-Release-Notes/Latest-release',NEWID(),0,1,2,1)
+		values('Whats New','Whats New','GOV-0008',NEWID(),0,1,2,1)
 	end
 
 	if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'https://community.precisely.com/home' and [isSystem] = 1)
@@ -237,9 +237,9 @@ if not exists (select 1 from [dbo].[HelpResource] where [Url] = 'about' and [isS
     <rollback>
       <![CDATA[	
 		delete from [dbo].[HelpResource] where [Url] = 'about' and [isSystem] = 1;
-		delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/User-guide' and [isSystem] = 1;
-		delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Help/Administration' and [isSystem] = 1;
-		delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Latest-release' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'GOV-0001' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'GOV-0003' and [isSystem] = 1;
+		delete from [dbo].[HelpResource] where [Url] = 'GOV-0008' and [isSystem] = 1;
 		delete from [dbo].[HelpResource] where [Url] = 'https://community.precisely.com/home' and [isSystem] = 1;
 		]]>
     </rollback>

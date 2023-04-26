@@ -83,7 +83,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
-        public async Task<IHttpActionResult> GetDataProfiles(Guid assetUid)
+        public async Task<IHttpActionResult> GetDataProfilesByAsset(Guid assetUid)
         {
             var prefix = "DataProfiles.GetDataProfiles => ";
             try
@@ -141,7 +141,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
-        public async Task<IHttpActionResult> GetDataProfiles(string profileIdentifier)
+        public async Task<IHttpActionResult> GetDataProfilesByIdentifier(string profileIdentifier)
         {
             var prefix = "DataProfiles.GetDataProfilesByIdentifier => ";
             try

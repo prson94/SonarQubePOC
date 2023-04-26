@@ -374,8 +374,10 @@ namespace d360.model
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
         
         bool HasAssetTypePermission(int id, Permission permission);
-        
-        decimal? GetAssetScore(long assetId, ScoreType type);
+
+		string GetUserPermissionQuery(string tempTableName, string userParam, string typeParam);
+
+		decimal? GetAssetScore(long assetId, ScoreType type);
         
         decimal? GetPreviousAssetScore(long assetId, ScoreType type);
         

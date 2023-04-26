@@ -454,6 +454,24 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.onClose.emit();
 	}
 
+	get assetTypeSupportsDefaultSecurity() {
+		let supportsDefaultSecurity: boolean = false;
+		switch (this.assetTypeClass) {
+			case AssetTypeClass.BusinessAsset:
+			case AssetTypeClass.Model:
+			case AssetTypeClass.Policy:
+			case AssetTypeClass.Rule:
+			case AssetTypeClass.TechnicalAsset:
+				supportsDefaultSecurity = true;
+				break;
+			default:
+				supportsDefaultSecurity = false;
+				break;
+		}
+
+		return supportsDefaultSecurity;
+	}
+
 	get isDiagramAssetTypeForm() {
 		return this.assetTypeClass === AssetTypeClass.DiagramAsset;
 	}

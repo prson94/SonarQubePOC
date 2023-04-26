@@ -29,6 +29,7 @@ import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { HelpService } from "../../../services/help.service";
 
 @Component({
     template: ''
@@ -116,11 +117,12 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         protected fieldsService: FieldsObservableService,
         protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
+		protected settingsService: CompanySettingsService,
+		protected helpService: HelpService,
         protected cdRef: ChangeDetectorRef
     ) {
-        super(settingsService);
-		this.conditionGroupLink = this.conditionAndWeightLink = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions?section=scoring-definitions__Asset_conditions");
+		super(settingsService);
+		this.conditionGroupLink = this.conditionAndWeightLink = this.helpService.getHelpUrl("GOV-0006");
         const readMoreText = $localize`Read more about Asset Conditions and Weighting`;
         const conditionWeightTooltipText = $localize`You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
 

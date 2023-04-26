@@ -7,6 +7,7 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { HelpService } from '../../../services/help.service';
 import { Table } from 'primeng/table';
 import { Subscription } from 'rxjs';
 
@@ -39,10 +40,11 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		titleService: Title,
 		private siteMenuService: SiteMenuService,
 		private messagesService: MessagesObservableService,
-		private assetTypeService: AssetTypeService
+		private assetTypeService: AssetTypeService,
+		private helpService: HelpService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
-		this.addAssetTypeHelpLink = this.getHelpUrl("Data360-Govern-Help/Administration/Managing-users-and-groups/Establishing-responsibilities");
+		this.addAssetTypeHelpLink = this.helpService.getHelpUrl("GOV-0004");
 	}
 
 	ngOnDestroy() {

@@ -218,7 +218,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     });
             }
         } else if (this.selectedField.split('|')[0] === 'FormInput') {
-            const input = this.formFields.find((f) => f['@id'] === this.selectedField.split('|')[2] && f['@stepId'] === this.selectedField.split('|')[1]);
+            const input = this.formFields.find((f) => f['@id'] === this.selectedField.split('|')[2] && +f['@stepId'] === +this.selectedField.split('|')[1]);
 
             this.selectedType = input['@type'].toLowerCase();
 
@@ -397,8 +397,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 break;
         }
 
-        if (fieldType === ConditionFieldType.Field) {
-            if (this.changeType === WorkflowChangeType.Update && !this.isForTransition) {
+		if (fieldType === ConditionFieldType.Field) {
+			if (this.changeType.toString() === WorkflowChangeType.Update.toString() && !this.isForTransition) {
                 ops.add('C');
             }
             ops.add('P');
@@ -406,10 +406,10 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
 
         if (fieldType === ConditionFieldType.Contextual) {
-            if (fieldId.indexOf('Score') > -1) {
-                if (this.changeType === WorkflowChangeType.Update
-                    || this.changeType === WorkflowChangeType.RequestCertification
-                    || this.changeType === WorkflowChangeType.Schedule) {
+			if (fieldId.indexOf('Score') > -1) {
+				if (this.changeType.toString() === WorkflowChangeType.Update.toString()
+					|| this.changeType.toString() === WorkflowChangeType.RequestCertification.toString()
+					|| this.changeType.toString() === WorkflowChangeType.Schedule.toString()) {
                     ops.add('P');
                     ops.add('NP');
                 }

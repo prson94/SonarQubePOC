@@ -28,6 +28,7 @@ import { cloneDeep, debounce } from "lodash-es";
 import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { HelpService } from "../../../services/help.service";
 
 @Component({
     selector: 'dataquality-measure-editor',
@@ -88,13 +89,14 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        protected fieldsService: FieldsObservableService,
+		protected fieldsService: FieldsObservableService,
+		protected helpService: HelpService,
         protected fb: UntypedFormBuilder,
         protected cdRef: ChangeDetectorRef
-    ) {
-        super(fieldsService, metricsService, messagesService, settingsService, cdRef);
-		this.helpUri = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions");
-		const conditionHelpLink: string = this.getHelpUrl("Data360-Govern-Help/Configuration/Scoring-definitions?section=scoring-definitions__Asset_conditions");
+	) {
+		super(fieldsService, metricsService, messagesService, settingsService, helpService, cdRef);
+		this.helpUri = this.helpService.getHelpUrl("GOV-0005");
+		const conditionHelpLink: string = this.helpService.getHelpUrl("GOV-0006");
 		const readMoreText = $localize`Read more about Asset Conditions and Weighting`;
 		const tooltipText = $localize`You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
 
