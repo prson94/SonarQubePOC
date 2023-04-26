@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Function.dbo.CustomSiteNavigation-v3">
-  <comment>GOV-21033</comment>
+  <changeSet author="TKlok" id="Function.dbo.CustomSiteNavigation-v3.1">
+  <comment>GOV-21033, GOV-21420, GOV-21421</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -41,7 +41,7 @@ BEGIN
 					[dbo].CustomSiteNavigation(v.id, @NoReadAssetTypes)
 				end as items
         FROM    dbo.SiteNav v		
-		    left join assettype a on a.objectid = v.objectid and v.Object = 'ArtifactType' and a.[object] = v.[Object]
+		    left join assettype a on a.objectid = v.objectid and a.[object] = v.[Object]
 			left join @NoReadAssetTypes nr on nr.id = a.id
         WHERE   v.ParentID = @id order by sortorder
         FOR XML PATH('nav'),TYPE
