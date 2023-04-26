@@ -440,7 +440,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		const position: FieldColumnPosition[] = [];
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });
-			idx++
+			idx++;
 		});
 
 		this.moveToPosition(this.fieldDisplayModel[0], position);
@@ -451,7 +451,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		let idx = 0;
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });
-			idx++
+			idx++;
 		});
 
 		this.moveToPosition(this.fieldDisplayModel[0], position);
