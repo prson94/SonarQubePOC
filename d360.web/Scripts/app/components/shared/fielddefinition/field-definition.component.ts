@@ -1,21 +1,30 @@
-﻿import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
-
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldDisplayModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
+import { FieldColumnPosition, FieldDisplayModel, FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { RelationshipsService } from '../../../services/relationships.service';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { Observable, of } from 'rxjs';
+import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
+import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
+import { Table } from 'primeng/table';
+import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 
 /*global $localize*/
 
 @Component({
 	selector: 'd3s-field-definition-tile',
 	templateUrl: './field-definition.component.html',
-	providers: [FieldsObservableService]
+	styleUrls: ['field-definition.component.less'],
+	providers: [FieldsObservableService],
+	encapsulation: ViewEncapsulation.None,
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
@@ -54,9 +63,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() allowSingleSegmentPath: boolean = true;
 
 	public dataCyPrefix: string = 'FieldType_';
-	private fieldDefinitions = new Array<FieldTypeAPIModelField>();
+	fieldDefinitions = new Array<FieldTypeAPIModelField>();
 	private fieldDisplayModel = new Array<FieldDisplayModel>();
-	private selectedRow = new FieldDisplayModel();
+	private nonFilteredFieldDisplayModel = new Array<FieldDisplayModel>();
+	selectedRow = new FieldDisplayModel();
 	assetTypeClass: AssetTypeClass;
 
 	private theDeleteCallback: Function;
@@ -65,12 +75,33 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	ascendingLabel: string = $localize`Ascending`;
 	descendingLabel: string = $localize`Descending`;
 
+
+	sidePanelStorageKey: string = '';
+	selectedItem: Record<string, object>;
+
+	sidePanelOpen = false;
+	selectedForInfoPanel: unknown;
+	columnWidthMinSize = 150;
+	tableWidth = 0;
+
+	advancedFilters: Filters;
+	simpleFilter: string;
+
+	isReorderingLocked: boolean = false;
+	reorderingLockedText: string = $localize`Items can be rearranged only in the default view. Use the reset button to clear any search, filter, or sorting applied.`;
+
+	@ViewChild('dt', { static: false }) tableEl: Table;
+	@ViewChild('advancedFilter', { static: false }) advFilter: AdvancedFilteringComponent;
+
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
 		private messagesService: MessagesObservableService,
-		protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		public sidePanelService: SidePanelService,
+		private uiAdvancedFiltering: UiAdvancedFiltering,
+		private cdRef: ChangeDetectorRef
 	) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
@@ -82,6 +113,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.isEditing = false;
 				this.isAdding = false;
 				this.isDeleting = false;
+				this.sidePanelStorageKey = "field_type_side_panel_" + this.assetTypeUid + this.actionTypeUid + this.relationshipTypeUid;
 			}
 		}
 		if (this.assetTypeUid) {
@@ -98,8 +130,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			this.load();
 		}
 	}
-
-
 
 	load(): void {
 		if (this.relationshipTypeUid === "IntersectType") {
@@ -133,26 +163,141 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					this.fieldDisplayModel = data.map((field) => {
 						const displayField = new FieldDisplayModel();
 						const type = this.currentFieldType(field);
+						displayField.AssetTypeUid = field["AssetTypeUid"];
 						displayField.Name = field.Name;
 						displayField.FriendlyName = field.FriendlyName;
-						displayField.Category = field.Category;
+						displayField.Category = field.Category ?? $localize`General`;
 						displayField.FieldType = this.getDisplayTypeName(type);
-						displayField.DisplayInColumn = field.Type[type].DisplayInColumn;
-						displayField.IsListable = field.Type[type].IsListable;
-						displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
-						displayField.SortOrder = field.Type[type].SortOrder;
-						displayField.SortByAscending = field.Type[type].SortByAscending;
-						displayField.ColumnOrder = field.Type[type].ColumnOrder;
-						displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
-						displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
+						displayField.FieldTypeValue = type;
+						displayField.DisplayInColumn = field.Type[`${type}`].DisplayInColumn ?? false;
+						displayField.IsListable = field.Type[`${type}`].IsListable;
+						displayField.IsPartOfKey = field.Type[`${type}`].IsPartOfKey ?? false;
+						displayField.SortOrder = field.Type[`${type}`].SortOrder;
+						displayField.SortByAscending = field.Type[`${type}`].SortByAscending;
+						displayField.ColumnOrder = field.Type[`${type}`].ColumnOrder;
+						displayField.ShowIfEmpty = field.Type[`${type}`].ShowIfEmpty ?? false;
+						displayField.IsRequired = field.Type[`${type}`].Validation != null ? field.Type[`${type}`].Validation.IsRequired : false;
+
+						displayField.DisplayDescription = field.Type[`${type}`]?.Description?.Display ?? "";
+						displayField.FormDescription = field.Type[`${type}`]?.Description?.Form ?? "";
+						displayField.AddToSearchResults = field.Type[`${type}`]?.Search?.AddToResult ?? false;
+						displayField.AllowMultipleItems = field.Type[`${type}`]?.List?.AllowMultipleValues ?? false;
+						displayField.EditableOnUI = field.Type[`${type}`]?.IsEditable ?? false;
+						displayField.ShowInDetailsTab = field.Type[`${type}`]?.IsDisplayable ?? false;
+						displayField.PersistInFilters = field.Type[`${type}`]?.IsPrimaryFilter ?? false;
+
+						displayField.ColumnWidth = field.Type[`${type}`]?.ColumnWidth;
+
+						if (type === 'Lookup') {
+							displayField.LookupTypeName = field.Type[`${type}`].List.Class + ": " + field.Type[`${type}`].List.TypeName;
+							displayField.LookupDisplayFormat = field.Type[`${type}`].Format.Display;
+							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
+						}
+						displayField.FieldTypeREF = field;
 						return displayField;
 					});
+					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
+					this.updateMenuItems();
+					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
+
+					this.tableWidth = this.tableEl.el.nativeElement.getBoundingClientRect().width;
 				}
+
 				this.checkKeyFields();
 				this.selectedRow = null;
 				this.isLoading = false;
+				this.cdRef.markForCheck();
 			}
 		);
+	}
+
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
+	onMenuItemSelect(item: FieldDisplayModel, $event) {
+		switch ($event.action) {
+			case 'info':
+				this.selectedRow = item;
+				this.sidePanelService.setSidePanelState({ expanded: true });
+				break;
+			case 'edit':
+				this.edit(item);
+				break;
+			case 'delete':
+				this.delete(item.Name);
+				break;
+			case 'movetop':
+				this.moveToTop(item);
+				break;
+			case 'moveup':
+				this.moveUp(item);
+				break;
+			case 'movedown':
+				this.moveDown(item);
+				break;
+			case 'movebottom':
+				this.moveToLast(item);
+				break;
+		}
+	}
+
+	reset() {
+		this.simpleFilter = "";
+		this.advFilter.clearFilters();
+		this.tableEl.reset();
+		this.load();
+	}
+
+	private updateMenuItems() {
+		let position = 0;
+		const keyFieldsCount = this.fieldDisplayModel.filter((x) => x.IsPartOfKey).length;
+
+		this.isReorderingLocked = (typeof this.simpleFilter !== 'undefined' && this.simpleFilter !== '')
+			|| (this.advancedFilters && this.advancedFilters.filter !== '');
+
+		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null && this.tableEl.sortField !== 'ColumnOrder');
+		// ignore complexity codacy issue
+		// eslint-disable-next-line
+		this.fieldDisplayModel.forEach((item) => {
+			position++;
+			const menuItems = [];
+			menuItems.push({ title: $localize`View Information`, action: 'info' });
+			menuItems.push({ title: $localize`Edit`, action: 'edit' });
+
+			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
+
+			if (this.fieldDisplayModel.length > 1) {
+				if (keyFieldsCount === 1 && item.IsPartOfKey) {
+					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`You cannot delete this field. There must be at least one key field defined.` });
+				}
+				else if (isDiagramAssetPage && ['Name', 'StepNo', 'GovernanceRole'].indexOf(item.Name) > -1) {
+					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Default fields cannot be deleted.` });
+				}
+				else {
+					menuItems.push({ title: $localize`Delete`, action: 'delete' });
+				}
+
+				let positionDisabled = false;
+				let positionTooltip = '';
+
+				if (this.isReorderingLocked) {
+					positionDisabled = true;
+					positionTooltip = this.reorderingLockedText;
+				}
+
+				if (position !== 1) {
+					menuItems.push({ title: $localize`Move To Top`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movetop' });
+					menuItems.push({ title: $localize`Move Up`, disabled: positionDisabled, tooltip: positionTooltip, action: 'moveup' });
+				}
+				if (position !== this.fieldDisplayModel.length) {
+					menuItems.push({ title: $localize`Move Down`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movedown' });
+					menuItems.push({ title: $localize`Move To Bottom`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movebottom' });
+				}
+			}
+
+			item.MenuItems = menuItems;
+		});
+
+		this.cdRef.markForCheck();
 	}
 
 	get currentUid(): string {
@@ -163,8 +308,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		let foundKeyField = false;
 		if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
 			this.fieldDisplayModel.forEach((d) => {
-				if (!d.SortOrder)
-					{d.SortOrder = 0;}
+				if (!d.SortOrder) { d.SortOrder = 0; }
 				if (d.IsPartOfKey) {
 					foundKeyField = true;
 				}
@@ -183,10 +327,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	CheckObjectType() {
 		if (this.assetTypeClass) {
 			return [AssetTypeClass.BusinessAsset,
-				AssetTypeClass.TechnicalAsset,
-				AssetTypeClass.Policy,
-				AssetTypeClass.Model,
-				AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
+			AssetTypeClass.TechnicalAsset,
+			AssetTypeClass.Policy,
+			AssetTypeClass.Model,
+			AssetTypeClass.Rule].indexOf(this.assetTypeClass) !== -1;
 		}
 	}
 	getDisplayTypeName(name: string): string {
@@ -218,13 +362,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "System": return $localize`System`;
 		}
 	}
-	edit(name: string): void {
-		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === name);
-		this.isEditing = true;
-		this.isDeleting = false;
-		this.isAdding = false;
-		this.onEdit.emit();
-	}
+
 
 	add(): void {
 		this.selectedRow = null;
@@ -270,42 +408,107 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					if (index >= 0 && index < this.fieldDisplayModel.length) {
 						this.fieldDisplayModel.splice(index, 1);
 					}
-
+					this.load();
 					this.onFieldsChanged.emit();
 				} else {
 					this.isDeleting = false;
 					this.checkKeyFields();
 				}
+				this.cdRef.markForCheck();
 			}
 		);
 
 	}
-	moveUp(field) {
 
+	moveToTop(field: FieldDisplayModel) {
+		let idx = this.fieldDisplayModel.indexOf(field);
+		this.fieldDisplayModel.unshift(this.fieldDisplayModel.splice(idx, 1)[0]);
+
+		const position: FieldColumnPosition[] = [];
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
+	}
+
+	moveToLast(field: FieldDisplayModel) {
+		let idx = this.fieldDisplayModel.indexOf(field);
+		this.fieldDisplayModel.push(this.fieldDisplayModel.splice(idx, 1)[0]);
+
+		const position: FieldColumnPosition[] = [];
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++;
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
+	}
+
+	onRowReorder() {
+		const position: FieldColumnPosition[] = [];
+		let idx = 0;
+		this.tableEl.value.forEach((f) => {
+			position.push({ ApiName: f.Name, ColumnOrder: idx });
+			idx++;
+		});
+
+		this.moveToPosition(this.fieldDisplayModel[0], position);
+	}
+
+	moveUp(field: FieldDisplayModel) {
+		this.isLoading = true;
 		this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
-			(r) => {
-				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
-				if (items.length === 1) {
-					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index > 0 && index < this.fieldDisplayModel.length)
-						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];}
-				}
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.load();
+				this.cdRef.markForCheck();
 			}
 		);
 	}
 
-	moveDown(field) {
-
+	moveDown(field: FieldDisplayModel) {
+		this.isLoading = true;
 		this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
-			(r) => {
-				const items = this.fieldDisplayModel.filter((x) => x.Name === field.Name);
-				if (items.length === 1) {
-					const index = this.fieldDisplayModel.indexOf(items[0]);
-					if (index >= 0 && index < this.fieldDisplayModel.length - 1)
-						{[this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];}
-				}
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.load();
+				this.cdRef.markForCheck();
 			}
 		);
+	}
+
+	moveToPosition(field: FieldDisplayModel, position: FieldColumnPosition[]) {
+		this.isLoading = true;
+		this.fieldsService.moveToPosition(this.currentUid, field.Name, position).subscribe(
+			(orderedColumns) => {
+				orderedColumns.forEach((ft) => {
+					this.fieldDisplayModel.find((f) => f.Name === ft.Name).ColumnOrder = ft.ColumnOrder;
+				});
+				this.tableEl.sortField = "ColumnOrder";
+				this.tableEl.sortSingle();
+				this.load();
+				this.cdRef.markForCheck();
+			}
+		);
+	}
+
+
+	edit(field: FieldDisplayModel): void {
+		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);
+		this.isEditing = true;
+		this.isDeleting = false;
+		this.isAdding = false;
+		this.onEdit.emit();
 	}
 
 	cancel() {
@@ -315,12 +518,240 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
-			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole')
-				{return false;}
+			if (fdm.Name === 'Name' || fdm.Name === 'StepNo' || fdm.Name === 'GovernanceRole') { return false; }
 		}
 
 		if (fdm.FieldType === "System") {
-			return false; 
+			return false;
+		}
+		return true;
+	}
+
+	getSidePanelWidth(): number {
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
+	}
+
+	getSidePanelMaxWidth(): number {
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
+	}
+
+	getSidePanelMinWidth(): number {
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
+	}
+
+	filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
+		{
+			Name: 'FriendlyName',
+			FriendlyName: $localize`Field Name`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'Name',
+			FriendlyName: $localize`API Name`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'Category',
+			FriendlyName: $localize`Category`,
+			Type: new FieldType("Text"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'DisplayDescription',
+			FriendlyName: $localize`Display Description`,
+			Type: new FieldType("Text"),
+			Category: ""
+		},
+		{
+			Name: 'FormDescription',
+			FriendlyName: $localize`Form Description`,
+			Type: new FieldType("Text"),
+			Category: ""
+		},
+		{
+			Name: 'IsListable',
+			FriendlyName: $localize`Listable`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'AddToSearchResults',
+			FriendlyName: $localize`Add to Search Results`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'AllowMultipleItems',
+			FriendlyName: $localize`Allow Multiple Items`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'EditableOnUI',
+			FriendlyName: $localize`Editable On UI`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'IsPartOfKey',
+			FriendlyName: $localize`Key Field`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'IsRequired',
+			FriendlyName: $localize`Required`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'ShowInDetailsTab',
+			FriendlyName: $localize`Show In Details Tab`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'DisplayInColumn',
+			FriendlyName: $localize`Display In Column`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'ShowIfEmpty',
+			FriendlyName: $localize`Show If Empty`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'PersistInFilters',
+			FriendlyName: $localize`Persist In Filters`,
+			Type: new FieldType("Boolean"),
+			Category: "",
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'FieldType',
+			Type: new FieldType("Lookup"),
+			FriendlyName: $localize`Type`,
+			Category: "",
+			ValueLoader: this.getFilterValuesForFieldType.bind(this),
+			RemovePopulatedOperator: true
+		},
+	]);
+
+	getFilterValuesForFieldType(): Observable<LookupValuesAPIModel> {
+		const types: string[] = [
+			$localize`True/False`,
+			$localize`Relation Lookup`,
+			$localize`Counter`,
+			$localize`Date`,
+			$localize`Date Time`,
+			$localize`Decimal`,
+			$localize`Field from Relationship`,
+			$localize`Html`,
+			$localize`JSON`,
+			$localize`JsonElement`,
+			$localize`Link`,
+			$localize`List`,
+			$localize`Number`,
+			$localize`Ownership Lookup`,
+			$localize`Asset Path`,
+			$localize`Reference Item List from Relationship`,
+			$localize`Relationship`,
+			$localize`Score`,
+			$localize`Tag`,
+			$localize`Simple Text`,
+			$localize`System`];
+
+		if (types.length === 1 && types[0] === '') {
+			return of({
+				items: [],
+				count: 0
+			});
+		} else {
+			return of({
+				items: types,
+				count: types.length
+			});
+		}
+	}
+
+	advancedFiltersChanged(event: Filters): void {
+		this.advancedFilters = event;
+		this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
+		this.updateMenuItems();
+	}
+
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') { return true; }
+			element = element.parentElement;
+		}
+		return false;
+	}
+
+	hasPartOfKey(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasRequired(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasDisplayInColumn(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasShowIfEmpty(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['Path', 'Json', 'Tag'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+	hasIsListable(field: FieldDisplayModel) {
+		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
+		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
+			return false;
 		}
 		return true;
 	}

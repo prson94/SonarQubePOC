@@ -1,0 +1,578 @@
+<div class="asset-detail side-panel-detail no-padding">
+	<div class="asset-detail-header">
+		<div class="asset-name">{{fieldType.FriendlyName}}</div>
+		<div class="class-name" i18n>Field</div>
+
+		<div class="ng-star-inserted">
+			<a (click)="editClick()">Edit</a>
+		</div>
+	</div>
+
+	<div *ngIf="currentType" class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General" [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Field Name</label>
+						<div class="ig-value">
+							{{fieldType.FriendlyName}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>API Name</label>
+						<div class="ig-value">
+							{{fieldType.Name}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Type</label>
+						<span class="ig-value">
+							{{fieldType.FieldType}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Category</label>
+						<span class="ig-value">
+							{{fieldType.Category}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Column Width</label>
+						<span class="ig-value" *ngIf="fieldType.ColumnWidth">
+							{{fieldType.ColumnWidth}}px
+						</span>
+						<span class="ig-value" *ngIf="!fieldType.ColumnWidth">
+							---
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Sort Order</label>
+						<span class="ig-value">
+							{{fieldType.SortOrder ?? '---'}}
+						</span>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Sort Direction</label>
+						<span class="ig-value">
+							{{fieldType.SortByAscending ? ascendingLabel : descendingLabel}}
+						</span>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="currentType == 'Lookup'" i18n-title title="List Configuration" [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Type of List</label>
+						<div class="ig-value">
+							{{fieldType.LookupTypeName}}
+						</div>
+					</div>
+
+				</div>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>List Display Format</label>
+						<div class="ig-value">
+							{{fieldType.LookupDisplayFormat}}
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>List Edit Format</label>
+						<div class="ig-value">
+							{{fieldType.LookupEditFormat}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['Text','Number','Decimal'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Validation"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row" *ngIf="['Text'].indexOf(currentType) > -1">
+						<label class="ig-label" i18n>Validation Pattern</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.Pattern ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n *ngIf="currentType === 'Text'">Minimum Length</label>
+						<label class="ig-label" i18n *ngIf="currentType !== 'Text'">Minimum Value</label>
+						<div class="ig-value" *ngIf="currentType === 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MinimumLength ?? '---' }}
+						</div>
+						<div class="ig-value" *ngIf="currentType !== 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MinimumValue ?? '---' }}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n *ngIf="currentType === 'Text'">Maximum Length</label>
+						<label class="ig-label" i18n *ngIf="currentType !== 'Text'">Maximum Value</label>
+						<div class="ig-value" *ngIf="currentType === 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MaximumLength ?? '---' }}
+						</div>
+						<div class="ig-value" *ngIf="currentType !== 'Text'">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.MaximumValue ?? '---' }}
+						</div>
+					</div>
+					<div class="row" *ngIf="currentType === 'Decimal'">
+						<label class="ig-label" i18n>Decimal Places</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.Precision ?? '---' }}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Validation Messages</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].Validation.Message ?? '---' }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal','Score'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Value Selection"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<ng-container *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+						<div class="row">
+							<label class="ig-label" i18n>Default Value (Link Name)</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue?.Text ?? '---'}}
+
+							</div>
+						</div>
+						<div class="row">
+							<label class="ig-label" i18n>Default Value (Link Url)</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue?.Url ?? '---'}}
+
+							</div>
+						</div>
+					</ng-container>
+
+					<ng-template #nonLinkField>
+						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+							<label class="ig-label" i18n>Default Value</label>
+							<div class="ig-value">
+								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}
+							</div>
+						</div>
+					</ng-template>
+					<div class="row" *ngIf="currentType === 'Lookup'">
+						<label class="ig-label" i18n>
+							Allow ALL Value Selection
+						</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].AllowAllValue; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row" *ngIf="currentType === 'Lookup' && fieldType.FieldTypeREF.Type[currentType].AllowAllValue">
+						<label class="ig-label" i18n>
+							Allow ALL Value Label
+						</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].AllowAllLabel ?? '---'}}
+						</div>
+					</div>
+					<div class="row" *ngIf="currentType == 'Number' || currentType == 'Decimal'">
+						<label class="ig-label" i18n>Increment</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].Increment ?? '---'}}
+						</div>
+					</div>
+					<div class="row" *ngIf="currentType === 'Score'">
+						<label class="ig-label" i18n>Score</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].ScoreType ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['Relationship'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Relationship"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Relationship</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].IntersectTypeName ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Use Asset Display Format</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].UseDisplayFormat; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['ComputedRelationshipField'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Field from Relationship"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Relationship</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type['ComputedRelationshipField'].IntersectTypeName ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Field Type Name</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type['ComputedRelationshipField'].FieldTypeName ?? '---'}}
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['ComputedRelationshipReferenceList'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Reference Item List from Relationship"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Relationship</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type['ComputedRelationshipReferenceList'].IntersectTypeName ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="['ComputedOwnershipLookup'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Ownership Lookup"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>
+							Display as List
+						</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].Definition.DisplayAsList; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>
+							Expand Group Membership
+						</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].Definition.ExpandGroupMembership; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<ng-container *ngIf="!fieldType.FieldTypeREF.Type[currentType].Definition.DisplayAsList">
+						<div class="row">
+							<label class="ig-label" i18n>
+								Display Assignment Source
+							</label>
+							<div class="ig-value">
+								<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].Definition.DisplayAssignmentSource; else falseTemplate">
+									<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+									<ng-container i18n>True</ng-container>
+								</ng-container>
+								<ng-template #falseTemplate>
+									<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+									<ng-container i18n>False</ng-container>
+								</ng-template>
+							</div>
+						</div>
+						<div class="row">
+							<label class="ig-label" i18n>
+								Hide Grid Filter
+							</label>
+							<div class="ig-value">
+								<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].HideFilter; else falseTemplate">
+									<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+									<ng-container i18n>True</ng-container>
+								</ng-container>
+								<ng-template #falseTemplate>
+									<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+									<ng-container i18n>False</ng-container>
+								</ng-template>
+							</div>
+						</div>
+						<div class="row">
+							<label class="ig-label" i18n>
+								Hide Grid Footer
+							</label>
+							<div class="ig-value">
+								<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].HideFooter; else falseTemplate">
+									<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+									<ng-container i18n>True</ng-container>
+								</ng-container>
+								<ng-template #falseTemplate>
+									<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+									<ng-container i18n>False</ng-container>
+								</ng-template>
+							</div>
+						</div>
+						<div class="row">
+							<label class="ig-label" i18n>
+								Hide Grid Column Headers
+							</label>
+							<div class="ig-value">
+								<ng-container *ngIf="fieldType.FieldTypeREF.Type[currentType].HideHeader; else falseTemplate">
+									<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+									<ng-container i18n>True</ng-container>
+								</ng-container>
+								<ng-template #falseTemplate>
+									<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+									<ng-container i18n>False</ng-container>
+								</ng-template>
+							</div>
+						</div>
+					</ng-container>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group *ngIf="['ComputedRelationshipLookup'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Relation Lookup"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<d3s-relation-lookup-detail [fieldName]="fieldType.Name" [assetTypeUid]="fieldType.AssetTypeUid"></d3s-relation-lookup-detail>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group *ngIf="['Counter'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Value Selection"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Counter Prefix</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].CounterPrefix ?? '---'}}
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Counter Initial Value</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].CounterInitialIndex ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+
+		<ig-property-group *ngIf="['Path'].indexOf(currentType) > -1"
+						   i18n-title
+						   title="Asset Path"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>List Single Segment</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType].Definition.AssetTypeName ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group i18n-title
+						   title="Descriptions"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Display Description</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType]?.Description?.Display ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Form Description</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType]?.Description?.Form ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+		<ig-property-group *ngIf="fieldType.FieldTypeREF?.Type[currentType]?.Search?.AddToResult"
+						   i18n-title
+						   title="Search Results"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row">
+						<label class="ig-label" i18n>Prefix</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType]?.Search.Prefix ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Suffix</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType]?.Search.Suffix ?? '---'}}
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Display Order</label>
+						<div class="ig-value">
+							{{fieldType.FieldTypeREF.Type[currentType]?.Search.DisplayOrder ?? '---'}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+
+
+		<ig-property-group i18n-title
+						   title="Settings"
+						   [shouldBePadded]="false">
+			<div inputs>
+				<div class="form-group">
+					<div class="row" *ngIf="hasIsListable()">
+						<label class="ig-label" i18n>Is Listable</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsListable; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Editable on UI</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.EditableOnUI; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row" *ngIf="hasPartOfKey()">
+						<label class="ig-label" i18n>Key Field</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsPartOfKey; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row" *ngIf="hasRequired()">
+						<label class="ig-label" i18n>Required</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsRequired; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row">
+						<label class="ig-label" i18n>Show in Details Tab</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.ShowInDetailsTab; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row" *ngIf="hasDisplayInColumn()">
+						<label class="ig-label" i18n>Display in Column</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.DisplayInColumn; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+					<div class="row" *ngIf="hasShowIfEmpty()">
+						<label class="ig-label" i18n>Show if Empty</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.ShowIfEmpty; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+	</div>
+</div>

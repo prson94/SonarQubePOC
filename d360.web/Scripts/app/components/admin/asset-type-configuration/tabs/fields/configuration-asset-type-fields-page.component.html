@@ -4,13 +4,12 @@
 <d3s-configuration-asset-type-tabs [assetTypeClass]="assetTypeClass"
 								   [uid]="uid">
 </d3s-configuration-asset-type-tabs>
-<div class="tile tile-detail main-panel">
-	<d3s-field-definition-tile [assetTypeUid]="uid"
-							   [showTitle]="false"
-							   [supportsPrimaryFilterOption]="fieldTileSettings.supportsPrimaryFilterOption"
-							   [showDisplayInColumn]="fieldTileSettings.showDisplayInColumn"
-							   [showAddToSearch]="fieldTileSettings.showAddToSearch"
-							   [allowSingleSegmentPath]="fieldTileSettings.allowSingleSegmentPath"
-							   [objectName]="assetType?.Name">
-	</d3s-field-definition-tile>
-</div>
+<d3s-field-definition-tile [assetTypeUid]="uid"
+						   [showTitle]="false"
+						   [supportsPrimaryFilterOption]="fieldTileSettings.supportsPrimaryFilterOption"
+						   [showDisplayInColumn]="fieldTileSettings.showDisplayInColumn"
+						   [showAddToSearch]="fieldTileSettings.showAddToSearch"
+						   [allowSingleSegmentPath]="fieldTileSettings.allowSingleSegmentPath"
+						   [objectName]="assetType?.Name">
+</d3s-field-definition-tile>
+

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -1931,21 +1932,62 @@ namespace d360.web.Controllers.V2
 						(currentPosition > 0 ? currentPosition - 1 : 0) :
 						(currentPosition < maxPosition ? currentPosition + 1 : maxPosition);
 
-					fieldToMove.ColumnOrder = newPosition;
+					string whereQuery = "";
+					int typeId = -1;
 
-					var fieldFromMove = list.OrderBy(x => x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
-
-					if (fieldFromMove != null && fieldFromMove.ID != 0)
+					if (assetType != null)
 					{
-						fieldFromMove.ColumnOrder = currentPosition;
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+						whereQuery = " AssetTypeID = @typeId";
+						typeId = assetType.ID;
+					}
+					else if (intersectType != null)
+					{
+						whereQuery = " IntersectTypeID = @typeId";
+						typeId = intersectType.ID;
+					}
+					else if (actionType != null)
+					{
+						whereQuery = " IssueTypeID = @typeId";
+						typeId = actionType.ID;
+					}
+
+					if (model.Direction == "positional")
+					{
+						var dbArgs = new DynamicParameters();
+						dbArgs.Add("typeId", typeId);
+						StringBuilder stringBuilder	= new StringBuilder();
+						int idx = 0;
+						foreach (var field in model.Position)
+						{
+							dbArgs.Add("ft_name_" + idx, field.ApiName);
+							dbArgs.Add("ft_value_" + idx, field.ColumnOrder);
+							stringBuilder.AppendLine($@"update FieldType set ColumnOrder = @ft_value_{idx} where {whereQuery} and Name = @ft_name_{idx};");
+							idx++;
+						}
+
+						Company.Database.Connection.Query(stringBuilder.ToString(), dbArgs);
+
 					}
 					else
 					{
-						Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+						fieldToMove.ColumnOrder = newPosition;
+
+						var fieldFromMove = list.OrderBy(x => x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+
+						if (fieldFromMove != null && fieldFromMove.ID != 0)
+						{
+							fieldFromMove.ColumnOrder = currentPosition;
+							Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+						}
+						else
+						{
+							Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+						}
 					}
 
-					return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.FieldMovedSuccessfully);
+					var updatedOrdering = Company.Database.Connection.Query($@"select Name, ColumnOrder from Fieldtype where {whereQuery}", new { typeId }).ToList();
+
+					return Request.CreateResponse(HttpStatusCode.OK, updatedOrdering);
 				}
 				else
 				{
@@ -3151,5 +3193,85 @@ namespace d360.web.Controllers.V2
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Retrieves complex relation lookup definition for asset type uid and field name. Used in field type side panel
+		/// </summary>
+		/// <returns>Returns a relation lookup definition</returns>        
+		/// <param name="assetTypeUid">Uid of the asset types</param>
+		/// <param name="fieldName">Field name</param>
+		[
+			HttpGet,
+			Route("{assetTypeUid:Guid}/relationLookupDetails/{fieldName}"),
+			 SwaggerResponse(HttpStatusCode.OK, "A list of filter values for a given asset uid and field name.", typeof(List<FieldTypesApiViewModel>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public HttpResponseMessage GetRelationLookupDetails(Guid assetTypeUid, string fieldName)
+		{
+			var prefix = "Fields.GetRelationLookupDetails => ";
+			try
+			{
+				string sql = $@"
+declare @fieldTypeId int = (select ft.ID from AssetType 
+inner join fieldtype ft on ft.name = @fieldname and ft.assettypeid = AssetType.ID
+where uid = @assettypeuid)
+
+declare @hideHeader bit;
+declare @hideFooter bit;
+declare @hideFilter bit;
+declare @definition nvarchar(max);
+
+select @hideHeader = HideHeader, @hideFooter = HideFooter, @hideFilter = HideFilter, @definition = [Definition] from FieldTypeLookup where @fieldTypeId = FieldTypeID
+
+
+SELECT Parsed.*, ITD.SubjectName, ITD.PredicateName, ITD.PredicateInverse, ITD.ObjectName, ITD.Name AS RelationshipTypeName
+FROM OPENJSON(@definition,'$.Relations') WITH (
+    RelationType int '$.RelationType',
+    Direction int '$.Direction',
+    AssetTypeUid uniqueidentifier '$.AssetTypeUid',
+    IntersectTypeUid uniqueidentifier '$.IntersectTypeUid'
+    ) Parsed
+inner join IntersectTypeDetail ITD ON ITD.uid = Parsed.IntersectTypeUid
+
+
+SELECT Parsed.*, RelName.name as RelationshipTypeName
+FROM OPENJSON(@definition,'$.Fields') WITH (
+AssetTypeUid uniqueidentifier '$.AssetTypeUid',
+FieldTypeID int '$.FieldTypeID',
+FieldTypeName nvarchar(max) '$.FieldTypeName',
+[Filter] nvarchar(max) '$.Filter',
+OverrideDisplayName nvarchar(max) '$.OverrideDisplayName',
+DisplayOrder int '$.DisplayOrder',
+SortOrder int '$.SortOrder',
+Show bit '$.Show',
+Width nvarchar(max) '$.Width',
+RelationIndex int '$.RelationIndex'
+) Parsed
+outer apply (select top 1 ITD.Name from IntersectTypeDetail ITD WHERE ITD.ID = Parsed.FieldTypeId and Parsed.FieldTypeName like 'Related Item%') RelName(name)
+
+
+select @hideHeader as hideHeader, @hideFooter as hideFooter, @hideFilter as hideFilter";
+
+				var reader = Company.Database.Connection.QueryMultiple(sql, new { assetTypeUid, fieldName });
+
+				var response = new
+				{
+					relationships = reader.Read<dynamic>(),
+					fields = reader.Read<dynamic>(),
+					details = reader.Read<dynamic>().FirstOrDefault(),
+				};
+
+				return Request.CreateResponse(HttpStatusCode.OK, response);
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> { { "Endpoint Method", prefix } });
+
+				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+			}
+		}
 	}
 }

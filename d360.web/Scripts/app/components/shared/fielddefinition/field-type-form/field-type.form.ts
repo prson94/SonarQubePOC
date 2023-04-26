@@ -1,5 +1,5 @@
 import { cloneDeep, set, sumBy } from "lodash-es";
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 
 import {
@@ -64,7 +64,8 @@ import { RelationshipType } from "../../../../models/relationship.model";
 			}
         `
     ],
-    providers: [FieldsObservableService, ObjectDetailService, AssetService],
+	providers: [FieldsObservableService, ObjectDetailService, AssetService],
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
@@ -178,6 +179,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         private assetService: AssetService,
 		protected settingsService: CompanySettingsService,
 		private relationshipService: RelationshipsService,
+		private cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
         this.model = new FieldTypeEditorModel();
@@ -316,7 +318,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 										this.enableAllowMultipleValues = false;
 									}
 
-                                    this.isLoading = false;
+									this.isLoading = false;
+									this.cdRef.markForCheck();
                                 });
                         });
                 });
@@ -331,7 +334,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 					this.getLookupsHandler(x);
 					this.getRelationshipDetails();			
                     this.model.FieldType.Type = new FieldType(); //Set as Empty to allow for selection.
-                    this.isLoading = false;
+					this.isLoading = false;
+					this.cdRef.markForCheck();
                 });
         }
 	}

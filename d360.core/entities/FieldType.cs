@@ -223,6 +223,9 @@ namespace d360.core.entities
 	{
 		[DataMember]
 		public Guid? AssetTypeUid { get; set; }
+
+		[DataMember]
+		public string AssetTypeName { get; set; }
 	}
 
 	public class FieldTypeDescriptionApiViewModel_DisplayForm : FieldTypeDescriptionApiViewModel_Display
@@ -393,6 +396,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Guid IntersectTypeUid { get; set; }
+		
+		[DataMember]
+		public string IntersectTypeName { get; set; }
 
 		[DataMember]
 		public string FieldTypeName { get; set; }
@@ -453,6 +459,8 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Guid IntersectTypeUid { get; set; }
+		[DataMember]
+		public string IntersectTypeName { get; set; }
 
 		[DataMember]
 		public bool IsDisplayable { get; set; }
@@ -686,6 +694,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool AllowMultipleValues { get; set; }
+
+		[DataMember]
+		public string TypeName { get; set; }
 	}
 	public class FieldTypeDataTypeLookupApiViewModel : FieldTypeEditableApiViewModel
 	{
@@ -783,6 +794,9 @@ namespace d360.core.entities
 		public Guid IntersectTypeUid { get; set; }
 
 		[DataMember]
+		public string IntersectTypeName { get; set; }
+
+		[DataMember]
 		public int? ColumnOrder { get; set; }
 
 		[DataMember]
@@ -817,7 +831,7 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool UseDisplayFormat { get; set; }
-		
+
 		[DataMember]
 		public bool IsSubject { get; set; }
 	}
@@ -1258,6 +1272,15 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string Direction { get; set; }
+
+		[DataMember]
+		public List<FieldColumnPosition> Position { get; set; }
+	}
+
+	public class FieldColumnPosition
+	{
+		public string ApiName { get; set; }
+		public string ColumnOrder { get; set; }
 	}
 
 	/// <summary>
