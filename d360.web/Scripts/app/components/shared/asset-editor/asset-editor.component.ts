@@ -274,11 +274,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.action = this.newActionName;
 		}
 
-		if (this.objectType !== 'Issue') {
+		if (!this.isActionForm()) {
 			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
 		}
 
-		if (this.useSidePanel) {
+		if (this.useSidePanel || this.isActionForm()) {
 			this.getAssetTypeDetails().subscribe((result) => {
 				this.assetTypeFields = result.fields || [];
 				this.assetTypeFields.forEach((field) => {
@@ -301,7 +301,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	}
 
 	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
-		if (this.objectType === 'Issue') {
+		if (this.isActionForm()) {
 			return forkJoin({
 				fields: this.fieldsObservableService.getFieldsV2(null, this.objectTypeUid, null),
 				relationships: this.relationshipService.getRelationshipsByAssetTypeUid(this.objectTypeUid)
@@ -372,7 +372,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			});
 		}
 
-		if (this.objectType === "Issue") {
+		if (this.isActionForm()) {
 			this.editorDefinitionService.getNewEditorDefinition(this.objectTypeUid, this.objectType)
 				.subscribe((result) => {
 					this.handleEditor(result);
@@ -439,7 +439,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.fields = result;
 
 			this.fields.forEach((f) => {
-				if (this.objectType === 'Issue' && f.FieldType === 'Lookup') {
+				if (this.isActionForm() && f.FieldType === 'Lookup') {
 					this.useSidePanel = true;
 				}
 
@@ -505,7 +505,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			setTimeout(() => {
 				this.initialFormValue = this.form.value;
 				this.form.valueChanges.subscribe((change) => {
-					if (this.selection && !isEqual(this.initialFormValue, change)) {
+					if ((this.selection || this.isActionForm()) && !isEqual(this.initialFormValue, change)) {
 						this.hasUpdateFormChanged = true;
 					}
 				});
@@ -817,7 +817,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		else if (this.objectType === "IntersectType") {
 			this.postToRelationshipApiV2({ item: values, action, addAnother: false });
 		}
-		else if (this.objectType === "Issue") {
+		else if (this.isActionForm()) {
 			//This gets handled in RaiseIssueComponent
 			this.savingInProgress = true;
 			this.saveClick.emit({ actionTypeUid: this.objectTypeUid, item: values });
@@ -1181,4 +1181,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		this.sidePanelOpen = true;
 	}
 
+	isActionForm() {
+		return this.objectType === 'Issue';
+	}
 }
