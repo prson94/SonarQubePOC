@@ -147,10 +147,10 @@ export class HeaderActionsComponent {
 				this.assetTypeUid = this.assetUid = null;
 
 				if (this.uri.toLowerCase().startsWith("asset/")) {
-					this.assetUid = this.uri.toLowerCase().replace("asset/", "");
+					this.assetUid = this.uri.toLowerCase().replace("asset/", "").slice(0, 36);
 				}
 				if (this.uri.toLowerCase().startsWith("assets/")) {
-					this.assetTypeUid = this.uri.toLowerCase().replace("assets/", "");
+					this.assetTypeUid = this.uri.toLowerCase().replace("assets/", "").slice(0, 36);
 				}
 			}
 		});
