@@ -346,7 +346,8 @@ export class UiAdvancedFiltering {
 		} else if (options.fieldType === 'Lookup') {
 			return this.lookupGivenValueWithinSearchValue(givenValue, searchValue as LookupOption[]);
 		} else if (options.fieldType === 'Text' || options.fieldType === 'Boolean') {
-			return givenValue.toString().toLowerCase() === searchValue.toString().toLowerCase();
+			const value = givenValue ?? '';
+			return value.toString().toLowerCase() === searchValue.toString().toLowerCase();
 		} else if (options.fieldType === 'Number') {
 			return Number(givenValue) === Number(searchValue);
 		} else if (options.fieldType === 'Date') {

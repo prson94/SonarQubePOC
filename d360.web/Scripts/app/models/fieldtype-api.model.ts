@@ -602,41 +602,41 @@ export class Score implements ICommonOptions {
 }
 
 export class RelationshipLookupDefinition {
-	relationships: RelationshipLookupRelationshipDefinition[]
-	fields: RelationshipLookupFieldDefinition[]
-	details: Details
+	relationships: RelationshipLookupRelationshipDefinition[];
+	fields: RelationshipLookupFieldDefinition[];
+	details: Details;
 }
 
 export class RelationshipLookupRelationshipDefinition {
-	RelationType: number
-	Direction: number
-	AssetTypeUid: string
-	IntersectTypeUid: string
-	SubjectName: string
-	PredicateName: string
-	PredicateInverse: string
-	ObjectName: string
+	RelationType: number;
+	Direction: number;
+	AssetTypeUid: string;
+	IntersectTypeUid: string;
+	SubjectName: string;
+	PredicateName: string;
+	PredicateInverse: string;
+	ObjectName: string;
 	RelationshipTypeName: string;
 }
 
 export class RelationshipLookupFieldDefinition {
-	AssetTypeUid: string
-	FieldTypeID: number
-	FieldTypeName: string
-	Filter: string
-	OverrideDisplayName: any
-	DisplayOrder: number
-	SortOrder: number
-	Show: boolean
-	Width: any
-	RelationIndex: number
-	RelationshipTypeName?: string
+	AssetTypeUid: string;
+	FieldTypeID: number;
+	FieldTypeName: string;
+	Filter: string;
+	OverrideDisplayName: string;
+	DisplayOrder: number;
+	SortOrder: number;
+	Show: boolean;
+	Width: number;
+	RelationIndex: number;
+	RelationshipTypeName?: string;
 }
 
 export class Details {
-	hideHeader: boolean
-	hideFooter: boolean
-	hideFilter: boolean
+	hideHeader: boolean;
+	hideFooter: boolean;
+	hideFilter: boolean;
 }
 
 
