@@ -57,7 +57,8 @@ namespace d360.web.Controllers
 						Name = (el.Element("name") ?? el.Element("Name")).Value,
 						Url = el.Element("url").Value,
 						Disabled = el.Element("disabled")?.Value == "1",
-						ShowChildren = showChildren
+						ShowChildren = showChildren,
+						Description = (el.Elements("Description").Any() && el.Element("Description") != null ? el.Element("Description").Value : null)						
 					};
 
 					if (el.Element("items") != null)

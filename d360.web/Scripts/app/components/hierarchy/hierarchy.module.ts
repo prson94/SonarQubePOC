@@ -17,7 +17,6 @@ import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-ed
 import { HierarchyRoutingModule } from './hierarchy.routes';
 
 import { HierarchyComponent } from './hierarchy.component';
-import { HierarchyListComponent } from './hierarchy-list.component';
 import { HierarchyItemComponent } from './hierarchy-item.component';
 import { HierarchyItemStructureComponent } from './hierarchy-item-structure.component';
 
@@ -99,13 +98,11 @@ import { AngularSplitModule } from 'angular-split';
     ],
     declarations: [
         HierarchyComponent,
-        HierarchyListComponent,
         HierarchyItemComponent,
         HierarchyItemStructureComponent,
 	],
 	exports: [
 		HierarchyComponent,
-		HierarchyListComponent,
 		HierarchyItemComponent,
 		HierarchyItemStructureComponent,
 	],
