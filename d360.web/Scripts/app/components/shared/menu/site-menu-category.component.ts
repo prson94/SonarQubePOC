@@ -52,9 +52,9 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 		super(settingsService);
 	}
 
-	ngOnChanges(changes: SimpleChanges): void {
+	ngOnChanges(): void {
 		if (this.menu && this.menu.Description) {
-			this.menuTooltip = this.menu.Description
+			this.menuTooltip = this.menu.Description;
 			if (!this.expanded) {
 				this.menuTooltip = `<p><b>${this.title}</b></p>${this.menu.Description}`;
 			}
