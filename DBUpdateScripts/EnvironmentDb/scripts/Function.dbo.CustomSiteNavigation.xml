@@ -5,16 +5,50 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Function.dbo.CustomSiteNavigation-v3.1">
-  <comment>GOV-21033, GOV-21420, GOV-21421</comment>
+  <changeSet author="bquinlivan" id="Function.dbo.CustomSiteNavigation-v4">
+  <comment>GOV-21140</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-drop function if exists dbo.CustomSiteNavigation
-GO
-
+CREATE OR ALTER FUNCTION [dbo].[CustomSiteNavigation]
+(
+	@id int,
+	@NoReadAssetTypes dbo.ids readonly
+)
+RETURNS XML
+WITH RETURNS NULL ON NULL INPUT
+AS
+BEGIN
+	 RETURN 
+    (
+        SELECT  COALESCE(a.Name,v.Name) as name 
+                , v.[Route] AS url
+				, 0 as feature,
+				case when nr.id is not null
+					then 1
+					else 0
+					end as disabled,
+				case when v.Object = 'ArtifactType' then
+					dbo.ArtifactSiteNavigation(a.id, @NoReadAssetTypes)
+				when v.Object = 'TaxonomyType' or v.Object = 'PolicyType' then
+					null
+				else
+					[dbo].CustomSiteNavigation(v.id, @NoReadAssetTypes)
+				end as items,
+				a.Description
+        FROM    dbo.SiteNav v		
+		    left join assettype a on a.objectid = v.objectid and a.[object] = v.[Object]
+			left join @NoReadAssetTypes nr on nr.id = a.id
+        WHERE   v.ParentID = @id order by sortorder
+        FOR XML PATH('nav'),TYPE
+    )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[CustomSiteNavigation]
 (
 	@id int,
@@ -41,38 +75,8 @@ BEGIN
 					[dbo].CustomSiteNavigation(v.id, @NoReadAssetTypes)
 				end as items
         FROM    dbo.SiteNav v		
-		    left join assettype a on a.objectid = v.objectid and a.[object] = v.[Object]
-			left join @NoReadAssetTypes nr on nr.id = a.id
-        WHERE   v.ParentID = @id order by sortorder
-        FOR XML PATH('nav'),TYPE
-    )
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER FUNCTION [dbo].[CustomSiteNavigation]
-(
-	@id int
-)
-RETURNS XML
-WITH RETURNS NULL ON NULL INPUT
-AS
-BEGIN
-	 RETURN 
-    (
-        SELECT  COALESCE(a.Name,v.Name) as name 
-                , v.[Route] AS url
-				, 0 as feature,
-				case when v.Object = 'ArtifactType' then
-					dbo.ArtifactNgSiteNavigation(a.id)
-				when v.Object = 'TaxonomyType' or v.Object = 'PolicyType' then
-					null
-				else
-					[dbo].CustomSiteNavigation(v.id)
-				end as items
-        FROM    dbo.SiteNav v		
 		    left join assettype a on a.objectid = v.objectid and v.Object = 'ArtifactType' and a.[object] = v.[Object]
+			left join @NoReadAssetTypes nr on nr.id = a.id
         WHERE   v.ParentID = @id order by sortorder
         FOR XML PATH('nav'),TYPE
     )

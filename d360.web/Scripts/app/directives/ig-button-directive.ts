@@ -15,7 +15,8 @@ import { coerceBooleanProperty } from '@angular/cdk/coercion';
 })
 export class ButtonDirective implements AfterViewInit, OnDestroy {
     @Input() tooltip: string;
-    @Input() darkMode: boolean = false;
+	@Input() darkMode: boolean = false;
+	@Input() iconRight: boolean = false;
 
     public _label: string;
     public _icon: string;
@@ -90,13 +91,18 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
             this.el.nativeElement.removeChild(iconElement);
 		}
 
-        if (this._icon) {
+		if (this._icon) {
+			const usePrepend = typeof this.el.nativeElement.attributes['prepend-label'] !== 'undefined';
+
             const iconElement = document.createElement("span");
             iconElement.setAttribute("aria-hidden", "true");
             iconElement.className = 'ig-button-icon fa ' + this._icon;
 
-            const labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-label');
-            if (labelElement) {
+			const labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-button-label');
+			if (labelElement && usePrepend) {
+				this.el.nativeElement.appendChild(iconElement);
+			}
+            else if (labelElement) {
                 this.el.nativeElement.insertBefore(iconElement, labelElement);
             } else {
                 this.el.nativeElement.appendChild(iconElement);

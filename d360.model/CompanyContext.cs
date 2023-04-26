@@ -1236,7 +1236,7 @@ from	IntersectType I
 			{
 				if (subjectUid.HasValue)
 				{
-					var IsReferenceClass = Filter<AssetType>(i => i.uid.ToString().ToLowerInvariant() == subjectUid.Value.ToString().ToLowerInvariant() && i.Class == AssetTypeClass.Reference).Count();
+					var IsReferenceClass = Filter<AssetType>(i => i.uid == subjectUid.Value && i.Class == AssetTypeClass.Reference).Count();
 					if (IsReferenceClass > 0)
 					{
 						limitToClasses.Remove(AssetTypeClass.Reference);

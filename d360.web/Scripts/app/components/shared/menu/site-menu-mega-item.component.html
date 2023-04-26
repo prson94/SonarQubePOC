@@ -2,10 +2,15 @@
     (click)="itemClick()"
     [ngClass]="{'menu-item truncate':true , 'dim': item.Url == null, 'menu-item-disabled':item.Disabled }"
     [igDataCy]="'PrimaryNav_' + item.Name"
-    [pTooltip]="item.Disabled ? noReadTooltip : null"
+    [pTooltip]="item.Disabled ? noReadTooltip : item.Description"
     [tooltipPosition]="item.Disabled ? 'right' : null"
     [tooltipStyleClass]="item.Disabled ? 'ig-tooltip' : null">
-    <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}">
+    <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}" 
+        pTooltip="{{item.Description ?? item.Name}}"                                       
+        [escape]="false"
+        i18n-pTooltip
+	    tooltipPosition="right"
+        tooltipStyleClass="ig-tooltip-site-sub-menu">
         <div class="caret" (click)="handleArrowClick($event)">
             <i *ngIf="item.Items" [class]="!item.ShowChildren ? 'subitem fa fa-caret-right' : 'subitem fa fa-caret-down'" aria-hidden="true"></i>
         </div>

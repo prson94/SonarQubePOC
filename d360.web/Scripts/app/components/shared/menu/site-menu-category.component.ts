@@ -5,6 +5,7 @@
 	EventEmitter,
 	HostListener,
 	Input,
+	OnChanges,
 	Output,
 	TemplateRef,
 	ViewChild
@@ -21,7 +22,7 @@ import { Router } from '@angular/router';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class SiteMenuCategoryComponent extends BaseComponent {
+export class SiteMenuCategoryComponent extends BaseComponent implements OnChanges {
 	@Input() url: string;
 	@Input() title: string;
 	@Input() rootIconName: string;
@@ -35,6 +36,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 
 	@Output() clearClick = new EventEmitter();
 	@Output() activeItemChanged = new EventEmitter();
+    menuTooltip: string;
 
 	@HostListener('document:click', ['$event'])
 	documentClick() {
@@ -43,13 +45,22 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 		}
 	}
 
-	isCaretHovered = false;
-
 	constructor(
 		protected settingsService: CompanySettingsService,
 		private router: Router) {
 		super(settingsService);
 	}
+
+	ngOnChanges(): void {
+		if (this.menu && this.menu.Description) {
+			this.menuTooltip = this.menu.Description;
+			if (!this.expanded) {
+				this.menuTooltip = `<p><b>${this.title}</b></p>${this.menu.Description}`;
+			}
+		} else {
+			this.menuTooltip = this.title;
+		}
+    }
 
 	@ViewChild('item', { static: false }) item: ElementRef<HTMLLIElement>;
 
@@ -61,7 +72,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 		if (url) {
 			this.router.navigateByUrl(this.federateUrl(url));
 		}
-		else if (!this.expanded) {
+		else {
 			this.onCategoryExpand($event);
 		}
 	}
