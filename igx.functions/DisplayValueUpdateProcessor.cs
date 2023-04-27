@@ -78,7 +78,7 @@ namespace igx.functions.consumption
                     {
                         try
                         {
-                            await companyConnection.ExecuteAsync("exec GenerateAllAssetTypeDisplayValues", commandTimeout: 2400);
+                            await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
                         }
                         catch
                         {

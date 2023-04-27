@@ -5,8 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Function.dbo.GetAssetDisplayValueById-v10">
+  <changeSet author="bquinlivan" id="Function.dbo.GetAssetDisplayValueById-v11">
   <comment>GOV-20086,GOV-20357</comment>
+  <comment>If logical is changed, this also needs to be updated in CheckDisplayValues</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
