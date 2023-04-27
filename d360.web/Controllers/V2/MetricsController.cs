@@ -1678,7 +1678,7 @@ namespace d360.web.Controllers.V2
 				}
 				List<RootMetricAssetHierarchyModel> dataPoints = new List<RootMetricAssetHierarchyModel>();
 
-				if(results.Count > 0)
+				if (results.Count > 0 && allocation != null)
 				{
 					dataPoints = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, null, results.Min(x => x.EffectiveDate));
 				}
