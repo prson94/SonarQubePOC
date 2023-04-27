@@ -194,6 +194,27 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
 						}
 						displayField.FieldTypeREF = field;
+
+						if (!this.hasPartOfKey(displayField)) {
+							displayField.IsPartOfKey = null;
+						}
+
+						if (!this.hasRequired(displayField)) {
+							displayField.IsRequired = null;
+						}
+
+						if (!this.hasDisplayInColumn(displayField)) {
+							displayField.DisplayInColumn = null;
+						}
+
+						if (!this.hasShowIfEmpty(displayField)) {
+							displayField.ShowIfEmpty = null;
+						}
+
+						if (!this.hasIsListable(displayField)) {
+							displayField.IsListable = null;
+						}
+
 						return displayField;
 					});
 					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
