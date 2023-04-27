@@ -406,9 +406,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.load();
 		this.onFieldsChanged.emit();
 	}
-
-	deleteFieldType(name: string) {
-
+	deleteInProgress: boolean = false;
+	deleteFieldType() {
+		this.deleteInProgress = true;
 		this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
 			(res) => {
 				if (res != null && res.Success === true) {
@@ -416,6 +416,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					const index = this.fieldDisplayModel.findIndex((f) => f.Name === this.selectedRow.Name);
 
 					this.isDeleting = false;
+					this.deleteInProgress = false;
 
 					if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
 						const ix = this.fieldDefinitions.findIndex((f) => f.Name === this.selectedRow.Name);
