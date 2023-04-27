@@ -1081,6 +1081,9 @@ export class BaseComponent {
 			this.breadcrumbsService.clearBreadcrumbs();
 
 			var areaName = r.DisplayValue;
+			if (r?.ObjectType === 'IntersectType') {
+				areaName = r?.TypeName;
+			}
 			var mainTabTitle = r.MainTabTitle;
 			if (r.PreloadData) {
 				this.preloadedTreeData = r.PreloadData;
@@ -1262,6 +1265,9 @@ export class BaseComponent {
 			{this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));}
 
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
+		if (data?.ObjectType === 'IntersectType') {
+			this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data?.TypeName));
+		}
 		this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
 	}
 

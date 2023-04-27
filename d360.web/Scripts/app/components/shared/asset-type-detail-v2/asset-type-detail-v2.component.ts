@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
+import { AssetTypeApiModel, AssetTypeClass, AssetTypeClassText } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 import { AssetService } from '../../../services/asset.service';
@@ -337,6 +337,13 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			case AssetTypeClass.DiagramAsset:
 				this.addFieldsToCategory($localize`General`, [
 					{
+						name: $localize`Description`,
+						type: AssetTypeDetailFieldType.HTML,
+						value: assetTypeModel.Description
+					}
+				]);
+				this.addFieldsToCategory($localize`General`, [
+					{
 						name: 'Flow Object Type',
 						type: AssetTypeDetailFieldType.TEXT,
 						value: assetTypeModel.FlowObjectType
@@ -362,5 +369,22 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 				}
 			]);
 		});
+	}
+
+	getAssetTypeClass(): AssetTypeClass {
+		switch (this.assetTypeModel.Class.Value.toString()) {
+			case `BusinessAsset`: return AssetTypeClass.BusinessAsset; 
+			case `DiagramAsset`: return AssetTypeClass.DiagramAsset; 
+			case `Group`: return AssetTypeClass.Group; 
+			case `Model`: return AssetTypeClass.Model; 
+			case `Policy`: return AssetTypeClass.Policy; 
+			case `Reference`: return AssetTypeClass.Reference; 
+			case `ReferenceItemType`: return AssetTypeClass.ReferenceItemType; 
+			case `Rule`: return AssetTypeClass.Rule; 
+			case `SemanticType`: return AssetTypeClass.SemanticType; 
+			case `TechnicalAsset`: return AssetTypeClass.TechnicalAsset; 
+			case `User`: return AssetTypeClass.User; 
+		}
+		return this.assetTypeModel.Class.Value as AssetTypeClass;
 	}
 }

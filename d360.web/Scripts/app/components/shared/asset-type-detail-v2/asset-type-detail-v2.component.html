@@ -46,7 +46,7 @@
 </div>
 
 <asset-type-modal-form *ngIf="assetTypeModel && isDetailsPage"
-					   [assetTypeClass]="assetTypeModel.Class.Value"
+					   [assetTypeClass]="getAssetTypeClass()"
 					   [uid]="assetTypeModel.uid"
 					   [parentTypeName]="assetTypeModel.Path"
 					   [parentUid]="assetTypeModel.ParentUid"

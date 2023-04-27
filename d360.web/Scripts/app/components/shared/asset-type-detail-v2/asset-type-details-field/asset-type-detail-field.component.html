@@ -53,7 +53,7 @@
 		{{ field.value | date:'d MMM yyyy' }}
 	</div>
 	<div class="ig-value" *ngSwitchCase="fieldType.USER">
-		<a href="#" (click)="onResourceClick($event)">
+		<a context-link (click)="onResourceClick($event)" [attr.data-link-type]="'resource'">
 			{{field.value.title}}
 		</a>
 	</div>

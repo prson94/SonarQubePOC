@@ -30,7 +30,7 @@ export class ConfigurationAssetTypeBreadcrumbsComponent {
             // eslint-disable-next-line no-constant-condition
             while (true) {
                 const item = this.idToItemMap[currentUid];
-                breadcrumbs.push(new Breadcrumb(item.Name, `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}/${item.Uid}/fields`));
+                breadcrumbs.push(new Breadcrumb(item.Name, `/admin/configuration/assets/${AssetTypeClass[this.assetTypeClass]}/${item.Uid}/details`));
                 if (item.ParentUid == null) {
                     break;
                 }
