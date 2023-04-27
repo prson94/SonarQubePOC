@@ -11,7 +11,6 @@ import { BaseComponent } from "../../base.component";
 @Component({
     selector: "measure-conditions-details",
     templateUrl: "./measure-conditions-details.component.html",
-    styles: [""],
     encapsulation: ViewEncapsulation.None
 })
 

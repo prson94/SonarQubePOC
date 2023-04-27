@@ -95,6 +95,19 @@
                 }
               ]
             },
+			"development": {
+				"optimization": false,
+				"outputHashing": "none",
+				"sourceMap": true,
+				"namedChunks": true,
+				"extractLicenses": true,
+				"vendorChunk": true,
+				"buildOptimizer": false,
+				"polyfills": "Scripts/polyfills.dev.ts",
+				"localize": false,
+				"outputPath": "Scripts/dist/en",
+				"progress": true
+			},
 			"en": {
 				"localize": [
 					"en"
