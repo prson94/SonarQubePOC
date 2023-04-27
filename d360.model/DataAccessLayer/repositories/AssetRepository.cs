@@ -3119,7 +3119,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						IsDescriptionEnabled = model.IsDescriptionEnabled,
 						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
 						DescriptionButtonName = model.DescriptionButtonName,
-						DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0
+						DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ?
+							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) :
+							(int)Permission.ReadAsset
 					};
 					CompanyContext.Add(at);
 
@@ -3156,7 +3158,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						IsDescriptionEnabled = model.IsDescriptionEnabled,
 						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
 						DescriptionButtonName = model.DescriptionButtonName,
-						DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0
+						DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ? 
+							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) : 
+							(int)Permission.ReadAsset
 					};
 
 					if (at.HierarchyMaximumDepth <= 0 || at.HierarchyMaximumDepth > 10)
@@ -3366,7 +3370,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
 					if (model.Class != AssetTypeClass.Diagram && model.Class != AssetTypeClass.Reference && model.Class != AssetTypeClass.User && model.Class != AssetTypeClass.Group)
 					{
-						assetType.DefaultPermissions = model.IsDefaultReadAccessEnabled ? (int)Permission.ReadAsset : 0;
+						assetType.DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ?
+							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) :
+							(int)Permission.ReadAsset;
 					}
 					assetType.DescriptionButtonName = model.DescriptionButtonName;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;

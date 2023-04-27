@@ -40,7 +40,8 @@ namespace d360.web.Models
                 Notes = "Notes about usage or any other topic.",
                 UseAsTransformation = false,
                 AutoDisplayParent = true,
-                CanEditParent = true
+                CanEditParent = true,
+				IsDefaultReadAccessEnabled = true
             };
         }
     }
