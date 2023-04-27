@@ -691,7 +691,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetMetricDefinitionHierarchyByAssetType(It.IsAny<Guid>(), It.IsAny<DateTime?>()))
                 .Returns(new MetricAssetTypeHierarchyModels() { new MetricAssetTypeHierarchyModel(), new MetricAssetTypeHierarchyModel() });
 
-            mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime?>()))
+            mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>()))
                 .Returns(new List<RootMetricAssetHierarchyModel>());
 
             mock.Setup(x => x.GetMetricStructureByAllocation(It.IsAny<Guid>(), It.IsAny<List<State>>()))

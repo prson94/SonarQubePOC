@@ -28,7 +28,7 @@ namespace d360.model.DataAccessLayer
         
         List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         
-        List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate);
+        List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null);
         
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
         

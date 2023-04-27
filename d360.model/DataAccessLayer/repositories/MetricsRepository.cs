@@ -1661,7 +1661,7 @@ namespace d360.model.DataAccessLayer
 			return model;
 		}
 
-		public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate)
+		public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null)
 		{
 			SqlConnection cnn = Company.Database.Connection as SqlConnection;
 
@@ -1672,6 +1672,13 @@ namespace d360.model.DataAccessLayer
 			else
 			{
 				effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
+			}
+
+			string dateLimitWhereQuery = @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
+
+			if (startDate.HasValue)
+			{
+				dateLimitWhereQuery = @"and S.EffectiveDate >= @startDate";
 			}
 
 			string sql = $@"
@@ -1722,7 +1729,7 @@ namespace d360.model.DataAccessLayer
 											) MaxItemDt
 									where   S.AllocationUid = @allocationUid 
 											and S.AssetUid = @assetUid 
-											and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)
+											{dateLimitWhereQuery}
 									) O 
 							where	O.RowNum = 1
 							order by ParentUid, Name
@@ -1811,7 +1818,7 @@ namespace d360.model.DataAccessLayer
 				cnn.Open();
 			}
 
-			return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
+			return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value, startDate = startDate.HasValue ? startDate.Value : new DateTime() }, commandTimeout: ApiTimeout).ToList();
 		}
 
 		public List<MetricAssetViewModel> GetMetricStructureByAllocation(Guid allocationUid, List<State> states = null)
