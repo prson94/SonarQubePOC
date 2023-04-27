@@ -421,9 +421,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	moveToTop(field: FieldDisplayModel) {
-		let idx = this.fieldDisplayModel.indexOf(field);
-		this.fieldDisplayModel.unshift(this.fieldDisplayModel.splice(idx, 1)[0]);
+		let idx = this.tableEl.value.indexOf(field);
+		this.tableEl.value.unshift(this.tableEl.value.splice(idx, 1)[0]);
 
+		idx = 0;
 		const position: FieldColumnPosition[] = [];
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });
@@ -434,9 +435,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	moveToLast(field: FieldDisplayModel) {
-		let idx = this.fieldDisplayModel.indexOf(field);
-		this.fieldDisplayModel.push(this.fieldDisplayModel.splice(idx, 1)[0]);
+		let idx = this.tableEl.value.indexOf(field);
+		this.tableEl.value.push(this.tableEl.value.splice(idx, 1)[0]);
 
+		idx = 0;
 		const position: FieldColumnPosition[] = [];
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });
