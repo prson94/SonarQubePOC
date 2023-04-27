@@ -34,6 +34,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { FieldTypeDetailModule } from './field-type-details/field-type-details.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
 
 @NgModule({
     imports: [
@@ -67,7 +68,8 @@ import { FieldTypeDetailModule } from './field-type-details/field-type-details.m
 		SearchFieldModule,
 		AdvancedFiltersModule,
 		PopupMenuModule,
-		FieldTypeDetailModule
+		FieldTypeDetailModule,
+		SiteModalModule
     ],
     declarations: [
         FieldTypeForm,

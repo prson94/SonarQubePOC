@@ -194,6 +194,27 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
 						}
 						displayField.FieldTypeREF = field;
+
+						if (!this.hasPartOfKey(displayField)) {
+							displayField.IsPartOfKey = null;
+						}
+
+						if (!this.hasRequired(displayField)) {
+							displayField.IsRequired = null;
+						}
+
+						if (!this.hasDisplayInColumn(displayField)) {
+							displayField.DisplayInColumn = null;
+						}
+
+						if (!this.hasShowIfEmpty(displayField)) {
+							displayField.ShowIfEmpty = null;
+						}
+
+						if (!this.hasIsListable(displayField)) {
+							displayField.IsListable = null;
+						}
+
 						return displayField;
 					});
 					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
@@ -385,9 +406,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.load();
 		this.onFieldsChanged.emit();
 	}
-
-	deleteFieldType(name: string) {
-
+	deleteInProgress: boolean = false;
+	deleteFieldType() {
+		this.deleteInProgress = true;
 		this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
 			(res) => {
 				if (res != null && res.Success === true) {
@@ -395,6 +416,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					const index = this.fieldDisplayModel.findIndex((f) => f.Name === this.selectedRow.Name);
 
 					this.isDeleting = false;
+					this.deleteInProgress = false;
 
 					if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
 						const ix = this.fieldDefinitions.findIndex((f) => f.Name === this.selectedRow.Name);
@@ -421,9 +443,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	moveToTop(field: FieldDisplayModel) {
-		let idx = this.fieldDisplayModel.indexOf(field);
-		this.fieldDisplayModel.unshift(this.fieldDisplayModel.splice(idx, 1)[0]);
+		let idx = this.tableEl.value.indexOf(field);
+		this.tableEl.value.unshift(this.tableEl.value.splice(idx, 1)[0]);
 
+		idx = 0;
 		const position: FieldColumnPosition[] = [];
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });
@@ -434,9 +457,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	moveToLast(field: FieldDisplayModel) {
-		let idx = this.fieldDisplayModel.indexOf(field);
-		this.fieldDisplayModel.push(this.fieldDisplayModel.splice(idx, 1)[0]);
+		let idx = this.tableEl.value.indexOf(field);
+		this.tableEl.value.push(this.tableEl.value.splice(idx, 1)[0]);
 
+		idx = 0;
 		const position: FieldColumnPosition[] = [];
 		this.tableEl.value.forEach((f) => {
 			position.push({ ApiName: f.Name, ColumnOrder: idx });

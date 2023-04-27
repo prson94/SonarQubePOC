@@ -6,7 +6,7 @@
 		  class="col s12 split"
 		  style="display: flex">
 	<as-split-area class="tile tile-detail main-panel field-type-grid">
-		<ng-template *ngIf="!isEditing && !isDeleting" [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
+		<ng-template *ngIf="!isEditing" [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
 
 		<div *ngIf="isEditing">
 			<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
@@ -28,15 +28,6 @@
 								 (onCancel)="cancel()"
 								 (onComplete)="editComplete($event)"></d3s-field-type-form>
 		</div>
-
-		<d3s-delete-form *ngIf="isDeleting"
-						 [callback]="theDeleteCallback"
-						 [itemId]="selectedRow?.Name"
-						 [method]="'callback'"
-						 i18n-prompt
-						 prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
-						 (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
-
 	</as-split-area>
 	<as-split-area [size]="getSidePanelWidth()"
 				   [minSize]="getSidePanelMinWidth()"
@@ -261,3 +252,18 @@
 		</ng-template>
 	</div>
 </ng-template>
+
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor"
+		   title="Delete Field Type"
+		   (onClose)="isDeleting = false"
+		   i18n-title
+		   [isVisible]="isDeleting">
+	<div class="content">
+		<span i18n>Are you sure you want to delete the field type [{{selectedRow?.Name}}]?</span><br /><br />
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="isDeleting = false"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-danger" i18n-label label="Delete" [loading]="deleteInProgress" (click)="deleteFieldType()"></button>
+	</div>
+</d3s-modal>
