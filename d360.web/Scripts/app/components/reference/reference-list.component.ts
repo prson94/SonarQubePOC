@@ -169,7 +169,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
 			this.fieldNav.icons = ['fa-drivers-license-o'];
 			this.fieldNav.tag = 'fields';
-			this.fieldNav.title = $localize`Field Definitions`;
+			this.fieldNav.title = $localize`Fields`;
 			this.fieldNav.orderPriority = 1;
 			this.fieldNav.url = `/assets/${this.selectedReferenceListUid}/fields`;
 

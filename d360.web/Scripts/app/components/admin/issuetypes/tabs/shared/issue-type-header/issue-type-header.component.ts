@@ -53,7 +53,7 @@ export class ConfigurationIssueTypeHeaderComponent {
 		return [
 			{
 				url: `${baseUrl}/fields`,
-				title: $localize`Field Definition`
+				title: $localize`Fields`
 			},
 			{
 				url: `${baseUrl}/allocations`,

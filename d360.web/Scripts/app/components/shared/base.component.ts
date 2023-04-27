@@ -423,7 +423,7 @@ export class BaseComponent {
 					url = `/admin/relationships/${this.baseIntersectTypeUid}/fields`;
 				}
 				this.fieldNav = new SecondaryNavItem(
-					$localize`Field Definitions`,
+					$localize`Fields`,
 					'fields',
 					['fa-drivers-license-o'],
 					url, null, 1);
