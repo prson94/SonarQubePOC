@@ -2111,15 +2111,26 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 
 			var sql = $@"
-				select	A.[uid],
-						AP.[keypath] as [path]
-				from	
-					Asset A
-					inner join 
-					AssetPath AP on a.ID=ap.ID
+
+				DROP TABLE IF EXISTS #tempassetPath;
+				create table #tempassetPath (id int identity(1,1), AssetId bigint);
+				create index ix_tempassetPath on #tempassetPath	(AssetId);
+
+				insert into #tempassetPath
+				select a.ID
+				from Asset A
 				where A.assetTypeId = @assetTypeId
 				order by A.ID
-				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
+				option (recompile);
+
+				select	A.[uid],
+						AP.[keypath] as [path]
+				from #tempassetPath TempPA
+				inner join Asset A on A.ID = TempPA.AssetId
+				inner join AssetPath AP on a.ID=ap.ID
+				order by TempPA.ID
+				option (recompile);";
 
 			int? total = null;
 			if (includeTotal)
@@ -2128,7 +2139,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				select 
 					count(1)
 				from 
-					Asset A	                
+					Asset A
 				where 
 					A.assetTypeId = @assetTypeId";
 
