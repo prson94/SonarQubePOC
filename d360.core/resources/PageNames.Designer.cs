@@ -196,7 +196,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Field Definitions.
+        ///   Looks up a localized string similar to Fields.
         /// </summary>
         public static string FieldDefinitionsTab {
             get {

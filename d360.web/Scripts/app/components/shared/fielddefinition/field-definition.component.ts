@@ -28,7 +28,7 @@ import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
-	@Input() title: string = $localize`Field Definition`;
+	@Input() title: string = $localize`Fields`;
 
 	@Input() showTitle = true;
 	@Input() actionTypeUid: string;

@@ -23,7 +23,7 @@ export class ConfigurationAssetTypeTabsComponent {
 			},
             {
                 url: `${baseUrl}/fields`,
-				title: $localize`Field Definition`,
+				title: $localize`Fields`,
 				isVisible: () => [AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.DiagramAsset].includes(this.assetTypeClass),
             },
             {
