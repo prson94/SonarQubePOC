@@ -7,6 +7,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { BaseComponent } from '../../../shared/base.component';
 import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
 
+/*global $localize*/	
 
 @Component({
 	selector: 'd3s-admin-level-grid',

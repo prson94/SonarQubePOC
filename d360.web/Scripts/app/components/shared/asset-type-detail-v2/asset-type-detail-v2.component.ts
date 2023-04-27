@@ -22,7 +22,7 @@ import {
 	ControlsOptions,
 	OpenBehaviour
 } from './asset-type-detail-v2.model';
-import { AssetTypeApiModel, AssetTypeClass, AssetTypeClassText } from "../../../models/asset.model";
+import { AssetTypeApiModel, AssetTypeClass } from "../../../models/asset.model";
 import { RelationshipsService } from '../../../services/relationships.service';
 import { Predicate } from '../../../models/predicate.model';
 import { AssetService } from '../../../services/asset.service';
@@ -371,6 +371,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 		});
 	}
 
+	// disable complexity codacy issue
+	// eslint-disable-next-line
 	getAssetTypeClass(): AssetTypeClass {
 		switch (this.assetTypeModel.Class.Value.toString()) {
 			case `BusinessAsset`: return AssetTypeClass.BusinessAsset; 
