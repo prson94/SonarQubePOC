@@ -220,8 +220,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					this.fieldDisplayModel = this.fieldDisplayModel.sort((a, b) => a.ColumnOrder > b.ColumnOrder ? 1 : -1);
 					this.updateMenuItems();
 					this.nonFilteredFieldDisplayModel = JSON.parse(JSON.stringify(this.fieldDisplayModel));
-
-					this.tableWidth = this.tableEl.el.nativeElement.getBoundingClientRect().width;
+					if (this.tableEl) {
+						this.tableWidth = this.tableEl.el.nativeElement.getBoundingClientRect().width;
+					}
 				}
 
 				this.checkKeyFields();
@@ -275,7 +276,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.isReorderingLocked = (typeof this.simpleFilter !== 'undefined' && this.simpleFilter !== '')
 			|| (this.advancedFilters && this.advancedFilters.filter !== '');
 
-		this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null && this.tableEl.sortField !== 'ColumnOrder');
+		if (this.tableEl) {
+			this.isReorderingLocked = this.isReorderingLocked || (typeof this.tableEl.sortField !== 'undefined' && this.tableEl.sortField !== null && this.tableEl.sortField !== 'ColumnOrder');
+		}
 		// ignore complexity codacy issue
 		// eslint-disable-next-line
 		this.fieldDisplayModel.forEach((item) => {
