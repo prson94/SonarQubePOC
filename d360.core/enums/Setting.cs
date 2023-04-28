@@ -312,15 +312,6 @@ namespace d360.core.enums
         WorkflowFromEmail = 49,
 
         [
-            DefaultValue(false),
-            Description("HasRegisterLink_Desc", typeof(Settings)),
-            Locked(false),
-            Name("HasRegisterLink_Name", typeof(Settings)),
-            Type(SettingType.Boolean)
-        ]
-        HasRegisterLink = 52,
-
-        [
             DefaultValue(""),
             Description("JwtAuthority_Desc", typeof(Settings)),
             Locked(false),

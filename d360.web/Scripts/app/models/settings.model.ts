@@ -124,7 +124,6 @@ export enum CompanySettingEnum {
     ActionMessage = 47,
     WorkflowFromName = 48,
     WorkflowFromEmail = 49,
-    HasRegisterLink = 52,
     JwtAuthority = 54,
     PowerBIClientId = 55,
     PowerBIGroupId = 56,

@@ -475,24 +475,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Has Register Link on Login Page..
-        /// </summary>
-        internal static string HasRegisterLink_Desc {
-            get {
-                return ResourceManager.GetString("HasRegisterLink_Desc", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Has Login Register Link.
-        /// </summary>
-        internal static string HasRegisterLink_Name {
-            get {
-                return ResourceManager.GetString("HasRegisterLink_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This hides Data3Sixty users from an environment, so as to not make these accounts editable..
         /// </summary>
         internal static string HideData3SixtyUsers_Desc {
