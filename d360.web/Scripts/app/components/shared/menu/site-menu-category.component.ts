@@ -36,7 +36,8 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 
 	@Output() clearClick = new EventEmitter();
 	@Output() activeItemChanged = new EventEmitter();
-    menuTooltip: string;
+	menuTooltip: string;
+	public showCaret: boolean = true;
 
 	@HostListener('document:click', ['$event'])
 	documentClick() {
@@ -52,13 +53,22 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 	}
 
 	ngOnChanges(): void {
+		this.menuTooltip = "";
+		if(this.expanded){
+			this.showCaret = true;
+		}
+		
 		if (this.menu && this.menu.Description) {
 			this.menuTooltip = this.menu.Description;
 			if (!this.expanded) {
 				this.menuTooltip = `<p><b>${this.title}</b></p>${this.menu.Description}`;
+				this.showCaret = false;
 			}
-		} else {
-			this.menuTooltip = this.title;
+		} else {			
+			if (!this.expanded) {
+				this.menuTooltip = this.title;
+				this.showCaret = false;
+			}			
 		}
     }
 
@@ -125,5 +135,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 		if (panel) {
 			panel.style.top = newPanelTop + 'px';
 		}
+	}
+
+	toggleShowCaret(isHovered: boolean) {
+		if (!this.expanded) {
+			this.showCaret = isHovered;
+		}		
 	}
 }

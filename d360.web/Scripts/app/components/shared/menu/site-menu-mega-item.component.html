@@ -6,7 +6,7 @@
     [tooltipPosition]="item.Disabled ? 'right' : null"
     [tooltipStyleClass]="item.Disabled ? 'ig-tooltip' : null">
     <div class="mega-item-container" [ngStyle]="{'text-indent': getMainIndent()}" 
-        pTooltip="{{item.Description ?? item.Name}}"                                       
+        pTooltip="{{item.Description}}"                                       
         [escape]="false"
         i18n-pTooltip
 	    tooltipPosition="right"
