@@ -815,10 +815,15 @@ namespace d360.web.Controllers
             return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true, string defaultCategoryNameOverride = null)
         {
             var row = startRow;
-            const string defaultCategoryName = "General";
+            string defaultCategoryName = "General";
+
+			if (!string.IsNullOrEmpty(defaultCategoryNameOverride))
+			{
+				defaultCategoryName = defaultCategoryNameOverride;
+			}
 
             fields.ForEach(f =>
             {
@@ -905,10 +910,6 @@ namespace d360.web.Controllers
                                             fld.ParentFieldTypeID = f.FilterFieldTypeID;
                                             fld.ParentFieldTypeName = filterParent.FriendlyName;
                                         }
-                                    }
-                                    else
-                                    {
-                                        fld.DelayedLoadType = "Predicate";
                                     }
                                 }
                                 else if (loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
@@ -1188,10 +1189,6 @@ namespace d360.web.Controllers
 											fld.ParentFieldTypeID = ft.FilterFieldTypeID;
 											fld.ParentFieldTypeName = filterParent.FriendlyName;
 										}
-									}
-									else
-									{
-										fld.DelayedLoadType = "Predicate";
 									}
 									if (ft.AllowMultipleValues && f != null && !string.IsNullOrWhiteSpace(f.Value))
 									{
