@@ -220,7 +220,7 @@
 					<td><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? ascendingLabel : descendingLabel}}</ng-container></td>
 					<td class="grid-tools-column" #assetGridTools>
 						<div [style.left]="tableWidth" class="token-popup-menu" *ngIf="item.MenuItems">
-							<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
+							<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="beforeMenuOpen();$event.stopPropagation();tokenMenu.toggle($event);"></button>
 							<ig-popup-menu [items]="item.MenuItems"
 										   (onSelect)="onMenuItemSelect(item,$event)"
 										   #tokenMenu

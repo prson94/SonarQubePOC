@@ -184,6 +184,14 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 		}
 	}
 
+	public closePopup() {
+		if (this.isVisible && !this.toggleInProgress) {
+			this.isVisible = false;
+			this.reset();
+			this.cdRef.markForCheck();
+		}
+	}
+
 	@HostListener('document:contextmenu', ['$event'])
 	handleRightClick(event: MouseEvent) {
 		if (!this.popupEl.nativeElement.contains(event.target)) {

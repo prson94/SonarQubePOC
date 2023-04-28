@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -92,6 +92,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('advancedFilter', { static: false }) advFilter: AdvancedFilteringComponent;
+	@ViewChildren('tokenMenu') menus: PopupMenu[] = [];
 
 	constructor(
 		private fieldsService: FieldsObservableService,
@@ -107,6 +108,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
 	}
 
+
+	beforeMenuOpen() {
+		if (this.menus) {
+			this.menus.forEach((menu) => {
+				menu.closePopup();
+			});
+		}
+	}
 	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
 		for (const p in changes) {
 			if (p === 'actionTypeUid' || p === 'assetTypeUid' || p === 'relationshipTypeUid') {
