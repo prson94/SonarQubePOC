@@ -27,8 +27,6 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from "../../../services/feature-flags.enum";
 import { V2ApiFilters } from '../../../models/asset-search.model';
-import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
-import { takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { isEqual } from "lodash-es";
 import { SidePanelService } from '../../../services/side-panel.service';
@@ -102,6 +100,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         { title: $localize`Delete` },
     ];
 
+	numberOfRowsStorageKey = 'AdminGroupsRowsPerPage';
+
     constructor(
         private router: Router,
         private groupService: GroupService,
@@ -114,8 +114,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         private cdRef: ChangeDetectorRef,
         public sidePanelService: SidePanelService,
         private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: LaunchDarklyService,
-		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService
+		private featureFlagService: LaunchDarklyService
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
@@ -133,11 +132,20 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag);
 	}
 
-    ngOnInit() {
-		this.load();
+	loadRowsPerPage(): void {
+		const rowsPerPageStorage = localStorage.getItem(this.numberOfRowsStorageKey);
+		this.rowsPerPage = rowsPerPageStorage != null ? +rowsPerPageStorage : 25;
+	}
 
-		this.setRowsPerPage();
-		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+	setRowsPerPage($event) {
+		if ($event && $event.rows) {
+			localStorage.setItem(this.numberOfRowsStorageKey, $event.rows);
+		}
+	}
+
+	ngOnInit() {
+		this.loadRowsPerPage();
+		this.load();
     }
 
     ngOnDestroy() {
@@ -164,14 +172,6 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
         this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
     }
-
-	setRowsPerPage(): void {
-		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-			takeUntil(this.destroy)
-		).subscribe((rowsPerPage) => {
-			this.rowsPerPage = rowsPerPage[this.groupListHeading] || this.defaultInitialItemsPerPage;
-		});
-	}
 
 	public lazyLoadGroups(event: LazyLoadEvent) {
 		if (isEqual(event, this.previousEvent)) {

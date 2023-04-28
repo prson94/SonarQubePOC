@@ -44,7 +44,7 @@
                          [style]="{'width':'100%'}"
                          [loading]="isLoading"
                          [loadingIcon]="'fa fa-spinner fa-spin'"
-                         (onPage)="numberOfRowsByCategoryService.onPage($event, groupListHeading)">
+                         (onPage)="setRowsPerPage($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th *ngFor="let col of columns"
