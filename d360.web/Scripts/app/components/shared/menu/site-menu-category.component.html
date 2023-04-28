@@ -1,16 +1,15 @@
 ﻿<li #item 
-    [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"
-    title="{{title}}" 
+    [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}"    
     [attr.data-cy]="getDataCyAttribute()"
     (click)="navigateToUrl(url, $event)" 
     style="cursor: pointer;"
     [igDataCy]="'PrimaryNav_' + title"  
     >
-    <div class="menu-category-box">
-        <div pTooltip="{{this.menuTooltip}}"             
+    <div class="menu-category-box" (mouseover)="toggleShowCaret(true)" (mouseout)="toggleShowCaret(false)">
+        <div pTooltip="{{this.menuTooltip}}"
              i18n-pTooltip
              tooltipPosition="right"
-             tooltipStyleClass="ig-tooltip-site-menu"
+             tooltipStyleClass="{{(expanded ? 'ig-tooltip-site-menu' : 'ig-tooltip-site-menu-collapsed')}}"
              style="display:inline-flex"
              [escape]="false">
             <div>
@@ -21,9 +20,9 @@
             <div [ngClass]="{'min':!expanded, 'menu-title-item': true}">
                 <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
             </div>
-        </div>        
+        </div>
         <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"
-           class="menu-category fa fa-caret-right" [ngClass]="{'icon-active':expanded,'icon':!expanded}"
+           class="menu-category fa fa-caret-right" [ngClass]="{'icon-active':showCaret,'icon':!showCaret, 'narrow-icon': !expanded}"
            (click)="onCategoryExpand($event)">
         </i>
     </div>
