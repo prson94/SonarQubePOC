@@ -1076,6 +1076,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	}
 
 	get cancelButtonLabel(): string {
+		if (this.isActionForm()) {
+			return this.hasUpdateFormChanged ? $localize`Discard Form` : $localize`Close`;
+		}
 		return this.hasUpdateFormChanged ? $localize`Discard Changes` : $localize`Cancel`;
 	}
 

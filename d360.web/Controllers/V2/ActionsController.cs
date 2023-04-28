@@ -775,10 +775,12 @@ namespace d360.web.Controllers.V2
 
 				if (isWriteActionDescriptionEnabled && issueModel.Issue.AssetID != null)
 				{
+					string commentBody = string.IsNullOrEmpty(issueModel.Comment) ? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name) : issueModel.Comment;
+
 					var comment = new CommentApiPostModel
 					{
 						AssetUid = issueModel.AssetUid,
-						Body = issueModel.Comment ?? string.Format(ActionApiMessages.ActionAssetCommentBody, issueType.Name),
+						Body = commentBody,
 						Tags = new List<Guid> { issueModel.AssetUid }       // Add relation to current artifact
 					};
 					var dtl = await commentRepository.AddComment(comment, CommentType.Issue);

@@ -9,13 +9,14 @@
 					{{assetTypePath}}
 				</div>
 				<div class="sub-header sub-header-breadcrumbs" *ngIf="objectType === 'Issue'">
-					<span class="sub-header-breadcrumb" *ngIf="breadCrumbs.length > 0" i18n>Associated with:</span>&nbsp;
+					<span class="sub-header-breadcrumb" *ngIf="breadCrumbs.length > 0" i18n>Associated with:</span>
 					<div class="sub-header-breadcrumb" *ngFor="let breadcrumb of breadCrumbs;last as isLast">
 						<ng-container *ngIf="isLast && breadcrumb.link.startsWith('asset/'); else typeBreadcrumb">
+							{{breadcrumb.parentTypeName}}<span> > </span>
 							<a href="#" (click)="onHeaderBreadcrumbClick($event, breadcrumb)">{{breadcrumb.text}}</a>
 						</ng-container>
 						<ng-template #typeBreadcrumb>
-							{{breadcrumb.text}} <span *ngIf="!isLast"> > </span>
+							{{breadcrumb.text}}<span *ngIf="!isLast"> > </span>
 						</ng-template>
 					</div>
 				</div>
