@@ -255,12 +255,6 @@
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
     <value>Governance Role Reference List Uid</value>
   </data>
-  <data name="HasRegisterLink_Desc" xml:space="preserve">
-    <value>Has Register Link on Login Page.</value>
-  </data>
-  <data name="HasRegisterLink_Name" xml:space="preserve">
-    <value>Has Login Register Link</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>This hides Data3Sixty users from an environment, so as to not make these accounts editable.</value>
   </data>
