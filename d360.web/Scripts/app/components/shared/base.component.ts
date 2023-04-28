@@ -394,7 +394,7 @@ export class BaseComponent {
 					url = `/assets/${this.baseAssetTypeUid}/log`;
 				}
 				else if (this.baseIntersectTypeUid) {
-					url = `/assets/${this.baseIntersectTypeUid}/log`;
+					url = `/admin/relationships/${this.baseIntersectTypeUid}/log`;
 				}
 				else if (this.baseResponsibilityUid) {
 					url = `/assets/${this.baseResponsibilityUid}/log`;

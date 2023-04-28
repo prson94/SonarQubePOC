@@ -13,6 +13,7 @@ const routes: Routes = [
             { path: 'relationships', loadChildren: () => import('./relationships/admin-relationships.module').then((m) => m.AdminRelationshipsModule) }, 
 			{ path: "relationships/:assetTypeUid/fields", data: { type: 'relationship' }, loadChildren: () => import("../../components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
 			{ path: "relationships/:uid/details", data: { type: 'relationship' }, loadChildren: () => import("../../components/admin/relationships/detail-page/relationship-type-detail-page.module").then((m) => m.RelationshipTypeDetailPageModule) },
+			{ path: "relationships/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'surveys', loadChildren: () => import('./surveys/admin-surveys.module').then((m) => m.AdminSurveysModule) },             
             { path: 'workflow', loadChildren: () => import('./workflow/admin-workflow.module').then((m) => m.AdminWorkflowModule) },
             { path: 'load', loadChildren: () => import('./load/admin-load.module').then((m) => m.AdminLoadModule) },
