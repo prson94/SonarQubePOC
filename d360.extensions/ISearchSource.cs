@@ -137,7 +137,7 @@ namespace d360.extensions
         
         public List<int> ResourceGroupIDs { get; set; }
         
-		public bool IsAdministrator { get; set; } = false;
+		public bool IsAdministrator { get; set; }
     }
 
     public class IndexAggregation
