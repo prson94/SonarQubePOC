@@ -635,7 +635,7 @@ namespace d360.extensions.search
                     string whereCondition = string.Join(" and ", where.ToArray());
                     string UrlMethod = assetClass == AssetTypeClass.Diagram ? "dbo.GenerateAssetUrl(a.ID)" : "''";
 
-                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid, Url, Segments FROM (
+                    sql = $@"SELECT AssetID, ItemUniqueID, Type, ID, TypeID, DisplayValue, TypeName, AssetTypeUid, Uid, Url, Segments, DefaultPermissions FROM (
                         SELECT
                             A.ID as AssetID,
 	                        cast(A.ID as varchar) as ItemUniqueID,
@@ -647,7 +647,8 @@ namespace d360.extensions.search
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
                             {UrlMethod} as 'Url',
-                            ap.Segments as Segments
+                            ap.Segments as Segments,
+							att.DefaultPermissions
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
@@ -665,19 +666,20 @@ namespace d360.extensions.search
 					}
                     shaper = (dynamic o) =>
                     {
-                        return new IndexObjectModel
-                        {
-                            Category = GetCategoryFromClass(assetClass),
-                            CompanyID = companyID,
-                            ID = o.ID,
-                            AssetID = o.AssetID,
-                            ItemUniqueID = o.ItemUniqueID,
-                            AssetType = o.TypeName,
-                            RelativeUrl = $"asset/{o.Uid.ToString().ToLower()}",
-                            Uid = o.Uid,
-                            AssetTypeUid = o.AssetTypeUid,
-                            AssetPath = GetPathArrayFromSegments(o.Segments),
-                            Fields = new Dictionary<string, string>() {
+						return new IndexObjectModel
+						{
+							Category = GetCategoryFromClass(assetClass),
+							CompanyID = companyID,
+							ID = o.ID,
+							AssetID = o.AssetID,
+							ItemUniqueID = o.ItemUniqueID,
+							AssetType = o.TypeName,
+							RelativeUrl = $"asset/{o.Uid.ToString().ToLower()}",
+							Uid = o.Uid,
+							AssetTypeUid = o.AssetTypeUid,
+							AssetPath = GetPathArrayFromSegments(o.Segments),
+							DefaultPermisisons = o.DefaultPermissions == 1,
+							Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue }
                             }
                         };
@@ -701,7 +703,8 @@ namespace d360.extensions.search
                         att.Name,
                         att.Description,
                         att.uid as AssetTypeUid,
-                        p.Path as Path
+                        p.Path as Path,
+						att.DefaultPermissions
                     FROM [dbo].[AssetType] att
                     cross apply dbo.GetAssetTypeTextPathById(att.id, '{pathSeperator}') p
                     WHERE {whereCondition}";
@@ -716,6 +719,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = o.Path.Split(new[] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
+							DefaultPermisisons = o.DefaultPermissions == 1,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
@@ -774,6 +778,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"users/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
+							DefaultPermisisons = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue },
                                 { "Email", o.Email },
@@ -830,6 +835,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"group/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
+							DefaultPermisisons = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue },
                                 { "Description", o.Description }
@@ -875,6 +881,7 @@ namespace d360.extensions.search
                             ItemUniqueID = o.Qualifier,
                             RelativeUrl = $"semantics/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
+							DefaultPermisisons = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description },
@@ -955,6 +962,7 @@ namespace d360.extensions.search
                             ItemUniqueID = $"intersect|{o.ID}|{o.Direction}",
                             RelativeUrl = o.Url,
                             Uid = o.Uid,
+							DefaultPermisisons = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
@@ -998,6 +1006,7 @@ namespace d360.extensions.search
                             ItemUniqueID = $"custom|{o.ID}",
                             RelativeUrl = o.Url,
                             Uid = o.Uid,
+							DefaultPermisisons = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
@@ -1019,7 +1028,8 @@ namespace d360.extensions.search
                         Object,
                         Name,
                         Description,
-                        uid as AssetTypeUid
+                        uid as AssetTypeUid,
+						DefaultPermisisons
                     FROM [dbo].[AssetType] att
                     WHERE [Object] = 'ReferenceItemType'
                     {where}";
@@ -1033,7 +1043,8 @@ namespace d360.extensions.search
                             AssetType = "Reference List",
                             RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
 							AssetTypeUid = o.AssetTypeUid,
-                            Fields = new Dictionary<string, string>() {
+							DefaultPermisisons = (bool)o.DefaultPermisisons,
+							Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
                             }
@@ -1049,6 +1060,7 @@ namespace d360.extensions.search
             IPagedQuery<FieldSqlModel> FieldQuery = null;
             PagedQuery<TagSqlModel> TagsQuery = null;
             PagedQuery<ResponsibilitySqlModel> ResponsibilityQuery = null;
+			PagedQuery<ResponsibilitySqlModel> DefaultPermissionsResponsibilityQuery = null;
 			PagedQuery<SemanticTypeSqlModel> SemanticQuery = null;
 
             if (mode.HasFlag(IndexMode.WithFields))
@@ -1077,7 +1089,8 @@ namespace d360.extensions.search
             if (mode.HasFlag(IndexMode.WithResponsibility))
             {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
-            }
+				DefaultPermissionsResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetDefaultPermissionsResponsibilityQuery(parameters), parameters);
+			}
 
 			if(mode.HasFlag(IndexMode.WithSemantic))
 			{
@@ -1107,12 +1120,20 @@ namespace d360.extensions.search
                     var secset = ResponsibilityQuery.GetByAssetID(item.AssetID);
                     item.NoRead = new Dictionary<string, List<int>> {
                         { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
-                        { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
-                        { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
+                        { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() }
                     };
                 }
 
-				if(SemanticQuery != null)
+				if (DefaultPermissionsResponsibilityQuery != null && item.DefaultPermisisons == false)
+				{
+					var secset = DefaultPermissionsResponsibilityQuery.GetByAssetID(item.AssetID);
+					item.CanRead = new Dictionary<string, List<int>> {
+						{ "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
+						{ "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() }
+					};
+				}
+
+				if (SemanticQuery != null)
 				{
 					var semantic = SemanticQuery.GetByAssetID(item.AssetID).FirstOrDefault();
 					if(semantic != null)
@@ -1328,9 +1349,78 @@ namespace d360.extensions.search
 
             return sql;
         }
-    }
 
-    [Serializable]
+		private static string GetDefaultPermissionsResponsibilityQuery(DynamicParameters parameters)
+		{
+			List<string> joins = new List<string>();
+			List<string> conditions = new List<string>();
+
+			string sql = $@"SELECT aa.id as AssetID,
+                              rresource.SecurityAsset,
+                              rresource.SecurityAssetID
+                        FROM ResponsibilityTypeRelationRule r
+                        INNER JOIN ResponsibilityTypeRelation rrel ON (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+                                                                      AND r.[Object] = rrel.[ObjectType]
+                                                                      AND r.ObjectID = rrel.ObjectID)
+                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (r.ID = rasset.RuleID)
+                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (r.ID = rresource.RuleID)
+						INNER JOIN AssetType att on att.id = rasset.AssetTypeID
+                        INNER JOIN Asset aa ON AA.AssetTypeID = att.ID
+                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 1
+                         AND rasset.AssetID = 0
+						 AND att.DefaultPermissions = 0
+                        UNION ALL
+                        SELECT rasset.AssetID,
+                              rresource.SecurityAsset,
+                              rresource.SecurityAssetID
+                        FROM ResponsibilityTypeRelationRule rtrr
+                        INNER JOIN ResponsibilityTypeRelation rrel ON (rtrr.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+                                                                      AND rtrr.[Object] = rrel.[ObjectType]
+                                                                      AND rtrr.ObjectID = rrel.ObjectID)
+                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (rtrr.ID = rasset.RuleID)
+                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (rtrr.ID = rresource.RuleID)
+						INNER JOIN Asset aa on aa.id = rasset.AssetID
+						INNER JOIN AssetType att on att.id = aa.AssetTypeID
+                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 1
+                         AND rasset.AssetTypeID = 0
+						 AND att.DefaultPermissions = 0";
+			if (parameters.ParameterNames.Contains("assetuid"))
+			{
+				joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
+				conditions.Add("a.uid = @assetuid");
+			}
+			else if (parameters.ParameterNames.Contains("assettypeuid"))
+			{
+				joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
+				joins.Add("INNER JOIN [dbo].AssetType att on a.AssetTypeID = att.id");
+				conditions.Add("att.uid = @assettypeuid");
+			}
+
+			if (parameters.ParameterNames.Contains("batchtable"))
+			{
+				joins.Add($"INNER JOIN {parameters.Get<string>("batchtable")} bt on q.AssetID = bt.AssetID");
+
+				if (parameters.ParameterNames.Contains("assettypeclass"))
+				{
+					conditions.Add("bt.Class = @assettypeclass");
+				}
+			}
+
+			if (joins.Any())
+			{
+				sql = $@"SELECT q.* FROM ({sql}) q {string.Join(" ", joins)}";
+				if (conditions.Any())
+				{
+					sql += $" WHERE {string.Join(" AND ", conditions)}";
+				}
+			}
+
+			return sql;
+		}
+
+	}
+
+	[Serializable]
     public class SearchIndexException : Exception
     {
         public SearchIndexException()

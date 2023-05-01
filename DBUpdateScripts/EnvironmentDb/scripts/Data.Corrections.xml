@@ -705,6 +705,18 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-21437">
+	<comment>GOV-21437 - Queue update to SearchIndex mapping</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', getdate(), 'UpdateMapping', 0;
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
 
 

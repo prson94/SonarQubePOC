@@ -183,21 +183,29 @@ namespace d360.extensions.search
         public byte NGramMin { get; set; }
         public byte NGramMax { get; set; }
 
-        #region Utility methods
+		#region Utility methods
 
-        private static readonly Dictionary<string, string> NoReadMapping =
-        new Dictionary<string, string>
-        {
-            { "R", "NoReadResourceID" },
-            { "G", "NoReadGroupID" },
-        };
+		private static readonly Dictionary<string, string> NoReadMapping =
+		new Dictionary<string, string>
+		{
+			{ "R", "NoReadResourceID" },
+			{ "G", "NoReadGroupID" }
+		};
 
-        private string CreateDocument(IndexObjectModel item, bool forUpdate = false)
+		private static readonly Dictionary<string, string> CanReadMapping =
+		new Dictionary<string, string>
+		{
+			{ "R", "CanReadResourceID" },
+			{ "G", "CanReadGroupID" }
+		};
+
+		private string CreateDocument(IndexObjectModel item, bool forUpdate = false)
         {
             StringBuilder sb = new StringBuilder();
             Dictionary<string, string> d3sFields = new Dictionary<string, string>();
-            Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
-            Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
+			Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
+			Dictionary<string, string> d3sCanRead = new Dictionary<string, string>();
+			Dictionary<string, string> dynamicFields = item.Fields != null ? item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value) : new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(item.RelativeUrl))
             {
@@ -206,6 +214,7 @@ namespace d360.extensions.search
             
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
+			d3sFields.Add("DefaultPermissions", item.DefaultPermisisons == true ? "true" : "false");
 
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
             {
@@ -254,9 +263,23 @@ namespace d360.extensions.search
                 {
                     sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
                 }
-            }
+				foreach (KeyValuePair<string, string> entry in CanReadMapping)
+				{
+					string val = "[";
+					if (item.CanRead != null && item.CanRead.ContainsKey(entry.Key) && item.CanRead[entry.Key].Count > 0)
+					{
+						val += string.Join(",", item.CanRead[entry.Key].ToArray());
+					}
+					val += "]";
+					d3sCanRead.Add(entry.Value, val);
+				}
+				if (d3sCanRead.Count > 0)
+				{
+					sb.Append("," + string.Join(",", d3sCanRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value)).ToArray()));
+				}
+			}
 
-            if (item.IndexFlags.HasFlag(IndexMode.WithTags))
+			if (item.IndexFlags.HasFlag(IndexMode.WithTags))
             {
                 string[] tags = new string[] { };
                 if (item.Tags != null && item.Tags.Any())
@@ -472,7 +495,10 @@ namespace d360.extensions.search
                                         .Keyword(s => s.Name("NoReadResourceID"))
                                         .Keyword(s => s.Name("NoReadGroupID"))
                                         .Boolean(b => b.Name("Data3SixtyUser"))
-                                        .Text(s => s.Name("Path"))
+										.Keyword(s => s.Name("CanReadResourceID"))
+										.Keyword(s => s.Name("CanReadGroupID"))
+										.Boolean(b => b.Name("DefaultPermissions"))
+										.Text(s => s.Name("Path"))
 										.Text(s => s.Name("SemanticName"))
 										.Text(s => s
 											.Name("SemanticQualifier")
@@ -499,14 +525,54 @@ namespace d360.extensions.search
                     throw new ArgumentException(response.OriginalException.Message);
                 }
             }
-
         }
 
-        /// <summary>
-        /// Gets version number from Elastic server
-        /// </summary>
-        /// <param name="companyID"></param>
-        public Version GetElasticVersion(int companyID)
+		public void UpdateMappingIfExists(int companyID)
+		{
+			var indexName = GetCompanyIndexName(companyID);
+			var client = GetElasticClient(companyID);
+
+			var existsResponse = client.IndexExists(indexName);
+			if (!existsResponse.IsValid)
+			{
+				throw new SearchServerConnectionException(
+					existsResponse.OriginalException,
+					string.Join(", ", client.ConnectionSettings.ConnectionPool.Nodes.Select(n => n.Uri.OriginalString)),
+					indexName
+				);
+			}
+			else if (existsResponse.Exists)
+			{
+				var body = PostData.String(@"{
+	""properties"": {
+		""d3s"": {
+			""properties"": {
+				""DefaultPermissions"": {
+					""type"": ""boolean""
+				},
+		""CanReadGroupID"": {
+					""type"": ""keyword""
+		},
+		""CanReadResourceID"": {
+					""type"": ""keyword""
+		}
+			}
+		}
+	}
+}");
+				var response = client.LowLevel.IndicesPutMapping<StringResponse>(indexName, "_doc", body);
+				if (!response.Success)
+				{
+					throw new ArgumentException(response.OriginalException.Message);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets version number from Elastic server
+		/// </summary>
+		/// <param name="companyID"></param>
+		public Version GetElasticVersion(int companyID)
         {
             Version ver = null;
             var client = GetElasticClient(companyID).LowLevel;
@@ -1789,20 +1855,85 @@ namespace d360.extensions.search
 
         private List<QueryContainer> FiltersFromLimit(QueryLimitation queryLimit)
         {
-            List<QueryContainer> mustNotQueries = new List<QueryContainer>
-            {
-                //NoRead limitations
-                new TermQuery
-                {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
-                    Value = queryLimit.ResourceID
-                },
-                new TermsQuery
-                {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
-                    Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
-                },
+			var permissionField = new Nest.Field(D3S_FIELD_PREFIX + "DefaultPermissions");
+
+			List<QueryContainer> mustNotQueries = new List<QueryContainer>
+			{
+				//If permission field does not exists or is true, user or group cannot be in the NoRead
+				new BoolQuery
+				{
+					MinimumShouldMatch = 1,
+					Should = new QueryContainer[]
+					{
+						//NoRead limitations
+						new TermQuery
+						{
+							Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
+							Value = queryLimit.ResourceID
+						},
+						new TermsQuery
+						{
+							Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
+							Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+						},
+					},
+					Must = new QueryContainer[]
+					{
+						new BoolQuery
+						{
+							MinimumShouldMatch = 1,
+							Should = new QueryContainer[]
+							{
+								new TermQuery
+								{
+									Field = permissionField,
+									Value = true
+								},
+								new BoolQuery
+								{
+									MustNot = new QueryContainer[]
+									{
+										new ExistsQuery
+										{
+											Field = permissionField
+										}
+									}
+								}
+							}
+						}
+					}
+                }
             };
+
+			if(!queryLimit.IsAdministrator)
+			{
+				mustNotQueries.Add(new BoolQuery
+				{
+					MinimumShouldMatch = 1,
+					Must = new QueryContainer[]
+					{
+						new TermQuery
+						{
+							Field = permissionField,
+							Value = false
+						}
+					},
+					Should = new QueryContainer[]
+					{
+						new TermQuery
+						{
+							Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadResourceID"),
+							Value = queryLimit.ResourceID
+						},
+						new TermsQuery
+						{
+							Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadGroupID"),
+							Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+						},
+					},
+				});
+			}
+
 
             //User access limitations
             if (queryLimit.HideData3SixtyUsers)
