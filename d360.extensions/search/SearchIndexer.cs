@@ -287,65 +287,72 @@ namespace d360.extensions.search
             }
             else
             {
+				var skip = false;
 				try
 				{
 					_source.ClearIndex(_companyID, assetClass.ToString());
 				}
 				catch (Exception e)
 				{
+					skip = true;
 					_messages.Add($"Exception caught clearing index for Asset Category {assetClass}: {e.Message}");
 				}
-				bool processByAssetType = false;
-                int assettypeclass = (int)assetClass;
 
-                long assetCount = CreatePendingDBLog(assetClass, null);
+				if (!skip)
+				{
+					bool processByAssetType = false;
+					int assettypeclass = (int)assetClass;
 
-                //Use count of assets in class to determine if the class contains a large number of assets
-                //and indexing by asset type is more performant. Only larger asset classes.
-                if (new List<AssetTypeClass> {
-                        AssetTypeClass.BusinessAsset,
-                        AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.Diagram,
-                        AssetTypeClass.Model,
-                        AssetTypeClass.Policy,
-                        AssetTypeClass.Rule
-                    }.Contains(assetClass))
-                {
-                    processByAssetType = assetCount > _indexClassAsTypesLimit;
-                }
+					long assetCount = CreatePendingDBLog(assetClass, null);
 
-                if (processByAssetType)
-                {
-                    UpdateDBLog(assetClass, null, SearchJobStatus.ProcessingAsType);
-                    List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
-                    assetTypes.ForEach(t => CreatePendingDBLog(assetClass, t));
-
-                    assetTypes.ForEach(t =>
-                    {
-                        try
-                        {
-                            IndexAssetType(t, false);
-                        }
-                        catch (PagedQueryException e)
-                        {
-                            _messages.Add($"Failed to index AssetType {t}: {e.Message}");
-                        }
-                        catch (Exception e)
-                        {
-                            _messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
-                        }
-                    });
-                }
-                else
-                {
-                    UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
-					try { 
-						IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
-						_source.AddToIndex(models);
-					}
-					catch (Exception e)
+					//Use count of assets in class to determine if the class contains a large number of assets
+					//and indexing by asset type is more performant. Only larger asset classes.
+					if (new List<AssetTypeClass> {
+						AssetTypeClass.BusinessAsset,
+						AssetTypeClass.TechnicalAsset,
+						AssetTypeClass.Diagram,
+						AssetTypeClass.Model,
+						AssetTypeClass.Policy,
+						AssetTypeClass.Rule
+					}.Contains(assetClass))
 					{
-						_messages.Add($"Exception caught indexing Asset Category {assetClass}: {e.Message}");
+						processByAssetType = assetCount > _indexClassAsTypesLimit;
+					}
+
+					if (processByAssetType)
+					{
+						UpdateDBLog(assetClass, null, SearchJobStatus.ProcessingAsType);
+						List<Guid> assetTypes = _context.Query<Guid>("SELECT at.uid FROM [dbo].[AssetType] at WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.assettypeid = at.id) AND at.class =  @assettypeclass", new { assettypeclass }).ToList();
+						assetTypes.ForEach(t => CreatePendingDBLog(assetClass, t));
+
+						assetTypes.ForEach(t =>
+						{
+							try
+							{
+								IndexAssetType(t, false);
+							}
+							catch (PagedQueryException e)
+							{
+								_messages.Add($"Failed to index AssetType {t}: {e.Message}");
+							}
+							catch (Exception e)
+							{
+								_messages.Add($"Exception caught indexing AssetType {t}: {e.Message}");
+							}
+						});
+					}
+					else
+					{
+						UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
+						try
+						{
+							IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, assetClass, null, null);
+							_source.AddToIndex(models);
+						}
+						catch (Exception e)
+						{
+							_messages.Add($"Exception caught indexing Asset Category {assetClass}: {e.Message}");
+						}
 					}
 				}
 			}

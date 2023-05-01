@@ -909,8 +909,9 @@ namespace d360.extensions.search
             //Refresh all shards after the query delete to avoid 409 versioning conflicts
             DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
             {
-                Refresh = true
-            };
+                Refresh = true,
+				Timeout = TimeSpan.FromMinutes(2)
+			};
             return client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
 
         }
