@@ -1427,7 +1427,7 @@ namespace d360.web.Controllers
 			bool addModifySynonym = true;
 			bool deleteSynonym = true;
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!Company.CurrentResourceIsAdmin && json != null)
 			{
 				long assetId = long.Parse(json.GetValue("AssetID").ToString());
 				string objectType = SystemObjects.Artifact.ToString();
@@ -1449,6 +1449,26 @@ namespace d360.web.Controllers
 			json.Add("SynonymPermission", permission);
 
 			return Request.CreateResponse(HttpStatusCode.OK, json);
+		}
+
+		[Route("getAssetUidReadPremission/{uid:Guid}")]
+		public async Task<dynamic> GetAssetUidReadPremission(Guid uid)
+		{
+			bool isreadpremission = false;
+
+			var TagPermission = (await Company.QueryAsync<int>($@"
+			select	count(1)
+			from	Asset O
+					inner join AssetType T on T.ID = O.AssetTypeID
+			where   O.Uid = @assetUid
+					and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 
+					and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+			", new { assetUid = uid, rid = Company.CurrentResourceID })).FirstOrDefault();
+
+			return new
+			{
+				isreadpremission = (TagPermission > 0) ? true : false
+			};
 		}
 
 		[Route("artifacts/{assetTypeUid:Guid}")]

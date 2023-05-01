@@ -5,6 +5,10 @@ import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../..
 import { Router } from "@angular/router";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { CompanySettingEnum } from "../../../models/settings.model";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { Subscription } from 'rxjs';
+
+/*global $localize*/
 
 @Component({
     selector: "d3s-social-comment",
@@ -34,10 +38,13 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     isDeletable: boolean = false;
     isEditable: boolean = false;
     resourceUid: string = "";
+    checkpermission: Subscription;
+
 
     constructor(
         private socialService: SocialService,
         protected settingsService: CompanySettingsService,
+        private messagesService: MessagesObservableService,
         private router: Router) {
         super(settingsService);
         this.replyData = new CommentApiPostModel();
@@ -92,6 +99,33 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private changeUrl(route) {
         this.router.navigate([route]);
+    }
+
+    ngOnDestroy() {
+        if (this.checkpermission) {
+            this.checkpermission.unsubscribe();
+        }
+    }
+    private changeUrlwithPermission(route, uid) {
+        if (uid !== null && !this.isAdmin) {
+            if (this.checkpermission) {
+                this.checkpermission.unsubscribe();
+            }
+            this.checkpermission = this.socialService.getAssetUidReadPremission(uid)
+                .subscribe((res) => {
+                    if (res) {
+                        if (res === true) {
+                            this.router.navigate([route]);
+                        }
+                        else {
+                            this.messagesService.showError($localize`Error`, $localize`You do not have read permissions to the underlying asset.`);
+                        }
+                    }
+                });
+        }
+        else {
+            this.router.navigate([route]);
+        }
     }
 
     isModified() {

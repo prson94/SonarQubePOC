@@ -123,4 +123,12 @@ export class SocialService extends BaseObservableService  {
             );
     }
 
+	getAssetUidReadPremission(uid: string): Observable<boolean> {
+		return this.http
+			.get(`api/getAssetUidReadPremission/${uid}`)
+			.pipe(
+				map((res) => <CommentVoteDetail[]>res),
+				catchError((err) => this.handleError(err))
+			);
+	}
 }
