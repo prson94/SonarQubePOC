@@ -1,103 +1,114 @@
-﻿<header *ngIf="!showEditor && !showDelete">
-    <ng-container i18n>Levels</ng-container>
-    <d3s-tile-actions [hasAdd]="true"
-                      (addClick)="add()"
-                      [hasFilterMode]="true"
-                      [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-</header>
+﻿<div class="row" *ngIf="!showEditor && !showDelete">
+	<div class="grid-actions-header column-layout">
+		<div class="grid-actions-header-row">
+			<div class="simple-search">
+				<ig-search-field (onSearch)="dt.filterGlobal($event, 'contains');"
+								 mode="Keypress">
+				</ig-search-field>
+			</div>
+			<div class="grid-action-buttons">
+				<button *ngIf="!isDisabled"
+						[igDataCy]="'Levels_Add'"
+						(click)="add()"
+						igButton
+						pTooltip="{{(isDisabled ? disabledAddTooltipText : addTooltipText)}}"
+						tooltipPosition="top"
+						tooltipStyleClass="ig-tooltip"
+						class="ig-button-primary"
+						[disabled]="isDisabled"
+						icon="fa-plus">
+				</button>
+
+				<div *ngIf="isDisabled" pTooltip="{{disabledAddTooltipText}}"
+					 tooltipPosition="left"
+					 tooltipStyleClass="ig-tooltip">
+					<button [igDataCy]="'Levels_Add'"
+							(click)="add()"
+							igButton
+							class="ig-button-primary"
+							[disabled]="isDisabled"
+							icon="fa-plus">
+					</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<span *ngIf="!isLoading && !showDelete && !showEditor">
-    <input type="text"
-           [hidden]="!showSimpleFilter"
-           pInputText
-           size="100"
-           (input)="dt.filterGlobal($event.target.value, 'contains')"
-           placeholder="searchText"
-           class="grid-simple-filter">
-    <p-table #dt
-             [value]="levels"
-             selectionMode="single"
-             [globalFilterFields]="['Name','Level','Description']"
-             [(selection)]="selectedLevel"
-             [rows]="10"
-             [paginator]="true"
-             [pageLinks]="3">
-        <ng-template pTemplate="header">
-            <tr>
-                <th [pSortableColumn]="'Level'">
-                    <ng-container i18n>Level</ng-container>
-                    <d3s-sortIcon [field]="'Level'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'Name'">
-                    <ng-container i18n>Name</ng-container>
-                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'Description'">
-                    <ng-container i18n>Description</ng-container>
-                    <d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
-                </th>
-                <th style="width: 40px"></th>
-                <th style="width: 40px"></th>
-            </tr>
-            <tr [hidden]="showSimpleFilter">
-                <th>
-                    <d3s-column-filter [field]="'Level'"></d3s-column-filter>
-                </th>
-                <th>
-                    <d3s-column-filter [field]="'Name'"></d3s-column-filter>
-                </th>
-                <th>
-                    <d3s-column-filter [field]="'Description'"></d3s-column-filter>
-                </th>
-                <th></th>
-                <th></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body"
-                     let-item>
-            <tr (dblclick)="showEditor = true"
-                [pSelectableRow]="item">
-                <td>
-                    {{item.Level}}
-                </td>
-                <td>
-                    {{item.Name}}
-                </td>
-                <td>
-                    <div [innerHtml]="item?.Description"></div>
-                </td>
-                <td>
-                    <div class="RowTools">
-                        <a style="cursor:pointer;"
-                           (click)="selectedLevel=item;showEditor=true"><i class="fa fa-pencil"></i></a>
-                    </div>
-                </td>
-                <td>
-                    <div class="RowTools">
-                        <a style="cursor:pointer;"
-                           (click)="selectedLevel=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template *ngIf="dt.totalRecords"
-                     pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first"
-                                  [rows]="dt.rows"
-                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-        </ng-template>
-    </p-table>
-</span>
+<div *ngIf="!isLoading && !showDelete && !showEditor" style="padding: 0px 10px;">
+	<p-table #dt
+			 [value]="levels"
+			 selectionMode="single"
+			 [globalFilterFields]="['Name','Level','Description']"
+			 [(selection)]="selectedLevel"
+			 [rows]="10"
+			 [paginator]="true"
+			 [pageLinks]="3">
+		<ng-template pTemplate="header">
+			<tr>
+				<th [pSortableColumn]="'Level'">
+					<ng-container i18n>Level</ng-container>
+					<d3s-sortIcon [field]="'Level'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Name'">
+					<ng-container i18n>Name</ng-container>
+					<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+				</th>
+				<th [pSortableColumn]="'Description'">
+					<ng-container i18n>Description</ng-container>
+					<d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
+				</th>
+				<th style="width: 40px"></th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body"
+					 let-item>
+			<tr (dblclick)="showEditor = true"
+				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected = item;"
+				[pSelectableRow]="item">
+				<td>
+					{{item.Level}}
+				</td>
+				<td>
+					{{item.Name}}
+				</td>
+				<td>
+					<div [innerHtml]="item?.Description"></div>
+				</td>
+				<td style="padding-left:0" #assetGridTools>
+					<div class="token-popup-menu" *ngIf="item.MenuItems">
+						<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
+						<ig-popup-menu [items]="item.MenuItems"
+									   #tokenMenu
+									   [tabIndex]="1"></ig-popup-menu>
+					</div>
+
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu [items]="item.MenuItems" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
+				</td>
+			</tr>
+		</ng-template>
+		<ng-template *ngIf="dt.totalRecords"
+					 pTemplate="summary">
+			<d3s-grid-paging-info [first]="dt.first"
+								  [rows]="dt.rows"
+								  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		</ng-template>
+	</p-table>
+</div>
 <d3s-delete-form *ngIf="showDelete"
-                 [callback]="theDeleteCallback"
-                 [itemId]="selectedLevel?.Level"
-                 [method]="'callback'"
-                 [prompt]="deleteModalTitle"
-                 (onCancel)="showDelete=false;"></d3s-delete-form>
+				 [callback]="theDeleteCallback"
+				 [itemId]="selectedLevel?.Level"
+				 [method]="'callback'"
+				 [prompt]="deleteModalTitle"
+				 (onCancel)="showDelete=false;"></d3s-delete-form>
 <d3s-admin-level-editor *ngIf="showEditor"
-                        [maxDepth]="maxDepth"
-                        [level]="selectedLevel"
-                        [objectId]="objectId"
-                        [objectType]="objectType"
-                        (closeClick)="closeEditor()"
-                        (saveClick)="saveLevel($event)"></d3s-admin-level-editor>
+						[maxDepth]="maxDepth"
+						[level]="selectedLevel"
+						[objectId]="objectId"
+						[objectType]="objectType"
+						(closeClick)="closeEditor()"
+						(saveClick)="saveLevel($event)"></d3s-admin-level-editor>

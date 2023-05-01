@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { IOutputData } from "angular-split";
 import { AssetTypeClass } from "../../../../../models/asset.model";
@@ -8,7 +8,8 @@ import { SidePanelService } from "../../../../../services/side-panel.service";
 
 @Component({
 	selector: "d3s-configuration-asset-type-details-page",
-	templateUrl: './configuration-asset-type-details-page.component.html'
+	templateUrl: './configuration-asset-type-details-page.component.html',
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfigurationAssetTypeDetailsPageComponent {
 	assetTypeClass: AssetTypeClass;
@@ -23,11 +24,14 @@ export class ConfigurationAssetTypeDetailsPageComponent {
 	constructor(
 		private route: ActivatedRoute,
 		public sidePanelService: SidePanelService,
+		private cdRef: ChangeDetectorRef,
 		private linkClickInterceptor: LinkClickInterceptor) {
 		this.linkClickInterceptor.getEvents().subscribe((res) => {
 			if (res && res.data) {
 				this.selectedItem = res.data;
 				this.sidePanelService.setSidePanelState({ expanded: true });
+				this.sidePanelOpen = true;
+				this.cdRef.markForCheck();
 			}
 		});
 	}
@@ -37,6 +41,7 @@ export class ConfigurationAssetTypeDetailsPageComponent {
 			this.assetTypeClass = AssetTypeClass[params["typeClass"] as string];
 			this.uid = params["uid"];
 			this.sidePanelStorageKey = "side_panel_asset_type_Details_" + this.uid;
+			this.cdRef.markForCheck();
 		});
 	}
 

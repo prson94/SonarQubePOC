@@ -100,13 +100,13 @@
 					</div>
 					<div class="row" *ngIf="relationshipType.CreatedByName">
 						<label class="ig-label" i18n>Created By</label>
-						<a (click)="resourceClicked(relationshipType.CreatedByUid)">
+						<a (click)="resourceClicked(relationshipType.CreatedByUid)" context-link [attr.data-link-type]="'resource'">
 							{{ relationshipType.CreatedByName }}
 						</a>
 					</div>
 					<div class="row" *ngIf="relationshipType.UpdatedByName">
 						<label class="ig-label" i18n>Last Modified by</label>
-						<a (click)="resourceClicked(relationshipType.UpdatedByUid)">
+						<a (click)="resourceClicked(relationshipType.UpdatedByUid)" context-link [attr.data-link-type]="'resource'">
 							{{ relationshipType.UpdatedByName }}
 						</a>
 					</div>
@@ -117,8 +117,7 @@
 
 </div>
 
-
-<d3s-admin-relationships-editor  *ngIf="relationshipType && isDetailsPage"
+<d3s-admin-relationships-editor *ngIf="relationshipType && isDetailsPage"
 								[isModalVisible]="showEditor"
 								[relationshipTypeUid]="relationshipType.Uid"
 								(onSave)="onSaveRelationship()"

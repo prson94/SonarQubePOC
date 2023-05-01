@@ -32,7 +32,7 @@ export class LinkClickInterceptor {
 
     constructor(private router: Router) { }
 
-    sendEvent(origEvent: any, data: any, url: string, valueIndex = 0) {
+	sendEvent(origEvent: any, data: any, url: string, valueIndex = 0) {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
 		adcEv.url = url;

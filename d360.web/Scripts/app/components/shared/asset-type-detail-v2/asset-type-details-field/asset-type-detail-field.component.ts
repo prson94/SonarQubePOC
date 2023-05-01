@@ -24,8 +24,9 @@ export class AssetTypeDetailFieldComponent {
 	}
 
 	onResourceClick($event: PointerEvent) {
+		this.linkClickInterceptor.sendEvent($event, { type: 'Resource', uid: this.field.value.value }, "users/" + this.field.value.value);
+	
 		$event.stopPropagation();
 		$event.preventDefault();
-		this.linkClickInterceptor.sendEvent($event, { type: 'Resource', uid: this.field.value.value }, "");
 	}
 }
