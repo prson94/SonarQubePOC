@@ -6,6 +6,7 @@ import { Router } from "@angular/router";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { CompanySettingEnum } from "../../../models/settings.model";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { AssetService } from '../../../services/asset.service';
 import { Subscription } from 'rxjs';
 
 /*global $localize*/
@@ -42,6 +43,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
 
     constructor(
+        private assetService: AssetService,
         private socialService: SocialService,
         protected settingsService: CompanySettingsService,
         private messagesService: MessagesObservableService,
@@ -106,20 +108,17 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
             this.checkpermission.unsubscribe();
         }
     }
-    private changeUrlwithPermission(route, uid) {
-        if (uid !== null && !this.isAdmin) {
+
+     private changeUrlwithPermission(route, uid) {
+          const routeValue: string = route.toString().toLocaleLowerCase();
+          if (uid !== null && !this.isAdmin && routeValue.substring(0,6) === "asset/") {
             if (this.checkpermission) {
                 this.checkpermission.unsubscribe();
             }
-            this.checkpermission = this.socialService.getAssetUidReadPremission(uid)
+               this.checkpermission = this.assetService.getAsset(uid)
                 .subscribe((res) => {
                     if (res) {
-                        if (res === true) {
-                            this.router.navigate([route]);
-                        }
-                        else {
-                            this.messagesService.showError($localize`Error`, $localize`You do not have read permissions to the underlying asset.`);
-                        }
+                        this.router.navigate([route]);
                     }
                 });
         }
