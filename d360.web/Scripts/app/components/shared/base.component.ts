@@ -1212,8 +1212,11 @@ export class BaseComponent {
 	}
 
 	protected determineAreaForAdminPage(areaName: string): string {
-		let area = "";
+		if (this.baseIntersectTypeUid) {
+			return StringConstants.Area_Configuration;
+		}
 
+		let area = "";
 		area = [
 			StringConstants.Section_BusinessAssets,
 			StringConstants.Section_TechnicalAssets,
