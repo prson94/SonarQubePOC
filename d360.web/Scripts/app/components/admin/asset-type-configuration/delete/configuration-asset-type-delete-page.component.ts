@@ -88,7 +88,7 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent imp
 
 	formatMessage() {
 		const name = this.assetType.Name;
-		const undoneMsg = $localize`Please note that this operaion cannot be undone.`;
+		const undoneMsg = $localize`Please note that this operation cannot be undone.`;
 		const checkBoxMsg = $localize`Please check this box if you would like to continue.`;
 		this.isConfirmed = false;
 		if (this.assetsCount === 0) {
