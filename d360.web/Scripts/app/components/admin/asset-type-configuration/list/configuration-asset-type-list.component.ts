@@ -101,6 +101,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			else {
 				this.selectedRow = _first(this.artifactTypes);
 			}
+			this.setSimpleFilterFromStorage();
 			this.isLoading = false;
 			this.cdRef.markForCheck();
 		});
@@ -261,6 +262,24 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		}
 		else {
 			this.collapseAll();
+		}
+		this.setSimpleFilterStorage();
+	}
+
+	get simpleFilterStorageKey(): string {
+		return 'SimpleFilterStorage' + this.assetTypeClass + '_' + this.settingsService.CurrentResourceID;
+	}
+
+	private setSimpleFilterStorage() {
+		window.localStorage.setItem(this.simpleFilterStorageKey, this.simpleFilterValue);
+	}
+
+	private setSimpleFilterFromStorage() {
+		const value = window.localStorage.getItem(this.simpleFilterStorageKey);
+		if (value) {
+			this.simpleFilterValue = value;
+
+			this.treeTable.filterGlobal(this.simpleFilterValue, 'contains')
 		}
 	}
 
