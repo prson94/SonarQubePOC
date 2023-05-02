@@ -47,6 +47,7 @@ namespace d360.model
 		private bool IsEventingEnabled;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
+		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
 		#region Ctors
 
@@ -1234,13 +1235,9 @@ from	IntersectType I
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
-				if (subjectUid.HasValue)
+				if (subjectUid.HasValue && subjectUid.Value == Refertypelistuid)
 				{
-					var IsReferenceClass = Filter<AssetType>(i => i.uid == subjectUid.Value && i.Class == AssetTypeClass.Reference).Count();
-					if (IsReferenceClass > 0)
-					{
-						limitToClasses.Remove(AssetTypeClass.Reference);
-					}
+					whereStatements.Add($@"T.[uid] != '{Refertypelistuid}'");
 				}
 				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
 			}
