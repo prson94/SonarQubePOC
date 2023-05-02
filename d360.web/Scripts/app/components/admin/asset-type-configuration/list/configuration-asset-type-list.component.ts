@@ -279,7 +279,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		if (value) {
 			this.simpleFilterValue = value;
 
-			this.treeTable.filterGlobal(this.simpleFilterValue, 'contains')
+			this.treeTable.filterGlobal(this.simpleFilterValue, 'contains');
 		}
 	}
 
