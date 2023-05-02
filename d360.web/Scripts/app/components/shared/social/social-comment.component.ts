@@ -5,6 +5,8 @@ import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../..
 import { Router } from "@angular/router";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { CompanySettingEnum } from "../../../models/settings.model";
+import { AssetService } from '../../../services/asset.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: "d3s-social-comment",
@@ -34,8 +36,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     isDeletable: boolean = false;
     isEditable: boolean = false;
     resourceUid: string = "";
+    checkpermission: Subscription;
+
 
     constructor(
+        private assetService: AssetService,
         private socialService: SocialService,
         protected settingsService: CompanySettingsService,
         private router: Router) {
@@ -92,6 +97,30 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private changeUrl(route) {
         this.router.navigate([route]);
+    }
+
+    ngOnDestroy() {
+        if (this.checkpermission) {
+            this.checkpermission.unsubscribe();
+        }
+    }
+
+     private changeUrlwithPermission(route, uid) {
+          const routeValue: string = route.toString().toLocaleLowerCase();
+          if (uid !== null && !this.isAdmin && routeValue.substring(0,6) === "asset/") {
+            if (this.checkpermission) {
+                this.checkpermission.unsubscribe();
+            }
+               this.checkpermission = this.assetService.getAsset(uid)
+                .subscribe((res) => {
+                    if (res) {
+                        this.router.navigate([route]);
+                    }
+                });
+        }
+        else {
+            this.router.navigate([route]);
+        }
     }
 
     isModified() {

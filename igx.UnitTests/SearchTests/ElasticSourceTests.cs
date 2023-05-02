@@ -434,8 +434,7 @@ namespace igx.UnitTests.SearchTests
             QueryLimitation limits = new QueryLimitation
             {
                 ResourceID = 1,
-                ResourceGroupIDs = new List<int> { 1, 2, 3},
-                ResourceOrgIDs = new List<int>()
+                ResourceGroupIDs = new List<int> { 1, 2, 3 }
             };
 
             var source = new Mock<ElasticSearchSource>(MockBehavior.Strict);

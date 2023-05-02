@@ -3109,7 +3109,7 @@ namespace d360.web.Controllers.V2
 
 				if (res == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+					throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFoundOrPermission, assetUid.ToString()));
 				}
 
 				return Ok(res);

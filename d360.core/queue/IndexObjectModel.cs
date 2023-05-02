@@ -42,13 +42,17 @@ namespace d360.core.queue
 
         public Guid? AssetTypeUid { get; set; }
 
+		public bool DefaultPermisisons { get; set; } = true;
+
         public Dictionary<string, string> Fields { get; set; }
 
         public Dictionary<string, string> Tags { get; set; }
 
-        public Dictionary<string, List<int>> NoRead { get; set; }
+		public Dictionary<string, List<int>> NoRead { get; set; }
 
-        public string[] AssetPath { get; set; }
+		public Dictionary<string, List<int>> CanRead { get; set; }
+
+		public string[] AssetPath { get; set; }
 
 		public IndexObjectSemanticModel Semantic { get; set; }
 

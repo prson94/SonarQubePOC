@@ -150,6 +150,9 @@
   <data name="AssetNotFound" xml:space="preserve">
     <value>Asset with Uid {0} could not be found.</value>
   </data>
+  <data name="AssetNotFoundOrPermission" xml:space="preserve">
+    <value>Asset with Uid {0} could not be found or you do not have permission to view the related asset.</value>
+  </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
     <value>You are not allowed to add actions on this asset type.</value>
   </data>
@@ -220,7 +223,7 @@
     <value>The field you specified for sorting ({0}) could not be found.</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Relationship Type with Uid {0} not allowed subject and object both side with reference type.</value>
+    <value>Relationship Type with Uid {0} not allowed subject and object both side with Reference List.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Relationship Type with Uid {0} could not be found.</value>

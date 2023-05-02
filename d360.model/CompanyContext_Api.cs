@@ -7141,11 +7141,11 @@ where	T.ExecutionID = @ExecutionID
 
 								Update  ER 
 								set     Success = 0, 
-										Message = 'Both ObjectUid, SubjectUid must not be Reference type.' 
+										Message = 'Both ObjectUid, SubjectUid must not be Reference List.' 
 								from    [api].[ExecutionRelationshipType] ER 
-										inner join AssetType AST on AST.UID = ER.ObjectUID 
-								where   ER.ExecutionID = @ExecutionID and ER.Success is null
-								and ER.ObjectClass = ER.SubjectClass and ER.SubjectClass = {(int)AssetTypeClass.Reference};
+										inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9 and AST.ObjectID = 0
+										inner join AssetType ASTS on ASTS.UID = ER.SubjectUID and ASTS.Class = 9 and ASTS.ObjectID = 0
+								where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
 								update  ER 
 								set     PredicateID = P.ID 

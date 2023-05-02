@@ -1427,7 +1427,7 @@ namespace d360.web.Controllers
 			bool addModifySynonym = true;
 			bool deleteSynonym = true;
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!Company.CurrentResourceIsAdmin && json != null)
 			{
 				long assetId = long.Parse(json.GetValue("AssetID").ToString());
 				string objectType = SystemObjects.Artifact.ToString();

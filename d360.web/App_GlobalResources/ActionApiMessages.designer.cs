@@ -160,6 +160,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset with Uid {0} could not be found or you do not have permission to view the related asset..
+        /// </summary>
+        public static string AssetNotFoundOrPermission {
+            get {
+                return ResourceManager.GetString("AssetNotFoundOrPermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are not allowed to add actions on this asset type..
         /// </summary>
         public static string AssetTypeAddActionPermissionsDenied {
@@ -367,7 +376,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationship Type with Uid {0} not allowed subject and object both side with reference type..
+        ///   Looks up a localized string similar to Relationship Type with Uid {0} not allowed subject and object both side with Reference List..
         /// </summary>
         public static string RelationshipReftypeBothSideNotAllowed {
             get {
