@@ -2416,4 +2416,22 @@ VALUES
 		]]>
 	</rollback>
   </changeSet>   
+  <changeSet author="bquinlivan" id="Data.Initial.SemanticTypes-v5">
+	<comment>GOV-20838</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		Update [dbo].[Semantic]
+			set CreatedBy = 0, UpdatedBy = 0
+		where 
+			qualifier in ('COMPANY_NAME','FULL_ADDRESS_EN')
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>
