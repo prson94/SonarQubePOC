@@ -5,8 +5,7 @@
             [class.left-side-nav-open]="menuOpen"
             [class.left-side-nav]='!menuOpen'>
             <d3s-site-menu-category [expanded]="menuOpen"
-                                    i18n-title
-                                    title="Home"
+                                    [title]="homeTitle"
                                     [url]="'home'"
                                     [rootIconName]="'fa-home'"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
@@ -29,16 +28,14 @@
             </ng-template>
             <d3s-site-menu-category *ngIf="isAdmin"
                                     [expanded]="menuOpen"
-                                    i18n-title
-                                    title="Configuration"
+                                    [title]="configurationTitle"
                                     rootIconName="fa-sliders"
                                     [menu]="configMenu"
                                     [isActive]="configMenu.isActiveItem"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
             <d3s-site-menu-category *ngIf="isAdmin"
-                                    [expanded]="menuOpen"
-                                    i18n-title
-                                    title="Administration"
+                                    [expanded]="menuOpen"                                    
+                                    [title]="administrationTitle"
                                     rootIconName="fa-cog"
                                     [menu]="adminMenu"
                                     [isActive]="adminMenu.isActiveItem"

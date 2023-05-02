@@ -58,7 +58,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     isScrollerVisable: boolean = false;
     scrollingUp: boolean = false;
-    scrollTitle: string = $localize`Scroll down`;
+	scrollTitle: string = $localize`Scroll down`;
+	homeTitle: string = $localize`Home`;
+	configurationTitle: string = $localize`Configuration`;
+	administrationTitle: string = $localize`Administration`;
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChildren(SiteMenuFavoritesComponent) favoritesMenuRefs: QueryList<SiteMenuFavoritesComponent>;
