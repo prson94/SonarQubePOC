@@ -5,7 +5,6 @@ import { CommentApiPostModel, CommentDetail, CommentType, Emoji } from "../../..
 import { Router } from "@angular/router";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { CompanySettingEnum } from "../../../models/settings.model";
-import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { AssetService } from '../../../services/asset.service';
 import { Subscription } from 'rxjs';
 
@@ -46,7 +45,6 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         private assetService: AssetService,
         private socialService: SocialService,
         protected settingsService: CompanySettingsService,
-        private messagesService: MessagesObservableService,
         private router: Router) {
         super(settingsService);
         this.replyData = new CommentApiPostModel();
