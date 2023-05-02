@@ -18,7 +18,7 @@
                 <img *ngIf="imageUrl" [src]="imageUrl" />
             </div>
             <div [ngClass]="{'min':!expanded, 'menu-title-item': true}">
-                <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
+                <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}}</div>
             </div>
         </div>
         <i *ngIf="menu && menu.NavigationItems && menu.NavigationItems.length > 0"

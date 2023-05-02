@@ -31,6 +31,8 @@ import { Subject } from 'rxjs';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from "../../../services/feature-flags.enum";
 
+/*global $localize*/
+
 @Component({
     selector: 'd3s-site-menu',
     templateUrl: './site-menu.component.html',
@@ -58,7 +60,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     isScrollerVisable: boolean = false;
     scrollingUp: boolean = false;
-    scrollTitle: string = $localize`Scroll down`;
+	scrollTitle: string = $localize`Scroll down`;
+	homeTitle: string = $localize`Home`;
+	configurationTitle: string = $localize`Configuration`;
+	administrationTitle: string = $localize`Administration`;
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChildren(SiteMenuFavoritesComponent) favoritesMenuRefs: QueryList<SiteMenuFavoritesComponent>;
