@@ -122,5 +122,4 @@ export class SocialService extends BaseObservableService  {
             catchError((err) => this.handleError(err))
             );
     }
-
 }

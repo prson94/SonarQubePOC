@@ -27,7 +27,7 @@
             <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
                 <i class="fa fa-tag" aria-hidden="true"></i>
                 <ng-container i18n>Comment Tags</ng-container>:
-                <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
+                <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrlwithPermission(tag.Url,tag.AssetUid)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
                     {{getTagName(tag)}}
                 </d3s-preview-tooltip>
             </div>
