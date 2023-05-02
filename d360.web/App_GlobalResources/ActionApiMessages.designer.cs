@@ -367,7 +367,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relationship Type with Uid {0} not allowed subject and object both side with reference type..
+        ///   Looks up a localized string similar to Relationship Type with Uid {0} not allowed subject and object both side with Reference List..
         /// </summary>
         public static string RelationshipReftypeBothSideNotAllowed {
             get {
