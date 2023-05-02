@@ -1265,7 +1265,7 @@ export class BaseComponent {
 			{this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));}
 
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
-		if (data?.ObjectType === 'IntersectType') {
+		if (data?.ObjectType === 'IntersectType' && data?.TypeName !== $localize`Relationships`) {
 			this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data?.TypeName));
 		}
 		this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);

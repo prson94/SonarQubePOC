@@ -1217,7 +1217,7 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
 					responseModel.IntersectTypeUid = model.IntersectTypeUid.Value;
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.TypeName = Company.Query<string>("select name from IntersectTypeDetail where uid = @uid ", new { uid = model.IntersectTypeUid.Value }).FirstOrDefault();
+					responseModel.TypeName = Company.Query<string>("select name from IntersectTypeDetail where uid = @uid ", new { uid = model.IntersectTypeUid.Value }).FirstOrDefault() ?? PageNames.RelationshipsTab;
 					responseModel.DisplayValue = PageNames.RelationshipsTab;
 					responseModel.MainTabTitle = PageNames.DetailsTab;
 					responseModel.MainTabUrl = $"admin/relationships/{model.IntersectTypeUid.Value}/details";
