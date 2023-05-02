@@ -2149,7 +2149,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="2605209619674092431" datatype="html">
-        <source>Please note that this operaion cannot be undone.</source><target>Tenga en cuenta que esta operación no se puede deshacer.</target>
+        <source>Please note that this operation cannot be undone.</source><target>Tenga en cuenta que esta operación no se puede deshacer.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/delete/configuration-asset-type-delete-page.component.ts</context>
           <context context-type="linenumber">91</context>
