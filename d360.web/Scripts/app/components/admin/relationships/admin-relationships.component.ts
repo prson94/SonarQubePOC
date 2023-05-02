@@ -34,7 +34,7 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 		if (this.isStandalonePage) {
 			this.baseIntersectTypeUid = this.selected.Uid;
 			this.buildSecondaryNavigation({
-				intersectTypeUid: this.baseIntersectTypeUid,
+				intersectTypeUid: '00000000-0000-0000-0000-000000000000',
 				forceRefresh: true,
 				excludeTabs: true
 			});
