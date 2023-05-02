@@ -8,8 +8,6 @@ import { CompanySettingEnum } from "../../../models/settings.model";
 import { AssetService } from '../../../services/asset.service';
 import { Subscription } from 'rxjs';
 
-/*global $localize*/
-
 @Component({
     selector: "d3s-social-comment",
     templateUrl: "./social-comment.component.html",
