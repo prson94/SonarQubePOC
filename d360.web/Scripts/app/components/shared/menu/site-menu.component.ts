@@ -31,6 +31,8 @@ import { Subject } from 'rxjs';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from "../../../services/feature-flags.enum";
 
+/*global $localize*/
+
 @Component({
     selector: 'd3s-site-menu',
     templateUrl: './site-menu.component.html',
