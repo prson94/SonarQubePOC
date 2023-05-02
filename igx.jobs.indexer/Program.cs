@@ -110,7 +110,13 @@ namespace igx.jobs.indexer
             }
             else if (!string.IsNullOrEmpty(reindex.Category))
             {
-                if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
+				if (reindex.Category == "UpdateMapping")
+				{
+					CoreFunction.AITrackTrace(functionName, $"Updating mapping for company {reindex.CompanyID}", companyId: reindex.CompanyID);
+					source.UpdateMappingIfExists(reindex.CompanyID);
+				}
+
+				if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
                 {
                     //Class "Predicate" is overloaded to be used for synonyms and intersects
                     reindex.Category = AssetTypeClass.Predicate.ToString();
@@ -126,7 +132,6 @@ namespace igx.jobs.indexer
                         indexer.IndexAssetClass(info.ID);
                     }
                     LogReindexEnd(categoryLabel, reindex.CompanyID);
-
                 }
             }
             else if (reindex.BatchUids != null && reindex.BatchUids.Any())

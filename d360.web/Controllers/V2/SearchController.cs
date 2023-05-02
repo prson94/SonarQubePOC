@@ -1041,6 +1041,7 @@ namespace d360.web.Controllers.V2
 
 			QueryLimitation limits = new QueryLimitation
 			{
+				IsAdministrator = Company.CurrentResourceIsAdmin,
 				ResourceID = Company.CurrentResourceID,
 				ResourceGroupIDs = Company.ResourceGroups.Where(i => i.ResourceID == Company.CurrentResourceID).Select(i => i.GroupID).ToList(),
 			};
