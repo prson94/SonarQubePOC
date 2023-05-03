@@ -158,9 +158,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 	deleteRelationship($event) {
 		this.showMessageForApiResult(this.messagesService, $event);
 		this.showDelete = false;
+
 		if ($event.Success === true) {
 			this.selected = this.relationships.length > 0 ? this.relationships[0] : null;
-			this.relationships.splice(this.findRelationshipIndex($event.uid), 1);
+			this.getRelationships();
 		}
 	}
 
