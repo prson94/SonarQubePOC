@@ -155,7 +155,7 @@ namespace d360.model.DataAccessLayer
 					if (bool.TryParse(includeString, out bool include))
 					{
 						extraJoins += @$" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID and Location = {(int)DashboardLocation.List}) D ";
-						extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
+						extraColumns += @", cast(iif(D.[Count] > 0, 1, 0) as bit) as HasDashboards";
 					}
 					else
 					{
