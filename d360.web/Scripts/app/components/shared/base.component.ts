@@ -1254,10 +1254,11 @@ export class BaseComponent {
 
 		this.breadcrumbsService.clearBreadcrumbs();
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(area));
+
 		if (adminHeading) {
 			this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));
 		}
-		debugger;
+
 		if (data?.ObjectType === 'IntersectType' && data.DisplayValue === $localize`Relationships`) {
 			url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + "/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
 		}
