@@ -278,6 +278,19 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
 		}
 
+
+		if (this.isActionForm() && this.breadCrumbs && this.breadCrumbs.length > 0) {
+			//https://jira.syncsort.com/browse/GOV-21580
+			//Show side panel of the asset on which action is being taken automatically when action is taken on a specific asset
+			const last = this.breadCrumbs[this.breadCrumbs.length - 1];
+			if (!last.isType) {
+				this.selectedReferenceItem = this.selectedTag = null;
+				this.selectedAsset = { type: this.objectType };
+				this.selectedAsset.uid = last.link.replace("asset/", "");
+			}
+		}
+
+
 		if (this.useSidePanel || this.isActionForm()) {
 			this.getAssetTypeDetails().subscribe((result) => {
 				this.assetTypeFields = result.fields || [];
