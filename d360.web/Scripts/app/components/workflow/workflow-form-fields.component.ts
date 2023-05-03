@@ -38,7 +38,7 @@ export class WorkflowFormFieldsComponent extends BaseComponent {
                 if (x.FieldType === WorkflowFormFieldType.Link) {
                     this.form.form.controls[`inputUrl_${i}`].setValidators([Validators.required]);
                     this.form.form.controls[`inputUrl_${i}`].updateValueAndValidity();
-                } else if (x.FieldType !== WorkflowFormFieldType.Boolean) {
+				} else {
                     this.form.form.controls[`input_${i}`].setValidators([Validators.required]);
                     this.form.form.controls[`input_${i}`].updateValueAndValidity();
                 }
