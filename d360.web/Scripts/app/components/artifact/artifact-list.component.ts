@@ -7,7 +7,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass, AssetTypeClassText } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { DataProfileService } from '../../services/dataprofile.service';
@@ -92,7 +92,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		let folderName: string = '#Business';
 		this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
-		if (this.assetTypeApiModel.Class.Value === AssetTypeClass.TechnicalAsset) {
+		if (this.assetTypeApiModel.Class.Value.toString() === AssetTypeClassText.TechnicalAsset) {
 			folderName = '#Technical';
 			this.areaLink = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
 		}
@@ -132,7 +132,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.currentAreaNameSubscription =
 			this.headerBreadcrumbService
 				.getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
-				.subscribe((result) => {
+			.subscribe((result) => {
 					this.currentAreaName = result;
 					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
 					this.artifactTypeHierarchy.forEach((x) => {
