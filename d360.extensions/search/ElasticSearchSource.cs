@@ -1860,78 +1860,70 @@ namespace d360.extensions.search
 
 			List<QueryContainer> mustNotQueries = new List<QueryContainer>
 			{
-				//If permission field does not exists or is true, user or group cannot be in the NoRead
-				new BoolQuery
+				//NoRead limitations
+				new TermQuery
 				{
-					MinimumShouldMatch = 1,
-					Should = new QueryContainer[]
-					{
-						//NoRead limitations
-						new TermQuery
-						{
-							Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
-							Value = queryLimit.ResourceID
-						},
-						new TermsQuery
-						{
-							Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
-							Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
-						},
-					},
-					Must = new QueryContainer[]
+					Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
+					Value = queryLimit.ResourceID
+				},
+				new TermsQuery
+				{
+					Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
+					Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+				}
+            };
+
+			if(!queryLimit.IsAdministrator)
+			{
+				//Default Permissions logic
+				mustNotQueries.Add(new BoolQuery
+				{
+					MustNot = new QueryContainer[]
 					{
 						new BoolQuery
 						{
 							MinimumShouldMatch = 1,
 							Should = new QueryContainer[]
 							{
-								new TermQuery
-								{
-									Field = permissionField,
-									Value = true
-								},
 								new BoolQuery
 								{
 									MustNot = new QueryContainer[]
 									{
-										new ExistsQuery
+										new TermQuery
 										{
-											Field = permissionField
+											Field = permissionField,
+											Value = false
 										}
+									}
+								},
+								new BoolQuery
+								{
+									MinimumShouldMatch = 1,
+									Must = new QueryContainer[]
+									{
+										new TermQuery
+										{
+											Field = permissionField,
+											Value = false
+										}
+									},
+									Should = new QueryContainer[]
+									{
+										new TermQuery
+										{
+											Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadResourceID"),
+											Value = queryLimit.ResourceID
+										},
+										new TermsQuery
+										{
+											Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadGroupID"),
+											Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+										},
 									}
 								}
 							}
 						}
 					}
-                }
-            };
-
-			if(!queryLimit.IsAdministrator)
-			{
-				mustNotQueries.Add(new BoolQuery
-				{
-					MinimumShouldMatch = 1,
-					Must = new QueryContainer[]
-					{
-						new TermQuery
-						{
-							Field = permissionField,
-							Value = false
-						}
-					},
-					Should = new QueryContainer[]
-					{
-						new TermQuery
-						{
-							Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadResourceID"),
-							Value = queryLimit.ResourceID
-						},
-						new TermsQuery
-						{
-							Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadGroupID"),
-							Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
-						},
-					},
 				});
 			}
 
