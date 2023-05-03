@@ -1,9 +1,9 @@
 import { Title } from '@angular/platform-browser';
 import {
-    SecondaryNavCurrentObject,
-    SecondaryNavItem,
-    SecondaryNavPostModel,
-    SecondaryNavRequestModel
+	SecondaryNavCurrentObject,
+	SecondaryNavItem,
+	SecondaryNavPostModel,
+	SecondaryNavRequestModel
 } from '../../models/secondaryNav.model';
 import { Permissions, PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -182,7 +182,7 @@ export class BaseComponent {
 	private logUsage(action: UsageAction,
 		assetUid?: string, assetTypeUid?: string, dashboardUid?: string, issueUid?: string, semanticUid?: string, tagUid?: string,
 		sidebar?: string, tab?: string) {
-		
+
 		if (this.webAnalyticsService) {
 			let browser = this.determineBrowser();
 
@@ -386,7 +386,7 @@ export class BaseComponent {
 
 			if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
 				let url = `/asset/${this.uid}/log`;
-				
+
 				if (this.baseAssetUid) {
 					url = `/asset/${this.baseAssetUid}/log`;
 				}
@@ -966,20 +966,16 @@ export class BaseComponent {
 			checkdisplayvalue = true;
 		}
 
-		if (loadData.ObjectType === currentData.Object && loadData.ObjectId === currentData.ObjectId)
-			{return true;}
+		if (loadData.ObjectType === currentData.Object && loadData.ObjectId === currentData.ObjectId) { return true; }
 
 		if (checkdisplayvalue) {
-			if (loadData.AssetUid === currentData.Uid && currentData.DisplayValue === loadData.DisplayValue)
-				{return true;}
+			if (loadData.AssetUid === currentData.Uid && currentData.DisplayValue === loadData.DisplayValue) { return true; }
 		}
 		else {
-			if (loadData.AssetUid === currentData.Uid)
-				{return true;}
+			if (loadData.AssetUid === currentData.Uid) { return true; }
 		}
 
-		if (loadData.AssetId === currentData.AssetId)
-			{return true;}
+		if (loadData.AssetId === currentData.AssetId) { return true; }
 
 		return false;
 	}
@@ -1026,14 +1022,11 @@ export class BaseComponent {
 			}
 		}
 
-		if (requestModel.objectType)
-			{data.ObjectType = requestModel.objectType;}
+		if (requestModel.objectType) { data.ObjectType = requestModel.objectType; }
 
-		if (requestModel.assetId)
-			{data.AssetId = requestModel.assetId;}
+		if (requestModel.assetId) { data.AssetId = requestModel.assetId; }
 
-		if (requestModel.assetTypeUid)
-			{data.AssetTypeUid = requestModel.assetTypeUid;}
+		if (requestModel.assetTypeUid) { data.AssetTypeUid = requestModel.assetTypeUid; }
 
 		if (!this.preloadedTreeData || this.preloadedTreeData.length === 0) {
 			//This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
@@ -1179,8 +1172,7 @@ export class BaseComponent {
 			this.secondaryNavService.clearButtons();
 
 			var areaIcon = area === $localize`Configuration` ? 'fa-sliders' : "fa-cog";
-			if (r.Object === 'Tag')
-				{areaIcon = 'fa-tag';}
+			if (r.Object === 'Tag') { areaIcon = 'fa-tag'; }
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
 			if (!requestModel.excludeTabs && r?.ObjectType !== 'IssueType') {
@@ -1240,15 +1232,13 @@ export class BaseComponent {
 	}
 
 	private IsType(objectName: string): boolean {
-		if (objectName === 'Tag')
-			{return true;}
+		if (objectName === 'Tag') { return true; }
 
 		if (objectName === 'MetricAllocation' || objectName === 'Predicate') {
 			return true;
 		}
 
-		if (objectName.length <= 4)
-			{return false;}
+		if (objectName.length <= 4) { return false; }
 		if (objectName.substr(objectName.length - 4).toLowerCase() === "type") {
 			return true;
 		}
@@ -1264,8 +1254,13 @@ export class BaseComponent {
 
 		this.breadcrumbsService.clearBreadcrumbs();
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(area));
-		if (adminHeading)
-			{this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));}
+		if (adminHeading) {
+			this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));
+		}
+		debugger;
+		if (data?.ObjectType === 'IntersectType' && data.DisplayValue === $localize`Relationships`) {
+			url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + "/" + SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS;
+		}
 
 		this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
 		if (data?.ObjectType === 'IntersectType' && data?.TypeName !== $localize`Relationships`) {
@@ -1433,7 +1428,7 @@ export class BaseComponent {
 						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
 					);
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
-					
+
 					this.breadcrumbsService.showBreadcrumb(
 						new Breadcrumb(
 							data.TypeName,
@@ -1447,7 +1442,7 @@ export class BaseComponent {
 						this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
 						this.baseCrumbs = [];
 						this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
-						
+
 						this.breadcrumbsService.showBreadcrumb(
 							new Breadcrumb(
 								selected.DisplayValue,
@@ -1503,15 +1498,11 @@ export class BaseComponent {
 	}
 
 	public getAsRawPrecentage(val: number, decimals: number): string {
-		if (val == null)
-			{return 'undefined';}
+		if (val == null) { return 'undefined'; }
 
-		if (val === 0)
-			{return '0%';}
-		if (!val)
-			{return;}
-		if (val >= 1)
-			{return '100%';}
+		if (val === 0) { return '0%'; }
+		if (!val) { return; }
+		if (val >= 1) { return '100%'; }
 
 		const s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
@@ -1519,15 +1510,11 @@ export class BaseComponent {
 	}
 
 	public getAsPrecentage(val: number): string {
-		if (val == null)
-			{return 'undefined';}
+		if (val == null) { return 'undefined'; }
 
-		if (val === 0)
-			{return '0%';}
-		if (!val)
-			{return;}
-		if (val >= 1)
-			{return '100%';}
+		if (val === 0) { return '0%'; }
+		if (!val) { return; }
+		if (val >= 1) { return '100%'; }
 
 		if (val > 1) {
 			var integerPart = Math.floor(val);
