@@ -14,6 +14,8 @@ import {
     ViewChild,
     ViewChildren
 } from '@angular/core';
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Event as NavigationEvent, NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AssetAction, DynamicButton, SecondaryNavItem } from '../../../models/secondaryNav.model';
@@ -30,11 +32,42 @@ import { SearchDetail } from '../../../models/search-result.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
+import { SharedDeleteFormModule } from '../delete.form';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { TakeSurveyModule } from '../survey/take-survey.module';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
+import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
+import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.module';
+import { PortalsModule } from '../portals/portals.module';
+import { DataCyModule } from '../../../directives/ig-data-cy.directive';
+import { DirectivesModule } from "../../../directives/directives.module";
+import { TabsModule } from '../tabs/tabs.module';
 
 @Component({
+	standalone: true,
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	imports: [
+		CommonModule,
+		FormsModule,
+		SharedDynamicGridEditorModule,
+		DataCyModule,
+		TagUsageInfoModule,
+		SharedDeleteFormModule,
+		SiteModalModule,
+		TakeSurveyModule,
+		PipesModule,
+		ScoreBadgeModule,
+		InfoTooltipModule,
+		SimpleBadgeModule,
+		PortalsModule,
+		DirectivesModule,
+		TabsModule
+	],
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     styleUrls: ['./right-sidebar.component.less'],
 })

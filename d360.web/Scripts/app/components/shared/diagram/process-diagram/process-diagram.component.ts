@@ -490,7 +490,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 		var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 		this.myDiagram =
-			$(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
+			$(go.Diagram, this.diagramRef.nativeElement,  // must name or refer to the DIV HTML element
 				{
 					"undoManager.isEnabled": true,
 					"textEditingTool.doActivate"() {

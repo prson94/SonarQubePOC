@@ -1,5 +1,5 @@
 ﻿import {
-    AfterContentInit,
+	AfterViewInit,
     Component,
     ElementRef,
     EventEmitter,
@@ -12,7 +12,7 @@
     ViewChild,
     ViewEncapsulation
 } from '@angular/core';
-
+import { DocumentUtilService } from "../../../services/document-util.service";
 
 @Component({
     selector: 'd3s-modal',
@@ -21,7 +21,7 @@
 	encapsulation: ViewEncapsulation.None
 })
 
-export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
+export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     @Input() title: string = $localize`Default Title`;
     @Input() additionalClasses: string = '';
     @Input() isVisible: boolean = false;
@@ -41,12 +41,14 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
 
     @ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
 
-    private display: boolean = false;
+	private display: boolean = false;
 
-    ngAfterContentInit() {
+	constructor(private docUtil: DocumentUtilService) { }
+
+    ngAfterViewInit() {
         if (this.appendToBody) {
-            setTimeout(() => {
-                document.body.append(this.modalDiv.nativeElement);
+			setTimeout(() => {
+				this.docUtil.appendToBody(this.modalDiv.nativeElement);
 
             });
         }
@@ -122,5 +124,9 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
         this.onConfirm.emit('confirm');
         this.closePopUp();
     }
-}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	private isInShadowDom(element: any): boolean {
+		return element && element.getRootNode() instanceof ShadowRoot;
+	}
+}
