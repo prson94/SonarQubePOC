@@ -138,7 +138,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
 			isDescriptionCollapsedByDefault: [true],
-			isDefaultReadAccessEnabled: [true],
+			isDefaultReadAccessEnabled: [undefined, { validators: [Validators.required] }],
 			backgroundColor: [null],
 			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
@@ -163,7 +163,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
 		this.assetTypeForm.controls['isDescriptionCollapsedByDefault'].setValue(true);
-		this.assetTypeForm.controls['isDefaultReadAccessEnabled'].setValue(true);
+		this.assetTypeForm.controls['isDefaultReadAccessEnabled'].setValue(undefined);
 
 		if (this.hasPredicateUid) {
 			if (this.hierarchyPredicatesSelectItem.length > 0) {
