@@ -2577,7 +2577,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
         }
 
-        const dg = this.g(go.Diagram, 'LineageDiagram', {
+		const dg = this.g(go.Diagram, this.diagramRef.nativeElement, {
             initialContentAlignment: go.Spot.Center,
             initialDocumentSpot: go.Spot.Center,
             allowDrop: true,

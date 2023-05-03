@@ -20,6 +20,7 @@ import { FormsModule } from '@angular/forms';
 import { KeyMapHelpers } from '../../../../static/keyboard-key-helper';
 import { IgBadgeModule } from '../badge/badge.module';
 import { DataCyModule } from '../../../../directives/ig-data-cy.directive';
+import { DocumentUtilService } from "../../../../services/document-util.service";
 
 @Component({
 	selector: 'ig-popup-menu',
@@ -59,7 +60,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
 	isMac: boolean = false;
 
-	constructor(public cdRef: ChangeDetectorRef) {
+	constructor(public cdRef: ChangeDetectorRef, private docUtil: DocumentUtilService) {
 		this.isMac = navigator.platform.indexOf('Mac') > -1;
 	}
 	reset() {
@@ -116,7 +117,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
 	ngAfterContentInit() {
 		setTimeout(() => {
-			document.body.append(this.popupEl.nativeElement);
+			this.docUtil.appendToBody(this.popupEl.nativeElement);
 			this.setElementPosition();
 		});
 

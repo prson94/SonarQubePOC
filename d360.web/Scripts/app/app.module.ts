@@ -9,7 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ToastModule } from 'primeng/toast';
 
-import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
+import { RightSidebarComponent } from './components/shared/rightsidebar/right-sidebar.component';
 import { SiteMenuModule } from './components/shared/menu/site-menu.module';
 import { HeaderModule } from './components/shared/header/header.module';
 
@@ -82,8 +82,8 @@ export function localeInitializer(localeId: string) {
         // prime
         ToastModule,
         DialogModule,
-        //d3s modules                                            
-        RightsidebarModule,
+		//d3s modules                                            
+		RightSidebarComponent,
         SiteMenuModule,
         HeaderModule,
     ],

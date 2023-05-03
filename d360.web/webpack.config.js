@@ -37,7 +37,7 @@ module.exports = {
 				'./AssetsBaseModule': 'Scripts/app/components/assets-base/assets-base.module.ts',
 				'./HierarchyModule': 'Scripts/app/components/hierarchy/hierarchy.module.ts',
 				'./DataCatalogModule': 'Scripts/app/components/data-catalog/data-catalog.module.ts',
-				'./RightsidebarModule': 'Scripts/app/components/shared/rightsidebar/right-sidebar.module'
+				'./RightsidebarComponent': 'Scripts/app/components/shared/rightsidebar/right-sidebar.component'
 			},
 			shared: {
 				...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto', includeSecondaries: true }),
