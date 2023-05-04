@@ -138,7 +138,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
 			isDescriptionCollapsedByDefault: [true],
-			isDefaultReadAccessEnabled: [undefined, { validators: [Validators.required] }],
+			isDefaultReadAccessEnabled: [undefined],
 			backgroundColor: [null],
 			backgroundColorTextValue: [null, { validators: [Validators.required] }],
 			icon: [null],
@@ -149,6 +149,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			flowObjectType: [null],
 			maxDepth: [null]
 		});
+
+		if (this.assetTypeClass !== AssetTypeClass.DiagramAsset) {
+			this.assetTypeForm.controls["isDefaultReadAccessEnabled"].setValidators([Validators.required]);
+		}
 
 		this.setDefaultFormValues();
 	}
