@@ -210,8 +210,8 @@ namespace d360.web.Controllers.V2
 			});
 
 			// Add path as the last column.
-			columns.Add(new CatalogColumn { ApiName = "displayPath", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
-			columns.Add(new CatalogColumn { ApiName = "displayPathSegment", Column = "p.DisplayPath", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displayPath", Column = "p.DisplayPath", Sort = "S.AssetPathWithId", Position = columns.Max(c => c.Position) + 1 });
+			columns.Add(new CatalogColumn { ApiName = "displayPathSegment", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
 			#endregion
 
@@ -679,7 +679,6 @@ namespace d360.web.Controllers.V2
 			string filtersTempTable = "";
 			if (hasFilters)
 			{
-				bool useSortPathInTempTable = false;
 				StringBuilder sb = new StringBuilder();
 				List<string> tempCols = new List<string>
 				{
@@ -689,20 +688,6 @@ namespace d360.web.Controllers.V2
 				{
 					tempCols.Add($"{w.PropertyName} bit");
 				});
-
-				if (sorts.Any(x => x.ToLowerInvariant().Contains("p.DisplayPath".ToLowerInvariant())))
-				{
-					//if we are sorting and filtering on display path we should include display path sorting value in temporary table
-					//otherwise indexing on asset path table is not optimial
-					//https://jira.syncsort.com/browse/GOV-21188
-
-					tempCols.Add("sort_path nvarchar(50)");
-					useSortPathInTempTable = true;
-					sorts = sorts.Select(sort => sort.Replace("p.DisplayPath", "fr.sort_path")).ToList();
-
-					var pathCol = columns.FirstOrDefault(x => x.ApiName == "displayPath");
-					pathCol.Sort = "fr.sort_path";
-				}
 
 				sb.AppendLine($@"
 					drop table if exists #filteredResults_temp
@@ -724,16 +709,6 @@ namespace d360.web.Controllers.V2
 						option(recompile);");
 				}
 
-				if (useSortPathInTempTable)
-				{
-					sb.AppendLine(@"
-						update t 
-						set t.sort_path = CAST(ap.DisplayPath as nvarchar(50))
-						from #filteredResults_temp t
-						inner join AssetPath ap on ap.ID = t.AssetId");
-				}
-
-
 				if (catalogWheres.Count > 0)
 				{
 					//replaced original query parameter value which contains all brackets and and/or operators with parsed where values
@@ -750,7 +725,7 @@ namespace d360.web.Controllers.V2
 
 				sb.AppendLine($@"
 						drop table if exists #filteredResults
-						select AssetId {(useSortPathInTempTable ? ", sort_path" : "")}
+						select AssetId
 						into #filteredResults
 						from #filteredResults_temp fr
 						where {advancedFilterString}
@@ -860,10 +835,24 @@ namespace d360.web.Controllers.V2
 
 
 			string offsetGroupBy = "group by S.ObjectAssetId";
+			string orderBy = $"order by {string.Join(", ", sorts)}";
 
 			if (columns.Any(x => x.UseAsSortBy))
 			{
 				offsetGroupBy += ", " + string.Join(", ", columns.Where(x => x.UseAsSortBy).Select(x => x.Sort));
+			}
+
+			if (offsetGroupBy.ToLowerInvariant().Contains("S.ObjectAssetId, S.DisplayValuePrefix".ToLowerInvariant()))
+			{
+				//instead of grouping by 2 columns, use DisplayValuePrefixWithId which contains both for performance
+				offsetGroupBy = offsetGroupBy.Replace("S.ObjectAssetId, S.DisplayValuePrefix", "S.DisplayValuePrefixWithId");
+				orderBy = orderBy.Replace("S.DisplayValuePrefix", "S.DisplayValuePrefixWithId");
+			}
+
+			if (offsetGroupBy.ToLowerInvariant().Contains("S.ObjectAssetId, S.DisplayPath".ToLowerInvariant()))
+			{
+				//when grouping on DisplayPath, no need to group on ObjectAssetId too, as DisplayPath should be unique per
+				offsetGroupBy = offsetGroupBy.Replace("S.ObjectAssetId, S.DisplayPath", "S.AssetPathWithId");
 			}
 
 			string resultsSql = $@"
@@ -872,7 +861,7 @@ namespace d360.web.Controllers.V2
 				insert into @results
 				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId")}
 				{offsetGroupBy}
-				order by {string.Join(", ", sorts)}
+				{orderBy}
 				{offset}";
 
 			string finalSql = $@"
@@ -902,7 +891,7 @@ namespace d360.web.Controllers.V2
 
 				{resultsSql}
 
-				select {string.Join("," + Environment.NewLine, columns.Select(x => x.Column))}
+				select {string.Join("," + Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.Column)).Select(x => x.Column))}
 				from @results res
 				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
 				inner join asset a on a.ID = res.objectassetid
