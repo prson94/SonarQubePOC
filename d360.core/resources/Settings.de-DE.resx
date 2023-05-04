@@ -253,12 +253,6 @@
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
     <value>Referenzlisten-UID für Governance-Rolle</value>
   </data>
-  <data name="HasRegisterLink_Desc" xml:space="preserve">
-    <value>Verfügt über Registrierungslink auf Anmeldeseite.</value>
-  </data>
-  <data name="HasRegisterLink_Name" xml:space="preserve">
-    <value>Verfügt über Registrierungslink zur Anmeldung</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>Dadurch werden Data3Sixty-Benutzer in einer Umgebung ausgeblendet, diese Konten sind dann nicht bearbeitbar.</value>
   </data>

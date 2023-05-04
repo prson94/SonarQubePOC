@@ -151,6 +151,9 @@
   <data name="DefinitionTab" xml:space="preserve">
     <value>Definición</value>
   </data>
+  <data name="DetailsTab" xml:space="preserve">
+    <value>Detalles</value>
+  </data>
   <data name="DiagramAssetsPage" xml:space="preserve">
     <value>Activos de diagrama</value>
   </data>
@@ -158,7 +161,7 @@
     <value>Tipos de activos de diagrama</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
-    <value>Definiciones de campo</value>
+    <value>Campos</value>
   </data>
   <data name="FollowersTab" xml:space="preserve">
     <value>Seguidores</value>

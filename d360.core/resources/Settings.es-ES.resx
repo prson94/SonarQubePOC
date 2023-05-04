@@ -253,12 +253,6 @@
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
     <value>UID de la lista de referencia de la función de gestión</value>
   </data>
-  <data name="HasRegisterLink_Desc" xml:space="preserve">
-    <value>Tiene un vínculo de registro en la página de inicio de sesión.</value>
-  </data>
-  <data name="HasRegisterLink_Name" xml:space="preserve">
-    <value>Tiene un vínculo de registro de inicio de sesión</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>Oculta a los usuarios de Data3Sixty de un entorno para que las cuentas no se puedan editar</value>
   </data>
