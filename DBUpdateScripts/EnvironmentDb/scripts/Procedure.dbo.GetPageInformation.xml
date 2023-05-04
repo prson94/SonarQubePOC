@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetPageInformation-v7.5">
-    <comment>GOV-18079, GOV-18449, GOV-19673</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetPageInformation-v8">
+    <comment>GOV-21592</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -98,24 +98,23 @@ begin
 						where	(IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID)
 						) Hier
 	where   O.Uid = @assetUid
-			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+			and exists (select 1 from UserAssetPermissions(@rid, O.AssetTypeID) P where P.PermissionsBitMask & 1 = 1 and P.AssetTypeID = O.AssetTypeID and (P.AssetID = O.ID or P.AssetID = 0)) 
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER PROCEDURE [dbo].[GetPageInformation]
-	@o varchar(50),
-	@oid int,
-	@rid int 
+create or alter procedure [dbo].[GetPageInformation]
+	@assetUid uniqueidentifier,
+	@rid int
 as
 begin
 	declare @breadcrumbsRaw table ([Level] int, [TypeName] nvarchar(500), [Name] nvarchar(max), [TypeUrl] nvarchar(2500), [Url] nvarchar(2500));
 	
 	insert into @breadcrumbsRaw
 	select *
-	from dbo.GetAssetBreadcrumbs(@o, @oid)
+	from dbo.GetAssetBreadcrumbs(@assetUid)
 
 	select	distinct
 			O.[Uid],
@@ -148,7 +147,7 @@ begin
 					select	P.ID as [ID],
 							P.Name as [Name]
 					from	[Predicate] P
-					where	exists(SELECT * FROM IntersectType IT WHERE P.[type] = 6 and P.ID = IT.PredicateID and ((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID =T.ObjectID)))
+					where	exists( SELECT * FROM IntersectType IT WHERE P.[type] = 6 and P.ID = IT.PredicateID and (IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID) )
 					union	
 					select	P.ID as [ID], 
 							P.Name as [Name] 
@@ -165,7 +164,7 @@ begin
 			) as Breadcrumbs
 	from	Asset O
 			inner join AssetType T on T.ID = O.AssetTypeID
-			left join dbo.GetAssetDisplayValue() OD on OD.ID = O.ID
+			left join AssetDisplayValue OD on OD.AssetID = O.ID
 			
 			cross apply (
 						select	count(1) as [Count]
@@ -182,17 +181,16 @@ begin
 			cross apply (
 						select	count(1) as [Count]
 						from	[PredicateIntersect]
-						where	Subject = O.Object
-								and SubjectID = O.ObjectID
+						where	SubjectAssetID = O.ID
 								and PredicateType = 3
 						) Child
 			cross apply (
 						select	count(1) as [Count]
 						from	IntersectType IT
 								inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = 3 
-						where	((IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR (IT.Object = T.Object and IT.ObjectID = T.ObjectID))
+						where	(IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID)
 						) Hier
-	where   O.Object = @o and O.ObjectID = @oid  
+	where   O.Uid = @assetUid
 			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
