@@ -51,7 +51,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 
 	flatNodes = [];
 
-	@ViewChild('dt', { static: false }) treeTable: TreeTable;
+	@ViewChild('dt', { static: true }) treeTable: TreeTable;
 	@ViewChild('sidepanelWrapper', { static: false }) sidepanelWrapper: AssetTypeListSidePanelWrapperComponent;
 
 	constructor(
@@ -278,8 +278,9 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		const value = window.localStorage.getItem(this.simpleFilterStorageKey);
 		if (value) {
 			this.simpleFilterValue = value;
-
-			this.treeTable.filterGlobal(this.simpleFilterValue, 'contains');
+			if (this.treeTable) {
+				this.treeTable.filterGlobal(this.simpleFilterValue, 'contains');
+			}
 		}
 	}
 
