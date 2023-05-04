@@ -201,13 +201,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
             .subscribe((res) => {
                 if (res.length > 0) {
-                    this.numberOfAssetsForType = +res[0].count + 1;
+					this.numberOfAssetsForType = +res[0].count + 1;
+					this.cdRef.markForCheck();
                 }
             });
 
         if(this.assetTypeUid) {
             this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((assetTypeAncestries: AssetTypeAncestry[]) => {
-                this.assetTypeAncestries = assetTypeAncestries;
+				this.assetTypeAncestries = assetTypeAncestries;
+				this.cdRef.markForCheck();
             });
         }
     }
@@ -356,7 +358,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
 		this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true).subscribe(
 				(x) => {
-					this.relationshipList = x;
+				this.relationshipList = x;
+				this.cdRef.markForCheck();
 				}
 			);			
 	}
@@ -411,7 +414,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                             this.changeDisplayOrder(item, parent);
                                         }
                                     }
-
+									this.cdRef.markForCheck();
                                 }
                             );
 
@@ -692,6 +695,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 							}
 						}
 					}
+					this.cdRef.markForCheck();
 				}
 			),
 				finalize(() => this.isLoadingDefaultFieldTypeName = false));
@@ -829,6 +833,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 						this.model.FieldType.Type[this.currentType].DefaultValue = item.value;
 					}
 				}
+				this.cdRef.markForCheck();
             }),
 			finalize(() => this.isLoadingDefaultValue = false)
         ).subscribe();
@@ -859,7 +864,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
                     }
                 }
-
+				this.cdRef.markForCheck();
             }
         ));
     }
@@ -872,7 +877,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 map((r) => {
                     this.scoreTypeOptions = r;
                     this.scoreTypeOptions.unshift({ label: this.chooseLabel, value: null });
-
+					this.cdRef.markForCheck();
                 })
             );
     }
@@ -946,7 +951,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.FieldType.Type = new FieldType("Empty");
                     this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
                 }
-                this.isLoading = false;
+				this.isLoading = false;
+				this.cdRef.markForCheck();
             }
         );
     }
@@ -1024,7 +1030,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 (x) => {
                     item.relationItems = x;
                 }
-            ), map(() => item.relationsLoading = false));
+			), map(() => {
+				item.relationsLoading = false;
+				this.cdRef.markForCheck();
+			}));
 
     }
     private GetCurrentUid() {
@@ -1091,7 +1100,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             s.push({ id: i, text: i });
                         }
 
-                        item.SortOrderList = s;
+						item.SortOrderList = s;
+						this.cdRef.markForCheck();
                     }
                 ));
         } catch (e) {
@@ -1123,7 +1133,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.assetTypeUid,
             this.actionTypeUid,
             this.relationshipTypeUid).subscribe((data) => {
-                this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
+				this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
+				this.cdRef.markForCheck();
             });
     }
 
