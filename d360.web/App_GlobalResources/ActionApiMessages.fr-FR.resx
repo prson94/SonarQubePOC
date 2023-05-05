@@ -148,6 +148,9 @@
   <data name="AssetNotFound" xml:space="preserve">
     <value>L’asset dont l’UID est {0} est introuvable.</value>
   </data>
+  <data name="AssetNotFoundOrPermission" xml:space="preserve">
+    <value>L’asset avec UID {0} est introuvable ou vous n’avez pas la permission de voir l'asset en question.</value>
+  </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
     <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’asset.</value>
   </data>
@@ -216,6 +219,9 @@
   </data>
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
     <value>Le champ que vous avez spécifié pour le tri ({0}) est introuvable.</value>
+  </data>
+  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
+    <value>Le type de relation avec UID {0} n’est pas autorisé pour le sujet et l’objet avec la liste de référence.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Le type de relation dont l’UID est {0}  est introuvable.</value>

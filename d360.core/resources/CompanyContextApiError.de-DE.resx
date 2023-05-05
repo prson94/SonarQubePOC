@@ -115,14 +115,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CheckExactLength" xml:space="preserve">
+    <value>{0} muss eine exakte Länge von {1} haben</value>
+  </data>
   <data name="DataProfilingNoPermission" xml:space="preserve">
     <value>Der Benutzer hat nicht die Berechtigung, Profilingdaten für dieses Asset hinzuzufügen, zu bearbeiten oder zu löschen.</value>
   </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>[ExecutionItemUid] duplizieren: {0}. Kennungen müssen innerhalb eines Batches eindeutig sein.</value>
   </data>
+  <data name="ExceedsMaximumLength" xml:space="preserve">
+    <value>{0} überschreitet die maximale Länge von {1} Zeichen</value>
+  </data>
+  <data name="FieldNameValidate" xml:space="preserve">
+    <value>{0} muss eine gültige {1} sein</value>
+  </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} lässt die Auswahl mehrerer Werte nicht zu.</value>
+  </data>
+  <data name="FieldValueIsRequired" xml:space="preserve">
+    <value>{0} ist ein Pflichtfeld</value>
+  </data>
+  <data name="IconFieldValidation" xml:space="preserve">
+    <value>Das Feld "Icon" darf höchstens fünfzig Zeichen lang sein und muss mit "fa-" beginnen.</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>Sie haben nicht die Berechtigung, Beziehungen des Objekt-Assets zu ändern.</value>
@@ -130,8 +145,26 @@
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
     <value>Sie haben nicht die Berechtigung, Beziehungen des Subjekt-Assets zu ändern.</value>
   </data>
+  <data name="NumericMaximumValueCheck" xml:space="preserve">
+    <value>{0} muss einen Wert von maximal {1} haben</value>
+  </data>
+  <data name="NumericMaxmiumLengthCheck" xml:space="preserve">
+    <value>{0} muss eine Länge von maximal {1} haben</value>
+  </data>
+  <data name="NumericMinimumLengthCheck" xml:space="preserve">
+    <value>{0} muss eine Länge von mindestens {1} haben</value>
+  </data>
+  <data name="NumericMinimumValueCheck" xml:space="preserve">
+    <value>{0} muss einen Wert von mindestens {1} haben</value>
+  </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Maximale Länge des Werts für 'Owner' überschritten:  {0}. Das Feld 'Owner' darf maximal 100 Zeichen enthalten.</value>
+  </data>
+  <data name="ReferenceListCodeFieldMaxLengthCheck" xml:space="preserve">
+    <value>Das Feld "Code" darf höchstens 250 Zeichen lang sein</value>
+  </data>
+  <data name="RegularExpressionPatternMatch" xml:space="preserve">
+    <value>{0} muss dem für dieses Feld definierten Muster für reguläre Ausdrücke entsprechen</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
     <value>UID der Beziehung ist ungültig.</value>
@@ -144,5 +177,23 @@
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
     <value>Die angegebene Beziehungs-UID gehört zu einem anderen Beziehungstyp.</value>
+  </data>
+  <data name="RestrictFieldTypeUpdate" xml:space="preserve">
+    <value>{0} ist ein {1}-Feld und kann mit dieser Anforderung nicht aktualisiert werden</value>
+  </data>
+  <data name="ValidateBoolValue" xml:space="preserve">
+    <value>{0} ist ein boolesches Feld und kann nur 'false' oder 'true' sein</value>
+  </data>
+  <data name="ValidateColorField" xml:space="preserve">
+    <value>Das Feld "Farbe" muss einen siebenstelligen RGB-Code oder den Namen einer Govern-Farbe enthalten.</value>
+  </data>
+  <data name="ValidateLinkValue" xml:space="preserve">
+    <value>{0} muss ein gültiger Link im Format Name|URL sein</value>
+  </data>
+  <data name="ValidateNumberFieldRange" xml:space="preserve">
+    <value>{0} muss eine gültige Ganzzahl größer als {1} und kleiner als {2} sein</value>
+  </data>
+  <data name="ValidFieldCheck" xml:space="preserve">
+    <value>{0} ist kein gültiges Feld</value>
   </data>
 </root>

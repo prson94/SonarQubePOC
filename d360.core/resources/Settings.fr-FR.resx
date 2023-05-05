@@ -253,12 +253,6 @@
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
     <value>UID de la liste de référence des rôles de gouvernance</value>
   </data>
-  <data name="HasRegisterLink_Desc" xml:space="preserve">
-    <value>Dispose d'un lien d'enregistrement sur la page de connexion.</value>
-  </data>
-  <data name="HasRegisterLink_Name" xml:space="preserve">
-    <value>Dispose d'un lien d'enregistrement de connexion</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>Cela masque les utilisateurs Data3Sixty d'un environnement, afin de ne pas rendre ces comptes modifiables.</value>
   </data>

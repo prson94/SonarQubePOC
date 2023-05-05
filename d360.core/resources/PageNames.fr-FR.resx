@@ -151,6 +151,9 @@
   <data name="DefinitionTab" xml:space="preserve">
     <value>Définition</value>
   </data>
+  <data name="DetailsTab" xml:space="preserve">
+    <value>Détails</value>
+  </data>
   <data name="DiagramAssetsPage" xml:space="preserve">
     <value>Assets de schéma</value>
   </data>
@@ -158,7 +161,7 @@
     <value>Types d’assets de schéma</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
-    <value>Définitions des champs</value>
+    <value>Champs</value>
   </data>
   <data name="FollowersTab" xml:space="preserve">
     <value>Followers</value>
