@@ -1,1 +1,217 @@
-<p>assignment-list works!</p>
+<div class="row">
+	<as-split unit="pixel"
+			  direction="horizontal"
+			  [gutterSize]="sidePanelService.draggableAreaWidth"
+			  class="col s12 split"
+			  style="display: flex"
+			  [class.side-panel-close]="!sidePanelOpen"
+			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+		<as-split-area class="tile tile-detail main-panel">
+			<div class="grid-actions-header column-layout">
+				<div class="grid-actions-header-row">
+					<div class="simple-search">
+						<ig-search-field mode="Keypress"
+										 [debounce]="600"
+										 (onSearch)="onSimpleSearch($event)"
+										 [(ngModel)]="simpleFilter"
+										 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
+						</ig-search-field>
+					</div>
+					<div class="grid-action-buttons">
+						<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+							 tooltipPosition="left"
+							 tooltipStyleClass="ig-tooltip">
+							<button igButton
+									class="ig-button-secondary"
+									[disabled]="!canExportRecords() || isExportInProgress"
+									[igDataCy]="'Assets_Export'"
+									icon="fa-download"
+									[loading]="isExportInProgress"
+									(click)="export()">
+							</button>
+						</div>
+					</div>
+				</div>
+				<div class="grid-actions-header-row">
+					<advanced-filtering [loadIdentifier]="'SemanticTypes'"
+										[fieldsObserver]="filterFields$"
+										(onLoad)="onFiltersLoaded()"
+										(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+				</div>
+			</div>
+			<div class="row asset-grid-wrapper">
+				<div class="col s12">
+					<p-table #dt
+							 [value]="semanticTypes"
+							 selectionMode="single"
+							 [(selection)]="selectedType"
+							 [metaKeySelection]="true"
+							 dataKey="uid"
+							 [paginator]="true"
+							 [pageLinks]="3"
+							 [rows]="rowsPerPage"
+							 [rowsPerPageOptions]="defaultPagingOptions"
+							 [totalRecords]="semanticsTotal"
+							 responsiveLayout="scroll"
+							 [loading]="isLoading"
+							 [loadingIcon]="'fa fa-spinner fa-spin'"
+							 [lazy]="true"
+							 (onLazyLoad)="lazyLoad($event)"
+							 [style]="{ 'width': '100%' }"
+							 (selectionChange)="selectRow($event)">
+						<ng-template pTemplate="header">
+							<tr>
+								<th [pSortableColumn]="'Name'">
+									<ng-container i18n>Name</ng-container>
+									<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+								</th>
+								<th [pSortableColumn]="'Qualifier'">
+									<ng-container i18n>Qualifier</ng-container>
+									<d3s-sortIcon [field]="'Qualifier'"></d3s-sortIcon>
+								</th>
+								<th [pSortableColumn]="'Status'">
+									<ng-container i18n>Status</ng-container>
+									<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+								</th>
+								<th [pSortableColumn]="'Priority'">
+									<ng-container i18n>Priority</ng-container>
+									<d3s-sortIcon [field]="'Priority'"></d3s-sortIcon>
+								</th>
+								<th [pSortableColumn]="'BaseType'">
+									<ng-container i18n>Base Type</ng-container>
+									<d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
+								</th>
+								<th *ngIf="showDisabled"
+									style="flex: 0 0 100px"
+									[pSortableColumn]="'isDisabled'">
+									<ng-container i18n>Disabled</ng-container>
+									<d3s-sortIcon [field]="'isDisabled'"></d3s-sortIcon>
+								</th>
+								<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body"
+									 let-item>
+							<tr (dblclick)="selectSemanticType(item)"
+								[pSelectableRow]="item"
+								(focus)="selectRow(item)">
+								<td>
+									<a (click)="selectSemanticType(item)"
+									   class="link">
+										{{item.name}}
+									</a>
+								</td>
+								<td>
+									{{item.qualifier}}
+								</td>
+								<td>
+                                    <span class="ig-value ig-colorfield-item detail"
+										  style="display: inline-flex !important;">
+                                        <span class="ig-colorfield-swatch"
+											  [style.background-color]="getCertificationStatusColor(item.status)"></span>
+                                        <span class="ig-colorfield-item-label">
+                                            {{(item.status==="InReview" ? "Under Review" : item.status)}}
+                                        </span>
+                                    </span>
+								</td>
+								<td>{{item.priority}}</td>
+								<td>{{(item.baseType == 0 ? '' : getBaseTypeText(item.baseType))}}</td>
+								<td *ngIf="showDisabled"
+									style="flex: 0 0 100px">
+                                    <span *ngIf="item.isDisabled">
+                                        <ig-badge [text]="'Disabled'"
+												  [variant]="'disabled'"></ig-badge>
+                                    </span>
+								</td>
+								<td class="asset-grid-tools"
+									style="flex: 0 0 30px"
+									alignFrozen="right"
+									pFrozenColumn>
+									<div style="display:inline-block">
+										<button igButton
+												type="button"
+												icon="fa-ellipsis-v"
+												(click)="selectRow(item); menu.toggle($event)"></button>
+										<ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+													   [items]="item[menuKey]"
+													   #menu
+													   [tabIndex]="1"></ig-popup-menu>
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="summary">
+							<d3s-grid-paging-info [first]="dt.first"
+												  [rows]="dt.rows"
+												  [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
+						</ng-template>
+						<ng-template pTemplate="emptymessage"
+									 i18n>
+							No semantic types found
+						</ng-template>
+					</p-table>
+				</div>
+			</div>
+			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
+				<div #semanticTile
+					 class="secondary-side-panel">
+					<div class="panel-header">
+                        <span class="header-label"
+							  i18n>Information</span>
+						<div class="button-container">
+							<button igButton
+									[attr.data-cy]="'Semantic_Secondary_Close'"
+									icon="fa-times"
+									(click)="secondarySidePanelOpen=false;"
+									tooltip="Close"
+									class="close-button"></button>
+						</div>
+					</div>
+					<div class="details-container">
+						<div>
+							<ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+								<ig-asset-detail [objectUID]="resourceUid"
+												 [objectType]="'Resource'"
+												 [useAccordion]="true"
+												 [shouldBePadded]="true"
+												 [showHeader]="true"
+												 [showHeaderLine]="false"
+												 [spacerHeight]="'16px'"
+												 [tooltipAlign]="'left'"
+												 [isSidePanel]="true"
+												 [interceptLinkClick]="true"
+												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+							</ng-container>
+							<ng-container *ngIf="secondarySidePanel=='status'">
+								<semantic-status-detail (close)="secondarySidePanelOpen=false;">
+								</semantic-status-detail>
+							</ng-container>
+						</div>
+					</div>
+				</div>
+			</ng-container>
+		</as-split-area>
+		<as-split-area [size]="getSidePanelWidth()"
+					   [minSize]="getSidePanelMinWidth()"
+					   [maxSize]="getSidePanelMaxWidth()"
+					   class="tile tile-detail side-panel"
+					   *ngIf="showSidePanel && selectedType">
+			<side-panel (expandedChange)="sidePanelOpen=$event"
+						[expanded]="sidePanelOpen"
+						[storageKey]="sidePanelStorageKey"
+						[selectedPanel]="sidePanelTab"
+						[setMinMaxWidth]="false"
+						hasDetail="true">
+				<ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
+					<ng-container *ngIf="selectedType">
+						<semantic-detail [qualifier]="selectedType.qualifier"
+										 [isSidePanel]="true"
+										 [showHeader]="true"
+										 [semanticType]="selectedType"
+										 (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
+					</ng-container>
+				</ng-container>
+			</side-panel>
+		</as-split-area>
+	</as-split>
+</div>
