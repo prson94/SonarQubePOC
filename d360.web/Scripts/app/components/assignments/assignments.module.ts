@@ -21,35 +21,39 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module'
 import { TableModule } from 'primeng/table'
 import { TooltipModule } from 'primeng/tooltip'
 import { FormsModule } from '@angular/forms'
+import { AssignmentInformationComponent } from './assignment-information/assignment-information.component'
+import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
 
 
 @NgModule({
 	declarations: [
-		AssignmentsContainerComponent,
-		AssignmentListComponent
+		AssignmentInformationComponent,
+		AssignmentListComponent,
+		AssignmentProgressComponent,
+		AssignmentsContainerComponent
 	],
-    imports: [
-        CommonModule,
-        RouterModule,
-        AssignmentsRoutingModule,
-        AdvancedFiltersModule,
-        AngularSplitModule,
-        AssetDetailModule,
-        ButtonModule,
-        CheckboxModule,
-        D3SSortIconModule,
-        DirectivesModule,
-        IgBadgeModule,
-        PopupMenuModule,
-        SearchFieldModule,
-        SemanticsModule,
-        SharedGridPagingInfoModule,
-        SharedModule,
-        SidePanelModule,
-        TableModule,
-        TooltipModule,
-        FormsModule
-    ]
+	imports: [
+		AdvancedFiltersModule,
+		AngularSplitModule,
+		AssetDetailModule,
+		AssignmentsRoutingModule,
+		ButtonModule,
+		CheckboxModule,
+		CommonModule,
+		D3SSortIconModule,
+		DirectivesModule,
+		FormsModule,
+		IgBadgeModule,
+		PopupMenuModule,
+		RouterModule,
+		SearchFieldModule,
+		SemanticsModule,
+		SharedGridPagingInfoModule,
+		SharedModule,
+		SidePanelModule,
+		TableModule,
+		TooltipModule
+	]
 })
 export class AssignmentsModule {
 }
