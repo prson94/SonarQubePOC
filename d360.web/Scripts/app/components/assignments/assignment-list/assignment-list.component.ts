@@ -153,6 +153,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	isAdd: boolean = false
 	showDisableDialog: boolean = false
 	showDisabled: boolean = false
+	selectedWorkflowId: number = 876
 
 	constructor(private route: ActivatedRoute,
 				protected router: Router,

@@ -18,9 +18,10 @@
 						</ig-search-field>
 					</div>
 					<div class="grid-action-buttons">
-						<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-							 tooltipPosition="left"
-							 tooltipStyleClass="ig-tooltip">
+						<div
+							pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+							tooltipPosition="left"
+							tooltipStyleClass="ig-tooltip">
 							<button igButton
 									class="ig-button-secondary"
 									[disabled]="!canExportRecords() || isExportInProgress"
@@ -110,7 +111,7 @@
                                         <span class="ig-colorfield-swatch"
 											  [style.background-color]="getCertificationStatusColor(item.status)"></span>
                                         <span class="ig-colorfield-item-label">
-                                            {{(item.status==="InReview" ? "Under Review" : item.status)}}
+                                            {{(item.status === "InReview" ? "Under Review" : item.status)}}
                                         </span>
                                     </span>
 								</td>
@@ -204,11 +205,13 @@
 						hasDetail="true">
 				<ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
 					<ng-container *ngIf="selectedType">
-						<semantic-detail [qualifier]="selectedType.qualifier"
-										 [isSidePanel]="true"
-										 [showHeader]="true"
-										 [semanticType]="selectedType"
-										 (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
+						<d3s-assignment-information [workflowItemId]="selectedWorkflowId"></d3s-assignment-information>
+						<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"></d3s-assignment-progress>
+<!--						<semantic-detail [qualifier]="selectedType.qualifier"-->
+<!--										 [isSidePanel]="true"-->
+<!--										 [showHeader]="true"-->
+<!--										 [semanticType]="selectedType"-->
+<!--										 (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>-->
 					</ng-container>
 				</ng-container>
 			</side-panel>
