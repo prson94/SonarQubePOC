@@ -1,0 +1,91 @@
+<div class="row">
+	<div class="col s12">
+		filter here
+	</div>
+	<div class="col s12">
+		<p-table #dt
+				 [loading]="isLoading"
+				 loadingIcon="fa fa-spinner"
+				 [value]="items"
+				 selectionMode="multiple"
+				 [metaKeySelection]="true"
+				 [lazy]="true"
+				 [totalRecords]="totalRecords"
+				 [scrollable]="true"
+				 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 (onLazyLoad)="loadWorkflowMonitorItems($event)"
+				 [selection]="selection"
+				 (selectionChange)="gridSelectionChange($event)"
+				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'WorkflowName'">
+						<ng-container i18n>Workflow Name</ng-container>
+						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Type'">
+						<ng-container i18n>Type</ng-container>
+						<d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'TypeName'">
+						<ng-container i18n>Type Name</ng-container>
+						<d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Asset'">
+						<ng-container i18n>Asset</ng-container>
+						<d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Initiator'">
+						<ng-container i18n>Initiator</ng-container>
+						<d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'StartedOn'">
+						<ng-container i18n>Started</ng-container>
+						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'CompletedOn'">
+						<ng-container i18n>Completed</ng-container>
+						<d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
+					</th>
+				</tr>
+				<tr [hidden]="showSimpleFilter">
+					<th><d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter></th>
+					<th><d3s-column-filter [field]="'CompletedOn'" [datatype]="'text'"></d3s-column-filter></th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item" style="word-wrap: break-word">
+					<td class="break-wrap">{{item.WorkflowName}}</td>
+					<td>{{item.Type}}</td>
+					<td>{{item.TypeName}}</td>
+					<td>{{item.Asset}}</td>
+					<td>{{item.Initiator}}</td>
+					<td>
+						<span>{{item.StartedOn | date: 'shortDate'}}</span>
+					</td>
+					<td>
+						<span>{{item.CompletedOn | date: 'shortDate'}}</span>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+		<div [hidden]="!isAdmin">
+			<div>
+				<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
+			</div>
+			<p i18n>Use the {{getMetaKey()}} key to select multiple items.</p>
+		</div>
+	</div>
+</div>

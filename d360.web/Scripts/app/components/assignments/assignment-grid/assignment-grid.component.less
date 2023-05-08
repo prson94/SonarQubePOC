@@ -1,0 +1,154 @@
+@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import '../../../../../Content/styles/_Variables.less';
+
+p-table as-split-area.main-panel ::ng-deep table {
+  th,
+  td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
+.grid-actions-header {
+  display: inline-flex;
+  padding: 8px 10px;
+  width: 100%;
+
+  .grid-action-buttons {
+    div {
+      display: inline-block;
+    }
+
+    button {
+      margin-left: 8px;
+    }
+  }
+
+  &.hidden {
+    display: none;
+  }
+
+  .simple-search {
+    width: 200px;
+  }
+}
+
+.export-link {
+  white-space: nowrap;
+
+  a {
+    .fa-download {
+      margin-right: 8px;
+      top: 1px;
+      position: relative;
+    }
+  }
+}
+
+p-table {
+  td {
+    > a:hover {
+      text-decoration: underline;
+
+      span {
+        text-decoration: underline;
+      }
+    }
+
+    &.asset-grid-tools {
+      vertical-align: top;
+      text-align: right;
+      padding: 1px;
+
+      button {
+        background: transparent;
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.07);
+        }
+
+        &:active {
+          background: rgba(0, 0, 0, 0.14);
+        }
+      }
+    }
+  }
+}
+
+.tooltip-icon {
+  width: 32px;
+  color: var(--tabLinkColor);
+  text-align: center;
+  cursor: pointer;
+  padding-top: 1px;
+}
+
+.asset-grid-wrapper {
+  padding: 0 6px;
+}
+
+.debug-code {
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  margin: 11px;
+  padding: 4px;
+  background: #f8ffe3;
+}
+
+.header-description {
+  padding-top: 16px;
+  padding-left: 10px;
+}
+
+.definition-panel {
+  display: flex;
+
+  .semantic-field {
+    width: 180px;
+    margin-right: 40px;
+  }
+}
+
+.asset-detail {
+  .windowtabs {
+    line-height: inherit;
+  }
+
+  .count-badge {
+    margin-left: 5px;
+    width: 32px;
+    height: 21px;
+    background: @ig-purple;
+    color: white;
+    line-height: 21px;
+    text-align: center;
+    border-radius: 2px;
+  }
+}
+
+.status-table {
+  .p-datatable {
+    padding-left: 16px;
+  }
+}
+
+ul.valueList {
+  margin-block-start: 4px;
+  margin-block-end: 12px;
+
+  li {
+    list-style-type: disc;
+    list-style-position: inside;
+
+    &.showMore {
+      list-style-type: none;
+      color: #006fba;
+      cursor: pointer;
+    }
+  }
+}

@@ -21,6 +21,10 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module'
 import { TableModule } from 'primeng/table'
 import { TooltipModule } from 'primeng/tooltip'
 import { FormsModule } from '@angular/forms'
+import { WorkflowMonitorModule } from '../workflowmonitor/workflowmonitor.module'
+import { AssignmentGridComponent } from './assignment-grid/assignment-grid.component'
+import { TilesModule } from '../shared/tiles/tiles.module'
+import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component'
 import { AssignmentInformationComponent } from './assignment-information/assignment-information.component'
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
 
@@ -30,7 +34,9 @@ import { AssignmentProgressComponent } from './assignment-progress/assignment-pr
 		AssignmentInformationComponent,
 		AssignmentListComponent,
 		AssignmentProgressComponent,
-		AssignmentsContainerComponent
+		AssignmentsContainerComponent,
+		AssignmentListComponent,
+		AssignmentGridComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -52,7 +58,9 @@ import { AssignmentProgressComponent } from './assignment-progress/assignment-pr
 		SharedModule,
 		SidePanelModule,
 		TableModule,
-		TooltipModule
+		TooltipModule,
+		WorkflowMonitorModule,
+		D3SColumnFilterModule
 	]
 })
 export class AssignmentsModule {
