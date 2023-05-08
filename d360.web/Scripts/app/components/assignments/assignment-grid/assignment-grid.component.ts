@@ -168,4 +168,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		return this.totalRecords <= this.maxExportRows;
 	}
 
+	selectRow(item: any): void {
+		console.log(item)
+	}
+
 }
