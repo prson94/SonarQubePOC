@@ -115,14 +115,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CheckExactLength" xml:space="preserve">
+    <value>{0} deve avere una lunghezza esatta di {1}</value>
+  </data>
   <data name="DataProfilingNoPermission" xml:space="preserve">
     <value>L'utente non dispone dell'autorizzazione per aggiungere, modificare o eliminare i dati di profilazione per questa risorsa</value>
   </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>[ExecutionItemUid] duplicato: {0}. Gli identificatori devono essere univoci all'interno di un batch.</value>
   </data>
+  <data name="ExceedsMaximumLength" xml:space="preserve">
+    <value>{0} ha superato la lunghezza massima di {1} caratteri</value>
+  </data>
+  <data name="FieldNameValidate" xml:space="preserve">
+    <value>{0} dev'essere un valido {1}</value>
+  </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} non consente la selezione di più valori</value>
+  </data>
+  <data name="FieldValueIsRequired" xml:space="preserve">
+    <value>{0} è un campo obbligatorio</value>
+  </data>
+  <data name="IconFieldValidation" xml:space="preserve">
+    <value>Il campo Icona deve avere una lunghezza massima di cinquanta caratteri e deve iniziare con "fa-"</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>Non si dispone dell'autorizzazione per modificare le relazioni sulla risorsa dell'oggetto.</value>
@@ -130,8 +145,26 @@
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
     <value>Non si dispone dell'autorizzazione per modificare le relazioni sulla risorsa del soggetto.</value>
   </data>
+  <data name="NumericMaximumValueCheck" xml:space="preserve">
+    <value>{0} deve avere un valore massimo di {1}</value>
+  </data>
+  <data name="NumericMaxmiumLengthCheck" xml:space="preserve">
+    <value>{0} deve avere una lunghezza massima di {1}</value>
+  </data>
+  <data name="NumericMinimumLengthCheck" xml:space="preserve">
+    <value>{0} deve avere una lunghezza minima di {1}</value>
+  </data>
+  <data name="NumericMinimumValueCheck" xml:space="preserve">
+    <value>{0} deve avere un valore minimo di {1}</value>
+  </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Lunghezza massima del valore Proprietario superata: {0}. La lunghezza massima del campo Proprietario è di 100 caratteri.</value>
+  </data>
+  <data name="ReferenceListCodeFieldMaxLengthCheck" xml:space="preserve">
+    <value>Il campo Codice deve avere una lunghezza massima di 250 caratteri</value>
+  </data>
+  <data name="RegularExpressionPatternMatch" xml:space="preserve">
+    <value>{0} deve corrispondere al modello di espressione regolare definito per questo campo</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
     <value>L'UID della relazione non è valido.</value>
@@ -144,5 +177,23 @@
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
     <value>L'UID della relazione specificato è di un tipo di relazione diverso.</value>
+  </data>
+  <data name="RestrictFieldTypeUpdate" xml:space="preserve">
+    <value>{0} è un campo {1} e non può essere aggiornato con questa richiesta</value>
+  </data>
+  <data name="ValidateBoolValue" xml:space="preserve">
+    <value>{0} è un campo booleano e può essere solo "falso" o "vero"</value>
+  </data>
+  <data name="ValidateColorField" xml:space="preserve">
+    <value>Il campo Colore deve avere un codice RGB di sette caratteri o il nome di un colore Govern</value>
+  </data>
+  <data name="ValidateLinkValue" xml:space="preserve">
+    <value>{0} dev'essere un link valido che utilizzi il formato nome|url</value>
+  </data>
+  <data name="ValidateNumberFieldRange" xml:space="preserve">
+    <value>{0} dev'essere un numero intero valido, maggiore di {1} e minore di {2}</value>
+  </data>
+  <data name="ValidFieldCheck" xml:space="preserve">
+    <value>{0} non è un campo valido</value>
   </data>
 </root>

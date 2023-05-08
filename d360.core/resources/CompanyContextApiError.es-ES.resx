@@ -115,14 +115,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CheckExactLength" xml:space="preserve">
+    <value>{0} debe tener una longitud exacta de {1}</value>
+  </data>
   <data name="DataProfilingNoPermission" xml:space="preserve">
     <value>El usuario no tiene permiso para añadir, editar ni eliminar datos de creación de perfiles en este activo</value>
   </data>
   <data name="DuplicateExecutionItem" xml:space="preserve">
     <value>Duplicar [ExecutionItemUid]: {0}. Los identificadores de un mismo lote deben ser únicos.</value>
   </data>
+  <data name="ExceedsMaximumLength" xml:space="preserve">
+    <value>{0} supera la longitud máxima de {1} caracteres</value>
+  </data>
+  <data name="FieldNameValidate" xml:space="preserve">
+    <value>{0} debe ser un {1} válido</value>
+  </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
     <value>{0} no permite la selección de varios valores</value>
+  </data>
+  <data name="FieldValueIsRequired" xml:space="preserve">
+    <value>{0} es un campo obligatorio</value>
+  </data>
+  <data name="IconFieldValidation" xml:space="preserve">
+    <value>El campo Icono debe tener una longitud de cincuenta caracteres o menos, y comenzar por "fa-"</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
     <value>No tiene permiso para modificar las relaciones en el activo del objeto.</value>
@@ -130,8 +145,26 @@
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
     <value>No tiene permiso para modificar las relaciones en el activo del sujeto.</value>
   </data>
+  <data name="NumericMaximumValueCheck" xml:space="preserve">
+    <value>{0} debe tener un valor máximo de {1}</value>
+  </data>
+  <data name="NumericMaxmiumLengthCheck" xml:space="preserve">
+    <value>{0} debe tener una longitud máxima de {1}</value>
+  </data>
+  <data name="NumericMinimumLengthCheck" xml:space="preserve">
+    <value>{0} debe tener una longitud mínima de {1}</value>
+  </data>
+  <data name="NumericMinimumValueCheck" xml:space="preserve">
+    <value>{0} debe tener un valor mínimo de {1}</value>
+  </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
     <value>Se ha superado la longitud máxima del valor del propietario: {0}. La longitud máxima del campo Propietario es 100 caracteres.</value>
+  </data>
+  <data name="ReferenceListCodeFieldMaxLengthCheck" xml:space="preserve">
+    <value>El campo Código debe tener una longitud de 250 caracteres o menos</value>
+  </data>
+  <data name="RegularExpressionPatternMatch" xml:space="preserve">
+    <value>{0} debe coincidir con el patrón de expresión regular definido en este campo</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
     <value>El UID de la relación no es válido.</value>
@@ -144,5 +177,23 @@
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
     <value>El UID de la relación especificado es de un tipo de relación diferente.</value>
+  </data>
+  <data name="RestrictFieldTypeUpdate" xml:space="preserve">
+    <value>{0} es un campo {1} y no se puede actualizar con esta solicitud</value>
+  </data>
+  <data name="ValidateBoolValue" xml:space="preserve">
+    <value>{0} es un campo booleano y solo puede ser "Verdadero" o "Falso"</value>
+  </data>
+  <data name="ValidateColorField" xml:space="preserve">
+    <value>El campo Color debe ser un código RGB de siete caracteres o el nombre de un color Govern</value>
+  </data>
+  <data name="ValidateLinkValue" xml:space="preserve">
+    <value>{0} debe ser un vínculo válido (debe usar el formato nombre|url)</value>
+  </data>
+  <data name="ValidateNumberFieldRange" xml:space="preserve">
+    <value>{0} debe ser un número entero válido mayor que {1} y menor que {2}</value>
+  </data>
+  <data name="ValidFieldCheck" xml:space="preserve">
+    <value>{0} no es un campo válido</value>
   </data>
 </root>

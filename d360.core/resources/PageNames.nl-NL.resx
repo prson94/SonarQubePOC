@@ -151,6 +151,9 @@
   <data name="DefinitionTab" xml:space="preserve">
     <value>Definitie</value>
   </data>
+  <data name="DetailsTab" xml:space="preserve">
+    <value>Details</value>
+  </data>
   <data name="DiagramAssetsPage" xml:space="preserve">
     <value>Diagramassets</value>
   </data>
@@ -158,7 +161,7 @@
     <value>Diagramassettypen</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
-    <value>Velddefinities</value>
+    <value>Velden</value>
   </data>
   <data name="FollowersTab" xml:space="preserve">
     <value>Volgers</value>

@@ -253,12 +253,6 @@
   <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
     <value>Referentielijst-UID van governanceregel</value>
   </data>
-  <data name="HasRegisterLink_Desc" xml:space="preserve">
-    <value>Heeft registratiekoppeling op de aanmeldpagina</value>
-  </data>
-  <data name="HasRegisterLink_Name" xml:space="preserve">
-    <value>Heeft registratiekoppeling voor aanmelden</value>
-  </data>
   <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
     <value>Hiermee worden Data3Sixty-gebruikers van een omgeving verborgen; deze accounts kunnen dan dus niet worden bewerkt.</value>
   </data>

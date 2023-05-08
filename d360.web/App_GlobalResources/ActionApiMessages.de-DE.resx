@@ -148,6 +148,9 @@
   <data name="AssetNotFound" xml:space="preserve">
     <value>Asset mit UID {0} wurde nicht gefunden.</value>
   </data>
+  <data name="AssetNotFoundOrPermission" xml:space="preserve">
+    <value>Asset mit UID {0} wurde nicht gefunden oder Sie verfügen nicht über die Berechtigung, das betreffende Asset anzuzeigen.</value>
+  </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
     <value>Sie dürfen diesem Asset-Typ keine Aktionen hinzufügen.</value>
   </data>
@@ -216,6 +219,9 @@
   </data>
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
     <value>Das angegebene Feld für die Sortierung ({0}) wurde nicht gefunden.</value>
+  </data>
+  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
+    <value>Beziehungstyp mit UID {0} nicht zulässig – Subjekt und Objekt auf beiden Seiten mit Referenzliste.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Beziehungstyp mit UID {0} wurde nicht gefunden.</value>
