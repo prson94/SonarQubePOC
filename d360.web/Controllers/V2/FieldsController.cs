@@ -1107,6 +1107,12 @@ namespace d360.web.Controllers.V2
 						list.Add("TextPath", "TextPath");
 					}
 					break;
+				case SystemObjects.ReferenceItemType:
+					if (id == 0)
+					{
+						list.Add("Name", "Name");
+					}
+					break;
 				default:
 					//do nothing.
 					break;
@@ -1198,6 +1204,26 @@ namespace d360.web.Controllers.V2
 						from [reporting].[Global_Resource] r 
 						{HideD3SUsers}
 						order by title";
+				}
+				else if (Uid == "TaxonomyType")
+				{
+					sql = $@"
+						select 
+							att.Uid as value,
+							att.Name  as title  
+						from [dbo].[AssetType] att 
+						where att.class = {(int)AssetTypeClass.Model}
+						order by name";
+				}
+				else if (Uid == "ReferenceItemType")
+				{
+					sql = $@"
+						select 
+							att.Uid as value,
+							att.Name  as title  
+						from [dbo].[AssetType] att 
+						where att.class = {(int)AssetTypeClass.Reference} and objectid <> 0
+						order by name";
 				}
 				else
 				{
@@ -1340,7 +1366,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetLookupListFilter(string uid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
 		{
-			var prefix = "Fields.GetLookupListFilter => ";
+				var prefix = "Fields.GetLookupListFilter => ";
 			var errorMessage = "";
 
 			try
