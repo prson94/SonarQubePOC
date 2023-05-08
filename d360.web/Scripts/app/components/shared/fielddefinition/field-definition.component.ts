@@ -701,7 +701,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		},
 	]);
 
-	getFilterValuesForFieldType(params: any): Observable<LookupValuesAPIModel> {
+	getFilterValuesForFieldType(params: Record<string, string>): Observable<LookupValuesAPIModel> {
 		const types: string[] = [
 			$localize`True/False`,
 			$localize`Relation Lookup`,
