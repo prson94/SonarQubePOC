@@ -81,11 +81,5 @@
 				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 			</ng-template>
 		</p-table>
-		<div [hidden]="!isAdmin">
-			<div>
-				<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
-			</div>
-			<p i18n>Use the {{getMetaKey()}} key to select multiple items.</p>
-		</div>
 	</div>
 </div>

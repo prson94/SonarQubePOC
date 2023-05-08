@@ -154,14 +154,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	getMetaKey() {
-		if (window.navigator && window.navigator.platform.indexOf("Mac") >= 0) {
-			return "\u2318";
-		} else {
-			return "Ctrl";
-		}
-	}
-
 	selectAll() {
 		if (this.selection) {
 			if (this.selection.length === this.items.length) {
