@@ -1205,7 +1205,7 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				if (intersectType.SubjectClass == intersectType.ObjectClass && intersectType.SubjectClass == AssetTypeClass.Reference
-					&& intersectType.ObjectAssetTypeID == 0 && intersectType.SubjectAssetTypeID == 0)
+					&& intersectType.ObjectAssetTypeID == intersectType.SubjectAssetTypeID)
 				{
 					throw new ForbiddenBusinessLayerException(string.Format(ActionApiMessages.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
 				}
