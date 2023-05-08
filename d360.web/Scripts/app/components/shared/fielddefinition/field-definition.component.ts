@@ -63,6 +63,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() allowSingleSegmentPath: boolean = true;
 
 	public dataCyPrefix: string = 'FieldType_';
+	get advancedFilteringStorageKey(): string {
+		return 'Configuration_FieldType_' + this.assetTypeUid;
+	}
 	fieldDefinitions = new Array<FieldTypeAPIModelField>();
 	private fieldDisplayModel = new Array<FieldDisplayModel>();
 	private nonFilteredFieldDisplayModel = new Array<FieldDisplayModel>();
@@ -235,7 +238,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 
 				this.checkKeyFields();
-				this.selectedRow = null;
+				if (this.fieldDisplayModel.length > 0) {
+					this.selectedRow = this.fieldDisplayModel[0];
+				}
+				else {
+					this.selectedRow = null;
+				}
 				this.isLoading = false;
 				this.cdRef.markForCheck();
 			}
@@ -693,7 +701,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		},
 	]);
 
-	getFilterValuesForFieldType(): Observable<LookupValuesAPIModel> {
+	getFilterValuesForFieldType(params: any): Observable<LookupValuesAPIModel> {
 		const types: string[] = [
 			$localize`True/False`,
 			$localize`Relation Lookup`,
@@ -715,7 +723,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			$localize`Score`,
 			$localize`Tag`,
 			$localize`Simple Text`,
-			$localize`System`];
+			$localize`System`]
+			.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1)
+			.sort((a, b) => a > b ? 1 : -1);
 
 		if (types.length === 1 && types[0] === '') {
 			return of({
@@ -731,11 +741,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	advancedFiltersChanged(event: Filters): void {
-		this.advancedFilters = event;
-		this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
-		this.updateMenuItems();
+		setTimeout(() => {
+			this.advancedFilters = event;
+			this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
+			this.updateMenuItems();
+			if (this.fieldDisplayModel.length > 0) {
+				this.selectedRow = this.fieldDisplayModel[0];
+			}
+			else {
+				this.selectedRow = null;
+			}
+			this.cdRef.markForCheck();
+		}, 50);
 	}
-
 
 	positionContextMenu(
 		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
