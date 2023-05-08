@@ -1366,7 +1366,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetLookupListFilter(string uid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
 		{
-				var prefix = "Fields.GetLookupListFilter => ";
+			var prefix = "Fields.GetLookupListFilter => ";
 			var errorMessage = "";
 
 			try
