@@ -33,7 +33,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showSidePanel: boolean = true
 	sidePanelOpen: boolean = false
 	sidePanelTab: string = 'detail'
-	sidePanelStorageKey: string
+	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
 	sortField: string
 	sortOrder: number
 	isExportInProgress: boolean = false
