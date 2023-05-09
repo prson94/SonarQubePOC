@@ -4,8 +4,6 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { CompanySettingsService } from '../../../services/settings.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SecondaryNavService } from '../../../services/right-sidebar.service'
-import { Breadcrumb } from '../../../models/breadcrumb.model'
-import { SiteUrlHelpers } from '../../../static/site-url-helpers'
 import { Observable } from 'rxjs'
 import {
 	AdvancedFilterFieldType
@@ -15,12 +13,10 @@ import { WebAnalyticsService } from '../../../services/web-analytics.service'
 import { DataProfileService } from '../../../services/dataprofile.service'
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly'
 import { FeatureFlags } from '../../../services/feature-flags.enum'
-import { StringConstants } from '../../../static/string-constants'
 import { IOutputData } from 'angular-split'
 import { BaseComponent } from '../../shared/base.component'
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 import { SidePanelButton } from '../../../models/side-panel.model'
-import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component'
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -29,10 +25,6 @@ import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.compo
 	providers: [DataProfileService]
 })
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
-	@Output() selectedTypeChanged = new EventEmitter()
-	sub: any
-
-
 	selectedType: any = null
 	simpleFilter: string = ''
 	advancedFilter: string = ''
@@ -48,8 +40,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	isContainsSearchDefault: boolean = false
 
 	filterFields$: Observable<AdvancedFilterFieldType[]>
-
-	readonly menuKey = '~menu'
 
 	secondarySidePanel: string
 	resourceUid: any
@@ -70,17 +60,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		icon: 'fa-step-forward',
 		disabled: false,
 		visible: true,
-		needsSelection: false,
-		// panelMenu: [
-		// 	new PopupMenuItem({
-		// 		title: $localize`Expand All`,
-		// 		callback: () => this.filterExpandAll()
-		// 	}),
-		// 	new PopupMenuItem({
-		// 		title: $localize`Collapse All`,
-		// 		callback: () => this.filterCollapseAll()
-		// 	})
-		// ]
+		needsSelection: false
 	})];
 
 
@@ -101,55 +81,27 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnInit() {
-
-		this.sidePanelStorageKey = 'SemanticTypes_' + this.settingsService.CurrentResourceID
+		this.clearSidebar();
 		this.displayBreadCrumbs()
 	}
 
 	selectRow(row: any) {
 		this.secondarySidePanelOpen = false
 		this.selectedType = row
-		if (this.selectedType) {
-			this.baseSemanticTypeUid = this.selectedType.uid
-			this.buildSecondaryNavigation({
-				assetUid: this.selectedType.uid,
-				objectId: 0,
-				objectType: 'SemanticType',
-				buildBreadcrumbOverride: this.displayBreadCrumbs.bind(this)
-			})
-		}
-		this.selectedTypeChanged.emit(row)
 	}
 
 	displayBreadCrumbs() {
-		this.sub = this.route.params.subscribe((params) => {
-			this.breadcrumbsService.getFolderTitle('#SemanticTypes').then((res) => {
-				this.setBrowserTitle(this.titleService, res)
-				this.breadcrumbsService.clearBreadcrumbs()
-				this.breadcrumbsService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT))
-
-				this.breadcrumbsService.getFolderIcon(res).subscribe((icon) => {
-					this.secondaryNavService.setCurrentArea(res, icon, StringConstants.Section_SemanticTypes)
-				})
-			})
-
-		})
+		this.setBrowserTitle(this.titleService, 'Assignments');
+		this.breadcrumbsService.clearBreadcrumbs();
+		this.breadcrumbsService.clearCurrentObjectInfo();
+		this.secondaryNavService.clearItems();
+		this.secondaryNavService.clearCurrentObject();
+		this.secondaryNavService.setCurrentArea("Assignments", "fa-list-ul", $localize`Definition`);
+		this.secondaryNavService.showHeader(true);
 	}
 
 	ngOnDestroy() {
-		if (this.sub) {
-			this.sub.unsubscribe()
-		}
-	}
 
-	handleSecondarySidePanelLinkClicked(event: any) {
-		this.secondarySidePanelOpen = true
-		if (event && event.resourceUid) {
-			this.secondarySidePanel = 'user'
-			this.resourceUid = event.resourceUid
-		} else {
-			this.secondarySidePanel = 'status'
-		}
 	}
 
 	getSidePanelWidth(): number {
@@ -170,7 +122,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]) {
 		this.selectedWorkflowItems = workflowMonitorItems
+		this.selectRow(workflowMonitorItems)
 	}
 
-	protected readonly console = console
 }
