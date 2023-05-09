@@ -1,13 +1,11 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core'
+import { Component, OnDestroy, OnInit } from '@angular/core'
 import { Title } from '@angular/platform-browser'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service'
 import { CompanySettingsService } from '../../../services/settings.service'
 import { ActivatedRoute, Router } from '@angular/router'
 import { SecondaryNavService } from '../../../services/right-sidebar.service'
 import { Observable } from 'rxjs'
-import {
-	AdvancedFilterFieldType
-} from '../../assets-grid/advanced-filtering/advanced-filtering.models'
+import { AdvancedFilterFieldType } from '../../assets-grid/advanced-filtering/advanced-filtering.models'
 import { SidePanelService } from '../../../services/side-panel.service'
 import { WebAnalyticsService } from '../../../services/web-analytics.service'
 import { DataProfileService } from '../../../services/dataprofile.service'
@@ -32,8 +30,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	currentPageNumber: number = 1
 	showSidePanel: boolean = true
 	sidePanelOpen: boolean = false
-	sidePanelTab: string = 'detail'
-	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
+	sidePanelTab: string = 'information'
+	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID
 	sortField: string
 	sortOrder: number
 	isExportInProgress: boolean = false
@@ -49,19 +47,33 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showAddButton: boolean = false
 	selectedWorkflowId: number = 876
 	selectedWorkflowItems: WorkflowMonitorItem[]
-	extraButtons: SidePanelButton[] = [new SidePanelButton({
-		label: $localize`Progress`,
-		tooltip: $localize`Progress`,
-		disabledTooltip: null,
-		nothingSelectedMessage: $localize`Assignment not available`,
-		notApplicableMessage: $localize`Assignment not available`,
-		multipleSelectedMessage: $localize`Assignment not available`,
-		key: 'assignment',
-		icon: 'fa-step-forward',
-		disabled: false,
-		visible: true,
-		needsSelection: false
-	})];
+	sidePanelButtons: SidePanelButton[] = [
+		new SidePanelButton({
+			label: $localize`Assignment Progress`,
+			tooltip: $localize`Assignment Progress`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Assignment not available`,
+			notApplicableMessage: $localize`Assignment not available`,
+			multipleSelectedMessage: $localize`Assignment not available`,
+			key: 'progress',
+			icon: 'fa-step-forward',
+			disabled: false,
+			visible: true,
+			needsSelection: false
+		}), new SidePanelButton({
+			label: $localize`Assignment Information`,
+			tooltip: $localize`Assignment Information`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Assignment not available`,
+			notApplicableMessage: $localize`Assignment not available`,
+			multipleSelectedMessage: $localize`Assignment not available`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: false
+		})
+	]
 
 
 	constructor(private route: ActivatedRoute,
@@ -81,7 +93,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnInit() {
-		this.clearSidebar();
+		this.clearSidebar()
 		this.displayBreadCrumbs()
 	}
 
@@ -91,13 +103,13 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	displayBreadCrumbs() {
-		this.setBrowserTitle(this.titleService, 'Assignments');
-		this.breadcrumbsService.clearBreadcrumbs();
-		this.breadcrumbsService.clearCurrentObjectInfo();
-		this.secondaryNavService.clearItems();
-		this.secondaryNavService.clearCurrentObject();
-		this.secondaryNavService.setCurrentArea("Assignments", "fa-list-ul", $localize`Definition`);
-		this.secondaryNavService.showHeader(true);
+		this.setBrowserTitle(this.titleService, 'Assignments')
+		this.breadcrumbsService.clearBreadcrumbs()
+		this.breadcrumbsService.clearCurrentObjectInfo()
+		this.secondaryNavService.clearItems()
+		this.secondaryNavService.clearCurrentObject()
+		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Definition`)
+		this.secondaryNavService.showHeader(true)
 	}
 
 	ngOnDestroy() {

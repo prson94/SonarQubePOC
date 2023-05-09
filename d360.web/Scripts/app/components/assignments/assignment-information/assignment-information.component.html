@@ -1,2 +1,30 @@
-<ig-property-group title="General"></ig-property-group>
-<pre>{{ workflowAssignmentItem | json }}</pre>
+<div class="asset-detail-tabs">
+	<ig-property-group title="General" [shouldBePadded]="false">
+		<div readonly>
+			<div class="row">
+				<label class="ig-label" i18n>Workflow Name</label>
+				<div class="ig-value">{{ workflowAssignmentItem.WorkflowName }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Workflow Type</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Type }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Associated with</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Asset }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Initiated</label>
+				<div class="ig-value">{{ workflowAssignmentItem.StartedOn }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Initiator</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Initiator }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Status</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Status }}</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>

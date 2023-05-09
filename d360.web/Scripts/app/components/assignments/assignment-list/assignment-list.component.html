@@ -57,16 +57,16 @@
 						[expanded]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
 						[(selectedPanel)]="sidePanelTab"
-						[extraButtons]="extraButtons"
+						[extraButtons]="sidePanelButtons"
 						[setMinMaxWidth]="false"
-						hasDetail="true">
+						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-assignment-information [workflowAssignmentItem]="selectedWorkflowItems[0]"
 												*ngIf="selectedWorkflowItems?.length === 1"
-												[hidden]="sidePanelTab !== 'detail'"></d3s-assignment-information>
+												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"
 											 *ngIf="selectedWorkflowItems?.length === 1"
-											 [hidden]="sidePanelTab !== 'assignment'"></d3s-assignment-progress>
+											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
 				</ng-container>
 			</side-panel>
 		</as-split-area>
