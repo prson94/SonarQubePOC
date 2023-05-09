@@ -7,44 +7,7 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<div class="grid-actions-header column-layout">
-				<div class="grid-actions-header-row">
-					<div class="simple-search">
-						<ig-search-field mode="Keypress"
-										 [debounce]="600"
-										 (onSearch)="onSimpleSearch($event)"
-										 [(ngModel)]="simpleFilter"
-										 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
-						</ig-search-field>
-					</div>
-					<div class="grid-action-buttons">
-						<div
-							pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-							tooltipPosition="left"
-							tooltipStyleClass="ig-tooltip">
-							<button igButton
-									class="ig-button-secondary"
-									[disabled]="!canExportRecords() || isExportInProgress"
-									[igDataCy]="'Assets_Export'"
-									icon="fa-download"
-									[loading]="isExportInProgress"
-									(click)="export()">
-							</button>
-						</div>
-					</div>
-				</div>
-				<div class="grid-actions-header-row">
-					<advanced-filtering [loadIdentifier]="'SemanticTypes'"
-										[fieldsObserver]="filterFields$"
-										(onLoad)="onFiltersLoaded()"
-										(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-				</div>
-			</div>
-			<div class="row asset-grid-wrapper">
-				<div class="col s12">
-					<d3s-assignment-grid (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
-				</div>
-			</div>
+			<d3s-assignment-grid (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
 				<div #semanticTile
 					 class="secondary-side-panel">
@@ -76,8 +39,9 @@
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='status'">
-								<semantic-status-detail (close)="secondarySidePanelOpen=false;">
-								</semantic-status-detail>
+<!--								<semantic-status-detail (close)="secondarySidePanelOpen=false;">-->
+<!--								</semantic-status-detail>-->
+								<p>hello world</p>
 							</ng-container>
 						</div>
 					</div>
@@ -88,7 +52,7 @@
 					   [minSize]="getSidePanelMinWidth()"
 					   [maxSize]="getSidePanelMaxWidth()"
 					   class="tile tile-detail side-panel"
-					   *ngIf="showSidePanel && selectedType">
+					   *ngIf="showSidePanel">
 			<side-panel (expandedChange)="sidePanelOpen=$event"
 						[expanded]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
@@ -96,7 +60,7 @@
 						[setMinMaxWidth]="false"
 						hasDetail="true">
 				<ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
-					<ng-container *ngIf="selectedType">
+					<ng-container *ngIf="selectedWorkflowItems.length > 0">
 						<d3s-assignment-information [workflowAssignmentItem]="selectedWorkflowItems[0]"
 													*ngIf="selectedWorkflowItems?.length === 1"></d3s-assignment-information>
 						<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"

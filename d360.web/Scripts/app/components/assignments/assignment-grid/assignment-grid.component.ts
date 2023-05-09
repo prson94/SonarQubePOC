@@ -172,4 +172,5 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		console.log(item)
 	}
 
+	protected readonly console = console
 }

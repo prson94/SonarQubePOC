@@ -1,93 +1,125 @@
-<p-table #dt
-		 [loading]="isLoading"
-		 loadingIcon="fa fa-spinner"
-		 [value]="items"
-		 selectionMode="multiple"
-		 [metaKeySelection]="true"
-		 [lazy]="true"
-		 [totalRecords]="totalRecords"
-		 [scrollable]="true"
-		 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
-		 [pageLinks]="3"
-		 [paginator]="true"
-		 [rows]="rowsPerPage || defaultInitialItemsPerPage"
-		 [rowsPerPageOptions]="defaultPagingOptions"
-		 (onLazyLoad)="loadWorkflowMonitorItems($event)"
-		 [selection]="selection"
-		 (selectionChange)="gridSelectionChange($event)"
-		 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
-	<ng-template pTemplate="header">
-		<tr>
-			<th [pSortableColumn]="'WorkflowName'">
-				<ng-container i18n>Workflow Name</ng-container>
-				<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
-			</th>
-			<th [pSortableColumn]="'Asset'">
-				<ng-container i18n>Associated with</ng-container>
-				<d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
-			</th>
-			<th [pSortableColumn]="'Initiator'">
-				<ng-container i18n>Initiator</ng-container>
-				<d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
-			</th>
-			<th [pSortableColumn]="'StartedOn'">
-				<ng-container i18n>Initiated</ng-container>
-				<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
-			</th>
-			<th [pSortableColumn]="'Status'">
-				<ng-container i18n>Status</ng-container>
-				<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
-			</th>
-			<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
-		</tr>
-		<tr [hidden]="showSimpleFilter">
-			<th>
-				<d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-		</tr>
-	</ng-template>
-	<ng-template pTemplate="body" let-item>
-		<tr [pSelectableRow]="item" style="word-wrap: break-word">
-			<td class="break-wrap">{{item.WorkflowName}}</td>
-			<td>{{item.Asset}}</td>
-			<td>{{item.Initiator}}</td>
-			<td>
-				<span>{{item.StartedOn | date: 'shortDate'}}</span>
-			</td>
-			<td>
-				<span>{{item.Status}}</span>
-			</td>
-			<td class="asset-grid-tools"
-				style="flex: 0 0 30px"
-				alignFrozen="right"
-				pFrozenColumn>
-				<div style="display:inline-block">
-					<button igButton
-							type="button"
-							icon="fa-ellipsis-v"
-							(click)="selectRow(item)"></button>
-					<!--							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"-->
-					<!--										   [items]="item[menuKey]"-->
-					<!--										   #menu-->
-					<!--										   [tabIndex]="1"></ig-popup-menu>-->
-				</div>
-			</td>
-		</tr>
-	</ng-template>
-	<ng-template pTemplate="summary">
-		<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
-							  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-	</ng-template>
-</p-table>
+<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+<!--			<ig-search-field mode="Keypress"-->
+<!--							 [debounce]="600"-->
+<!--							 (onSearch)="onSimpleSearch($event)"-->
+<!--							 [(ngModel)]="simpleFilter"-->
+<!--							 [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">-->
+<!--			</ig-search-field>-->
+		</div>
+		<div class="grid-action-buttons">
+			<div>
+				<button igButton
+						class="ig-button-secondary"
+						[igDataCy]="'Assets_Export'"
+						icon="fa-download"
+						(click)="console.log('export clicked')">
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="grid-actions-header-row">
+<!--		<advanced-filtering [loadIdentifier]="'SemanticTypes'"-->
+<!--							[fieldsObserver]="filterFields$"-->
+<!--							(onLoad)="onFiltersLoaded()"-->
+<!--							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>-->
+	</div>
+</div>
+<div class="row asset-grid-wrapper">
+	<div class="col s12">
+		<p-table #dt
+				 [loading]="isLoading"
+				 loadingIcon="fa fa-spinner"
+				 [value]="items"
+				 selectionMode="multiple"
+				 [metaKeySelection]="true"
+				 [lazy]="true"
+				 [totalRecords]="totalRecords"
+				 [scrollable]="true"
+				 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 (onLazyLoad)="loadWorkflowMonitorItems($event)"
+				 [selection]="selection"
+				 (selectionChange)="gridSelectionChange($event)"
+				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'WorkflowName'">
+						<ng-container i18n>Workflow Name</ng-container>
+						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Asset'">
+						<ng-container i18n>Associated with</ng-container>
+						<d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Initiator'">
+						<ng-container i18n>Initiator</ng-container>
+						<d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'StartedOn'">
+						<ng-container i18n>Initiated</ng-container>
+						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Status'">
+						<ng-container i18n>Status</ng-container>
+						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+					</th>
+					<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
+				</tr>
+				<tr [hidden]="showSimpleFilter">
+					<th>
+						<d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
+						<d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
+						<d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
+						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
+						<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item" style="word-wrap: break-word">
+					<td class="break-wrap">{{item.WorkflowName}}</td>
+					<td>{{item.Asset}}</td>
+					<td>{{item.Initiator}}</td>
+					<td>
+						<span>{{item.StartedOn | date: 'shortDate'}}</span>
+					</td>
+					<td>
+						<span>{{item.Status}}</span>
+					</td>
+					<td class="asset-grid-tools"
+						style="flex: 0 0 30px"
+						alignFrozen="right"
+						pFrozenColumn>
+						<div style="display:inline-block">
+							<button igButton
+									type="button"
+									icon="fa-ellipsis-v"
+									(click)="selectRow(item)"></button>
+							<!--							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"-->
+							<!--										   [items]="item[menuKey]"-->
+							<!--										   #menu-->
+							<!--										   [tabIndex]="1"></ig-popup-menu>-->
+						</div>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+	</div>
+</div>
