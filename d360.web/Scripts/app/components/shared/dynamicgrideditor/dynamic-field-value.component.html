@@ -50,7 +50,7 @@
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
         <ng-template #showJSON>
-            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+            <ig-json-view [data]="GetJSON(field.Value)"></ig-json-view>
         </ng-template>
     </span>
     <span *ngSwitchCase="'Link'" [class]="styleClass">

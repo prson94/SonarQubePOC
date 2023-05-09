@@ -5,7 +5,7 @@ import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 
 
 import { InputTextModule } from 'primeng/inputtext';
-import { NgxJsonViewModule } from 'ng-json-view';
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { NgModule } from '@angular/core';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
@@ -36,7 +36,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         CoreModule,        
 
         InputTextModule,
-        NgxJsonViewModule,
+        JsonViewerModule,
         PipesModule,
         RouterModule,
         SharedDynamicGridEditorModule,

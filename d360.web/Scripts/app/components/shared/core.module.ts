@@ -11,7 +11,7 @@ import { D3STreeTableToggler } from './treetable-toggler.component';
 import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
-import { NgxJsonViewModule } from 'ng-json-view';
+import { JsonViewerModule } from '../shared/controls/json-viewer/json-viewer.component';
 import { PipesModule } from '../../pipes/pipes.module';
 import { IgColorPickerModule } from './controls/color-picker/color-picker.module';
 
@@ -41,7 +41,7 @@ import { IgColorPickerModule } from './controls/color-picker/color-picker.module
         DirectivesModule,
         PipesModule,
         //JSON Viewer module
-        NgxJsonViewModule,
+        JsonViewerModule,
         IgColorPickerModule,
     ]
 

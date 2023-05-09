@@ -25,7 +25,7 @@ import { SimilarItemsModule } from '../similar-items.component';
 
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
-import { NgxJsonViewModule } from 'ng-json-view';
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
@@ -90,7 +90,7 @@ import { TaggedAssetDetailModule } from "../tagged-assets/tagged-assets-detail.m
         TagPickerModule,
         SwitchModule,
 
-        NgxJsonViewModule,
+        JsonViewerModule,
         SidePanelModule,
 		
 		AssetDetailModule,

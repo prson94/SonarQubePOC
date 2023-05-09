@@ -5,7 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { PipesModule } from "../../../pipes/pipes.module";
 import { CoreModule } from "../core.module";
 import { TooltipModule } from "primeng/tooltip";
-import { NgxJsonViewModule } from "ng-json-view";
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
 import { AssetDetailCategoryComponent } from "./asset-detail-category.component";
@@ -36,7 +36,7 @@ import { GroupMembersModule } from '../group/group-members.module';
         CoreModule,
         PipesModule,
         TooltipModule,
-        NgxJsonViewModule,
+        JsonViewerModule,
         IgColorPickerModule,
         PropertyGroupModule,
         TagViewModule,
