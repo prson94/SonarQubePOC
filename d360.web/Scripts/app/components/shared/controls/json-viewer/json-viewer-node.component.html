@@ -1,0 +1,18 @@
+﻿<div class="json-viewer-node">
+    <a (click)="toggle()">
+        <span class="toggler" [ngClass]="{'collapse': isOpen, 'expand': !isOpen}" [style.visibility]="hasChildren?'visible':'hidden'"></span>
+        <span class="key" *ngIf="key">
+            <span>{{key}}</span>
+            <span>: </span>
+        </span>
+        <span class="value" [ngClass]="typeClass()">
+            <ng-container *ngIf="isObject">{{ dataType }}</ng-container>
+            <ng-container *ngIf="isArray"> [<span class="valuedetail">{{ value }}</span>]</ng-container>
+            <ng-container *ngIf="isDate"> (<span class="valuedetail">{{ value }}</span>)</ng-container>
+            <ng-container *ngIf="!isObject">{{ value }}</ng-container>
+        </span>
+    </a>
+    <div class="children" *ngIf="hasChildren && isOpen">
+        <ig-json-viewer-node *ngFor="let _key of childrenKeys" [data]="data[_key]" [key]="_key" [level]="level+1"></ig-json-viewer-node>
+    </div>
+</div>
