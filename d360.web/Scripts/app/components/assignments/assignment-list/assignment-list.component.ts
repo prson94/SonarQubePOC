@@ -15,6 +15,7 @@ import { IOutputData } from 'angular-split'
 import { BaseComponent } from '../../shared/base.component'
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 import { SidePanelButton } from '../../../models/side-panel.model'
+import { SecondaryNavItem } from '../../../models/secondaryNav.model'
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -92,27 +93,33 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag)
 	}
 
-	ngOnInit() {
+	ngOnInit(): void {
 		this.clearSidebar()
 		this.displayBreadCrumbs()
 	}
 
-	selectRow(row: any) {
+	selectRow(row: any): void {
 		this.secondarySidePanelOpen = false
 		this.selectedType = row
 	}
 
-	displayBreadCrumbs() {
+	displayBreadCrumbs(): void {
 		this.setBrowserTitle(this.titleService, 'Assignments')
 		this.breadcrumbsService.clearBreadcrumbs()
 		this.breadcrumbsService.clearCurrentObjectInfo()
 		this.secondaryNavService.clearItems()
 		this.secondaryNavService.clearCurrentObject()
-		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Definition`)
+		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Assignments`)
 		this.secondaryNavService.showHeader(true)
+		this.fieldNav = new SecondaryNavItem(
+			$localize`By Workflow Version`,
+			'byWorkflowVersion',
+			null,
+			'/assignments/by-workflow-version', null, 1)
+		this.secondaryNavService.showItem(this.fieldNav)
 	}
 
-	ngOnDestroy() {
+	ngOnDestroy(): void {
 
 	}
 
@@ -132,7 +139,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event)
 	}
 
-	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]) {
+	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]): void {
 		this.selectedWorkflowItems = workflowMonitorItems
 		this.selectRow(workflowMonitorItems)
 	}

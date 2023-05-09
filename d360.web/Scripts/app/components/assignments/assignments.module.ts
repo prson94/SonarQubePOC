@@ -26,7 +26,8 @@ import { AssignmentGridComponent } from './assignment-grid/assignment-grid.compo
 import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component'
 import { AssignmentInformationComponent } from './assignment-information/assignment-information.component'
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
-import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component'
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
+import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component'
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
 		AssignmentInformationComponent,
 		AssignmentListComponent,
 		AssignmentProgressComponent,
-		AssignmentsContainerComponent
+		AssignmentsContainerComponent,
+  WorkflowVersionListComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
