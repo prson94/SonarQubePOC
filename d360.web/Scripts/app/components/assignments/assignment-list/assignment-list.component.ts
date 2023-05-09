@@ -27,6 +27,7 @@ import { LazyLoadEvent } from 'primeng/api'
 import { StringConstants } from '../../../static/string-constants'
 import { IOutputData } from 'angular-split'
 import { BaseComponent } from '../../shared/base.component'
+import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -154,6 +155,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showDisableDialog: boolean = false
 	showDisabled: boolean = false
 	selectedWorkflowId: number = 876
+	selectedWorkflowItems: WorkflowMonitorItem[]
 
 	constructor(private route: ActivatedRoute,
 				protected router: Router,
@@ -509,5 +511,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event)
+	}
+
+	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]) {
+		this.selectedWorkflowItems = workflowMonitorItems
 	}
 }

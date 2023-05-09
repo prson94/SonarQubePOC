@@ -42,7 +42,7 @@
 			</div>
 			<div class="row asset-grid-wrapper">
 				<div class="col s12">
-					<d3s-assignment-grid></d3s-assignment-grid>
+					<d3s-assignment-grid (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 				</div>
 			</div>
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
@@ -97,13 +97,15 @@
 						hasDetail="true">
 				<ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
 					<ng-container *ngIf="selectedType">
-						<d3s-assignment-information [workflowItemId]="selectedWorkflowId"></d3s-assignment-information>
-						<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"></d3s-assignment-progress>
-<!--						<semantic-detail [qualifier]="selectedType.qualifier"-->
-<!--										 [isSidePanel]="true"-->
-<!--										 [showHeader]="true"-->
-<!--										 [semanticType]="selectedType"-->
-<!--										 (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>-->
+						<d3s-assignment-information [workflowAssignmentItem]="selectedWorkflowItems[0]"
+													*ngIf="selectedWorkflowItems?.length === 1"></d3s-assignment-information>
+						<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"
+												 *ngIf="selectedWorkflowItems?.length === 1"></d3s-assignment-progress>
+						<!--						<semantic-detail [qualifier]="selectedType.qualifier"-->
+						<!--										 [isSidePanel]="true"-->
+						<!--										 [showHeader]="true"-->
+						<!--										 [semanticType]="selectedType"-->
+						<!--										 (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>-->
 					</ng-container>
 				</ng-container>
 			</side-panel>

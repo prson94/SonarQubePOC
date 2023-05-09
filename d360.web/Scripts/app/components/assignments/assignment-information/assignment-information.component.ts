@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core'
+import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -7,7 +8,7 @@ import { Component, Input, OnInit } from '@angular/core'
 })
 export class AssignmentInformationComponent implements OnInit {
 
-	@Input() workflowItemId: number
+	@Input() workflowAssignmentItem: WorkflowMonitorItem
 
 	constructor() {
 	}
