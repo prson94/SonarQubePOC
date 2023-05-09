@@ -19,6 +19,8 @@ import { StringConstants } from '../../../static/string-constants'
 import { IOutputData } from 'angular-split'
 import { BaseComponent } from '../../shared/base.component'
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
+import { SidePanelButton } from '../../../models/side-panel.model'
+import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component'
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -57,6 +59,30 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showAddButton: boolean = false
 	selectedWorkflowId: number = 876
 	selectedWorkflowItems: WorkflowMonitorItem[]
+	extraButtons: SidePanelButton[] = [new SidePanelButton({
+		label: $localize`Progress`,
+		tooltip: $localize`Progress`,
+		disabledTooltip: null,
+		nothingSelectedMessage: $localize`Assignment not available`,
+		notApplicableMessage: $localize`Assignment not available`,
+		multipleSelectedMessage: $localize`Assignment not available`,
+		key: 'assignment',
+		icon: 'fa-step-forward',
+		disabled: false,
+		visible: true,
+		needsSelection: false,
+		// panelMenu: [
+		// 	new PopupMenuItem({
+		// 		title: $localize`Expand All`,
+		// 		callback: () => this.filterExpandAll()
+		// 	}),
+		// 	new PopupMenuItem({
+		// 		title: $localize`Collapse All`,
+		// 		callback: () => this.filterCollapseAll()
+		// 	})
+		// ]
+	})];
+
 
 	constructor(private route: ActivatedRoute,
 				protected router: Router,

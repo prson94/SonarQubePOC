@@ -23,20 +23,19 @@ import { TooltipModule } from 'primeng/tooltip'
 import { FormsModule } from '@angular/forms'
 import { WorkflowMonitorModule } from '../workflowmonitor/workflowmonitor.module'
 import { AssignmentGridComponent } from './assignment-grid/assignment-grid.component'
-import { TilesModule } from '../shared/tiles/tiles.module'
 import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component'
 import { AssignmentInformationComponent } from './assignment-information/assignment-information.component'
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component'
 
 
 @NgModule({
 	declarations: [
+		AssignmentGridComponent,
 		AssignmentInformationComponent,
 		AssignmentListComponent,
 		AssignmentProgressComponent,
-		AssignmentsContainerComponent,
-		AssignmentListComponent,
-		AssignmentGridComponent
+		AssignmentsContainerComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -46,11 +45,13 @@ import { AssignmentProgressComponent } from './assignment-progress/assignment-pr
 		ButtonModule,
 		CheckboxModule,
 		CommonModule,
+		D3SColumnFilterModule,
 		D3SSortIconModule,
 		DirectivesModule,
 		FormsModule,
 		IgBadgeModule,
 		PopupMenuModule,
+		PropertyGroupModule,
 		RouterModule,
 		SearchFieldModule,
 		SemanticsModule,
@@ -59,8 +60,7 @@ import { AssignmentProgressComponent } from './assignment-progress/assignment-pr
 		SidePanelModule,
 		TableModule,
 		TooltipModule,
-		WorkflowMonitorModule,
-		D3SColumnFilterModule
+		WorkflowMonitorModule
 	]
 })
 export class AssignmentsModule {
