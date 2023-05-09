@@ -87,7 +87,7 @@
 		</div>
 		<div class="grid-actions-header-row">
 			<advanced-filtering #advancedFilter *ngIf="!isLoading"
-								[loadIdentifier]="'FieldType'"
+								[loadIdentifier]="advancedFilteringStorageKey"
 								[fieldsObserver]="filterFieldList$"
 								(onChange)="advancedFiltersChanged($event)">
 			</advanced-filtering>
