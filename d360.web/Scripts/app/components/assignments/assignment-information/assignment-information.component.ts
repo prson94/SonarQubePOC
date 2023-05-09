@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core'
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 
 @Component({
@@ -9,6 +9,7 @@ import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 export class AssignmentInformationComponent implements OnInit {
 
 	@Input() workflowAssignmentItem: WorkflowMonitorItem
+	@Output() linkClicked: EventEmitter<any> = new EventEmitter<any>()
 
 	constructor() {
 	}

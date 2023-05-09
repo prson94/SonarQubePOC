@@ -3,7 +3,9 @@
 		<div readonly>
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Name</label>
-				<div class="ig-value">{{ workflowAssignmentItem.WorkflowName }}</div>
+				<div class="ig-value"><a
+					(click)="linkClicked.emit({ resourceUid: workflowAssignmentItem.Id })">{{ workflowAssignmentItem.WorkflowName }}</a>
+				</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Type</label>

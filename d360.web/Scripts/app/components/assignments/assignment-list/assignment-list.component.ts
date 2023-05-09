@@ -53,26 +53,26 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			label: $localize`Assignment Progress`,
 			tooltip: $localize`Assignment Progress`,
 			disabledTooltip: null,
-			nothingSelectedMessage: $localize`Assignment not available`,
-			notApplicableMessage: $localize`Assignment not available`,
-			multipleSelectedMessage: $localize`Assignment not available`,
+			nothingSelectedMessage: $localize`Select an Assignment from the list to display its progress`,
+			notApplicableMessage: $localize`Progress data is not available for the selected Assignment`,
+			multipleSelectedMessage: $localize`Select a single Assignment to display it’s progress`,
 			key: 'progress',
 			icon: 'fa-step-forward',
 			disabled: false,
 			visible: true,
-			needsSelection: false
+			needsSelection: true
 		}), new SidePanelButton({
 			label: $localize`Assignment Information`,
 			tooltip: $localize`Assignment Information`,
 			disabledTooltip: null,
-			nothingSelectedMessage: $localize`Assignment not available`,
-			notApplicableMessage: $localize`Assignment not available`,
-			multipleSelectedMessage: $localize`Assignment not available`,
+			nothingSelectedMessage: $localize`Select an Assignment from the list to display its information`,
+			notApplicableMessage: $localize`Information data is not available for the selected Assignment`,
+			multipleSelectedMessage: $localize`Select a single Assignment to display it’s information`,
 			key: 'information',
 			icon: 'fa-info-circle',
 			disabled: false,
 			visible: true,
-			needsSelection: false
+			needsSelection: true
 		})
 	]
 

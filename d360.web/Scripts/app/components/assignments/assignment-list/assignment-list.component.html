@@ -52,10 +52,11 @@
 					   [maxSize]="getSidePanelMaxWidth()"
 					   class="tile tile-detail side-panel"
 					   *ngIf="showSidePanel">
-			<side-panel (expandedChange)="sidePanelOpen=$event"
-						[expanded]="sidePanelOpen"
+			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
 						[(selectedPanel)]="sidePanelTab"
+						[selectedItem]="selectedWorkflowItems[0]"
+						[multipleItemsSelected]="selectedWorkflowItems?.length > 1"
 						[extraButtons]="sidePanelButtons"
 						[setMinMaxWidth]="false"
 						[hasDetail]="false">
