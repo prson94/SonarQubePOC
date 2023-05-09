@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetPageInformation-v8.1">
-    <comment>GOV-21592, GOV-21598</comment>
+  <changeSet author="TKlok" id="Procedure.dbo.GetPageInformation-v8.3">
+    <comment>GOV-21592</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -103,8 +103,10 @@ begin
 					t.DefaultPermissions = 1
 					or
 					(
-						t.DefaultPermissions = 0
-						and exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 1 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+						t.DefaultPermissions = 0 and (
+							exists (select 1 from reporting.Global_Resource where ResourceID = @rid and IsAdministrator = 1)
+							or exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 1 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+						)
 					)
 				)
 	for json path, WITHOUT_ARRAY_WRAPPER
