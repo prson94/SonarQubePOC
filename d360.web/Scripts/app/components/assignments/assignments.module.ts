@@ -26,7 +26,7 @@ import { AssignmentGridComponent } from './assignment-grid/assignment-grid.compo
 import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component'
 import { AssignmentInformationComponent } from './assignment-information/assignment-information.component'
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
-import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component'
 import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component'
 
 
@@ -37,7 +37,7 @@ import { WorkflowVersionListComponent } from './workflow-version-list/workflow-v
 		AssignmentListComponent,
 		AssignmentProgressComponent,
 		AssignmentsContainerComponent,
-  WorkflowVersionListComponent
+		WorkflowVersionListComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
