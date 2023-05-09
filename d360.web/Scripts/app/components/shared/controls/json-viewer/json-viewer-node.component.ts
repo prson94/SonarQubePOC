@@ -21,7 +21,7 @@ export class JsonViewerNodeComponent implements OnInit {
 	childrenKeys: string[];
 	hasChildren: boolean = false;
 	dataType: string;
-	value: any;
+	value: unknown;
 	valueType: string;
 	isObject: boolean = false;
 	isArray: boolean = false;
