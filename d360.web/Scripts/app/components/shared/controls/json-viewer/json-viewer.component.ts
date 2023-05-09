@@ -12,9 +12,6 @@ export class IgJsonViewerComponent {
 
 	public level: number = 0;
 	@Input() levelLabels: { [key: number]: { [key: string]: string } };
-
-	constructor() {
-	}
 }
 
 @NgModule({

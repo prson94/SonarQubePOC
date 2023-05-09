@@ -11,7 +11,7 @@ export class JsonViewerNodeComponent implements OnInit {
 	@Input()
 	set data(data: object) {
 		this._data = data;
-		this.isInit && this.init();
+		this.isInit && this.processData();
 	}
 	get data(): object { return this._data; }
 	@Input() key: string;
@@ -29,11 +29,11 @@ export class JsonViewerNodeComponent implements OnInit {
 	isInit: boolean = false;
 
 	ngOnInit() {
-		this.init();
+		this.processData();
 		this.isInit = true;
 	}
 
-	init() {
+	processData() {
 		if (isObject(this.data)) {
 			this.isObject = true;
 			this.dataType = "Object";
@@ -49,9 +49,7 @@ export class JsonViewerNodeComponent implements OnInit {
 			}
 
 			this.childrenKeys = Object.keys(this.data);
-			if (this.childrenKeys && this.childrenKeys.length > 0) {
-				this.hasChildren = true;
-			}
+			this.hasChildren = this.childrenKeys?.length > 0;
 		} else {
 			this.value = this.data;
 			if (isString(this.data)) {

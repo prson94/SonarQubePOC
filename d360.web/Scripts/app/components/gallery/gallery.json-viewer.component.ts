@@ -17,7 +17,7 @@
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class GalleryJsonViewerComponent {
+export class GalleryJsonViewerComponent implements OnInit {
 	properties = [
 		{
 			Name: "data",
@@ -51,7 +51,6 @@ export class GalleryJsonViewerComponent {
 		try {
 			this.exampleJson = JSON.parse(this.exampleString);
 		} catch (e) {
-			console.log(e);
 			this.exampleJson = null;
 		}
 	}
