@@ -9,7 +9,11 @@ export class WorkflowMonitorItem {
     StartedOn: Date;
     CompletedOn: Date;
     Status: string;
-   
+	ObjectType: string;
+	ObjectTypeID: number;
+	Object: string;
+	ObjectID: number;
+	UID: string;
 }
 
 export class WorkflowMonitorItems {
