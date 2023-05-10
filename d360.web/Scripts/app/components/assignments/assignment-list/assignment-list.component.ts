@@ -144,4 +144,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.selectRow(workflowMonitorItems)
 	}
 
+	sidePanelLinkClicked(link: any) {
+		this.secondarySidePanelOpen = true
+		this.secondarySidePanel = 'user'
+		this.resourceUid = link.resourceUid;
+	}
 }

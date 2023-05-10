@@ -9,7 +9,7 @@ import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 export class AssignmentInformationComponent implements OnInit {
 
 	@Input() workflowAssignmentItem: WorkflowMonitorItem
-	@Output() linkClicked: EventEmitter<any> = new EventEmitter<any>()
+	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>()
 
 	constructor() {
 	}

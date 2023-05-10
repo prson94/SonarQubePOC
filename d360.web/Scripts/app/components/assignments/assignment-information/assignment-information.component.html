@@ -4,7 +4,7 @@
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Name</label>
 				<div class="ig-value"><a
-					(click)="linkClicked.emit({ resourceUid: workflowAssignmentItem.Id })">{{ workflowAssignmentItem.WorkflowName }}</a>
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.Id })">{{ workflowAssignmentItem.WorkflowName }}</a>
 				</div>
 			</div>
 			<div class="row">
@@ -13,15 +13,17 @@
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Associated with</label>
-				<div class="ig-value">{{ workflowAssignmentItem.Asset }}</div>
+				<div class="ig-value"><a
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.Id })">{{ workflowAssignmentItem.Asset }}</a></div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Initiated</label>
-				<div class="ig-value">{{ workflowAssignmentItem.StartedOn }}</div>
+				<div class="ig-value">{{ workflowAssignmentItem.StartedOn | date: 'medium' }}</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Initiator</label>
-				<div class="ig-value">{{ workflowAssignmentItem.Initiator }}</div>
+				<div class="ig-value"><a
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.Id })">{{ workflowAssignmentItem.Initiator }}</a></div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Status</label>
@@ -30,3 +32,4 @@
 		</div>
 	</ig-property-group>
 </div>
+<pre>{{ workflowAssignmentItem | json }}</pre>
