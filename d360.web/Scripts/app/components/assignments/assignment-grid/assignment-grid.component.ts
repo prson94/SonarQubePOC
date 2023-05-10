@@ -28,13 +28,17 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	sortOrder: SortOrder = SortOrder.Descending
 	isAdmin: boolean = false
 	selectedCount: number = 0
-	selection: WorkflowMonitorItem[]
+	selection: WorkflowMonitorItem[] = []
 	simpleFilter: string = ''
+	showDeletionModal: boolean = false
 	@Output() selectionChange = new EventEmitter()
 	@Output() hideDetails = new EventEmitter()
 	private destroy = new Subject<void>()
-
+	theDeleteCallback: Function;
 	exportMessage: string = ''
+	menuItems: any[] = [
+		{ title: $localize`Delete` }
+	];
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
@@ -43,7 +47,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				protected settingsService: CompanySettingsService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService)
-
+		this.theDeleteCallback = this.deleteAssignments.bind(this);
 		this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`
 	}
 
@@ -76,15 +80,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter)
 	}
 
-	gridSelectionChange($event) {
-		if (Array.isArray($event) && $event.length === 1) {
-			this.stateService.workflowItemFilters.itemId = $event[0].Id
+	gridSelectionChange(event) {
+		if (Array.isArray(event) && event.length === 1) {
+			this.stateService.workflowItemFilters.itemId = event[0].Id
 		} else {
 			this.stateService.workflowItemFilters.itemId = 0
 		}
-		this.selection = $event
+		this.selection = event
 		this.selectedCount = this.selection == null ? 0 : this.selection.length
-		this.selectionChange.emit($event)
+		this.selectionChange.emit(event)
 	}
 
 	private loadData() {
@@ -141,6 +145,29 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	onSimpleSearch(event: any) {
 		console.log(event)
+	}
+
+	clickMenuItem(event: any, item: any) {
+		const key = event.value.toLowerCase();
+		if (key === $localize`Delete`.toLowerCase()) {
+			this.showDeletionModal = true;
+		}
+	}
+
+	public deleteAssignments() {
+		this.isLoading = true;
+		let itemIds = [];
+		if (Array.isArray(this.selection)) {
+			itemIds = this.selection.map((i) => i.Id);
+		} else if (this.selection != null) {
+			itemIds.push((this.selection as WorkflowMonitorItem).Id);
+		}
+		this.wfMonitorService.deleteItems(itemIds).subscribe(
+			(res) => {
+				this.showDeletionModal = false
+				this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
+			}
+		);
 	}
 
 	protected readonly console = console

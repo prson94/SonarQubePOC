@@ -28,6 +28,7 @@ import { AssignmentInformationComponent } from './assignment-information/assignm
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component'
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component'
 import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component'
+import { SharedDeleteFormModule } from '../shared/delete.form'
 
 
 @NgModule({
@@ -39,31 +40,32 @@ import { WorkflowVersionListComponent } from './workflow-version-list/workflow-v
 		AssignmentsContainerComponent,
 		WorkflowVersionListComponent
 	],
-	imports: [
-		AdvancedFiltersModule,
-		AngularSplitModule,
-		AssetDetailModule,
-		AssignmentsRoutingModule,
-		ButtonModule,
-		CheckboxModule,
-		CommonModule,
-		D3SColumnFilterModule,
-		D3SSortIconModule,
-		DirectivesModule,
-		FormsModule,
-		IgBadgeModule,
-		PopupMenuModule,
-		PropertyGroupModule,
-		RouterModule,
-		SearchFieldModule,
-		SemanticsModule,
-		SharedGridPagingInfoModule,
-		SharedModule,
-		SidePanelModule,
-		TableModule,
-		TooltipModule,
-		WorkflowMonitorModule
-	]
+    imports: [
+        AdvancedFiltersModule,
+        AngularSplitModule,
+        AssetDetailModule,
+        AssignmentsRoutingModule,
+        ButtonModule,
+        CheckboxModule,
+        CommonModule,
+        D3SColumnFilterModule,
+        D3SSortIconModule,
+        DirectivesModule,
+        FormsModule,
+        IgBadgeModule,
+        PopupMenuModule,
+        PropertyGroupModule,
+        RouterModule,
+        SearchFieldModule,
+        SemanticsModule,
+        SharedGridPagingInfoModule,
+        SharedModule,
+        SidePanelModule,
+        TableModule,
+        TooltipModule,
+        WorkflowMonitorModule,
+        SharedDeleteFormModule
+    ]
 })
 export class AssignmentsModule {
 }

@@ -106,11 +106,9 @@
 							<button igButton
 									type="button"
 									icon="fa-ellipsis-v"
-									(click)="selectRow(item)"></button>
-							<!--							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"-->
-							<!--										   [items]="item[menuKey]"-->
-							<!--										   #menu-->
-							<!--										   [tabIndex]="1"></ig-popup-menu>-->
+									(click)="gridSelectionChange(item); menu.toggle($event)"></button>
+							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+										   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
 						</div>
 					</td>
 				</tr>
@@ -122,3 +120,19 @@
 		</p-table>
 	</div>
 </div>
+<d3s-delete-form [callback]="theDeleteCallback"
+				 [items]="selection"
+				 [showAsModal]="true"
+				 i18n-modalTitle
+				 modalTitle="Delete Assignments"
+				 [modalCssClasses]="'medium-dialog'"
+				 [isModalVisible]="showDeletionModal"
+				 [method]="'callback'"
+				 (onCancel)="showDeletionModal=false;">
+	<div prompt>
+		<p i18n>
+			Are you sure you want to delete this assignment?<br />
+			Deleted assignments <b>cannot be retrieved</b>.
+		</p>
+	</div>
+</d3s-delete-form>
