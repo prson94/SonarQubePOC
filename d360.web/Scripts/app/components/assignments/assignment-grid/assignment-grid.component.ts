@@ -9,8 +9,6 @@ import { StateService } from '../../../services/state.service'
 import { CompanySettingsService } from '../../../services/settings.service'
 import { AuthenticationService } from '../../../services/authentication.service'
 import { takeUntil } from 'rxjs/operators'
-import { clone } from 'lodash-es'
-import { StringHelpers } from '../../../static/string-helpers'
 import { LazyLoadEvent } from 'primeng/api'
 import { BaseComponent } from '../../shared/base.component'
 
@@ -31,6 +29,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	isAdmin: boolean = false
 	selectedCount: number = 0
 	selection: WorkflowMonitorItem[]
+	simpleFilter: string = ''
 	@Output() selectionChange = new EventEmitter()
 	@Output() hideDetails = new EventEmitter()
 	private destroy = new Subject<void>()
@@ -73,10 +72,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	export() {
-		const filter: GridFilterExpression[] = this.getFilter()
-		if (filter == null || filter.length < 1) {
-			return
-		}
+		const filter: GridFilterExpression[] = []
 		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter)
 	}
 
@@ -89,29 +85,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.selection = $event
 		this.selectedCount = this.selection == null ? 0 : this.selection.length
 		this.selectionChange.emit($event)
-	}
-
-	getFilter(): GridFilterExpression[] {
-		let filter: GridFilterExpression[] = []
-
-		if ((!this.stateService.workflowItemFilters) ||
-			((!this.stateService.workflowItemFilters.columFilters || this.stateService.workflowItemFilters.columFilters.length < 1) &&
-				(!this.stateService.workflowItemFilters.workflowTypeFilters ||
-					StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)))) {
-			return filter
-		}
-
-		if (this.stateService.workflowItemFilters.columFilters && this.stateService.workflowItemFilters.columFilters.length > 0) {
-			filter = clone(this.stateService.workflowItemFilters.columFilters)
-		}
-
-		if (this.stateService.workflowItemFilters.workflowTypeFilters &&
-			!StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)) {
-			filter.push(this.stateService.workflowItemFilters.workflowTypeFilters)
-		}
-
-		return filter
-
 	}
 
 	private loadData() {
@@ -164,6 +137,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	selectRow(item: any): void {
 		console.log(item)
+	}
+
+	onSimpleSearch(event: any) {
+		console.log(event)
 	}
 
 	protected readonly console = console
