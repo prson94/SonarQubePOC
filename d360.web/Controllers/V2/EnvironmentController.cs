@@ -2867,7 +2867,7 @@ select	r.uid as ResourceUid,
 
 			if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
 			{
-				var groupName = $"D3S{Company.CurrentCompanyID}";
+				var groupName = Guid.NewGuid().ToString();//$"D3S{Company.CurrentCompanyID}";
 				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
 				SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
 
