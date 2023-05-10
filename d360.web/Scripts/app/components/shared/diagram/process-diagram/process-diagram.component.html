@@ -1,358 +1,359 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
-    <div class="menu asset-browser-header" *ngIf="isEditMode">
-        <div class="asset-browser-button-group">
+	<div class="menu asset-browser-header" *ngIf="isEditMode">
+		<div class="asset-browser-button-group">
 
-            <button igButton icon="fa-chevron-circle-left" i18n-label label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
-            <div class="button-spacer"></div>
+			<button igButton icon="fa-chevron-circle-left" i18n-label label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
+			<div class="button-spacer"></div>
 
-            <button i18n-pTooltip pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" [disabled]="isSaveDisabled" (click)="save()"></button>
-            <div class="button-spacer"></div>
-            <button i18n-pTooltip pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button i18n-pTooltip pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
-            <div class="button-spacer"></div>
-            <div class="menu-wrapper">
-                <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" i18n-pTooltip pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                <ig-popup-menu [items]="popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>
-            </div>
-        </div>
-        <div class="controls-right">
-            <button i18n-pTooltip pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')"></button>
-            <button i18n-pTooltip pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')"></button>
-            <div class="button-spacer"></div>
-            <button i18n-pTooltip pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" (click)="changeInfoPanelMode()"></button>
-        </div>
-    </div>
+			<button i18n-pTooltip pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" [disabled]="isSaveDisabled" (click)="save()"></button>
+			<div class="button-spacer"></div>
+			<button i18n-pTooltip pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
+			<button i18n-pTooltip pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+			<div class="button-spacer"></div>
+			<div class="menu-wrapper">
+				<button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" i18n-pTooltip pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+				<ig-popup-menu [items]="popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>
+			</div>
+		</div>
+		<div class="controls-right">
+			<button i18n-pTooltip pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')"></button>
+			<button i18n-pTooltip pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')"></button>
+			<div class="button-spacer"></div>
+			<button i18n-pTooltip pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" (click)="changeInfoPanelMode()"></button>
+		</div>
+	</div>
 
 
-    <div class="diagram-content">
-        <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
-            <d3s-loading isLoading="true" i18n>Loading Process Diagram</d3s-loading>
-        </div>
-        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
-            <div class="pallete-wrapper">
-                <div class="gov-accordion">
-                    <div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
-                        <div class="title">
-                            <i class="fa fa-chevron-down"></i>
-                            <i class="fa fa-chevron-right"></i>
+	<div class="diagram-content">
+		<div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
+			<d3s-loading isLoading="true" i18n>Loading Process Diagram</d3s-loading>
+		</div>
+		<div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
+			<div class="pallete-wrapper">
+				<div class="gov-accordion">
+					<div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
+						<div class="title">
+							<i class="fa fa-chevron-down"></i>
+							<i class="fa fa-chevron-right"></i>
 
-                            <span i18n>Events</span>
-                        </div>
-                        <div class="content">
-                            <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
-                        </div>
-                    </div>
-                    <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
-                        <div class="title">
-                            <i class="fa fa-chevron-down"></i>
-                            <i class="fa fa-chevron-right"></i>
-                            <span i18n>Activities</span>
-                        </div>
-                        <div class="content">
+							<span i18n>Events</span>
+						</div>
+						<div class="content">
+							<div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
+						</div>
+					</div>
+					<div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+						<div class="title">
+							<i class="fa fa-chevron-down"></i>
+							<i class="fa fa-chevron-right"></i>
+							<span i18n>Activities</span>
+						</div>
+						<div class="content">
 
-                            <div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
-                        </div>
-                    </div>
-                    <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
-                        <div class="title">
-                            <i class="fa fa-chevron-down"></i>
-                            <i class="fa fa-chevron-right"></i>
-                            <span i18n>Gateways</span>
-                        </div>
-                        <div class="content">
-                            <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+							<div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
+						</div>
+					</div>
+					<div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+						<div class="title">
+							<i class="fa fa-chevron-down"></i>
+							<i class="fa fa-chevron-right"></i>
+							<span i18n>Gateways</span>
+						</div>
+						<div class="content">
+							<div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <as-split unit="pixel"
-                  direction="horizontal"
-                  [gutterSize]="16"
-                  class="split"
-                  style="display: flex"
-                  [class.side-panel-close]="!isInfoPanelOpened"
-                  (dragStart)="onSidePanelDragStart()"
-                  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
-            <as-split-area>
-                <div #diagram
-                     id="process-diagram-placeholder">
-                    <div class="empty-overlay"
-                         *ngIf="isDiagramLoaded && isCanvasEmpty">
-                        <div class="content"
-                             *ngIf="isEditMode">
-                            <div class="icon-holder">
-                                <i class="fa fa-plus"></i>
-                            </div>
-                            <span i18n>Drag and drop flow objects to start building your diagram</span>
-                        </div>
-                        <div class="content"
-                             *ngIf="!isEditMode">
-                            <div class="icon-holder">
-                                <i class="fa fa-pencil"></i>
-                            </div>
-                            <span i18n>Choose Edit to start creating your diagram</span>
-                        </div>
-                    </div>
-                    <div [hidden]="viewType == 'list'"
-                         id="diagram"></div>
-                    <div [hidden]="viewType == 'diagram'"
-                         id="list-view"
-                         *ngIf="myDiagram && myDiagram.model">
-                        <d3s-process-diagram-list-view #listView
-                                                       [diagram]="myDiagram"
-                                                       [nodeArray]="myDiagram.model.nodeDataArray"
-                                                       [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
-                    </div>
-                    <div *ngIf="myDiagram">
-                        <d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty"
-                                                   #overview
-                                                   [diagram]="myDiagram"></d3s-assetbrowser-overview>
-                    </div>
-                    <div *ngIf="viewType == 'diagram' && !isCanvasEmpty && !isSidePanelDragging"
-                         class="asset-browser-controls-bottom"
-                         [style.right]="isInfoPanelOpened ? calculateBottomControlsPosition() : '16px'">
-                        <d3s-assetbrowser-zoom [scale]="scale"
-                                               (change)="zoom_Change($event)"
-                                               [enabled]="true"></d3s-assetbrowser-zoom>
-                    </div>
-                </div>
-            </as-split-area>
-            <as-split-area [size]="getSidePanelWidth()"
-                           [minSize]="getSidePanelMinWidth()"
-                           [maxSize]="getSidePanelMaxWidth()">
-                <div #editors
-                     class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
-                    <d3s-process-diagram-side-panel [isReadOnly]="!isEditMode"
-                                                    [assetUid]="assetUid"
-                                                    [nodeData]="selectedNodeData"
-                                                    [linkData]="selectedLinkData"
-                                                    [viewType]="viewType"
-                                                    (nodeDataChange)="updateNodeFromForm($event)"
-                                                    (nodeDeselected)="deselect($event)"
-                                                    (linkDataChange)="updateLinkFromForm($event)"
-                                                    [disallowedNames]="nodeNames">
-                    </d3s-process-diagram-side-panel>
-                </div>
-            </as-split-area>
-        </as-split>
-    </div>
+		<as-split unit="pixel"
+				  direction="horizontal"
+				  [gutterSize]="16"
+				  class="split"
+				  style="display: flex"
+				  [class.side-panel-close]="!isInfoPanelOpened"
+				  (dragStart)="onSidePanelDragStart()"
+				  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+			<as-split-area>
+				<div #diagram
+					 id="process-diagram-placeholder">
+					<div class="empty-overlay"
+						 *ngIf="isDiagramLoaded && isCanvasEmpty">
+						<div class="content"
+							 *ngIf="isEditMode">
+							<div class="icon-holder">
+								<i class="fa fa-plus"></i>
+							</div>
+							<span i18n>Drag and drop flow objects to start building your diagram</span>
+						</div>
+						<div class="content"
+							 *ngIf="!isEditMode">
+							<div class="icon-holder">
+								<i class="fa fa-pencil"></i>
+							</div>
+							<span i18n>Choose Edit to start creating your diagram</span>
+						</div>
+					</div>
+					<div [hidden]="viewType == 'list'"
+						 id="diagram"
+						 #diagramDiv></div>
+					<div [hidden]="viewType == 'diagram'"
+						 id="list-view"
+						 *ngIf="myDiagram && myDiagram.model">
+						<d3s-process-diagram-list-view #listView
+													   [diagram]="myDiagram"
+													   [nodeArray]="myDiagram.model.nodeDataArray"
+													   [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
+					</div>
+					<div *ngIf="myDiagram">
+						<d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty"
+												   #overview
+												   [diagram]="myDiagram"></d3s-assetbrowser-overview>
+					</div>
+					<div *ngIf="viewType == 'diagram' && !isCanvasEmpty && !isSidePanelDragging"
+						 class="asset-browser-controls-bottom"
+						 [style.right]="isInfoPanelOpened ? calculateBottomControlsPosition() : '16px'">
+						<d3s-assetbrowser-zoom [scale]="scale"
+											   (change)="zoom_Change($event)"
+											   [enabled]="true"></d3s-assetbrowser-zoom>
+					</div>
+				</div>
+			</as-split-area>
+			<as-split-area [size]="getSidePanelWidth()"
+						   [minSize]="getSidePanelMinWidth()"
+						   [maxSize]="getSidePanelMaxWidth()">
+				<div #editors
+					 class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
+					<d3s-process-diagram-side-panel [isReadOnly]="!isEditMode"
+													[assetUid]="assetUid"
+													[nodeData]="selectedNodeData"
+													[linkData]="selectedLinkData"
+													[viewType]="viewType"
+													(nodeDataChange)="updateNodeFromForm($event)"
+													(nodeDeselected)="deselect($event)"
+													(linkDataChange)="updateLinkFromForm($event)"
+													[disallowedNames]="nodeNames">
+					</d3s-process-diagram-side-panel>
+				</div>
+			</as-split-area>
+		</as-split>
+	</div>
 </div>
 
 <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">
-    <div class="content">
-        <div class="row">
-            <ng-container i18n>Sorry, we cannot save your changes to the diagram until the following issues are resolved</ng-container>:
-            <br />
-            <br />
-            <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
-                <div class="validation-error" *ngFor="let item of validationErrors.errors">
-                    <div *ngIf="item.ErrorType && item.ErrorType.indexOf('Custom') != -1; then thenBlock else elseBlock"></div>
-                    <ng-template #thenBlock>
-                        <ul>
-                            <li>
-                                <i class="fa fa-exclamation-circle"></i> {{item.Error}}
-                            </li>
-                        </ul>
-                    </ng-template>
-                    <ng-template #elseBlock>
-                        <span class="error-title" i18n>
-                            Asset <strong>{{item.AssetName}}</strong> has following issues:
-                        </span>
-                        <ul>
-                            <li *ngFor="let error of item.Error.split('.')">
-                                &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-exclamation-circle"></i> {{error}}
-                            </li>
-                        </ul>
-                    </ng-template>
-                </div>
-                <span *ngIf="areNamesUnique">
-                    <br />
-                    <ng-container i18n>Please rename your flow objects to ensure that each has a unique name.</ng-container>
-                </span>
-            </div>
-        </div>
-    </div>
-    <div class="action-bar">
-        <div class="grow"></div>
-        <button igAutoFocus igButton class="ig-button-primary" i18n-label label="Close" (click)="isErrorModalOpened=false"></button>
+	<div class="content">
+		<div class="row">
+			<ng-container i18n>Sorry, we cannot save your changes to the diagram until the following issues are resolved</ng-container>:
+			<br />
+			<br />
+			<div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
+				<div class="validation-error" *ngFor="let item of validationErrors.errors">
+					<div *ngIf="item.ErrorType && item.ErrorType.indexOf('Custom') != -1; then thenBlock else elseBlock"></div>
+					<ng-template #thenBlock>
+						<ul>
+							<li>
+								<i class="fa fa-exclamation-circle"></i> {{item.Error}}
+							</li>
+						</ul>
+					</ng-template>
+					<ng-template #elseBlock>
+						<span class="error-title" i18n>
+							Asset <strong>{{item.AssetName}}</strong> has following issues:
+						</span>
+						<ul>
+							<li *ngFor="let error of item.Error.split('.')">
+								&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-exclamation-circle"></i> {{error}}
+							</li>
+						</ul>
+					</ng-template>
+				</div>
+				<span *ngIf="areNamesUnique">
+					<br />
+					<ng-container i18n>Please rename your flow objects to ensure that each has a unique name.</ng-container>
+				</span>
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<div class="grow"></div>
+		<button igAutoFocus igButton class="ig-button-primary" i18n-label label="Close" (click)="isErrorModalOpened=false"></button>
 
-    </div>
+	</div>
 </d3s-modal>
 
 <d3s-modal i18n-title title="Save Changes?" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
-    <div class="content">
-        <div class="row">
-            {{actionMessage}}
-        </div>
-    </div>
-    <div class="action-bar">
-        <button igButton i18n-label label="Cancel" tabindex="2001" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
-        <span class="spacer"></span>
-        <button igButton i18n-label label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
-        <div class="grow"></div>
-        <button igAutoFocus igButton class="ig-button-primary" i18n-label label="Save Changes" tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
+	<div class="content">
+		<div class="row">
+			{{actionMessage}}
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton i18n-label label="Cancel" tabindex="2001" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
+		<span class="spacer"></span>
+		<button igButton i18n-label label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
+		<div class="grow"></div>
+		<button igAutoFocus igButton class="ig-button-primary" i18n-label label="Save Changes" tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
 
-    </div>
+	</div>
 </d3s-modal>
 
 <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving || isExporting">
-    <div class="content">
-        <div class="row">
-            <div class="loader">
-                <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                <span class="text" *ngIf="isSaving && !isExporting && !isImporting" i18n>
-                    Saving changes
-                </span>
-                <span class="text" *ngIf="isExporting" i18n>
-                    Exporting diagram
-                </span>
-                <span class="text" *ngIf="isImporting" i18n>
-                    Importing diagram
-                </span>
-            </div>
-        </div>
-    </div>
+	<div class="content">
+		<div class="row">
+			<div class="loader">
+				<i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+				<span class="text" *ngIf="isSaving && !isExporting && !isImporting" i18n>
+					Saving changes
+				</span>
+				<span class="text" *ngIf="isExporting" i18n>
+					Exporting diagram
+				</span>
+				<span class="text" *ngIf="isImporting" i18n>
+					Importing diagram
+				</span>
+			</div>
+		</div>
+	</div>
 </d3s-modal>
 
 <d3s-modal [title]="deleteModelTitle" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
-    <div class="content">
-        <div class="row" *ngIf="getSelectedNodeCount() <= 1" i18n>
-            Please confirm that you wish to delete the selected item, as this operation cannot be undone.
-        </div>
-        <div class="row" *ngIf="getSelectedNodeCount() > 1" i18n>
-            Please confirm that you wish to delete the {{getSelectedNodeCount()}} selected items, as this operation cannot be undone.
-        </div>
-    </div>
-    <div class="action-bar">
-        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
-        <div class="grow"></div>
-        <button igButton class="ig-button-primary" i18n-label label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
+	<div class="content">
+		<div class="row" *ngIf="getSelectedNodeCount() <= 1" i18n>
+			Please confirm that you wish to delete the selected item, as this operation cannot be undone.
+		</div>
+		<div class="row" *ngIf="getSelectedNodeCount() > 1" i18n>
+			Please confirm that you wish to delete the {{getSelectedNodeCount()}} selected items, as this operation cannot be undone.
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
+		<div class="grow"></div>
+		<button igButton class="ig-button-primary" i18n-label label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
 
-    </div>
+	</div>
 </d3s-modal>
 
 <d3s-modal i18n-title title="Import Diagram" additionalClasses="large-dialog" (onClose)="isImportVisible=false" [isVisible]="isImportVisible">
-    <div class="content">
-        <div class="row" *ngIf="importAssets.length > 0" i18n>
-            Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from:
-        </div>
-        <div class="row">
-            <div class="search-wrapper">
-                <input igInput [(ngModel)]="searchValue" type="text" autocomplete="off" placeholder="Search assets" name="search-filter" maxlength="250" (input)="importTable.filterGlobal($event.target.value, 'contains')" />
-                <i class="fa fa-search"></i>
-            </div>
-        </div>
-        <d3s-loading [isLoading]="!areImportAssetsLoaded"></d3s-loading>
-        <div class="row">
-            <ng-container *ngIf="areImportAssetsLoaded">
-                <p-table #importTable
-                         selectionMode="single"
-                         dataKey="uid"
-                         [value]="importAssets"
-                         [pageLinks]="3"
-                         [paginator]="true"
-                         [rows]="5"
-                         [(selection)]="selectedImportFromAsset"
-                         [globalFilterFields]="['assetPath']"
-                         (onRowSelect)="onImportAssetSelection($event)"
-                         class="ig-table"
-                         [loadingIcon]="'fa fa-spinner fa-spin'">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th [pSortableColumn]="'assetPath'" style="width: 60%">
-                                <ng-container i18n>Asset</ng-container>
-                                <d3s-sortIcon [field]="'assetPath'"></d3s-sortIcon>
-                            </th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr [pSelectableRow]="item">
-                            <td>
-                                {{item.assetPath}}
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="summary">
-                        <d3s-grid-paging-info [first]="importTable.first" [rows]="importTable.rows" [totalRecords]="importAssets.length"></d3s-grid-paging-info>
-                    </ng-template>
-                </p-table>
+	<div class="content">
+		<div class="row" *ngIf="importAssets.length > 0" i18n>
+			Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from:
+		</div>
+		<div class="row">
+			<div class="search-wrapper">
+				<input igInput [(ngModel)]="searchValue" type="text" autocomplete="off" placeholder="Search assets" name="search-filter" maxlength="250" (input)="importTable.filterGlobal($event.target.value, 'contains')" />
+				<i class="fa fa-search"></i>
+			</div>
+		</div>
+		<d3s-loading [isLoading]="!areImportAssetsLoaded"></d3s-loading>
+		<div class="row">
+			<ng-container *ngIf="areImportAssetsLoaded">
+				<p-table #importTable
+						 selectionMode="single"
+						 dataKey="uid"
+						 [value]="importAssets"
+						 [pageLinks]="3"
+						 [paginator]="true"
+						 [rows]="5"
+						 [(selection)]="selectedImportFromAsset"
+						 [globalFilterFields]="['assetPath']"
+						 (onRowSelect)="onImportAssetSelection($event)"
+						 class="ig-table"
+						 [loadingIcon]="'fa fa-spinner fa-spin'">
+					<ng-template pTemplate="header">
+						<tr>
+							<th [pSortableColumn]="'assetPath'" style="width: 60%">
+								<ng-container i18n>Asset</ng-container>
+								<d3s-sortIcon [field]="'assetPath'"></d3s-sortIcon>
+							</th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-item>
+						<tr [pSelectableRow]="item">
+							<td>
+								{{item.assetPath}}
+							</td>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="summary">
+						<d3s-grid-paging-info [first]="importTable.first" [rows]="importTable.rows" [totalRecords]="importAssets.length"></d3s-grid-paging-info>
+					</ng-template>
+				</p-table>
 
-            </ng-container>
+			</ng-container>
 
-            <ng-container *ngIf="isReplace">
-                <p i18n>
-                    Please note that replacing the current diagram cannot be undone. Check the option below to confirm that you wish to continue.
-                </p>
-                <p-checkbox igCheckbox [binary]="true" [(ngModel)]="confirmation" i18n-label label="Replace the current diagram"></p-checkbox>
-            </ng-container>
-        </div>
-    </div>
-    <div class="action-bar">
-        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;"></button>
-        <div class="grow"></div>
-        <button igButton [loading]="loadingRelationships" class="ig-button-primary" label="{{importButtonText}}" [disabled]="!selectedImportFromAsset || (isReplace && !confirmation) || loadingRelationships" tabindex="1001" (click)="confirmation=false;isImportVisible=false;importDiagram();"></button>
+			<ng-container *ngIf="isReplace">
+				<p i18n>
+					Please note that replacing the current diagram cannot be undone. Check the option below to confirm that you wish to continue.
+				</p>
+				<p-checkbox igCheckbox [binary]="true" [(ngModel)]="confirmation" i18n-label label="Replace the current diagram"></p-checkbox>
+			</ng-container>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;"></button>
+		<div class="grow"></div>
+		<button igButton [loading]="loadingRelationships" class="ig-button-primary" label="{{importButtonText}}" [disabled]="!selectedImportFromAsset || (isReplace && !confirmation) || loadingRelationships" tabindex="1001" (click)="confirmation=false;isImportVisible=false;importDiagram();"></button>
 
-    </div>
+	</div>
 </d3s-modal>
 
 <d3s-modal i18n-title title="Diagram Import: Cannot Copy Relationships" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
-    <div class="content">
-        <div class="row" i18n>
-            The following relationships in the source diagram cannot be copied, due to cardinality (eg. one-to-one, many-to-one) restrictions on relationship types:<br /><br />
-        </div>
+	<div class="content">
+		<div class="row" i18n>
+			The following relationships in the source diagram cannot be copied, due to cardinality (eg. one-to-one, many-to-one) restrictions on relationship types:<br /><br />
+		</div>
 
-        <div class="row">
-            <p-table #importRejectedRelationshipsTable
-                     [value]="importRejectedRelationships"
-                     [pageLinks]="3"
-                     [paginator]="true"
-                     [rows]="5"
-                     class="ig-table">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th [pSortableColumn]="'FlowObject'" style="width: 60%">
-                            <ng-container i18n>Flow Object</ng-container>
-                            <d3s-sortIcon [field]="'FlowObject'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'RelatedAsset'" style="width: 60%">
-                            <ng-container i18n>Related Asset</ng-container>
-                            <d3s-sortIcon [field]="'RelatedAsset'"></d3s-sortIcon>
-                        </th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>
-                            {{item.FlowObject}}
-                        </td>
-                        <td>
-                            {{item.RelatedAsset}}
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="summary">
-                    <d3s-grid-paging-info [first]="importRejectedRelationshipsTable.first" [rows]="importRejectedRelationshipsTable.rows" [totalRecords]="importRejectedRelationships.length"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
-        </div>
-    </div>
-    <div class="action-bar">
-        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;showRelationshipsConfirmation=false;"></button>
-        <div class="grow"></div>
-        <button igButton class="ig-button-primary" i18n-label label="Continue" tabindex="1001" (click)="showRelationshipsConfirmation=false;isImportVisible=false;hasPassedRelationshipCheck=true;importDiagram();"></button>
+		<div class="row">
+			<p-table #importRejectedRelationshipsTable
+					 [value]="importRejectedRelationships"
+					 [pageLinks]="3"
+					 [paginator]="true"
+					 [rows]="5"
+					 class="ig-table">
+				<ng-template pTemplate="header">
+					<tr>
+						<th [pSortableColumn]="'FlowObject'" style="width: 60%">
+							<ng-container i18n>Flow Object</ng-container>
+							<d3s-sortIcon [field]="'FlowObject'"></d3s-sortIcon>
+						</th>
+						<th [pSortableColumn]="'RelatedAsset'" style="width: 60%">
+							<ng-container i18n>Related Asset</ng-container>
+							<d3s-sortIcon [field]="'RelatedAsset'"></d3s-sortIcon>
+						</th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-item>
+					<tr [pSelectableRow]="item">
+						<td>
+							{{item.FlowObject}}
+						</td>
+						<td>
+							{{item.RelatedAsset}}
+						</td>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="summary">
+					<d3s-grid-paging-info [first]="importRejectedRelationshipsTable.first" [rows]="importRejectedRelationshipsTable.rows" [totalRecords]="importRejectedRelationships.length"></d3s-grid-paging-info>
+				</ng-template>
+			</p-table>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;showRelationshipsConfirmation=false;"></button>
+		<div class="grow"></div>
+		<button igButton class="ig-button-primary" i18n-label label="Continue" tabindex="1001" (click)="showRelationshipsConfirmation=false;isImportVisible=false;hasPassedRelationshipCheck=true;importDiagram();"></button>
 
-    </div>
+	</div>
 </d3s-modal>
 
 <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
-                         (onClose)="closeRelationshipModel()"
-                         [isModalVisible]="isRelatedAssetsVisible"
-                         [assetUid]="selectedNodeData.key"
-                         [assetTypeUid]="selectedNodeData.assetTypeUid">
+						 (onClose)="closeRelationshipModel()"
+						 [isModalVisible]="isRelatedAssetsVisible"
+						 [assetUid]="selectedNodeData.key"
+						 [assetTypeUid]="selectedNodeData.assetTypeUid">
 </d3s-relationships-modal>
 
 <div #palleteTooltip id="toolTipDIV" class="gojs-pallete-tooltip">
-    <p id="toolTipParagraph"></p>
+	<p id="toolTipParagraph"></p>
 </div>

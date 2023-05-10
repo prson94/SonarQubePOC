@@ -287,6 +287,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 		});
 	}
 	@ViewChild('diagram', { static: false }) diagramRef;
+	@ViewChild('diagramDiv', { static: false }) diagramDivRef;
 	@ViewChild('editors', { static: false }) editorRef;
 	@HostListener('window:resize', ['$event'])
 	public onResize(event) {
@@ -490,7 +491,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 		var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 		this.myDiagram =
-			$(go.Diagram, this.diagramRef.nativeElement,  // must name or refer to the DIV HTML element
+			$(go.Diagram, this.diagramDivRef.nativeElement,  // must name or refer to the DIV HTML element
 				{
 					"undoManager.isEnabled": true,
 					"textEditingTool.doActivate"() {
