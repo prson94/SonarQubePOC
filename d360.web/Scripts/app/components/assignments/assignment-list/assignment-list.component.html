@@ -56,8 +56,8 @@
 						[storageKey]="sidePanelStorageKey"
 						[(selectedPanel)]="sidePanelTab"
 						[selectedItem]="selectedWorkflowItems?.[0]"
-						[multipleItemsSelected]="selectedWorkflowItems?.length > 1"
-						[extraButtons]="sidePanelButtons"
+						[selectedItemsCount]="selectedWorkflowItems?.length"
+						[extraButtons]="selectedWorkflowItems?.length > 1 ? sidePanelMultiSelectButtons : sidePanelButtons"
 						[setMinMaxWidth]="false"
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
@@ -65,9 +65,10 @@
 												*ngIf="selectedWorkflowItems?.length === 1"
 												(linkClick)="sidePanelLinkClicked($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
-					<d3s-assignment-progress [workflowItemId]="selectedWorkflowId"
+					<d3s-assignment-progress [workflowItemId]="selectedWorkflowItems[0]?.Id"
 											 *ngIf="selectedWorkflowItems?.length === 1"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
+					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1"></d3s-assignment-multi-delete>
 				</ng-container>
 			</side-panel>
 		</as-split-area>

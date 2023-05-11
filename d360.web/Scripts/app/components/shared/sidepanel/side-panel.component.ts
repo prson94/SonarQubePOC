@@ -40,6 +40,7 @@ export class SidePanelComponent extends BaseComponent {
 
     @Input() extraButtons: SidePanelButton[] = [];
     @Input() multipleItemsSelected: boolean = false;
+	@Input() selectedItemsCount: number = 0;
 	@Input() closeIcon: string = 'fa-arrow-circle-right';
 
     buttons: SidePanelButton[] = [];
@@ -86,6 +87,9 @@ export class SidePanelComponent extends BaseComponent {
         if (changes['hasDetail'] && !changes['hasDetail'].isFirstChange() && changes['hasDetail'].currentValue !== changes['hasDetail'].previousValue) {
             loadButtons = true;
         }
+		if (changes['selectedItemsCount'] && !changes['selectedItemsCount'].isFirstChange() && changes['selectedItemsCount'].currentValue !== changes['selectedItemsCount'].previousValue) {
+			loadButtons = true;
+		}
 
         if (loadButtons) {
             this.initButtons();

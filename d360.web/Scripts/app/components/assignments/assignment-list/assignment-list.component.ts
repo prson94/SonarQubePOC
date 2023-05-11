@@ -1,53 +1,29 @@
-import { Component, OnDestroy, OnInit } from '@angular/core'
-import { Title } from '@angular/platform-browser'
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service'
-import { CompanySettingsService } from '../../../services/settings.service'
-import { ActivatedRoute, Router } from '@angular/router'
-import { SecondaryNavService } from '../../../services/right-sidebar.service'
-import { Observable } from 'rxjs'
-import { AdvancedFilterFieldType } from '../../assets-grid/advanced-filtering/advanced-filtering.models'
-import { SidePanelService } from '../../../services/side-panel.service'
-import { WebAnalyticsService } from '../../../services/web-analytics.service'
-import { DataProfileService } from '../../../services/dataprofile.service'
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly'
-import { FeatureFlags } from '../../../services/feature-flags.enum'
-import { IOutputData } from 'angular-split'
-import { BaseComponent } from '../../shared/base.component'
-import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
-import { SidePanelButton } from '../../../models/side-panel.model'
-import { SecondaryNavItem } from '../../../models/secondaryNav.model'
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { SidePanelService } from '../../../services/side-panel.service';
+import { IOutputData } from 'angular-split';
+import { BaseComponent } from '../../shared/base.component';
+import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
+import { SidePanelButton } from '../../../models/side-panel.model';
+import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 
 @Component({
 	selector: 'd3s-assignment-list',
 	templateUrl: './assignment-list.component.html',
-	styleUrls: ['./assignment-list.component.less'],
-	providers: [DataProfileService]
+	styleUrls: ['./assignment-list.component.less']
 })
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
-	selectedType: any = null
-	simpleFilter: string = ''
-	advancedFilter: string = ''
-	rowsPerPage: number = 25
-	currentPageNumber: number = 1
-	showSidePanel: boolean = true
-	sidePanelOpen: boolean = false
-	sidePanelTab: string = 'information'
-	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID
-	sortField: string
-	sortOrder: number
-	isExportInProgress: boolean = false
-	isContainsSearchDefault: boolean = false
-
-	filterFields$: Observable<AdvancedFilterFieldType[]>
-
-	secondarySidePanel: string
-	resourceUid: any
-	secondarySidePanelOpen: boolean
-	showDelete: boolean = false
-	showEditor: boolean = false
-	showAddButton: boolean = false
-	selectedWorkflowId: number = 876
-	selectedWorkflowItems: WorkflowMonitorItem[]
+	showSidePanel: boolean = true;
+	sidePanelOpen: boolean = false;
+	sidePanelTab: string = 'information';
+	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
+	secondarySidePanel: string;
+	resourceUid: any;
+	secondarySidePanelOpen: boolean;
+	selectedWorkflowItems: WorkflowMonitorItem[] = [];
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Assignment Progress`,
@@ -74,49 +50,61 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			visible: true,
 			needsSelection: true
 		})
-	]
+	];
+	sidePanelMultiSelectButtons: SidePanelButton[] = [
+		new SidePanelButton({
+			label: $localize`${this.selectedWorkflowItems?.length} Assignments Selected`,
+			tooltip: $localize`${this.selectedWorkflowItems?.length} Assignments Selected`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Select multiple assignments from the list to display its information`,
+			notApplicableMessage: $localize`Information data is not available for the selected assignments`,
+			multipleSelectedMessage: $localize`multiple assignments selected`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: true
+		})
+	];
 
 
-	constructor(private route: ActivatedRoute,
-				protected router: Router,
-				headerBreadcrumbService: HeaderBreadcrumbService,
+	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
 				private titleService: Title,
 				public sidePanelService: SidePanelService,
-				webAnalyticsService: WebAnalyticsService,
-				private dataProfileService: DataProfileService,
 				secondaryNavService: SecondaryNavService,
-				protected settingsService: CompanySettingsService,
-				private featureFlagService: LaunchDarklyService) {
-		super(settingsService)
-		this.secondaryNavService = secondaryNavService
-		this.breadcrumbsService = headerBreadcrumbService
-		this.isContainsSearchDefault = this.featureFlagService.variation<boolean>(FeatureFlags.ContainsSearchDefaultUiFlag)
+				protected settingsService: CompanySettingsService) {
+		super(settingsService);
+		this.secondaryNavService = secondaryNavService;
+		this.breadcrumbsService = headerBreadcrumbService;
 	}
 
 	ngOnInit(): void {
-		this.clearSidebar()
-		this.displayBreadCrumbs()
+		this.clearSidebar();
+		this.displayBreadCrumbs();
 	}
 
-	selectRow(row: any): void {
-		this.secondarySidePanelOpen = false
-		this.selectedType = row
+	selectRow(rows: WorkflowMonitorItem[]): void {
+		this.secondarySidePanelOpen = false;
+		if (rows.length > 1) {
+			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
+			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
+		}
 	}
 
 	displayBreadCrumbs(): void {
-		this.setBrowserTitle(this.titleService, 'Assignments')
-		this.breadcrumbsService.clearBreadcrumbs()
-		this.breadcrumbsService.clearCurrentObjectInfo()
-		this.secondaryNavService.clearItems()
-		this.secondaryNavService.clearCurrentObject()
-		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Assignments`)
-		this.secondaryNavService.showHeader(true)
+		this.setBrowserTitle(this.titleService, 'Assignments');
+		this.breadcrumbsService.clearBreadcrumbs();
+		this.breadcrumbsService.clearCurrentObjectInfo();
+		this.secondaryNavService.clearItems();
+		this.secondaryNavService.clearCurrentObject();
+		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Assignments`);
+		this.secondaryNavService.showHeader(true);
 		this.fieldNav = new SecondaryNavItem(
 			$localize`By Workflow Version`,
 			'byWorkflowVersion',
 			null,
-			'/assignments/by-workflow-version', null, 1)
-		this.secondaryNavService.showItem(this.fieldNav)
+			'/assignments/by-workflow-version', null, 1);
+		this.secondaryNavService.showItem(this.fieldNav);
 	}
 
 	ngOnDestroy(): void {
@@ -124,29 +112,29 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	getSidePanelWidth(): number {
-		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey)
+		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
 	}
 
 	getSidePanelMaxWidth(): number {
-		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen)
+		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
 	}
 
 	getSidePanelMinWidth(): number {
-		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen)
+		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
-		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event)
+		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
 	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]): void {
-		this.selectedWorkflowItems = workflowMonitorItems
-		this.selectRow(workflowMonitorItems)
+		this.selectedWorkflowItems = workflowMonitorItems;
+		this.selectRow(workflowMonitorItems);
 	}
 
 	sidePanelLinkClicked(link: any) {
-		this.secondarySidePanelOpen = true
-		this.secondarySidePanel = 'user'
+		this.secondarySidePanelOpen = true;
+		this.secondarySidePanel = 'user';
 		this.resourceUid = link.resourceUid;
 	}
 }
