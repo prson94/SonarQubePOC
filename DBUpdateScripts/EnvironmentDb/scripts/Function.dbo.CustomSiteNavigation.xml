@@ -6,12 +6,17 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="bquinlivan" id="Function.dbo.CustomSiteNavigation-v4">
+	<validCheckSum>7:ce0e03e75525c7d2a909bd2ea888a9cb</validCheckSum>
+	<validCheckSum>7:7f973c5470ea413e2d01b14441ad3011</validCheckSum>
   <comment>GOV-21140</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+drop function if exists dbo.CustomSiteNavigation
+GO
+
 CREATE OR ALTER FUNCTION [dbo].[CustomSiteNavigation]
 (
 	@id int,
