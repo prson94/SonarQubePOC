@@ -125,6 +125,9 @@ namespace d360.web.Controllers.V2
 		///	- Not Contains operator - {fieldname} nct Data
 		///	- Starts with operator - {fieldname} ct Data*
 		///	- Ends with operator - {fieldname} ct *Data
+		///     
+		///- **Uid comparing operators ** (uid)
+		///	- Equals operator - uid eq 00000000-0000-0000-0000-000000000000
 		///	
 		/// - **Asset Path segment comparing operators ** (displayPathSegment) 
 		/// This expression will be matched agains every path segment in asset path
@@ -493,6 +496,24 @@ namespace d360.web.Controllers.V2
 										Where = $"fr.p{parameterIndex} = 1",
 										Query = query
 									});
+								}
+								else if (column.ApiName.ToLowerInvariant() == "uid")
+								{
+									string query = "";
+									string value = filterValue;
+									if (Guid.TryParse(value, out _) && filterOperation == "eq")
+									{
+										query = $@"select id as ObjectAssetID from Asset where Uid = @p{parameterIndex}";
+										dbArgs.Add($"p{parameterIndex}", value);
+
+										catalogWheres.Add(new CatalogWhere
+										{
+											TokenExpression = filterMatch.Match,
+											PropertyName = $"p{parameterIndex}",
+											Where = $"fr.p{parameterIndex} = 1",
+											Query = query
+										});
+									}
 								}
 							}
 						}
