@@ -30,17 +30,26 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
 import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { AssignmentMultiDeleteComponent } from './assignment-multi-delete/assignment-multi-delete.component';
+import {
+	AssignmentInformationGeneralComponent
+} from './assignment-information/assignment-information-general/assignment-information-general.component';
+import {
+	AssignmentInformationRequestComponent
+} from './assignment-information/assignment-information-request/assignment-information-request.component';
+import { CoreModule } from '../shared/core.module';
 
 
 @NgModule({
 	declarations: [
 		AssignmentGridComponent,
 		AssignmentInformationComponent,
+		AssignmentInformationGeneralComponent,
+		AssignmentInformationRequestComponent,
 		AssignmentListComponent,
+		AssignmentMultiDeleteComponent,
 		AssignmentProgressComponent,
 		AssignmentsContainerComponent,
-		WorkflowVersionListComponent,
-		AssignmentMultiDeleteComponent
+		WorkflowVersionListComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -50,6 +59,7 @@ import { AssignmentMultiDeleteComponent } from './assignment-multi-delete/assign
 		ButtonModule,
 		CheckboxModule,
 		CommonModule,
+		CoreModule,
 		D3SColumnFilterModule,
 		D3SSortIconModule,
 		DirectivesModule,
@@ -60,13 +70,13 @@ import { AssignmentMultiDeleteComponent } from './assignment-multi-delete/assign
 		RouterModule,
 		SearchFieldModule,
 		SemanticsModule,
+		SharedDeleteFormModule,
 		SharedGridPagingInfoModule,
 		SharedModule,
 		SidePanelModule,
 		TableModule,
 		TooltipModule,
-		WorkflowMonitorModule,
-		SharedDeleteFormModule
+		WorkflowMonitorModule
 	]
 })
 export class AssignmentsModule {

@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core'
-import { WorkflowService } from '../../../services/workflow.service'
-import { WorkflowItemStep } from '../../../models/workflow.model'
+import { Component, Input, OnInit } from '@angular/core';
+import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowItemStep } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-progress',
@@ -8,12 +8,12 @@ import { WorkflowItemStep } from '../../../models/workflow.model'
 	styleUrls: ['./assignment-progress.component.less']
 })
 export class AssignmentProgressComponent implements OnInit {
-	private _workflowItemId: number
-	itemSteps: WorkflowItemStep[]
+	private _workflowItemId: number;
+	itemSteps: WorkflowItemStep[];
 
 	@Input() set workflowItemId(value: number) {
-		this._workflowItemId = value
-		this.loadData()
+		this._workflowItemId = value;
+		this.loadData();
 	}
 
 	constructor(private workflowService: WorkflowService) {
@@ -23,12 +23,12 @@ export class AssignmentProgressComponent implements OnInit {
 	}
 
 	private loadData(): void {
-		this.itemSteps = []
+		this.itemSteps = [];
 		if (this._workflowItemId) {
 			this.workflowService.getWorkflowItemSteps(this._workflowItemId)
 				.subscribe((response: WorkflowItemStep[]) => {
-					this.itemSteps = response
-				})
+					this.itemSteps = response;
+				});
 		}
 	}
 }

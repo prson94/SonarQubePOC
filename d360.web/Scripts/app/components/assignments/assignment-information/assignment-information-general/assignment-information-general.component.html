@@ -1,0 +1,35 @@
+<div class="asset-detail-tabs">
+	<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+		<div readonly>
+			<div class="row">
+				<label class="ig-label" i18n>Workflow Name</label>
+				<div class="ig-value"><a
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.UID })">{{ workflowAssignmentItem.WorkflowName }}</a>
+				</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Workflow Type</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Type }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Associated with</label>
+				<div class="ig-value"><a
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.UID })">{{ workflowAssignmentItem.Asset }}</a></div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Initiated</label>
+				<div class="ig-value">{{ workflowAssignmentItem.StartedOn | date: 'medium' }}</div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Initiator</label>
+				<div class="ig-value"><a
+					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.UID })">{{ workflowAssignmentItem.Initiator }}</a></div>
+			</div>
+			<div class="row">
+				<label class="ig-label" i18n>Status</label>
+				<div class="ig-value">{{ workflowAssignmentItem.Status }}</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>
+<pre>{{ workflowAssignmentItem | json }}</pre>

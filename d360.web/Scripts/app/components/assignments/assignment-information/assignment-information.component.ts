@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
-import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -8,8 +8,8 @@ import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model'
 })
 export class AssignmentInformationComponent implements OnInit {
 
-	@Input() workflowAssignmentItem: WorkflowMonitorItem
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>()
+	@Input() workflowAssignmentItem: WorkflowMonitorItem;
+	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
 	constructor() {
 	}
