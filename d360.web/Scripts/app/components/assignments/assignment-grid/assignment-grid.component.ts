@@ -73,7 +73,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	export(): void {
-		console.log("export clicked")
+		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder)
 	}
 
 	gridSelectionChange(event: WorkflowMonitorItem[]): void {

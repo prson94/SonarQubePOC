@@ -19,6 +19,8 @@
 		</div>
 	</div>
 	<div class="grid-actions-header-row">
+		<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label label="Select All"
+				[disabled]="items.length < 1"></button>
 		<!--		<advanced-filtering [loadIdentifier]="'SemanticTypes'"-->
 		<!--							[fieldsObserver]="filterFields$"-->
 		<!--							(onLoad)="onFiltersLoaded()"-->
