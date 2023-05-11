@@ -8,6 +8,8 @@
   <changeSet author="bquinlivan" id="Function.dbo.CustomSiteNavigation-v4">
 	<validCheckSum>7:ce0e03e75525c7d2a909bd2ea888a9cb</validCheckSum>
 	<validCheckSum>7:7f973c5470ea413e2d01b14441ad3011</validCheckSum>
+	<validCheckSum>8:5a5de991ea56e64528f2b9a9bbd0f61a</validCheckSum>
+	<validCheckSum>8:52b2cec8916585cf1a8e07e205d183cd</validCheckSum>
   <comment>GOV-21140</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
