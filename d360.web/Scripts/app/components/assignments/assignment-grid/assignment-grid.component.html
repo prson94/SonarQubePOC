@@ -13,7 +13,7 @@
 						class="ig-button-secondary"
 						[igDataCy]="'Assets_Export'"
 						icon="fa-download"
-						(click)="console.log('export clicked')">
+						(click)="export()">
 				</button>
 			</div>
 		</div>
@@ -106,7 +106,7 @@
 							<button igButton
 									type="button"
 									icon="fa-ellipsis-v"
-									(click)="gridSelectionChange(item); menu.toggle($event)"></button>
+									(click)="clickMenuIcon(item); menu.toggle($event)"></button>
 							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"
 										   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
 						</div>

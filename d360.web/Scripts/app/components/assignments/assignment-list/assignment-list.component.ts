@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -9,6 +9,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
+import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -67,6 +68,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		})
 	];
 
+	@ViewChild('assignmentGridComponent', { static: false }) assignmentGridComponent: AssignmentGridComponent;
 
 	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
 				private titleService: Title,
@@ -136,5 +138,11 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.secondarySidePanelOpen = true;
 		this.secondarySidePanel = 'user';
 		this.resourceUid = link.resourceUid;
+	}
+
+	deleteAssignments(event: boolean) {
+		if (event) {
+			this.assignmentGridComponent.showDeletionModal = true;
+		}
 	}
 }

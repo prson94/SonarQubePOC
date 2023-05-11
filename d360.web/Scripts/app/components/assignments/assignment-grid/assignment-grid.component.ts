@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { GridFilterExpression } from '../../../models/grid-definition.model';
 import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
@@ -35,7 +34,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	@Output() hideDetails = new EventEmitter();
 	private destroy = new Subject<void>();
 	theDeleteCallback: Function;
-	exportMessage: string = '';
 	menuItems: any[] = [
 		{ title: $localize`Delete` }
 	];
@@ -48,7 +46,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteAssignments.bind(this);
-		this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
 	}
 
 	ngOnInit(): void {
@@ -75,12 +72,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.destroy.complete();
 	}
 
-	export() {
-		const filter: GridFilterExpression[] = [];
-		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter);
+	export(): void {
+		console.log("export clicked")
 	}
 
-	gridSelectionChange(event) {
+	gridSelectionChange(event: WorkflowMonitorItem[]): void {
 		if (Array.isArray(event) && event.length === 1) {
 			this.stateService.workflowItemFilters.itemId = event[0].Id;
 		} else {
@@ -91,7 +87,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.selectionChange.emit(event);
 	}
 
-	private loadData() {
+	private loadData(): void {
 		this.isLoading = true;
 		this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder)
 			.subscribe((result) => {
@@ -115,8 +111,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			});
 	}
 
-	loadWorkflowMonitorItems(event: LazyLoadEvent) {
-
+	loadWorkflowMonitorItems(event: LazyLoadEvent): void {
 		this.rowsPerPage = event.rows;
 		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
 		this.sortField = event.sortField == null ? '' : event.sortField;
@@ -125,7 +120,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	selectAll() {
+	selectAll(): void {
 		if (this.selection) {
 			if (this.selection.length === this.items.length) {
 				this.gridSelectionChange([this.items[0]]);
@@ -135,26 +130,24 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	canExportRecords() {
-		return this.totalRecords <= this.maxExportRows;
+	clickMenuIcon(item: any): void {
+		if(item) {
+			this.gridSelectionChange([item])
+		}
 	}
 
-	selectRow(item: any): void {
-		console.log(item);
-	}
-
-	onSimpleSearch(event: any) {
+	onSimpleSearch(event: any): void {
 		console.log(event);
 	}
 
-	clickMenuItem(event: any, item: any) {
+	clickMenuItem(event: any, item: any): void {
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
 			this.showDeletionModal = true;
 		}
 	}
 
-	public deleteAssignments() {
+	public deleteAssignments(): void {
 		this.isLoading = true;
 		let itemIds = [];
 		if (Array.isArray(this.selection)) {
@@ -170,5 +163,4 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		);
 	}
 
-	protected readonly console = console;
 }

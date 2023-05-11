@@ -7,7 +7,7 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<d3s-assignment-grid (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
+			<d3s-assignment-grid #assignmentGridComponent (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
 				<div class="secondary-side-panel">
 					<div class="panel-header">
@@ -37,11 +37,6 @@
 												 [interceptLinkClick]="true"
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
 							</ng-container>
-							<ng-container *ngIf="secondarySidePanel=='status'">
-								<!--								<semantic-status-detail (close)="secondarySidePanelOpen=false;">-->
-								<!--								</semantic-status-detail>-->
-								<p>hello world</p>
-							</ng-container>
 						</div>
 					</div>
 				</div>
@@ -68,7 +63,8 @@
 					<d3s-assignment-progress [workflowItemId]="selectedWorkflowItems[0]?.Id"
 											 *ngIf="selectedWorkflowItems?.length === 1"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
-					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1"></d3s-assignment-multi-delete>
+					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1" (confirmDelete)="deleteAssignments($event)">
+					</d3s-assignment-multi-delete>
 				</ng-container>
 			</side-panel>
 		</as-split-area>

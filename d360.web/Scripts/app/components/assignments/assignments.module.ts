@@ -14,7 +14,6 @@ import { DirectivesModule } from '../../directives/directives.module';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
-import { SemanticsModule } from '../semantic/semantics.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedModule } from 'primeng/api';
 import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
@@ -69,7 +68,6 @@ import { CoreModule } from '../shared/core.module';
 		PropertyGroupModule,
 		RouterModule,
 		SearchFieldModule,
-		SemanticsModule,
 		SharedDeleteFormModule,
 		SharedGridPagingInfoModule,
 		SharedModule,

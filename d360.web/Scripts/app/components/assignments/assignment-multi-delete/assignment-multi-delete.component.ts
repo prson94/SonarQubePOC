@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
-  selector: 'd3s-assignment-multi-delete',
-  templateUrl: './assignment-multi-delete.component.html',
-  styleUrls: ['./assignment-multi-delete.component.less']
+	selector: 'd3s-assignment-multi-delete',
+	templateUrl: './assignment-multi-delete.component.html',
+	styleUrls: ['./assignment-multi-delete.component.less']
 })
-export class AssignmentMultiDeleteComponent implements OnInit {
+export class AssignmentMultiDeleteComponent {
 
-  constructor() { }
+	constructor() {
+	}
 
-  ngOnInit(): void {
-  }
+	@Output() confirmDelete:EventEmitter<boolean> = new EventEmitter();
 
+	deleteAssignments(): void {
+		this.confirmDelete.emit(true)
+	}
 }
