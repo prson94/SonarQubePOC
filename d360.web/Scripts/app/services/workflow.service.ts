@@ -120,8 +120,7 @@ export class WorkflowService extends BaseObservableService {
 
         return this.http.get(`/api/v2/actions/types${qString}`)
             .pipe(
-                map((response) => <WorkflowIssueType[]>response),
-                catchError((err) => this.handleError(err))
+                map((response) => <WorkflowIssueType[]>response)
             ); 
     }
 
