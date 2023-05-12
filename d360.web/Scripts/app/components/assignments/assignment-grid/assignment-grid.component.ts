@@ -27,7 +27,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	sortOrder: SortOrder = SortOrder.Descending;
 	isAdmin: boolean = false;
 	selectedCount: number = 0;
-	selection: WorkflowMonitorItem[] = [];
+	assignments: WorkflowMonitorItem[] = [];
 	simpleFilter: string = '';
 	showDeletionModal: boolean = false;
 	@Output() selectionChange = new EventEmitter();
@@ -82,8 +82,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		} else {
 			this.stateService.workflowItemFilters.itemId = 0;
 		}
-		this.selection = event;
-		this.selectedCount = this.selection == null ? 0 : this.selection.length;
+		this.assignments = event;
+		this.selectedCount = this.assignments == null ? 0 : this.assignments.length;
 		this.selectionChange.emit(event);
 	}
 
@@ -99,9 +99,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
 					}
 
-					this.selection = item ? [item] : [this.items[0]];
+					this.assignments = item ? [item] : [this.items[0]];
 					this.selectedCount = 1;
-					this.selectionChange.emit(this.selection);
+					this.selectionChange.emit(this.assignments);
 				} else {
 					this.selectedCount = 0;
 					this.selectionChange.emit(null);
@@ -121,8 +121,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	selectAll(): void {
-		if (this.selection) {
-			if (this.selection.length === this.items.length) {
+		if (this.assignments) {
+			if (this.assignments.length === this.items.length) {
 				this.gridSelectionChange([this.items[0]]);
 			} else {
 				this.gridSelectionChange(this.items);
@@ -150,10 +150,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	public deleteAssignments(): void {
 		this.isLoading = true;
 		let itemIds = [];
-		if (Array.isArray(this.selection)) {
-			itemIds = this.selection.map((i) => i.Id);
-		} else if (this.selection != null) {
-			itemIds.push((this.selection as WorkflowMonitorItem).Id);
+		if (Array.isArray(this.assignments)) {
+			itemIds = this.assignments.map((i) => i.Id);
+		} else if (this.assignments != null) {
+			itemIds.push((this.assignments as WorkflowMonitorItem).Id);
 		}
 		this.wfMonitorService.deleteItems(itemIds).subscribe(
 			(res) => {
