@@ -36,6 +36,7 @@ import {
 	AssignmentInformationRequestComponent
 } from './assignment-information/assignment-information-request/assignment-information-request.component';
 import { CoreModule } from '../shared/core.module';
+import { CompleteAssignmentComponent } from './complete-assignment/complete-assignment.component';
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { CoreModule } from '../shared/core.module';
 		AssignmentMultiDeleteComponent,
 		AssignmentProgressComponent,
 		AssignmentsContainerComponent,
-		WorkflowVersionListComponent
+		WorkflowVersionListComponent,
+		CompleteAssignmentComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
