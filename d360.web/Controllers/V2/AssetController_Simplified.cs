@@ -888,6 +888,21 @@ namespace d360.web.Controllers.V2
 			string finalSql = $@"
 				drop table if exists #v 
 				create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
+
+				DECLARE @uniqueAssets TABLE (AssetId INT, DisplayValue nvarchar(500));
+
+				insert into @uniqueAssets (AssetId)
+				SELECT DISTINCT a.Id AS AssetId
+				FROM [Predicate] p
+				INNER JOIN IntersectType t ON t.PredicateId = p.Id
+					AND p.[Type] = 5
+				INNER JOIN Asset a ON a.AssetTypeId = t.SubjectAssetTypeId;
+
+				Update T
+				set T.DisplayValue = d.DisplayValue
+				from @uniqueAssets T
+				INNER JOIN AssetDisplayValue d ON d.AssetId = T.AssetId;
+
 				insert into #v
 					select	distinct
 							p.Id,
@@ -896,7 +911,7 @@ namespace d360.web.Controllers.V2
 					from	[Predicate] p
 							inner join IntersectType t on t.PredicateId = p.Id and p.[Type] = 5
 							inner join Asset a on a.AssetTypeId = t.SubjectAssetTypeId
-							inner join AssetDisplayValue d on d.AssetId = a.Id;
+							inner join @uniqueAssets d ON d.AssetId = a.Id;;
 
 				{assetsHierarchyTempTable}
 

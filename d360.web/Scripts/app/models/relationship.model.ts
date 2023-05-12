@@ -26,6 +26,7 @@ export class RelationshipTypeSimpleUIModel {
 	Subject: string;
 	Predicate: string;
 	PredicateFunctionalType: string;
+	Id: number;
 	Object: string;
 	IsEditDisabled: boolean = false;
 }
@@ -68,6 +69,7 @@ export class RelationshipType {
 			HasRelationships: data.HasRelationships,
 			HasRelationshipsTextValue: data.HasRelationships ? $localize`True` : $localize`False`,
 			TotalRelationshipCount: data.TotalRelationshipCount,
+			Id: data.Id,
 			IsEditDisabled: isEditDisabled
 		};
 	}

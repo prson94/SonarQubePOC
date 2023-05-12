@@ -60,4 +60,12 @@ export class FieldTypeDetailsComponent implements OnChanges {
 		}
 		return true;
 	}
+
+	hasAllowMultipleItems() {
+		const includeTypes: string[] = ['Lookup'];
+		if (includeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return true;
+		}
+		return false;
+	}
 }

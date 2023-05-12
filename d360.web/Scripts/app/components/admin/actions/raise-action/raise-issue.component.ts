@@ -91,7 +91,17 @@ export class RaiseIssueComponent extends BaseComponent implements OnChanges {
 				});
 				this.isLoading = false;
 				this.cdRef.markForCheck();
-			});
+			},
+				(error) => {
+					if (+error.status !== 404) {
+						//silently handle 404 error
+						//https://jira.syncsort.com/browse/GOV-21631 will deal with this issue in next sprint
+						//routes to multiple admim modules needs to be updated
+						error.Message = error.error.message;
+						this.showMessageForApiResponse(this.messagesService, error);
+					}
+					this.issueTypes = [];
+				});
 	}
 
 	openIssueType(issue) {
