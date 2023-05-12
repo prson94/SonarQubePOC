@@ -69,7 +69,7 @@
                     <div class="ig-value">
                         <div *ngIf="json == 'Error'; else showJSON">{{field.Value}}</div>
                         <ng-template #showJSON>
-                            <ngx-json-view [data]="json"></ngx-json-view>
+                            <ig-json-view [data]="json"></ig-json-view>
                         </ng-template>
                     </div>
                 </ng-container>

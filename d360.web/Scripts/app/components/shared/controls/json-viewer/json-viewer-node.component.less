@@ -1,0 +1,65 @@
+﻿@import "../../../../../../Content/styles/_Variables.less";
+
+.json-viewer-node {
+  a {
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .toggler {
+    width: 1em;
+    padding: 0;
+    display: block;
+    text-align: center;
+    float: left;
+  }
+
+  .collapse::before {
+    content: "-";
+  }
+
+  .expand::before {
+    content: "+";
+  }
+
+  .key {
+    color: var(--tabLinkColor, @ig-purple);
+  }
+
+  .value {
+    color: @ig-black;
+
+    &.array {
+      color: @ig-slate;
+    }
+
+    &.date {
+      color: @ig-orange;
+    }
+
+    &.string {
+      color: @ig-green;
+    }
+
+    &.number {
+      color: @ig-midblue;
+    }
+
+    &.boolean {
+      color: @ig-red;
+    }
+
+    &.null,
+    &.undefined {
+      color: @ig-coral;
+    }
+  }
+
+  .valuedetail {
+    color: @ig-grey;
+  }
+
+  .children {
+    margin-left: 1em;
+  }
+}

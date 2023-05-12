@@ -1,0 +1,35 @@
+﻿<div class="tile tile-detail">
+    <header>
+        JSON Viewer Component
+    </header>
+    <p>
+        Component that displays JSON data
+    </p>
+</div>
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Standard</h4>
+        <div>
+            <p>Input JSON in the text area below to see displayed with the JSON Viewer Component.</p>
+            <textarea pInputTextarea autoResize="true" igTextArea [(ngModel)]="exampleString" style="font-family: monospace"></textarea>
+            <button [disabled]="!isExampleValid" igButton class="ig-button-primary" (click)="showExample()" label="Show in JSON Viewer Component"></button>
+            <hr />
+            <h5>JSON Component:</h5>
+
+            <ig-json-viewer [data]="exampleJson"></ig-json-viewer>
+        </div>
+    </div>
+</div>
+
+<gallery-component-properties [header]="'Properties'"
+                              [properties]="properties">
+</gallery-component-properties>
+
+<gallery-component-properties [header]="'Events'"
+                              [properties]="events">
+</gallery-component-properties>

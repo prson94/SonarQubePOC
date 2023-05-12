@@ -48,7 +48,7 @@ import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part';
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
-import { NgxJsonViewModule } from 'ng-json-view';
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { IconService } from '../../../services/icon.service';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
@@ -131,7 +131,7 @@ import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.mo
         AccordionModule,
         TooltipModule,
         //JSON Viewer module
-        NgxJsonViewModule,
+        JsonViewerModule,
         AssetSearchModule,
         TagViewModule,
         PopupMenuModule,
