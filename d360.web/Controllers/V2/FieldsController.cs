@@ -2478,7 +2478,7 @@ namespace d360.web.Controllers.V2
 
 					if (fieldType.Type == "Relationship")
 					{
-						whereQuery += " and node.displaypath like @filter ";
+						whereQuery += $" and {(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "node.displaypath")} like @filter ";
 					}
 					else
 					{
@@ -2527,7 +2527,7 @@ namespace d360.web.Controllers.V2
 									OPTION(RECOMPILE);";
 					sql += $@"
 									select count(*) from Asset A
-									 inner join AssetPath Node on Node.id = a.id
+									 {(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}
 									where a.AssetTypeID = @assetTypeId {whereQuery}
 									OPTION(RECOMPILE);
 								end

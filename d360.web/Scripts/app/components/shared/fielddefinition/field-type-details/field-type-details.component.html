@@ -558,6 +558,19 @@
 							</ng-template>
 						</div>
 					</div>
+					<div class="row" *ngIf="hasAllowMultipleItems()">
+						<label class="ig-label" i18n>Allow Multiple Items</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.AllowMultipleItems; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
 					<div class="row" *ngIf="hasShowIfEmpty()">
 						<label class="ig-label" i18n>Show if Empty</label>
 						<div class="ig-value">

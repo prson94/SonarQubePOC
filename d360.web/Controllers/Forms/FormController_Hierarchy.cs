@@ -110,27 +110,32 @@ namespace d360.web.Controllers
 					parentItems.Add(new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString() });
 				}
 
-				list.Add(new EditableField 
-				{ 
-					FieldName = "Uid", 
-					FieldType = DataType.Hidden.ToString(), 
-					Value = model.Uid.ToString() 
-				});
-				
-				list.Add(new EditableField 
-				{ 
-					Row = 1, 
-					Column = 2, 
-					Required = true, 
-					FieldName = "ParentUid", 
-					Name = "Parent Model", 
-					FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning,
-					FieldType = DataType.Lookup.ToString(), 
-					Items = parentItems, 
-					ItemSize = 20,
-					Value = (parent != null) ? parent.uid.ToString() : Guid.Empty.ToString() 
+				list.Add(new EditableField
+				{
+					FieldName = "Uid",
+					FieldType = DataType.Hidden.ToString(),
+					Value = model.Uid.ToString()
 				});
 
+				var startRow = 2;
+
+				if (model.MaximumDepth > 1)
+				{ 
+					list.Add(new EditableField
+					{
+						Row = 1,
+						Column = 2,
+						Required = true,
+						FieldName = "ParentUid",
+						Name = "Parent Model",
+						FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning,
+						FieldType = DataType.Lookup.ToString(),
+						Items = parentItems,
+						ItemSize = 20,
+						Value = (parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()
+					});
+					startRow = 3;
+				}
 				long assetId = (long)model.AssetID;
 				int assetTypeId = (int)model.TypeID;
 				var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
@@ -142,7 +147,7 @@ namespace d360.web.Controllers
 						 list,
 						 fieldTypes,
 						 fields,
-						 3,
+						 startRow,
 						 loadOnlySelectedLookupValue: true
 					 );
 			}
