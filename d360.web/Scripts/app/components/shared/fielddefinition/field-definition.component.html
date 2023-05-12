@@ -83,6 +83,18 @@
 						icon="fa-plus"
 						[igDataCy]="'FieldType_Add'">
 				</button>
+				<button igButton
+						[attr.data-cy]="'FieldType_Add'"
+						pTooltip="Create new Field Type"
+						label="Create With modal form"
+						i18n-pTooltip
+						tooltipPosition="top"
+						tooltipStyleClass="ig-tooltip"
+						class="ig-button-primary"
+						(click)="isModalVisible = true"
+						icon="fa-plus"
+						[igDataCy]="'FieldType_Add'">
+				</button>
 			</div>
 		</div>
 		<div class="grid-actions-header-row">
@@ -267,3 +279,11 @@
 		<button igButton class="ig-button-danger" i18n-label label="Delete" [loading]="deleteInProgress" (click)="deleteFieldType()"></button>
 	</div>
 </d3s-modal>
+
+<field-type-modal-form [isModalVisible]="isModalVisible"
+					   [actionTypeUid]="actionTypeUid"
+					   [assetTypeUid]="assetTypeUid"
+					   [relationshipTypeUid]="relationshipTypeUid"
+					   [assetTypeName]="typeName"
+					   (onClose)="onEditFormClose()"
+					   (onUpdated)="onEditSaveFinished()"></field-type-modal-form>

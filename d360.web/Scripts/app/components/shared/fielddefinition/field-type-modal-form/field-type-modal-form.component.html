@@ -1,0 +1,97 @@
+<d3s-modal #modal
+		   additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
+		   [showTitle]="false"
+		   (onClose)="close()"
+		   [isVisible]="isModalVisible">
+	<div class="editor-container">
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+
+		<div *ngIf="!isLoading" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 *ngIf="assetTypeName" [innerHTML]="assetTypeName"></h2>
+				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges"
+										 [igformGroup]="fieldTypeForm"
+										 [inputContainer]="formElement">
+				</ig-form-feedback-badges>
+			</div>
+			<div class="form-container">
+
+				<form #form
+					  [formGroup]="fieldTypeForm"
+					  [style.overflow]="'auto'">
+
+					<p-table *ngIf="formState === 'FieldTypeSelection'"
+							 #dt
+							 [value]="fieldTypes"
+							 selectionMode="single"
+							 [globalFilterFields]="['label']"
+							 (selectionChange)="selectedFieldType = $event.value"
+							 [(selection)]="fieldTypeSelection">
+						<ng-template pTemplate="header">
+							<tr>
+								<th i18n>
+									Field Type
+								</th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body"
+									 let-item>
+							<tr [pSelectableRow]="item">
+								<td class="rel-name">
+									<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+
+									<span class="rel-text">
+										{{item.label}}
+									</span>
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+
+					<ng-container *ngIf="formState === 'Form'">
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="General" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="name" class="ig-label" i18n>Name</label>
+											<input igInput
+												   igSize="full"
+												   name="name"
+												   tabindex="10"
+												   formControlName="name"
+												   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+												   type="text"
+												   required />
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComplexRelationLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<d3s-relation-lookup-field-type-editor [uid]="uid"
+																			   [assetTypeUid]="assetTypeUid"></d3s-relation-lookup-field-type-editor>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+					</ng-container>
+				</form>
+
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>
+		<span class="grow"></span>
+		<button *ngIf="formState === 'Form'" igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button *ngIf="formState === 'FieldTypeSelection'" igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypSelection()" [disabled]="!selectedFieldType"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+	</div>
+</d3s-modal>

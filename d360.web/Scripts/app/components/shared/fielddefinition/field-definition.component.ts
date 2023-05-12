@@ -35,6 +35,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
 
+	@Input() typeName: string = 'Some Default Type Name';
+
 	@Input() showAddButton: boolean = true;
 	@Input() showEditButton: boolean = true;
 	@Input() showDeleteButton: boolean = true;
@@ -808,5 +810,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			return false;
 		}
 		return true;
+	}
+
+	isModalVisible: boolean = false;
+	onEditFormClose() {
+		this.isModalVisible = false;
+	}
+	onEditSaveFinished() {
+		this.load();
 	}
 }
