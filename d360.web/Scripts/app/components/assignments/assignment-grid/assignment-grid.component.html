@@ -19,7 +19,8 @@
 		</div>
 	</div>
 	<div class="grid-actions-header-row">
-		<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label label="Select All"
+		<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label
+				label="Select All"
 				[disabled]="items.length < 1"></button>
 		<!--		<advanced-filtering [loadIdentifier]="'SemanticTypes'"-->
 		<!--							[fieldsObserver]="filterFields$"-->
@@ -133,11 +134,12 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.WorkflowName }} on {{ assignment.Asset }} initiated on {{ assignment.StartedOn | date: 'short' }}
+			{{ assignment.WorkflowName }} on {{ assignment.Asset }}
+			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>
 			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-			Are you sure you want to delete this assignment?<br />
+			Are you sure you want to delete this assignment?<br/>
 			Deleted assignments <b>cannot be retrieved</b>.
 		</p>
 	</div>

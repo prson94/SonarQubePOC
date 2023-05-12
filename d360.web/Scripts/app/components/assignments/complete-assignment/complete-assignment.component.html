@@ -1,1 +1,32 @@
-<p>complete-assignment works!</p>
+<d3s-modal [showTitle]="false"
+		   [isVisible]="isModalVisible"
+		   [showConfirm]="true"
+		   [additionalClasses]="'large-dialog'"
+		   (onConfirm)="submit()"
+		   (onClose)="isModalVisible = false">
+	<div class="modal-with-side-panel">
+		<div class="modal-dialog-main-panel">
+			<div class="content condensed-table">
+				<div class="modal-edit-form">
+					<div class="title">
+						Match Detection
+					</div>
+				</div>
+				<div class="scrollable-content">
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
+				</div>
+			</div>
+		</div>
+		<div class="side-panel">
+			<side-panel [panelApplies]="true"
+						hasDetail="true"
+						[height]="'calc(100vh - 220px)'">
+			</side-panel>
+		</div>
+	</div>
+</d3s-modal>

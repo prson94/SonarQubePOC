@@ -10,6 +10,7 @@ import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
+import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -23,7 +24,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
 	secondarySidePanel: string;
 	resourceUid: any;
-	secondarySidePanelOpen: boolean;
+	secondarySidePanelOpen: boolean = false;
+	completeAssignmentModal: boolean = false;
 	selectedWorkflowItems: WorkflowMonitorItem[] = [];
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
@@ -69,6 +71,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	];
 
 	@ViewChild('assignmentGridComponent', { static: false }) assignmentGridComponent: AssignmentGridComponent;
+	@ViewChild('completeAssignmentComponent', { static: false }) completeAssignmentComponent: CompleteAssignmentComponent;
 
 	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
 				private titleService: Title,
@@ -134,15 +137,20 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.selectRow(workflowMonitorItems);
 	}
 
-	sidePanelLinkClicked(link: any) {
+	sidePanelLinkClicked(link: any): void {
 		this.secondarySidePanelOpen = true;
 		this.secondarySidePanel = 'user';
 		this.resourceUid = link.resourceUid;
 	}
 
-	deleteAssignments(event: boolean) {
+	deleteAssignments(event: boolean): void {
 		if (event) {
 			this.assignmentGridComponent.showDeletionModal = true;
 		}
+	}
+
+	openCompleteAssignment(): void {
+		this.completeAssignmentComponent
+		this.completeAssignmentComponent.openModal()
 	}
 }

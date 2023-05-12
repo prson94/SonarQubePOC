@@ -73,7 +73,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	export(): void {
-		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder)
+		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder);
 	}
 
 	gridSelectionChange(event: WorkflowMonitorItem[]): void {
@@ -131,8 +131,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	clickMenuIcon(item: any): void {
-		if(item) {
-			this.gridSelectionChange([item])
+		if (item) {
+			this.gridSelectionChange([item]);
 		}
 	}
 

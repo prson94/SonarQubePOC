@@ -40,6 +40,7 @@ import {
 	AssignmentProgressStepComponent
 } from './assignment-progress/assignment-progress-step/assignment-progress-step.component';
 import { CompleteAssignmentComponent } from './complete-assignment/complete-assignment.component';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 
 @NgModule({
@@ -80,7 +81,8 @@ import { CompleteAssignmentComponent } from './complete-assignment/complete-assi
 		SidePanelModule,
 		TableModule,
 		TooltipModule,
-		WorkflowMonitorModule
+		WorkflowMonitorModule,
+		SiteModalModule
 	]
 })
 export class AssignmentsModule {

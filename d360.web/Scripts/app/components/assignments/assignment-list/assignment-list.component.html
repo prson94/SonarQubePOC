@@ -7,6 +7,8 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
+			<button igButton type="button" class="ig-button-primary" margin (click)="openCompleteAssignment()" i18n-label
+					label="Complete Assignment"></button>
 			<d3s-assignment-grid #assignmentGridComponent (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
 				<div class="secondary-side-panel">
@@ -70,3 +72,4 @@
 		</as-split-area>
 	</as-split>
 </div>
+<d3s-complete-assignment #completeAssignmentComponent></d3s-complete-assignment>
