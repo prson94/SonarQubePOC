@@ -19,6 +19,7 @@ import { PropertyGroupModule } from '../../../shared/controls/property-group/pro
 import { SwitchModule } from '../../../shared/controls/switch/switch';
 import { CoreModule } from '../../../shared/core.module';
 import { SiteModalModule } from '../../../shared/modal/gov-modal.module';
+import { SearchFieldModule } from '../../controls/search-field/search-field.component';
 import { ConfigurationFieldTypeModalFormComponent } from './field-type-modal-form.component';
 import { RelationLookupFieldTypeEditorModule } from './relation-lookup-field-type-editor/relation-lookup-field-type-editor.module';
 
@@ -46,7 +47,8 @@ import { RelationLookupFieldTypeEditorModule } from './relation-lookup-field-typ
 		IconPickerModule,
 		IgNumberFieldModule,
 		TableModule,
-		RelationLookupFieldTypeEditorModule
+		RelationLookupFieldTypeEditorModule,
+		SearchFieldModule
     ],
 	declarations: [
 		ConfigurationFieldTypeModalFormComponent

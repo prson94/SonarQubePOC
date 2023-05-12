@@ -10,7 +10,7 @@
 			<div class="form-header-wrapper">
 				<div class="form-header">
 					{{title}}
-					<h2 *ngIf="assetTypeName" [innerHTML]="assetTypeName"></h2>
+					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
 				</div>
 				<ig-form-feedback-badges class="ig-form-feedback-badges"
 										 [igformGroup]="fieldTypeForm"
@@ -22,34 +22,44 @@
 				<form #form
 					  [formGroup]="fieldTypeForm"
 					  [style.overflow]="'auto'">
+					<ng-container *ngIf="formState === 'FieldTypeSelection'">
+						<div class="simple-search">
+							<span class="light-text" i18n>Select a field type from table below to continue.</span> <br />
+							<ig-search-field mode="Keypress"
+											 (onSearch)="dt.filterGlobal($event, 'contains')">
+							</ig-search-field>
+						</div>
+						<p-table #dt
+								 [value]="fieldTypes"
+								 selectionMode="single"
+								 [globalFilterFields]="['label']"
+								 (selectionChange)="selectedFieldType = $event.value"
+								 [(selection)]="fieldTypeSelection"
+								 responsiveLayout="scroll"
+								 [tableStyle]="{'min-width': 'max-content'}"
+								 [loading]="areFieldTypesLoading"
+								 [loadingIcon]="'fa fa-spinner fa-spin'">
+							<ng-template pTemplate="header">
+								<tr>
+									<th i18n>
+										Field Type
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body"
+										 let-item>
+								<tr [pSelectableRow]="item">
+									<td class="rel-name">
+										<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
 
-					<p-table *ngIf="formState === 'FieldTypeSelection'"
-							 #dt
-							 [value]="fieldTypes"
-							 selectionMode="single"
-							 [globalFilterFields]="['label']"
-							 (selectionChange)="selectedFieldType = $event.value"
-							 [(selection)]="fieldTypeSelection">
-						<ng-template pTemplate="header">
-							<tr>
-								<th i18n>
-									Field Type
-								</th>
-							</tr>
-						</ng-template>
-						<ng-template pTemplate="body"
-									 let-item>
-							<tr [pSelectableRow]="item">
-								<td class="rel-name">
-									<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
-
-									<span class="rel-text">
-										{{item.label}}
-									</span>
-								</td>
-							</tr>
-						</ng-template>
-					</p-table>
+										<span class="rel-text">
+											{{item.label}}
+										</span>
+									</td>
+								</tr>
+							</ng-template>
+						</p-table>
+					</ng-container>
 
 					<ng-container *ngIf="formState === 'Form'">
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="General" i18n-title>
@@ -57,13 +67,26 @@
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<label for="name" class="ig-label" i18n>Name</label>
+											<label for="FriendlyName" class="ig-label" i18n>Field Name</label>
 											<input igInput
 												   igSize="full"
-												   name="name"
+												   name="FriendlyName"
 												   tabindex="10"
-												   formControlName="name"
-												   [igDataCy]="'Asset_Type_Modal_Field_Name'"
+												   formControlName="FriendlyName"
+												   [igDataCy]="'Field_Type_Modal_Field_FriendlyName'"
+												   type="text"
+												   required />
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="Name" class="ig-label" i18n>API Name</label>
+											<input igInput
+												   igSize="full"
+												   name="Name"
+												   tabindex="10"
+												   formControlName="Name"
+												   [igDataCy]="'Field_Type_Modal_Field_Name'"
 												   type="text"
 												   required />
 										</div>

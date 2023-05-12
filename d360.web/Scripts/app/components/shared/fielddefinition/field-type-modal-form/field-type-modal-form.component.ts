@@ -1,8 +1,10 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
+import { Table } from "primeng/table";
 import { forkJoin, Subscription } from "rxjs";
 import { AssetType, AssetTypeClass, } from "../../../../models/asset.model";
+import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
@@ -35,6 +37,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@Output() onClose = new EventEmitter();
 	@Output() onUpdated = new EventEmitter();
 	fieldTypeForm: FormGroup = null;
+	fieldType: FieldTypeAPIModel;
 
 	title = 'unset';
 	subTitle = 'unset';
@@ -42,10 +45,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	isLoading = false;
 	savingInProgress = false;
 	formState: FormState = FormState.FieldTypeSelection;
-
+	areFieldTypesLoading: boolean = false;
 
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild('dt', { static: false }) dt: Table;
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -64,6 +68,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		private elRef: ElementRef,
 		private cdRef: ChangeDetectorRef
 	) {
+	
 	}
 
 	fieldTokens = [
@@ -75,9 +80,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	ngOnInit() {
 		this.isLoading = true;
 		this.setForm();
+		this.areFieldTypesLoading = true;
 		this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
 			.subscribe((res) => {
 				this.fieldTypes = res.DataTypes;
+				this.areFieldTypesLoading = false;
+				this.cdRef.markForCheck();
 			});
 
 	}
@@ -91,7 +99,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 	setForm() {
 		this.fieldTypeForm = this.fb.group({
-			name: [null, { validators: [Validators.required] }]
+			FriendlyName: [null, { validators: [Validators.required] }],
+			Name: [null, { validators: [Validators.required] }]
 		});
 
 		this.setDefaultFormValues();
@@ -109,43 +118,45 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	updateForm() {
+		this.subTitle = this.assetTypeName;
+
 		if (this.uid) {
-			if (this.changeFormSub) {
-				this.changeFormSub.unsubscribe();
-			}
-			this.isLoading = true;
+			//if (this.changeFormSub) {
+			//	this.changeFormSub.unsubscribe();
+			//}
+			//this.isLoading = true;
 
-			forkJoin(
-				this.assetTypeService.GetAssetTypeByUid(this.uid),
-				this.fieldsService.getAssetTypeFields(this.uid)
-			).subscribe((results) => {
-				const assetType = results[0];
-				this.fieldTokens = [];
-				if (results[1] && results[1].length) {
-					results[1].forEach((field) => {
-						const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Boolean", "Decimal", "Lookup", "Counter"];
-						if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
-							this.fieldTokens.push({ title: field.Name });
-						}
-					});
-				}
+			//forkJoin(
+			//	this.assetTypeService.GetAssetTypeByUid(this.uid),
+			//	this.fieldsService.getAssetTypeFields(this.uid)
+			//).subscribe((results) => {
+			//	const assetType = results[0];
+			//	this.fieldTokens = [];
+			//	if (results[1] && results[1].length) {
+			//		results[1].forEach((field) => {
+			//			const keyFieldTypes = ["Text", "Date", "DateTime", "Number", "Boolean", "Decimal", "Lookup", "Counter"];
+			//			if (keyFieldTypes.some((ft) => ft.toLowerCase() === field.Type.toLowerCase())) {
+			//				this.fieldTokens.push({ title: field.Name });
+			//			}
+			//		});
+			//	}
 
-				this.fieldTypeForm.controls["name"].setValue(assetType.Name);
-
-
-				this.title = $localize`Edit Field`;
-				this.subTitle = assetType.Name;
+			//	this.fieldTypeForm.controls["Name"].setValue(assetType.Name);
 
 
+			//	this.title = $localize`Edit Field`;
+			//	this.subTitle = assetType.Name;
 
-				this.isEditFormUpdated = false;
-				setTimeout(() => {
-					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
-						this.isEditFormUpdated = true;
-					});
-				}, 200);
-				this.isLoading = false;
-			});
+
+
+			//	this.isEditFormUpdated = false;
+			//	setTimeout(() => {
+			//		this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
+			//			this.isEditFormUpdated = true;
+			//		});
+			//	}, 200);
+			//	this.isLoading = false;
+			//});
 		}
 		else {
 			this.title = $localize`Add Field`;
@@ -159,25 +170,33 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	save() {
 		this.savingInProgress = true;
-		const model = new AssetType();
-		model.Class = this.assetTypeClass;
-		model.Name = this.fieldTypeForm.get("name").value;
+		const model = new FieldTypeAPIModel();
+		model.AssetTypeUid = this.assetTypeUid;
+		model.RelationshipTypeUid = this.relationshipTypeUid;
+		model.ActionTypeUid = this.actionTypeUid;
+		model.Fields = [];
+		model.Fields[0] = new FieldTypeAPIModelField();
+		model.Fields[0].Type = new FieldType(this.selectedFieldType);
+		const type = model.Fields[0].Type;
+		model.Fields[0].FriendlyName = this.fieldTypeForm.get("FriendlyName").value;
+		model.Fields[0].Name = this.fieldTypeForm.get("Name").value;
 
+		console.log(model);
+		return;
+		//let saveObs = this.assetTypeService.postAssetType(model);
 
-		let saveObs = this.assetTypeService.postAssetType(model);
+		//if (this.uid) {
+		//	model.Uid = this.uid;
+		//	saveObs = this.assetTypeService.putAssetType(model);
+		//}
 
-		if (this.uid) {
-			model.Uid = this.uid;
-			saveObs = this.assetTypeService.putAssetType(model);
-		}
-
-		saveObs.subscribe((res) => {
-			if (res) {
-				this.onUpdated.emit(res);
-				this.close();
-			}
-			this.savingInProgress = false;
-		});
+		//saveObs.subscribe((res) => {
+		//	if (res) {
+		//		this.onUpdated.emit(res);
+		//		this.close();
+		//	}
+		//	this.savingInProgress = false;
+		//});
 	}
 
 	get isFormDisabled(): boolean {
@@ -248,6 +267,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	confirmTypSelection() {
 		console.log(this.selectedFieldType);
 		this.formState = FormState.Form;
+		this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
 		this.cdRef.markForCheck();
 	}
 }
