@@ -9,6 +9,7 @@ import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 export class AssignmentInformationComponent implements OnInit {
 
 	@Input() workflowAssignmentItem: WorkflowMonitorItem;
+	@Input() isIssueType: boolean = false;
 	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
 	constructor() {

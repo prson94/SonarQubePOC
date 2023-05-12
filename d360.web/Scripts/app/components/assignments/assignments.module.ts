@@ -36,6 +36,9 @@ import {
 	AssignmentInformationRequestComponent
 } from './assignment-information/assignment-information-request/assignment-information-request.component';
 import { CoreModule } from '../shared/core.module';
+import {
+	AssignmentProgressStepComponent
+} from './assignment-progress/assignment-progress-step/assignment-progress-step.component';
 import { CompleteAssignmentComponent } from './complete-assignment/complete-assignment.component';
 
 
@@ -48,9 +51,10 @@ import { CompleteAssignmentComponent } from './complete-assignment/complete-assi
 		AssignmentListComponent,
 		AssignmentMultiDeleteComponent,
 		AssignmentProgressComponent,
+		AssignmentProgressStepComponent,
 		AssignmentsContainerComponent,
-		WorkflowVersionListComponent,
-		CompleteAssignmentComponent
+		CompleteAssignmentComponent,
+		WorkflowVersionListComponent
 	],
 	imports: [
 		AdvancedFiltersModule,

@@ -9,8 +9,12 @@ import { WorkflowMonitorItem } from '../../../../models/workflowmonitor.model';
 	styleUrls: ['./assignment-information-request.component.less']
 })
 export class AssignmentInformationRequestComponent implements OnInit {
+	private _workflowAssignmentItem: WorkflowMonitorItem;
 
-	@Input() workflowAssignmentItem: WorkflowMonitorItem;
+	@Input() set workflowAssignmentItem(value: WorkflowMonitorItem) {
+		this._workflowAssignmentItem = value;
+		this.loadData();
+	}
 
 	isLoading: boolean;
 	tooltipInfo: TooltipInfo;
@@ -23,7 +27,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	loadData() {
 		this.isLoading = true;
-		this.toolTipService.getTooltipInfo('Issue', this.workflowAssignmentItem.Id)
+		this.toolTipService.getTooltipInfo('Issue', this._workflowAssignmentItem.Id)
 			.subscribe((data) => {
 				this.tooltipInfo = data;
 				this.isLoading = false;
