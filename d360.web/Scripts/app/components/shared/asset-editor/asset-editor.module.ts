@@ -1,10 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CalendarModule } from 'primeng/calendar';
 import { DropdownModule } from 'primeng/dropdown';
@@ -14,7 +11,6 @@ import { EditorModule } from 'primeng/editor';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
-
 import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -22,10 +18,9 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedAssetEditorsModule } from '../asseteditors/shared-asset-editor.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { SimilarItemsModule } from '../similar-items.component';
-
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
-import { NgxJsonViewModule } from 'ng-json-view';
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
@@ -90,7 +85,7 @@ import { TaggedAssetDetailModule } from "../tagged-assets/tagged-assets-detail.m
         TagPickerModule,
         SwitchModule,
 
-        NgxJsonViewModule,
+        JsonViewerModule,
         SidePanelModule,
 		
 		AssetDetailModule,

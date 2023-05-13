@@ -1235,9 +1235,13 @@ from	IntersectType I
 
 			if (limitToClasses != null && limitToClasses.Count > 0)
 			{
-				if (subjectUid.HasValue && subjectUid.Value == Refertypelistuid)
+				if (subjectUid.HasValue)
 				{
-					whereStatements.Add($@"T.[uid] != '{Refertypelistuid}'");
+					var IsReferenceClass = Filter<AssetType>(i => i.uid == subjectUid.Value && i.Class == AssetTypeClass.Reference).Count();
+					if (IsReferenceClass > 0)
+					{
+						whereStatements.Add($@"T.[uid] != '{subjectUid.Value}'");
+					}
 				}
 				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
 			}

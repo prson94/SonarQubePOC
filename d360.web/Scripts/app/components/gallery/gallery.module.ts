@@ -74,6 +74,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GalleryImagePickerComponent } from './gallery.image-picker.component';
 import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
 import { GalleryRegexpInputComponent } from './gallery.regexp-input.component';
+import { GalleryJsonViewerComponent } from './gallery.json-viewer.component';
+import { JsonViewerModule } from '../shared/controls/json-viewer/json-viewer.component';
 import { GalleryComponentPropertiesComponent } from './shared/gallery.component-properties.component';
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
 import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
@@ -131,7 +133,8 @@ import { TableDataTransferModule } from '../shared/table-data-transfer/table-dat
         CodemirrorModule,
         ImagePickerModule,
         ColorSelectorModule,
-        RegexpInputModule,
+		RegexpInputModule,
+		JsonViewerModule,
         FormFeedbackBadgesModule,
         DropdownBadgeModule,
         InputTextareaModule,
@@ -176,7 +179,8 @@ import { TableDataTransferModule } from '../shared/table-data-transfer/table-dat
         GalleryModalDrawerComponent,
         GalleryCodeAreaComponent,
         GalleryImagePickerComponent,
-        GalleryRegexpInputComponent,
+		GalleryRegexpInputComponent,
+		GalleryJsonViewerComponent,
         GalleryColorSelectorComponent,
         GalleryFormFeedbackBadgesComponent,
         GalleryDropdownBadgeComponent

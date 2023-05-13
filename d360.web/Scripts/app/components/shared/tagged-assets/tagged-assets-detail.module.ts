@@ -6,7 +6,7 @@ import { FormsModule } from "@angular/forms";
 import { PipesModule } from "../../../pipes/pipes.module";
 import { CoreModule } from "../core.module";
 import { TooltipModule } from "primeng/tooltip";
-import { NgxJsonViewModule } from "ng-json-view";
+import { JsonViewerModule } from '../controls/json-viewer/json-viewer.component';
 import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
 import { TagViewModule } from "../tags/d3s-tag-view.module";
 import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
@@ -34,7 +34,7 @@ import { DirectivesModule } from "../../../directives/directives.module";
         PipesModule,
         TooltipModule,
         DirectivesModule,
-        NgxJsonViewModule,
+        JsonViewerModule,
         IgColorPickerModule,
         PropertyGroupModule,
         TagViewModule,

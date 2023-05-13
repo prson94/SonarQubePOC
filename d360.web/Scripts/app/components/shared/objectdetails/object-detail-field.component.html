@@ -44,7 +44,7 @@
                     <div class="FieldDisplayContent">
                         <div *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</div>
                         <ng-template #showJSON>
-                            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                            <ig-json-view [data]="GetJSON(field.Value)"></ig-json-view>
                         </ng-template>
                     </div>
                 </ng-container>
