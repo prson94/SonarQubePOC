@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { StepType, WorkflowItemStep } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-progress-step',
@@ -7,27 +8,29 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class AssignmentProgressStepComponent implements OnInit {
 
-	/**
-	 *
-	 */
-	@Input() header: string;
+	@Input() workflowItemStep: WorkflowItemStep;
 
-	/**
-	 *
-	 */
-	@Input() status: string;
+	get header(): string {
+		return StepType[this.workflowItemStep.StepType];
+	}
 
-	/**
-	 *
-	 */
-	@Input() message: string;
+	get status(): string {
+		return this.workflowItemStep.Complete ? 'Done' : (this.isLastStep ? 'In Progress' : 'Not started');
+	}
 
-	/**
-	 *
-	 */
-	@Input() icon: string = 'information';
+	get message(): string {
+		return '';
+	}
 
-	@Input() isLastStep: boolean = false
+	get icon(): string {
+		if (this.workflowItemStep.StepType === 1) {
+			return 'fa-play-circle';
+		} else if (this.workflowItemStep.StepType === 4) {
+			return 'fa-stop-circle';
+		}
+	}
+
+	@Input() isLastStep: boolean = false;
 
 	constructor() {
 	}
@@ -35,4 +38,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 	ngOnInit(): void {
 	}
 
+	showStepDetails(workflowItemStep: WorkflowItemStep) {
+
+	}
 }

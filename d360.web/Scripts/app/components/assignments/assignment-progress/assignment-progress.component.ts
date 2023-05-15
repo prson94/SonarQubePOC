@@ -9,7 +9,7 @@ import { WorkflowItemStep } from '../../../models/workflow.model';
 })
 export class AssignmentProgressComponent implements OnInit {
 	private _workflowItemId: number;
-	itemSteps: WorkflowItemStep[];
+	workflowItemSteps: WorkflowItemStep[];
 
 	@Input() set workflowItemId(value: number) {
 		this._workflowItemId = value;
@@ -23,11 +23,11 @@ export class AssignmentProgressComponent implements OnInit {
 	}
 
 	private loadData(): void {
-		this.itemSteps = [];
+		this.workflowItemSteps = [];
 		if (this._workflowItemId) {
 			this.workflowService.getWorkflowItemSteps(this._workflowItemId)
 				.subscribe((response: WorkflowItemStep[]) => {
-					this.itemSteps = response;
+					this.workflowItemSteps = response;
 				});
 		}
 	}

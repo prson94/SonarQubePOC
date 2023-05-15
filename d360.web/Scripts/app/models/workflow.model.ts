@@ -508,10 +508,13 @@ export class WorkflowItemStep {
 	StartedBy: string;
 	CompletedOn: string;
 	CompletedBy: string;
+	Fields: string;
 	IsIssueType: boolean;
 	Object: string;
 	ObjectID: number;
 	TypeID: number;
+	IsAssignedLoginUser: string;
+	FieldsObject: Record<string, any>
 }
 
 export class BulkWorkflowFormModel {

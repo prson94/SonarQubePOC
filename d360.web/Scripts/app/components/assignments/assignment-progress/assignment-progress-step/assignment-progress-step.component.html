@@ -1,17 +1,28 @@
 <div class="assignment-progress-step">
-	<div class="row">
-		<div class="col s1">
-			<i class="fa spacing-top" [ngClass]="icon"></i>
+	<ng-container *ngIf="(workflowItemStep.StepType === 1 || workflowItemStep.StepType === 4) else isClickable">
+		<div class="row">
+			<ng-template [ngTemplateOutlet]="stepHeader"></ng-template>
 		</div>
-		<div class="col s7 header-text">
-			{{ header }}
+	</ng-container>
+	<ng-template #isClickable>
+		<div class="row" role="button" (click)="showStepDetails(workflowItemStep)">
+			<ng-template [ngTemplateOutlet]="stepHeader"></ng-template>
 		</div>
-		<div class="col s4 right-align">
-			{{ status }}
-		</div>
-	</div>
+	</ng-template>
 	<div class="row" *ngIf="message">
 		<div class="col offset-s1">{{message}}</div>
 	</div>
 </div>
 <span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
+
+<ng-template #stepHeader>
+	<div class="col s1">
+		<i class="fa spacing-top" [ngClass]="icon"></i>
+	</div>
+	<div class="col s7 header-text" i18n>
+		{{ header }}
+	</div>
+	<div class="col s4 right-align" i18n>
+		{{ status }}
+	</div>
+</ng-template>
