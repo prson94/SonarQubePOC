@@ -32,6 +32,7 @@ import { cloneDeep, includes } from "lodash-es";
 import * as go from 'gojs';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
@@ -171,9 +172,15 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     ngOnChanges() {
-        if (this.step.settings == null)
-            {this.step.settings = new NodeSettings();}
-        this.originalStep = cloneDeep(this.step);
+		if (this.step.settings == null) {
+			this.step.settings = new NodeSettings();
+		}
+
+		if (this.step.settings.MessageBodyTemplate) {
+			this.step.settings.MessageBodyTemplate = DOMPurify.sanitize(this.step.settings.MessageBodyTemplate);
+		}
+
+		this.originalStep = cloneDeep(this.step);
 
 
         if (this.step.activityType === WorkflowActivityType.EmailNotification) {

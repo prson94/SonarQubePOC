@@ -7,6 +7,7 @@ import { SocialService } from "../../../services/social.service";
 import { BaseComponent } from "../base.component";
 import { cloneDeep } from "lodash-es";
 import { CompanySettingsService } from "../../../services/settings.service";
+import * as DOMPurify from "dompurify";
 
 @Component({
     selector: "d3s-comment-form",
@@ -38,7 +39,8 @@ export class CommentFormComponent extends BaseComponent {
     }
 
     ngOnInit() {
-        if (this.comment.Body) {
+		if (this.comment.Body) {
+			this.comment.Body = DOMPurify.sanitize(this.comment.Body);
             this.originalComment = cloneDeep(this.comment);
         }
     }

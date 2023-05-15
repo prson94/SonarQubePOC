@@ -28,6 +28,7 @@ import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { Subject } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
+import * as DOMPurify from "dompurify";
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -286,6 +287,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 }
 
+				if (f.FieldType === "Html") {
+					f.Value = DOMPurify.sanitize(f.Value);
+				}
 
                 if (f.FieldType && f.FieldType.toUpperCase() === 'BOOLEAN' && f.Value != null) {
                     if (f.Value) {

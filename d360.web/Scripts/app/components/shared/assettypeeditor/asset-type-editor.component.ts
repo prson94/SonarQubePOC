@@ -4,6 +4,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass, AssetTypeEditorModel, FlowObjectType } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-asset-type-editor',
@@ -104,7 +105,12 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             .assetTypeService
             .getAssetTypeEditor(this.assetTypeClass, this.id, this.parentID)
             .subscribe((data) => {
-                this.model = data;
+				this.model = data;
+
+				if (this.model.AssetType.Description) {
+					this.model.AssetType.Description = DOMPurify.sanitize(this.model.AssetType.Description);
+				}
+
                 if (this.model.AssetType.Hierarchy.MaximumDepth === 0) {
                     this.model.AssetType.Hierarchy.MaximumDepth = 1;
                 }

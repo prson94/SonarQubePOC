@@ -32,6 +32,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-responsibility-item-form',
@@ -92,7 +93,10 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         this.responsibilityService.getResponsibilityItemEditor(null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
             .subscribe((data) => {
-                this.model = data;
+				this.model = data;
+				if (this.model.responsibility.Context) {
+					this.model.responsibility.Context = DOMPurify.sanitize(this.model.responsibility.Context);
+				}
                 this.onLoadComplete.emit({ item: this.item });
                 this.isLoading = false;
             });

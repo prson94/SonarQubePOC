@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using d360.core;
 using d360.extensions;
-using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
@@ -21,15 +20,7 @@ namespace d360.web
         public BaseMiddleware(Func<IDictionary<string, object>, Task> next)
         {
 	        Next = next;
-
-	        if (Config.GetValue<bool>("RedisEnabled"))
-            {
-                Cache = new RedisCachingProvider();
-            }
-            else
-            {
-                Cache = new MemoryCachingProvider();
-            }
+			Cache = new MemoryCachingProvider();
         }
 
         public CompanyContext CreateOwinCompanyContext(int companyId)

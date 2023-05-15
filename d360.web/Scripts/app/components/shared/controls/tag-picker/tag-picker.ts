@@ -23,6 +23,7 @@ import { TagPermissionItem, TagType } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import * as DOMPurify from 'dompurify';
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {
@@ -181,7 +182,10 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         if (isAssigned)
             {return false;}
 
-        if (item.title.includes("|")) {
+		if (item.title) {
+			item.title = DOMPurify.sanitize(item.title, { USE_PROFILES: { html: false } });
+		}
+		if (item.title.includes("|")) {
             this.messagesService.showError('Error', "Tag can't contain | character");
             return false;
         }

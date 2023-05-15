@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
@@ -42,7 +43,7 @@ namespace d360.model.DataAccessLayer
 
 			var report = new Report();
 			report.Name = model.Name;
-			report.Description = model.Description;
+			report.Description = model.Description.SanitizeHtml();
 			report.AssetTypeID = model.AssetTypeId;
 			report.AssetTypeUid = model.AssetTypeUid;
 
@@ -68,7 +69,7 @@ namespace d360.model.DataAccessLayer
 
 			var report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
 			report.Name = model.Name;
-			report.Description = model.Description;
+			report.Description = model.Description.SanitizeHtml();
 			report.AssetTypeID = model.AssetTypeId;
 			report.AssetTypeUid = model.AssetTypeUid;
 
