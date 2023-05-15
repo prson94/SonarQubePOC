@@ -4,7 +4,7 @@
 		"declaration": false,
 		"module": "esnext",
 		"moduleResolution": "node",
-		"target": "es2020",
+		"target": "ES2022",
 		"noImplicitAny": false,
 		"sourceMap": true,
 		"mapRoot": "",
@@ -24,7 +24,8 @@
 		"typeRoots": [
 			// add path to @types
 			"../../node_modules/@types"
-		]
+		],
+		"useDefineForClassFields": false
 	},
 	"angularCompilerOptions": {
 		"strictTemplates": false,
