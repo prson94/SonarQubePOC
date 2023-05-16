@@ -25,7 +25,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	secondarySidePanel: string;
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
-	completeAssignmentModal: boolean = false;
 	selectedWorkflowItems: WorkflowMonitorItem[] = [];
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({

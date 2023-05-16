@@ -41,6 +41,7 @@ import {
 } from './assignment-progress/assignment-progress-step/assignment-progress-step.component';
 import { CompleteAssignmentComponent } from './complete-assignment/complete-assignment.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { AssetTypeDetailV2Module } from '../shared/asset-type-detail-v2/asset-type-detail-v2.module';
 
 
 @NgModule({
@@ -57,33 +58,34 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 		CompleteAssignmentComponent,
 		WorkflowVersionListComponent
 	],
-	imports: [
-		AdvancedFiltersModule,
-		AngularSplitModule,
-		AssetDetailModule,
-		AssignmentsRoutingModule,
-		ButtonModule,
-		CheckboxModule,
-		CommonModule,
-		CoreModule,
-		D3SColumnFilterModule,
-		D3SSortIconModule,
-		DirectivesModule,
-		FormsModule,
-		IgBadgeModule,
-		PopupMenuModule,
-		PropertyGroupModule,
-		RouterModule,
-		SearchFieldModule,
-		SharedDeleteFormModule,
-		SharedGridPagingInfoModule,
-		SharedModule,
-		SidePanelModule,
-		TableModule,
-		TooltipModule,
-		WorkflowMonitorModule,
-		SiteModalModule
-	]
+    imports: [
+        AdvancedFiltersModule,
+        AngularSplitModule,
+        AssetDetailModule,
+        AssignmentsRoutingModule,
+        ButtonModule,
+        CheckboxModule,
+        CommonModule,
+        CoreModule,
+        D3SColumnFilterModule,
+        D3SSortIconModule,
+        DirectivesModule,
+        FormsModule,
+        IgBadgeModule,
+        PopupMenuModule,
+        PropertyGroupModule,
+        RouterModule,
+        SearchFieldModule,
+        SharedDeleteFormModule,
+        SharedGridPagingInfoModule,
+        SharedModule,
+        SidePanelModule,
+        TableModule,
+        TooltipModule,
+        WorkflowMonitorModule,
+        SiteModalModule,
+        AssetTypeDetailV2Module
+    ]
 })
 export class AssignmentsModule {
 }
