@@ -249,14 +249,14 @@ namespace d360.web
             bool returnVar = false;
             if (urlwithparameter.Contains("?"))
             {
-                int lendata = urlwithparameter.ToLowerInvariant().LastIndexOf("?".ToLowerInvariant());
+                int lendata =  urlwithparameter.LastIndexOf("?", StringComparison.InvariantCulture);
                 url = urlwithparameter.Substring(0, lendata);
             }
             string Checkchar = url.Substring(url.Length - 1, 1).ToLowerInvariant();
 
             string invalidcharList = " &%*<>?:";
 
-            if (invalidcharList.ToLowerInvariant().IndexOf(Checkchar) > -1)
+            if (invalidcharList.IndexOf(Checkchar,StringComparison.InvariantCulture) > -1)
             {
                 returnVar = true;
             }
