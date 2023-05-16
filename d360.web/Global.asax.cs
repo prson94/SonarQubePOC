@@ -60,21 +60,15 @@ namespace d360.web
             #region Extension DI
 
             #region Config Setting Reader            
-            builder.RegisterType<d360.extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
+            builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
             builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>().InstancePerRequest().OnActivating(i => {
                 i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
                 i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
             });
-            if (Config.GetValue<bool>("RedisEnabled"))
-            {
-                builder.RegisterType<RedisCachingProvider>().As<ICachingProvider>().InstancePerRequest();
-            }
-            else
-            {
-                builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
-            }
-            builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
-            builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
+			
+			builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            builder.RegisterType<extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
+            builder.RegisterType<extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion
 
             builder.RegisterModelModule();
@@ -87,7 +81,7 @@ namespace d360.web
 
             builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
 
-            builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
+            builder.RegisterType<extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
                 .InstancePerRequest()
                 .OnActivating(i => {
                     try

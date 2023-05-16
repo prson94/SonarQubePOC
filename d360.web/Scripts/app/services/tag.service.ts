@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import * as DOMPurify from 'dompurify';
 
 @Injectable({
     providedIn: 'root'
@@ -66,6 +67,10 @@ export class TagService extends BaseObservableService {
 
     saveTag(tag: TagType): Observable<any> {
         let url = `api/v2/tags/`;
+
+		if (tag.Value) {
+			tag.Value = DOMPurify.sanitize(tag.Value, { USE_PROFILES: { html: false } });
+		}
 
         if (tag.uid == null || !tag.uid) {
             return this.http.post(url, tag)

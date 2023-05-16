@@ -1,4 +1,22 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Contracts;
+using d360.core.entities.Graph;
+using d360.core.entities.Metric;
+using d360.core.entities.Views;
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.exceptions;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+using Dapper;
+using Microsoft.ApplicationInsights;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
@@ -10,31 +28,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Contracts;
-using d360.core.entities.Graph;
-using d360.core.entities.Metric;
-using d360.core.entities.Views;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.exceptions;
-using d360.core.helpers;
-using d360.core.queue;
-using d360.core.resources;
-using d360.extensions;
-using d360.model.helpers;
-using d360.model.helpers.filters;
-
-using Dapper;
-
-using Ganss.XSS;
-
-using Microsoft.ApplicationInsights;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace d360.model
 {
@@ -1798,9 +1791,7 @@ from	IntersectType I
 
 					if (field.FieldType != null && (field.FieldType.Type == "Html" || field.FieldType.Type == "Link"))
 					{
-						HtmlSanitizer sanitizer = new HtmlSanitizer();
-						sanitizer.AllowedSchemes.Add("data");
-						field.Value = sanitizer.Sanitize(field.Value);
+						field.Value = field.Value.SanitizeHtml();
 					}
 
 					// Need to determine if this field value has changed if not we dont want to tell workflow

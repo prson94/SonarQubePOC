@@ -46,6 +46,7 @@ import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { Breadcrumb } from "../../../models/breadcrumb.model";
+import * as DOMPurify from "dompurify";
 
 @Component({
 	selector: 'asset-editor',
@@ -454,6 +455,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			this.fields.forEach((f) => {
 				if (this.isActionForm() && f.FieldType === 'Lookup') {
 					this.useSidePanel = true;
+				}
+
+				if (f.FieldType === "Html") {
+					f.Value = DOMPurify.sanitize(f.Value);
 				}
 
 				if (f.Category == null) {

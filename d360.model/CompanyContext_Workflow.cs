@@ -2675,9 +2675,7 @@ namespace d360.model
 
 			if (supportHtml)
 			{
-				Ganss.XSS.HtmlSanitizer sanitizer = new Ganss.XSS.HtmlSanitizer();
-				sanitizer.AllowedSchemes.Add("data");
-				bodyTemplate = sanitizer.Sanitize(bodyTemplate);
+				bodyTemplate = bodyTemplate.SanitizeHtml();
 			}
 
 			string result = bodyTemplate;

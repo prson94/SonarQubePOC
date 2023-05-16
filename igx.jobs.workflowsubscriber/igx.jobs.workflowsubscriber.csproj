@@ -139,9 +139,6 @@
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
     </PackageReference>
-    <PackageReference Include="HtmlSanitizer">
-      <Version>5.0.404</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.Azure.Amqp">
       <Version>2.4.13</Version>
     </PackageReference>

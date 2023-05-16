@@ -1174,9 +1174,7 @@ namespace d360.model.DataAccessLayer.repositories
 					}
 					break;
 				case "HTML":
-					var doc = new HtmlAgilityPack.HtmlDocument();
-					doc.LoadHtml((value as string).GetSafeXLSColumnValue());
-					var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+					var txt = (value as string).ReplaceHtmlEntities();
 					if (txt.StartsWith("="))
 					{
 						txt = "'" + txt;

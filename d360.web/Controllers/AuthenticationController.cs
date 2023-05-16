@@ -1281,16 +1281,7 @@ namespace d360.web.Controllers
 
 		private List<ClaimMapping> getClaimMappings()
 		{
-			ICachingProvider cache;
-			if (ConfigurationManager.AppSettings["RedisEnabled"].ToString().ToLower() == "true")
-			{
-				cache = new RedisCachingProvider();
-			}
-			else
-			{
-				cache = new MemoryCachingProvider();
-			}
-
+			ICachingProvider cache = new MemoryCachingProvider();
 			return cache.GetItem<List<ClaimMapping>>($"{Company.CurrentCompanyID}_{Company.CurrentCompanyDomain}_ClaimMappings") ?? new List<ClaimMapping>();
 		}
     }

@@ -535,9 +535,7 @@ namespace d360.web.Controllers.Services
 					}
 					else if (field.FieldType == WorkflowFormModelFieldType.html)
 					{
-						var sanitizer = new Ganss.XSS.HtmlSanitizer();
-						sanitizer.AllowedSchemes.Add("data");
-						val = sanitizer.Sanitize(val);
+						val = val.SanitizeHtml();
 					}
 
 					newForm.Add(new XElement("field",

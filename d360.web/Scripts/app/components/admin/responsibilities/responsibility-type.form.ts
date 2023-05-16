@@ -1,4 +1,5 @@
 ﻿import { Component, EventEmitter, Input, OnInit, Output, SimpleChange } from '@angular/core';
+import * as DOMPurify from 'dompurify';
 import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
@@ -50,7 +51,10 @@ export class ResponsibilityTypeForm implements OnInit {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityType(this.id)
             .subscribe((r) => {
-                this.item = r;
+				this.item = r;
+				if (this.item.Description) {
+					this.item.Description = DOMPurify.sanitize(this.item.Description);
+				}
                 this.getSelectedAllocations();
                 this.isLoading = false;
             });

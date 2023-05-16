@@ -783,8 +783,8 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Boolean.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Boolean.Description.Display;
-						newFieldType.FormDescription = f.Type.Boolean.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Boolean.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Boolean.Description.Form.SanitizeHtml();
 					}
 					
 					if (f.Type.Boolean.Validation != null)
@@ -855,7 +855,7 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Score.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Score.Description.Display;
+						newFieldType.DisplayDescription = f.Type.Score.Description.Display.SanitizeHtml();
 					}
 
 				}
@@ -871,7 +871,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.ComputedOwnershipLookup.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.ComputedOwnershipLookup.Description.Display;
+						newFieldType.DisplayDescription = f.Type.ComputedOwnershipLookup.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.ComputedOwnershipLookup.IsDisplayable;
@@ -912,7 +912,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.ComputedRelationshipField.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.ComputedRelationshipField.Description.Display;
+						newFieldType.DisplayDescription = f.Type.ComputedRelationshipField.Description.Display.SanitizeHtml();
 					}
 
 					var query = @"
@@ -983,7 +983,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.ComputedRelationshipLookup.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.ComputedRelationshipLookup.Description.Display;
+						newFieldType.DisplayDescription = f.Type.ComputedRelationshipLookup.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.ComputedRelationshipLookup.IsDisplayable;
@@ -1200,7 +1200,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.ComputedRelationshipReferenceList.Description.Display;
+						newFieldType.DisplayDescription = f.Type.ComputedRelationshipReferenceList.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.ComputedRelationshipReferenceList.IsDisplayable;
@@ -1236,8 +1236,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Date.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Date.Description.Display;
-						newFieldType.FormDescription = f.Type.Date.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Date.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Date.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Date.IsDisplayable;
@@ -1283,8 +1283,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.DateTime.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.DateTime.Description.Display;
-						newFieldType.FormDescription = f.Type.DateTime.Description.Form;
+						newFieldType.DisplayDescription = f.Type.DateTime.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.DateTime.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.DateTime.IsDisplayable;
@@ -1329,8 +1329,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Decimal.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Decimal.Description.Display;
-						newFieldType.FormDescription = f.Type.Decimal.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Decimal.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Decimal.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Decimal.IsDisplayable;
@@ -1379,8 +1379,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Html.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Html.Description.Display;
-						newFieldType.FormDescription = f.Type.Html.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Html.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Html.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Html.IsDisplayable;
@@ -1412,7 +1412,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Json.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Json.Description.Display;
+						newFieldType.DisplayDescription = f.Type.Json.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
@@ -1435,7 +1435,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.JsonElement.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.JsonElement.Description.Display;
+						newFieldType.DisplayDescription = f.Type.JsonElement.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
@@ -1478,8 +1478,8 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Link.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Link.Description.Display;
-						newFieldType.FormDescription = f.Type.Link.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Link.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Link.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Link.IsDisplayable;
@@ -1524,8 +1524,8 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Lookup.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Lookup.Description.Display;
-						newFieldType.FormDescription = f.Type.Lookup.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Lookup.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Lookup.Description.Form.SanitizeHtml();
 					}
 					
 					newFieldType.AllowAllLabel = f.Type.Lookup.AllowAllLabel;
@@ -1705,8 +1705,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Number.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Number.Description.Display;
-						newFieldType.FormDescription = f.Type.Number.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Number.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Number.Description.Form.SanitizeHtml();
 					}
 					newFieldType.IsDisplayable = f.Type.Number.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Number.IsEditable;
@@ -1749,7 +1749,7 @@ namespace d360.model.DataAccessLayer
 
                     if (f.Type.Path.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Path.Description.Display;
+						newFieldType.DisplayDescription = f.Type.Path.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = f.Type.Path.IsDisplayable;
@@ -1771,8 +1771,8 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Relationship.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Relationship.Description.Display;
-						newFieldType.FormDescription = f.Type.Relationship.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Relationship.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Relationship.Description.Form.SanitizeHtml();
 					}
 					
 					var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
@@ -1822,8 +1822,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.Text.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Text.Description.Display;
-						newFieldType.FormDescription = f.Type.Text.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Text.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Text.Description.Form.SanitizeHtml();
 					}
 					newFieldType.IsDisplayable = f.Type.Text.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Text.IsEditable;
@@ -1860,7 +1860,7 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Tag.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Tag.Description.Display;
+						newFieldType.DisplayDescription = f.Type.Tag.Description.Display.SanitizeHtml();
 					}
 					
 					newFieldType.IsDisplayable = true;
@@ -1880,8 +1880,8 @@ namespace d360.model.DataAccessLayer
 					
 					if (f.Type.Counter.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.Counter.Description.Display;
-						newFieldType.FormDescription = f.Type.Counter.Description.Form;
+						newFieldType.DisplayDescription = f.Type.Counter.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.Counter.Description.Form.SanitizeHtml();
 					}
 
 					newFieldType.IsDisplayable = f.Type.Counter.IsDisplayable;
@@ -1923,8 +1923,8 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.System.Description != null)
 					{
-						newFieldType.DisplayDescription = f.Type.System.Description.Display;
-						newFieldType.FormDescription = f.Type.System.Description.Form;
+						newFieldType.DisplayDescription = f.Type.System.Description.Display.SanitizeHtml();
+						newFieldType.FormDescription = f.Type.System.Description.Form.SanitizeHtml();
 					}
 					newFieldType.IsDisplayable = f.Type.System.IsDisplayable;
 					newFieldType.IsEditable = f.Type.System.IsEditable;

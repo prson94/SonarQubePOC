@@ -4,6 +4,7 @@ import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import { cloneDeep } from "lodash-es";
 import { UntypedFormGroup, NgForm } from '@angular/forms';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',
@@ -26,7 +27,10 @@ export class AdminSurveyQuestionEditorEditor {
     @ViewChild('questionEditorForm', { static: true }) formGroup: NgForm;
 
     ngOnInit() {
-        if (this.question != null) {
+		if (this.question != null) {
+			if (this.question.Description) {
+				this.question.Description = DOMPurify.sanitize(this.question.Description);
+			}
             this.editedQuestion = cloneDeep(this.question);
         }
         else {

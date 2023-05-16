@@ -18,6 +18,7 @@ import { MessagesObservableService } from "../../../services/messages-observable
 import { CompanySettingsService } from "../../../services/settings.service";
 import { Operator } from "../../../models/operator.model";
 import { forkJoin } from "rxjs";
+import * as DOMPurify from "dompurify";
 
 
 @Component({
@@ -142,6 +143,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
                 .subscribe((data) => {
 					this.model = data;
+					if (this.model.Context) {
+						this.model.Context = DOMPurify.sanitize(this.model.Context);
+					}
+
 					if (this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions) {
 						this.model.StructuredDefinition.Then.Conditions.forEach((x) => {
 							if (!x.Object) {
