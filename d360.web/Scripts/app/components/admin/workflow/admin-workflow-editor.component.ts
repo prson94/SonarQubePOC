@@ -18,6 +18,7 @@ import { of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-admin-workflow-editor',
@@ -127,7 +128,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         //create initial model and settings if needed
                         if (this.model == null)
                             {this.model = new WorkflowDiagramModel();}
-                        if (this.model.Event.SettingsObject == null)
+
+						if (this.model.Type.Description) {
+							this.model.Type.Description = DOMPurify.sanitize(this.model.Type.Description);
+						}
+						if (this.model.Event.SettingsObject == null)
                             {this.model.Event.SettingsObject = {};}
                         if (this.model.Event.SettingsObject.Settings == null)
                             {this.model.Event.SettingsObject.Settings = {};}

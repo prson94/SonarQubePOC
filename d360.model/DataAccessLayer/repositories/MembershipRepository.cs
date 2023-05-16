@@ -469,8 +469,8 @@ namespace d360.model.DataAccessLayer
 				var success = true;
 				var messages = new List<string>();
 
-				user.FirstName = SanitizeValue(user.FirstName);
-				user.LastName = SanitizeValue(user.LastName);
+				user.FirstName = user.FirstName.SanitizeHtml();
+				user.LastName = user.LastName.SanitizeHtml();
 
 				if (user.IsNew)
 				{
@@ -1353,17 +1353,6 @@ namespace d360.model.DataAccessLayer
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
-		}
-
-		private string SanitizeValue(string ParameterValue)
-		{
-			var allowedTags = new[] { "data" };
-			var allowedSchemas = new[] { "data" };
-
-			var sanitizer = new Ganss.XSS.HtmlSanitizer(allowedTags: allowedTags, allowedSchemes: allowedSchemas);
-			var retstring = sanitizer.Sanitize(ParameterValue);
-
-			return retstring;
 		}
 
 		private bool validatePassword(string password)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.SurveyModels;
 using d360.core.resources;
@@ -63,7 +63,7 @@ namespace d360.model.DataAccessLayer
 
 			questionType.Name = update.Name;
 			questionType.DisplayStyle = update.DisplayStyle;
-			questionType.Description = update.Description;
+			questionType.Description = update.Description.SanitizeHtml();
 
 			var options = Enumerable.Zip(
 				questionType.QuestionTypeOptions,

@@ -7,6 +7,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DashboardService } from '../../../services/dashboard.service';
 import { DashboardDefinition, DashboardLocation, DashboardModel, DashboardType } from '../../../models/dashboard.model';
+import * as DOMPurify from 'dompurify';
 
 @Component({
 	selector: 'd3s-admin-dashboards-editor',
@@ -46,6 +47,9 @@ export class AdminDashboardsEditor {
 			this.reportTypes.push({ value: "DqPlus", title: "Data360 DQ+" });
 		}
 		if (this.report != null) {
+			if (this.report.Description) {
+				this.report.Description = DOMPurify.sanitize(this.report.Description);
+			}
 			this.editedReport = cloneDeep(this.report);
 			if (this.editedReport.AssetTypeUid) {
 				this.editedReport.SelectedObjectData = this.editedReport.AssetTypeUid.toLowerCase();

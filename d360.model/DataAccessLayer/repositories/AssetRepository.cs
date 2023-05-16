@@ -3103,7 +3103,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						uid = uid,
 						Name = model.Name,
 						DisplayFormat = model.DisplayFormat,
-						Description = model.Description,
+						Description = model.Description.SanitizeHtml(),
 						Object = parentType.ToString(),
 						State = State.Active,
 						UpdatedBy = resourceId,
@@ -3143,7 +3143,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						uid = uid,
 						Name = model.Name,
 						DisplayFormat = model.DisplayFormat,
-						Description = model.Description,
+						Description = model.Description.SanitizeHtml(),
 						HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
 						Object = objectType.ToString(),
 						State = State.Active,
@@ -3189,7 +3189,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						uid = uid,
 						Name = model.Name,
 						DisplayFormat = model.DisplayFormat,
-						Description = model.Description,
+						Description = model.Description.SanitizeHtml(),
 						Notes = model.Notes,
 						Object = SystemObjects.ReferenceItemType.ToString(),
 						State = State.Active,
@@ -3220,7 +3220,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						uid = uid,
 						Name = model.Name,
 						DisplayFormat = model.DisplayFormat,
-						Description = model.Description,
+						Description = model.Description.SanitizeHtml(),
 						Object = SystemObjects.TaskType.ToString(),
 						State = State.Active,
 						UpdatedBy = resourceId,
@@ -3365,7 +3365,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 					assetType.Name = model.Name;
 					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-					assetType.Description = model.Description;
+					assetType.Description = model.Description.SanitizeHtml();
 					assetType.IsDescriptionEnabled = model.IsDescriptionEnabled;
 					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
 					if (model.Class != AssetTypeClass.Diagram && model.Class != AssetTypeClass.Reference && model.Class != AssetTypeClass.User && model.Class != AssetTypeClass.Group)

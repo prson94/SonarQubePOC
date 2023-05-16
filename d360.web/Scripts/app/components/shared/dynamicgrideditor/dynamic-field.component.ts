@@ -27,6 +27,7 @@ import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -214,7 +215,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                 if (content != null) {
                     this.field.Value = quill.container.querySelector('.ql-editor').innerHTML;
-
+					this.field.Value = DOMPurify.sanitize(this.field.Value);
                     return;
                 }
             }
@@ -474,7 +475,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
 
-        } else if (this.field.FieldType === 'Html') {
+		} else if (this.field.FieldType === 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
         } else {

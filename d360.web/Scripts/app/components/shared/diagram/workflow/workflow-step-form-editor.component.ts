@@ -19,6 +19,7 @@ import { GroupService } from "../../../../services/group.service";
 import { FormMode, SelectItem } from "../../../../models/form.model";
 import { forkJoin } from "rxjs";
 import { CompanySettingsService } from "../../../../services/settings.service";
+import * as DOMPurify from "dompurify";
 
 @Component({
     selector: "d3s-workflow-step-form-editor",
@@ -210,6 +211,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         if (this.step.settings == null) {
             this.step.settings = new NodeSettings();
         }
+
+		if (this.step.settings.MessageBodyTemplate) {
+			this.step.settings.MessageBodyTemplate = DOMPurify.sanitize(this.step.settings.MessageBodyTemplate);
+		}
 
         //parse bool fields
         if (this.step.settings.SendFormEmail == null) {

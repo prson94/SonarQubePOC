@@ -1,5 +1,6 @@
 import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import * as DOMPurify from "dompurify";
 import { SelectItem } from "primeng/api";
 import { forkJoin, Subscription } from "rxjs";
 import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
@@ -197,6 +198,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 							this.fieldTokens.push({ title: field.Name });
 						}
 					});
+				}
+
+				if (assetType.Description) {
+					assetType.Description = DOMPurify.sanitize(assetType.Description);
 				}
 
 				this.assetTypeForm.controls["name"].setValue(assetType.Name);

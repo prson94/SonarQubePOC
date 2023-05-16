@@ -341,7 +341,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
     }
 
-    ngOnChanges() {
+	ngOnChanges() {
         if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
         } else {
@@ -381,7 +381,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         else if (this.field.FieldType === 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
 
-        } else if (this.field.FieldType === 'Html') {
+		} else if (this.field.FieldType === 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
         } else {

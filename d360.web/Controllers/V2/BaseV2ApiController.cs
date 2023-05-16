@@ -621,9 +621,7 @@ namespace d360.web.Controllers.V2
 
 					break;
 				default:
-					var doc = new HtmlAgilityPack.HtmlDocument();
-					doc.LoadHtml(value + "");
-					var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+					var txt = value.ReplaceHtmlEntities();
 
 					if (txt.StartsWith("="))
 					{
@@ -786,10 +784,7 @@ namespace d360.web.Controllers.V2
 
 					break;
 				default:
-					var doc = new HtmlAgilityPack.HtmlDocument();
-					doc.LoadHtml(value + "");
-					var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-
+					var txt = (value+"").ReplaceHtmlEntities();
 					if (txt.StartsWith("="))
 					{
 						txt = "'" + txt;

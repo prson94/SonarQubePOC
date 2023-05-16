@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using d360.core.resources;
+using HtmlAgilityPack;
+using OWASP.AntiSamy.Html;
 
 namespace d360.core
 {
@@ -151,6 +153,38 @@ namespace d360.core
 		{
 			var validXmlChars = text.Where(ch => XmlConvert.IsXmlChar(ch)).ToArray();
 			return new string(validXmlChars);
+		}
+
+		//				
+
+		public static string SanitizeHtml(this string text)
+		{
+			if (!string.IsNullOrEmpty(text))
+			{
+				var s = new AntiSamy();
+				var results = s.Scan(text);
+				text = results.GetCleanHtml();
+			}
+			return text;
+		}
+
+		public static string RemoveHtml(this string text)
+		{
+			if (!string.IsNullOrEmpty(text))
+			{
+				HtmlDocument doc = new HtmlDocument();
+				doc.LoadHtml(text);
+				text = doc.DocumentNode.InnerText;
+			}
+			return text;
+		}
+
+		public static string ReplaceHtmlEntities(this string text)
+		{
+			HtmlDocument doc = new HtmlDocument();
+			doc.LoadHtml(text + "");
+			text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+			return text;
 		}
 
 	}
