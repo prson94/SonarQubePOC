@@ -8,17 +8,56 @@
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
-					<div class="title">
-						Match Detection
+					<div i18n class="title">
+						{{ modalTitle }}
+						<span class="modal-buttons">
+							<button
+								igButton
+								[ngClass]="isAssignmentProgressSelected ? '' : 'selected'"
+								[icon]="'fa-file-text'"
+								(click)="showAssignment()"
+								class="ig-button-secondary side-panel-button">
+							</button>
+							<button
+								igButton
+								[icon]="'fa-list-ul'"
+								[ngClass]="isAssignmentProgressSelected ? 'selected' : ''"
+								(click)="showAssignmentProgress()"
+								class="ig-button-secondary side-panel-button">
+							</button>
+						</span>
 					</div>
 				</div>
-				<div class="scrollable-content">
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia nesciunt omnis, porro repellendus.
+				<div>subtitle</div>
+				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content">
+					Assignment Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus.
+					Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
+				</div>
+				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
+					Assignment Progress Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
+					temporibus. Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
+					debitis
+					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
+					nesciunt omnis, porro repellendus.
 				</div>
 			</div>
 		</div>

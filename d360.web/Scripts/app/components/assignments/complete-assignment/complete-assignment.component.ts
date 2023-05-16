@@ -8,19 +8,32 @@ import { Component, OnInit } from '@angular/core';
 export class CompleteAssignmentComponent implements OnInit {
 
 	isModalVisible: boolean = false;
+	isAssignmentProgressSelected: boolean = false;
+	modalTitle: string = 'Assignment';
 
 	constructor() {
 	}
 
 	ngOnInit(): void {
+		this.isAssignmentProgressSelected = false;
 	}
-	
+
 	openModal(): void {
-		this.isModalVisible = true
+		this.isModalVisible = true;
 	}
 
 	submit(): void {
-		console.log("submit")
+		console.log('submit');
+	}
+
+	showAssignment(): void {
+		this.isAssignmentProgressSelected = false
+		this.modalTitle = 'Assignment'
+	}
+
+	showAssignmentProgress(): void {
+		this.isAssignmentProgressSelected = true
+		this.modalTitle = 'Assignment Progress and Information'
 	}
 
 }
