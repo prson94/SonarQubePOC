@@ -3,10 +3,10 @@ import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
 import { forkJoin, Observable, Subscription } from "rxjs";
-import { AssetType, AssetTypeClass, } from "../../../../models/asset.model";
+import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
-import { AssetTypeService } from "../../../../services/asset-type.service";
+import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
@@ -35,17 +35,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
 
-
-	@Input() showIsListable: boolean = true;
-	@Input() showIsPartOfKey: boolean = true;
 	@Input() showShowInDetailTile: boolean = true;
 	@Input() showIsEditable: boolean = true;
 	@Input() showIsRequired: boolean = true;
 	@Input() showDescription: boolean = true;
-	@Input() showPersistInFilters: boolean = true;
 	@Input() enableAllowMultipleValues: boolean = true;
-	@Input() showAddToSearch: boolean = false;
-	@Input() supportsPrimaryFilterOption: boolean = false;
 	@Input() hasDisplayInColumn: boolean = false;
 
 	@Output() onClose = new EventEmitter();
@@ -80,13 +74,19 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	selectedAssetPathListSegment: any;
 
 	isInitialDataLoaded: boolean = false;
+	numberOfAssetsForType: number = 0;
 
 	get isEditing(): boolean {
 		return this.name ? true : false;
 	}
 
+	get supportsPrimaryFilterOption(): boolean {
+		return this.assetTypeUid ? true : false;
+	}
+
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
+		private assetService: AssetService,
 		private cdRef: ChangeDetectorRef
 	) {
 
@@ -100,29 +100,39 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	ngOnInit() {
 		this.isLoading = true;
-		this.areFieldTypesLoaded = false;
+
 		forkJoin(
 			this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
-			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
+			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
+			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
 		).subscribe((results) => {
-			this.typeFieldTypes = results[0];
-			const categories = Array.from(new Set(this.typeFieldTypes.map((item) => item.Category)));
+			if (results[0]) {
+				this.typeFieldTypes = results[0];
+				const categories = Array.from(new Set(this.typeFieldTypes.map((item) => item.Category)));
 
-			this.categoryTokens = [];
+				this.categoryTokens = [];
 
-			categories.filter((x) => x && x.length > 0).forEach((x) => {
-				this.categoryTokens.push({
-					title: x
+				categories.filter((x) => x && x.length > 0).forEach((x) => {
+					this.categoryTokens.push({
+						title: x
+					});
 				});
-			});
-			if (this.categoryTokens.length === 0) {
-				this.categoryTokens.push({ title: $localize`General` });
+				if (this.categoryTokens.length === 0) {
+					this.categoryTokens.push({ title: $localize`General` });
+				}
 			}
 
-			this.fieldTypes = results[1].DataTypes;
+			if (results[1]) {
+				this.fieldTypes = results[1].DataTypes;
+				this.setForm();
+			}
+
+			if (results[2].length > 0) {
+				this.numberOfAssetsForType = +results[2].length + 1;
+			}
+
 			this.areFieldTypesLoaded = true;
 			this.cdRef.markForCheck();
-			this.setForm();
 		});
 
 		if (this.assetTypeUid) {
@@ -166,18 +176,36 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			type.Path.Definition.AssetTypeUid = this.fieldTypeForm.get("AssetPathListSegment").value ?? null;
 		}
 
+		//Counter
+		if (this.selectedFieldType === 'Counter') {
+			type[this.selectedFieldType].CounterInitialIndex = this.fieldTypeForm.get("CounterInitialIndex").value ?? 1;
+			type[this.selectedFieldType].CounterPrefix = this.fieldTypeForm.get("CounterPrefix").value ?? '';
+		}
+
 		type[this.selectedFieldType].Description.Display = this.fieldTypeForm.get("DisplayDescription").value ?? null;
 		type[this.selectedFieldType].Search.AddToResult = this.fieldTypeForm.get("AddToResult").value ?? false;
 		type[this.selectedFieldType].IsDisplayable = this.fieldTypeForm.get("IsDisplayable").value ?? false;
 		type[this.selectedFieldType].DisplayInColumn = this.fieldTypeForm.get("DisplayInColumn").value ?? false;
 		type[this.selectedFieldType].IsEditable = this.fieldTypeForm.get("IsEditable").value ?? false;
-		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
 		type[this.selectedFieldType].Validation.IsRequired = this.fieldTypeForm.get("IsRequired").value ?? false;
 		type[this.selectedFieldType].IsPartOfKey = this.fieldTypeForm.get("IsPartOfKey").value ?? false;
 		type[this.selectedFieldType].IsPrimaryFilter = this.fieldTypeForm.get("IsPrimaryFilter").value ?? false;
 		type[this.selectedFieldType].AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? false;
 		type[this.selectedFieldType].ShowIfEmpty = this.fieldTypeForm.get("ShowIfEmpty").value ?? false;
 
+		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
+		if (type[this.selectedFieldType].IsListable) {
+			type[this.selectedFieldType].ColumnWidth = this.fieldTypeForm.get("ColumnWidth").value ?? null;
+			type[this.selectedFieldType].SortOrder = this.fieldTypeForm.get("SortOrder").value ?? null;
+			type[this.selectedFieldType].SortByAscending = this.fieldTypeForm.get("SortByAscending").value === 'true' ? true : false;
+		} else {
+			type[this.selectedFieldType].ColumnWidth = null;
+			type[this.selectedFieldType].SortOrder = null;
+			type[this.selectedFieldType].SortByAscending = null;
+		}
+
+		//window.alert(JSON.stringify(model));
+		//this.savingInProgress = false;
 		let saveObs = this.fieldsService.putFieldsV2(model);
 
 		saveObs.subscribe((res) => {
@@ -206,7 +234,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			IsPartOfKey: [null],
 			IsPrimaryFilter: [null],
 			AllowMultipleValues: [null],
-			ShowIfEmpty: [null]
+			ShowIfEmpty: [null],
+			CounterPrefix: [null, { validators: [Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9-_]*$/)] }],
+			CounterInitialIndex: [null],
+			ColumnWidth: [null],
+			SortOrder: [null],
+			SortByAscending: ['true']
 		});
 
 		this.setDefaultFormValues();
@@ -220,6 +253,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		this.fieldTypeForm.reset();
 		this.selectedAssetPathListSegment = null;
+
+		switch (this.selectedFieldType) {
+			case 'Counter':
+				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.numberOfAssetsForType);
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				break;
+			case 'Path':
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				break;
+
+			default: break;
+		}
+		this.cdRef.markForCheck();
 	}
 
 	updateForm() {
@@ -260,12 +308,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 
+				this.fieldTypeForm.controls["ColumnWidth"].setValue(type?.ColumnWidth ?? null);
+				this.fieldTypeForm.controls["SortOrder"].setValue(type?.SortOrder ?? null);
+				this.fieldTypeForm.controls["SortByAscending"].setValue((type?.SortByAscending ?? '').toString() ?? 'true');
+
 				if (this.selectedFieldType === 'Path') {
 					this.fieldTypeForm.controls["AssetPathListSegment"].setValue(type?.Definition?.AssetTypeUid ?? null);
 					this.selectedAssetPathListSegment = this.fieldTypeForm.controls["AssetPathListSegment"].value;
 
 					//asset path cannot be empty, so its always visible
 					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				}
+
+				//Counter
+				if (this.selectedFieldType === 'Counter') {
+					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
+					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);;
 				}
 
 				this.title = $localize`Edit Field`;
@@ -358,7 +416,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	confirmTypSelection() {
 		this.formState = FormState.Form;
 		this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
-		this.setDefaultValues();
+		this.setDefaultFormValues();
 		this.cdRef.markForCheck();
 	}
 
@@ -490,7 +548,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		};
 	}
 
-	private setDefaultValues() {
+	private setDefaultValuesDeprecated() {
 		const observables: Array<Observable<any>> = [];
 		this.showDescription = true;
 		this.enableAllowMultipleValues = true;
@@ -588,8 +646,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'path':
 				this.showDescription = false;
 
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'score':
 				//observables.push(this.loadAvailableScoreTypes());
@@ -624,4 +680,24 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		//	.forEach((obs) => obs.pipe(map(() => this.validate('*'))).subscribe());
 	}
 
+
+	get showAddToSearch(): boolean {
+		const allowedTypes = ['Counter'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get showIsPartOfKey(): boolean {
+		const allowedTypes = ['Counter'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get showIsListable(): boolean {
+		const allowedTypes = ['Counter'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get showPersistInFilters(): boolean {
+		const allowedTypes = ['Counter'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
 }

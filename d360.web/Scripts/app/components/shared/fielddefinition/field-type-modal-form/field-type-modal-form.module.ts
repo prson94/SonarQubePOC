@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { EditorModule } from 'primeng/editor';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeTableModule } from 'primeng/treetable';
@@ -44,6 +45,7 @@ import { RelationLookupFieldTypeEditorModule } from './relation-lookup-field-typ
 		CheckboxModule,
 		ColorSelectorModule,
 		IgColorPickerModule,
+		RadioButtonModule,
 		IconPickerModule,
 		IgNumberFieldModule,
 		TableModule,

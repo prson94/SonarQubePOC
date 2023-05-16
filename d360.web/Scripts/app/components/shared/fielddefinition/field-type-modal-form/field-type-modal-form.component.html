@@ -190,59 +190,188 @@
 							</div>
 						</ig-property-group>
 
-						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
+						<ig-property-group *ngIf="selectedFieldType === 'Counter'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row flex-form-group form-group-2">
+										<div class="field-col">
+											<label for="CounterPrefix" class="ig-label" i18n>
+												Counter Prefix
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="You can provide a prefix to be displayed in front of the counter. For example, with a prefix 'DQ-' the counter would display as DQ-1, DQ-2, etc."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<input igInput
+												   name="CounterPrefix"
+												   tabindex="10"
+												   formControlName="CounterPrefix"
+												   [igDataCy]="'Field_Type_Modal_Field_CounterPrefix'"
+												   type="text" />
+											<div *ngIf="fieldTypeForm.get('CounterPrefix')?.errors?.maxlength" class="ig-text-required" i18n>
+												Counter Prefix cannot be longer than 10 characters.
+											</div>
+											<div *ngIf="fieldTypeForm.get('CounterPrefix')?.errors?.pattern" class="ig-text-required" i18n>
+												Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.
+											</div>
+
+										</div>
+
+										<div class="field-col">
+											<label for="CounterInitialIndex" class="ig-label" i18n>
+												Counter Initial Value
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="The initial value will be the value of the counter for the first added asset after the counter field type is defined. It must be greater than the number of existing assets."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-number-input [attr.name]="'CounterInitialIndex'"
+															 [min]="numberOfAssetsForType"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'CounterInitialIndex'"
+															 [formControl]="fieldTypeForm.controls['CounterInitialIndex']"
+															 tabindex="60">
+											</ig-number-input>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="showIsListable" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Table" i18n-title>
 							<div inputs>
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<div *ngIf="showAddToSearch">
-												<p-checkbox binary="true"
-															formControlName="AddToResult"
-															[igDataCy]="'FieldType_Modal_Field_AddToResult'"
-															label="Add To Search Results"
-															i18n-label
-															[disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
+											<label for="IsListable" class="ig-label" i18n>
+												Listable
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not the field appears as a column on a related table."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'IsListable'"
+													   [formControlName]="'IsListable'"
+													   [formControl]="fieldTypeForm.controls['IsListable']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+
+										</div>
+									</div>
+									<ng-container *ngIf="fieldTypeForm.controls['IsListable'].value">
+										<div class="row">
+											<div class="field-col">
+												<label for="ColumnWidth" class="ig-label" i18n>
+													Column Width (pixels)
+												</label>
+												<ig-number-input [attr.name]="'ColumnWidth'"
+																 [min]="0"
+																 [enforceMaxMin]="true"
+																 [formControlName]="'ColumnWidth'"
+																 [formControl]="fieldTypeForm.controls['ColumnWidth']"
+																 tabindex="60">
+												</ig-number-input>
 											</div>
+										</div>
+										<div class="row multiple-inline">
+											<div class="field-col">
+												<label for="SortOrder" class="ig-label" i18n>
+													Sort Order
+												</label>
+												<div style="display:flex;">
+													<ig-number-input [attr.name]="'SortOrder'"
+																	 [min]="0"
+																	 [enforceMaxMin]="true"
+																	 [formControlName]="'SortOrder'"
+																	 [formControl]="fieldTypeForm.controls['SortOrder']"
+																	 tabindex="60">
+													</ig-number-input>
+													<div class="inline-field">
+														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
+														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
+													</div>
+												</div>
+											</div>
+										</div>
+									</ng-container>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
+							<div inputs>
+								<div class="form-group form-group-checkboxes">
+									<div class="row">
+										<div *ngIf="showAddToSearch">
+											<p-checkbox binary="true"
+														formControlName="AddToResult"
+														[igDataCy]="'FieldType_Modal_Field_AddToResult'"
+														label="Add To Search Results"
+														i18n-label
+														[disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
 										</div>
 									</div>
 									<div class="row">
-										<div class="field-col">
-											<p-checkbox *ngIf="showShowInDetailTile"
-														binary="true"
-														formControlName="IsDisplayable"
-														[igDataCy]="'FieldType_Field_IsDisplayable'"
-														label="Show In Details Tab"
+										<div *ngIf="showIsPartOfKey">
+											<p-checkbox binary="true"
+														formControlName="IsPartOfKey"
+														[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
+														label="Key Field"
 														i18n-label
-														(ngModelChange)="onShowDetailChange($event);"
-														[disabled]="isSettingDisabled('IsDisplayable')">
+														[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+										</div>
+									</div>
+
+									<div class="row">
+										<p-checkbox *ngIf="showShowInDetailTile"
+													binary="true"
+													formControlName="IsDisplayable"
+													[igDataCy]="'FieldType_Field_IsDisplayable'"
+													label="Show In Details Tab"
+													i18n-label
+													(ngModelChange)="onShowDetailChange($event);"
+													[disabled]="isSettingDisabled('IsDisplayable')">
+										</p-checkbox>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value">
+										<div style="margin-left: 16px;">
+											<p-checkbox [escape]="false"
+														pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."
+														tooltipPosition="left"
+														tooltipStyleClass="ig-tooltip"
+														binary="true"
+														i18n-label
+														i18n-pTooltip
+														formControlName="DisplayInColumn"
+														label="Display In Column"
+														[disabled]="isSettingDisabled('DisplayInColumn')">
 											</p-checkbox>
 										</div>
 									</div>
 									<div class="row">
-										<div class="field-col">
-											<div *ngIf="fieldTypeForm.get('IsDisplayable').value && hasDisplayInColumn" style="margin-left: 16px;">
-												<p-checkbox [escape]="false"
-															pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."
-															tooltipPosition="left"
-															tooltipStyleClass="ig-tooltip"
-															binary="true"
-															i18n-label
-															i18n-pTooltip
-															formControlName="DisplayInColumn"
-															label="Display In Column"
-															[disabled]="isSettingDisabled('DisplayInColumn')">
-												</p-checkbox>
-											</div>
-										</div>
+										<p-checkbox binary="true"
+													formControlName="ShowIfEmpty"
+													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
+													label="Show if Empty?"
+													i18n-label
+													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+
 									</div>
+
 									<div class="row">
-										<div class="field-col">
+										<div *ngIf="showPersistInFilters">
 											<p-checkbox binary="true"
-														formControlName="ShowIfEmpty"
-														[igDataCy]="'FieldType_Field_ShowIfEmpty'"
-														label="Show if Empty?"
+														formControlName="IsPrimaryFilter"
+														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
+														label="Persist in filters?"
 														i18n-label
-														[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
 										</div>
 									</div>
 
@@ -261,16 +390,7 @@
 												(ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
 												[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
 								</div>
-								<div *ngIf="showIsListable">
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].IsListable"
-												[igDataCy]="'FieldType_Field_IsListable'"
-												label="Is Listable?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												(ngModelChange)="!$event ? model.FieldType.Type[currentType].SortOrder=0:model.FieldType.Type[currentType].SortOrder=model.FieldType.Type[currentType].SortOrder"
-												[disabled]="isSettingDisabled('IsListable')"></p-checkbox>
-								</div>
+
 								<div *ngIf="showIsRequired">
 									<p-checkbox binary="true"
 												[(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
@@ -281,24 +401,7 @@
 												[disabled]="isSettingDisabled('IsRequired')"
 												(onChange)="model.FieldType.Type[currentType].MinimumLength=0"></p-checkbox>
 								</div>
-								<div *ngIf="showIsPartOfKey">
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].IsPartOfKey"
-												[igDataCy]="'FieldType_Field_IsPartOfKey'"
-												label="Part Of Key?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
-								</div>
-								<div *ngIf="showPersistInFilters">
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].IsPrimaryFilter"
-												[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
-												label="Persist in filters?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
-								</div>
+
 								<div *ngIf="enableAllowMultipleValues">
 									<p-checkbox binary="true"
 												[ngModel]="model.FieldType.Type[currentType].AllowMultipleValues"
