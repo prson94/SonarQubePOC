@@ -45,6 +45,12 @@ namespace d360.web
             RouteTable.Routes.MapMvcAttributeRoutes();  // MVC Routes
 
             RouteTable.Routes.MapRoute(
+                name: "Error-Fallback",
+                url: "ErrorBadRequest/{*url}", // a/{*url}
+                defaults: new { controller = "Home", action = "BadRequest" }
+            );
+
+            RouteTable.Routes.MapRoute(
                 name: "API-Fallback",
                 url: "api/{*url}", // a/{*url}
                 defaults: new { controller = "Home", action = "NotFound" }

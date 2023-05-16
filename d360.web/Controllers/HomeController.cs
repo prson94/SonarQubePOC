@@ -88,5 +88,23 @@ namespace d360.web.Controllers
                 },
                 JsonRequestBehavior.AllowGet);
         }
+
+        /// <summary>
+        /// Fallback for incorrect API URLs
+        /// </summary>
+        /// <returns></returns>
+        [Authorize]
+        public ActionResult BadRequest()
+        {
+            Response.StatusCode = 400;
+
+            return Json(
+                new
+                {
+                    title = "Error",
+                    message = "The requested URL was invalid request. Please check the URL and all parameters are correct."
+                },
+                JsonRequestBehavior.AllowGet);
+        }
     }
 }

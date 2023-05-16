@@ -148,6 +148,25 @@ namespace d360.web
             Response.Headers.Remove("Server");
             Response.Headers.Remove("X-Powered-By");
 
+            if (((Response.StatusCode == 404 && Request.Path != "/api/Nofound") ||
+                            (Response.StatusCode == 400 && Request.Path != "/ErrorBadRequest/BadReq")) && Request.Path.StartsWith("/api/") && Response.ContentType.ToLower() == "text/html")
+            {
+
+                bool isInvalidCharInUrl = CheckUrlValidity(Request.RawUrl);
+
+                if (Response.StatusCode == 404 && isInvalidCharInUrl)
+                {
+                    Response.Clear();
+                    Response.Redirect(Response.ApplyAppPathModifier("~/api/Nofound"));
+                    return;
+                }
+                if (Response.StatusCode == 400 && isInvalidCharInUrl)
+                {
+                    Response.Clear();
+                    Response.Redirect(Response.ApplyAppPathModifier("~/ErrorBadRequest/BadReq"));
+                    return;
+                }
+            }
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
              * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag
@@ -224,6 +243,26 @@ namespace d360.web
             Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.TelemetryInitializers.Add(new GovernAppInsightsTelemetryInitializer());
         }
 
+        private bool CheckUrlValidity(string urlwithparameter)
+        {
+            string url = urlwithparameter;
+            bool returnVar = false;
+            if (urlwithparameter.Contains("?"))
+            {
+                int lendata = urlwithparameter.LastIndexOf("?");
+                url = urlwithparameter.Substring(0, lendata);
+            }
+            string Checkchar = url.Substring(url.Length - 1, 1);
 
+            string invalidcharList = " &%*<>?:";
+
+            if (invalidcharList.IndexOf(Checkchar) > -1)
+            {
+                returnVar = true;
+            }
+
+
+            return returnVar;
+        }
     }
 }
