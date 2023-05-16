@@ -373,6 +373,7 @@
 								</div>
 							</div>
 						</ig-property-group>
+
 						<ig-property-group *ngIf="showIsListable" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Table" i18n-title>
 							<div inputs>
 								<div class="form-group">
@@ -437,20 +438,97 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="showAddToSearch" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Search Results" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="AddToResult" class="ig-label" i18n>
+												Add to Search Results
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not the field is displayed on the search results card on the Search Results page for the asset type."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'AddToResult'"
+													   [formControlName]="'AddToResult'"
+													   [formControl]="fieldTypeForm.controls['AddToResult']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+
+										</div>
+									</div>
+									<ng-container *ngIf="fieldTypeForm.controls['AddToResult'].value">
+										<div class="form-group">
+											<div class="row flex-form-group form-group-2">
+												<div class="field-col">
+													<label for="Prefix" class="ig-label" i18n>
+														Prefix
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''Status:Certified''"
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<input igInput
+														   igSize="full"
+														   name="Prefix"
+														   tabindex="10"
+														   formControlName="Prefix"
+														   [igDataCy]="'Field_Type_Modal_Field_Prefix'"
+														   type="text" />
+												</div>
+												<div class="field-col">
+													<label for="Suffix" class="ig-label" i18n>
+														Suffix
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="You can provide a prefix and/or a suffix to be displayed in place of the field label. For example, a suffix 'accurate' could be used to display '96% accurate' instead of '<b>Accuracy</b>: 96%'."
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<input igInput
+														   igSize="full"
+														   name="Suffix"
+														   tabindex="10"
+														   formControlName="Suffix"
+														   [igDataCy]="'Field_Type_Modal_Field_Suffix'"
+														   type="text" />
+												</div>
+											</div>
+											<div class="row">
+												<div class="field-col">
+													<label for="DisplayOrder" class="ig-label" i18n>
+														Display Order
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="By default, the display order is based on the order of fields. This can be overriden by setting the display order here."
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<ig-number-input [attr.name]="'DisplayOrder'"
+																	 [enforceMaxMin]="true"
+																	 (ngModelChange)="onMinValueChange()"
+																	 [formControlName]="'DisplayOrder'"
+																	 [formControl]="fieldTypeForm.controls['DisplayOrder']"
+																	 tabindex="60">
+													</ig-number-input>
+												</div>
+
+											</div>
+										</div>
+									</ng-container>
+								</div>
+							</div>
+						</ig-property-group>
+
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
 							<div inputs>
 								<div class="form-group form-group-checkboxes">
-									<div class="row">
-										<div *ngIf="showAddToSearch">
-											<p-checkbox binary="true"
-														formControlName="AddToResult"
-														[igDataCy]="'FieldType_Modal_Field_AddToResult'"
-														label="Add To Search Results"
-														i18n-label
-														[disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
-										</div>
-									</div>
-
 									<div *ngIf="showIsEditable">
 										<p-checkbox binary="true"
 													formControlName="IsEditable"

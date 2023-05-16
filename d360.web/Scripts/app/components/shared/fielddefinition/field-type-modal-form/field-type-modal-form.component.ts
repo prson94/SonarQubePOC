@@ -184,6 +184,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		type[this.selectedFieldType].Description.Form = this.fieldTypeForm.get("FormDescription").value ?? null;
 
 		type[this.selectedFieldType].Search.AddToResult = this.fieldTypeForm.get("AddToResult").value ?? false;
+		if (type[this.selectedFieldType].Search.AddToResult) {
+			type[this.selectedFieldType].Search.Prefix = this.fieldTypeForm.get("Prefix").value ?? null;
+			type[this.selectedFieldType].Search.Suffix = this.fieldTypeForm.get("Suffix").value ?? null;
+			type[this.selectedFieldType].Search.DisplayOrder = this.fieldTypeForm.get("DisplayOrder").value ?? null;
+		}
+		else {
+			type[this.selectedFieldType].Search.Prefix = null;
+			type[this.selectedFieldType].Search.Suffix = null;
+			type[this.selectedFieldType].Search.DisplayOrder = null;
+		}
+
+
 		type[this.selectedFieldType].IsDisplayable = this.fieldTypeForm.get("IsDisplayable").value ?? false;
 		type[this.selectedFieldType].DisplayInColumn = this.fieldTypeForm.get("DisplayInColumn").value ?? false;
 		type[this.selectedFieldType].IsEditable = this.fieldTypeForm.get("IsEditable").value ?? false;
@@ -199,6 +211,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		type[this.selectedFieldType].Increment = this.fieldTypeForm.get("Increment").value ?? null;
 
 		type[this.selectedFieldType].DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
+
 
 		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
 		if (type[this.selectedFieldType].IsListable) {
@@ -258,7 +271,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number), this.minimumValueValidator()] }],
 			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
 			Precision: [null, { validators: [this.minMaxValueValidator(0, 5, true)] }],
-			Increment: [null, { validators: [this.incrementValidation()] }]
+			Increment: [null, { validators: [this.incrementValidation()] }],
+			Suffix: [null],
+			Prefix: [null],
+			DisplayOrder: [null],
 		});
 
 		this.setDefaultFormValues();
@@ -330,6 +346,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["FormDescription"].setValue(type?.Description?.Form ?? null);
 
 				this.fieldTypeForm.controls["AddToResult"].setValue(type?.Search?.AddToResult ?? null);
+				this.fieldTypeForm.controls["Prefix"].setValue(type?.Search?.Prefix ?? null);
+				this.fieldTypeForm.controls["Suffix"].setValue(type?.Search?.Suffix ?? null);
+				this.fieldTypeForm.controls["DisplayOrder"].setValue(type?.Search?.DisplayOrder ?? null);
+
+
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(type?.IsDisplayable ?? null);
 				this.fieldTypeForm.controls["DisplayInColumn"].setValue(type?.DisplayInColumn ?? null);
 				this.fieldTypeForm.controls["IsEditable"].setValue(type?.IsEditable ?? null);
