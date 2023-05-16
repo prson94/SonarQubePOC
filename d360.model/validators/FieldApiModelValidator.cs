@@ -812,7 +812,7 @@ namespace d360.model.validators
             }
 
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", 
-                "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath", "displayvalue" };
+                "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath", "displayvalue", "path" };
             
             if (isRelationshipType)
             {

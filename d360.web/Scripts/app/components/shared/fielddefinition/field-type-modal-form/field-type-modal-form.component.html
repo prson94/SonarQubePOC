@@ -4,9 +4,9 @@
 		   (onClose)="close()"
 		   [isVisible]="isModalVisible">
 	<div class="editor-container">
-		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+		<d3s-loading [isLoading]="isLoading || !areFieldTypesLoaded"></d3s-loading>
 
-		<div *ngIf="!isLoading" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
+		<div *ngIf="!isLoading && areFieldTypesLoaded" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
 					{{title}}
@@ -61,7 +61,7 @@
 						</p-table>
 					</ng-container>
 
-					<ng-container *ngIf="formState === 'Form'">
+					<div class="form-div" *ngIf="formState === 'Form'">
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="General" i18n-title>
 							<div inputs>
 								<div class="form-group">
@@ -74,6 +74,7 @@
 												   tabindex="10"
 												   formControlName="FriendlyName"
 												   [igDataCy]="'Field_Type_Modal_Field_FriendlyName'"
+												   (keyup)="updateApiName($event)"
 												   type="text"
 												   required />
 										</div>
@@ -89,7 +90,63 @@
 												   [igDataCy]="'Field_Type_Modal_Field_Name'"
 												   type="text"
 												   required />
+
+											<div *ngIf="fieldTypeForm.get('Name')?.errors?.notUnique" class="ig-text-required" i18n>
+												Please enter a unique value!
+											</div>
+											<div *ngIf="fieldTypeForm.get('Name')?.errors?.restricted" class="ig-text-required" i18n>
+												Please enter a different value. The API Name entered contains a restricted value.
+											</div>
 										</div>
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="Category" class="ig-label" i18n>Category</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="Category"
+													   tabindex="20"
+													   formControlName="Category"
+													   [igDataCy]="'Field_Type_Modal_Field_Category'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateCategoryName($event)"
+																   [items]="categoryTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<label for="AssetPathListSegment" class="ig-label" i18n>
+											List Single Segment
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</label>
+
+										<p-dropdown [ngModelOptions]="{standalone: true}"
+													(onChange)="onAssetPathListSegmentChange($event)"
+													[(ngModel)]="selectedAssetPathListSegment"
+													igDropdown
+													[options]="assetTypeAncestries"
+													appendTo="body"
+													optionLabel="Name"
+													optionValue="Uid"></p-dropdown>
 									</div>
 								</div>
 							</div>
@@ -105,7 +162,166 @@
 								</div>
 							</div>
 						</ig-property-group>
-					</ng-container>
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayDescription" class="ig-label" i18n>
+												Display Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when hovering over the field on the asset detail page"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="DisplayDescription"
+													  [igDataCy]="'FieldType_Modal_Field_DisplayDescription'"
+													  name="DisplayDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<div *ngIf="showAddToSearch">
+												<p-checkbox binary="true"
+															formControlName="AddToResult"
+															[igDataCy]="'FieldType_Modal_Field_AddToResult'"
+															label="Add To Search Results"
+															i18n-label
+															[disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<p-checkbox *ngIf="showShowInDetailTile"
+														binary="true"
+														formControlName="IsDisplayable"
+														[igDataCy]="'FieldType_Field_IsDisplayable'"
+														label="Show In Details Tab"
+														i18n-label
+														(ngModelChange)="onShowDetailChange($event);"
+														[disabled]="isSettingDisabled('IsDisplayable')">
+											</p-checkbox>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<div *ngIf="fieldTypeForm.get('IsDisplayable').value && hasDisplayInColumn" style="margin-left: 16px;">
+												<p-checkbox [escape]="false"
+															pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."
+															tooltipPosition="left"
+															tooltipStyleClass="ig-tooltip"
+															binary="true"
+															i18n-label
+															i18n-pTooltip
+															formControlName="DisplayInColumn"
+															label="Display In Column"
+															[disabled]="isSettingDisabled('DisplayInColumn')">
+												</p-checkbox>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<p-checkbox binary="true"
+														formControlName="ShowIfEmpty"
+														[igDataCy]="'FieldType_Field_ShowIfEmpty'"
+														label="Show if Empty?"
+														i18n-label
+														[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+										</div>
+									</div>
+
+								</div>
+								<!--<div>
+
+
+								</div>-->
+								<!--<div *ngIf="showIsEditable">
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].IsEditable"
+												[igDataCy]="'FieldType_Field_IsEditable'"
+												label="Is Editable?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												(ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
+												[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
+								</div>
+								<div *ngIf="showIsListable">
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].IsListable"
+												[igDataCy]="'FieldType_Field_IsListable'"
+												label="Is Listable?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												(ngModelChange)="!$event ? model.FieldType.Type[currentType].SortOrder=0:model.FieldType.Type[currentType].SortOrder=model.FieldType.Type[currentType].SortOrder"
+												[disabled]="isSettingDisabled('IsListable')"></p-checkbox>
+								</div>
+								<div *ngIf="showIsRequired">
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
+												[igDataCy]="'FieldType_Field_IsRequired'"
+												label="Is Required?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												[disabled]="isSettingDisabled('IsRequired')"
+												(onChange)="model.FieldType.Type[currentType].MinimumLength=0"></p-checkbox>
+								</div>
+								<div *ngIf="showIsPartOfKey">
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].IsPartOfKey"
+												[igDataCy]="'FieldType_Field_IsPartOfKey'"
+												label="Part Of Key?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+								</div>
+								<div *ngIf="showPersistInFilters">
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].IsPrimaryFilter"
+												[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
+												label="Persist in filters?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
+								</div>
+								<div *ngIf="enableAllowMultipleValues">
+									<p-checkbox binary="true"
+												[ngModel]="model.FieldType.Type[currentType].AllowMultipleValues"
+												[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+												(ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;"
+												label="Allow Multiple Items?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+								</div>
+								<div>
+									<p-checkbox binary="true"
+												[(ngModel)]="model.FieldType.Type[currentType].ShowIfEmpty"
+												[igDataCy]="'FieldType_Field_ShowIfEmpty'"
+												label="Show if Empty?"
+												i18n-label
+												[ngModelOptions]="{standalone: true}"
+												[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+								</div>-->
+							</div>
+
+						</ig-property-group>
+					</div>
 				</form>
 
 			</div>
