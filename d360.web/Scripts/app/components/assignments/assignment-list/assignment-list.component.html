@@ -7,9 +7,11 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<button igButton type="button" class="ig-button-primary" margin (click)="openCompleteAssignment()" i18n-label
+			<button igButton type="button" class="ig-button-primary" margin (click)="openCompleteAssignment()"
+					i18n-label
 					label="Complete Assignment"></button>
-			<d3s-assignment-grid #assignmentGridComponent (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
+			<d3s-assignment-grid #assignmentGridComponent
+								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
 				<div class="secondary-side-panel">
 					<div class="panel-header">
@@ -64,8 +66,10 @@
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemId]="selectedWorkflowItems[0]?.Id"
 											 *ngIf="selectedWorkflowItems?.length === 1"
+											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
-					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1" (confirmDelete)="deleteAssignments($event)">
+					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1"
+												 (confirmDelete)="deleteAssignments($event)">
 					</d3s-assignment-multi-delete>
 				</ng-container>
 			</side-panel>

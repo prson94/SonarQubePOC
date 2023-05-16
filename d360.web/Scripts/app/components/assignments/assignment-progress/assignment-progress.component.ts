@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowItemStep } from '../../../models/workflow.model';
 
@@ -8,13 +8,20 @@ import { WorkflowItemStep } from '../../../models/workflow.model';
 	styleUrls: ['./assignment-progress.component.less']
 })
 export class AssignmentProgressComponent implements OnInit {
-	private _workflowItemId: number;
-	workflowItemSteps: WorkflowItemStep[];
-
 	@Input() set workflowItemId(value: number) {
 		this._workflowItemId = value;
 		this.loadData();
 	}
+
+	@Output() completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
+		workflowId;
+		stepId;
+		assetId
+	}>();
+
+	workflowItemSteps: WorkflowItemStep[];
+
+	private _workflowItemId: number;
 
 	constructor(private workflowService: WorkflowService) {
 	}

@@ -150,7 +150,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	openCompleteAssignment(): void {
-		this.completeAssignmentComponent
-		this.completeAssignmentComponent.openModal()
+		this.completeAssignmentComponent.openModal(null)
 	}
 }

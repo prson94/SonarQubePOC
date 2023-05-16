@@ -18,7 +18,7 @@ export class CompleteAssignmentComponent implements OnInit {
 		this.isAssignmentProgressSelected = false;
 	}
 
-	openModal(): void {
+	openModal(details: { workflowId; stepId; assetId }): void {
 		this.isModalVisible = true;
 	}
 
@@ -27,13 +27,13 @@ export class CompleteAssignmentComponent implements OnInit {
 	}
 
 	showAssignment(): void {
-		this.isAssignmentProgressSelected = false
-		this.modalTitle = 'Assignment'
+		this.isAssignmentProgressSelected = false;
+		this.modalTitle = 'Assignment';
 	}
 
 	showAssignmentProgress(): void {
-		this.isAssignmentProgressSelected = true
-		this.modalTitle = 'Assignment Progress and Information'
+		this.isAssignmentProgressSelected = true;
+		this.modalTitle = 'Assignment Progress and Information';
 	}
 
 }

@@ -2,6 +2,7 @@
 	<ig-property-group title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<d3s-assignment-progress-step [workflowItemStep]="workflowItemStep"
+										  (completeAssignment)="completeAssignment.emit($event)"
 										  [isLastStep]="workflowItemSteps.indexOf(workflowItemStep) === (workflowItemSteps.length - 1)"
 										  *ngFor="let workflowItemStep of workflowItemSteps"></d3s-assignment-progress-step>
 		</div>

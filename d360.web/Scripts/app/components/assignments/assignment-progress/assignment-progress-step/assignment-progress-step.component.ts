@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { StepType, WorkflowActivityType, WorkflowItemStep } from '../../../../models/workflow.model';
 import { DatePipe } from '@angular/common';
 
@@ -12,7 +12,8 @@ export class AssignmentProgressStepComponent implements OnInit {
 	@Input() workflowItemStep: WorkflowItemStep;
 
 	@Input() isLastStep: boolean = false;
-	private completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
+
+	@Output() completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
 		workflowId;
 		stepId;
 		assetId
