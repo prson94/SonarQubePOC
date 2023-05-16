@@ -1,32 +1,40 @@
-<div class="assignment-progress-step">
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="assignment-progress-step" [hidden]="isLoading">
 	<ng-container *ngIf="(workflowItemStep.StepType === 1 || workflowItemStep.StepType === 4) else isClickable">
-		<div class="row">
+		<div>
 			<ng-template [ngTemplateOutlet]="stepHeader"></ng-template>
 		</div>
 	</ng-container>
 	<ng-template #isClickable>
-		<div class="row" role="button" (click)="showStepDetails(workflowItemStep)">
+		<div role="button" (click)="showStepDetails()">
 			<ng-template [ngTemplateOutlet]="stepHeader"></ng-template>
 		</div>
 	</ng-template>
 </div>
-<button igButton type="button" *ngIf="isCurrentStep && workflowItemStep.IsAssignedLoginUser.toLowerCase() === 'true'"
+<button igButton type="button"
+		*ngIf="!workflowItemStep.Complete && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
 		class="ig-button-primary width-100"
+		label="Complete the Assignment" [iconRight]="true"
+		icon="fa-pencil"
 		(click)="completeAssignmentClick()" i18n-label
-		label="Complete Assignment"></button>
+		>Awaiting your answer</button>
 <span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
 
 <ng-template #stepHeader>
-	<div class="col s1">
-		<i class="fa spacing-top" [ngClass]="icon"></i>
+	<div class="row">
+		<div class="col s1">
+			<i class="fa spacing-top" [ngClass]="icon"></i>
+		</div>
+		<div class="col s7 header-text" i18n>
+			{{ header }}
+		</div>
+		<div class="col s4 right-align" i18n>
+			{{ status }}
+		</div>
 	</div>
-	<div class="col s7 header-text" i18n>
-		{{ header }}
-	</div>
-	<div class="col s4 right-align" i18n>
-		{{ status }}
-	</div>
-	<div class="row" *ngIf="isCurrentStep && message">
+	<div class="row" *ngIf="!workflowItemStep.Complete && message">
 		<div class="col offset-s1 preserve-line-break">{{message}}</div>
 	</div>
 </ng-template>
+
+<pre *ngIf="workflowStepDetail">{{ workflowStepDetail | json }}</pre>

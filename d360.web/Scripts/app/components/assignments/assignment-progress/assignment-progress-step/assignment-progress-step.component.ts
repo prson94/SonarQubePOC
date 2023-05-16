@@ -1,6 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { StepType, WorkflowActivityType, WorkflowItemStep } from '../../../../models/workflow.model';
-import { DatePipe } from '@angular/common';
+import {
+	StepType,
+	WorkflowActivityType,
+	WorkflowItemStep,
+	WorkflowStepDetail
+} from '../../../../models/workflow.model';
+import { WorkflowService } from '../../../../services/workflow.service';
 
 @Component({
 	selector: 'd3s-assignment-progress-step',
@@ -19,12 +24,16 @@ export class AssignmentProgressStepComponent implements OnInit {
 		assetId
 	}>();
 
+	workflowStepDetail: WorkflowStepDetail;
+
+	isLoading: boolean = false;
+
 	get header(): string {
 		return this.workflowItemStep.Name;
 	}
 
 	get status(): string {
-		return this.workflowItemStep.Complete ? 'Done' : (this.isLastStep ? 'In Progress' : 'Not started');
+		return this.workflowItemStep.Complete ? 'Done' : 'In Progress';
 	}
 
 	get message(): string {
@@ -40,20 +49,25 @@ export class AssignmentProgressStepComponent implements OnInit {
 			return 'fa-envelope';
 		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.Form) {
 			return 'fa-sliders';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.FieldChange) {
+			return 'fa-sliders';
 		}
 	}
 
-	get isCurrentStep(): boolean {
-		return !this.workflowItemStep.Complete && this.isLastStep;
-	}
-
-	constructor(private datePipe: DatePipe) {
+	constructor(private workflowService: WorkflowService) {
 	}
 
 	ngOnInit(): void {
+		if (!this.workflowItemStep.Complete) {
+			this.isLoading = true;
+			this.workflowService.getWorkflowStepDetail(this.workflowItemStep.ID).subscribe((response) => {
+				this.workflowStepDetail = response;
+				this.isLoading = false;
+			});
+		}
 	}
 
-	showStepDetails(workflowItemStep: WorkflowItemStep) {
+	showStepDetails() {
 
 	}
 
