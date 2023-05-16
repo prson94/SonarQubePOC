@@ -6,28 +6,7 @@
 		  class="col s12 split"
 		  style="display: flex">
 	<as-split-area class="tile tile-detail main-panel field-type-grid">
-		<ng-template *ngIf="!isEditing" [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
-
-		<div *ngIf="isEditing">
-			<d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
-								 [actionTypeUid]="actionTypeUid"
-								 [assetTypeUid]="assetTypeUid"
-								 [relationshipTypeUid]="relationshipTypeUid"
-								 [objectType]="objectType"
-								 [objectID]="objectID"
-								 [objectName]="objectName"
-								 [showIsListable]="showIsListable"
-								 [showIsPartOfKey]="showIsPartOfKey"
-								 [showPersistInFilters]="showPersistInFilters"
-								 [showAddToSearch]="showAddToSearch"
-								 [showShowInDetailTile]="showShowInDetailTile"
-								 [showDisplayInColumn]="showDisplayInColumn"
-								 [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
-								 [allowSingleSegmentPath]="allowSingleSegmentPath"
-								 [fields]="fieldDefinitions"
-								 (onCancel)="cancel()"
-								 (onComplete)="editComplete($event)"></d3s-field-type-form>
-		</div>
+		<ng-template [ngTemplateOutlet]="fieldGridTemplate"></ng-template>
 	</as-split-area>
 	<as-split-area [size]="getSidePanelWidth()"
 				   [minSize]="getSidePanelMinWidth()"
@@ -79,7 +58,7 @@
 						tooltipPosition="top"
 						tooltipStyleClass="ig-tooltip"
 						class="ig-button-primary"
-						(click)="isModalVisible = true"
+						(click)="editedFieldName = null;isModalVisible = true"
 						icon="fa-plus"
 						[igDataCy]="'FieldType_Add'">
 				</button>

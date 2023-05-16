@@ -460,6 +460,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					this.isDeleting = false;
 					this.checkKeyFields();
 				}
+				this.deleteInProgress = false;
 				this.cdRef.markForCheck();
 			}
 		);
