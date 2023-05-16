@@ -193,6 +193,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		type[this.selectedFieldType].AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? false;
 		type[this.selectedFieldType].ShowIfEmpty = this.fieldTypeForm.get("ShowIfEmpty").value ?? false;
 
+		type[this.selectedFieldType].Validation.MinimumValue = this.fieldTypeForm.get("MinimumValue").value ?? null;
+		type[this.selectedFieldType].Validation.MaximumValue = this.fieldTypeForm.get("MaximumValue").value ?? null;
+		type[this.selectedFieldType].Validation.Precision = this.fieldTypeForm.get("Precision").value ?? null;
+		type[this.selectedFieldType].Increment = this.fieldTypeForm.get("Increment").value ?? null;
+
 		type[this.selectedFieldType].DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
 		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
@@ -249,7 +254,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			ColumnWidth: [null],
 			SortOrder: [null],
 			SortByAscending: ['true'],
-			DefaultValue: [null]
+			DefaultValue: [null],
+			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number), this.minimumValueValidator()] }],
+			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
+			Precision: [null, { validators: [this.minMaxValueValidator(0, 5, true)] }],
+			Increment: [null, { validators: [this.incrementValidation()] }]
 		});
 
 		this.setDefaultFormValues();
@@ -262,6 +271,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return;
 		}
 		this.fieldTypeForm.reset();
+
+		if (this.selectedFieldType === 'Decimal') {
+			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
+		}
+
 		this.selectedAssetPathListSegment = null;
 
 		switch (this.selectedFieldType) {
@@ -275,6 +289,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Date':
+			case 'DateTime':
+			case 'Decimal':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				break;
@@ -325,6 +341,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 				this.fieldTypeForm.controls["DefaultValue"].setValue(type?.DefaultValue ?? null);
+				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
+				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
+				this.fieldTypeForm.controls["Precision"].setValue(type?.Validation?.Precision ?? null);
+				this.fieldTypeForm.controls["Increment"].setValue(type?.Increment ?? null);
 
 				this.fieldTypeForm.controls["ColumnWidth"].setValue(type?.ColumnWidth ?? null);
 				this.fieldTypeForm.controls["SortOrder"].setValue(type?.SortOrder ?? null);
@@ -347,11 +367,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.title = $localize`Edit Field`;
 
 				this.isEditFormUpdated = false;
-				setTimeout(() => {
-					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
-						this.isEditFormUpdated = true;
-					});
-				}, 200);
 				this.cdRef.markForCheck();
 				this.isLoading = false;
 			});
@@ -364,6 +379,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			this.setDefaultFormValues();
 		}
+		this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe((change) => {
+			this.isEditFormUpdated = true;
+			//this.fieldTypeForm.controls["MinimumValue"]
+			//	.patchValue(this.fieldTypeForm.get("MinimumValue").value, { emitEvent: false, onlySelf: true });
+		});
 	}
 
 	get isFormDisabled(): boolean {
@@ -461,6 +481,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!$event) {
 			this.fieldTypeForm.controls["DisplayInColumn"].setValue(false);
 		}
+	}
+
+	onMaxValueChange() {
+		this.fieldTypeForm.controls['MinimumValue'].updateValueAndValidity();
+		this.fieldTypeForm.controls['DefaultValue'].updateValueAndValidity();
+	}
+
+	onMinValueChange() {
+		this.fieldTypeForm.controls['DefaultValue'].updateValueAndValidity();
 	}
 
 	isSettingDisabled(val: string) {
@@ -562,6 +591,91 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				};
 			}
 
+			return null;
+		};
+	}
+
+	private max_number: number = Number.MAX_SAFE_INTEGER;
+	private min_number: number = Number.MIN_SAFE_INTEGER;
+	minMaxValueValidator(min: number, max: number, is_precision: boolean = false): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: any } | null => {
+			if (control.value == null) {
+				return {};
+			}
+
+			if (is_precision && (+control.value > max || +control.value < min)) {
+				return {
+					max_number: { value: control.value, message: $localize`Please enter decimal places between ${min} and ${max}` }
+				};
+			}
+
+			if (+control.value > max) {
+				return {
+					max_number: { value: control.value, message: $localize`Please enter value smaller than ` + max }
+				};
+			}
+			if (+control.value < min) {
+				return {
+					min_number: { value: control.value, message: $localize`Please enter value bigger than ` + min }
+				};
+			}
+			return null;
+		};
+	}
+
+	incrementValidation(): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: any } | null => {
+			if (control.value == null) {
+				return {};
+			}
+
+			if (+control.value < 0) {
+				return {
+					error: { value: control.value, message: $localize`Please enter a positive number for increment` }
+				};
+			}
+			return null;
+		};
+	}
+
+	numberDefaultValueValidator(): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: any } | null => {
+			if (control.value == null || !this.fieldTypeForm) {
+				return {};
+			}
+			const max_value = this.fieldTypeForm.get("MaximumValue").value;
+			const min_value = this.fieldTypeForm.get("MinimumValue").value;
+
+
+			if (max_value && +control.value > max_value) {
+				return {
+					error_max_value: { value: control.value, message: $localize`Please enter a maximum value of ` + max_value }
+				};
+			}
+			if (max_value && +control.value < min_value) {
+				return {
+					error_min_value: { value: control.value, message: $localize`Please enter a minimum value of ` + min_value }
+				};
+			}
+			return null;
+		};
+	}
+
+	minimumValueValidator(): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: any } | null => {
+			if (!this.fieldTypeForm) {
+				return {};
+			}
+			const max_value = this.fieldTypeForm.get("MaximumValue").value;
+			if (control.value == null || !max_value) {
+				return {};
+			}
+
+			if (+control.value > +max_value) {
+				return {
+					invalid_value: { value: control.value, message: $localize`Please enter a value which is lower than maximum value` }
+				};
+			}
 			return null;
 		};
 	}
@@ -700,32 +814,32 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsPartOfKey(): boolean {
-		const allowedTypes = ['Counter', 'Date'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -735,7 +849,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -743,4 +857,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return FormHelpers.getLocaleDateString();
 	}
 
+	getObjectKeys(obj: Record<string, object>): string[] {
+		if (!obj) {
+			return [];
+		}
+		return Object.keys(obj);
+	}
 }

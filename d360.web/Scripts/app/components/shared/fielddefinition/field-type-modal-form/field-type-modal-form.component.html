@@ -282,7 +282,97 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
+							<div inputs>
+								<div class="form-group" style="display:flex;">
+									<div class="row flex-form-group form-group-3">
+										<div class="field-col">
+											<label for="MinimumValue" class="ig-label" i18n>
+												Minimum Value
+											</label>
+											<ig-number-input [attr.name]="'MinimumValue'"
+															 [enforceMaxMin]="true"
+															 (ngModelChange)="onMinValueChange()"
+															 [formControlName]="'MinimumValue'"
+															 [formControl]="fieldTypeForm.controls['MinimumValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MinimumValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MinimumValue')?.errors[item].message}}
+											</div>
 
+										</div>
+										<div class="field-col">
+											<label for="MaximumValue" class="ig-label" i18n>
+												Maximum Value
+											</label>
+											<ig-number-input [attr.name]="'MaximumValue'"
+															 (ngModelChange)="onMaxValueChange()"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'MaximumValue'"
+															 [formControl]="fieldTypeForm.controls['MaximumValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MaximumValue')?.errors[item].message}}
+											</div>
+										</div>
+										<div class="field-col">
+											<label for="Precision" class="ig-label" i18n>
+												Decimal Places
+											</label>
+											<ig-number-input [attr.name]="'Precision'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'Precision'"
+															 [formControl]="fieldTypeForm.controls['Precision']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Precision')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('Precision')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row flex-form-group form-group-3">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+											<ig-number-input [attr.name]="'DefaultValue'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'DefaultValue'"
+															 [formControl]="fieldTypeForm.controls['DefaultValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('DefaultValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('DefaultValue')?.errors[item].message}}
+											</div>
+
+										</div>
+										<div class="field-col">
+											<label for="Increment" class="ig-label" i18n>
+												Increment
+											</label>
+											<ig-number-input [attr.name]="'Increment'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'Increment'"
+															 [formControl]="fieldTypeForm.controls['Increment']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Increment')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('Increment')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
 						<ig-property-group *ngIf="showIsListable" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Table" i18n-title>
 							<div inputs>
 								<div class="form-group">
