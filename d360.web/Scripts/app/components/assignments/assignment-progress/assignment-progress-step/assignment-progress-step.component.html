@@ -9,10 +9,11 @@
 			<ng-template [ngTemplateOutlet]="stepHeader"></ng-template>
 		</div>
 	</ng-template>
-	<div class="row" *ngIf="message">
-		<div class="col offset-s1">{{message}}</div>
-	</div>
 </div>
+<button igButton type="button" *ngIf="isCurrentStep && workflowItemStep.IsAssignedLoginUser.toLowerCase() === 'true'"
+		class="ig-button-primary width-100"
+		(click)="completeAssignmentClick()" i18n-label
+		label="Complete Assignment"></button>
 <span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
 
 <ng-template #stepHeader>
@@ -24,5 +25,8 @@
 	</div>
 	<div class="col s4 right-align" i18n>
 		{{ status }}
+	</div>
+	<div class="row" *ngIf="isCurrentStep && message">
+		<div class="col offset-s1 preserve-line-break">{{message}}</div>
 	</div>
 </ng-template>

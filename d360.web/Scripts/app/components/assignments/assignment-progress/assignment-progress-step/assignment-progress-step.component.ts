@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { StepType, WorkflowItemStep } from '../../../../models/workflow.model';
+import { Component, EventEmitter, Input, OnInit } from '@angular/core';
+import { StepType, WorkflowActivityType, WorkflowItemStep } from '../../../../models/workflow.model';
+import { DatePipe } from '@angular/common';
 
 @Component({
 	selector: 'd3s-assignment-progress-step',
@@ -10,8 +11,15 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	@Input() workflowItemStep: WorkflowItemStep;
 
+	@Input() isLastStep: boolean = false;
+	private completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
+		workflowId;
+		stepId;
+		assetId
+	}>();
+
 	get header(): string {
-		return StepType[this.workflowItemStep.StepType];
+		return this.workflowItemStep.Name;
 	}
 
 	get status(): string {
@@ -19,20 +27,26 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get message(): string {
-		return '';
+		return 'Assigned to ' + this.workflowItemStep.Assignee + '\nOpen for ' + this.getTimeSpan(Date.parse(this.workflowItemStep.StartedOn));
 	}
 
 	get icon(): string {
-		if (this.workflowItemStep.StepType === 1) {
+		if (this.workflowItemStep.StepType === StepType.Start) {
 			return 'fa-play-circle';
-		} else if (this.workflowItemStep.StepType === 4) {
+		} else if (this.workflowItemStep.StepType === StepType.Finish) {
 			return 'fa-stop-circle';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.EmailNotification) {
+			return 'fa-envelope';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.Form) {
+			return 'fa-sliders';
 		}
 	}
 
-	@Input() isLastStep: boolean = false;
+	get isCurrentStep(): boolean {
+		return !this.workflowItemStep.Complete && this.isLastStep;
+	}
 
-	constructor() {
+	constructor(private datePipe: DatePipe) {
 	}
 
 	ngOnInit(): void {
@@ -40,5 +54,22 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	showStepDetails(workflowItemStep: WorkflowItemStep) {
 
+	}
+
+	completeAssignmentClick() {
+		this.completeAssignment.emit({
+			workflowId: this.workflowItemStep.ID,
+			stepId: this.workflowItemStep.ItemID,
+			assetId: this.workflowItemStep.ObjectID
+		});
+	}
+
+	private getTimeSpan(startDateMilliseconds: number, endDateMilliseconds: number = Date.now()): string {
+		const totalMilliseconds: number = endDateMilliseconds - startDateMilliseconds;
+		const minutes: number = Math.floor(Math.abs(totalMilliseconds) / (60 * 1000));
+		const hours: number = Math.floor(minutes / 60);
+		const days: number = Math.floor(hours / 24);
+
+		return `${days}d ${hours % 24}h ${minutes % 60}m`;
 	}
 }
