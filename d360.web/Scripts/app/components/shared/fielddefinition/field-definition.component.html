@@ -79,18 +79,6 @@
 						tooltipPosition="top"
 						tooltipStyleClass="ig-tooltip"
 						class="ig-button-primary"
-						(click)="add()"
-						icon="fa-plus"
-						[igDataCy]="'FieldType_Add'">
-				</button>
-				<button igButton
-						[attr.data-cy]="'FieldType_Add'"
-						pTooltip="Create new Field Type"
-						label="Create With modal form"
-						i18n-pTooltip
-						tooltipPosition="top"
-						tooltipStyleClass="ig-tooltip"
-						class="ig-button-primary"
 						(click)="isModalVisible = true"
 						icon="fa-plus"
 						[igDataCy]="'FieldType_Add'">
@@ -285,5 +273,6 @@
 					   [assetTypeUid]="assetTypeUid"
 					   [relationshipTypeUid]="relationshipTypeUid"
 					   [assetTypeName]="typeName"
+					   [name]="editedFieldName"
 					   (onClose)="onEditFormClose()"
 					   (onUpdated)="onEditSaveFinished()"></field-type-modal-form>

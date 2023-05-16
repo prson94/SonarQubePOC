@@ -8,6 +8,7 @@ import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
+import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 
@@ -36,10 +37,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@Input() relationshipTypeUid: string;
 
 	@Input() showShowInDetailTile: boolean = true;
-	@Input() showIsEditable: boolean = true;
-	@Input() showIsRequired: boolean = true;
 	@Input() showDescription: boolean = true;
-	@Input() enableAllowMultipleValues: boolean = true;
 	@Input() hasDisplayInColumn: boolean = false;
 
 	@Output() onClose = new EventEmitter();
@@ -183,6 +181,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		type[this.selectedFieldType].Description.Display = this.fieldTypeForm.get("DisplayDescription").value ?? null;
+		type[this.selectedFieldType].Description.Form = this.fieldTypeForm.get("FormDescription").value ?? null;
+
 		type[this.selectedFieldType].Search.AddToResult = this.fieldTypeForm.get("AddToResult").value ?? false;
 		type[this.selectedFieldType].IsDisplayable = this.fieldTypeForm.get("IsDisplayable").value ?? false;
 		type[this.selectedFieldType].DisplayInColumn = this.fieldTypeForm.get("DisplayInColumn").value ?? false;
@@ -192,6 +192,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		type[this.selectedFieldType].IsPrimaryFilter = this.fieldTypeForm.get("IsPrimaryFilter").value ?? false;
 		type[this.selectedFieldType].AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? false;
 		type[this.selectedFieldType].ShowIfEmpty = this.fieldTypeForm.get("ShowIfEmpty").value ?? false;
+
+		type[this.selectedFieldType].DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
 		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
 		if (type[this.selectedFieldType].IsListable) {
@@ -204,17 +206,23 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			type[this.selectedFieldType].SortByAscending = null;
 		}
 
-		//window.alert(JSON.stringify(model));
-		//this.savingInProgress = false;
-		let saveObs = this.fieldsService.putFieldsV2(model);
+		if (false) {
 
-		saveObs.subscribe((res) => {
-			if (res) {
-				this.onUpdated.emit(res);
-				this.close();
-			}
+			window.alert(JSON.stringify(model));
 			this.savingInProgress = false;
-		});
+		}
+		else {
+			let saveObs = this.fieldsService.putFieldsV2(model);
+
+			saveObs.subscribe((res) => {
+				if (res) {
+					this.onUpdated.emit(res);
+					this.close();
+				}
+				this.savingInProgress = false;
+			});
+		}
+
 	}
 
 	setForm() {
@@ -224,6 +232,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			Category: [null, { validators: Validators.maxLength(100) }],
 			AssetPathListSegment: [null],
 			DisplayDescription: [null],
+			FormDescription: [null],
 			IsDisplayable: [null],
 			DisplayAsList: [null],
 			DisplayInColumn: [null],
@@ -239,7 +248,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			CounterInitialIndex: [null],
 			ColumnWidth: [null],
 			SortOrder: [null],
-			SortByAscending: ['true']
+			SortByAscending: ['true'],
+			DefaultValue: [null]
 		});
 
 		this.setDefaultFormValues();
@@ -264,6 +274,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
+			case 'Date':
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
+				break;
 
 			default: break;
 		}
@@ -274,6 +288,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.subTitle = this.assetTypeName;
 
 		if (this.isEditing) {
+			this.isLoading = true;
 			if (this.changeFormSub) {
 				this.changeFormSub.unsubscribe();
 			}
@@ -296,6 +311,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				const type = fieldType.Type[this.selectedFieldType];
 
 				this.fieldTypeForm.controls["DisplayDescription"].setValue(type?.Description?.Display ?? null);
+				this.fieldTypeForm.controls["FormDescription"].setValue(type?.Description?.Form ?? null);
+
 				this.fieldTypeForm.controls["AddToResult"].setValue(type?.Search?.AddToResult ?? null);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(type?.IsDisplayable ?? null);
 				this.fieldTypeForm.controls["DisplayInColumn"].setValue(type?.DisplayInColumn ?? null);
@@ -307,6 +324,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.AllowMultipleValues ?? null);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
+				this.fieldTypeForm.controls["DefaultValue"].setValue(type?.DefaultValue ?? null);
 
 				this.fieldTypeForm.controls["ColumnWidth"].setValue(type?.ColumnWidth ?? null);
 				this.fieldTypeForm.controls["SortOrder"].setValue(type?.SortOrder ?? null);
@@ -551,9 +569,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	private setDefaultValuesDeprecated() {
 		const observables: Array<Observable<any>> = [];
 		this.showDescription = true;
-		this.enableAllowMultipleValues = true;
+		//this.enableAllowMultipleValues = true;
 		this.hasDisplayInColumn = true;
-		this.showIsRequired = true;
+		//this.showIsRequired = true;
 
 		switch (this.selectedFieldType.toLowerCase()) {
 			case 'lookup':
@@ -682,22 +700,47 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter'];
+		const allowedTypes = ['Counter', 'Date'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsPartOfKey(): boolean {
-		const allowedTypes = ['Counter'];
+		const allowedTypes = ['Counter', 'Date'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter'];
+		const allowedTypes = ['Counter', 'Date'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter'];
+		const allowedTypes = ['Counter', 'Date'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
+
+	get showIsEditable(): boolean {
+		const allowedTypes = ['Date'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get showIsRequired(): boolean {
+		const allowedTypes = ['Date'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get enableAllowMultipleValues(): boolean {
+		const allowedTypes = ['Lookup'];
+		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	get hasFormDescription(): boolean {
+		const allowedTypes = ['Date'];
+		return allowedTypes.indexOf(this.selectedFieldType) > -1;
+	}
+
+	public getLocaleDateString(): string {
+		return FormHelpers.getLocaleDateString();
+	}
+
 }

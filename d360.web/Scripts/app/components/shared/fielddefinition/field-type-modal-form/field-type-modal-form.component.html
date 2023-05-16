@@ -187,6 +187,28 @@
 										</div>
 									</div>
 								</div>
+								<div class="form-group" *ngIf="hasFormDescription">
+									<div class="row">
+										<div class="field-col">
+											<label for="FormDescription" class="ig-label" i18n>
+												Form Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when editing the asset details and hovering over the field"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="FormDescription"
+													  [igDataCy]="'FieldType_Modal_Field_FormDescription'"
+													  name="FormDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
 							</div>
 						</ig-property-group>
 
@@ -239,6 +261,27 @@
 								</div>
 							</div>
 						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Date'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+											<ig-date name="DefaultValue"
+													 [appendTo]="'body'"
+													 tabindex="10"
+													 [formControl]="fieldTypeForm.controls['DefaultValue']"
+													 formControlName="DefaultValue"></ig-date>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="showIsListable" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Table" i18n-title>
 							<div inputs>
@@ -317,6 +360,16 @@
 														[disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
 										</div>
 									</div>
+
+									<div *ngIf="showIsEditable">
+										<p-checkbox binary="true"
+													formControlName="IsEditable"
+													[igDataCy]="'FieldType_Field_IsEditable'"
+													label="Editable on UI"
+													i18n-label
+													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
+									</div>
+
 									<div class="row">
 										<div *ngIf="showIsPartOfKey">
 											<p-checkbox binary="true"
@@ -326,6 +379,16 @@
 														i18n-label
 														[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
 										</div>
+									</div>
+
+
+									<div *ngIf="showIsRequired">
+										<p-checkbox binary="true"
+													formControlName="IsRequired"
+													[igDataCy]="'FieldType_Field_IsRequired'"
+													label="Required"
+													i18n-label
+													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
 									</div>
 
 									<div class="row">
@@ -363,6 +426,16 @@
 													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
 
 									</div>
+									<div class="row">
+										<div *ngIf="enableAllowMultipleValues">
+											<p-checkbox binary="true"
+														formControlName="AllowMultipleValues"
+														[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+														label="Allow Multiple Items"
+														i18n-label
+														[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+										</div>
+									</div>
 
 									<div class="row">
 										<div *ngIf="showPersistInFilters">
@@ -376,51 +449,6 @@
 									</div>
 
 								</div>
-								<!--<div>
-
-
-								</div>-->
-								<!--<div *ngIf="showIsEditable">
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].IsEditable"
-												[igDataCy]="'FieldType_Field_IsEditable'"
-												label="Is Editable?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												(ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
-												[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
-								</div>
-
-								<div *ngIf="showIsRequired">
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
-												[igDataCy]="'FieldType_Field_IsRequired'"
-												label="Is Required?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												[disabled]="isSettingDisabled('IsRequired')"
-												(onChange)="model.FieldType.Type[currentType].MinimumLength=0"></p-checkbox>
-								</div>
-
-								<div *ngIf="enableAllowMultipleValues">
-									<p-checkbox binary="true"
-												[ngModel]="model.FieldType.Type[currentType].AllowMultipleValues"
-												[igDataCy]="'FieldType_Field_AllowMultipleValues'"
-												(ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;"
-												label="Allow Multiple Items?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
-								</div>
-								<div>
-									<p-checkbox binary="true"
-												[(ngModel)]="model.FieldType.Type[currentType].ShowIfEmpty"
-												[igDataCy]="'FieldType_Field_ShowIfEmpty'"
-												label="Show if Empty?"
-												i18n-label
-												[ngModelOptions]="{standalone: true}"
-												[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
-								</div>-->
 							</div>
 
 						</ig-property-group>

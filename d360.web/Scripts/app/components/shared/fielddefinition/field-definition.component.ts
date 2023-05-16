@@ -64,6 +64,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() supportsPrimaryFilterOption: boolean = false;
 	@Input() allowSingleSegmentPath: boolean = true;
 
+	editedFieldName: string;
+
 	public dataCyPrefix: string = 'FieldType_';
 	get advancedFilteringStorageKey(): string {
 		return 'Configuration_FieldType_' + this.assetTypeUid;
@@ -551,9 +553,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	edit(field: FieldDisplayModel): void {
 		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);
-		this.isEditing = true;
-		this.isDeleting = false;
-		this.isAdding = false;
+		this.editedFieldName = this.selectedRow.Name;
+		this.isModalVisible = true;
+		this.cdRef.markForCheck();
 		this.onEdit.emit();
 	}
 
