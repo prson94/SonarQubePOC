@@ -344,6 +344,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Date':
 			case 'DateTime':
 			case 'Decimal':
+			case 'Html':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				break;
@@ -901,27 +902,27 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -931,7 +932,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

@@ -143,94 +143,6 @@
 							</div>
 						</ig-property-group>
 
-						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
-							<div inputs>
-								<div class="form-group">
-									<div class="row">
-										<label for="AssetPathListSegment" class="ig-label" i18n>
-											List Single Segment
-											<span class="field-tooltip fa fa-question-circle"
-												  i18n-pTooltip
-												  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
-												  tooltipPosition="top"
-												  tooltipStyleClass="ig-tooltip"></span>
-										</label>
-
-										<p-dropdown [ngModelOptions]="{standalone: true}"
-													(onChange)="onAssetPathListSegmentChange($event)"
-													[(ngModel)]="selectedAssetPathListSegment"
-													igDropdown
-													[options]="assetTypeAncestries"
-													appendTo="body"
-													optionLabel="Name"
-													optionValue="Uid"></p-dropdown>
-									</div>
-								</div>
-							</div>
-						</ig-property-group>
-
-						<ig-property-group *ngIf="selectedFieldType === 'ComplexRelationLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
-							<div inputs>
-								<div class="form-group">
-									<div class="row">
-										<d3s-relation-lookup-field-type-editor [uid]="uid"
-																			   [assetTypeUid]="assetTypeUid"></d3s-relation-lookup-field-type-editor>
-									</div>
-								</div>
-							</div>
-						</ig-property-group>
-
-						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipField'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
-							<div inputs>
-								<div class="form-group">
-									<div class="row">
-										<div class="field-col">
-											<label for="AssetPathListSegment" class="ig-label" i18n>
-												Many-to-One Relationship
-												<span class="field-tooltip fa fa-question-circle"
-													  i18n-pTooltip
-													  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
-													  tooltipPosition="top"
-													  tooltipStyleClass="ig-tooltip"></span>
-											</label>
-
-											<p-dropdown [ngModelOptions]="{standalone: true}"
-														(onChange)="onFieldFromRelationshipChange($event)"
-														[(ngModel)]="selectedfieldFromRelationship"
-														igDropdown
-														[options]="fieldFromRelationshipItems"
-														appendTo="body"
-														required>
-												<ng-template let-item pTemplate="item">
-													<span [innerHTML]="item.label"></span>
-												</ng-template>
-												<ng-template let-item pTemplate="selectedItem">
-													<span [innerHTML]="item.label"></span>
-												</ng-template>
-											</p-dropdown>
-										</div>
-									</div>
-									<div class="row" *ngIf="selectedfieldFromRelationship">
-										<div class="field-col">
-											<label for="AssetPathListSegment" class="ig-label" i18n>
-												Field
-											</label>
-
-											<d3s-loading [isLoading]="loadingRelationFields"></d3s-loading>
-											<p-dropdown *ngIf="!loadingRelationFields"
-														[ngModelOptions]="{standalone: true}"
-														(onChange)="onFieldChange($event)"
-														[(ngModel)]="selectedField"
-														igDropdown
-														[options]="fieldsFromRelation"
-														appendTo="body"
-														required>
-											</p-dropdown>
-										</div>
-									</div>
-								</div>
-							</div>
-						</ig-property-group>
 
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
 							<div inputs>
@@ -350,6 +262,118 @@
 								</div>
 							</div>
 						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Html'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<p-editor formControlName="DefaultValue"
+													  [igDataCy]="'FieldType_Modal_Field_DefaultValue'"
+													  name="DefaultValue"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<label for="AssetPathListSegment" class="ig-label" i18n>
+											List Single Segment
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</label>
+
+										<p-dropdown [ngModelOptions]="{standalone: true}"
+													(onChange)="onAssetPathListSegmentChange($event)"
+													[(ngModel)]="selectedAssetPathListSegment"
+													igDropdown
+													[options]="assetTypeAncestries"
+													appendTo="body"
+													optionLabel="Name"
+													optionValue="Uid"></p-dropdown>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComplexRelationLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<d3s-relation-lookup-field-type-editor [uid]="uid"
+																			   [assetTypeUid]="assetTypeUid"></d3s-relation-lookup-field-type-editor>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipField'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="AssetPathListSegment" class="ig-label" i18n>
+												Many-to-One Relationship
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-dropdown [ngModelOptions]="{standalone: true}"
+														(onChange)="onFieldFromRelationshipChange($event)"
+														[(ngModel)]="selectedfieldFromRelationship"
+														igDropdown
+														[options]="fieldFromRelationshipItems"
+														appendTo="body"
+														required>
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row" *ngIf="selectedfieldFromRelationship">
+										<div class="field-col">
+											<label for="AssetPathListSegment" class="ig-label" i18n>
+												Field
+											</label>
+
+											<d3s-loading [isLoading]="loadingRelationFields"></d3s-loading>
+											<p-dropdown *ngIf="!loadingRelationFields"
+														[ngModelOptions]="{standalone: true}"
+														(onChange)="onFieldChange($event)"
+														[(ngModel)]="selectedField"
+														igDropdown
+														[options]="fieldsFromRelation"
+														appendTo="body"
+														required>
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Decimal'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
 							<div inputs>
