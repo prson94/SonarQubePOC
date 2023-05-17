@@ -9,7 +9,7 @@
 		<div *ngIf="!isLoading && areFieldTypesLoaded" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
-					{{title}}
+					{{title}} ({{selectedFieldType}})
 					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
 				</div>
 				<ig-form-feedback-badges class="ig-form-feedback-badges"
@@ -158,6 +158,58 @@
 									<div class="row">
 										<d3s-relation-lookup-field-type-editor [uid]="uid"
 																			   [assetTypeUid]="assetTypeUid"></d3s-relation-lookup-field-type-editor>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'FieldFromRelationship'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="AssetPathListSegment" class="ig-label" i18n>
+												Many-to-One Relationship
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-dropdown [ngModelOptions]="{standalone: true}"
+														(onChange)="onFieldFromRelationshipChange($event)"
+														[(ngModel)]="selectedfieldFromRelationship"
+														igDropdown
+														[options]="fieldFromRelationshipItems"
+														appendTo="body"
+														required>
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row" *ngIf="selectedfieldFromRelationship">
+										<div class="field-col">
+											<label for="AssetPathListSegment" class="ig-label" i18n>
+												Field
+											</label>
+
+											<d3s-loading [isLoading]="loadingRelationFields"></d3s-loading>
+											<p-dropdown *ngIf="!loadingRelationFields"
+														[ngModelOptions]="{standalone: true}"
+														(onChange)="onFieldChange($event)"
+														[(ngModel)]="selectedField"
+														igDropdown
+														[options]="fieldsFromRelation"
+														appendTo="body"
+														required>
+											</p-dropdown>
+										</div>
 									</div>
 								</div>
 							</div>

@@ -1,8 +1,9 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
+import { stubFalse } from "lodash-es";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
-import { forkJoin, Observable, Subscription } from "rxjs";
+import { forkJoin, map, Observable, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
@@ -68,6 +69,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	fieldTypes: SelectItem[] = [];
+	fieldFromRelationshipItems: SelectItem[] = [];
+	fieldsFromRelation: SelectItem[] = [];
+
+	selectedfieldFromRelationship: any;
+	selectedField: any;
+
 	assetTypeAncestries: AssetTypeAncestry[] = [];
 	selectedAssetPathListSegment: any;
 
@@ -121,6 +128,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 
 			if (results[1]) {
+				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
 				this.fieldTypes = results[1].DataTypes;
 				this.setForm();
 			}
@@ -180,6 +188,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			type[this.selectedFieldType].CounterPrefix = this.fieldTypeForm.get("CounterPrefix").value ?? '';
 		}
 
+		if (this.selectedFieldType === 'FieldFromRelationship') {
+			type[this.selectedFieldType].IntersectTypeUid = this.fieldTypeForm.get("IntersectTypeUid").value ?? null;
+			type[this.selectedFieldType].FieldTypeName = this.fieldTypeForm.get("FieldTypeName").value ?? null;
+		}
+
 		type[this.selectedFieldType].Description.Display = this.fieldTypeForm.get("DisplayDescription").value ?? null;
 		type[this.selectedFieldType].Description.Form = this.fieldTypeForm.get("FormDescription").value ?? null;
 
@@ -222,6 +235,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			type[this.selectedFieldType].ColumnWidth = null;
 			type[this.selectedFieldType].SortOrder = null;
 			type[this.selectedFieldType].SortByAscending = null;
+		}
+
+
+		if (this.selectedFieldType === "FieldFromRelationship") {
+			type['ComputedRelationshipField'] = type[this.selectedFieldType];
+			delete type[this.selectedFieldType];
 		}
 
 		if (false) {
@@ -275,6 +294,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			Suffix: [null],
 			Prefix: [null],
 			DisplayOrder: [null],
+			IntersectTypeUid: [null],
+			FieldTypeName: [null]
 		});
 
 		this.setDefaultFormValues();
@@ -293,6 +314,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		this.selectedAssetPathListSegment = null;
+		this.selectedfieldFromRelationship = null;
+		this.selectedField = null;
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
@@ -301,6 +324,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Path':
+			case 'FieldFromRelationship':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -496,6 +520,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	onAssetPathListSegmentChange($event) {
 		this.fieldTypeForm.controls["AssetPathListSegment"].setValue($event.value);
+	}
+
+	onFieldFromRelationshipChange($event) {
+		this.fieldTypeForm.controls["IntersectTypeUid"].setValue($event.value);
+		this.loadFieldsFromRelationships($event.value);
+	}
+
+	onFieldChange($event) {
+		this.fieldTypeForm.controls["FieldTypeName"].setValue($event.value);
 	}
 
 	onShowDetailChange($event: boolean) {
@@ -835,7 +868,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'FieldFromRelationship'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -884,4 +917,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		return Object.keys(obj);
 	}
+
+	loadingRelationFields: boolean = false;
+	loadFieldsFromRelationships(intersectTypeUid: string): Observable<any> {
+		if (intersectTypeUid == null) {
+			console.log("[ERROR] - Intersect TYPE IS UNDEFINED", intersectTypeUid);
+			return Observable.create();
+		}
+		this.loadingRelationFields = true;
+		this.fieldsService.getRelationObjectFields(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, intersectTypeUid)
+			.subscribe((d) => {
+				this.fieldsFromRelation = d;
+				console.log(this.fieldsFromRelation);
+				this.loadingRelationFields = false;
+				this.cdRef.markForCheck();
+			}
+			);
+	}
+
 }
