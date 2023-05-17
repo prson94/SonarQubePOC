@@ -96,6 +96,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return this.assetTypeUid ? true : false;
 	}
 
+	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
+	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
+
+
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
 		private assetService: AssetService,
@@ -244,6 +248,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
+		if (this.selectedFieldType === 'Link') {
+			fieldTypeApiObject.DefaultValue = {
+				Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
+				Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
+			}
+		}
+
 
 		fieldTypeApiObject.IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
 		if (fieldTypeApiObject.IsListable) {
@@ -308,7 +319,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			Prefix: [null],
 			DisplayOrder: [null],
 			IntersectTypeUid: [null],
-			FieldTypeName: [null]
+			FieldTypeName: [null],
+			LinkDefaultName: [null],
+			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }]
 		});
 
 		this.setDefaultFormValues();
@@ -345,6 +358,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'DateTime':
 			case 'Decimal':
 			case 'Html':
+			case 'Link':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				break;
@@ -434,6 +448,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.selectedfieldFromRelationship = type?.IntersectTypeUid ?? null;
 					this.selectedField = type?.FieldTypeName ?? null;
 					this.loadFieldsFromRelationships(this.selectedfieldFromRelationship);
+				}
+
+				if (this.selectedFieldType === 'Link') {
+					this.fieldTypeForm.controls["LinkDefaultName"].setValue(type?.DefaultValue?.Text ?? null);
+					this.fieldTypeForm.controls["LinkDefaultUrl"].setValue(type?.DefaultValue?.Url ?? null);
 				}
 
 
@@ -901,7 +920,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -911,22 +930,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -936,7 +955,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

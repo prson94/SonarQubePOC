@@ -144,54 +144,51 @@
 						</ig-property-group>
 
 
-						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
+						<ig-property-group *ngIf="selectedFieldType === 'Link'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<label for="DisplayDescription" class="ig-label" i18n>
-												Display Description
-												<span class="field-tooltip fa fa-question-circle"
-													  i18n-pTooltip
-													  pTooltip="Enter a description to be displayed in a tooltip when hovering over the field on the asset detail page"
-													  tooltipPosition="top"
-													  tooltipStyleClass="ig-tooltip"></span>
+											<label for="LinkDefaultName" class="ig-label" i18n>
+												Default Link Name
 											</label>
 
-											<p-editor formControlName="DisplayDescription"
-													  [igDataCy]="'FieldType_Modal_Field_DisplayDescription'"
-													  name="DisplayDescription"
-													  tabindex="80"
-													  [style]="{'height':'150px'}"
-													  ngDefaultControl #ed>
-											</p-editor>
+											<input igInput
+												   igSize="full"
+												   name="LinkDefaultName"
+												   tabindex="20"
+												   formControlName="LinkDefaultName"
+												   [igDataCy]="'Field_Type_Modal_Field_LinkDefaultName'"
+												   type="text" />
 										</div>
 									</div>
-								</div>
-								<div class="form-group" *ngIf="hasFormDescription">
 									<div class="row">
 										<div class="field-col">
-											<label for="FormDescription" class="ig-label" i18n>
-												Form Description
-												<span class="field-tooltip fa fa-question-circle"
-													  i18n-pTooltip
-													  pTooltip="Enter a description to be displayed in a tooltip when editing the asset details and hovering over the field"
-													  tooltipPosition="top"
-													  tooltipStyleClass="ig-tooltip"></span>
+											<label for="LinkDefaultUrl" class="ig-label" i18n>
+												Default URL
 											</label>
 
-											<p-editor formControlName="FormDescription"
-													  [igDataCy]="'FieldType_Modal_Field_FormDescription'"
-													  name="FormDescription"
-													  tabindex="80"
-													  [style]="{'height':'150px'}"
-													  ngDefaultControl #ed>
-											</p-editor>
+											<input igInput
+												   igSize="full"
+												   name="LinkDefaultUrl"
+												   tabindex="20"
+												   formControlName="LinkDefaultUrl"
+												   placeholder="{{(fieldTypeForm.controls['LinkDefaultName'].value ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}"
+												   [required]="fieldTypeForm.controls['LinkDefaultName'].value ? true : null"
+												   [igDataCy]="'Field_Type_Modal_Field_LinkDefaultUrl'"
+												   type="text" />
+
+											<div *ngIf="fieldTypeForm.get('LinkDefaultUrl')?.errors?.pattern" class="ig-text-required" i18n>
+												Please start URL with a protocol prefix eg. http:// or https://
+											</div>
+
 										</div>
 									</div>
 								</div>
 							</div>
 						</ig-property-group>
+
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Counter'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>
@@ -218,7 +215,6 @@
 											<div *ngIf="fieldTypeForm.get('CounterPrefix')?.errors?.pattern" class="ig-text-required" i18n>
 												Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.
 											</div>
-
 										</div>
 
 										<div class="field-col">
@@ -284,6 +280,7 @@
 								</div>
 							</div>
 						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
 							<div inputs>
@@ -461,6 +458,57 @@
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Increment')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('Increment')?.errors[item].message}}
 											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayDescription" class="ig-label" i18n>
+												Display Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when hovering over the field on the asset detail page"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="DisplayDescription"
+													  [igDataCy]="'FieldType_Modal_Field_DisplayDescription'"
+													  name="DisplayDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+								<div class="form-group" *ngIf="hasFormDescription">
+									<div class="row">
+										<div class="field-col">
+											<label for="FormDescription" class="ig-label" i18n>
+												Form Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when editing the asset details and hovering over the field"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="FormDescription"
+													  [igDataCy]="'FieldType_Modal_Field_FormDescription'"
+													  name="FormDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
 										</div>
 									</div>
 								</div>
