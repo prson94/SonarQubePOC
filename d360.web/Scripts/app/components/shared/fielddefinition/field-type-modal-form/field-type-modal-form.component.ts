@@ -73,11 +73,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldFromRelationshipItems: SelectItem[] = [];
 	fieldsFromRelation: SelectItem[] = [];
 
-	selectedfieldFromRelationship: any;
-	selectedField: any;
+	lookupAssetTypes: SelectItem[] = [];
+	selectedLookupAssetType: any;
+
+	lookupDefaultValueOptions: SelectItem[] = [];
+	lookupSelectedDefaultValueOption: any;
 
 	assetTypeAncestries: AssetTypeAncestry[] = [];
-	selectedAssetPathListSegment: any;
 
 	isInitialDataLoaded: boolean = false;
 	numberOfAssetsForType: number = 0;
@@ -122,6 +124,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
 		).subscribe((results) => {
+			//fields
 			if (results[0]) {
 				this.typeFieldTypes = results[0];
 				const categories = Array.from(new Set(this.typeFieldTypes.map((item) => item.Category)));
@@ -138,6 +141,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 			}
 
+			//lookups
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
 				if (this.fieldFromRelationshipItems.length === 0) {
@@ -149,10 +153,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					if (this.fieldTypeNameToApiNameMap[ft.value]) {
 						ft.value = this.fieldTypeNameToApiNameMap[ft.value];
 					}
-				})
+				});
+
+				this.lookupAssetTypes = results[1].Lookups.map((x) => {
+					if (x.value.length && x.value.length === 36) { return { value: x.value.toLowerCase(), label: x.label }; }
+					else { return { value: x.value, label: x.label }; }
+				});
 				this.setForm();
 			}
 
+			//asset count
 			if (results[2].length > 0) {
 				this.numberOfAssetsForType = +results[2].length + 1;
 			}
@@ -178,8 +188,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 		}
 	}
-
-
 
 	save() {
 		this.savingInProgress = true;
@@ -255,6 +263,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 		}
 
+		if (this.selectedFieldType === 'Lookup') {
+			fieldTypeApiObject.List.Uid = this.fieldTypeForm.get("LookupUid").value ?? null;
+		}
+
 
 		fieldTypeApiObject.IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
 		if (fieldTypeApiObject.IsListable) {
@@ -321,7 +333,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			IntersectTypeUid: [null],
 			FieldTypeName: [null],
 			LinkDefaultName: [null],
-			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }]
+			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }],
+			LookupUid: [null]
+		});
+
+		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
+			this.loadFieldsFromRelationships(value);
 		});
 
 		this.setDefaultFormValues();
@@ -339,9 +356,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
 
-		this.selectedAssetPathListSegment = null;
-		this.selectedfieldFromRelationship = null;
-		this.selectedField = null;
+		this.selectedLookupAssetType = null;
+		this.lookupSelectedDefaultValueOption = null;
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
@@ -429,7 +445,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				if (this.selectedFieldType === 'Path') {
 					this.fieldTypeForm.controls["AssetPathListSegment"].setValue(type?.Definition?.AssetTypeUid ?? null);
-					this.selectedAssetPathListSegment = this.fieldTypeForm.controls["AssetPathListSegment"].value;
 
 					//asset path cannot be empty, so its always visible
 					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
@@ -444,10 +459,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (this.selectedFieldType === 'ComputedRelationshipField') {
 					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
 					this.fieldTypeForm.controls["FieldTypeName"].setValue(type?.FieldTypeName ?? null);
-
-					this.selectedfieldFromRelationship = type?.IntersectTypeUid ?? null;
-					this.selectedField = type?.FieldTypeName ?? null;
-					this.loadFieldsFromRelationships(this.selectedfieldFromRelationship);
 				}
 
 				if (this.selectedFieldType === 'Link') {
@@ -455,6 +466,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["LinkDefaultUrl"].setValue(type?.DefaultValue?.Url ?? null);
 				}
 
+				if (this.selectedFieldType === 'Lookup') {
+					this.fieldTypeForm.controls["LookupUid"].setValue(type?.List?.Uid ?? null);
+					this.selectedLookupAssetType = type?.List?.Uid;
+				}
 
 				this.title = $localize`Edit Field`;
 
@@ -570,23 +585,24 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.controls["Category"].setValue(newValue);
 	}
 
-	onAssetPathListSegmentChange($event) {
-		this.fieldTypeForm.controls["AssetPathListSegment"].setValue($event.value);
-	}
-
-	onFieldFromRelationshipChange($event) {
-		this.fieldTypeForm.controls["IntersectTypeUid"].setValue($event.value);
-		this.loadFieldsFromRelationships($event.value);
-	}
-
 	onFieldChange($event) {
 		this.fieldTypeForm.controls["FieldTypeName"].setValue($event.value);
 	}
+
+
 
 	onShowDetailChange($event: boolean) {
 		if (!$event) {
 			this.fieldTypeForm.controls["DisplayInColumn"].setValue(false);
 		}
+	}
+
+	onLookupAssetTypesChange($event) {
+		this.fieldTypeForm.controls["LookupUid"].setValue($event.value);
+		this.loadLookupDefaultValue();
+	}
+	onLookupDefaultValueOptionsChange($event) {
+		console.log($event);
 	}
 
 	onMaxValueChange() {
@@ -971,20 +987,27 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	loadingRelationFields: boolean = false;
-	loadFieldsFromRelationships(intersectTypeUid: string): Observable<any> {
+	loadFieldsFromRelationships(intersectTypeUid: string) {
 		if (intersectTypeUid == null) {
-			console.log("[ERROR] - Intersect TYPE IS UNDEFINED", intersectTypeUid);
-			return Observable.create();
+			return
 		}
+
 		this.loadingRelationFields = true;
 		this.fieldsService.getRelationObjectFields(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, intersectTypeUid)
 			.subscribe((d) => {
 				this.fieldsFromRelation = d;
-				console.log(this.fieldsFromRelation);
 				this.loadingRelationFields = false;
 				this.cdRef.markForCheck();
-			}
-			);
+			});
 	}
 
+	loadingDefaultValues: boolean = false;
+	loadLookupDefaultValue() {
+		this.loadingDefaultValues = true;
+		this.fieldsService.getLookupDefaultValueOptions(this.selectedLookupAssetType).subscribe((res) => {
+			this.lookupDefaultValueOptions = res;
+			this.loadingDefaultValues = false;
+			this.cdRef.markForCheck();
+		});
+	}
 }

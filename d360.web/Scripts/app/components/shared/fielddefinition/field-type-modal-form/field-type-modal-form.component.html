@@ -189,6 +189,52 @@
 						</ig-property-group>
 
 
+						<ig-property-group *ngIf="selectedFieldType === 'Lookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="List Configuration" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="LinkDefaultName" class="ig-label" i18n>
+												Select List
+											</label>
+
+											<p-dropdown [ngModelOptions]="{standalone: true}"
+														(onChange)="onLookupAssetTypesChange($event)"
+														[(ngModel)]="selectedLookupAssetType"
+														igDropdown
+														required
+														[options]="lookupAssetTypes"
+														appendTo="body"></p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Lookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="LinkDefaultName" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<d3s-loading [isLoading]="loadingDefaultValues"></d3s-loading>
+											<p-dropdown *ngIf="!loadingDefaultValues"
+														[ngModelOptions]="{standalone: true}"
+														(onChange)="onLookupDefaultValueOptionsChange($event)"
+														[(ngModel)]="lookupSelectedDefaultValueOption"
+														[disabled]="selectedLookupAssetType ? false : true"
+														igDropdown
+														[options]="lookupDefaultValueOptions"
+														appendTo="body"></p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Counter'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>
@@ -295,9 +341,10 @@
 												  tooltipStyleClass="ig-tooltip"></span>
 										</label>
 
-										<p-dropdown [ngModelOptions]="{standalone: true}"
-													(onChange)="onAssetPathListSegmentChange($event)"
-													[(ngModel)]="selectedAssetPathListSegment"
+										<p-dropdown formControlName="AssetPathListSegment"
+													[autoDisplayFirst]="false"
+													name="AssetPathListSegment"
+													[igDataCy]="'FieldType_Modal_Field_AssetPathListSegment'"
 													igDropdown
 													[options]="assetTypeAncestries"
 													appendTo="body"
@@ -324,7 +371,7 @@
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<label for="AssetPathListSegment" class="ig-label" i18n>
+											<label for="IntersectTypeUid" class="ig-label" i18n>
 												Many-to-One Relationship
 												<span class="field-tooltip fa fa-question-circle"
 													  i18n-pTooltip
@@ -332,13 +379,15 @@
 													  tooltipPosition="top"
 													  tooltipStyleClass="ig-tooltip"></span>
 											</label>
-
-											<p-dropdown [ngModelOptions]="{standalone: true}"
-														(onChange)="onFieldFromRelationshipChange($event)"
-														[(ngModel)]="selectedfieldFromRelationship"
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
 														igDropdown
 														[options]="fieldFromRelationshipItems"
 														appendTo="body"
+														optionLabel="label"
+														optionValue="value"
 														required>
 												<ng-template let-item pTemplate="item">
 													<span [innerHTML]="item.label"></span>
@@ -349,20 +398,22 @@
 											</p-dropdown>
 										</div>
 									</div>
-									<div class="row" *ngIf="selectedfieldFromRelationship">
+									<div class="row" *ngIf="fieldTypeForm.get('IntersectTypeUid').value">
 										<div class="field-col">
-											<label for="AssetPathListSegment" class="ig-label" i18n>
+											<label for="FieldTypeName" class="ig-label" i18n>
 												Field
 											</label>
-
 											<d3s-loading [isLoading]="loadingRelationFields"></d3s-loading>
 											<p-dropdown *ngIf="!loadingRelationFields"
-														[ngModelOptions]="{standalone: true}"
-														(onChange)="onFieldChange($event)"
-														[(ngModel)]="selectedField"
+														formControlName="FieldTypeName"
+														[autoDisplayFirst]="false"
+														name="FieldTypeName"
+														[igDataCy]="'FieldType_Modal_Field_FieldTypeName'"
 														igDropdown
 														[options]="fieldsFromRelation"
 														appendTo="body"
+														optionLabel="label"
+														optionValue="value"
 														required>
 											</p-dropdown>
 										</div>
