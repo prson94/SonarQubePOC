@@ -348,6 +348,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				break;
+			case 'JSON':
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				break;
 
 			default: break;
 		}
