@@ -51,6 +51,14 @@ export class AssignmentProgressStepComponent implements OnInit {
 			return 'fa-sliders';
 		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.FieldChange) {
 			return 'fa-sliders';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.HTTPRequest) {
+			return 'fa-globe';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.HTTPResponse) {
+			return 'fa-cogs';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.RelationshipUpdate) {
+			return 'fa-users';
+		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.Delete) {
+			return 'fa-trash';
 		}
 	}
 
