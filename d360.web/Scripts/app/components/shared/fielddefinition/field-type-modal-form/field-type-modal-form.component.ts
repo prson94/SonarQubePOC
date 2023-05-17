@@ -46,6 +46,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldTypeForm: FormGroup = null;
 	fieldType: FieldTypeAPIModel;
 	typeFieldTypes: FieldTypeAPIModelField[] = [];
+	editedFieldType: FieldTypeAPIModelField;
 
 	title = 'unset';
 	subTitle = 'unset';
@@ -65,8 +66,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	private isEditFormUpdated: boolean = false;
 	private changeFormSub: Subscription;
 	fieldTypeSelection: SelectItem;
-	selectedFieldType: string;
 
+	selectedFieldType: string;
 
 	fieldTypes: SelectItem[] = [];
 	fieldFromRelationshipItems: SelectItem[] = [];
@@ -80,6 +81,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	isInitialDataLoaded: boolean = false;
 	numberOfAssetsForType: number = 0;
+
+	disableFieldFromRelationship: boolean = false;
+
+	private fieldTypeNameToApiNameMap = {
+		'FieldFromRelationship': 'ComputedRelationshipField'
+	}
 
 	get isEditing(): boolean {
 		return this.name ? true : false;
@@ -129,7 +136,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
+				if (this.fieldFromRelationshipItems.length === 0) {
+					this.disableFieldFromRelationship = true;
+				}
 				this.fieldTypes = results[1].DataTypes;
+
+				this.fieldTypes.forEach((ft) => {
+					if (this.fieldTypeNameToApiNameMap[ft.value]) {
+						ft.value = this.fieldTypeNameToApiNameMap[ft.value];
+					}
+				})
 				this.setForm();
 			}
 
@@ -171,11 +187,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.ActionTypeUid = this.actionTypeUid;
 		model.Fields = [];
 		model.Fields[0] = new FieldTypeAPIModelField();
-		model.Fields[0].Type = new FieldType(this.selectedFieldType);
-		const type = model.Fields[0].Type;
+
 		model.Fields[0].FriendlyName = this.fieldTypeForm.get("FriendlyName").value;
 		model.Fields[0].Name = this.fieldTypeForm.get("Name").value;
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
+
+		model.Fields[0].Type = new FieldType(this.selectedFieldType);
+		const type = model.Fields[0].Type;
+		let fieldTypeApiObject = type[this.selectedFieldType];
 
 		//Asset Path
 		if (this.selectedFieldType === 'Path') {
@@ -184,63 +203,57 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		//Counter
 		if (this.selectedFieldType === 'Counter') {
-			type[this.selectedFieldType].CounterInitialIndex = this.fieldTypeForm.get("CounterInitialIndex").value ?? 1;
-			type[this.selectedFieldType].CounterPrefix = this.fieldTypeForm.get("CounterPrefix").value ?? '';
+			fieldTypeApiObject.CounterInitialIndex = this.fieldTypeForm.get("CounterInitialIndex").value ?? 1;
+			fieldTypeApiObject.CounterPrefix = this.fieldTypeForm.get("CounterPrefix").value ?? '';
 		}
 
-		if (this.selectedFieldType === 'FieldFromRelationship') {
-			type[this.selectedFieldType].IntersectTypeUid = this.fieldTypeForm.get("IntersectTypeUid").value ?? null;
-			type[this.selectedFieldType].FieldTypeName = this.fieldTypeForm.get("FieldTypeName").value ?? null;
+		if (this.selectedFieldType === 'ComputedRelationshipField') {
+			fieldTypeApiObject.IntersectTypeUid = this.fieldTypeForm.get("IntersectTypeUid").value ?? null;
+			fieldTypeApiObject.FieldTypeName = this.fieldTypeForm.get("FieldTypeName").value ?? null;
 		}
 
-		type[this.selectedFieldType].Description.Display = this.fieldTypeForm.get("DisplayDescription").value ?? null;
-		type[this.selectedFieldType].Description.Form = this.fieldTypeForm.get("FormDescription").value ?? null;
+		fieldTypeApiObject.Description.Display = this.fieldTypeForm.get("DisplayDescription").value ?? null;
+		fieldTypeApiObject.Description.Form = this.fieldTypeForm.get("FormDescription").value ?? null;
 
-		type[this.selectedFieldType].Search.AddToResult = this.fieldTypeForm.get("AddToResult").value ?? false;
-		if (type[this.selectedFieldType].Search.AddToResult) {
-			type[this.selectedFieldType].Search.Prefix = this.fieldTypeForm.get("Prefix").value ?? null;
-			type[this.selectedFieldType].Search.Suffix = this.fieldTypeForm.get("Suffix").value ?? null;
-			type[this.selectedFieldType].Search.DisplayOrder = this.fieldTypeForm.get("DisplayOrder").value ?? null;
+		fieldTypeApiObject.Search.AddToResult = this.fieldTypeForm.get("AddToResult").value ?? false;
+		if (fieldTypeApiObject.Search.AddToResult) {
+			fieldTypeApiObject.Search.Prefix = this.fieldTypeForm.get("Prefix").value ?? null;
+			fieldTypeApiObject.Search.Suffix = this.fieldTypeForm.get("Suffix").value ?? null;
+			fieldTypeApiObject.Search.DisplayOrder = this.fieldTypeForm.get("DisplayOrder").value ?? null;
 		}
 		else {
-			type[this.selectedFieldType].Search.Prefix = null;
-			type[this.selectedFieldType].Search.Suffix = null;
-			type[this.selectedFieldType].Search.DisplayOrder = null;
+			fieldTypeApiObject.Search.Prefix = null;
+			fieldTypeApiObject.Search.Suffix = null;
+			fieldTypeApiObject.Search.DisplayOrder = null;
 		}
 
 
-		type[this.selectedFieldType].IsDisplayable = this.fieldTypeForm.get("IsDisplayable").value ?? false;
-		type[this.selectedFieldType].DisplayInColumn = this.fieldTypeForm.get("DisplayInColumn").value ?? false;
-		type[this.selectedFieldType].IsEditable = this.fieldTypeForm.get("IsEditable").value ?? false;
-		type[this.selectedFieldType].Validation.IsRequired = this.fieldTypeForm.get("IsRequired").value ?? false;
-		type[this.selectedFieldType].IsPartOfKey = this.fieldTypeForm.get("IsPartOfKey").value ?? false;
-		type[this.selectedFieldType].IsPrimaryFilter = this.fieldTypeForm.get("IsPrimaryFilter").value ?? false;
-		type[this.selectedFieldType].AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? false;
-		type[this.selectedFieldType].ShowIfEmpty = this.fieldTypeForm.get("ShowIfEmpty").value ?? false;
+		fieldTypeApiObject.IsDisplayable = this.fieldTypeForm.get("IsDisplayable").value ?? false;
+		fieldTypeApiObject.DisplayInColumn = this.fieldTypeForm.get("DisplayInColumn").value ?? false;
+		fieldTypeApiObject.IsEditable = this.fieldTypeForm.get("IsEditable").value ?? false;
+		fieldTypeApiObject.Validation.IsRequired = this.fieldTypeForm.get("IsRequired").value ?? false;
+		fieldTypeApiObject.IsPartOfKey = this.fieldTypeForm.get("IsPartOfKey").value ?? false;
+		fieldTypeApiObject.IsPrimaryFilter = this.fieldTypeForm.get("IsPrimaryFilter").value ?? false;
+		fieldTypeApiObject.AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? false;
+		fieldTypeApiObject.ShowIfEmpty = this.fieldTypeForm.get("ShowIfEmpty").value ?? false;
 
-		type[this.selectedFieldType].Validation.MinimumValue = this.fieldTypeForm.get("MinimumValue").value ?? null;
-		type[this.selectedFieldType].Validation.MaximumValue = this.fieldTypeForm.get("MaximumValue").value ?? null;
-		type[this.selectedFieldType].Validation.Precision = this.fieldTypeForm.get("Precision").value ?? null;
-		type[this.selectedFieldType].Increment = this.fieldTypeForm.get("Increment").value ?? null;
+		fieldTypeApiObject.Validation.MinimumValue = this.fieldTypeForm.get("MinimumValue").value ?? null;
+		fieldTypeApiObject.Validation.MaximumValue = this.fieldTypeForm.get("MaximumValue").value ?? null;
+		fieldTypeApiObject.Validation.Precision = this.fieldTypeForm.get("Precision").value ?? null;
+		fieldTypeApiObject.Increment = this.fieldTypeForm.get("Increment").value ?? null;
 
-		type[this.selectedFieldType].DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
+		fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
 
-		type[this.selectedFieldType].IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
-		if (type[this.selectedFieldType].IsListable) {
-			type[this.selectedFieldType].ColumnWidth = this.fieldTypeForm.get("ColumnWidth").value ?? null;
-			type[this.selectedFieldType].SortOrder = this.fieldTypeForm.get("SortOrder").value ?? null;
-			type[this.selectedFieldType].SortByAscending = this.fieldTypeForm.get("SortByAscending").value === 'true' ? true : false;
+		fieldTypeApiObject.IsListable = this.fieldTypeForm.get("IsListable").value ?? false;
+		if (fieldTypeApiObject.IsListable) {
+			fieldTypeApiObject.ColumnWidth = this.fieldTypeForm.get("ColumnWidth").value ?? null;
+			fieldTypeApiObject.SortOrder = this.fieldTypeForm.get("SortOrder").value ?? null;
+			fieldTypeApiObject.SortByAscending = this.fieldTypeForm.get("SortByAscending").value === 'true' ? true : false;
 		} else {
-			type[this.selectedFieldType].ColumnWidth = null;
-			type[this.selectedFieldType].SortOrder = null;
-			type[this.selectedFieldType].SortByAscending = null;
-		}
-
-
-		if (this.selectedFieldType === "FieldFromRelationship") {
-			type['ComputedRelationshipField'] = type[this.selectedFieldType];
-			delete type[this.selectedFieldType];
+			fieldTypeApiObject.ColumnWidth = null;
+			fieldTypeApiObject.SortOrder = null;
+			fieldTypeApiObject.SortByAscending = null;
 		}
 
 		if (false) {
@@ -324,7 +337,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Path':
-			case 'FieldFromRelationship':
+			case 'ComputedRelationshipField':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -354,17 +367,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			forkJoin(
 				this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
 			).subscribe((results) => {
-				const fieldType = results[0][0];
-				this.selectedFieldType = Object.keys(fieldType.Type)[0];
+				this.editedFieldType = results[0][0];
+				this.selectedFieldType = Object.keys(this.editedFieldType.Type)[0];
 
 				this.fieldTypeSelection = this.fieldTypes.find((s) => s.value === this.selectedFieldType);
-				this.confirmTypSelection();
+				this.confirmTypeSelection();
 
-				this.fieldTypeForm.controls["Name"].setValue(fieldType.Name);
-				this.fieldTypeForm.controls["FriendlyName"].setValue(fieldType.FriendlyName);
-				this.fieldTypeForm.controls["Category"].setValue(fieldType.Category);
+				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
+				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
+				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category);
 
-				const type = fieldType.Type[this.selectedFieldType];
+				const type = this.editedFieldType.Type[this.selectedFieldType];
 
 				this.fieldTypeForm.controls["DisplayDescription"].setValue(type?.Description?.Display ?? null);
 				this.fieldTypeForm.controls["FormDescription"].setValue(type?.Description?.Form ?? null);
@@ -408,6 +421,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
 					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);;
 				}
+
+				if (this.selectedFieldType === 'ComputedRelationshipField') {
+					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
+					this.fieldTypeForm.controls["FieldTypeName"].setValue(type?.FieldTypeName ?? null);
+
+					this.selectedfieldFromRelationship = type?.IntersectTypeUid ?? null;
+					this.selectedField = type?.FieldTypeName ?? null;
+					this.loadFieldsFromRelationships(this.selectedfieldFromRelationship);
+				}
+
 
 				this.title = $localize`Edit Field`;
 
@@ -496,9 +519,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 	}
 
-	confirmTypSelection() {
+	confirmTypeSelection() {
 		this.formState = FormState.Form;
-		this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
+		if (this.isEditing) {
+			this.subTitle = this.assetTypeName + " - " + this.editedFieldType.FriendlyName;
+		}
+		else {
+			this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
+		}
 		this.setDefaultFormValues();
 		this.cdRef.markForCheck();
 	}
@@ -571,18 +599,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'IsDisplayable':
 				return (['ComplexRelationLookup', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
-				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
 				return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON', 'System'].indexOf(this.selectedFieldType) > -1
 					|| (this.selectedFieldType === 'Relationship' && !this.isListableRelationship));
 			case 'IsRequired':
-				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
-				return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link', 'System']
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link', 'System']
 					.indexOf(this.selectedFieldType) > -1
 					|| this.selectedFieldType === 'ReferenceItemType');
 			case 'IsPrimaryFilter':
-				return (!this.supportsPrimaryFilterOption || ['FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (!this.supportsPrimaryFilterOption || ['ComputedRelationshipField', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
@@ -868,7 +896,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'FieldFromRelationship'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

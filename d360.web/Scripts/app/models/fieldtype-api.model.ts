@@ -27,6 +27,9 @@ export class FieldType {
 			case 'FieldFromRelationship':
 				this.FieldFromRelationship = new ComputedRelationshipField();
 				break;
+			case 'ComputedRelationshipField':
+				this.ComputedRelationshipField = new ComputedRelationshipField();
+				break;
 			case 'ComplexRelationLookup':
 				this.ComplexRelationLookup = new ComputedRelationshipLookup();
 				break;

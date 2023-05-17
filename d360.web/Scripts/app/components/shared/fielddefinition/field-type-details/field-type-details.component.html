@@ -160,7 +160,7 @@
 					</ng-container>
 
 					<ng-template #nonLinkField>
-						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1">
 							<label class="ig-label" i18n>Default Value</label>
 							<div class="ig-value">
 								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}

@@ -48,14 +48,31 @@
 							</ng-template>
 							<ng-template pTemplate="body"
 										 let-item>
-								<tr [pSelectableRow]="item">
-									<td class="rel-name">
-										<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
+									<td class="disabled"
+										*ngIf="disableFieldFromRelationship && item.value === 'ComputedRelationshipField', else defaultFieldTypeSelection"
+										i18n-pTooltip
+										pTooltip="No relationships are currently defined for this asset type"
+										tooltipPosition="top"
+										tooltipStyleClass="ig-tooltip">
+										<span class="disabled-item">
+											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
 
-										<span class="rel-text">
-											{{item.label}}
+											<span class="rel-text">
+												{{item.label}}
+											</span>
 										</span>
 									</td>
+
+									<ng-template #defaultFieldTypeSelection>
+										<td>
+											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+
+											<span class="rel-text">
+												{{item.label}}
+											</span>
+										</td>
+									</ng-template>
 								</tr>
 							</ng-template>
 						</p-table>
@@ -163,7 +180,7 @@
 							</div>
 						</ig-property-group>
 
-						<ig-property-group *ngIf="selectedFieldType === 'FieldFromRelationship'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipField'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
 							<div inputs>
 								<div class="form-group">
 									<div class="row">
@@ -682,6 +699,6 @@
 		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>
 		<span class="grow"></span>
 		<button *ngIf="formState === 'Form'" igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
-		<button *ngIf="formState === 'FieldTypeSelection'" igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypSelection()" [disabled]="!selectedFieldType"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button *ngIf="formState === 'FieldTypeSelection'" igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypeSelection()" [disabled]="!selectedFieldType"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>
 </d3s-modal>
