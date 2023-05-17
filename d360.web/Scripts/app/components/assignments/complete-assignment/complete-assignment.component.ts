@@ -13,7 +13,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = true;
-	@Input() assetUid: string = 'E26E46D7-C22A-4D69-B481-8A17B1E0AF76'
+	assetId: number
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 
 	constructor(protected settingsService: CompanySettingsService) {
@@ -29,6 +29,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	openModal(details: { workflowId; stepId; assetId }): void {
+		if(details && details.assetId) {
+			this.assetId = details.assetId
+		}
 		this.isModalVisible = true;
 	}
 
