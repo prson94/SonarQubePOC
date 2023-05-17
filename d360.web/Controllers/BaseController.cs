@@ -209,26 +209,26 @@ namespace d360.web.Controllers
             return userModel;
         }
 
-        internal User GetSdkFeatureFlagUser()
-        {
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-            var userModel = GetFeatureFlagUser();
+		internal User GetSdkFeatureFlagUser()
+		{
+			var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+			var userModel = GetFeatureFlagUser();
 
-            var b = LaunchDarkly.Sdk.User.Builder(itemKey);
+			var b = LaunchDarkly.Sdk.User.Builder(itemKey);
 
-            if (userModel != null)
-            {
-                b.FirstName(userModel.FirstName)
-                    .LastName(userModel.LastName)
-                    .Email(userModel.Email)
-                    .Custom("tenantId", userModel.TenantId.ToString())
-                    .Custom("tenantName", userModel.TenantName);
-            }
+			if (userModel != null)
+			{
+				b.FirstName(userModel.FirstName)
+					.LastName(userModel.LastName)
+					.Email(userModel.Email)
+					.Custom("tenantId", userModel.TenantId.ToString())
+					.Custom("tenantName", userModel.TenantName);
+			}
 
-            return b.Build();
-        }
+			return b.Build();
+		}
 
-        internal FeatureFlagUser GetClientFeatureFlagUser()
+		internal FeatureFlagUser GetClientFeatureFlagUser()
         {
             var itemKey = $"{Community.CurrentClientID}.{Community.CurrentCompanyID}.{Community.CurrentResourceID}";
             var userModel = GetFeatureFlagUser();
@@ -2189,23 +2189,24 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
             return userModel;
         }
 
-        internal User GetSdkFeatureFlagUser()
-        {
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-            var userModel = GetFeatureFlagUser();
-            var b = LaunchDarkly.Sdk.User.Builder(itemKey);
+		internal User GetSdkFeatureFlagUser()
+		{
+			var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+			var userModel = GetFeatureFlagUser();
 
-            if (userModel != null)
-            {
-                b.FirstName(userModel.FirstName)
-                    .LastName(userModel.LastName)
-                    .Email(userModel.Email)
-                    .Custom("tenantId", userModel.TenantId.ToString())
-                    .Custom("tenantName", userModel.TenantName);
-            }
+			var b = LaunchDarkly.Sdk.User.Builder(itemKey);
 
-            return b.Build();
-        }
+			if (userModel != null)
+			{
+				b.FirstName(userModel.FirstName)
+					.LastName(userModel.LastName)
+					.Email(userModel.Email)
+					.Custom("tenantId", userModel.TenantId.ToString())
+					.Custom("tenantName", userModel.TenantName);
+			}
+
+			return b.Build();
+		}
 
         protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
         {

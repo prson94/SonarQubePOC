@@ -8032,7 +8032,7 @@ where   ER.ExecutionID = @ExecutionID
                             {
                                 row["Name"] = model.Name.Trim();
                             }
-                            row["Description"] = model.Description;
+                            row["Description"] = model.Description.SanitizeHtml();
                             if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
                             {
                                 row["Uid"] = model.Uid;
@@ -10555,7 +10555,7 @@ where   ER.ExecutionID = @ExecutionID
                             row["Name"] = item.Name.Trim();
                         }
 
-                        row["Description"] = item.Description;
+						row["Description"] = item.Description.SanitizeHtml();
 
                         if (item.PrimaryOwnerUid != null)
                         {
@@ -12317,7 +12317,7 @@ where   ER.ExecutionID = @ExecutionID
                         row["AssetUid"] = item.AssetUid;
 
                         row["SecurityAssetUid"] = item.AssignedUid;
-                        row["Context"] = item.Description;
+                        row["Context"] = item.Description.SanitizeHtml();
 
                         ResponsibilityTypeRelationOverrideTable.Rows.Add(row);
 

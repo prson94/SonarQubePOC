@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using d360.core;
 
 using d360.core.entities;
 
@@ -35,7 +36,9 @@ namespace d360.model.validators
             {
                 throw new Exception("Invalid tag specified [too long].");
             }
-        }
+
+			model.Value = model.Value.RemoveHtml();
+		}
 
         public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
         {
@@ -70,6 +73,8 @@ namespace d360.model.validators
             {
                 throw new ArgumentException("Invalid uid specified.");
             }
-        }
+
+			model.Value = model.Value.RemoveHtml();
+		}
     }
 }

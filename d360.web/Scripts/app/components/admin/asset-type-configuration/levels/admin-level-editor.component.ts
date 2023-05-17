@@ -4,6 +4,7 @@ import { LevelsService } from '../../../../services/levels.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { BaseComponent } from '../../../shared/base.component';
 import { cloneDeep } from 'lodash-es';
+import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-admin-level-editor',
@@ -34,8 +35,12 @@ export class AdminLevelEditorComponent extends BaseComponent {
     }
 
     ngOnInit() {
-        if (this.level != null)
-            {this.editedLevel = cloneDeep(this.level);}
+		if (this.level != null) {
+			if (this.level.Description) {
+				this.level.Description = DOMPurify.sanitize(this.level.Description);
+			}
+			{ this.editedLevel = cloneDeep(this.level); }
+		}
         else {
             this.editedLevel = new HierarchyTypeLevel();
             this.action = $localize`New`;

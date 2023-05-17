@@ -29,6 +29,7 @@ import { AssetService } from '../../../../services/asset.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { RelationshipsService } from "../../../../services/relationships.service";
 import { RelationshipType } from "../../../../models/relationship.model";
+import * as DOMPurify from "dompurify";
 
 
 @Component({
@@ -576,7 +577,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
         if (this.currentType === 'Date' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
             this.defaultDate = new Date(this.model.FieldType.Type[this.currentType].DefaultValue);
-        }
+		}
+
+		if (this.currentType === 'Html' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
+			this.model.FieldType.Type[this.currentType].DefaultValue = DOMPurify.sanitize(this.model.FieldType.Type[this.currentType].DefaultValue);
+		}
 
         if (this.currentType === 'Link' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
             this.defaultLinkName = this.model.FieldType.Type[this.currentType].DefaultValue.Text;

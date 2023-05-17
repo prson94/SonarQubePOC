@@ -1063,7 +1063,7 @@ namespace d360.model.DataAccessLayer
 							Uid = Guid.NewGuid(),
 							AssetUid = metricAsset.Uid,
 							Name = model.Name,
-							Description = model.Description,
+							Description = model.Description.SanitizeHtml(),
 							CreatedBy = Company.CurrentResourceID,
 							CreatedOn = DateTime.UtcNow,
 							MatchConditionsOnly = model.MatchConditionsOnly,
@@ -1172,7 +1172,7 @@ namespace d360.model.DataAccessLayer
 
 						// Set the properties.
 						metricAssetVersion.Name = model.Name;
-						metricAssetVersion.Description = model.Description;
+						metricAssetVersion.Description = model.Description.SanitizeHtml();
 						metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
 						metricAssetVersion.Threshold = model.Threshold;
 						metricAssetVersion.Weight = model.Weight;
