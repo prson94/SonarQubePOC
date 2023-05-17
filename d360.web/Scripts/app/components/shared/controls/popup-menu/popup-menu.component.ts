@@ -36,6 +36,8 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 	@Input() location: PopupMenuLocation;
 	@Input() allowAllUnchecked: boolean = true;
 	@Input() forceOpenBottom: boolean = false;
+	@Input() forceOpenBottomRight: boolean = false;
+	@Input() isScrollable: boolean = false;
 
 	@Output() onSelect = new EventEmitter();
 
@@ -311,9 +313,9 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 			});
 		}
 	}
-
+	// ignore codacy complexity issue
+	/* eslint-disable-next-line */
 	setElementPosition() {
-
 		if (this.positionEl && this.isVisible) {
 			var htmlEl = this.positionEl.nativeElement as HTMLElement;
 			var menu = this.popupEl.nativeElement as HTMLElement;
@@ -347,6 +349,10 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 				this.currentLocation = PopupMenuLocation.BottomLeft;
 			}
 
+			if (this.forceOpenBottomRight) {
+				this.openToBottomSide = true;
+				this.currentLocation = PopupMenuLocation.BottomRight;
+			}
 
 			if (this.anchorElement) {
 
