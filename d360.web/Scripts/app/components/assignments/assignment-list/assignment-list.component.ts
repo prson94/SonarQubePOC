@@ -155,6 +155,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	stepClicked(value: { workflowItemStep: WorkflowItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
-		this.secondarySidePanel = 'user';
+		this.secondarySidePanel = 'step-details';
 	}
 }

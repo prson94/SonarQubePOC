@@ -25,7 +25,7 @@
 					</div>
 					<div class="details-container">
 						<div>
-							<ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+							<ng-container *ngIf="secondarySidePanel=='user'">
 								<ig-asset-detail [objectUID]="resourceUid"
 												 objectType="Resource"
 												 [useAccordion]="true"
@@ -37,6 +37,9 @@
 												 [isSidePanel]="true"
 												 [interceptLinkClick]="true"
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+							</ng-container>
+							<ng-container *ngIf="secondarySidePanel=='step-details'">
+								<d3s-assignment-progress-step-details></d3s-assignment-progress-step-details>
 							</ng-container>
 						</div>
 					</div>

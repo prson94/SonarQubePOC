@@ -42,6 +42,9 @@ import {
 import { CompleteAssignmentComponent } from './complete-assignment/complete-assignment.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetTypeDetailV2Module } from '../shared/asset-type-detail-v2/asset-type-detail-v2.module';
+import {
+	AssignmentProgressStepDetailsComponent
+} from './assignment-progress-step-details/assignment-progress-step-details.component';
 
 
 @NgModule({
@@ -56,36 +59,37 @@ import { AssetTypeDetailV2Module } from '../shared/asset-type-detail-v2/asset-ty
 		AssignmentProgressStepComponent,
 		AssignmentsContainerComponent,
 		CompleteAssignmentComponent,
-		WorkflowVersionListComponent
+		WorkflowVersionListComponent,
+		AssignmentProgressStepDetailsComponent
 	],
-    imports: [
-        AdvancedFiltersModule,
-        AngularSplitModule,
-        AssetDetailModule,
-        AssignmentsRoutingModule,
-        ButtonModule,
-        CheckboxModule,
-        CommonModule,
-        CoreModule,
-        D3SColumnFilterModule,
-        D3SSortIconModule,
-        DirectivesModule,
-        FormsModule,
-        IgBadgeModule,
-        PopupMenuModule,
-        PropertyGroupModule,
-        RouterModule,
-        SearchFieldModule,
-        SharedDeleteFormModule,
-        SharedGridPagingInfoModule,
-        SharedModule,
-        SidePanelModule,
-        TableModule,
-        TooltipModule,
-        WorkflowMonitorModule,
-        SiteModalModule,
-        AssetTypeDetailV2Module
-    ]
+	imports: [
+		AdvancedFiltersModule,
+		AngularSplitModule,
+		AssetDetailModule,
+		AssignmentsRoutingModule,
+		ButtonModule,
+		CheckboxModule,
+		CommonModule,
+		CoreModule,
+		D3SColumnFilterModule,
+		D3SSortIconModule,
+		DirectivesModule,
+		FormsModule,
+		IgBadgeModule,
+		PopupMenuModule,
+		PropertyGroupModule,
+		RouterModule,
+		SearchFieldModule,
+		SharedDeleteFormModule,
+		SharedGridPagingInfoModule,
+		SharedModule,
+		SidePanelModule,
+		TableModule,
+		TooltipModule,
+		WorkflowMonitorModule,
+		SiteModalModule,
+		AssetTypeDetailV2Module
+	]
 })
 export class AssignmentsModule {
 }
