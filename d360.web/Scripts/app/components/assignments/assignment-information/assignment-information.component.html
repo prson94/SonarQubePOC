@@ -1,4 +1,4 @@
 <d3s-assignment-information-request
 	[workflowAssignmentItem]="workflowAssignmentItem" *ngIf="isIssueType"></d3s-assignment-information-request>
-<d3s-assignment-information-general
-	[workflowAssignmentItem]="workflowAssignmentItem"></d3s-assignment-information-general>
+<d3s-assignment-information-general (linkClick)="linkClick.emit($event)"
+									[workflowAssignmentItem]="workflowAssignmentItem"></d3s-assignment-information-general>
