@@ -24,9 +24,12 @@ export class AssignmentProgressStepComponent implements OnInit {
 		assetId
 	}>();
 
+	@Output() stepClickChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+
 	workflowStepDetail: WorkflowStepDetail;
 
 	isLoading: boolean = false;
+	selected: boolean = false;
 
 	get header(): string {
 		return this.workflowItemStep.Name;
@@ -75,8 +78,9 @@ export class AssignmentProgressStepComponent implements OnInit {
 		}
 	}
 
-	showStepDetails() {
-
+	toggleStepDetails(): void {
+		this.selected = !this.selected;
+		this.stepClickChange.emit(this.selected);
 	}
 
 	completeAssignmentClick() {

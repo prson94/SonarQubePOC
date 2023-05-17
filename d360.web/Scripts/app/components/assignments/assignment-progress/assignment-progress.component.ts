@@ -8,6 +8,7 @@ import { WorkflowItemStep } from '../../../models/workflow.model';
 	styleUrls: ['./assignment-progress.component.less']
 })
 export class AssignmentProgressComponent implements OnInit {
+
 	@Input() set workflowItemId(value: number) {
 		this._workflowItemId = value;
 		this.loadData();
@@ -17,6 +18,11 @@ export class AssignmentProgressComponent implements OnInit {
 		workflowId;
 		stepId;
 		assetId
+	}>();
+
+	@Output() stepClickChange: EventEmitter<{ workflowItemStep: WorkflowItemStep, open: boolean }> = new EventEmitter<{
+		workflowItemStep: WorkflowItemStep,
+		open: boolean
 	}>();
 
 	workflowItemSteps: WorkflowItemStep[];

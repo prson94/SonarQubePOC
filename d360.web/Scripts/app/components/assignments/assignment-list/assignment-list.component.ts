@@ -11,6 +11,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
+import { WorkflowItemStep } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -149,6 +150,11 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	openCompleteAssignment(): void {
-		this.completeAssignmentComponent.openModal(null)
+		this.completeAssignmentComponent.openModal(null);
+	}
+
+	stepClicked(value: { workflowItemStep: WorkflowItemStep; open: boolean }) {
+		this.secondarySidePanelOpen = value.open;
+		this.secondarySidePanel = 'user';
 	}
 }

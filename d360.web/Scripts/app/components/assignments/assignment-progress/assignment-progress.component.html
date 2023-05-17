@@ -1,10 +1,12 @@
 <div class="asset-detail-tabs">
 	<ig-property-group title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
-			<d3s-assignment-progress-step [workflowItemStep]="workflowItemStep"
+			<d3s-assignment-progress-step *ngFor="let workflowItemStep of workflowItemSteps"
+										  [workflowItemStep]="workflowItemStep"
+										  (stepClickChange)="stepClickChange.emit({workflowItemStep:workflowItemStep, open:$event})"
 										  (completeAssignment)="completeAssignment.emit($event)"
 										  [isLastStep]="workflowItemSteps.indexOf(workflowItemStep) === (workflowItemSteps.length - 1)"
-										  *ngFor="let workflowItemStep of workflowItemSteps"></d3s-assignment-progress-step>
+			></d3s-assignment-progress-step>
 		</div>
 	</ig-property-group>
 </div>

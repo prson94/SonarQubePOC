@@ -6,6 +6,26 @@
   padding: 0.5rem 0;
   background: @ig-slate-t5;
 
+  &:focus {
+    box-shadow: 0 0 0 1px #8abddf;
+  }
+
+  &:hover {
+    background: linear-gradient(@ig-toolbar-overlay-hover, @ig-toolbar-overlay-hover), var(--primaryButtonBackColor);
+  }
+
+  &:active {
+    background: linear-gradient(@ig-toolbar-overlay-active, @ig-toolbar-overlay-active), var(--primaryButtonBackColor);
+  }
+
+  &.selected {
+    background: var(--secondaryButtonSelectedBackColor) !important;
+
+    &:active {
+      background: var(--secondaryButtonSelectedBackColor);
+    }
+  }
+
   .spacing-top {
     padding-top: 0.25rem;
   }
@@ -25,6 +45,7 @@
   white-space: pre-line;
 }
 
-.width-100 {
+.complete-assignment {
   width: 100%;
+  white-space: nowrap;
 }
