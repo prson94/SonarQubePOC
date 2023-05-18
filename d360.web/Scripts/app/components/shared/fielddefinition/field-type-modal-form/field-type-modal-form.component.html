@@ -194,17 +194,68 @@
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<label for="LinkDefaultName" class="ig-label" i18n>
+											<label for="LookupUid" class="ig-label" i18n>
 												Select List
 											</label>
 
-											<p-dropdown [ngModelOptions]="{standalone: true}"
-														(onChange)="onLookupAssetTypesChange($event)"
-														[(ngModel)]="selectedLookupAssetType"
+											<p-dropdown formControlName="LookupUid"
+														[autoDisplayFirst]="false"
+														name="LookupUid"
+														[igDataCy]="'FieldType_Modal_Field_LookupUid'"
 														igDropdown
-														required
 														[options]="lookupAssetTypes"
-														appendTo="body"></p-dropdown>
+														appendTo="body"
+														required
+														optionLabel="label"
+														optionValue="value"></p-dropdown>
+										</div>
+									</div>
+									<d3s-loading [isLoading]="loadingDefaultValues" [inline]="true"></d3s-loading>
+
+									<div class="row" *ngIf="fieldTypeForm.get('LookupUid').value && !loadingDefaultValues">
+										<div class="field-col">
+											<label for="DisplayFormat" class="ig-label" i18n>Display Format</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="DisplayFormat"
+													   tabindex="20"
+													   formControlName="DisplayFormat"
+													   [igDataCy]="'Field_Type_Modal_Field_Category'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateControls('DisplayFormat', $event)"
+																   [items]="lookupFieldTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+
+
+									<div class="row" *ngIf="fieldTypeForm.get('LookupUid').value && !loadingDefaultValues">
+										<div class="field-col">
+											<label for="EditFormat" class="ig-label" i18n>Edit Format</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="EditFormat"
+													   tabindex="20"
+													   formControlName="EditFormat"
+													   [igDataCy]="'Field_Type_Modal_EditFormat'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateControls('EditFormat', $event)"
+																   [items]="lookupFieldTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -216,19 +267,59 @@
 								<div class="form-group">
 									<div class="row">
 										<div class="field-col">
-											<label for="LinkDefaultName" class="ig-label" i18n>
+											<label for="DefaultValue" class="ig-label" i18n>
 												Default Value
 											</label>
 
-											<d3s-loading [isLoading]="loadingDefaultValues"></d3s-loading>
+											<d3s-loading [isLoading]="loadingDefaultValues" [inline]="true"></d3s-loading>
 											<p-dropdown *ngIf="!loadingDefaultValues"
-														[ngModelOptions]="{standalone: true}"
-														(onChange)="onLookupDefaultValueOptionsChange($event)"
-														[(ngModel)]="lookupSelectedDefaultValueOption"
-														[disabled]="selectedLookupAssetType ? false : true"
+														formControlName="DefaultValue"
+														[autoDisplayFirst]="false"
+														name="DefaultValue"
+														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
 														igDropdown
 														[options]="lookupDefaultValueOptions"
-														appendTo="body"></p-dropdown>
+														[disabled]="fieldTypeForm.get('LookupUid').value ? false : true"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value">
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="AllowAllValue" class="ig-label" i18n>
+												Allow All value selection
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'AllowAllValue'"
+													   [formControlName]="'AllowAllValue'"
+													   [formControl]="fieldTypeForm.controls['AllowAllValue']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('AllowAllValue').value">
+										<div class="field-col">
+											<label for="AllowAllLabel" class="ig-label" i18n>
+												Label for Value selection
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="AllowAllLabel"
+												   tabindex="10"
+												   formControlName="AllowAllLabel"
+												   [igDataCy]="'Field_Type_Modal_Field_AllowAllLabel'"
+												   type="text"
+												   [required]="fieldTypeForm.get('AllowAllValue').value ? true : false" />
 										</div>
 									</div>
 								</div>
@@ -403,7 +494,7 @@
 											<label for="FieldTypeName" class="ig-label" i18n>
 												Field
 											</label>
-											<d3s-loading [isLoading]="loadingRelationFields"></d3s-loading>
+											<d3s-loading [isLoading]="loadingRelationFields" [inline]="true"></d3s-loading>
 											<p-dropdown *ngIf="!loadingRelationFields"
 														formControlName="FieldTypeName"
 														[autoDisplayFirst]="false"

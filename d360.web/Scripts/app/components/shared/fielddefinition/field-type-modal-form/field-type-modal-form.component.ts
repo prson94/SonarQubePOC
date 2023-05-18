@@ -1,6 +1,6 @@
 import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
-import { stubFalse } from "lodash-es";
+import { stubFalse, values } from "lodash-es";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
 import { forkJoin, map, Observable, Subscription } from "rxjs";
@@ -74,7 +74,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldsFromRelation: SelectItem[] = [];
 
 	lookupAssetTypes: SelectItem[] = [];
-	selectedLookupAssetType: any;
+	lookupFieldTokens: any[] = [];
 
 	lookupDefaultValueOptions: SelectItem[] = [];
 	lookupSelectedDefaultValueOption: any;
@@ -265,6 +265,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		if (this.selectedFieldType === 'Lookup') {
 			fieldTypeApiObject.List.Uid = this.fieldTypeForm.get("LookupUid").value ?? null;
+			fieldTypeApiObject.List.AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? null;
+			fieldTypeApiObject.AllowAllValue = this.fieldTypeForm.get("AllowAllValue").value ?? null;
+			fieldTypeApiObject.AllowAllLabel = this.fieldTypeForm.get("AllowAllLabel").value ?? null;
+			fieldTypeApiObject.Format.Display = this.fieldTypeForm.get("DisplayFormat").value ?? null;
+			fieldTypeApiObject.Format.Edit = this.fieldTypeForm.get("EditFormat").value ?? null;
 		}
 
 
@@ -334,11 +339,19 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			FieldTypeName: [null],
 			LinkDefaultName: [null],
 			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }],
-			LookupUid: [null]
+			LookupUid: [null],
+			AllowAllValue: ['false'],
+			AllowAllLabel: [null],
+			DisplayFormat: [null],
+			EditFormat: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
 			this.loadFieldsFromRelationships(value);
+		});
+
+		this.fieldTypeForm.controls["LookupUid"].valueChanges.subscribe((value) => {
+			this.loadLookupDefaultValue(value);
 		});
 
 		this.setDefaultFormValues();
@@ -356,7 +369,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
 
-		this.selectedLookupAssetType = null;
 		this.lookupSelectedDefaultValueOption = null;
 
 		switch (this.selectedFieldType) {
@@ -375,8 +387,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Decimal':
 			case 'Html':
 			case 'Link':
+			case 'Lookup':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'JSON':
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
@@ -430,7 +444,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsRequired"].setValue(type?.Validation?.IsRequired ?? null);
 				this.fieldTypeForm.controls["IsPartOfKey"].setValue(type?.IsPartOfKey ?? null);
 				this.fieldTypeForm.controls["IsPrimaryFilter"].setValue(type?.IsPrimaryFilter ?? null);
-				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.AllowMultipleValues ?? null);
+				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 				this.fieldTypeForm.controls["DefaultValue"].setValue(type?.DefaultValue ?? null);
@@ -468,7 +482,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				if (this.selectedFieldType === 'Lookup') {
 					this.fieldTypeForm.controls["LookupUid"].setValue(type?.List?.Uid ?? null);
-					this.selectedLookupAssetType = type?.List?.Uid;
+					this.fieldTypeForm.controls["AllowAllValue"].setValue(type?.AllowAllValue ?? null);
+					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
+					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
+					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
+
 				}
 
 				this.title = $localize`Edit Field`;
@@ -585,24 +603,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.controls["Category"].setValue(newValue);
 	}
 
-	onFieldChange($event) {
-		this.fieldTypeForm.controls["FieldTypeName"].setValue($event.value);
-	}
-
-
-
 	onShowDetailChange($event: boolean) {
 		if (!$event) {
 			this.fieldTypeForm.controls["DisplayInColumn"].setValue(false);
 		}
-	}
-
-	onLookupAssetTypesChange($event) {
-		this.fieldTypeForm.controls["LookupUid"].setValue($event.value);
-		this.loadLookupDefaultValue();
-	}
-	onLookupDefaultValueOptionsChange($event) {
-		console.log($event);
 	}
 
 	onMaxValueChange() {
@@ -936,7 +940,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -946,22 +950,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -971,7 +975,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1002,12 +1006,45 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	loadingDefaultValues: boolean = false;
-	loadLookupDefaultValue() {
+	loadLookupDefaultValue(uid: string) {
+		if (!uid) {
+			return;
+		}
 		this.loadingDefaultValues = true;
-		this.fieldsService.getLookupDefaultValueOptions(this.selectedLookupAssetType).subscribe((res) => {
-			this.lookupDefaultValueOptions = res;
+		forkJoin(
+			this.fieldsService.getLookupDefaultValueOptions(uid),
+			this.fieldsService.getLookupTokens(uid)
+		).subscribe((data) => {
+			this.lookupDefaultValueOptions = [];
+			if (data[0] && data[0].length > 0) {
+				this.lookupDefaultValueOptions = data[0].filter((x) => x.value !== null);
+				this.lookupDefaultValueOptions.forEach((item) => item.value = (item.value as string).toUpperCase());
+			}
+
 			this.loadingDefaultValues = false;
+			this.lookupFieldTokens = [];
+			if (data[1] && data[1].length > 0) {
+				data[1].forEach((item) => {
+					this.lookupFieldTokens.push({ title: item.label, value: item.value });
+				});
+
+				if (!this.isEditing && !this.fieldTypeForm.get('DisplayFormat').value) {
+					this.fieldTypeForm.controls['DisplayFormat'].setValue(`${this.lookupFieldTokens[0].value}`);
+				}
+
+				if (!this.isEditing && !this.fieldTypeForm.get('EditFormat').value) {
+					this.fieldTypeForm.controls['EditFormat'].setValue(`${this.lookupFieldTokens[0].value}`);
+				}
+			}
+
 			this.cdRef.markForCheck();
 		});
+	}
+	updateControls(ctrlName, $event) {
+		const currentValue = this.fieldTypeForm.get(ctrlName).value ?? '';
+		const newValue = `${currentValue}{${$event.value}}`;
+
+		this.fieldTypeForm.controls[ctrlName].setValue(newValue);
+
 	}
 }
