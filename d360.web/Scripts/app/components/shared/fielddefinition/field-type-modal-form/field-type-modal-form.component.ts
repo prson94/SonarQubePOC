@@ -503,6 +503,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Score':
+			case 'Tag':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -943,139 +944,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		};
 	}
 
-	private setDefaultValuesDeprecated() {
-		const observables: Array<Observable<any>> = [];
-		this.showDescription = true;
-		//this.enableAllowMultipleValues = true;
-		this.hasDisplayInColumn = true;
-		//this.showIsRequired = true;
-
-		switch (this.selectedFieldType.toLowerCase()) {
-			case 'lookup':
-				//if (this.model.FieldType.Type[this.selectedFieldType].List && this.model.FieldType.Type[this.selectedFieldType].List.Uid) {
-				//	observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.selectedFieldType].List.Uid));
-				//	this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-				//}
-				//else if (this.model.FieldType.Type[this.selectedFieldType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.selectedFieldType].List.Uid) {
-				//	const valToPass = this.model.FieldType.Type['Lookup'].List.Class === 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
-				//	this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-				//	observables.push(this.lookupTypeSelected(valToPass));
-				//}
-				//else {
-				//	this.model.FieldType.Type[this.selectedFieldType].List.Uid = this.lookups.Lookups[0].value;
-				//	observables.push(this.lookupTypeSelected(this.lookups.Lookups[0].value));
-				//	this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-				//}
-				break;
-			case 'relationship':
-				//try {
-				//	if (this.model.FieldType.Type["Relationship"].IntersectTypeUid) {
-				//		observables.push(this.cardinalRelationshipSelected(`${this.model.FieldType.Type["Relationship"].IntersectTypeUid}|${this.model.FieldType.Type["Relationship"].IsSubject}`));
-				//	}
-				//	if (!this.model.FieldType.Type["Relationship"].IsEditable) {
-				//		this.showDescription = false;
-				//		this.model.FieldType.Type["Relationship"].Description.Form = "";
-				//	}
-				//} catch (e) {
-				//	console.log(e);
-				//}
-				break;
-			case 'fieldfromrelationship':
-			case 'computedrelationshipfield':
-				//try {
-				//	if (this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid) {
-				//		observables.push(this.cardinalFieldFromRelationshipSelected(this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid, this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
-				//	} else if (this.lookups.Field_CardinalRelationships.length > 0) {
-				//		observables.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value,
-				//			this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
-				//	}
-				//	this.model.FieldType.Type.FieldFromRelationship.IsEditable = false;
-				//	this.showDescription = false;
-				//} catch (e) {
-				//	console.log(e);
-				//}
-				break;
-			case 'reflistrelationship':
-				//this.hasDisplayInColumn = false;
-				//try {
-				//	if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
-				//		&& (this.lookups.Field_CardinalReferenceRelationships.find((x) => x.value === this.model.cardinalRelationship))) {
-				//		observables.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
-				//	} else if (this.lookups.Field_CardinalReferenceRelationships.length > 0) {
-				//		observables.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value));
-				//	}
-				//	this.showDescription = false;
-				//} catch (e) {
-				//	console.log(e);
-				//}
-				break;
-			case 'complexrelationlookup':
-			//this.showDescription = false;
-			//this.hasDisplayInColumn = false;
-			//if (this.model.RelationItems == null || this.model.RelationItems.length === 0) {
-			//	const r = new FieldTypeRelationItemEditorModel();
-
-			//	r.DisplayFields = [];
-			//	r.AssetTypeUid = this.GetCurrentUid();
-
-			//	this.model.RelationItems = [];
-			//	this.model.RelationItems.push(r);
-			//	this.relationItemCount = 1;
-			//	this.loadRelationItems(this.model.RelationItems.length - 1).subscribe();
-			//}
-			//break;
-			case 'tag':
-				//if (!isFromLoad) { this.showIsEditable = false; }
-				//this.showDescription = false;
-				//this.enableAllowMultipleValues = false;
-				//this.hasDisplayInColumn = false;
-				break;
-			case "ComputedOwnershipLookup":
-				//this.showDescription = false;
-				//this.onEnableListSingleResponsibilityType(this.model.FieldType.Type[this.selectedFieldType].Definition.ResponsibilityTypeUid?.length > 1);
-				break;
-			case 'computedownershiplookup':
-			case 'json':
-			case 'jsonelement':
-				this.hasDisplayInColumn = false;
-			case 'path':
-				this.showDescription = false;
-
-				break;
-			case 'score':
-				//observables.push(this.loadAvailableScoreTypes());
-				//this.enableAllowMultipleValues = false;
-				//this.showDescription = false;
-				break;
-			case 'counter':
-				//this.model.FieldType.Type.Counter.ShowIfEmpty = true;
-				//if (!this.model.FieldType.Type.Counter.CounterInitialIndex) {
-				//	this.model.FieldType.Type.Counter.CounterInitialIndex = this.numberOfAssetsForType;
-				//}
-				//this.showIsRequired = false;
-				//this.enableAllowMultipleValues = false;
-				//this.showDescription = false;
-				break;
-			default:
-				break;
-		}
-		//if (this.selectedFieldType === 'Date' && this.model.FieldType.Type[this.selectedFieldType].DefaultValue != null) {
-		//	this.defaultDate = new Date(this.model.FieldType.Type[this.selectedFieldType].DefaultValue);
-		//}
-
-		//if (this.selectedFieldType === 'Link' && this.model.FieldType.Type[this.selectedFieldType].DefaultValue != null) {
-		//	this.defaultLinkName = this.model.FieldType.Type[this.selectedFieldType].DefaultValue.Text;
-		//	this.defaultLinkAdress = this.model.FieldType.Type[this.selectedFieldType].DefaultValue.Url;
-		//}
-
-		//this.errorMessage = ""; //clear the error message when changing types
-
-		//observables
-		//	.filter((x) => x != null && x != null)
-		//	.forEach((obs) => obs.pipe(map(() => this.validate('*'))).subscribe());
-	}
-
-
 	get showAddToSearch(): boolean {
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number', 'Relationship', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
@@ -1087,12 +955,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score', 'Text'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score', 'Text', 'Tag'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1199,6 +1067,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		if (item.value === 'Score' && (!this.scoreTypeOptions || this.scoreTypeOptions.length === 0)) {
 			return $localize`No scores are currently defined for this asset type`;
+		}
+
+		if (item.value === 'Tag' && this.typeFieldTypes.filter((x) => x.Type.Tag).length > 0) {
+			return $localize`Asset type can have only one Tag field type`;
 		}
 
 		return null;
