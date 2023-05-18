@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChildren } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
 
 @Component({
 	selector: 'd3s-assignment-progress',
@@ -8,6 +9,8 @@ import { WorkflowItemStep } from '../../../models/workflow.model';
 	styleUrls: ['./assignment-progress.component.less']
 })
 export class AssignmentProgressComponent implements OnInit {
+
+	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
 	@Input() set workflowItemId(value: number) {
 		this._workflowItemId = value;
@@ -39,9 +42,24 @@ export class AssignmentProgressComponent implements OnInit {
 		this.workflowItemSteps = [];
 		if (this._workflowItemId) {
 			this.workflowService.getWorkflowItemSteps(this._workflowItemId)
-				.subscribe((response: WorkflowItemStep[]) => {
+				.subscribe((response: WorkflowItemStep[]): void => {
 					this.workflowItemSteps = response;
 				});
+		}
+	}
+
+	stepSelectionChanged(workflowItemStep: WorkflowItemStep, open: boolean): void {
+		if (open) {
+			this.deselectWorkflowSteps(workflowItemStep);
+		}
+		this.stepClickChange.emit({ workflowItemStep: workflowItemStep, open: open });
+	}
+
+	deselectWorkflowSteps(workflowItemStepToSkip?: WorkflowItemStep) {
+		for (const assignmentProgressStepComponent of this.assignmentProgressStepComponents) {
+			if (workflowItemStepToSkip !== assignmentProgressStepComponent.workflowItemStep) {
+				assignmentProgressStepComponent.selected = false;
+			}
 		}
 	}
 }

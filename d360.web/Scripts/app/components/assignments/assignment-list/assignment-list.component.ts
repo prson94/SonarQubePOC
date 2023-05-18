@@ -12,6 +12,7 @@ import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -19,6 +20,8 @@ import { WorkflowItemStep } from '../../../models/workflow.model';
 	styleUrls: ['./assignment-list.component.less']
 })
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
+
+	@ViewChild(AssignmentProgressComponent) assignmentProgressComponent: AssignmentProgressComponent;
 	showSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelTab: string = 'information';
@@ -158,5 +161,10 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.secondarySidePanelOpen = value.open;
 		this.workflowItemStep = value.workflowItemStep
 		this.secondarySidePanel = 'step-details';
+	}
+
+	closeSecondarySidePanel() {
+		this.secondarySidePanelOpen = false;
+		this.assignmentProgressComponent.deselectWorkflowSteps();
 	}
 }
