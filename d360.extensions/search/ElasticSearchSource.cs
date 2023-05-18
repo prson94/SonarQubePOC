@@ -727,6 +727,7 @@ namespace d360.extensions.search
                             SELECT FLOOR(COUNT(*) * 2.4) AS total,
                                     FLOOR(COUNT(DISTINCT [Name]) * 3.6) AS dist
                             FROM [dbo].[FieldType]
+							WHERE AssetTypeID IS NOT NULL
                         ) a;";
 			return context.Query<int>(sql).FirstOrDefault();
 		}
