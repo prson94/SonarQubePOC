@@ -42,6 +42,14 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import {
 	AssignmentProgressStepDetailsComponent
 } from './assignment-progress-step-details/assignment-progress-step-details.component';
+import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
+import { WorkflowInformationComponent } from './workflow-information/workflow-information.component';
+import {
+	WorkflowInformationGeneralComponent
+} from './workflow-information/workflow-information-general/workflow-information-general.component';
+import {
+	WorkflowInformationDiagramComponent
+} from './workflow-information/workflow-information-diagram/workflow-information-diagram.component';
 
 
 @NgModule({
@@ -56,7 +64,10 @@ import {
 		AssignmentProgressStepComponent,
 		AssignmentProgressStepDetailsComponent,
 		AssignmentsContainerComponent,
-		CompleteAssignmentComponent
+		CompleteAssignmentComponent,
+		WorkflowInformationComponent,
+		WorkflowInformationDiagramComponent,
+		WorkflowInformationGeneralComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -82,7 +93,8 @@ import {
 		SidePanelModule,
 		SiteModalModule,
 		TableModule,
-		TooltipModule
+		TooltipModule,
+		WorkflowDiagramModule
 	]
 })
 export class AssignmentsModule {
