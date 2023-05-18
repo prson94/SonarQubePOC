@@ -50,7 +50,7 @@
 										 let-item>
 								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
 									<td class="disabled"
-										*ngIf="disableFieldFromRelationship && item.value === 'ComputedRelationshipField', else defaultFieldTypeSelection"
+										*ngIf="isFieldTypeDisabled(item), else defaultFieldTypeSelection"
 										i18n-pTooltip
 										pTooltip="No relationships are currently defined for this asset type"
 										tooltipPosition="top"
@@ -63,7 +63,7 @@
 											</span>
 										</span>
 									</td>
-
+									
 									<ng-template #defaultFieldTypeSelection>
 										<td>
 											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
@@ -565,6 +565,52 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipReferenceList'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Reference Item List from Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IntersectTypeUid" class="ig-label" i18n>
+												One-to-Many Relationship
+											</label>
+
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
+														igDropdown
+														required
+														[options]="referenceListFromRelationshipRelations"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayRefListDescription" class="ig-label" i18n>
+												Show Reference List Description
+											</label>
+											<ig-switch [attr.name]="'DisplayRefListDescription'"
+													   [formControlName]="'DisplayRefListDescription'"
+													   [formControl]="fieldTypeForm.controls['DisplayRefListDescription']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
 						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipField'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
 							<div inputs>
 								<div class="form-group">
@@ -958,7 +1004,7 @@
 													[disabled]="isSettingDisabled('IsDisplayable')">
 										</p-checkbox>
 									</div>
-									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value">
+									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList'">
 										<div style="margin-left: 16px;">
 											<p-checkbox [escape]="false"
 														pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."

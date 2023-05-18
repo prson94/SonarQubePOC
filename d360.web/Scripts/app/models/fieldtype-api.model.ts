@@ -39,6 +39,9 @@ export class FieldType {
 			case 'RefListRelationship':
 				this.RefListRelationship = new ComputedRelationshipReferenceList();
 				break;
+			case 'ComputedRelationshipReferenceList':
+				this.ComputedRelationshipReferenceList = new ComputedRelationshipReferenceList();
+				break;
 			case 'Date':
 				this.Date = new DateClass();
 				break;

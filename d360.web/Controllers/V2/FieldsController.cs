@@ -724,8 +724,8 @@ namespace d360.web.Controllers.V2
 					.Select(i => new
 					{
 						title = (i.SubjectUid == AssetTypeUid) ?
-							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
-							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
+							$"<b>{i.SubjectName}</b> {i.PredicateName} <b>{i.ObjectName}</b>" :
+							$"<b>{i.ObjectName}</b> {i.PredicateInverse} <b>{i.SubjectName}</b>",
 						value = i.Uid
 					});
 
