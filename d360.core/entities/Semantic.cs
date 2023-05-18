@@ -235,9 +235,24 @@ namespace d360.core.entities
         [Column(TypeName = "nvarchar")]
         public string ValidValues { get; set; }
 
-        #endregion
+		#endregion
 
-        internal T deserializeTextProperty<T>(string propertyValue)
+		#region Internal Fields that are only populated via the "GET semantictypes" endpoint.
+
+		internal bool hasQualifiedAssets { get; set; }
+
+		internal string dates { get; set; }
+		internal List<string> dateArray { get { return JsonConvert.DeserializeObject<List<string>>(dates ?? "[]"); } }
+
+		internal Guid createdByUid { get; set; }
+		internal string createdByFullName { get; set; }
+
+		internal Guid updatedByUid { get; set; }
+		internal string updatedByFullName { get; set; }
+
+		#endregion
+
+		internal T deserializeTextProperty<T>(string propertyValue)
         {
             return string.IsNullOrEmpty(propertyValue) ? default(T) : JsonConvert.DeserializeObject<T>(propertyValue);
         }
@@ -318,7 +333,54 @@ namespace d360.core.entities
             };
         }
 
-        public static Semantic ToRepositoryModel(this PostSemantic model, int resourceId)
+		/// <summary>
+		/// Only used by the GET semantictypes endpoint.
+		/// </summary>
+		public static GetSemantic ToGetModel(this Semantic model)
+		{
+			return new GetSemantic
+			{
+				BaseType = model.BaseType,
+				CreatedBy = new GetUserModel
+				{
+					FullName = model.createdByFullName ?? "Unknown",
+					Uid = model.createdByUid
+				},
+				CreatedOn = model.CreatedOn,
+				Description = model.Description,
+				EffectiveDate = model.EffectiveDate,
+				HeaderFilter = model.HeaderFilter,
+				HeaderFilterConfidence = model.HeaderFilterConfidence,
+				InvalidValuesStructured = model.deserializeTextProperty<List<string>>(model.InvalidValues),
+				JsonPayloadStructured = (string.IsNullOrEmpty(model.JsonPayload)) ? null : JObject.Parse(model.JsonPayload),
+				MatchType = model.MatchType,
+				Maximum = model.Maximum,
+				Minimum = model.Minimum,
+				MinimumSamples = model.MinimumSamples,
+				MinMaxPresent = model.MinMaxPresent,
+				Name = model.Name,
+				Priority = model.Priority,
+				Qualifier = model.Qualifier,
+				RegularExpression = model.RegularExpression,
+				Source = model.Source,
+				Status = model.Status,
+				Threshold = model.Threshold,
+				Uid = model.Uid,
+				UpdatedBy = new GetUserModel
+				{
+					FullName = model.updatedByFullName ?? "Unknown",
+					Uid = model.updatedByUid
+				},
+				UpdatedOn = model.UpdatedOn,
+				ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
+				ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues),
+				HasQualifiedAssets = model.hasQualifiedAssets,
+				EffectiveDates = parseEffectiveDates(model.dateArray),
+				ID = model.ID
+			};
+		}
+
+		public static Semantic ToRepositoryModel(this PostSemantic model, int resourceId)
         {
             var date = DateTime.UtcNow;
 

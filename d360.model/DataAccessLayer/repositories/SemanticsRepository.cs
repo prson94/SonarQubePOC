@@ -430,7 +430,7 @@ namespace d360.model.DataAccessLayer
 
             if (!includeDisabled)
             {
-				whereStatements.Add("EffectiveDate = UpdatedOn");
+				whereStatements.Add("S.EffectiveDate = S.UpdatedOn");
 			}
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "asofeffectivedate"))
@@ -478,11 +478,32 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var tableQuery = $@"(select ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
-			var whereConjunction = whereStatements.Count > 0 ? "and" : "";
+			var tableQuery = $@"select ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate";
+			whereStatements.Add("S.RowNum = 1");
+			var whereQuery = "where " + string.Join(" and ", whereStatements);
+			var countSql = $"select count(1) as [Count] from ({tableQuery}) S {whereQuery}";
 
-			var countSql = $"select count(1) as [Count] from {tableQuery} {whereConjunction} {string.Join(" and ", whereStatements)}";
-			var sql = $"select * from {tableQuery} {whereConjunction} {string.Join(" and ", whereStatements)} order by {order} {direction} OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
+			var sql = $@"
+select	S.*, 
+		case
+			when exists(select 1 from AssetDataProfile where Qualifier = S.Qualifier) then 1
+			else 0
+		end as hasQualifiedAssets,
+		(
+		select	'[""' + string_agg(FORMAT(EffectiveDate, 'yyyy-MM-ddThh.mm.ss')+':'+FORMAT(UpdatedOn, 'yyyy-MM-ddThh.mm.ss'), '"",""') + '""]'
+		from	Semantic
+		where	Qualifier = S.Qualifier
+		) as dates,
+		c.uid as createdByUid, 
+		c.FirstName + ' ' + c.LastName as createdByFullName, 
+		u.uid as updatedByUid, 
+		u.FirstName + ' ' + u.LastName as updatedByFullName 
+from	({tableQuery}) S 
+		left join reporting.Global_Resource c on c.ResourceID = S.CreatedBy
+		left join reporting.Global_Resource u on u.ResourceID = S.UpdatedBy
+{whereQuery} 
+order by {order} {direction} 
+OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
 			var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
 				  new CommandDefinition($"{countSql}; {sql}",
@@ -496,16 +517,18 @@ namespace d360.model.DataAccessLayer
 			model.total = gridReader.Read<int>().FirstOrDefault();
 			var repoModels = gridReader.Read<Semantic>().ToList();
 
-			model.items = (
-				from s in repoModels
-				join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID into oc
-				from subc in oc.DefaultIfEmpty()
-				join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID into ou
-				from subu in ou.DefaultIfEmpty()
-				let p = CompanyContext.AssetDataProfile.Where(dp => s.Qualifier == dp.TypeQualifier).FirstOrDefault()
-				let dates = includeDisabled ? CompanyContext.Semantics.Where(s1 => s1.Qualifier == s.Qualifier).Select(a => new { a.EffectiveDate, a.UpdatedOn }).ToList() : null
-				select s.ToGetModel(subc, subu, p != null, dates?.Select(x => { return $"{x.EffectiveDate:yyyy-MM-ddThh.mm.ss}:{x.UpdatedOn:yyyy-MM-ddThh.mm.ss}"; }).ToList())
-				).ToList();
+			model.items = repoModels.Select(o => o.ToGetModel()).ToList();
+
+			//model.items = (
+			//	from s in repoModels
+			//	join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID into oc
+			//	from subc in oc.DefaultIfEmpty()
+			//	join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID into ou
+			//	from subu in ou.DefaultIfEmpty()
+			//	let p = CompanyContext.AssetDataProfile.Where(dp => s.Qualifier == dp.TypeQualifier).FirstOrDefault()
+			//	let dates = includeDisabled ? CompanyContext.Semantics.Where(s1 => s1.Qualifier == s.Qualifier).Select(a => new { a.EffectiveDate, a.UpdatedOn }).ToList() : null
+			//	select s.ToGetModel(subc, subu, p != null, dates?.Select(x => { return $"{x.EffectiveDate:yyyy-MM-ddThh.mm.ss}:{x.UpdatedOn:yyyy-MM-ddThh.mm.ss}"; }).ToList())
+			//	).ToList();
 			
 			return model;
 		}
