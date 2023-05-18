@@ -406,6 +406,31 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'Boolean'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<p-dropdown formControlName="DefaultValue"
+														[autoDisplayFirst]="false"
+														name="DefaultValue"
+														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
+														igDropdown
+														[options]="booleanDefaultValueOptions"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value">
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Counter'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>
