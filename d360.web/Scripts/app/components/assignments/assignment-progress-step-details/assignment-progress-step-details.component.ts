@@ -1,5 +1,4 @@
 import {
-	ChangeDetectionStrategy,
 	ChangeDetectorRef,
 	Component,
 	EventEmitter,
@@ -15,7 +14,6 @@ import {
 	StepType,
 	WorkflowActivityType,
 	WorkflowChangeType,
-	WorkflowStepDetail,
 	WorkflowStepReassignment
 } from '../../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
@@ -26,16 +24,17 @@ import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
-  selector: 'd3s-assignment-progress-step-details',
-  templateUrl: './assignment-progress-step-details.component.html',
-  styleUrls: ['./assignment-progress-step-details.component.less']
+	selector: 'd3s-assignment-progress-step-details',
+	templateUrl: './assignment-progress-step-details.component.html',
+	styleUrls: ['./assignment-progress-step-details.component.less']
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepId: number;
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();
-	step: WorkflowStepDetail = null;
+	step: any = null;
+	activityType: string = '';
 	reassignments: WorkflowStepReassignment[] = [];
 	StepType = StepType;
 	WorkflowActivityType = WorkflowActivityType;
@@ -43,6 +42,12 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	responsibilities: ResponsibilityType[];
 	fields: any[] = [];
 	helper = WorkflowHelpers;
+	private states = [
+		{ value: '0', label: $localize`Pending Add` },
+		{ value: '1', label: $localize`Active` },
+		{ value: '2', label: $localize`Pending Delete` },
+		{ value: '3', label: $localize`Deleted` }
+	];
 	private showAllAnyCondition: boolean = false;
 	private isSatisfyAll: boolean = true;
 
@@ -90,7 +95,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						this.isLoading = false;
 						this.step = r;
 						this.reassignments = [];
-
+						this.activityType = this.getActivityType(this.step);
 						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
 							for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
 								this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
@@ -109,6 +114,66 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 				);
 		} else {
 			return of();
+		}
+	}
+
+
+	private get bulkReassignments() {
+		return this.reassignments.filter((r) => r.IsBulkReassignment);
+	}
+
+	private get reassignment() {
+		if (this.reassignments == null || this.reassignments.length < 1) {
+			return null;
+		} else if (this.reassignments.length === 1 && !this.reassignments[0].IsBulkReassignment) {
+			return this.reassignments[0];
+		} else if (this.reassignments.length > 1) {
+			return this.reassignments.find((r) => !r.IsBulkReassignment);
+		} else {
+			return null;
+		}
+	}
+
+	private close() {
+		this.visible = false;
+		this.visibleChange.emit(false);
+		this.ref.markForCheck();
+	}
+
+	operatorName(condition: any): string {
+		switch (condition['@Operator']) {
+			case 'C':
+				return '[' + $localize`any value change` + ']';
+			case 'P':
+				return $localize`is populated`;
+			case 'NP':
+				return $localize`is not populated`;
+			default:
+				return condition['@Operator'];
+		}
+	}
+
+	get filteredConditions(): any[] {
+		return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') === 0);
+	}
+
+	get reassignmentFieldName(): string {
+		if (this.reassignment) {
+			if (this.reassignment.ReassignType === 'Object') {
+				return $localize`Action was reassigned to another object`;
+			} else if (this.reassignment.ReassignType === 'Resource') {
+				return $localize`Action is reassigned to Resource`;
+			}
+		}
+
+		return $localize`Action was reassigned`;
+	}
+
+	getActivityType(step: any): string {
+		if (step.ActivityType !== 0) {
+			return this.helper.activityTypeName(step.ActivityType);
+		} else {
+			return this.helper.stepTypeName(step.StepType);
 		}
 	}
 }

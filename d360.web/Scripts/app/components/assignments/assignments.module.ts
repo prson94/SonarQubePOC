@@ -20,13 +20,11 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
-import { WorkflowMonitorModule } from '../workflowmonitor/workflowmonitor.module';
 import { AssignmentGridComponent } from './assignment-grid/assignment-grid.component';
 import { D3SColumnFilterModule } from '../shared/turbotable-column-filter.component';
 import { AssignmentInformationComponent } from './assignment-information/assignment-information.component';
 import { AssignmentProgressComponent } from './assignment-progress/assignment-progress.component';
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
-import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { AssignmentMultiDeleteComponent } from './assignment-multi-delete/assignment-multi-delete.component';
 import {
@@ -44,13 +42,6 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import {
 	AssignmentProgressStepDetailsComponent
 } from './assignment-progress-step-details/assignment-progress-step-details.component';
-import { WorkflowInformationComponent } from './workflow-information/workflow-information.component';
-import {
-	WorkflowInformationGeneralComponent
-} from './workflow-information/workflow-information-general/workflow-information-general.component';
-import {
-	WorkflowInformationDiagramComponent
-} from './workflow-information/workflow-information-diagram/workflow-information-diagram.component';
 
 
 @NgModule({
@@ -65,11 +56,7 @@ import {
 		AssignmentProgressStepComponent,
 		AssignmentProgressStepDetailsComponent,
 		AssignmentsContainerComponent,
-		CompleteAssignmentComponent,
-		WorkflowInformationComponent,
-		WorkflowInformationDiagramComponent,
-		WorkflowInformationGeneralComponent,
-		WorkflowVersionListComponent
+		CompleteAssignmentComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -95,8 +82,7 @@ import {
 		SidePanelModule,
 		SiteModalModule,
 		TableModule,
-		TooltipModule,
-		WorkflowMonitorModule
+		TooltipModule
 	]
 })
 export class AssignmentsModule {
