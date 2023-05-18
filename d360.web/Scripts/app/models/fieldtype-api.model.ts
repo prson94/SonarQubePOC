@@ -24,6 +24,9 @@ export class FieldType {
 			case 'OwnershipLookup':
 				this.OwnershipLookup = new ComputedOwnershipLookup();
 				break;
+			case 'ComputedOwnershipLookup':
+				this.ComputedOwnershipLookup = new ComputedOwnershipLookup();
+				break;
 			case 'FieldFromRelationship':
 				this.FieldFromRelationship = new ComputedRelationshipField();
 				break;

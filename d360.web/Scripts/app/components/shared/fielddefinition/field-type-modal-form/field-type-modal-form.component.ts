@@ -79,6 +79,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	lookupDefaultValueOptions: SelectItem[] = [];
 	lookupSelectedDefaultValueOption: any;
 
+	responsibilityTypes: SelectItem[] = [];
+
 	assetTypeAncestries: AssetTypeAncestry[] = [];
 
 	isInitialDataLoaded: boolean = false;
@@ -87,7 +89,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	disableFieldFromRelationship: boolean = false;
 
 	private fieldTypeNameToApiNameMap = {
-		'FieldFromRelationship': 'ComputedRelationshipField'
+		'FieldFromRelationship': 'ComputedRelationshipField',
+		'OwnershipLookup': 'ComputedOwnershipLookup'
 	}
 
 	get isEditing(): boolean {
@@ -144,6 +147,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			//lookups
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
+				this.responsibilityTypes = results[1].FieldResponsibilityTypes;
 				if (this.fieldFromRelationshipItems.length === 0) {
 					this.disableFieldFromRelationship = true;
 				}
@@ -284,6 +288,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.SortByAscending = null;
 		}
 
+		if (this.selectedFieldType === 'ComputedOwnershipLookup') {
+			fieldTypeApiObject.Definition.ResponsibilityTypeUid = this.fieldTypeForm.get("ResponsibilityTypeUid").value ?? null;
+			fieldTypeApiObject.Definition.ExpandGroupMembership = this.fieldTypeForm.get("ExpandGroupMembership").value ?? null;
+			fieldTypeApiObject.Definition.DisplayAssignmentSource = this.fieldTypeForm.get("DisplayAssignmentSource").value ?? null;
+			fieldTypeApiObject.Definition.DisplayAsList = this.fieldTypeForm.get("DisplayAsList").value === 'true' ? true : false;
+			fieldTypeApiObject.HideFilter = this.fieldTypeForm.get("HideFilter").value ?? false;
+			fieldTypeApiObject.HideHeader = this.fieldTypeForm.get("HideHeader").value ?? false;
+			fieldTypeApiObject.HideFooter = this.fieldTypeForm.get("HideFooter").value ?? false;
+		}
+
+
 		if (false) {
 
 			window.alert(JSON.stringify(model));
@@ -312,7 +327,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			DisplayDescription: [null],
 			FormDescription: [null],
 			IsDisplayable: [null],
-			DisplayAsList: [null],
 			DisplayInColumn: [null],
 			AddToResult: [null],
 			IsEditable: [null],
@@ -343,7 +357,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			AllowAllValue: ['false'],
 			AllowAllLabel: [null],
 			DisplayFormat: [null],
-			EditFormat: [null]
+			EditFormat: [null],
+			ResponsibilityTypeUid: [null],
+			ExpandGroupMembership: [null],
+			DisplayAsList: ['false'],
+			DisplayAssignmentSource: [null],
+			HideFilter: [null],
+			HideHeader: [null],
+			HideFooter: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
@@ -352,6 +373,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		this.fieldTypeForm.controls["LookupUid"].valueChanges.subscribe((value) => {
 			this.loadLookupDefaultValue(value);
+		});
+
+		this.fieldTypeForm.controls["DisplayAsList"].valueChanges.subscribe((value) => {
+			if (value === 'true') {
+				this.fieldTypeForm.get('DisplayAssignmentSource').setValue(false);
+				this.fieldTypeForm.get('HideFilter').setValue(false);
+				this.fieldTypeForm.get('HideHeader').setValue(false);
+				this.fieldTypeForm.get('HideFooter').setValue(false);
+			}
 		});
 
 		this.setDefaultFormValues();
@@ -364,6 +394,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return;
 		}
 		this.fieldTypeForm.reset();
+		this.fieldTypeForm.get('DisplayAsList').setValue('false');
+		this.fieldTypeForm.get('AllowAllValue').setValue('false');
+		this.fieldTypeForm.get('SortByAscending').setValue('true');
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -395,6 +428,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				break;
 			case 'JSON':
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				break;
+			case 'ComputedOwnershipLookup':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
 
@@ -487,7 +523,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
 					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
 					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
+				}
 
+				if (this.selectedFieldType === 'ComputedOwnershipLookup') {
+					this.fieldTypeForm.controls["ResponsibilityTypeUid"].setValue(type?.Definition?.ResponsibilityTypeUid ?? null);
+					this.fieldTypeForm.controls["ExpandGroupMembership"].setValue(type?.Definition?.ExpandGroupMembership ?? null);
+					this.fieldTypeForm.controls["DisplayAssignmentSource"].setValue(type?.Definition?.DisplayAssignmentSource ?? null);
+					this.fieldTypeForm.controls["DisplayAsList"].setValue((type?.Definition?.DisplayAsList ?? 'false').toString());
+					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null);
+					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null);
+					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null);
 				}
 
 				this.title = $localize`Edit Field`;
@@ -644,29 +689,29 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'IsDisplayable':
 				return (['ComplexRelationLookup', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'RefListRelationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
 				return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON', 'System'].indexOf(this.selectedFieldType) > -1
 					|| (this.selectedFieldType === 'Relationship' && !this.isListableRelationship));
 			case 'IsRequired':
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link', 'System']
+				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link', 'System']
 					.indexOf(this.selectedFieldType) > -1
 					|| this.selectedFieldType === 'ReferenceItemType');
 			case 'IsPrimaryFilter':
-				return (!this.supportsPrimaryFilterOption || ['ComputedRelationshipField', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (!this.supportsPrimaryFilterOption || ['ComputedRelationshipField', 'ComplexRelationLookup', 'ComputedOwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
 				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.objectType === 'ReferenceItemType' && fieldName.toLocaleLowerCase() === "code"));
 			case 'SearchAddToResult':
-				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'isSettingDisabled':
 				return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'RefListRelationship', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'DisplayInColumn':
-				if (this.selectedFieldType === "OwnershipLookup") {
-					const isDisabled = !this.fieldTypeForm.get("DisplayAsList").value;
+				if (this.selectedFieldType === "ComputedOwnershipLookup") {
+					const isDisabled = !(this.fieldTypeForm.get("DisplayAsList").value === 'true');
 					if (isDisabled) {
 						this.fieldTypeForm.controls["DisplayInColumn"].setValue(false);
 					}
@@ -894,7 +939,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				//this.enableAllowMultipleValues = false;
 				//this.hasDisplayInColumn = false;
 				break;
-			case "ownershiplookup":
+			case "ComputedOwnershipLookup":
 				//this.showDescription = false;
 				//this.onEnableListSingleResponsibilityType(this.model.FieldType.Type[this.selectedFieldType].Definition.ResponsibilityTypeUid?.length > 1);
 				break;
@@ -951,7 +996,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 

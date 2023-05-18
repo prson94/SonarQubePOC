@@ -38,20 +38,25 @@
     }
   }
 
+  .field-tooltip {
+    top: 0 !important;
+    left: 0 !important;
+  }
+
   .form-group-checkboxes {
     .p-checkbox-label {
       font-weight: normal;
       padding: 8px 0px 8px 4px;
     }
+
+    .field-tooltip {
+      top: -5px !important;
+      left: 4px !important;
+    }
   }
 
   .form-div {
     max-height: calc(100vh - 249px);
-  }
-
-  .field-tooltip {
-    top: 0 !important;
-    left: 0 !important;
   }
 
   td {
@@ -64,6 +69,15 @@
         color: black;
         opacity: 0.33;
         pointer-events: none;
+      }
+    }
+  }
+
+  .field-col {
+    .inline-field {
+      .p-radiobutton-label {
+        top: 3px;
+        margin-right: 20px;
       }
     }
   }

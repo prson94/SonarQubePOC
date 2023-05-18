@@ -446,6 +446,114 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedOwnershipLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Ownership Lookup" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ResponsibilityTypeUid" class="ig-label" i18n>
+												List Single Ownership Type
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Choose an appropriate type from the dropdown below to limit the users displayed to a specific ownership type"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-dropdown formControlName="ResponsibilityTypeUid"
+														[autoDisplayFirst]="false"
+														name="ResponsibilityTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_ResponsibilityTypeUid'"
+														igDropdown
+														[options]="responsibilityTypes"
+														appendTo="body"></p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="ExpandGroupMembership" class="ig-label" i18n>
+												Expand Group Membership
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not, individual users within an assigned group is displayed. Only the group is displayed by default."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'ExpandGroupMembership'"
+													   [formControlName]="'ExpandGroupMembership'"
+													   [formControl]="fieldTypeForm.controls['ExpandGroupMembership']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayAsList" class="ig-label" i18n>
+												Display As
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="The Ownership Lookup field can be displayed as a list rather than a table in the Definition tab. Please note that a listable Ownership Lookup field is always shown as a list in tables."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<div class="inline-field">
+												<p-radioButton igRadioButton formControlName="DisplayAsList" name="DisplayAsList" value="false" label="Table" i18n-label></p-radioButton>
+												<p-radioButton igRadioButton formControlName="DisplayAsList" name="DisplayAsList" value="true" label="List" i18n-label></p-radioButton>
+											</div>
+										</div>
+									</div>
+									<div class="form-group-checkboxes">
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="DisplayAssignmentSource"
+														[igDataCy]="'FieldType_Field_DisplayAssignmentSource'"
+														label="Display Assignment Source"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="If you have chosen to expand group membership, choosing this option will display the Via column in tables, to indentify the group reponsibile for the addition of users to the list"
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideFilter"
+														[igDataCy]="'FieldType_Field_HideFilter'"
+														label="Hide Table Filter"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideHeader"
+														[igDataCy]="'FieldType_Field_HideHeader'"
+														label="Hide Table Column Headers"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideFooter"
+														[igDataCy]="'FieldType_Field_HideFooter'"
+														label="Hide Table Footer"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 						<ig-property-group *ngIf="selectedFieldType === 'ComplexRelationLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
 							<div inputs>
 								<div class="form-group">
@@ -812,7 +920,7 @@
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
 							<div inputs>
 								<div class="form-group form-group-checkboxes">
-									<div *ngIf="showIsEditable">
+									<div class="row" *ngIf="showIsEditable">
 										<p-checkbox binary="true"
 													formControlName="IsEditable"
 													[igDataCy]="'FieldType_Field_IsEditable'"
@@ -821,19 +929,17 @@
 													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
 									</div>
 
-									<div class="row">
-										<div *ngIf="showIsPartOfKey">
-											<p-checkbox binary="true"
-														formControlName="IsPartOfKey"
-														[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
-														label="Key Field"
-														i18n-label
-														[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
-										</div>
+									<div class="row" *ngIf="showIsPartOfKey">
+										<p-checkbox binary="true"
+													formControlName="IsPartOfKey"
+													[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
+													label="Key Field"
+													i18n-label
+													[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
 									</div>
 
 
-									<div *ngIf="showIsRequired">
+									<div class="row" *ngIf="showIsRequired">
 										<p-checkbox binary="true"
 													formControlName="IsRequired"
 													[igDataCy]="'FieldType_Field_IsRequired'"
@@ -842,9 +948,8 @@
 													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
 									</div>
 
-									<div class="row">
-										<p-checkbox *ngIf="showShowInDetailTile"
-													binary="true"
+									<div class="row" *ngIf="showShowInDetailTile">
+										<p-checkbox binary="true"
 													formControlName="IsDisplayable"
 													[igDataCy]="'FieldType_Field_IsDisplayable'"
 													label="Show In Details Tab"
