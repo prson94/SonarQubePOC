@@ -1,6 +1,6 @@
 ﻿<ng-container *ngIf="(assetUid || assetTypeUid) && issueTypes && issueTypes.length > 0">
 	<button type="button" igButton class="ig-button-accent take-action-button" (click)="menu.toggle($event)" i18n-label label="Take Action" icon="fa-chevron-down" prepend-label></button>
-	<ig-popup-menu [items]="popupMenu" #menu [tabIndex]="10"></ig-popup-menu>
+	<ig-popup-menu [items]="popupMenu" #menu [tabIndex]="10" [forceOpenBottomRight]="true" [isScrollable]="true"></ig-popup-menu>
 </ng-container>
 
 <action-modal-form [isModalVisible]="isModalVisible"
