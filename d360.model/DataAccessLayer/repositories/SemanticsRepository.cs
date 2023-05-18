@@ -518,17 +518,6 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			var repoModels = gridReader.Read<Semantic>().ToList();
 
 			model.items = repoModels.Select(o => o.ToGetModel()).ToList();
-
-			//model.items = (
-			//	from s in repoModels
-			//	join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID into oc
-			//	from subc in oc.DefaultIfEmpty()
-			//	join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID into ou
-			//	from subu in ou.DefaultIfEmpty()
-			//	let p = CompanyContext.AssetDataProfile.Where(dp => s.Qualifier == dp.TypeQualifier).FirstOrDefault()
-			//	let dates = includeDisabled ? CompanyContext.Semantics.Where(s1 => s1.Qualifier == s.Qualifier).Select(a => new { a.EffectiveDate, a.UpdatedOn }).ToList() : null
-			//	select s.ToGetModel(subc, subu, p != null, dates?.Select(x => { return $"{x.EffectiveDate:yyyy-MM-ddThh.mm.ss}:{x.UpdatedOn:yyyy-MM-ddThh.mm.ss}"; }).ToList())
-			//	).ToList();
 			
 			return model;
 		}
