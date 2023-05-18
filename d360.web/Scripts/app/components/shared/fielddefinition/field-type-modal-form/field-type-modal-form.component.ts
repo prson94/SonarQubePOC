@@ -73,6 +73,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldFromRelationshipItems: SelectItem[] = [];
 	fieldsFromRelation: SelectItem[] = [];
 	referenceListFromRelationshipRelations: SelectItem[] = [];
+	relationshipItems: SelectItem[] = [];
+
+	relationshipDisplayFormatValueOptions: SelectItem[];
+	scoreTypeOptions: SelectItem[];
 
 	lookupAssetTypes: SelectItem[] = [];
 	lookupFieldTokens: any[] = [];
@@ -86,9 +90,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	isInitialDataLoaded: boolean = false;
 	numberOfAssetsForType: number = 0;
-
-	disableFieldFromRelationship: boolean = false;
-	disableReferenceListFromRelationship: boolean = false;
 
 	private fieldTypeNameToApiNameMap = {
 		'FieldFromRelationship': 'ComputedRelationshipField',
@@ -114,6 +115,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		private cdRef: ChangeDetectorRef
 	) {
 
+		this.relationshipDisplayFormatValueOptions = [
+			{ label: $localize`Display Format`, value: true },
+			{ label: $localize`Asset Path`, value: false },
+		];
 	}
 
 	categoryTokens = [
@@ -128,7 +133,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		forkJoin(
 			this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
-			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid)
+			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid),
+			this.fieldsService.getAvailableScoreTypes(this.assetTypeUid)
 		).subscribe((results) => {
 			//fields
 			if (results[0]) {
@@ -151,9 +157,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
 				this.responsibilityTypes = results[1].FieldResponsibilityTypes;
-				if (this.fieldFromRelationshipItems.length === 0) {
-					this.disableFieldFromRelationship = true;
-				}
 				this.fieldTypes = results[1].DataTypes;
 
 				this.fieldTypes.forEach((ft) => {
@@ -168,15 +171,27 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				});
 
 				this.referenceListFromRelationshipRelations = results[1].Field_CardinalReferenceRelationships;
-				if (this.referenceListFromRelationshipRelations.length === 0) {
-					this.disableReferenceListFromRelationship = true;
-				}
+
+				this.relationshipItems = [];
+				results[1].Field_Relationships.forEach((i) => {
+					if (typeof i.value === "undefined") {
+						i.value = null;
+					}
+					this.relationshipItems.push({ label: i.title, value: `${i.value}|${i.isSubject}` });
+				});
+
+
 				this.setForm();
 			}
 
 			//asset count
 			if (results[2].length > 0) {
 				this.numberOfAssetsForType = +results[2].length + 1;
+			}
+
+			//score types
+			if (results[3].length > 0) {
+				this.scoreTypeOptions = results[3];
 			}
 
 			this.areFieldTypesLoaded = true;
@@ -312,6 +327,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 
+		if (this.selectedFieldType === 'Relationship') {
+			const relValues = (this.fieldTypeForm.get("IntersectTypeUid").value as string).split('|');
+			fieldTypeApiObject.IntersectTypeUid = relValues[0] ?? null;
+			fieldTypeApiObject.UseDisplayFormat = this.fieldTypeForm.get("UseDisplayFormat").value ?? null;
+			fieldTypeApiObject.IsSubject = relValues[1] === 'true' ? true : false;
+		}
+
+		if (this.selectedFieldType === 'Score') {
+			fieldTypeApiObject.ScoreType = this.fieldTypeForm.get("ScoreType").value ?? null;
+		}
+
+
 		if (false) {
 
 			window.alert(JSON.stringify(model));
@@ -378,11 +405,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			HideFilter: [null],
 			HideHeader: [null],
 			HideFooter: [null],
-			DisplayRefListDescription: [null]
+			DisplayRefListDescription: [null],
+			UseDisplayFormat: [null],
+			ScoreType: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
-			if (this.selectedFieldType !== 'ComputedRelationshipReferenceList') {
+			if (this.selectedFieldType === 'ComputedRelationshipField') {
 				this.loadFieldsFromRelationships(value);
 			}
 		});
@@ -438,9 +467,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Link':
 			case 'Lookup':
 			case 'Number':
+			case 'Relationship':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				this.fieldTypeForm.controls["UseDisplayFormat"].setValue(false);
 				break;
 			case 'JSON':
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
@@ -453,7 +484,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
-
+			case 'Score':
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				break;
 			default: break;
 		}
 		this.cdRef.markForCheck();
@@ -558,6 +592,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (this.selectedFieldType === 'ComputedRelationshipReferenceList') {
 					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
 					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
+				}
+
+				if (this.selectedFieldType === 'Relationship') {
+					this.fieldTypeForm.controls["IntersectTypeUid"].setValue((type?.IntersectTypeUid + '|' + type?.IsSubject) ?? null);
+					this.fieldTypeForm.controls["UseDisplayFormat"].setValue(type?.UseDisplayFormat ?? null);
+				}
+
+				if (this.selectedFieldType === 'Score') {
+					this.fieldTypeForm.controls["ScoreType"].setValue(type?.ScoreType ?? null);
 				}
 
 				this.title = $localize`Edit Field`;
@@ -1011,7 +1054,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number', 'Relationship'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1021,17 +1064,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1046,7 +1089,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1118,8 +1161,23 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.controls[ctrlName].setValue(newValue);
 	}
 
-	isFieldTypeDisabled(item): boolean {
-		return (this.disableFieldFromRelationship && item.value === 'ComputedRelationshipField')
-			|| (this.disableReferenceListFromRelationship && item.value === 'ComputedRelationshipReferenceList')
+	fieldTypeDisabledTooltip(item): string {
+		if (item.value === 'ComputedRelationshipField' && (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)) {
+			return $localize`No relationships are currently defined for this asset type`;
+		}
+
+		if (item.value === 'ComputedRelationshipReferenceList' && (!this.referenceListFromRelationshipRelations || this.referenceListFromRelationshipRelations.length === 0)) {
+			return $localize`No reference item list from relationship is currently defined`;
+		}
+
+		if (item.value === 'Relationship' && (!this.relationshipItems || this.relationshipItems.length === 0)) {
+			return $localize`No relationships are currently defined for this asset type`;
+		}
+
+		if (item.value === 'Score' && (!this.scoreTypeOptions || this.scoreTypeOptions.length === 0)) {
+			return $localize`No scores are currently defined for this asset type`;
+		}
+
+		return null;
 	}
 }

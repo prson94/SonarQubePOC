@@ -2050,6 +2050,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.DisplayInColumn = newFieldType.DisplayInColumn;
 					currentFieldType.UseDisplayFormat = newFieldType.UseDisplayFormat;
 					currentFieldType.IsSubject = newFieldType.IsSubject;
+					currentFieldType.ScoreType = newFieldType.ScoreType;
 
 					fieldTypeNamesToDelete.Add(f.Name);
 				}

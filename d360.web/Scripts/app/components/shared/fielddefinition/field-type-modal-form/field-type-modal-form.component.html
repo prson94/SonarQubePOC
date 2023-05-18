@@ -50,9 +50,9 @@
 										 let-item>
 								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
 									<td class="disabled"
-										*ngIf="isFieldTypeDisabled(item), else defaultFieldTypeSelection"
+										*ngIf="fieldTypeDisabledTooltip(item), else defaultFieldTypeSelection"
 										i18n-pTooltip
-										pTooltip="No relationships are currently defined for this asset type"
+										pTooltip="{{fieldTypeDisabledTooltip(item)}}"
 										tooltipPosition="top"
 										tooltipStyleClass="ig-tooltip">
 										<span class="disabled-item">
@@ -63,7 +63,7 @@
 											</span>
 										</span>
 									</td>
-									
+
 									<ng-template #defaultFieldTypeSelection>
 										<td>
 											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
@@ -606,6 +606,86 @@
 													   falseLabel="False"></ig-switch>
 										</div>
 									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Relationship'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IntersectTypeUid" class="ig-label" i18n>
+												Relationship
+											</label>
+
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
+														igDropdown
+														required
+														[options]="relationshipItems"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="UseDisplayFormat" class="ig-label" i18n>
+												Asset Display
+											</label>
+
+											<p-dropdown formControlName="UseDisplayFormat"
+														[autoDisplayFirst]="false"
+														name="UseDisplayFormat"
+														[igDataCy]="'FieldType_Modal_Field_UseDisplayFormat'"
+														igDropdown
+														required
+														[options]="relationshipDisplayFormatValueOptions"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Score'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ScoreType" class="ig-label" i18n>
+												Score
+											</label>
+
+											<p-dropdown formControlName="ScoreType"
+														[autoDisplayFirst]="false"
+														name="ScoreType"
+														[igDataCy]="'FieldType_Modal_Field_ScoreType'"
+														igDropdown
+														required
+														[options]="scoreTypeOptions"
+														appendTo="body">
+											</p-dropdown>
+										</div>
+									</div>
+
 								</div>
 
 							</div>
