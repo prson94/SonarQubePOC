@@ -514,7 +514,7 @@
 						</ig-property-group>
 
 
-						<ig-property-group *ngIf="selectedFieldType === 'Decimal'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal' || selectedFieldType === 'Number'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
 							<div inputs>
 								<div class="form-group" style="display:flex;">
 									<div class="row flex-form-group form-group-3">
@@ -549,7 +549,7 @@
 												{{fieldTypeForm.get('MaximumValue')?.errors[item].message}}
 											</div>
 										</div>
-										<div class="field-col">
+										<div class="field-col" *ngIf="selectedFieldType === 'Decimal'">
 											<label for="Precision" class="ig-label" i18n>
 												Decimal Places
 											</label>
@@ -568,7 +568,7 @@
 							</div>
 						</ig-property-group>
 
-						<ig-property-group *ngIf="selectedFieldType === 'Decimal'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal' || selectedFieldType === 'Number'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>
 								<div class="form-group">
 									<div class="row flex-form-group form-group-3">

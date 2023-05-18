@@ -365,7 +365,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		this.fieldTypeForm.reset();
 
-		if (this.selectedFieldType === 'Decimal') {
+		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
 
@@ -388,6 +388,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Html':
 			case 'Link':
 			case 'Lookup':
+			case 'Number':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
@@ -940,32 +941,32 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsPartOfKey(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -975,7 +976,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
