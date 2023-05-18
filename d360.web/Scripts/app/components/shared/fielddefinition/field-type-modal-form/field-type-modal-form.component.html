@@ -143,6 +143,86 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'Text'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ValidationPattern" class="ig-label" i18n>
+												Regular Expression
+											</label>
+
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="ValidationPattern"
+													   tabindex="20"
+													   formControlName="ValidationPattern"
+													   [igDataCy]="'Field_Type_Modal_Field_ValidationPattern'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="fieldTypeForm.get('ValidationPattern').setValue($event.data.value)"
+																   [items]="regexPatternTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('ValidationPattern').value">
+										<div class="field-col" style="padding-left:32px;">
+											<label for="RegexTestString" class="ig-label" i18n>
+												Regular Expression Test String
+											</label>
+
+											<div class="regex-validation">
+												<div class="input-holder">
+													<input igInput
+														   igSize="full"
+														   name="RegexTestString"
+														   tabindex="20"
+														   formControlName="RegexTestString"
+														   [igDataCy]="'Field_Type_Modal_Field_RegexTestString'"
+														   type="text" />
+												</div>
+
+												<div>
+													<button igButton i18n-label (click)="validatePattern()" label="Validate" [disabled]="!fieldTypeForm.get('RegexTestString').value"></button>
+
+												</div>
+
+												<div class="mark" *ngIf="isValidPattern === true">
+													<i class="fa fa-check" style="color:green;"></i> <span i18n>Pass</span>
+												</div>
+												<div class="mark" *ngIf="isValidPattern === false">
+													<i class="fa fa-times" style="color:red;"></i> <span i18n>Fail</span>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="MaximumLength" class="ig-label" i18n>
+												Maximum Length
+											</label>
+											<ig-number-input [attr.name]="'MaximumLength'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'MaximumLength'"
+															 [formControl]="fieldTypeForm.controls['MaximumLength']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumLength')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MaximumLength')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Link'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
 							<div inputs>

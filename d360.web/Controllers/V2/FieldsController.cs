@@ -739,7 +739,6 @@ namespace d360.web.Controllers.V2
 
 				var patterns = new Dictionary<string, string>
 				{
-					{ Fields.RegexPatternChoose, "" },
 					{ Fields.RegexPatternEmail, @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
 					{ Fields.RegexPatternIP, @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
 					{ Fields.RegexPatternNorthAmericanPhone, @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },

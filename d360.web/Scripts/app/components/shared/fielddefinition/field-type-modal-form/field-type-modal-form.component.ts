@@ -12,6 +12,7 @@ import { FieldsObservableService } from "../../../../services/fieldsObservable.s
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
+import { PopupMenuItem } from "../../controls/popup-menu/popup-menu.component";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -80,6 +81,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	lookupAssetTypes: SelectItem[] = [];
 	lookupFieldTokens: any[] = [];
+	regexPatternTokens: any[] = [];
 
 	lookupDefaultValueOptions: SelectItem[] = [];
 	lookupSelectedDefaultValueOption: any;
@@ -180,8 +182,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.relationshipItems.push({ label: i.title, value: `${i.value}|${i.isSubject}` });
 				});
 
-
-				this.setForm();
+				this.regexPatternTokens = [];
+				results[1].Patterns.forEach((item) => {
+					this.regexPatternTokens.push({ title: item.label, value: item.value });
+				});
 			}
 
 			//asset count
@@ -194,6 +198,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.scoreTypeOptions = results[3];
 			}
 
+			this.setForm();
 			this.areFieldTypesLoaded = true;
 			this.cdRef.markForCheck();
 		});
@@ -338,6 +343,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.ScoreType = this.fieldTypeForm.get("ScoreType").value ?? null;
 		}
 
+		if (this.selectedFieldType === 'Text') {
+			fieldTypeApiObject.Validation.Pattern = this.fieldTypeForm.get("ValidationPattern").value ?? null;
+			fieldTypeApiObject.Validation.MaximumLength = this.fieldTypeForm.get("MaximumLength").value ?? null;
+		}
+
 
 		if (false) {
 
@@ -384,6 +394,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			DefaultValue: [null],
 			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number), this.minimumValueValidator()] }],
 			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
+			MaximumLength: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
 			Precision: [null, { validators: [this.minMaxValueValidator(0, 5, true)] }],
 			Increment: [null, { validators: [this.incrementValidation()] }],
 			Suffix: [null],
@@ -407,7 +418,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			HideFooter: [null],
 			DisplayRefListDescription: [null],
 			UseDisplayFormat: [null],
-			ScoreType: [null]
+			ScoreType: [null],
+			ValidationPattern: [null],
+			RegexTestString: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
@@ -467,6 +480,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Link':
 			case 'Lookup':
 			case 'Number':
+			case 'Text':
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				break;
 			case 'Relationship':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["IsEditable"].setValue(true);
@@ -601,6 +619,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				if (this.selectedFieldType === 'Score') {
 					this.fieldTypeForm.controls["ScoreType"].setValue(type?.ScoreType ?? null);
+				}
+
+				if (this.selectedFieldType === 'Text') {
+					this.fieldTypeForm.controls["ValidationPattern"].setValue(type?.Validation?.Pattern ?? null);
+					this.fieldTypeForm.controls["MaximumLength"].setValue(type?.Validation?.MaximumLength ?? null);
 				}
 
 				this.title = $localize`Edit Field`;
@@ -1054,32 +1077,32 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 
 	get showAddToSearch(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number', 'Relationship'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number', 'Relationship', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsPartOfKey(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1089,7 +1112,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get hasFormDescription(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1179,5 +1202,25 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		return null;
+	}
+
+	isValidPattern: boolean = null;
+	validatePattern() {
+		var pattern = this.fieldTypeForm.get('ValidationPattern').value;
+		var testValue = this.fieldTypeForm.get('RegexTestString').value;
+
+		if (((typeof pattern) !== "undefined") && pattern !== null && pattern.length > 0) {
+			try {
+				var regex = new RegExp(pattern);
+				this.isValidPattern = regex.test(testValue);
+				return;
+			}
+			catch (e) {
+				this.isValidPattern = false;
+				return;
+			}
+		}
+
+		this.isValidPattern = false;
 	}
 }
