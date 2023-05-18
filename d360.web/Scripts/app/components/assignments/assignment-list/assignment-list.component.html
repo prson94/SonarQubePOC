@@ -25,6 +25,19 @@
 					</div>
 					<div class="details-container">
 						<div>
+							<ng-container *ngIf="secondarySidePanel=='assignment-information'">
+								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
+												 [objectType]="secondarySidePanelObjectType"
+												 [useAccordion]="true"
+												 [shouldBePadded]="true"
+												 [showHeader]="true"
+												 [showHeaderLine]="false"
+												 [spacerHeight]="'16px'"
+												 [tooltipAlign]="'left'"
+												 [isSidePanel]="true"
+												 [interceptLinkClick]="true"
+												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='workflow-information'">
 								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
 												 [objectType]="secondarySidePanelObjectType"

@@ -145,7 +145,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	sidePanelLinkClicked(link: any): void {
 		this.secondarySidePanelOpen = true;
-		this.secondarySidePanel = 'workflow-information';
+		this.secondarySidePanel = 'assignment-information';
 		this.secondarySidePanelObjectID = link.objectId;
 		this.secondarySidePanelObjectType = link.objectType;
 	}
