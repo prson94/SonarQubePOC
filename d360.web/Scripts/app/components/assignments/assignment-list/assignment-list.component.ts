@@ -76,6 +76,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	@ViewChild('assignmentGridComponent', { static: false }) assignmentGridComponent: AssignmentGridComponent;
 	@ViewChild('completeAssignmentComponent', { static: false }) completeAssignmentComponent: CompleteAssignmentComponent;
+	secondarySidePanelObjectID: number;
+	secondarySidePanelObjectType: string;
 
 	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
 				private titleService: Title,
@@ -143,8 +145,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	sidePanelLinkClicked(link: any): void {
 		this.secondarySidePanelOpen = true;
-		this.secondarySidePanel = 'user';
-		this.resourceUid = link.resourceUid;
+		this.secondarySidePanel = 'workflow-information';
+		this.secondarySidePanelObjectID = link.objectId;
+		this.secondarySidePanelObjectType = link.objectType;
 	}
 
 	deleteAssignments(event: boolean): void {
