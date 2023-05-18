@@ -4,6 +4,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { NavigationState, SiteMenuItem } from '../../../models/site-menu.model';
 import { CompanySettingsService } from "../../../services/settings.service";
+import * as DOMPurify from "dompurify";
 
 @Component({
     selector: 'd3s-site-menu-mega-item',
@@ -24,6 +25,10 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
     numberLoading: boolean;
     /*global $localize*/
     noReadTooltip: string = $localize`You do not have read access to this type`;
+
+	get tooltipText() {
+		return DOMPurify.sanitize(this.item.Description) ?? "";
+	}
 
     constructor(
         private menuService: SiteMenuService,

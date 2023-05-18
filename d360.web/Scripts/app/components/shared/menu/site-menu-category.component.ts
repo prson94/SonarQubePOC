@@ -14,6 +14,7 @@ import { BaseComponent } from '../base.component';
 import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
+import * as DOMPurify from "dompurify";
 
 @Component({
 	selector: 'd3s-site-menu-category',
@@ -59,9 +60,9 @@ export class SiteMenuCategoryComponent extends BaseComponent implements OnChange
 		}
 		
 		if (this.menu && this.menu.Description) {
-			this.menuTooltip = this.menu.Description;
+			this.menuTooltip = DOMPurify.sanitize(this.menu.Description);
 			if (!this.expanded) {
-				this.menuTooltip = `<p><b>${this.title}</b></p>${this.menu.Description}`;
+				this.menuTooltip = DOMPurify.sanitize(`<p><b>${this.title}</b></p>${this.menu.Description}`);
 				this.showCaret = false;
 			}
 		} else {			
