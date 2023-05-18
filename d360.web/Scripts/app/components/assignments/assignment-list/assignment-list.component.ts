@@ -27,6 +27,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowMonitorItem[] = [];
+	workflowItemStep: WorkflowItemStep
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Assignment Progress`,
@@ -155,6 +156,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	stepClicked(value: { workflowItemStep: WorkflowItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
+		this.workflowItemStep = value.workflowItemStep
 		this.secondarySidePanel = 'step-details';
 	}
 }

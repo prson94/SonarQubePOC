@@ -1,1 +1,39 @@
-<p>assignment-progress-step-details works!</p>
+<ng-container *ngIf="visible">
+	<div class="detail-panel">
+		<header>
+			{{step?.Name}}
+		</header>
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+		<ng-container *ngIf="!isLoading && step != null">
+			<!-- non-tasks (start, finish, terminate)-->
+			<ng-container *ngIf="step.StepType != StepType.Task">
+				<div class="row">
+					<div class="col s4">
+                        <span class="FieldName">
+                            <ng-container i18n>Change Type</ng-container>:
+                        </span>
+						<span>
+                            {{helper.changeTypeName(step.ChangeType)}}
+                        </span>
+					</div>
+					<div class="col s4">
+                        <span class="FieldName">
+                            <ng-container i18n>Date Started</ng-container>:
+                        </span>
+						<span>
+                            {{(step.StartedOn | date: 'short')}}
+                        </span>
+					</div>
+					<div class="col s4">
+                        <span class="FieldName">
+                            <ng-container i18n>Date Completed</ng-container>:
+                        </span>
+						<span>
+                            {{step.CompletedOn == null ? 'N/A' : (step.CompletedOn | date: 'short')}}
+                        </span>
+					</div>
+				</div>
+			</ng-container>
+		</ng-container>
+	</div>
+</ng-container>

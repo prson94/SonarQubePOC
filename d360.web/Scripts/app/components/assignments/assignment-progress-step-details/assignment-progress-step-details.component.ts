@@ -1,15 +1,114 @@
-import { Component, OnInit } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	EventEmitter,
+	Input,
+	OnChanges,
+	OnInit,
+	Output,
+	SimpleChanges
+} from '@angular/core';
+import { BaseComponent } from '../../shared/base.component';
+import { WorkflowService } from '../../../services/workflow.service';
+import {
+	StepType,
+	WorkflowActivityType,
+	WorkflowChangeType,
+	WorkflowStepDetail,
+	WorkflowStepReassignment
+} from '../../../models/workflow.model';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { WorkflowHelpers } from '../../../static/workflow-helpers';
+import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { ResponsibilityType } from '../../../models/responsibility-type.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'd3s-assignment-progress-step-details',
   templateUrl: './assignment-progress-step-details.component.html',
   styleUrls: ['./assignment-progress-step-details.component.less']
 })
-export class AssignmentProgressStepDetailsComponent implements OnInit {
+export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
+	@Input() itemStepId: number;
+	@Input() visible: boolean = true;
+	@Output() visibleChange = new EventEmitter();
+	@Output() onCloseClick = new EventEmitter();
+	step: WorkflowStepDetail = null;
+	reassignments: WorkflowStepReassignment[] = [];
+	StepType = StepType;
+	WorkflowActivityType = WorkflowActivityType;
+	WorkflowChangeType = WorkflowChangeType;
+	responsibilities: ResponsibilityType[];
+	fields: any[] = [];
+	helper = WorkflowHelpers;
+	private showAllAnyCondition: boolean = false;
+	private isSatisfyAll: boolean = true;
 
-  constructor() { }
+	constructor(
+		private responsibilityService: ResponsibilityTypeService,
+		protected settingsService: CompanySettingsService,
+		private workflowService: WorkflowService,
+		private ref: ChangeDetectorRef) {
+		super(settingsService);
+	}
 
-  ngOnInit(): void {
-  }
+	ngOnInit() {
+		this.load()
+			.pipe(
+				map(() => {
+					this.responsibilityService.getResponsibilityTypes().subscribe((r) => {
+						this.responsibilities = r;
+					});
+				}),
+				map(() => {
+					if (this.step != null) {
+						this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
+							.subscribe((r) => {
+								this.fields = r;
+							});
+					}
+				})
+			).subscribe();
+	}
 
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue !== changes['itemStepId'].previousValue))) {
+			this.load().subscribe();
+		}
+	}
+
+	load(): Observable<any> {
+		this.step = null;
+
+		if (this.itemStepId != null) {
+			this.isLoading = true;
+			return this.workflowService.getWorkflowStepDetail(this.itemStepId)
+				.pipe(
+					map((r) => {
+						this.isLoading = false;
+						this.step = r;
+						this.reassignments = [];
+
+						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
+							for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
+								this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
+							}
+						}
+
+						this.ref.markForCheck();
+					}),
+					map(() => {
+						if (typeof this.step.Condition !== 'undefined' && typeof this.step.Condition.length !== 'undefined') {
+
+							this.showAllAnyCondition = this.step.Condition.filter((x) => x['@FieldTypeID']).length > 1;
+							this.isSatisfyAll = this.step.Condition.every((x) => x['@Connector'] === 'AND');
+						}
+					})
+				);
+		} else {
+			return of();
+		}
+	}
 }
