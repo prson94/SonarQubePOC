@@ -9,7 +9,7 @@
 		<div *ngIf="!isLoading && areFieldTypesLoaded" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
 			<div class="form-header-wrapper">
 				<div class="form-header">
-					{{title}} ({{selectedFieldType}})
+					{{title}}
 					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
 				</div>
 				<ig-form-feedback-badges class="ig-form-feedback-badges"
@@ -41,8 +41,8 @@
 								 [loadingIcon]="'fa fa-spinner fa-spin'">
 							<ng-template pTemplate="header">
 								<tr>
-									<th i18n>
-										Field Type
+									<th i18n [pSortableColumn]="'label'">
+										Field Type <d3s-sortIcon [field]="'label'"></d3s-sortIcon>
 									</th>
 								</tr>
 							</ng-template>
@@ -1158,6 +1158,11 @@
 													label="Editable on UI"
 													i18n-label
 													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not the field value can be edited. This settings only applies to the user interface, and does not prevent you from editing a field value via the APIs."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
 
 									<div class="row" *ngIf="showIsPartOfKey">
@@ -1167,6 +1172,11 @@
 													label="Key Field"
 													i18n-label
 													[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
 
 
@@ -1177,6 +1187,11 @@
 													label="Required"
 													i18n-label
 													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not a particular field is required when completing a form, such as adding a new user and needing to specify their title."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
 
 									<div class="row" *ngIf="showShowInDetailTile">
@@ -1188,20 +1203,26 @@
 													(ngModelChange)="onShowDetailChange($event);"
 													[disabled]="isSettingDisabled('IsDisplayable')">
 										</p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
 									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList'">
 										<div style="margin-left: 16px;">
-											<p-checkbox [escape]="false"
-														pTooltip="Check to diplay the field in a column on the Definition panel.<br/> Multiple, adjacent columns will be displayed on a single line.<br/> Otherwise, the field will be displayed using the full width of the panel."
-														tooltipPosition="left"
-														tooltipStyleClass="ig-tooltip"
-														binary="true"
+											<p-checkbox binary="true"
 														i18n-label
 														i18n-pTooltip
 														formControlName="DisplayInColumn"
 														label="Display In Column"
 														[disabled]="isSettingDisabled('DisplayInColumn')">
 											</p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
 										</div>
 									</div>
 									<div class="row">
@@ -1211,6 +1232,11 @@
 													label="Show if Empty?"
 													i18n-label
 													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If this option is selected, the field will always be displayed on an asset detail page, even if there is no specific value."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
 
 									</div>
 									<div class="row">
@@ -1246,8 +1272,10 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>
+		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button *ngIf="formState === 'Form'" igButton igAutoFocus i18n-label label="Back" (click)="back()"></button>
 		<span class="grow"></span>
+		<button *ngIf="formState === 'Form'" igButton igAutoFocus i18n-label label="Add and Create Another" (click)="save(true)" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 		<button *ngIf="formState === 'Form'" igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 		<button *ngIf="formState === 'FieldTypeSelection'" igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypeSelection()" [disabled]="!selectedFieldType"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 	</div>

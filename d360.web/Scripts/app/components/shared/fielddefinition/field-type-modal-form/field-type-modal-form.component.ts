@@ -85,7 +85,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	regexPatternTokens: any[] = [];
 
 	lookupDefaultValueOptions: SelectItem[] = [];
-	lookupSelectedDefaultValueOption: any;
 
 	responsibilityTypes: SelectItem[] = [];
 
@@ -227,7 +226,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 	}
 
-	save() {
+	save(addAnother: boolean = false) {
 		this.savingInProgress = true;
 		const model = new FieldTypeAPIModel();
 		model.Action = "Merge";
@@ -355,22 +354,25 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 
-		if (false) {
+		let saveObs = this.fieldsService.putFieldsV2(model);
 
-			window.alert(JSON.stringify(model));
-			this.savingInProgress = false;
-		}
-		else {
-			let saveObs = this.fieldsService.putFieldsV2(model);
+		saveObs.subscribe((res) => {
+			if (res) {
+				this.onUpdated.emit(res);
+				if (addAnother) {
+					this.formState = FormState.FieldTypeSelection;
+					this.selectedFieldType = null;
+					this.fieldTypeSelection = null;
+					this.setForm();
 
-			saveObs.subscribe((res) => {
-				if (res) {
-					this.onUpdated.emit(res);
+				}
+				else {
 					this.close();
 				}
-				this.savingInProgress = false;
-			});
-		}
+			}
+			this.savingInProgress = false;
+		});
+
 
 	}
 
@@ -465,8 +467,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
-
-		this.lookupSelectedDefaultValueOption = null;
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
@@ -665,7 +665,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`Save Changes`;
 		}
 		else {
-			return $localize`Add Field Type`;
+			return $localize`Add Field`;
 		}
 	}
 
@@ -1101,5 +1101,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		this.isValidPattern = false;
+	}
+
+	back() {
+		this.formState = FormState.FieldTypeSelection;
 	}
 }
