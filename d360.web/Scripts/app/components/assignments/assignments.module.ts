@@ -50,6 +50,18 @@ import {
 import {
 	WorkflowInformationDiagramComponent
 } from './workflow-information/workflow-information-diagram/workflow-information-diagram.component';
+import {
+	AssignmentStepFieldChangeDetailsComponent
+} from './assignment-progress-step-details/assignment-step-field-change-details/assignment-step-field-change-details.component';
+import {
+	AssignmentStepRelationshipChangeDetailsComponent
+} from './assignment-progress-step-details/assignment-step-relationship-change-details/assignment-step-relationship-change-details.component';
+import {
+	AssignmentStepHttpDetailsComponent
+} from './assignment-progress-step-details/assignment-step-http-details/assignment-step-http-details.component';
+import {
+	AssignmentStepHttpResponseDetailsComponent
+} from './assignment-progress-step-details/assignment-step-http-response-details/assignment-step-http-response-details.component';
 
 
 @NgModule({
@@ -67,7 +79,11 @@ import {
 		CompleteAssignmentComponent,
 		WorkflowInformationComponent,
 		WorkflowInformationDiagramComponent,
-		WorkflowInformationGeneralComponent
+		WorkflowInformationGeneralComponent,
+		AssignmentStepFieldChangeDetailsComponent,
+		AssignmentStepRelationshipChangeDetailsComponent,
+		AssignmentStepHttpDetailsComponent,
+		AssignmentStepHttpResponseDetailsComponent
 	],
 	imports: [
 		AdvancedFiltersModule,

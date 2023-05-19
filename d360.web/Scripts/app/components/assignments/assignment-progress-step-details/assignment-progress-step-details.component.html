@@ -29,5 +29,14 @@
 				</div>
 			</div>
 		</ig-property-group>
+		<ig-property-group title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container [ngSwitch]="step.ActivityType">
+					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+						<d3s-assignment-step-field-change-details [fieldChanges]="step.FieldChanges"></d3s-assignment-step-field-change-details>
+					</ng-container>
+				</ng-container>
+			</div>
+		</ig-property-group>
 	</div>
 </div>
