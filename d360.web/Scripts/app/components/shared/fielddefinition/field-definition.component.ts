@@ -15,6 +15,7 @@ import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.ser
 import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
 import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
+import { ApiResult } from '../../../models/apiresult.model';
 
 /*global $localize*/
 
@@ -147,7 +148,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 
-	load(): void {
+	load(focusFieldName: string = null): void {
 		if (this.relationshipTypeUid === "IntersectType") {
 			this.showIsPartOfKey = false;
 		}
@@ -247,6 +248,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 				else {
 					this.selectedRow = null;
+				}
+
+				if (focusFieldName) {
+					this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
 				}
 				this.isLoading = false;
 				this.cdRef.markForCheck();
@@ -819,7 +824,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	onEditFormClose() {
 		this.isModalVisible = false;
 	}
-	onEditSaveFinished() {
-		this.load();
+	onEditSaveFinished($event) {
+		const result = new ApiResult();
+		result.Success = true;
+		result.Message = $event.isEdit ? $localize`Field successfully updated` : $localize`Field successfully added`;
+		this.showMessageForApiResult(this.messagesService, result);
+		this.load($event.name);
 	}
 }

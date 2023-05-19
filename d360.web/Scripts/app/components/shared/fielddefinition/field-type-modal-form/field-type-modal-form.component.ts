@@ -12,7 +12,6 @@ import { FieldsObservableService } from "../../../../services/fieldsObservable.s
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
-import { PopupMenuItem } from "../../controls/popup-menu/popup-menu.component";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -110,7 +109,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
 
-
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
 		private assetService: AssetService,
@@ -135,6 +133,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	]
 
 	ngOnInit() {
+		this.loadBaseData();
+	}
+
+	loadBaseData() {
 		this.isLoading = true;
 
 		forkJoin(
@@ -195,7 +197,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			//asset count
 			if (results[2].length > 0) {
-				this.numberOfAssetsForType = +results[2].length + 1;
+				this.numberOfAssetsForType = +results[2][0].count;
 			}
 
 			//score types
@@ -224,6 +226,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 			}
 		}
+		if (changes['name']) {
+			if (changes['name'].previousValue !== changes['name'].currentValue) { // object has changed 
+				if (this.areFieldTypesLoaded) {
+					this.updateForm();
+				}
+			}
+		}
 	}
 
 	save(addAnother: boolean = false) {
@@ -242,9 +251,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
+
+
+
 		const type = model.Fields[0].Type;
 		let fieldTypeApiObject = type[this.selectedFieldType];
 
+		if (this.isEditing) {
+			const oldValues = this.typeFieldTypes.find((type) => type.Name === model.Fields[0].Name).Type[this.selectedFieldType];
+
+			Object.keys(oldValues).forEach((key) => {
+				if (typeof oldValues[key] !== 'object') {
+					fieldTypeApiObject[key] = oldValues[key];
+				}
+			});
+		}
 		//Asset Path
 		if (this.selectedFieldType === 'Path') {
 			type.Path.Definition.AssetTypeUid = this.fieldTypeForm.get("AssetPathListSegment").value ?? null;
@@ -358,15 +379,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		saveObs.subscribe((res) => {
 			if (res) {
-				this.onUpdated.emit(res);
+				const event = {
+					isEdit: this.isEditing,
+					name: model.Fields[0].Name
+				};
+				this.onUpdated.emit(event);
 				if (addAnother) {
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
 					this.fieldTypeSelection = null;
+					this.loadBaseData();
 					this.setForm();
 
 				}
 				else {
+					this.loadBaseData();
 					this.close();
 				}
 			}
@@ -461,12 +488,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		this.fieldTypeForm.reset();
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
-		this.fieldTypeForm.get('AllowAllValue').setValue('false');
+		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
+
+		this.partOfKeyModel = false;
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
@@ -538,6 +567,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				this.fieldTypeSelection = this.fieldTypes.find((s) => s.value === this.selectedFieldType);
 				this.confirmTypeSelection();
+				this.setDefaultFormValues();
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
@@ -560,6 +590,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsListable"].setValue(type?.IsListable ?? null);
 				this.fieldTypeForm.controls["IsRequired"].setValue(type?.Validation?.IsRequired ?? null);
 				this.fieldTypeForm.controls["IsPartOfKey"].setValue(type?.IsPartOfKey ?? null);
+				this.partOfKeyModel = type?.IsPartOfKey ?? null;
+
 				this.fieldTypeForm.controls["IsPrimaryFilter"].setValue(type?.IsPrimaryFilter ?? null);
 				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
@@ -639,25 +671,27 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.isEditFormUpdated = false;
 				this.cdRef.markForCheck();
 				this.isLoading = false;
+				setTimeout(() => {
+					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe((change) => {
+						this.isEditFormUpdated = true;
+					});
+				}, 500);
 			});
 		}
 		else {
 			this.title = $localize`Add Field`;
+			this.fieldTypeForm.controls["Name"].enable();
 			this.formState = FormState.FieldTypeSelection;
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
 
 			this.setDefaultFormValues();
 		}
-		this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe((change) => {
-			this.isEditFormUpdated = true;
-			//this.fieldTypeForm.controls["MinimumValue"]
-			//	.patchValue(this.fieldTypeForm.get("MinimumValue").value, { emitEvent: false, onlySelf: true });
-		});
+
 	}
 
 	get isFormDisabled(): boolean {
-		return this.savingInProgress || this.fieldTypeForm.invalid || (this.name && !this.isEditFormUpdated);
+		return this.savingInProgress || this.fieldTypeForm.invalid || (this.isEditing && !this.isEditFormUpdated);
 	}
 
 	get saveButtonLabel(): string {
@@ -729,7 +763,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		else {
 			this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
 		}
-		this.setDefaultFormValues();
 		this.cdRef.markForCheck();
 	}
 
@@ -763,6 +796,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.controls['DefaultValue'].updateValueAndValidity();
 	}
 
+	disabledPartOfKeyTooltip: string = '';
 	isSettingDisabled(val: string) {
 		if (!this.fieldTypeForm) {
 			return;
@@ -795,6 +829,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'IsRequired':
 				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
+				this.disabledPartOfKeyTooltip = '';
+				let numberOfKeyFields = 0;
+				let lastKeyFieldName = '';
+				this.typeFieldTypes.forEach((type) => {
+					const typeProperty = Object.keys(type.Type)[0];
+					if (type.Type[typeProperty].IsPartOfKey) {
+						numberOfKeyFields++;
+						lastKeyFieldName = type.Name;
+					}
+				});
+
+				if (numberOfKeyFields === 1 && this.fieldTypeForm.get('Name').value === lastKeyFieldName) {
+					this.disabledPartOfKeyTooltip = 'You cannot uncheck this key field. There must be at least one key field in an asset type.';
+					return true;
+				}
+
 				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Link', 'System']
 					.indexOf(this.selectedFieldType) > -1
 					|| this.selectedFieldType === 'ReferenceItemType');
@@ -1105,5 +1155,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	back() {
 		this.formState = FormState.FieldTypeSelection;
+	}
+
+	pendingPartOfKeyValue: boolean;
+	partOfKeyModel: boolean;
+	partOfKeyConfirmationModalVisible: boolean = false;
+	onPartOfKeyChange() {
+		this.pendingPartOfKeyValue = !this.partOfKeyModel;
+		this.partOfKeyConfirmationModalVisible = true;
+		this.cdRef.markForCheck();
+	}
+
+	confirmPendingPartOfKeyValue() {
+		this.partOfKeyModel = this.pendingPartOfKeyValue;
+		this.fieldTypeForm.get('IsPartOfKey').setValue(this.partOfKeyModel);
+		this.partOfKeyConfirmationModalVisible = false;
+		this.cdRef.markForCheck();
 	}
 }
