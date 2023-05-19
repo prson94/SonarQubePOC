@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
-import { forkJoin, Subscription } from "rxjs";
+import { forkJoin, of, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
@@ -141,8 +141,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		forkJoin(
 			this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
-			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid),
-			this.fieldsService.getAvailableScoreTypes(this.assetTypeUid)
+			this.assetTypeUid ? this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid) : of([]),
+			this.assetTypeUid ? this.fieldsService.getAvailableScoreTypes(this.assetTypeUid) : of([])
 		).subscribe((results) => {
 			//fields
 			if (results[0]) {
@@ -809,7 +809,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		const fieldName = this.fieldTypeForm.get("Name").value;
 
-		if (this.objectType === 'TaskType') {
+		if (this.isTaskType) {
 			if (fieldName === 'Name') { return true; }
 			if ((fieldName === 'StepNo' || fieldName === 'GovernanceRole') && (val !== 'IsEditable' && val !== 'IsRequired' && val !== 'SearchAddToResult')) {
 				return true;
@@ -859,7 +859,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
-				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.objectType === 'ReferenceItemType' && fieldName.toLocaleLowerCase() === "code"));
+				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.isReferenceItemType && fieldName.toLocaleLowerCase() === "code"));
 			case 'SearchAddToResult':
 				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComplexRelationLookup', 'ComputedRelationshipReferenceList', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'isSettingDisabled':
@@ -878,8 +878,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 	}
 
-	get objectType(): string {
-		return "some object type";
+	get isTaskType(): boolean {
+		return this.assetTypeClass === AssetTypeClass.DiagramAsset;
+	}
+
+	get isReferenceItemType(): boolean {
+		return this.assetTypeClass === AssetTypeClass.ReferenceItemType;
 	}
 
 	get isListableRelationship(): boolean {
