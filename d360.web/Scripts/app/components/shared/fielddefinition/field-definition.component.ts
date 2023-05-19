@@ -243,16 +243,17 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 
 				this.checkKeyFields();
-				if (this.fieldDisplayModel.length > 0) {
+
+				if (focusFieldName) {
+					this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
+				}
+				else if (this.fieldDisplayModel.length > 0) {
 					this.selectedRow = this.fieldDisplayModel[0];
 				}
 				else {
 					this.selectedRow = null;
 				}
 
-				if (focusFieldName) {
-					this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
-				}
 				this.isLoading = false;
 				this.cdRef.markForCheck();
 			}
