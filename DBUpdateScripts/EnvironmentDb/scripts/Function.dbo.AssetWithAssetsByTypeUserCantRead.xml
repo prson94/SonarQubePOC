@@ -5,8 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v3.1">
+  <changeSet author="Pappas" id="function.dbo.AssetWithAssetsByTypeUserCantRead-v3.2">
     <comment>GOV-15702</comment>
+	<comment>GOV-21440</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -69,6 +70,7 @@ RETURN
 				T.DefaultPermissions = 0 
 				and not exists(select 1 from reporting.Global_Resource where ResourceID = @ResourceID and IsAdministrator = 1)
 				and not exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
+				and not exists(select 1 from dbo.ResponsibilityDetail where ApplyToType = 1 and AssetTypeID = T.ID and ResourceID = @ResourceID)
 	)
 ]]>
     </sql>    

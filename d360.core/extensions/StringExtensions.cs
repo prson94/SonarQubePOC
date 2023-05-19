@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using d360.core.helpers;
 using d360.core.resources;
 using HtmlAgilityPack;
 using OWASP.AntiSamy.Html;
@@ -164,6 +166,15 @@ namespace d360.core
 				var s = new AntiSamy();
 				var results = s.Scan(text);
 				text = results.GetCleanHtml();
+			}
+			return text;
+		}
+
+		public static string ConvertHtml(this string text)
+		{
+			if (!string.IsNullOrEmpty(text))
+			{
+				text = WebUtility.HtmlEncode(text);
 			}
 			return text;
 		}
