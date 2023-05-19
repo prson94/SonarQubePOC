@@ -5,13 +5,7 @@ import { Component, Input, OnInit } from '@angular/core';
 	templateUrl: './relation-lookup-field-type-editor.component.html',
 	styleUrls: ['./relation-lookup-field-type-editor.component.less']
 })
-export class RelationLookupFieldTypeEditorComponent implements OnInit {
+export class RelationLookupFieldTypeEditorComponent {
 	@Input() uid: string;
 	@Input() assetTypeUid: string;
-
-	constructor() { }
-
-	ngOnInit(): void {
-	}
-
 }

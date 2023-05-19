@@ -116,7 +116,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 
 	writeValue(obj: any): void {
 		if (obj) {
-			var date = new Date(obj);
+			const date = new Date(obj);
 			obj = date;
 		}
 

@@ -1,9 +1,8 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
-import { stubFalse, values } from "lodash-es";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
-import { forkJoin, map, Observable, Subscription } from "rxjs";
+import { forkJoin, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
@@ -80,8 +79,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	scoreTypeOptions: SelectItem[];
 
 	lookupAssetTypes: SelectItem[] = [];
-	lookupFieldTokens: any[] = [];
-	regexPatternTokens: any[] = [];
+	lookupFieldTokens: Record<string, unknown>[] = [];
+	regexPatternTokens: Record<string, unknown>[] = [];
 
 	lookupDefaultValueOptions: SelectItem[] = [];
 
@@ -235,6 +234,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 	}
 
+	// eslint-disable-next-line
 	save(addAnother: boolean = false) {
 		this.savingInProgress = true;
 		const model = new FieldTypeAPIModel();
@@ -252,10 +252,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
 
-
-
 		const type = model.Fields[0].Type;
-		let fieldTypeApiObject = type[this.selectedFieldType];
+		const fieldTypeApiObject = type[this.selectedFieldType];
 
 		if (this.isEditing) {
 			const oldValues = this.typeFieldTypes.find((type) => type.Name === model.Fields[0].Name).Type[this.selectedFieldType];
@@ -318,7 +316,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.DefaultValue = {
 				Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
 				Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
-			}
+			};
 		}
 
 		if (this.selectedFieldType === 'Lookup') {
@@ -375,7 +373,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 
-		let saveObs = this.fieldsService.putFieldsV2(model);
+		const saveObs = this.fieldsService.putFieldsV2(model);
 
 		saveObs.subscribe((res) => {
 			if (res) {
@@ -427,9 +425,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			SortOrder: [null],
 			SortByAscending: ['true'],
 			DefaultValue: [null],
-			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number), this.minimumValueValidator()] }],
-			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
-			MaximumLength: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
+			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber), this.minimumValueValidator()] }],
+			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber)] }],
+			MaximumLength: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber)] }],
 			Precision: [null, { validators: [this.minMaxValueValidator(0, 5, true)] }],
 			Increment: [null, { validators: [this.incrementValidation()] }],
 			Suffix: [null],
@@ -482,6 +480,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.cdRef.markForCheck();
 	}
 
+	// ignore complexity
+	// eslint-disable-next-line
 	setDefaultFormValues() {
 		if (!this.fieldTypeForm) {
 			return;
@@ -559,6 +559,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			this.fieldTypeForm.controls["Name"].disable();
 
+			// ignore complexity
+			// eslint-disable-next-line
 			forkJoin(
 				this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
 			).subscribe((results) => {
@@ -616,7 +618,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				//Counter
 				if (this.selectedFieldType === 'Counter') {
 					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
-					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);;
+					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);
 				}
 
 				if (this.selectedFieldType === 'ComputedRelationshipField') {
@@ -672,7 +674,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.cdRef.markForCheck();
 				this.isLoading = false;
 				setTimeout(() => {
-					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe((change) => {
+					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
 					});
 				}, 500);
@@ -684,7 +686,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.formState = FormState.FieldTypeSelection;
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
-
 			this.setDefaultFormValues();
 		}
 
@@ -763,6 +764,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		else {
 			this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
 		}
+		this.setDefaultFormValues();
+		this.restoreControlsValues();
 		this.cdRef.markForCheck();
 	}
 
@@ -797,6 +800,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	disabledPartOfKeyTooltip: string = '';
+
+	// ignore complexity
+	// eslint-disable-next-line
 	isSettingDisabled(val: string) {
 		if (!this.fieldTypeForm) {
 			return;
@@ -808,7 +814,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if ((fieldName === 'StepNo' || fieldName === 'GovernanceRole') && (val !== 'IsEditable' && val !== 'IsRequired' && val !== 'SearchAddToResult')) {
 				return true;
 			}
-			var staticFields: string[] = [];
+			const staticFields: string[] = [];
 			staticFields.push('Name');
 			staticFields.push('GovernanceRole');
 			staticFields.push('StepNo');
@@ -868,7 +874,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 				return false;
 			default:
-				console.warn(`invalid setting[${val}]passed to isSettingDisabled`);
+				break;
 		}
 	}
 
@@ -881,7 +887,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	apiNameValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || this.isEditing) {
 				return {};
 			}
@@ -902,8 +908,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			if (this.assetTypeUid && this.assetTypeUid.toLocaleLowerCase() === '00000001-0000-0000-0000-A00000000011'.toLocaleLowerCase()) {
 				//when type is user
-				const user_restricted_fields = ["firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator"];
-				restricted.push(...user_restricted_fields);
+				const userRestrictedFields = ["firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator"];
+				restricted.push(...userRestrictedFields);
 			}
 
 			if (restricted.indexOf((control.value as string).toLocaleLowerCase()) !== -1) {
@@ -916,28 +922,28 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		};
 	}
 
-	private max_number: number = Number.MAX_SAFE_INTEGER;
-	private min_number: number = Number.MIN_SAFE_INTEGER;
-	minMaxValueValidator(min: number, max: number, is_precision: boolean = false): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+	private maxNumber: number = Number.MAX_SAFE_INTEGER;
+	private minNumber: number = Number.MIN_SAFE_INTEGER;
+	minMaxValueValidator(min: number, max: number, isPrecision: boolean = false): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null) {
 				return {};
 			}
 
-			if (is_precision && (+control.value > max || +control.value < min)) {
+			if (isPrecision && (+control.value > max || +control.value < min)) {
 				return {
-					max_number: { value: control.value, message: $localize`Please enter decimal places between ${min} and ${max}` }
+					maxNumber: { value: control.value, message: $localize`Please enter decimal places between ${min} and ${max}` }
 				};
 			}
 
 			if (+control.value > max) {
 				return {
-					max_number: { value: control.value, message: $localize`Please enter value smaller than ` + max }
+					maxNumber: { value: control.value, message: $localize`Please enter value smaller than ` + max }
 				};
 			}
 			if (+control.value < min) {
 				return {
-					min_number: { value: control.value, message: $localize`Please enter value bigger than ` + min }
+					minNumber: { value: control.value, message: $localize`Please enter value bigger than ` + min }
 				};
 			}
 			return null;
@@ -945,7 +951,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	incrementValidation(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null) {
 				return {};
 			}
@@ -960,22 +966,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	numberDefaultValueValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || !this.fieldTypeForm) {
 				return {};
 			}
-			const max_value = this.fieldTypeForm.get("MaximumValue").value;
-			const min_value = this.fieldTypeForm.get("MinimumValue").value;
+			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
+			const minValue = this.fieldTypeForm.get("MinimumValue").value;
 
 
-			if (max_value && +control.value > max_value) {
+			if (maxValue && +control.value > maxValue) {
 				return {
-					error_max_value: { value: control.value, message: $localize`Please enter a maximum value of ` + max_value }
+					errorMaxValue: { value: control.value, message: $localize`Please enter a maximum value of ` + maxValue }
 				};
 			}
-			if (max_value && +control.value < min_value) {
+			if (minValue && +control.value < minValue) {
 				return {
-					error_min_value: { value: control.value, message: $localize`Please enter a minimum value of ` + min_value }
+					errorMinValue: { value: control.value, message: $localize`Please enter a minimum value of ` + minValue }
 				};
 			}
 			return null;
@@ -983,7 +989,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	minimumValueValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (!this.fieldTypeForm) {
 				return {};
 			}
@@ -1055,7 +1061,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	loadingRelationFields: boolean = false;
 	loadFieldsFromRelationships(intersectTypeUid: string) {
 		if (intersectTypeUid == null) {
-			return
+			return;
 		}
 
 		this.loadingRelationFields = true;
@@ -1076,6 +1082,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		forkJoin(
 			this.fieldsService.getLookupDefaultValueOptions(uid),
 			this.fieldsService.getLookupTokens(uid)
+			// ignore complexity
+			// eslint-disable-next-line
 		).subscribe((data) => {
 			this.lookupDefaultValueOptions = [];
 			if (data[0] && data[0].length > 0) {
@@ -1106,9 +1114,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		const currentValue = this.fieldTypeForm.get(ctrlName).value ?? '';
 		const newValue = `${currentValue}{${$event.value}}`;
 
-		this.fieldTypeForm.controls[ctrlName].setValue(newValue);
+		this.fieldTypeForm.controls[`${ctrlName}`].setValue(newValue);
 	}
 
+	// ignore complexity
+	// eslint-disable-next-line
 	fieldTypeDisabledTooltip(item): string {
 		if (item.value === 'ComputedRelationshipField' && (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
@@ -1135,12 +1145,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	isValidPattern: boolean = null;
 	validatePattern() {
-		var pattern = this.fieldTypeForm.get('ValidationPattern').value;
-		var testValue = this.fieldTypeForm.get('RegexTestString').value;
+		const pattern = this.fieldTypeForm.get('ValidationPattern').value;
+		const testValue = this.fieldTypeForm.get('RegexTestString').value;
 
 		if (((typeof pattern) !== "undefined") && pattern !== null && pattern.length > 0) {
 			try {
-				var regex = new RegExp(pattern);
+				const regex = new RegExp(pattern);
 				this.isValidPattern = regex.test(testValue);
 				return;
 			}
@@ -1153,8 +1163,30 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.isValidPattern = false;
 	}
 
+
 	back() {
+		this.storeControlsValues();
 		this.formState = FormState.FieldTypeSelection;
+	}
+
+	controlsStoredValue = [];
+	storeControlsValues() {
+		this.controlsStoredValue = [];
+		Object.keys(this.fieldTypeForm.controls)
+			.forEach((x) => {
+				this.controlsStoredValue.push({ key: x, value: this.fieldTypeForm.get(x).value });
+			});
+	}
+
+	restoreControlsValues() {
+		if (this.controlsStoredValue.length > 0) {
+			this.controlsStoredValue.forEach((item) => {
+				if (item.value !== null) {
+					this.fieldTypeForm.get(item.key).setValue(item.value);
+				}
+			})
+			this.controlsStoredValue = [];
+		}
 	}
 
 	pendingPartOfKeyValue: boolean;

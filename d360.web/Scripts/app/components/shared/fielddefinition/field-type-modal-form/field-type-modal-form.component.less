@@ -20,6 +20,15 @@
     }
   }
 
+  .field-col {
+    .inline-field {
+      .p-radiobutton-label {
+        top: 3px;
+        margin-right: 20px;
+      }
+    }
+  }
+
   .flex-form-group {
     display: flex;
     width: 100%;
@@ -46,7 +55,7 @@
   .form-group-checkboxes {
     .p-checkbox-label {
       font-weight: normal;
-      padding: 8px 0px 8px 4px;
+      padding: 8px 0 8px 4px;
     }
 
     .row {
@@ -77,15 +86,6 @@
     }
   }
 
-  .field-col {
-    .inline-field {
-      .p-radiobutton-label {
-        top: 3px;
-        margin-right: 20px;
-      }
-    }
-  }
-
   .regex-validation {
     display: flex;
     width: 100%;
@@ -110,7 +110,8 @@
 
 .simple-search {
   padding: 0 0 16px 0;
-
+  // usage of invalid selector
+  // eslint-disable-next-line
   ig-search-field {
     width: 100%;
   }
