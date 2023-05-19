@@ -127,10 +127,10 @@ namespace d360.model.helpers
             if (parseType == FilterExpressionParseType.Semantics)
             {
                 allowedDefaultFields.Clear();
-                allowedDefaultFields.Add(new DefaultFilter("uid", "Uid", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("name", "Name", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("description", "Description", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("qualifier", "Qualifier", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("uid", "S.Uid", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("name", "S.Name", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("description", "S.Description", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("qualifier", "S.Qualifier", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("status",
                     SemanticStatus.Draft.GetSqlCaseFilterStatement("Status"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("source",
