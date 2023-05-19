@@ -53,6 +53,7 @@ namespace d360.web.Controllers.V2
 		/// Returns all actions.
 		/// </summary>
 		/// <param name="actionTypeUid">The unique identifier of an action type</param>
+		/// <param name="actionUid">The unique identifier of an action</param>
 		/// <param name="assetUid">The unique identifier of an asset</param>
 		/// <param name="_pageSize">The number of results to return per page. The default is 5 actions per page and max value is 250.</param>
 		/// <param name="_pageNum">The page number to return results for.</param>
@@ -68,7 +69,7 @@ namespace d360.web.Controllers.V2
 		   SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 	   ]
-		public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc")
+		public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string actionUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc")
 		{
 			List<string> selectColumns = new List<string>() {
 				"I.Uid", "I.CompletedOn",
@@ -87,6 +88,7 @@ namespace d360.web.Controllers.V2
 			DynamicParameters dbArgs = new DynamicParameters();
 			ResourceApiViewModel model = new ResourceApiViewModel();
 			bool isOrderByFieldValid = false;
+			var actionGuid = new Guid();
 
 			#region Determine paging
 
@@ -180,6 +182,29 @@ namespace d360.web.Controllers.V2
 
 			var queryParams = Request.GetQueryNameValuePairs();
 
+			if (!string.IsNullOrEmpty(actionUid) && !string.IsNullOrWhiteSpace(actionUid))
+			{
+				if (Guid.TryParse(actionUid, out actionGuid))
+				{
+					Issue issue = issueRepository.GetIssueByUID(actionGuid);
+
+					if (issue == null)
+					{
+						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionUidNotFound, actionUid));
+					}
+					else
+					{
+						var actionType = Company.Filter<IssueType>(it => it.ID == issue.IssueTypeID).FirstOrDefault();
+						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && actionType.uid.ToString() != actionTypeUid.ToLower())
+						{
+							throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
+						}
+
+						actionTypeUid = actionType.uid.ToString();
+					}
+				}
+			}
+
 			if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid))
 			{
 				if (Guid.TryParse(actionTypeUid, out Guid atGuid))
@@ -194,6 +219,12 @@ namespace d360.web.Controllers.V2
 					{
 						queries.Add("IT.[Uid] = @actionTypeUid");
 						dbArgs.Add("actionTypeUid", actionTypeUid);
+						
+						if(actionGuid != null && actionGuid != Guid.Empty)
+						{
+							queries.Add("I.[Uid] = @actionUid");
+							dbArgs.Add("actionUid", actionUid);
+						}
 
 						var fieldTypes = Company.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
 						getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "Issue", "I.ID");
