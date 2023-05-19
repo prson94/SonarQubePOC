@@ -195,8 +195,14 @@ namespace d360.web.Controllers.V2
                 TagValidator.ValidateForPost(model);
                 model.Value = model.Value.Trim();
 
-                //make sure no tag with the same name exists
-                if (tagRepository.DoesTagExists(model.Value))
+				//make sure tag is not empty
+				if (string.IsNullOrEmpty(model.Value))
+				{
+					throw new ArgumentNullException(TagsApiMessages.ErrorCreateTag);
+				}
+
+				//make sure no tag with the same name exists
+				if (tagRepository.DoesTagExists(model.Value))
                 {
                     throw new ArgumentNullException(TagsApiMessages.TagExists);
                 }
@@ -249,7 +255,13 @@ namespace d360.web.Controllers.V2
             TagValidator.ValidateForPut(tagId, model);
             var existingTag = tagRepository.GetTagByUid(tagId);
 
-            if (existingTag == null)
+			//make sure tag is not empty
+			if (string.IsNullOrEmpty(model.Value))
+			{
+				throw new ArgumentNullException(TagsApiMessages.ErrorUpdateTag);
+			}
+
+			if (existingTag == null)
             {
                 throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
