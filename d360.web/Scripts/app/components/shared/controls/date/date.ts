@@ -115,8 +115,11 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
 	}
 
 	writeValue(obj: any): void {
-		var date = new Date(obj);
-		obj = date;
+		if (obj) {
+			var date = new Date(obj);
+			obj = date;
+		}
+
 		this.value = obj;
 		this.onModelChange(this.value);
 		this.ref.markForCheck();

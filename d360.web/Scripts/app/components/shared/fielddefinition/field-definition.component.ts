@@ -245,7 +245,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				this.checkKeyFields();
 
 				if (focusFieldName) {
-					this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
+					setTimeout(() => {
+						this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
+					}, 100);
 				}
 				else if (this.fieldDisplayModel.length > 0) {
 					this.selectedRow = this.fieldDisplayModel[0];
@@ -752,16 +754,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	advancedFiltersChanged(event: Filters): void {
+		const currentSelectedField = this.selectedRow.Name;
 		setTimeout(() => {
 			this.advancedFilters = event;
 			this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
 			this.updateMenuItems();
-			if (this.fieldDisplayModel.length > 0) {
-				this.selectedRow = this.fieldDisplayModel[0];
-			}
-			else {
-				this.selectedRow = null;
-			}
+
+			this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === currentSelectedField);
+
 			this.cdRef.markForCheck();
 		}, 50);
 	}
