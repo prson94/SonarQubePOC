@@ -259,8 +259,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			const oldValues = this.typeFieldTypes.find((type) => type.Name === model.Fields[0].Name).Type[this.selectedFieldType];
 
 			Object.keys(oldValues).forEach((key) => {
-				if (typeof oldValues[key] !== 'object') {
-					fieldTypeApiObject[key] = oldValues[key];
+				if (typeof oldValues[`${key}`] !== 'object') {
+					fieldTypeApiObject[`${key}`] = oldValues[`${key}`];
 				}
 			});
 		}
@@ -559,10 +559,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			this.fieldTypeForm.controls["Name"].disable();
 
-			// ignore complexity
-			// eslint-disable-next-line
+
 			forkJoin(
 				this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
+				// ignore complexity
+				// eslint-disable-next-line
 			).subscribe((results) => {
 				this.editedFieldType = results[0][0];
 				this.selectedFieldType = Object.keys(this.editedFieldType.Type)[0];
@@ -823,6 +824,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (val === 'IsListable' || val === 'IsPartOfKey' || val === 'IsPrimaryFilter') { return true; }
 			}
 		}
+		let numberOfKeyFields = 0;
+		let lastKeyFieldName = '';
 
 		switch (val) {
 			case 'IsDisplayable':
@@ -836,11 +839,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
 				this.disabledPartOfKeyTooltip = '';
-				let numberOfKeyFields = 0;
-				let lastKeyFieldName = '';
+
 				this.typeFieldTypes.forEach((type) => {
 					const typeProperty = Object.keys(type.Type)[0];
-					if (type.Type[typeProperty].IsPartOfKey) {
+					if (type.Type[`${typeProperty}`].IsPartOfKey) {
 						numberOfKeyFields++;
 						lastKeyFieldName = type.Name;
 					}
@@ -890,6 +892,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return false;
 	}
 
+	// ignore complexity issue
+	// eslint-disable-next-line
 	apiNameValidator(): ValidatorFn {
 		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || this.isEditing) {
@@ -997,14 +1001,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (!this.fieldTypeForm) {
 				return {};
 			}
-			const max_value = this.fieldTypeForm.get("MaximumValue").value;
-			if (control.value == null || !max_value) {
+			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
+			if (control.value == null || !maxValue) {
 				return {};
 			}
 
-			if (+control.value > +max_value) {
+			if (+control.value > +maxValue) {
 				return {
-					invalid_value: { value: control.value, message: $localize`Please enter a value which is lower than maximum value` }
+					invalidValue: { value: control.value, message: $localize`Please enter a value which is lower than maximum value` }
 				};
 			}
 			return null;
@@ -1154,6 +1158,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		if (((typeof pattern) !== "undefined") && pattern !== null && pattern.length > 0) {
 			try {
+				// false positive non literal error
+				// eslint-disable-next-line
 				const regex = new RegExp(pattern);
 				this.isValidPattern = regex.test(testValue);
 				return;
@@ -1188,7 +1194,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (item.value !== null) {
 					this.fieldTypeForm.get(item.key).setValue(item.value);
 				}
-			})
+			});
 			this.controlsStoredValue = [];
 		}
 	}
