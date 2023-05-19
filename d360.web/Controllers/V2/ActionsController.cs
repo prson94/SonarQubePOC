@@ -195,7 +195,7 @@ namespace d360.web.Controllers.V2
 					else
 					{
 						var actionType = Company.Filter<IssueType>(it => it.ID == issue.IssueTypeID).FirstOrDefault();
-						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && actionType.uid.ToString() != actionTypeUid.ToLower())
+						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && actionType.uid.ToString().Equals(actionTypeUid, StringComparison.InvariantCultureIgnoreCase))
 						{
 							throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
 						}
