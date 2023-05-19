@@ -216,6 +216,10 @@ namespace d360.web.Controllers.V2
 			columns.Add(new CatalogColumn { ApiName = "displayPath", Column = "p.DisplayPath", Sort = "S.AssetPathWithId", Position = columns.Max(c => c.Position) + 1 });
 			columns.Add(new CatalogColumn { ApiName = "displayPathSegment", Sort = "p.DisplayPath", JoinStatement = "inner join AssetPath p on p.Id = S.ObjectAssetId", Position = columns.Max(c => c.Position) + 1 });
 
+
+			columns.Add(new CatalogColumn { ApiName = "keyPath", Column = "p.KeyPath" });
+			columns.Add(new CatalogColumn { ApiName = "assetTypeUid", Column = "at.uid as [AssetTypeUid]" });
+
 			#endregion
 
 			#region Filtering logic
@@ -931,6 +935,7 @@ namespace d360.web.Controllers.V2
 				from @results res
 				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
 				inner join asset a on a.ID = res.objectassetid
+				inner join AssetType at on at.ID = a.AssetTypeID
 				inner join AssetPath p on p.Id = A.Id
 				{string.Join(Environment.NewLine, columns.Where(x => x.CatalogColumnType == CatalogColumnType.Predicate).Select(x => x.DataStatement).Distinct())}
 				option(recompile)
