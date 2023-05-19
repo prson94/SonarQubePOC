@@ -892,9 +892,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return false;
 	}
 
-	// ignore complexity issue
-	// eslint-disable-next-line
 	apiNameValidator(): ValidatorFn {
+		// ignore complexity issue
+		// eslint-disable-next-line
 		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || this.isEditing) {
 				return {};
