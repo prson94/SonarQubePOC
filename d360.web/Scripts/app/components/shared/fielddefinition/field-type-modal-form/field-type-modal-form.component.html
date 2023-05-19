@@ -25,7 +25,8 @@
 					<ng-container *ngIf="formState === 'FieldTypeSelection'">
 						<div class="simple-search">
 							<span class="light-text" i18n>Select a field type from table below to continue.</span> <br />
-							<ig-search-field mode="Keypress"
+							<ig-search-field style="width:100%;"
+											 mode="Keypress"
 											 (onSearch)="dt.filterGlobal($event, 'contains')">
 							</ig-search-field>
 						</div>
