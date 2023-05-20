@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model';
@@ -8,7 +8,7 @@ import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model
   templateUrl: './assignment-step-field-change-details.component.html',
   styleUrls: ['./assignment-step-field-change-details.component.less']
 })
-export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent {
+export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit{
 	@Input() fieldChanges: any;
 
 	constructor(protected settingsService: CompanySettingsService) {
@@ -41,6 +41,10 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent {
 		if (item.ObjectType !== '' && item.ObjectType !== 'Issue')
 		{return $localize`Asset Field` + '::' + item.FieldName;}
 		return $localize`Action Field` + '::' + item.FieldName;
+	}
+
+	ngOnInit(): void {
+		console.log(this.fieldChanges)
 	}
 
 }

@@ -34,7 +34,7 @@
 				<tr [pSelectableRow]="item">
 					<td>{{getFieldName(item)}}</td>
 					<td>
-						<div [ngSwitch]="item.Type" style="overflow-x: auto">
+						<div *ngIf="item.Value" [ngSwitch]="item.Type" style="overflow-x: auto">
                             <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important"
 								  [innerHtml]="getHtmlFieldValue(item)"></span>
 							<span *ngSwitchCase="'Link'" style="display:block; word-wrap:break-word !important"><a
@@ -43,6 +43,7 @@
 							<span *ngSwitchDefault
 								  style="display:block; word-wrap:break-word !important">{{item.Value}}</span>
 						</div>
+						<div *ngIf="!item.Value"><span> -- </span></div>
 					</td>
 					<td>{{item.FormValue}}</td>
 					<td>{{item.UseOutputValue}}</td>
