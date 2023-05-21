@@ -35,6 +35,9 @@
 					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
 						<d3s-assignment-step-field-change-details [fieldChanges]="step.FieldChanges"></d3s-assignment-step-field-change-details>
 					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+						<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>
+					</ng-container>
 				</ng-container>
 			</div>
 		</ig-property-group>

@@ -53,6 +53,8 @@ import {
 import {
 	AssignmentStepFieldChangeDetailsComponent
 } from './assignment-progress-step-details/assignment-step-field-change-details/assignment-step-field-change-details.component';
+import { AssignmentStepEmailDetailsComponent } from './assignment-progress-step-details/assignment-step-email-details/assignment-step-email-details.component';
+import { PipesModule } from '../../pipes/pipes.module';
 
 
 @NgModule({
@@ -71,7 +73,8 @@ import {
 		WorkflowInformationComponent,
 		WorkflowInformationDiagramComponent,
 		WorkflowInformationGeneralComponent,
-		AssignmentStepFieldChangeDetailsComponent
+		AssignmentStepFieldChangeDetailsComponent,
+  AssignmentStepEmailDetailsComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -98,7 +101,8 @@ import {
 		SiteModalModule,
 		TableModule,
 		TooltipModule,
-		WorkflowDiagramModule
+		WorkflowDiagramModule,
+		PipesModule
 	]
 })
 export class AssignmentsModule {
