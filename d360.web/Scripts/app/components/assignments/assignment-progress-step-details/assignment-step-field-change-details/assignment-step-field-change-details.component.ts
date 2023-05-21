@@ -4,11 +4,11 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model';
 
 @Component({
-  selector: 'd3s-assignment-step-field-change-details',
-  templateUrl: './assignment-step-field-change-details.component.html',
-  styleUrls: ['./assignment-step-field-change-details.component.less']
+	selector: 'd3s-assignment-step-field-change-details',
+	templateUrl: './assignment-step-field-change-details.component.html',
+	styleUrls: ['./assignment-step-field-change-details.component.less']
 })
-export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit{
+export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit {
 	@Input() fieldChanges: any;
 
 	constructor(protected settingsService: CompanySettingsService) {
@@ -16,35 +16,47 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 	}
 
 	getHtmlFieldValue(item: any) {
-		if (typeof item.Value === 'undefined')
-		{return '';}
+		if (typeof item.Value === 'undefined') {
+			return '';
+		}
 		return item.Value;
 	}
 
 	getUrl(val: string): string {
-		if (typeof val !== "undefined") {
-			let url: string[] = val.split("|");
+		if (typeof val !== 'undefined') {
+			let url: string[] = val.split('|');
 			return url[1];
 		}
-		return "";
+		return '';
 	}
 
 	getName(val: string): string {
-		if (typeof val !== "undefined") {
-			let name: string[] = val.split("|");
+		if (typeof val !== 'undefined') {
+			let name: string[] = val.split('|');
 			return name[0];
 		}
-		return "";
+		return '';
 	}
 
 	getFieldName(item: WorkflowStepFieldChangeDetail): string {
-		if (item.ObjectType !== '' && item.ObjectType !== 'Issue')
-		{return $localize`Asset Field` + '::' + item.FieldName;}
+		if (item.ObjectType !== '' && item.ObjectType !== 'Issue') {
+			return $localize`Asset Field` + '::' + item.FieldName;
+		}
 		return $localize`Action Field` + '::' + item.FieldName;
 	}
 
 	ngOnInit(): void {
-		console.log(this.fieldChanges)
+		if (this.fieldChanges) {
+			for (let i = 0; i < this.fieldChanges.length; i++) {
+				if (this.fieldChanges[i].AppendValue === 'true') {
+					this.fieldChanges[i].ChangeType = 'Append';
+				} else if (this.fieldChanges[i].ClearValue === 'true') {
+					this.fieldChanges[i].ChangeType = 'Clear';
+				} else {
+					this.fieldChanges[i].ChangeType = 'Replace';
+				}
+			}
+		}
 	}
 
 }
