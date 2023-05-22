@@ -53,8 +53,13 @@ import {
 import {
 	AssignmentStepFieldChangeDetailsComponent
 } from './assignment-progress-step-details/assignment-step-field-change-details/assignment-step-field-change-details.component';
-import { AssignmentStepEmailDetailsComponent } from './assignment-progress-step-details/assignment-step-email-details/assignment-step-email-details.component';
+import {
+	AssignmentStepEmailDetailsComponent
+} from './assignment-progress-step-details/assignment-step-email-details/assignment-step-email-details.component';
 import { PipesModule } from '../../pipes/pipes.module';
+import {
+	AssignmentStepHttpDetailsComponent
+} from './assignment-progress-step-details/assignment-step-http-details/assignment-step-http-details.component';
 
 
 @NgModule({
@@ -74,7 +79,8 @@ import { PipesModule } from '../../pipes/pipes.module';
 		WorkflowInformationDiagramComponent,
 		WorkflowInformationGeneralComponent,
 		AssignmentStepFieldChangeDetailsComponent,
-  AssignmentStepEmailDetailsComponent
+		AssignmentStepEmailDetailsComponent,
+		AssignmentStepHttpDetailsComponent
 	],
 	imports: [
 		AdvancedFiltersModule,

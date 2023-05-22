@@ -15,7 +15,6 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 @Component({
 	selector: 'd3s-assignment-step-email-details',
 	templateUrl: './assignment-step-email-details.component.html',
-	styleUrls: ['./assignment-step-email-details.component.less'],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssignmentStepEmailDetailsComponent extends BaseComponent implements OnInit, OnChanges {

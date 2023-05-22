@@ -5,8 +5,7 @@ import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model
 
 @Component({
 	selector: 'd3s-assignment-step-field-change-details',
-	templateUrl: './assignment-step-field-change-details.component.html',
-	styleUrls: ['./assignment-step-field-change-details.component.less']
+	templateUrl: './assignment-step-field-change-details.component.html'
 })
 export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit {
 	@Input() fieldChanges: any;
