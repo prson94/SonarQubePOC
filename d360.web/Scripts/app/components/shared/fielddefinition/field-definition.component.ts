@@ -15,6 +15,7 @@ import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.ser
 import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
 import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
+import { ApiResult } from '../../../models/apiresult.model';
 
 /*global $localize*/
 
@@ -34,6 +35,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() actionTypeUid: string;
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
+
+	@Input() typeName: string = 'Some Default Type Name';
 
 	@Input() showAddButton: boolean = true;
 	@Input() showEditButton: boolean = true;
@@ -61,6 +64,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	@Input() supportsPrimaryFilterOption: boolean = false;
 	@Input() allowSingleSegmentPath: boolean = true;
+
+	editedFieldName: string;
 
 	public dataCyPrefix: string = 'FieldType_';
 	get advancedFilteringStorageKey(): string {
@@ -143,7 +148,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 
-	load(): void {
+	load(focusFieldName: string = null): void {
 		if (this.relationshipTypeUid === "IntersectType") {
 			this.showIsPartOfKey = false;
 		}
@@ -238,12 +243,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 
 				this.checkKeyFields();
-				if (this.fieldDisplayModel.length > 0) {
+
+				if (focusFieldName) {
+					setTimeout(() => {
+						this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
+					}, 100);
+				}
+				else if (this.fieldDisplayModel.length > 0) {
 					this.selectedRow = this.fieldDisplayModel[0];
 				}
 				else {
 					this.selectedRow = null;
 				}
+
 				this.isLoading = false;
 				this.cdRef.markForCheck();
 			}
@@ -456,6 +468,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					this.isDeleting = false;
 					this.checkKeyFields();
 				}
+				this.deleteInProgress = false;
 				this.cdRef.markForCheck();
 			}
 		);
@@ -549,9 +562,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 	edit(field: FieldDisplayModel): void {
 		this.selectedRow = this.fieldDisplayModel.find((f) => f.Name === field.Name);
-		this.isEditing = true;
-		this.isDeleting = false;
-		this.isAdding = false;
+		this.editedFieldName = this.selectedRow.Name;
+		this.isModalVisible = true;
+		this.cdRef.markForCheck();
 		this.onEdit.emit();
 	}
 
@@ -741,16 +754,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	advancedFiltersChanged(event: Filters): void {
+		const currentSelectedField = this.selectedRow.Name;
 		setTimeout(() => {
 			this.advancedFilters = event;
 			this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
 			this.updateMenuItems();
-			if (this.fieldDisplayModel.length > 0) {
-				this.selectedRow = this.fieldDisplayModel[0];
-			}
-			else {
-				this.selectedRow = null;
-			}
+
+			this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === currentSelectedField);
+
 			this.cdRef.markForCheck();
 		}, 50);
 	}
@@ -808,5 +819,17 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			return false;
 		}
 		return true;
+	}
+
+	isModalVisible: boolean = false;
+	onEditFormClose() {
+		this.isModalVisible = false;
+	}
+	onEditSaveFinished($event) {
+		const result = new ApiResult();
+		result.Success = true;
+		result.Message = $event.isEdit ? $localize`Field successfully updated` : $localize`Field successfully added`;
+		this.showMessageForApiResult(this.messagesService, result);
+		this.load($event.name);
 	}
 }

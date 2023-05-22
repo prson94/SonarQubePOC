@@ -724,22 +724,21 @@ namespace d360.web.Controllers.V2
 					.Select(i => new
 					{
 						title = (i.SubjectUid == AssetTypeUid) ?
-							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
-							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
+							$"<b>{i.SubjectName}</b> {i.PredicateName} <b>{i.ObjectName}</b>" :
+							$"<b>{i.ObjectName}</b> {i.PredicateInverse} <b>{i.SubjectName}</b>",
 						value = i.Uid
 					});
 
 				var Field_FieldFromRelRelationships = fieldFromRelRelationships.Select(i => new
 				{
 					title = (i.SubjectUid == AssetTypeUid) ?
-							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
-							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
+							$"<b>{i.SubjectName}</b> {i.PredicateName} <b>{i.ObjectName}</b>" :
+							$"<b>{i.ObjectName}</b> {i.PredicateInverse} <b>{i.SubjectName}</b>",
 					value = i.Uid
 				});
 
 				var patterns = new Dictionary<string, string>
 				{
-					{ Fields.RegexPatternChoose, "" },
 					{ Fields.RegexPatternEmail, @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
 					{ Fields.RegexPatternIP, @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
 					{ Fields.RegexPatternNorthAmericanPhone, @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },

@@ -35,6 +35,7 @@ import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/adva
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { FieldTypeDetailModule } from './field-type-details/field-type-details.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { FieldTypeModalFormModule } from './field-type-modal-form/field-type-modal-form.module';
 
 @NgModule({
     imports: [
@@ -69,7 +70,8 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 		AdvancedFiltersModule,
 		PopupMenuModule,
 		FieldTypeDetailModule,
-		SiteModalModule
+		SiteModalModule,
+		FieldTypeModalFormModule
     ],
     declarations: [
         FieldTypeForm,
