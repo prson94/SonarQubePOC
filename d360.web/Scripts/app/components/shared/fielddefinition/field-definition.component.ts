@@ -15,6 +15,7 @@ import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.ser
 import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
 import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
+import { ApiResult } from '../../../models/apiresult.model';
 
 /*global $localize*/
 
@@ -147,7 +148,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		}
 	}
 
-	load(): void {
+	load(focusFieldName: string = null): void {
 		if (this.relationshipTypeUid === "IntersectType") {
 			this.showIsPartOfKey = false;
 		}
@@ -242,12 +243,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 				}
 
 				this.checkKeyFields();
-				if (this.fieldDisplayModel.length > 0) {
+
+				if (focusFieldName) {
+					setTimeout(() => {
+						this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === focusFieldName);
+					}, 100);
+				}
+				else if (this.fieldDisplayModel.length > 0) {
 					this.selectedRow = this.fieldDisplayModel[0];
 				}
 				else {
 					this.selectedRow = null;
 				}
+
 				this.isLoading = false;
 				this.cdRef.markForCheck();
 			}
@@ -746,16 +754,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	advancedFiltersChanged(event: Filters): void {
+		const currentSelectedField = this.selectedRow.Name;
 		setTimeout(() => {
 			this.advancedFilters = event;
 			this.fieldDisplayModel = this.uiAdvancedFiltering.runFiltering(this.nonFilteredFieldDisplayModel, event);
 			this.updateMenuItems();
-			if (this.fieldDisplayModel.length > 0) {
-				this.selectedRow = this.fieldDisplayModel[0];
-			}
-			else {
-				this.selectedRow = null;
-			}
+
+			this.selectedRow = this.fieldDisplayModel.find((x) => x.Name === currentSelectedField);
+
 			this.cdRef.markForCheck();
 		}, 50);
 	}
@@ -819,7 +825,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	onEditFormClose() {
 		this.isModalVisible = false;
 	}
-	onEditSaveFinished() {
-		this.load();
+	onEditSaveFinished($event) {
+		const result = new ApiResult();
+		result.Success = true;
+		result.Message = $event.isEdit ? $localize`Field successfully updated` : $localize`Field successfully added`;
+		this.showMessageForApiResult(this.messagesService, result);
+		this.load($event.name);
 	}
 }

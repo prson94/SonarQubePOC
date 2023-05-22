@@ -1,9 +1,8 @@
-import { AfterViewChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
-import { stubFalse, values } from "lodash-es";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
-import { forkJoin, map, Observable, Subscription } from "rxjs";
+import { forkJoin, of, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
@@ -12,7 +11,6 @@ import { FieldsObservableService } from "../../../../services/fieldsObservable.s
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
-import { PopupMenuItem } from "../../controls/popup-menu/popup-menu.component";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -81,11 +79,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	scoreTypeOptions: SelectItem[];
 
 	lookupAssetTypes: SelectItem[] = [];
-	lookupFieldTokens: any[] = [];
-	regexPatternTokens: any[] = [];
+	lookupFieldTokens: Record<string, unknown>[] = [];
+	regexPatternTokens: Record<string, unknown>[] = [];
 
 	lookupDefaultValueOptions: SelectItem[] = [];
-	lookupSelectedDefaultValueOption: any;
 
 	responsibilityTypes: SelectItem[] = [];
 
@@ -111,7 +108,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
 	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
 
-
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
 		private assetService: AssetService,
@@ -136,13 +132,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	]
 
 	ngOnInit() {
+		this.loadBaseData();
+	}
+
+	loadBaseData() {
 		this.isLoading = true;
 
 		forkJoin(
 			this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
-			this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid),
-			this.fieldsService.getAvailableScoreTypes(this.assetTypeUid)
+			this.assetTypeUid ? this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid) : of([]),
+			this.assetTypeUid ? this.fieldsService.getAvailableScoreTypes(this.assetTypeUid) : of([])
 		).subscribe((results) => {
 			//fields
 			if (results[0]) {
@@ -196,7 +196,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			//asset count
 			if (results[2].length > 0) {
-				this.numberOfAssetsForType = +results[2].length + 1;
+				this.numberOfAssetsForType = +results[2][0].count;
 			}
 
 			//score types
@@ -225,9 +225,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 			}
 		}
+		if (changes['name']) {
+			if (changes['name'].previousValue !== changes['name'].currentValue) { // object has changed 
+				if (this.areFieldTypesLoaded) {
+					this.updateForm();
+				}
+			}
+		}
 	}
 
-	save() {
+	// eslint-disable-next-line
+	save(addAnother: boolean = false) {
 		this.savingInProgress = true;
 		const model = new FieldTypeAPIModel();
 		model.Action = "Merge";
@@ -243,9 +251,19 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
-		const type = model.Fields[0].Type;
-		let fieldTypeApiObject = type[this.selectedFieldType];
 
+		const type = model.Fields[0].Type;
+		const fieldTypeApiObject = type[this.selectedFieldType];
+
+		if (this.isEditing) {
+			const oldValues = this.typeFieldTypes.find((type) => type.Name === model.Fields[0].Name).Type[this.selectedFieldType];
+
+			Object.keys(oldValues).forEach((key) => {
+				if (typeof oldValues[`${key}`] !== 'object') {
+					fieldTypeApiObject[`${key}`] = oldValues[`${key}`];
+				}
+			});
+		}
 		//Asset Path
 		if (this.selectedFieldType === 'Path') {
 			type.Path.Definition.AssetTypeUid = this.fieldTypeForm.get("AssetPathListSegment").value ?? null;
@@ -298,7 +316,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.DefaultValue = {
 				Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
 				Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
-			}
+			};
 		}
 
 		if (this.selectedFieldType === 'Lookup') {
@@ -355,22 +373,31 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 
-		if (false) {
+		const saveObs = this.fieldsService.putFieldsV2(model);
 
-			window.alert(JSON.stringify(model));
-			this.savingInProgress = false;
-		}
-		else {
-			let saveObs = this.fieldsService.putFieldsV2(model);
+		saveObs.subscribe((res) => {
+			if (res) {
+				const event = {
+					isEdit: this.isEditing,
+					name: model.Fields[0].Name
+				};
+				this.onUpdated.emit(event);
+				if (addAnother) {
+					this.formState = FormState.FieldTypeSelection;
+					this.selectedFieldType = null;
+					this.fieldTypeSelection = null;
+					this.loadBaseData();
+					this.setForm();
 
-			saveObs.subscribe((res) => {
-				if (res) {
-					this.onUpdated.emit(res);
+				}
+				else {
+					this.loadBaseData();
 					this.close();
 				}
-				this.savingInProgress = false;
-			});
-		}
+			}
+			this.savingInProgress = false;
+		});
+
 
 	}
 
@@ -398,9 +425,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			SortOrder: [null],
 			SortByAscending: ['true'],
 			DefaultValue: [null],
-			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number), this.minimumValueValidator()] }],
-			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
-			MaximumLength: [null, { validators: [this.minMaxValueValidator(this.min_number, this.max_number)] }],
+			MinimumValue: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber), this.minimumValueValidator()] }],
+			MaximumValue: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber)] }],
+			MaximumLength: [null, { validators: [this.minMaxValueValidator(this.minNumber, this.maxNumber)] }],
 			Precision: [null, { validators: [this.minMaxValueValidator(0, 5, true)] }],
 			Increment: [null, { validators: [this.incrementValidation()] }],
 			Suffix: [null],
@@ -453,20 +480,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.cdRef.markForCheck();
 	}
 
+	// ignore complexity
+	// eslint-disable-next-line
 	setDefaultFormValues() {
 		if (!this.fieldTypeForm) {
 			return;
 		}
 		this.fieldTypeForm.reset();
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
-		this.fieldTypeForm.get('AllowAllValue').setValue('false');
+		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
 
-		this.lookupSelectedDefaultValueOption = null;
+		this.partOfKeyModel = false;
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
@@ -530,14 +559,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			this.fieldTypeForm.controls["Name"].disable();
 
+
 			forkJoin(
 				this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
+				// ignore complexity
+				// eslint-disable-next-line
 			).subscribe((results) => {
 				this.editedFieldType = results[0][0];
 				this.selectedFieldType = Object.keys(this.editedFieldType.Type)[0];
 
 				this.fieldTypeSelection = this.fieldTypes.find((s) => s.value === this.selectedFieldType);
 				this.confirmTypeSelection();
+				this.setDefaultFormValues();
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
@@ -560,6 +593,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["IsListable"].setValue(type?.IsListable ?? null);
 				this.fieldTypeForm.controls["IsRequired"].setValue(type?.Validation?.IsRequired ?? null);
 				this.fieldTypeForm.controls["IsPartOfKey"].setValue(type?.IsPartOfKey ?? null);
+				this.partOfKeyModel = type?.IsPartOfKey ?? null;
+
 				this.fieldTypeForm.controls["IsPrimaryFilter"].setValue(type?.IsPrimaryFilter ?? null);
 				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
@@ -584,7 +619,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				//Counter
 				if (this.selectedFieldType === 'Counter') {
 					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
-					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);;
+					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);
 				}
 
 				if (this.selectedFieldType === 'ComputedRelationshipField') {
@@ -639,25 +674,26 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.isEditFormUpdated = false;
 				this.cdRef.markForCheck();
 				this.isLoading = false;
+				setTimeout(() => {
+					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
+						this.isEditFormUpdated = true;
+					});
+				}, 500);
 			});
 		}
 		else {
 			this.title = $localize`Add Field`;
+			this.fieldTypeForm.controls["Name"].enable();
 			this.formState = FormState.FieldTypeSelection;
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
-
 			this.setDefaultFormValues();
 		}
-		this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe((change) => {
-			this.isEditFormUpdated = true;
-			//this.fieldTypeForm.controls["MinimumValue"]
-			//	.patchValue(this.fieldTypeForm.get("MinimumValue").value, { emitEvent: false, onlySelf: true });
-		});
+
 	}
 
 	get isFormDisabled(): boolean {
-		return this.savingInProgress || this.fieldTypeForm.invalid || (this.name && !this.isEditFormUpdated);
+		return this.savingInProgress || this.fieldTypeForm.invalid || (this.isEditing && !this.isEditFormUpdated);
 	}
 
 	get saveButtonLabel(): string {
@@ -665,7 +701,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`Save Changes`;
 		}
 		else {
-			return $localize`Add Field Type`;
+			return $localize`Add Field`;
 		}
 	}
 
@@ -730,6 +766,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.subTitle = this.assetTypeName + " - " + this.fieldTypeSelection["label"];
 		}
 		this.setDefaultFormValues();
+		this.restoreControlsValues();
 		this.cdRef.markForCheck();
 	}
 
@@ -763,18 +800,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.controls['DefaultValue'].updateValueAndValidity();
 	}
 
+	disabledPartOfKeyTooltip: string = '';
+
+	// ignore complexity
+	// eslint-disable-next-line
 	isSettingDisabled(val: string) {
 		if (!this.fieldTypeForm) {
 			return;
 		}
 		const fieldName = this.fieldTypeForm.get("Name").value;
 
-		if (this.objectType === 'TaskType') {
+		if (this.isTaskType) {
 			if (fieldName === 'Name') { return true; }
 			if ((fieldName === 'StepNo' || fieldName === 'GovernanceRole') && (val !== 'IsEditable' && val !== 'IsRequired' && val !== 'SearchAddToResult')) {
 				return true;
 			}
-			var staticFields: string[] = [];
+			const staticFields: string[] = [];
 			staticFields.push('Name');
 			staticFields.push('GovernanceRole');
 			staticFields.push('StepNo');
@@ -783,6 +824,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				if (val === 'IsListable' || val === 'IsPartOfKey' || val === 'IsPrimaryFilter') { return true; }
 			}
 		}
+		let numberOfKeyFields = 0;
+		let lastKeyFieldName = '';
 
 		switch (val) {
 			case 'IsDisplayable':
@@ -795,6 +838,21 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'IsRequired':
 				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
+				this.disabledPartOfKeyTooltip = '';
+
+				this.typeFieldTypes.forEach((type) => {
+					const typeProperty = Object.keys(type.Type)[0];
+					if (type.Type[`${typeProperty}`].IsPartOfKey) {
+						numberOfKeyFields++;
+						lastKeyFieldName = type.Name;
+					}
+				});
+
+				if (numberOfKeyFields === 1 && this.fieldTypeForm.get('Name').value === lastKeyFieldName) {
+					this.disabledPartOfKeyTooltip = 'You cannot uncheck this key field. There must be at least one key field in an asset type.';
+					return true;
+				}
+
 				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Link', 'System']
 					.indexOf(this.selectedFieldType) > -1
 					|| this.selectedFieldType === 'ReferenceItemType');
@@ -803,7 +861,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
-				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.objectType === 'ReferenceItemType' && fieldName.toLocaleLowerCase() === "code"));
+				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.isReferenceItemType && fieldName.toLocaleLowerCase() === "code"));
 			case 'SearchAddToResult':
 				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComplexRelationLookup', 'ComputedRelationshipReferenceList', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'isSettingDisabled':
@@ -818,12 +876,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 				return false;
 			default:
-				console.warn(`invalid setting[${val}]passed to isSettingDisabled`);
+				break;
 		}
 	}
 
-	get objectType(): string {
-		return "some object type";
+	get isTaskType(): boolean {
+		return this.assetTypeClass === AssetTypeClass.DiagramAsset;
+	}
+
+	get isReferenceItemType(): boolean {
+		return this.assetTypeClass === AssetTypeClass.ReferenceItemType;
 	}
 
 	get isListableRelationship(): boolean {
@@ -831,7 +893,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	apiNameValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		// ignore complexity issue
+		// eslint-disable-next-line
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || this.isEditing) {
 				return {};
 			}
@@ -852,8 +916,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			if (this.assetTypeUid && this.assetTypeUid.toLocaleLowerCase() === '00000001-0000-0000-0000-A00000000011'.toLocaleLowerCase()) {
 				//when type is user
-				const user_restricted_fields = ["firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator"];
-				restricted.push(...user_restricted_fields);
+				const userRestrictedFields = ["firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator"];
+				restricted.push(...userRestrictedFields);
 			}
 
 			if (restricted.indexOf((control.value as string).toLocaleLowerCase()) !== -1) {
@@ -866,28 +930,28 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		};
 	}
 
-	private max_number: number = Number.MAX_SAFE_INTEGER;
-	private min_number: number = Number.MIN_SAFE_INTEGER;
-	minMaxValueValidator(min: number, max: number, is_precision: boolean = false): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+	private maxNumber: number = Number.MAX_SAFE_INTEGER;
+	private minNumber: number = Number.MIN_SAFE_INTEGER;
+	minMaxValueValidator(min: number, max: number, isPrecision: boolean = false): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null) {
 				return {};
 			}
 
-			if (is_precision && (+control.value > max || +control.value < min)) {
+			if (isPrecision && (+control.value > max || +control.value < min)) {
 				return {
-					max_number: { value: control.value, message: $localize`Please enter decimal places between ${min} and ${max}` }
+					maxNumber: { value: control.value, message: $localize`Please enter decimal places between ${min} and ${max}` }
 				};
 			}
 
 			if (+control.value > max) {
 				return {
-					max_number: { value: control.value, message: $localize`Please enter value smaller than ` + max }
+					maxNumber: { value: control.value, message: $localize`Please enter value smaller than ` + max }
 				};
 			}
 			if (+control.value < min) {
 				return {
-					min_number: { value: control.value, message: $localize`Please enter value bigger than ` + min }
+					minNumber: { value: control.value, message: $localize`Please enter value bigger than ` + min }
 				};
 			}
 			return null;
@@ -895,7 +959,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	incrementValidation(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null) {
 				return {};
 			}
@@ -910,22 +974,22 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	numberDefaultValueValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null || !this.fieldTypeForm) {
 				return {};
 			}
-			const max_value = this.fieldTypeForm.get("MaximumValue").value;
-			const min_value = this.fieldTypeForm.get("MinimumValue").value;
+			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
+			const minValue = this.fieldTypeForm.get("MinimumValue").value;
 
 
-			if (max_value && +control.value > max_value) {
+			if (maxValue && +control.value > maxValue) {
 				return {
-					error_max_value: { value: control.value, message: $localize`Please enter a maximum value of ` + max_value }
+					errorMaxValue: { value: control.value, message: $localize`Please enter a maximum value of ` + maxValue }
 				};
 			}
-			if (max_value && +control.value < min_value) {
+			if (minValue && +control.value < minValue) {
 				return {
-					error_min_value: { value: control.value, message: $localize`Please enter a minimum value of ` + min_value }
+					errorMinValue: { value: control.value, message: $localize`Please enter a minimum value of ` + minValue }
 				};
 			}
 			return null;
@@ -933,18 +997,18 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	minimumValueValidator(): ValidatorFn {
-		return (control: AbstractControl): { [key: string]: any } | null => {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (!this.fieldTypeForm) {
 				return {};
 			}
-			const max_value = this.fieldTypeForm.get("MaximumValue").value;
-			if (control.value == null || !max_value) {
+			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
+			if (control.value == null || !maxValue) {
 				return {};
 			}
 
-			if (+control.value > +max_value) {
+			if (+control.value > +maxValue) {
 				return {
-					invalid_value: { value: control.value, message: $localize`Please enter a value which is lower than maximum value` }
+					invalidValue: { value: control.value, message: $localize`Please enter a value which is lower than maximum value` }
 				};
 			}
 			return null;
@@ -1005,7 +1069,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	loadingRelationFields: boolean = false;
 	loadFieldsFromRelationships(intersectTypeUid: string) {
 		if (intersectTypeUid == null) {
-			return
+			return;
 		}
 
 		this.loadingRelationFields = true;
@@ -1026,6 +1090,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		forkJoin(
 			this.fieldsService.getLookupDefaultValueOptions(uid),
 			this.fieldsService.getLookupTokens(uid)
+			// ignore complexity
+			// eslint-disable-next-line
 		).subscribe((data) => {
 			this.lookupDefaultValueOptions = [];
 			if (data[0] && data[0].length > 0) {
@@ -1056,9 +1122,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		const currentValue = this.fieldTypeForm.get(ctrlName).value ?? '';
 		const newValue = `${currentValue}{${$event.value}}`;
 
-		this.fieldTypeForm.controls[ctrlName].setValue(newValue);
+		this.fieldTypeForm.controls[`${ctrlName}`].setValue(newValue);
 	}
 
+	// ignore complexity
+	// eslint-disable-next-line
 	fieldTypeDisabledTooltip(item): string {
 		if (item.value === 'ComputedRelationshipField' && (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
@@ -1085,12 +1153,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	isValidPattern: boolean = null;
 	validatePattern() {
-		var pattern = this.fieldTypeForm.get('ValidationPattern').value;
-		var testValue = this.fieldTypeForm.get('RegexTestString').value;
+		const pattern = this.fieldTypeForm.get('ValidationPattern').value;
+		const testValue = this.fieldTypeForm.get('RegexTestString').value;
 
 		if (((typeof pattern) !== "undefined") && pattern !== null && pattern.length > 0) {
 			try {
-				var regex = new RegExp(pattern);
+				// false positive non literal error
+				// eslint-disable-next-line
+				const regex = new RegExp(pattern);
 				this.isValidPattern = regex.test(testValue);
 				return;
 			}
@@ -1101,5 +1171,47 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		this.isValidPattern = false;
+	}
+
+
+	back() {
+		this.storeControlsValues();
+		this.formState = FormState.FieldTypeSelection;
+	}
+
+	controlsStoredValue = [];
+	storeControlsValues() {
+		this.controlsStoredValue = [];
+		Object.keys(this.fieldTypeForm.controls)
+			.forEach((x) => {
+				this.controlsStoredValue.push({ key: x, value: this.fieldTypeForm.get(x).value });
+			});
+	}
+
+	restoreControlsValues() {
+		if (this.controlsStoredValue.length > 0) {
+			this.controlsStoredValue.forEach((item) => {
+				if (item.value !== null) {
+					this.fieldTypeForm.get(item.key).setValue(item.value);
+				}
+			});
+			this.controlsStoredValue = [];
+		}
+	}
+
+	pendingPartOfKeyValue: boolean;
+	partOfKeyModel: boolean;
+	partOfKeyConfirmationModalVisible: boolean = false;
+	onPartOfKeyChange() {
+		this.pendingPartOfKeyValue = !this.partOfKeyModel;
+		this.partOfKeyConfirmationModalVisible = true;
+		this.cdRef.markForCheck();
+	}
+
+	confirmPendingPartOfKeyValue() {
+		this.partOfKeyModel = this.pendingPartOfKeyValue;
+		this.fieldTypeForm.get('IsPartOfKey').setValue(this.partOfKeyModel);
+		this.partOfKeyConfirmationModalVisible = false;
+		this.cdRef.markForCheck();
 	}
 }

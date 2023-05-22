@@ -53,7 +53,7 @@
 				</button>
 				<button igButton
 						[attr.data-cy]="'FieldType_Add'"
-						pTooltip="Create new Field Type"
+						pTooltip="Add Field"
 						i18n-pTooltip
 						tooltipPosition="top"
 						tooltipStyleClass="ig-tooltip"
@@ -250,8 +250,9 @@
 <field-type-modal-form [isModalVisible]="isModalVisible"
 					   [actionTypeUid]="actionTypeUid"
 					   [assetTypeUid]="assetTypeUid"
+					   [assetTypeClass]="assetTypeClass"
 					   [relationshipTypeUid]="relationshipTypeUid"
 					   [assetTypeName]="typeName"
 					   [name]="editedFieldName"
 					   (onClose)="onEditFormClose()"
-					   (onUpdated)="onEditSaveFinished()"></field-type-modal-form>
+					   (onUpdated)="onEditSaveFinished($event)"></field-type-modal-form>
