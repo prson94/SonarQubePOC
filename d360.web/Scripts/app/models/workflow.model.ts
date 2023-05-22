@@ -589,6 +589,7 @@ export class WorkflowStepItemSettings {
 	emails: any;
 	hasPendingForms: boolean;
 	hasEmails: boolean;
+	Responsibilities: any;
 }
 
 export class WorkflowStepAssignedUser {
