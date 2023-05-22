@@ -33,7 +33,8 @@
 			<div readonly>
 				<ng-container [ngSwitch]="step.ActivityType">
 					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
-						<d3s-assignment-step-field-change-details [fieldChanges]="step.FieldChanges"></d3s-assignment-step-field-change-details>
+						<d3s-assignment-step-field-change-details
+							[fieldChanges]="step.FieldChanges"></d3s-assignment-step-field-change-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
 						<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>
@@ -42,10 +43,21 @@
 						<d3s-assignment-step-http-details [step]="step"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						<d3s-assignment-step-http-response-details [step]="step"></d3s-assignment-step-http-response-details>
+						<div class="row">
+							<label class="ig-label" i18n>HTTP Request</label>
+							<div class="ig-value"></div>
+						</div>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange">
+						</d3s-assignment-step-relationship-change-details>
 					</ng-container>
 				</ng-container>
 			</div>
+		</ig-property-group>
+		<ig-property-group *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
+			<d3s-assignment-step-http-response-details [step]="step"></d3s-assignment-step-http-response-details>
 		</ig-property-group>
 	</div>
 </div>
