@@ -490,9 +490,11 @@ select	S.*,
 			else 0
 		end as hasQualifiedAssets,
 		(
-		select	'[""' + string_agg(FORMAT(EffectiveDate, 'yyyy-MM-ddThh.mm.ss')+':'+FORMAT(UpdatedOn, 'yyyy-MM-ddThh.mm.ss'), '"",""') + '""]'
+		select	FORMAT(EffectiveDate, 'yyyy-MM-ddThh.mm.ss') as effectiveDate,
+				FORMAT(UpdatedOn, 'yyyy-MM-ddThh.mm.ss') as updatedOn
 		from	Semantic
 		where	Qualifier = S.Qualifier
+		for json path
 		) as dates,
 		c.uid as createdByUid, 
 		c.FirstName + ' ' + c.LastName as createdByFullName, 
