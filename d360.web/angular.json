@@ -98,7 +98,7 @@
 			"development": {
 				"optimization": false,
 				"outputHashing": "none",
-				"sourceMap": false,
+				"sourceMap": true,
 				"namedChunks": true,
 				"extractLicenses": true,
 				"vendorChunk": true,
@@ -106,8 +106,7 @@
 				"polyfills": "Scripts/polyfills.dev.ts",
 				"localize": false,
 				"outputPath": "Scripts/dist/en",
-				"progress": true,
-				"aot": false
+				"progress": true
 			},
 			"en": {
 				"localize": [
