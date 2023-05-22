@@ -137,15 +137,15 @@ namespace d360.model.helpers
                     SemanticSource.BuiltIn.GetSqlCaseFilterStatement("[Source]"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("matchtype",
                     SemanticMatchType.Advanced.GetSqlCaseFilterStatement("MatchType"), SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("threshold", "Threshold", SqlFieldType.Number));
-                allowedDefaultFields.Add(new DefaultFilter("priority", "Priority", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("threshold", "S.Threshold", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("priority", "S.Priority", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("baseType",
                     SemanticBaseType.Boolean.GetSqlCaseFilterStatement("BaseType"), SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "EffectiveDate", SqlFieldType.DateTime));
-                allowedDefaultFields.Add(new DefaultFilter("createdOn", "CAST(CreatedOn as DATE)", SqlFieldType.Date));
-                allowedDefaultFields.Add(new DefaultFilter("updatedOn", "CAST(UpdatedOn as DATE)", SqlFieldType.Date));
-                allowedDefaultFields.Add(new DefaultFilter("createdBy", "CreatedBy", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("updatedBy", "UpdatedBy", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "S.EffectiveDate", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "CAST(S.CreatedOn as DATE)", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("updatedOn", "CAST(S.UpdatedOn as DATE)", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("createdBy", "S.CreatedBy", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("updatedBy", "S.UpdatedBy", SqlFieldType.Text));
 
 				//I understand it is a copy of the item above.
 				//The reason to add a new one is to avoid side effects that may be caused by modifying the old thing.
