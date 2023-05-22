@@ -60,6 +60,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 import {
 	AssignmentStepHttpDetailsComponent
 } from './assignment-progress-step-details/assignment-step-http-details/assignment-step-http-details.component';
+import { AssignmentStepHttpResponseDetailsComponent } from './assignment-progress-step-details/assignment-step-http-response-details/assignment-step-http-response-details.component';
 
 
 @NgModule({
@@ -80,7 +81,8 @@ import {
 		WorkflowInformationGeneralComponent,
 		AssignmentStepFieldChangeDetailsComponent,
 		AssignmentStepEmailDetailsComponent,
-		AssignmentStepHttpDetailsComponent
+		AssignmentStepHttpDetailsComponent,
+  AssignmentStepHttpResponseDetailsComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
