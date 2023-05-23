@@ -1,0 +1,30 @@
+@import '../../../../../../../Content/styles/_Variables.less';
+
+.rel-lookup-editor {
+  .grey-container {
+    padding: 12px;
+    background-color: #f1f1f3;
+    border-radius: 4px;
+  }
+
+  label {
+    font-weight: bold;
+    color: @ig-black;
+  }
+
+  .relationship-types-container {
+
+
+    .new-hop-link-button {
+      margin-top: 16px;
+      color: @ig-purple;
+      pointer-events: none;
+      opacity: 0.3;
+
+      &.enabled {
+        pointer-events: all;
+        opacity: 1;
+      }
+    }
+  }
+}
