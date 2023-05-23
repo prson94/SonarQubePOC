@@ -160,7 +160,7 @@
 					</ng-container>
 
 					<ng-template #nonLinkField>
-						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1, else nonLinkField">
+						<div class="row" *ngIf="['Link'].indexOf(currentType) > -1">
 							<label class="ig-label" i18n>Default Value</label>
 							<div class="ig-value">
 								{{fieldType.FieldTypeREF.Type[currentType].DefaultValue ?? '---'}}
@@ -418,7 +418,7 @@
 					<div class="row">
 						<label class="ig-label" i18n>List Single Segment</label>
 						<div class="ig-value">
-							{{fieldType.FieldTypeREF.Type[currentType].Definition.AssetTypeName ?? '---'}}
+							{{fieldType.FieldTypeREF.Type[currentType]?.Definition?.AssetTypeName ?? '---'}}
 						</div>
 					</div>
 				</div>

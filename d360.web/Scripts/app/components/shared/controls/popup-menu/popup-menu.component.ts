@@ -434,7 +434,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 		}
 
 		if (!item.hasCheckbox) {
-			this.onSelect.emit({ value: item.title, action: item.action, event: $event });
+			this.onSelect.emit({ value: item.title, action: item.action, event: $event, data: item });
 			this.toggle();
 			this.reset();
 		}

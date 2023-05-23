@@ -13,187 +13,193 @@ using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities
 {
-    #region Helper Classes
+	#region Helper Classes
 
-    public class SemanticHeaderFilterValue
-    {
-        public string @operator { get; set; }
-        
-        public string value { get; set; }
-    }
+	public class SemanticHeaderFilterValue
+	{
+		public string @operator { get; set; }
 
-    public class SemanticHeaderFilter
-    {
-        public string match { get; set; }
-        
-        public List<SemanticHeaderFilterValue> values { get; set; }
-    }
+		public string value { get; set; }
+	}
 
-    public class SemanticUserModel
-    {
-        [JsonProperty("uid")]
-        public Guid Uid { get; set; }
+	public class SemanticHeaderFilter
+	{
+		public string match { get; set; }
 
-        [JsonProperty("fullName")]
-        public string FullName { get; set; }
-    }
+		public List<SemanticHeaderFilterValue> values { get; set; }
+	}
 
-    #endregion
+	public class SemanticUserModel
+	{
+		[JsonProperty("uid")]
+		public Guid Uid { get; set; }
 
-    public abstract class SemanticBase : BaseObject
-    {
-        [JsonProperty("baseType")]
-        public SemanticBaseType BaseType { get; set; }
+		[JsonProperty("fullName")]
+		public string FullName { get; set; }
+	}
 
-        [JsonProperty("description"), Column(TypeName = "nvarchar")]
-        public string Description { get; set; }
+	#endregion
 
-        [JsonProperty("headerRegExps"), Column(TypeName = "nvarchar")]
-        public string HeaderFilter { get; set; }
+	public abstract class SemanticBase : BaseObject
+	{
+		[JsonProperty("baseType")]
+		public SemanticBaseType BaseType { get; set; }
 
-        [JsonProperty("headerRegExpConfidence")]
-        public int? HeaderFilterConfidence { get; set; }
+		[JsonProperty("description"), Column(TypeName = "nvarchar")]
+		public string Description { get; set; }
 
-        [JsonProperty("invalidList"), NotMapped]
-        public List<string> InvalidValuesStructured { get; set; }
+		[JsonProperty("headerRegExps"), Column(TypeName = "nvarchar")]
+		public string HeaderFilter { get; set; }
 
-        [JsonProperty("advanced"), NotMapped]
-        public JObject JsonPayloadStructured { get; set; }
+		[JsonProperty("headerRegExpConfidence")]
+		public int? HeaderFilterConfidence { get; set; }
 
-        [JsonProperty("matchType")]
-        public SemanticMatchType MatchType { get; set; }
+		[JsonProperty("invalidList"), NotMapped]
+		public List<string> InvalidValuesStructured { get; set; }
 
-        [JsonProperty("maximum")]
-        public decimal? Maximum { get; set; }
+		[JsonProperty("advanced"), NotMapped]
+		public JObject JsonPayloadStructured { get; set; }
 
-        [JsonProperty("minimum")]
-        public decimal? Minimum { get; set; }
+		[JsonProperty("matchType")]
+		public SemanticMatchType MatchType { get; set; }
 
-        [JsonProperty("minSamples")]
-        public int? MinimumSamples { get; set; }
+		[JsonProperty("maximum")]
+		public decimal? Maximum { get; set; }
 
-        [JsonProperty("minMaxPresent")]
-        public bool? MinMaxPresent { get; set; }
+		[JsonProperty("minimum")]
+		public decimal? Minimum { get; set; }
 
-        [JsonProperty("name"), Column(TypeName = "nvarchar"), StringLength(250)]
-        public string Name { get; set; }
+		[JsonProperty("minSamples")]
+		public int? MinimumSamples { get; set; }
 
-        [JsonProperty("priority")]
-        public int Priority { get; set; }
+		[JsonProperty("minMaxPresent")]
+		public bool? MinMaxPresent { get; set; }
 
-        [JsonProperty("qualifier"), Column(TypeName = "nvarchar")]
-        public string Qualifier { get; set; }
+		[JsonProperty("name"), Column(TypeName = "nvarchar"), StringLength(250)]
+		public string Name { get; set; }
 
-        [JsonProperty("regExpReturned"), Column(TypeName = "nvarchar")]
-        public string RegularExpression { get; set; }
+		[JsonProperty("priority")]
+		public int Priority { get; set; }
 
-        [JsonProperty("status")]
-        public SemanticStatus Status { get; set; }
+		[JsonProperty("qualifier"), Column(TypeName = "nvarchar")]
+		public string Qualifier { get; set; }
 
-        [JsonProperty("threshold")]
-        public int Threshold { get; set; }
+		[JsonProperty("regExpReturned"), Column(TypeName = "nvarchar")]
+		public string RegularExpression { get; set; }
 
-        [JsonProperty("validLocales"), NotMapped]
-        public List<string> ValidLocalesStructured { get; set; }
+		[JsonProperty("status")]
+		public SemanticStatus Status { get; set; }
 
-        [JsonProperty("validList"), NotMapped]
-        public List<string> ValidValuesStructured { get; set; }
-    }
+		[JsonProperty("threshold")]
+		public int Threshold { get; set; }
 
-    public class GetSemantics
-    {
-        public int total { get; set; }
-        
-        public int pageNum { get; set; }
-        
-        public int pageSize { get; set; }
-        
-        public List<GetSemantic> items { get; set; }
-    }
+		[JsonProperty("validLocales"), NotMapped]
+		public List<string> ValidLocalesStructured { get; set; }
 
-    public class GetSemantic : SemanticBase
-    {
-        [JsonProperty("uid")]
-        public Guid Uid { get; set; }
+		[JsonProperty("validList"), NotMapped]
+		public List<string> ValidValuesStructured { get; set; }
+	}
 
-        [JsonProperty("createdBy")]
-        public GetUserModel CreatedBy { get; set; }
+	public class GetSemantics
+	{
+		public int total { get; set; }
 
-        [JsonProperty("createdOn")]
-        public DateTime CreatedOn { get; set; }
+		public int pageNum { get; set; }
 
-        [JsonProperty("effectiveDate")]
-        public DateTime EffectiveDate { get; set; }
+		public int pageSize { get; set; }
 
-        [JsonProperty("source"), DataMember]
-        public SemanticSource Source { get; set; }
+		public List<GetSemantic> items { get; set; }
+	}
 
-        [JsonProperty("updatedBy")]
-        public GetUserModel UpdatedBy { get; set; }
+	public class GetSemantic : SemanticBase
+	{
+		[JsonProperty("uid")]
+		public Guid Uid { get; set; }
 
-        [JsonProperty("updatedOn")]
-        public DateTime UpdatedOn { get; set; }
+		[JsonProperty("createdBy")]
+		public GetUserModel CreatedBy { get; set; }
 
-        [JsonProperty("hasQualifiedAssets")]
-        public bool HasQualifiedAssets { get; set; }
+		[JsonProperty("createdOn")]
+		public DateTime CreatedOn { get; set; }
 
-        [JsonProperty("isDisabled")]
-        public bool IsDisabled {
-            get
-            {
-                return EffectiveDate < UpdatedOn;
-            }
-        }
+		[JsonProperty("effectiveDate")]
+		public DateTime EffectiveDate { get; set; }
 
-        [JsonProperty("effectiveDates")]
-        public List<DateRange>? EffectiveDates { get; set; }
+		[JsonProperty("source"), DataMember]
+		public SemanticSource Source { get; set; }
+
+		[JsonProperty("updatedBy")]
+		public GetUserModel UpdatedBy { get; set; }
+
+		[JsonProperty("updatedOn")]
+		public DateTime UpdatedOn { get; set; }
+
+		[JsonProperty("hasQualifiedAssets")]
+		public bool HasQualifiedAssets { get; set; }
+
+		[JsonProperty("isDisabled")]
+		public bool IsDisabled {
+			get
+			{
+				return EffectiveDate < UpdatedOn;
+			}
+		}
+
+		[JsonProperty("effectiveDates")]
+		public List<DateRange>? EffectiveDates { get; set; }
 
 		[JsonProperty("id")]
 		public long ID { get; set; }
-    }
+	}
 
-    public class PatchSemantic : SemanticBase
-    {
-        [JsonProperty("baseType")]
-        public new SemanticBaseType? BaseType { get; set; }
+	public class PatchSemantic : SemanticBase
+	{
+		[JsonProperty("baseType")]
+		public new SemanticBaseType? BaseType { get; set; }
 
-        [JsonProperty("matchType")]
-        public new SemanticMatchType? MatchType { get; set; }
+		[JsonProperty("matchType")]
+		public new SemanticMatchType? MatchType { get; set; }
 
-        [JsonProperty("priority")]
-        public new int? Priority { get; set; }
+		[JsonProperty("priority")]
+		public new int? Priority { get; set; }
 
-        [JsonProperty("status")]
-        public new SemanticStatus? Status { get; set; }
+		[JsonProperty("status")]
+		public new SemanticStatus? Status { get; set; }
 
-        [JsonProperty("threshold")]
-        public new int? Threshold { get; set; }
+		[JsonProperty("threshold")]
+		public new int? Threshold { get; set; }
 
-        [JsonProperty("validLocales"), NotMapped]
-        public new List<string>? ValidLocalesStructured { get; set; }
+		[JsonProperty("validLocales"), NotMapped]
+		public new List<string>? ValidLocalesStructured { get; set; }
 
-        [JsonProperty("validList"), NotMapped]
-        public new List<string>? ValidValuesStructured { get; set; }
+		[JsonProperty("validList"), NotMapped]
+		public new List<string>? ValidValuesStructured { get; set; }
 
-        [JsonProperty("invalidList"), NotMapped]
-        public new List<string>? InvalidValuesStructured { get; set; }
+		[JsonProperty("invalidList"), NotMapped]
+		public new List<string>? InvalidValuesStructured { get; set; }
 
-        [JsonProperty("advanced"), NotMapped]
-        public new JObject? JsonPayloadStructured { get; set; }
+		[JsonProperty("advanced"), NotMapped]
+		public new JObject? JsonPayloadStructured { get; set; }
 
-        [JsonProperty("isDisabled")]
-        public bool? IsDisabled { get; set; }
-    }
+		[JsonProperty("isDisabled")]
+		public bool? IsDisabled { get; set; }
+	}
 
-    public class PostSemantic : SemanticBase
-    {
+	public class PostSemantic : SemanticBase
+	{
 
-    }
+	}
 
-    public class PutSemantic : SemanticBase
-    {
+	public class PutSemantic : SemanticBase
+	{
 
-    }
+	}
+
+	internal class SemanticEffectiveDateJsonItem
+	{
+		public string effectiveDate { get; set; }
+		public string updatedOn { get; set; }
+	}
 
     public class Semantic : SemanticBase
     {
@@ -242,7 +248,13 @@ namespace d360.core.entities
 		internal bool hasQualifiedAssets { get; set; }
 
 		internal string dates { get; set; }
-		internal List<string> dateArray { get { return JsonConvert.DeserializeObject<List<string>>(dates ?? "[]"); } }
+		internal List<string> dateArray { 
+			get 
+			{
+				var arr = JsonConvert.DeserializeObject<List<SemanticEffectiveDateJsonItem>>(dates ?? "[]");
+				return arr.Select(i => $"{i.effectiveDate}:{i.updatedOn}").ToList(); 
+			} 
+		}
 
 		internal Guid createdByUid { get; set; }
 		internal string createdByFullName { get; set; }

@@ -1,0 +1,1329 @@
+<d3s-modal #modal
+		   additionalClasses="modal-dyn-editor asset-editor large-dialog modal-form"
+		   [showTitle]="false"
+		   (onClose)="close()"
+		   [isVisible]="isModalVisible">
+	<div class="editor-container">
+		<d3s-loading [isLoading]="isLoading || !areFieldTypesLoaded"></d3s-loading>
+
+		<div *ngIf="!isLoading && areFieldTypesLoaded" class="form-editor-container {{savingInProgress ? 'saving-in-progress' : ''}}">
+			<div class="form-header-wrapper">
+				<div class="form-header">
+					{{title}}
+					<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
+				</div>
+				<ig-form-feedback-badges class="ig-form-feedback-badges"
+										 [igformGroup]="fieldTypeForm"
+										 [inputContainer]="formElement">
+				</ig-form-feedback-badges>
+			</div>
+			<div class="form-container">
+
+				<form #form
+					  [formGroup]="fieldTypeForm"
+					  [style.overflow]="'auto'">
+					<ng-container *ngIf="formState === 'FieldTypeSelection'">
+						<div class="simple-search">
+							<span class="light-text" i18n>Select a field type from table below to continue.</span> <br />
+							<ig-search-field style="width:100%;"
+											 mode="Keypress"
+											 (onSearch)="dt.filterGlobal($event, 'contains')">
+							</ig-search-field>
+						</div>
+						<p-table #dt
+								 [value]="fieldTypes"
+								 selectionMode="single"
+								 [globalFilterFields]="['label']"
+								 (selectionChange)="selectedFieldType = $event.value"
+								 [(selection)]="fieldTypeSelection"
+								 responsiveLayout="scroll"
+								 [tableStyle]="{'min-width': 'max-content'}"
+								 [loading]="areFieldTypesLoading"
+								 [loadingIcon]="'fa fa-spinner fa-spin'">
+							<ng-template pTemplate="header">
+								<tr>
+									<th i18n [pSortableColumn]="'label'">
+										Field Type <d3s-sortIcon [field]="'label'"></d3s-sortIcon>
+									</th>
+								</tr>
+							</ng-template>
+							<ng-template pTemplate="body"
+										 let-item>
+								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
+									<td class="disabled"
+										*ngIf="fieldTypeDisabledTooltip(item), else defaultFieldTypeSelection"
+										i18n-pTooltip
+										pTooltip="{{fieldTypeDisabledTooltip(item)}}"
+										tooltipPosition="top"
+										tooltipStyleClass="ig-tooltip">
+										<span class="disabled-item">
+											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+
+											<span class="rel-text">
+												{{item.label}}
+											</span>
+										</span>
+									</td>
+
+									<ng-template #defaultFieldTypeSelection>
+										<td>
+											<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+
+											<span class="rel-text">
+												{{item.label}}
+											</span>
+										</td>
+									</ng-template>
+								</tr>
+							</ng-template>
+						</p-table>
+					</ng-container>
+
+					<div class="form-div" *ngIf="formState === 'Form'">
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="General" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="FriendlyName" class="ig-label" i18n>Field Name</label>
+											<input igInput
+												   igSize="full"
+												   name="FriendlyName"
+												   tabindex="10"
+												   formControlName="FriendlyName"
+												   [igDataCy]="'Field_Type_Modal_Field_FriendlyName'"
+												   (keyup)="updateApiName($event)"
+												   type="text"
+												   required />
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="Name" class="ig-label" i18n>API Name</label>
+											<input igInput
+												   igSize="full"
+												   name="Name"
+												   tabindex="10"
+												   formControlName="Name"
+												   [igDataCy]="'Field_Type_Modal_Field_Name'"
+												   type="text"
+												   required />
+
+											<div *ngIf="fieldTypeForm.get('Name')?.errors?.notUnique" class="ig-text-required" i18n>
+												Please enter a unique value!
+											</div>
+											<div *ngIf="fieldTypeForm.get('Name')?.errors?.restricted" class="ig-text-required" i18n>
+												Please enter a different value. The API Name entered contains a restricted value.
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="Category" class="ig-label" i18n>Category</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="Category"
+													   tabindex="20"
+													   formControlName="Category"
+													   [igDataCy]="'Field_Type_Modal_Field_Category'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateCategoryName($event)"
+																   [items]="categoryTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Text'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ValidationPattern" class="ig-label" i18n>
+												Regular Expression
+											</label>
+
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="ValidationPattern"
+													   tabindex="20"
+													   formControlName="ValidationPattern"
+													   [igDataCy]="'Field_Type_Modal_Field_ValidationPattern'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="fieldTypeForm.get('ValidationPattern').setValue($event.data.value)"
+																   [items]="regexPatternTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('ValidationPattern').value">
+										<div class="field-col" style="padding-left:32px;">
+											<label for="RegexTestString" class="ig-label" i18n>
+												Regular Expression Test String
+											</label>
+
+											<div class="regex-validation">
+												<div class="input-holder">
+													<input igInput
+														   igSize="full"
+														   name="RegexTestString"
+														   tabindex="20"
+														   formControlName="RegexTestString"
+														   [igDataCy]="'Field_Type_Modal_Field_RegexTestString'"
+														   type="text" />
+												</div>
+
+												<div>
+													<button igButton i18n-label (click)="validatePattern()" label="Validate" [disabled]="!fieldTypeForm.get('RegexTestString').value"></button>
+
+												</div>
+
+												<div class="mark" *ngIf="isValidPattern === true">
+													<i class="fa fa-check" style="color:green;"></i> <span i18n>Pass</span>
+												</div>
+												<div class="mark" *ngIf="isValidPattern === false">
+													<i class="fa fa-times" style="color:red;"></i> <span i18n>Fail</span>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="MaximumLength" class="ig-label" i18n>
+												Maximum Length
+											</label>
+											<ig-number-input [attr.name]="'MaximumLength'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'MaximumLength'"
+															 [formControl]="fieldTypeForm.controls['MaximumLength']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumLength')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MaximumLength')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Link'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="LinkDefaultName" class="ig-label" i18n>
+												Default Link Name
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="LinkDefaultName"
+												   tabindex="20"
+												   formControlName="LinkDefaultName"
+												   [igDataCy]="'Field_Type_Modal_Field_LinkDefaultName'"
+												   type="text" />
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="LinkDefaultUrl" class="ig-label" i18n>
+												Default URL
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="LinkDefaultUrl"
+												   tabindex="20"
+												   formControlName="LinkDefaultUrl"
+												   placeholder="{{(fieldTypeForm.controls['LinkDefaultName'].value ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}"
+												   [required]="fieldTypeForm.controls['LinkDefaultName'].value ? true : null"
+												   [igDataCy]="'Field_Type_Modal_Field_LinkDefaultUrl'"
+												   type="text" />
+
+											<div *ngIf="fieldTypeForm.get('LinkDefaultUrl')?.errors?.pattern" class="ig-text-required" i18n>
+												Please start URL with a protocol prefix eg. http:// or https://
+											</div>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Lookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="List Configuration" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="LookupUid" class="ig-label" i18n>
+												Select List
+											</label>
+
+											<p-dropdown formControlName="LookupUid"
+														[autoDisplayFirst]="false"
+														name="LookupUid"
+														[igDataCy]="'FieldType_Modal_Field_LookupUid'"
+														igDropdown
+														[options]="lookupAssetTypes"
+														appendTo="body"
+														required
+														optionLabel="label"
+														optionValue="value"></p-dropdown>
+										</div>
+									</div>
+									<d3s-loading [isLoading]="loadingDefaultValues" [inline]="true"></d3s-loading>
+
+									<div class="row" *ngIf="fieldTypeForm.get('LookupUid').value && !loadingDefaultValues">
+										<div class="field-col">
+											<label for="DisplayFormat" class="ig-label" i18n>Display Format</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="DisplayFormat"
+													   tabindex="20"
+													   formControlName="DisplayFormat"
+													   [igDataCy]="'Field_Type_Modal_Field_Category'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateControls('DisplayFormat', $event)"
+																   [items]="lookupFieldTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+
+
+									<div class="row" *ngIf="fieldTypeForm.get('LookupUid').value && !loadingDefaultValues">
+										<div class="field-col">
+											<label for="EditFormat" class="ig-label" i18n>Edit Format</label>
+											<div class="category-picker">
+												<input igInput
+													   igSize="full"
+													   name="EditFormat"
+													   tabindex="20"
+													   formControlName="EditFormat"
+													   [igDataCy]="'Field_Type_Modal_EditFormat'"
+													   type="text" />
+												<div class="token-popup-menu">
+													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<ig-popup-menu (onSelect)="updateControls('EditFormat', $event)"
+																   [items]="lookupFieldTokens"
+																   [forceOpenBottom]="true"
+																   #tokenMenu
+																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Lookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<d3s-loading [isLoading]="loadingDefaultValues" [inline]="true"></d3s-loading>
+											<p-dropdown *ngIf="!loadingDefaultValues"
+														formControlName="DefaultValue"
+														[autoDisplayFirst]="false"
+														name="DefaultValue"
+														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
+														igDropdown
+														[options]="lookupDefaultValueOptions"
+														[disabled]="fieldTypeForm.get('LookupUid').value ? false : true"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value">
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="AllowAllValue" class="ig-label" i18n>
+												Allow All value selection
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'AllowAllValue'"
+													   [formControlName]="'AllowAllValue'"
+													   [formControl]="fieldTypeForm.controls['AllowAllValue']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('AllowAllValue').value === true">
+										<div class="field-col">
+											<label for="AllowAllLabel" class="ig-label" i18n>
+												Label for Value selection
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="AllowAllLabel"
+												   tabindex="10"
+												   formControlName="AllowAllLabel"
+												   [igDataCy]="'Field_Type_Modal_Field_AllowAllLabel'"
+												   type="text"
+												   [required]="fieldTypeForm.get('AllowAllValue').value ? true : false" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Boolean'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<p-dropdown formControlName="DefaultValue"
+														[autoDisplayFirst]="false"
+														name="DefaultValue"
+														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
+														igDropdown
+														[options]="booleanDefaultValueOptions"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value">
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Counter'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row flex-form-group form-group-2">
+										<div class="field-col">
+											<label for="CounterPrefix" class="ig-label" i18n>
+												Counter Prefix
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="You can provide a prefix to be displayed in front of the counter. For example, with a prefix 'DQ-' the counter would display as DQ-1, DQ-2, etc."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<input igInput
+												   name="CounterPrefix"
+												   tabindex="10"
+												   formControlName="CounterPrefix"
+												   [igDataCy]="'Field_Type_Modal_Field_CounterPrefix'"
+												   type="text" />
+											<div *ngIf="fieldTypeForm.get('CounterPrefix')?.errors?.maxlength" class="ig-text-required" i18n>
+												Counter Prefix cannot be longer than 10 characters.
+											</div>
+											<div *ngIf="fieldTypeForm.get('CounterPrefix')?.errors?.pattern" class="ig-text-required" i18n>
+												Counter Prefix must be consisted of alphanumericals and/or symbols _ or -.
+											</div>
+										</div>
+
+										<div class="field-col">
+											<label for="CounterInitialIndex" class="ig-label" i18n>
+												Counter Initial Value
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="The initial value will be the value of the counter for the first added asset after the counter field type is defined. It must be greater than the number of existing assets."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-number-input [attr.name]="'CounterInitialIndex'"
+															 [min]="numberOfAssetsForType"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'CounterInitialIndex'"
+															 [formControl]="fieldTypeForm.controls['CounterInitialIndex']"
+															 tabindex="60">
+											</ig-number-input>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Date'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+											<ig-date name="DefaultValue"
+													 [appendTo]="'body'"
+													 tabindex="10"
+													 [formControl]="fieldTypeForm.controls['DefaultValue']"
+													 formControlName="DefaultValue"></ig-date>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Html'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<p-editor formControlName="DefaultValue"
+													  [igDataCy]="'FieldType_Modal_Field_DefaultValue'"
+													  name="DefaultValue"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<label for="AssetPathListSegment" class="ig-label" i18n>
+											List Single Segment
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</label>
+
+										<p-dropdown formControlName="AssetPathListSegment"
+													[autoDisplayFirst]="false"
+													name="AssetPathListSegment"
+													[igDataCy]="'FieldType_Modal_Field_AssetPathListSegment'"
+													igDropdown
+													[options]="assetTypeAncestries"
+													appendTo="body"
+													optionLabel="Name"
+													optionValue="Uid"></p-dropdown>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedOwnershipLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Ownership Lookup" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ResponsibilityTypeUid" class="ig-label" i18n>
+												List Single Ownership Type
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Choose an appropriate type from the dropdown below to limit the users displayed to a specific ownership type"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-dropdown formControlName="ResponsibilityTypeUid"
+														[autoDisplayFirst]="false"
+														name="ResponsibilityTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_ResponsibilityTypeUid'"
+														igDropdown
+														[options]="responsibilityTypes"
+														appendTo="body"></p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="ExpandGroupMembership" class="ig-label" i18n>
+												Expand Group Membership
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not, individual users within an assigned group is displayed. Only the group is displayed by default."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'ExpandGroupMembership'"
+													   [formControlName]="'ExpandGroupMembership'"
+													   [formControl]="fieldTypeForm.controls['ExpandGroupMembership']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+
+									</div>
+
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayAsList" class="ig-label" i18n>
+												Display As
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="The Ownership Lookup field can be displayed as a list rather than a table in the Definition tab. Please note that a listable Ownership Lookup field is always shown as a list in tables."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<div class="inline-field">
+												<p-radioButton igRadioButton formControlName="DisplayAsList" name="DisplayAsList" value="false" label="Table" i18n-label></p-radioButton>
+												<p-radioButton igRadioButton formControlName="DisplayAsList" name="DisplayAsList" value="true" label="List" i18n-label></p-radioButton>
+											</div>
+										</div>
+									</div>
+									<div class="form-group-checkboxes">
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="DisplayAssignmentSource"
+														[igDataCy]="'FieldType_Field_DisplayAssignmentSource'"
+														label="Display Assignment Source"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="If you have chosen to expand group membership, choosing this option will display the Via column in tables, to indentify the group reponsibile for the addition of users to the list"
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideFilter"
+														[igDataCy]="'FieldType_Field_HideFilter'"
+														label="Hide Table Filter"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideHeader"
+														[igDataCy]="'FieldType_Field_HideHeader'"
+														label="Hide Table Column Headers"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+										<div class="row">
+											<p-checkbox binary="true"
+														formControlName="HideFooter"
+														[igDataCy]="'FieldType_Field_HideFooter'"
+														label="Hide Table Footer"
+														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
+														i18n-label>
+											</p-checkbox>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComplexRelationLookup'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<d3s-relation-lookup-field-type-editor [uid]="uid"
+																			   [assetTypeUid]="assetTypeUid"></d3s-relation-lookup-field-type-editor>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipReferenceList'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Reference Item List from Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IntersectTypeUid" class="ig-label" i18n>
+												One-to-Many Relationship
+											</label>
+
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
+														igDropdown
+														required
+														[options]="referenceListFromRelationshipRelations"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayRefListDescription" class="ig-label" i18n>
+												Show Reference List Description
+											</label>
+											<ig-switch [attr.name]="'DisplayRefListDescription'"
+													   [formControlName]="'DisplayRefListDescription'"
+													   [formControl]="fieldTypeForm.controls['DisplayRefListDescription']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Relationship'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IntersectTypeUid" class="ig-label" i18n>
+												Relationship
+											</label>
+
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
+														igDropdown
+														required
+														[options]="relationshipItems"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row">
+										<div class="field-col">
+											<label for="UseDisplayFormat" class="ig-label" i18n>
+												Asset Display
+											</label>
+
+											<p-dropdown formControlName="UseDisplayFormat"
+														[autoDisplayFirst]="false"
+														name="UseDisplayFormat"
+														[igDataCy]="'FieldType_Modal_Field_UseDisplayFormat'"
+														igDropdown
+														required
+														[options]="relationshipDisplayFormatValueOptions"
+														appendTo="body">
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Score'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="ScoreType" class="ig-label" i18n>
+												Score
+											</label>
+
+											<p-dropdown formControlName="ScoreType"
+														[autoDisplayFirst]="false"
+														name="ScoreType"
+														[igDataCy]="'FieldType_Modal_Field_ScoreType'"
+														igDropdown
+														required
+														[options]="scoreTypeOptions"
+														appendTo="body">
+											</p-dropdown>
+										</div>
+									</div>
+
+								</div>
+
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'ComputedRelationshipField'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Field from Relationship" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IntersectTypeUid" class="ig-label" i18n>
+												Many-to-One Relationship
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="List Single Segment enables you to limit the asset path segment displayed to a specific asset type"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<p-dropdown formControlName="IntersectTypeUid"
+														[autoDisplayFirst]="false"
+														name="IntersectTypeUid"
+														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
+														igDropdown
+														[options]="fieldFromRelationshipItems"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value"
+														required>
+												<ng-template let-item pTemplate="item">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+												<ng-template let-item pTemplate="selectedItem">
+													<span [innerHTML]="item.label"></span>
+												</ng-template>
+											</p-dropdown>
+										</div>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('IntersectTypeUid').value">
+										<div class="field-col">
+											<label for="FieldTypeName" class="ig-label" i18n>
+												Field
+											</label>
+											<d3s-loading [isLoading]="loadingRelationFields" [inline]="true"></d3s-loading>
+											<p-dropdown *ngIf="!loadingRelationFields"
+														formControlName="FieldTypeName"
+														[autoDisplayFirst]="false"
+														name="FieldTypeName"
+														[igDataCy]="'FieldType_Modal_Field_FieldTypeName'"
+														igDropdown
+														[options]="fieldsFromRelation"
+														appendTo="body"
+														optionLabel="label"
+														optionValue="value"
+														required>
+											</p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal' || selectedFieldType === 'Number'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
+							<div inputs>
+								<div class="form-group" style="display:flex;">
+									<div class="row flex-form-group form-group-3">
+										<div class="field-col">
+											<label for="MinimumValue" class="ig-label" i18n>
+												Minimum Value
+											</label>
+											<ig-number-input [attr.name]="'MinimumValue'"
+															 [enforceMaxMin]="true"
+															 (ngModelChange)="onMinValueChange()"
+															 [formControlName]="'MinimumValue'"
+															 [formControl]="fieldTypeForm.controls['MinimumValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MinimumValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MinimumValue')?.errors[item].message}}
+											</div>
+
+										</div>
+										<div class="field-col">
+											<label for="MaximumValue" class="ig-label" i18n>
+												Maximum Value
+											</label>
+											<ig-number-input [attr.name]="'MaximumValue'"
+															 (ngModelChange)="onMaxValueChange()"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'MaximumValue'"
+															 [formControl]="fieldTypeForm.controls['MaximumValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('MaximumValue')?.errors[item].message}}
+											</div>
+										</div>
+										<div class="field-col" *ngIf="selectedFieldType === 'Decimal'">
+											<label for="Precision" class="ig-label" i18n>
+												Decimal Places
+											</label>
+											<ig-number-input [attr.name]="'Precision'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'Precision'"
+															 [formControl]="fieldTypeForm.controls['Precision']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Precision')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('Precision')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Decimal' || selectedFieldType === 'Number'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row flex-form-group form-group-3">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+											<ig-number-input [attr.name]="'DefaultValue'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'DefaultValue'"
+															 [formControl]="fieldTypeForm.controls['DefaultValue']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('DefaultValue')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('DefaultValue')?.errors[item].message}}
+											</div>
+
+										</div>
+										<div class="field-col">
+											<label for="Increment" class="ig-label" i18n>
+												Increment
+											</label>
+											<ig-number-input [attr.name]="'Increment'"
+															 [enforceMaxMin]="true"
+															 [formControlName]="'Increment'"
+															 [formControl]="fieldTypeForm.controls['Increment']"
+															 tabindex="60">
+											</ig-number-input>
+											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Increment')?.errors)" class="ig-text-required" i18n>
+												{{fieldTypeForm.get('Increment')?.errors[item].message}}
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Descriptions" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DisplayDescription" class="ig-label" i18n>
+												Display Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when hovering over the field on the asset detail page"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="DisplayDescription"
+													  [igDataCy]="'FieldType_Modal_Field_DisplayDescription'"
+													  name="DisplayDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+								<div class="form-group" *ngIf="hasFormDescription">
+									<div class="row">
+										<div class="field-col">
+											<label for="FormDescription" class="ig-label" i18n>
+												Form Description
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Enter a description to be displayed in a tooltip when editing the asset details and hovering over the field"
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+
+											<p-editor formControlName="FormDescription"
+													  [igDataCy]="'FieldType_Modal_Field_FormDescription'"
+													  name="FormDescription"
+													  tabindex="80"
+													  [style]="{'height':'150px'}"
+													  ngDefaultControl #ed>
+											</p-editor>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="showIsListable" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Table" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="IsListable" class="ig-label" i18n>
+												Listable
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not the field appears as a column on a related table."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'IsListable'"
+													   [formControlName]="'IsListable'"
+													   [formControl]="fieldTypeForm.controls['IsListable']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+
+										</div>
+									</div>
+									<ng-container *ngIf="fieldTypeForm.controls['IsListable'].value">
+										<div class="row">
+											<div class="field-col">
+												<label for="ColumnWidth" class="ig-label" i18n>
+													Column Width (pixels)
+												</label>
+												<ig-number-input [attr.name]="'ColumnWidth'"
+																 [min]="0"
+																 [enforceMaxMin]="true"
+																 [formControlName]="'ColumnWidth'"
+																 [formControl]="fieldTypeForm.controls['ColumnWidth']"
+																 tabindex="60">
+												</ig-number-input>
+											</div>
+										</div>
+										<div class="row multiple-inline">
+											<div class="field-col">
+												<label for="SortOrder" class="ig-label" i18n>
+													Sort Order
+												</label>
+												<div style="display:flex;">
+													<ig-number-input [attr.name]="'SortOrder'"
+																	 [min]="0"
+																	 [enforceMaxMin]="true"
+																	 [formControlName]="'SortOrder'"
+																	 [formControl]="fieldTypeForm.controls['SortOrder']"
+																	 tabindex="60">
+													</ig-number-input>
+													<div class="inline-field">
+														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
+														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
+													</div>
+												</div>
+											</div>
+										</div>
+									</ng-container>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="showAddToSearch" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Display on Search Results" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="AddToResult" class="ig-label" i18n>
+												Add to Search Results
+												<span class="field-tooltip fa fa-question-circle"
+													  i18n-pTooltip
+													  pTooltip="Determines whether or not the field is displayed on the search results card on the Search Results page for the asset type."
+													  tooltipPosition="top"
+													  tooltipStyleClass="ig-tooltip"></span>
+											</label>
+											<ig-switch [attr.name]="'AddToResult'"
+													   [formControlName]="'AddToResult'"
+													   [formControl]="fieldTypeForm.controls['AddToResult']"
+													   i18n-trueLabel
+													   i18n-falseLabel
+													   tabindex="90"
+													   trueLabel="True"
+													   falseLabel="False"></ig-switch>
+
+										</div>
+									</div>
+									<ng-container *ngIf="fieldTypeForm.controls['AddToResult'].value">
+										<div class="form-group">
+											<div class="row flex-form-group form-group-2">
+												<div class="field-col">
+													<label for="Prefix" class="ig-label" i18n>
+														Prefix
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''Status:Certified''"
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<input igInput
+														   igSize="full"
+														   name="Prefix"
+														   tabindex="10"
+														   formControlName="Prefix"
+														   [igDataCy]="'Field_Type_Modal_Field_Prefix'"
+														   type="text" />
+												</div>
+												<div class="field-col">
+													<label for="Suffix" class="ig-label" i18n>
+														Suffix
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="You can provide a prefix and/or a suffix to be displayed in place of the field label. For example, a suffix 'accurate' could be used to display '96% accurate' instead of '<b>Accuracy</b>: 96%'."
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<input igInput
+														   igSize="full"
+														   name="Suffix"
+														   tabindex="10"
+														   formControlName="Suffix"
+														   [igDataCy]="'Field_Type_Modal_Field_Suffix'"
+														   type="text" />
+												</div>
+											</div>
+											<div class="row">
+												<div class="field-col">
+													<label for="DisplayOrder" class="ig-label" i18n>
+														Display Order
+														<span class="field-tooltip fa fa-question-circle"
+															  i18n-pTooltip
+															  pTooltip="By default, the display order is based on the order of fields. This can be overriden by setting the display order here."
+															  tooltipPosition="top"
+															  tooltipStyleClass="ig-tooltip"></span>
+													</label>
+													<ig-number-input [attr.name]="'DisplayOrder'"
+																	 [enforceMaxMin]="true"
+																	 (ngModelChange)="onMinValueChange()"
+																	 [formControlName]="'DisplayOrder'"
+																	 [formControl]="fieldTypeForm.controls['DisplayOrder']"
+																	 tabindex="60">
+													</ig-number-input>
+												</div>
+
+											</div>
+										</div>
+									</ng-container>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
+							<div inputs>
+								<div class="form-group form-group-checkboxes">
+									<div class="row" *ngIf="showIsEditable">
+										<p-checkbox binary="true"
+													formControlName="IsEditable"
+													[igDataCy]="'FieldType_Field_IsEditable'"
+													label="Editable on UI"
+													i18n-label
+													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not the field value can be edited. This settings only applies to the user interface, and does not prevent you from editing a field value via the APIs."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
+									<div class="row" *ngIf="showIsPartOfKey">
+										<ng-container *ngIf="numberOfAssetsForType > 0 && !isSettingDisabled('IsPartOfKey'), else defaultIsPartOfKey">
+											<div (click)="onPartOfKeyChange()" style="display: inline-block;">
+												<div style="pointer-events:none;">
+													<p-checkbox binary="true"
+																[ngModelOptions]="{standalone: true}"
+																[(ngModel)]="partOfKeyModel"
+																[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
+																label="Key Field"
+																i18n-label
+																[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+
+												</div>
+
+											</div>
+										</ng-container>
+
+										<ng-template #defaultIsPartOfKey>
+											<p-checkbox binary="true"
+														formControlName="IsPartOfKey"
+														[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
+														label="Key Field"
+														i18n-label
+														i18n-pTooltip
+														pTooltip="{{disabledPartOfKeyTooltip}}"
+														tooltipPosition="top"
+														tooltipStyleClass="ig-tooltip"
+														[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+										</ng-template>
+
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
+
+									<div class="row" *ngIf="showIsRequired">
+										<p-checkbox binary="true"
+													formControlName="IsRequired"
+													[igDataCy]="'FieldType_Field_IsRequired'"
+													label="Required"
+													i18n-label
+													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Sets whether or not a particular field is required when completing a form, such as adding a new user and needing to specify their title."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
+									<div class="row" *ngIf="showShowInDetailTile">
+										<p-checkbox binary="true"
+													formControlName="IsDisplayable"
+													[igDataCy]="'FieldType_Field_IsDisplayable'"
+													label="Show In Details Tab"
+													i18n-label
+													(ngModelChange)="onShowDetailChange($event);"
+													[disabled]="isSettingDisabled('IsDisplayable')">
+										</p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel"
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList'">
+										<div style="margin-left: 16px;">
+											<p-checkbox binary="true"
+														i18n-label
+														i18n-pTooltip
+														formControlName="DisplayInColumn"
+														label="Display In Column"
+														[disabled]="isSettingDisabled('DisplayInColumn')">
+											</p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
+										</div>
+									</div>
+									<div class="row">
+										<p-checkbox binary="true"
+													formControlName="ShowIfEmpty"
+													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
+													label="Show if Empty?"
+													i18n-label
+													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If this option is selected, the field will always be displayed on an asset detail page, even if there is no specific value."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+
+									</div>
+									<div class="row">
+										<div *ngIf="enableAllowMultipleValues">
+											<p-checkbox binary="true"
+														formControlName="AllowMultipleValues"
+														[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+														label="Allow Multiple Items"
+														i18n-label
+														[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+										</div>
+									</div>
+
+									<div class="row">
+										<div *ngIf="showPersistInFilters">
+											<p-checkbox binary="true"
+														formControlName="IsPrimaryFilter"
+														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
+														label="Persist in filters?"
+														i18n-label
+														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+						</ig-property-group>
+					</div>
+				</form>
+
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button *ngIf="formState === 'Form' && !isEditing" igButton igAutoFocus i18n-label label="Back" (click)="back()"></button>
+		<span class="grow"></span>
+		<ng-container *ngIf="formState === 'Form' && !isEditing">
+			<button igButton igAutoFocus i18n-label label="Add and Create Another" (click)="save(true)" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		</ng-container>
+		<ng-container *ngIf="formState === 'Form'">
+			<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>
+		</ng-container>
+		<ng-container *ngIf="formState === 'FieldTypeSelection'">
+			<button igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypeSelection()" [disabled]="!selectedFieldType"></button>
+		</ng-container>
+	</div>
+</d3s-modal>
+
+
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor"
+		   title="Change Key Field"
+		   (onClose)="partOfKeyConfirmationModalVisible = false"
+		   i18n-title
+		   [isVisible]="partOfKeyConfirmationModalVisible">
+	<div class="content">
+		<span i18n>Are you sure you want to change the key field?</span><br /><br />
+		<span i18n>If you change the key fields on an asset type after data has been loaded, you will need to edit the existing assets to ensure that the updated key fields are used. Any change to key fields will invalidate the duplicate check functionality on existing records and could result in duplicate data when bulk loading.</span>
+	</div>
+	<div class="action-bar">
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="partOfKeyConfirmationModalVisible = false"></button>
+		<span class="grow"></span>
+		<button igButton class="ig-button-danger" i18n-label label="Change Key Field" (click)="confirmPendingPartOfKeyValue()"></button>
+	</div>
+</d3s-modal>

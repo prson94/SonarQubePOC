@@ -24,14 +24,23 @@ export class FieldType {
 			case 'OwnershipLookup':
 				this.OwnershipLookup = new ComputedOwnershipLookup();
 				break;
+			case 'ComputedOwnershipLookup':
+				this.ComputedOwnershipLookup = new ComputedOwnershipLookup();
+				break;
 			case 'FieldFromRelationship':
 				this.FieldFromRelationship = new ComputedRelationshipField();
+				break;
+			case 'ComputedRelationshipField':
+				this.ComputedRelationshipField = new ComputedRelationshipField();
 				break;
 			case 'ComplexRelationLookup':
 				this.ComplexRelationLookup = new ComputedRelationshipLookup();
 				break;
 			case 'RefListRelationship':
 				this.RefListRelationship = new ComputedRelationshipReferenceList();
+				break;
+			case 'ComputedRelationshipReferenceList':
+				this.ComputedRelationshipReferenceList = new ComputedRelationshipReferenceList();
 				break;
 			case 'Date':
 				this.Date = new DateClass();
