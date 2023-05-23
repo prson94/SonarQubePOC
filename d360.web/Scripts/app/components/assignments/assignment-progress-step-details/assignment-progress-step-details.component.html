@@ -29,7 +29,7 @@
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+		<ig-property-group *ngIf="step.ActivityType !== 0" title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="step.ActivityType">
 					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
