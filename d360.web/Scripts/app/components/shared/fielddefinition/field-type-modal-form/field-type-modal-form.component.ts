@@ -47,6 +47,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldType: FieldTypeAPIModel;
 	typeFieldTypes: FieldTypeAPIModelField[] = [];
 	editedFieldType: FieldTypeAPIModelField;
+	computedRelationshipLookupInitialDefinition: ComputedRelationshipLookupDefinition;
 
 	title = 'unset';
 	subTitle = 'unset';
@@ -59,6 +60,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChild('dt', { static: false }) dt: Table;
+	@ViewChild('relationLookupEditor', { static: false }) relationLookupEditor: RelationLookupFieldTypeEditorComponent;
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -375,7 +377,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		if (this.selectedFieldType === 'ComputedRelationshipLookup') {
-			fieldTypeApiObject.Definition = this.computedRelationshipLookupDefinition;
+			fieldTypeApiObject.Definition = this.relationLookupEditor.getDefinition();
 		}
 
 		const saveObs = this.fieldsService.putFieldsV2(model);
@@ -1233,11 +1235,5 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('IsPartOfKey').setValue(this.partOfKeyModel);
 		this.partOfKeyConfirmationModalVisible = false;
 		this.cdRef.markForCheck();
-	}
-
-	computedRelationshipLookupInitialDefinition: ComputedRelationshipLookupDefinition;
-	computedRelationshipLookupDefinition: ComputedRelationshipLookupDefinition;
-	onRelationLookupDefinitionChange($event: ComputedRelationshipLookupDefinition) {
-		this.computedRelationshipLookupDefinition = $event;
 	}
 }

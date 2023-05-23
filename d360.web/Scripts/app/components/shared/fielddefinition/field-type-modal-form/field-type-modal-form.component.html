@@ -661,7 +661,8 @@
 						</ig-property-group>
 
 
-						<d3s-relation-lookup-field-type-editor [isVisible]="selectedFieldType === 'ComputedRelationshipLookup'"
+						<d3s-relation-lookup-field-type-editor #relationLookupEditor
+															   [isVisible]="selectedFieldType === 'ComputedRelationshipLookup'"
 															   [uid]="uid"
 															   [fieldTypeForm]="fieldTypeForm"
 															   [definition]="computedRelationshipLookupInitialDefinition"

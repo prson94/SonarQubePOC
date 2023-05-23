@@ -19,7 +19,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	@Input() assetTypeUid: string;
 	@Input() fieldTypeForm: FormGroup = null;
 	@Input() definition: ComputedRelationshipLookupDefinition = null;
-	@Output() onChange = new EventEmitter();
 
 	relationshipTypeSelection: RelationshipTypeSelection[] = []
 	fieldOptions: SelectItemGroup[] = [];
@@ -44,12 +43,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 			if (this.isVisible) {
 				this.load();
-				this.fieldTypeForm.valueChanges.subscribe(() => {
-					if (!this.isLoading) {
-						const state = this.getState();
-						this.onChange.emit(state);
-					}
-				});
 			}
 		}
 	}
@@ -113,7 +106,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.fieldOptions = [];
 		this.relationshipTypeSelection.forEach((rel) => {
 			if (rel.fieldOptions && rel.fieldOptions.length > 0) {
-				rel.fieldOptions.forEach((item) => {
+				rel.fieldOptions.filter((item) => (item.value as string).indexOf('|') === -1).forEach((item) => {
 					item.value += "|" + rel.index;
 				})
 				this.fieldOptions.push({ items: rel.fieldOptions, label: $localize`Relationship Type ` + rel.index, value: 'RelationLookup_Rel_' + rel.index })
@@ -139,10 +132,11 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		return Object.keys(this.fieldTypeForm.controls).filter((x) => x.startsWith('RelationLookupField_Name_'));
 	}
 
-	getState() {
+	getDefinition(): ComputedRelationshipLookupDefinition {
 		var definition = new ComputedRelationshipLookupDefinition();
 		definition.Fields = [];
 		definition.Relations = [];
+
 		this.relationshipTypeSelection.forEach((rel) => {
 			definition.Relations.push({
 				AssetTypeUid: rel.assetTypeUid,
@@ -166,7 +160,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			}
 
 			const parsedFieldValue = (fieldValue as string).split('|');
-			if (parsedFieldValue.length !== 2) {
+			if (parsedFieldValue.length < 2) {
 				continue;
 			}
 			const fieldName = parsedFieldValue[0];
