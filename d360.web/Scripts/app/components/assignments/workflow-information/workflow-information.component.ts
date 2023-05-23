@@ -7,14 +7,13 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 })
 export class WorkflowInformationComponent implements OnInit {
 
-	@Input() objectID: number;
-	@Input() objectType: string;
 	@Input() shouldBePadded: boolean = true;
 	@Input() showHeaderLine: boolean = true;
 	@Input() isSidePanel: boolean = false;
 	@Input() interceptLinkClick: boolean = false;
 	@Output() linkClick = new EventEmitter();
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
+	@Input() workflowTypeId: number = 129;
 
 	constructor() {
 	}
