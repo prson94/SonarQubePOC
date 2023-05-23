@@ -71,6 +71,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Input() monitorView: boolean = false;
     @Input() filteredObject: string;
     @Input() filteredObjectId: number;
+	@Input() hasMenu: boolean = true;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();

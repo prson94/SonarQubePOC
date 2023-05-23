@@ -134,7 +134,7 @@
      [hidden]="isLoading">
     <header class="workflow-tool-header">
         &nbsp;
-        <d3s-tile-actions hasMenu="true"
+        <d3s-tile-actions [hasMenu]="hasMenu"
                           [menuItems]="menuItems"
                           (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>

@@ -28,6 +28,8 @@ export class AssignmentProgressComponent implements OnInit {
 		open: boolean
 	}>();
 
+	@Output() linkClick = new EventEmitter();
+
 	workflowItemSteps: WorkflowItemStep[];
 
 	private _workflowItemId: number;
