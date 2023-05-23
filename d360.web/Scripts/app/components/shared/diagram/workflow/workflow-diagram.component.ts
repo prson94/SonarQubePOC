@@ -71,6 +71,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Input() monitorView: boolean = false;
     @Input() filteredObject: string;
     @Input() filteredObjectId: number;
+	@Input() isSidePanel: boolean = false;
+	@Input() showCountPanel: boolean = true
 	@Input() hasMenu: boolean = true;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
@@ -1656,7 +1658,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private resizeDiagram() {
         const dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
         const oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
-        this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+		this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset - (this.isSidePanel ? 328 : 0)) + 'px';
         this.paletteRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - oOffset;
     }
@@ -1981,7 +1983,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
-                    margin: 5
+                    margin: 5,
+					visible: this.showCountPanel
                 },
                     this.makeCountPanel(nodeFontSize)
                 ),
@@ -2042,7 +2045,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
-                    margin: 0
+                    margin: 0,
+					visible: this.showCountPanel
                 },
                     this.makeTerminalCountPanel(nodeFontSize, isStart)
                 ),
