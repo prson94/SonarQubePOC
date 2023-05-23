@@ -1,15 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
-  selector: 'd3s-workflow-information',
-  templateUrl: './workflow-information.component.html',
-  styleUrls: ['./workflow-information.component.less']
+	selector: 'd3s-workflow-information',
+	templateUrl: './workflow-information.component.html',
+	styleUrls: ['./workflow-information.component.less']
 })
 export class WorkflowInformationComponent implements OnInit {
 
-  constructor() { }
+	@Input() objectID: number;
+	@Input() objectType: string;
+	@Input() shouldBePadded: boolean = true;
+	@Input() showHeaderLine: boolean = true;
+	@Input() isSidePanel: boolean = false;
+	@Input() interceptLinkClick: boolean = false;
+	@Output() linkClick = new EventEmitter();
+	@Output() close: EventEmitter<void> = new EventEmitter<void>();
 
-  ngOnInit(): void {
-  }
+	constructor() {
+	}
+
+	ngOnInit(): void {
+	}
 
 }

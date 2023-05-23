@@ -26,17 +26,13 @@
 					<div class="details-container">
 						<div>
 							<ng-container *ngIf="secondarySidePanel=='assignment-information'">
-								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
+								<d3s-workflow-information [objectID]="secondarySidePanelObjectID"
 												 [objectType]="secondarySidePanelObjectType"
-												 [useAccordion]="true"
 												 [shouldBePadded]="true"
-												 [showHeader]="true"
 												 [showHeaderLine]="false"
-												 [spacerHeight]="'16px'"
-												 [tooltipAlign]="'left'"
 												 [isSidePanel]="true"
 												 [interceptLinkClick]="true"
-												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+												 (close)="secondarySidePanelOpen=false;"></d3s-workflow-information>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='workflow-information'">
 								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
@@ -79,6 +75,7 @@
 												(linkClick)="sidePanelLinkClicked($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemId]="selectedWorkflowItems[0]?.Id"
+											 (linkClick)="sidePanelLinkClicked($event)"
 											 *ngIf="selectedWorkflowItems?.length === 1"
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
