@@ -12,19 +12,16 @@
     color: @ig-black;
   }
 
-  .relationship-types-container {
+  .new-hop-link-button {
+    margin-top: 16px;
+    color: @ig-purple;
+    pointer-events: none;
+    opacity: 0.3;
 
-
-    .new-hop-link-button {
-      margin-top: 16px;
-      color: @ig-purple;
-      pointer-events: none;
-      opacity: 0.3;
-
-      &.enabled {
-        pointer-events: all;
-        opacity: 1;
-      }
+    &.enabled {
+      cursor: pointer;
+      pointer-events: all;
+      opacity: 1;
     }
   }
 }

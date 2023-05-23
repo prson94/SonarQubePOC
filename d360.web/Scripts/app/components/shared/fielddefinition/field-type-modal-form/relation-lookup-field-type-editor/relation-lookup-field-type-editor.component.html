@@ -1,61 +1,78 @@
-<div class="rel-lookup-editor">
-
-	<div class="grey-container relationship-types-container" [formGroup]="fieldTypeForm">
-		<div *ngFor="let item of relationshipTypeSelection" class="relationship-type-selector">
-			<label i18n>Relationship Type {{item.index}}</label>
-			<p-dropdown igDropdown
-						igSize="full"
-						[igDataCy]="'RelationshipType_Dropdown'"
-						name="{{item.cntrlName}}"
-						formControlName="{{item.cntrlName}}"
-						appendTo="body"
-						[options]="item.options"
-						[autoDisplayFirst]="false"
-						optionLabel="title"
-						optionValue="value"
-						required
-						(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
-		</div>
-
-		<div class="new-hop-link-button {{addRelationshipHopEnabled ? 'enabled' : ''}}" (click)="loadNewHop()">
-			<i class="fa fa-plus-circle"></i><span i18n>Add Relationship Hop</span>
-		</div>
-	</div>
-
-	<div class="grey-container" *ngIf="relationshipTypeSelection.length > 0 && relationshipTypeSelection[0].selected">
-		<div class="field-types-container" *ngFor="let field of fieldTypeControls" [formGroup]="fieldTypeForm">
-			<div class="row flex-form-group form-group-2">
-				<div class="field-col">
-					<label>Reference Column</label>
-					<p-dropdown igDropdown
-								igSize="full"
-								[igDataCy]="'RelationshipField_Dropdown'"
-								name="{{field}}"
-								formControlName="{{field}}"
-								appendTo="body"
-								[options]="fieldOptions"
-								[autoDisplayFirst]="false"
-								[group]="true"
-								required></p-dropdown>
-				</div>
-				<div class="field-col">
-					<label>Display Name</label>
-					<input igInput
-						   igSize="full"
-						   name="{{field.replace('Name','DisplayName')}}"
-						   tabindex="20"
-						   formControlName="{{field.replace('Name','DisplayName')}}"
-						   [igDataCy]="'Field_Type_Modal_Field_DisplayName'"
-						   type="text" />
-				</div>
+<ng-template #relationshipLookupEditor>
+	<d3s-loading [isLoading]="isLoading" [inline]="true"></d3s-loading>
+	<div class="rel-lookup-editor" *ngIf="!isLoading">
+		<div class="grey-container relationship-types-container" [formGroup]="fieldTypeForm">
+			<div *ngFor="let item of relationshipTypeSelection" class="relationship-type-selector">
+				<label i18n>Relationship Type {{item.index}}</label>
+				<p-dropdown igDropdown
+							igSize="full"
+							[igDataCy]="'RelationshipType_Dropdown'"
+							name="{{item.cntrlName}}"
+							formControlName="{{item.cntrlName}}"
+							appendTo="body"
+							[options]="item.options"
+							[autoDisplayFirst]="false"
+							optionLabel="title"
+							optionValue="value"
+							required
+							(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
 			</div>
 
+			<div class="new-hop-link-button {{addRelationshipHopEnabled ? 'enabled' : ''}}" (click)="loadNewHop()">
+				<i class="fa fa-plus-circle"></i><span i18n>Add Relationship Hop</span>
+			</div>
 		</div>
-		<div class="new-hop-link-button" (click)="addFormFieldForField()">
-			<i class="fa fa-plus-circle"></i><span i18n>Add Column</span>
+
+		<div class="grey-container" *ngIf="relationshipTypeSelection.length > 0 && relationshipTypeSelection[0].selected">
+			<div class="row flex-form-group form-group-2">
+				<div class="field-col">
+					<label i18n>Reference Column</label>
+				</div>
+				<div class="field-col">
+					<label i18n>Display Name</label>
+				</div>
+			</div>
+			<div class="field-types-container" *ngFor="let field of fieldTypeControls" [formGroup]="fieldTypeForm">
+				<div class="row flex-form-group form-group-2">
+					<div class="field-col">
+						<p-dropdown igDropdown
+									igSize="full"
+									[igDataCy]="'RelationshipField_Dropdown'"
+									name="{{field}}"
+									formControlName="{{field}}"
+									appendTo="body"
+									[options]="fieldOptions"
+									[autoDisplayFirst]="false"
+									[group]="true"
+									required></p-dropdown>
+					</div>
+					<div class="field-col">
+						<input igInput
+							   igSize="full"
+							   name="{{field.replace('Name','DisplayName')}}"
+							   tabindex="20"
+							   formControlName="{{field.replace('Name','DisplayName')}}"
+							   [igDataCy]="'Field_Type_Modal_Field_DisplayName'"
+							   type="text" />
+					</div>
+				</div>
+
+			</div>
+			<div class="new-hop-link-button enabled" (click)="addFormFieldForField()">
+				<i class="fa fa-plus-circle"></i><span i18n>Add Column</span>
+			</div>
+		</div>
+
+		<button igButton label="See state" (click)="getState()"></button>
+	</div>
+</ng-template>
+
+<ig-property-group *ngIf="isVisible" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
+	<div inputs>
+		<div class="form-group">
+			<div class="row">
+				<ng-template [ngTemplateOutlet]="relationshipLookupEditor"></ng-template>
+			</div>
 		</div>
 	</div>
-
-	<button igButton label="See state" (click)="getState()"></button>
-
-</div>
+</ig-property-group>

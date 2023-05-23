@@ -21,6 +21,7 @@ import { IconPickerModule } from '../../../controls/icon-picker/icon-picker.comp
 import { IgNumberFieldModule } from '../../../controls/number-picker/number-input.component';
 import { TableModule } from 'primeng/table';
 import { SearchFieldModule } from '../../../controls/search-field/search-field.component';
+import { InputModule } from '../../../../../directives/ig-input-directive';
 
 
 
@@ -48,6 +49,7 @@ import { SearchFieldModule } from '../../../controls/search-field/search-field.c
 		CheckboxModule,
 		ColorSelectorModule,
 		IgColorPickerModule,
+		InputModule,
 		IgDateModule,
 		RadioButtonModule,
 		IconPickerModule,

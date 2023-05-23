@@ -1789,7 +1789,7 @@ namespace d360.web.Controllers.V2
 					}
 				});
 
-				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }));
+				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = $"{i.Key}" }));
 			}
 			catch (RestApiException ex)
 			{

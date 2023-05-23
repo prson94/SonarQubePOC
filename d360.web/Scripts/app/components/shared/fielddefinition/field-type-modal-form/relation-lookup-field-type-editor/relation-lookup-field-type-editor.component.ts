@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { SelectItemGroup } from 'primeng/api';
+import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
+import { ComputedRelationshipLookupDefinition } from '../../../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../../../services/fieldsObservable.service';
 import { RelationshipTypeSelection } from './relation-lookup-form.models';
 
@@ -11,37 +13,77 @@ import { RelationshipTypeSelection } from './relation-lookup-form.models';
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RelationLookupFieldTypeEditorComponent implements OnInit {
+export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	@Input() uid: string;
+	@Input() isVisible: boolean = false;
 	@Input() assetTypeUid: string;
 	@Input() fieldTypeForm: FormGroup = null;
+	@Input() definition: ComputedRelationshipLookupDefinition = null;
+	@Output() onChange = new EventEmitter();
 
 	relationshipTypeSelection: RelationshipTypeSelection[] = []
 	fieldOptions: SelectItemGroup[] = [];
 
+	isLoading: boolean = false;
+
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private cdRef: ChangeDetectorRef) {
+
 	}
 
-	ngOnInit() {
-		this.load();
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes.isVisible && changes.isVisible.currentValue !== changes.isVisible.previousValue) {
+			this.relationshipTypeSelection = [];
+
+			Object.keys(this.fieldTypeForm.controls)
+				.filter((x) => x.startsWith('RelationLookup'))
+				.forEach((key) => {
+					this.fieldTypeForm.removeControl(key);
+				});
+
+			if (this.isVisible) {
+				this.load();
+				this.fieldTypeForm.valueChanges.subscribe(() => {
+					if (!this.isLoading) {
+						const state = this.getState();
+						this.onChange.emit(state);
+					}
+				});
+			}
+		}
 	}
 
 	load() {
-		this.relationshipTypeSelection = [];
-		this.fieldsService.getStandardRelations(this.assetTypeUid)
+		this.isLoading = true;
+		if (this.definition) {
+			this.loadDefinition();
+		}
+		else {
+			this.fieldsService.getStandardRelations(this.assetTypeUid)
+				.subscribe((res) => {
+					const item: RelationshipTypeSelection = { index: 1, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + 1 };
+					this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl('', [Validators.required]));
+					this.relationshipTypeSelection.push(item);
+					this.isLoading = false;
+					this.cdRef.markForCheck();
+				})
+		}
+	}
+
+	loadNewHop() {
+		const lastRel = this.relationshipTypeSelection[this.relationshipTypeSelection.length - 1];
+		this.fieldsService.getStandardRelations(lastRel.assetTypeUid)
 			.subscribe((res) => {
-				const item: RelationshipTypeSelection = { index: 1, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + 1 };
+				const item: RelationshipTypeSelection = { index: lastRel.index + 1, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + lastRel.index + 1 };
 				this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl('', [Validators.required]));
 				this.relationshipTypeSelection.push(item);
 				this.cdRef.markForCheck();
 			})
 	}
 
-	relationshipTypeSelected($event, item: RelationshipTypeSelection) {
+	relationshipTypeSelected($event, item: RelationshipTypeSelection, callback: Function = null, addNew: boolean = true) {
 		item.selected = $event.value;
-		console.log($event);
 		var values = item.selected.split('|');
 		if (values.length === 3) {
 			item.relationshipTypeUid = values[0];
@@ -53,18 +95,24 @@ export class RelationLookupFieldTypeEditorComponent implements OnInit {
 		}
 
 		item.fieldOptions = [];
-		this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid)
+		return this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid)
 			.subscribe((fields) => {
 				item.fieldOptions = fields;
-				this.addFormFieldForField();
+				if (addNew) {
+					this.addFormFieldForField();
+				}
 				this.setFieldsDropdown();
+
+				if (callback) {
+					callback();
+				}
 			});
 	}
 
 	setFieldsDropdown() {
 		this.fieldOptions = [];
 		this.relationshipTypeSelection.forEach((rel) => {
-			if (rel.fieldOptions.length > 0) {
+			if (rel.fieldOptions && rel.fieldOptions.length > 0) {
 				rel.fieldOptions.forEach((item) => {
 					item.value += "|" + rel.index;
 				})
@@ -73,10 +121,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnInit {
 		});
 	}
 
-	addFormFieldForField() {
+	addFormFieldForField(name = '', displayOverrideName = '') {
 		const fieldIndex = this.fieldTypeControls.length + 1;
-		this.fieldTypeForm.addControl('RelationLookupField_Name_' + fieldIndex, new UntypedFormControl('', [Validators.required]));
-		this.fieldTypeForm.addControl('RelationLookupField_DisplayName_' + fieldIndex, new UntypedFormControl('', [Validators.required]));
+		this.fieldTypeForm.addControl('RelationLookupField_Name_' + fieldIndex, new UntypedFormControl(name, [Validators.required]));
+		this.fieldTypeForm.addControl('RelationLookupField_DisplayName_' + fieldIndex, new UntypedFormControl(displayOverrideName));
 		this.cdRef.markForCheck();
 	}
 
@@ -92,11 +140,109 @@ export class RelationLookupFieldTypeEditorComponent implements OnInit {
 	}
 
 	getState() {
-		Object.keys(this.fieldTypeForm.controls).filter((x) => x.startsWith('RelationLookup')).
-			forEach((key) => {
-				console.log(key + "==>" + this.fieldTypeForm.get(key).value);
-			})
+		var definition = new ComputedRelationshipLookupDefinition();
+		definition.Fields = [];
+		definition.Relations = [];
+		this.relationshipTypeSelection.forEach((rel) => {
+			definition.Relations.push({
+				AssetTypeUid: rel.assetTypeUid,
+				IntersectTypeUid: rel.relationshipTypeUid,
+				RelationType: null,
+				Direction: this.resolveDirectionString(rel.direction)
+			});
+		});
 
+		for (let i = 1; i <= this.fieldTypeControls.length; i++) {
+			const fieldNameKey = 'RelationLookupField_Name_' + i;
+			const fieldOverrideNameKey = 'RelationLookupField_DisplayName_' + i;
+
+			if (!this.fieldTypeForm.controls[fieldNameKey] || !this.fieldTypeForm.controls[fieldOverrideNameKey]) {
+				continue;
+			}
+			const fieldValue = this.fieldTypeForm.get(fieldNameKey).value;
+			const overrideDisplayName = this.fieldTypeForm.get(fieldOverrideNameKey).value;
+			if (!fieldValue) {
+				continue;
+			}
+
+			const parsedFieldValue = (fieldValue as string).split('|');
+			if (parsedFieldValue.length !== 2) {
+				continue;
+			}
+			const fieldName = parsedFieldValue[0];
+			const relationIndex = +parsedFieldValue[1] - 1;
+			const rel = this.relationshipTypeSelection[relationIndex];
+
+			definition.Fields.push({
+				AssetTypeUid: rel.assetTypeUid,
+				FieldTypeName: fieldName,
+				DisplayOrder: i,
+				OverrideDisplayName: overrideDisplayName,
+				Filter: null,
+				RelationIndex: relationIndex,
+				Show: true,
+				SortOrder: null,
+				Width: null
+			});
+		}
+
+		return definition;
+	}
+
+	loadDefinition() {
+		let relationshipTypesObservables: Observable<any>[] = new Array();
+
+		for (let i = 0; i < this.definition.Relations.length; i++) {
+			const assetTypeUid = i === 0 ? this.assetTypeUid : this.definition.Relations[i - 1].AssetTypeUid;
+			const relItem = this.definition.Relations[i];
+
+			var obs = this.fieldsService.getStandardRelations(assetTypeUid).pipe(map((res) => { return { item: relItem, result: res } }));
+			relationshipTypesObservables.push(obs);
+		}
+
+		forkJoin(relationshipTypesObservables).subscribe((data) => {
+			let idx = 1;
+			data.forEach((result) => {
+				const res = result.result;
+				const x = result.item;
+
+				const item: RelationshipTypeSelection = { index: idx, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + idx };
+				const value = `${x.IntersectTypeUid}|${x.AssetTypeUid}|${this.resolveDirectionId(x.Direction)}`.toUpperCase();
+
+				const isLast = data.indexOf(result) === data.length - 1;
+
+				this.relationshipTypeSelected({ value: value }, item, isLast ? this.loadDefinitionFields.bind(this) : null, false);
+
+				this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl(value, [Validators.required]));
+				this.relationshipTypeSelection.push(item);
+				this.cdRef.markForCheck();
+				idx++;
+			});
+		});
+	}
+	loadDefinitionFields() {
+		this.definition.Fields.forEach((field) => {
+			this.addFormFieldForField(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.OverrideDisplayName);
+		});
+		this.isLoading = false;
+	};
+
+	resolveDirectionString(id: number): string {
+		switch (id) {
+			case 1: return 'Back';
+			case 2: return 'Forward';
+			case 3: return 'Both';
+		}
+		return null;
+	}
+
+	resolveDirectionId(name: string): number {
+		switch (name) {
+			case 'Back': return 1;
+			case 'Forward': return 2;
+			case 'Both': return 3;
+		}
+		return null;
 	}
 }
 
