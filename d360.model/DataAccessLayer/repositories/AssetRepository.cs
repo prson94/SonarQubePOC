@@ -2332,38 +2332,13 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				filter = queryParams.ToList().First(k => k.Key.ToLower() == "_simplefilter").Value.ToString();
 			}
 
-			string orderValue = "";
-			int orderID = 0;
-			if (queryParams.Any(p => p.Key.Trim().ToLower() == "_order"))
-			{
-				orderValue = queryParams.ToList().First(k => k.Key.ToLower() == "_order").Value.ToString();
-				if (orderValue != "undefined")
-				{
-					orderValue = orderValue.Split(new[] { "Field" }, StringSplitOptions.None)[1];
-					orderID = int.Parse(orderValue);
-				}
-			}
-
-			List<KeyValuePair<string, string>> queryParamsWithOrder = new List<KeyValuePair<string, string>>();
-			if (orderID != 0)
-			{
-				var orderName = CompanyContext.FieldTypes.Where(f => f.ID == orderID).FirstOrDefault().FriendlyName;
-				queryParamsWithOrder.AddRange(queryParams);
-				queryParamsWithOrder.RemoveAll(x => x.Key == "_order");
-				queryParamsWithOrder.Add(new KeyValuePair<string, string>("_order", orderName));
-			}
-			else
-			{
-				queryParamsWithOrder.AddRange(queryParams);
-			}
-
 			var typesToAvoid = new List<string>() {
 				DataType.ComplexRelationLookup.ToString()
 			};
 
 			assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
 			var id = assetType.ObjectID;
-			var data = await GetAssets(assetType, queryParamsWithOrder);
+			var data = await GetAssets(assetType, queryParams);
 			fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 			results = data.items;
 
@@ -2400,7 +2375,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				if (allFamily.Count > 0)
 				{
-					var par = queryParamsWithOrder.Where(k => k.Key.ToLower() != "_simplefilter");
+					var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter");
 					qp.AddRange(par);
 					qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allFamily)));
 					var fammilyAssets = await GetAssets(assetType, qp);
