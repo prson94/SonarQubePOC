@@ -66,6 +66,9 @@ import {
 import {
 	AssignmentStepRelationshipChangeDetailsComponent
 } from './assignment-progress-step-details/assignment-step-relationship-change-details/assignment-step-relationship-change-details.component';
+import {
+	AssignmentStepHttpResponseDetailsComponent
+} from './assignment-progress-step-details/assignment-step-http-response-details/assignment-step-http-response-details.component';
 
 
 @NgModule({
@@ -88,7 +91,8 @@ import {
 		AssignmentStepEmailDetailsComponent,
 		AssignmentStepHttpDetailsComponent,
 		AssignmentStepHttpResponseOutputsComponent,
-		AssignmentStepRelationshipChangeDetailsComponent
+		AssignmentStepRelationshipChangeDetailsComponent,
+		AssignmentStepHttpResponseDetailsComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
