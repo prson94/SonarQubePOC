@@ -4,7 +4,16 @@ import { SelectItemGroup } from 'primeng/api';
 import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
 import { ComputedRelationshipLookupDefinition } from '../../../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../../../services/fieldsObservable.service';
+import { PopupMenuItem } from '../../../controls/popup-menu/popup-menu.component';
 import { RelationshipTypeSelection } from './relation-lookup-form.models';
+
+export class LookupField {
+	name: string;
+	idx: number;
+	fieldNameControl: string;
+	fieldDisplayNameControl: string;
+	MenuItems: PopupMenuItem[] = [];
+}
 
 @Component({
 	selector: 'd3s-relation-lookup-field-type-editor',
@@ -24,6 +33,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	fieldOptions: SelectItemGroup[] = [];
 
 	isLoading: boolean = false;
+
+	lookupFields: LookupField[] = [];
 
 	constructor(
 		private fieldsService: FieldsObservableService,
@@ -127,8 +138,14 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	addFormFieldForField(name = '', displayOverrideName = '') {
 		const fieldIndex = this.fieldTypeControls.length + 1;
-		this.fieldTypeForm.addControl('RelationLookupField_Name_' + fieldIndex, new UntypedFormControl(name, [Validators.required]));
-		this.fieldTypeForm.addControl('RelationLookupField_DisplayName_' + fieldIndex, new UntypedFormControl(displayOverrideName));
+		const fieldNameControl = 'RelationLookupField_Name_' + fieldIndex;
+		const fieldDisplayNameControl = 'RelationLookupField_DisplayName_' + fieldIndex;
+		this.lookupFields.push(
+			{ idx: fieldIndex, name: 'Name', fieldNameControl, fieldDisplayNameControl, MenuItems: [] }
+		);
+		this.fieldTypeForm.addControl(fieldNameControl, new UntypedFormControl(name, [Validators.required]));
+		this.fieldTypeForm.addControl(fieldDisplayNameControl, new UntypedFormControl(displayOverrideName));
+		this.updateMenuItems();
 		this.cdRef.markForCheck();
 	}
 
@@ -157,15 +174,14 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			});
 		});
 
-		for (let i = 1; i <= this.fieldTypeControls.length; i++) {
-			const fieldNameKey = 'RelationLookupField_Name_' + i;
-			const fieldOverrideNameKey = 'RelationLookupField_DisplayName_' + i;
+		for (let i = 1; i <= this.lookupFields.length; i++) {
+			const lookupField = this.lookupFields[i - 1];
 
-			if (!this.fieldTypeForm.controls[fieldNameKey] || !this.fieldTypeForm.controls[fieldOverrideNameKey]) {
+			if (!this.fieldTypeForm.controls[lookupField.fieldNameControl] || !this.fieldTypeForm.controls[lookupField.fieldDisplayNameControl]) {
 				continue;
 			}
-			const fieldValue = this.fieldTypeForm.get(fieldNameKey).value;
-			const overrideDisplayName = this.fieldTypeForm.get(fieldOverrideNameKey).value;
+			const fieldValue = this.fieldTypeForm.get(lookupField.fieldNameControl).value;
+			const overrideDisplayName = this.fieldTypeForm.get(lookupField.fieldDisplayNameControl).value;
 			if (!fieldValue) {
 				continue;
 			}
@@ -253,6 +269,36 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	removeRelationshipHop($event) {
 		console.log($event);
+	}
+
+	private updateMenuItems() {
+		let position = 0;
+		// ignore complexity codacy issue
+		// eslint-disable-next-line
+		this.lookupFields.forEach((item) => {
+			position++;
+			const menuItems = [];
+
+			if (this.lookupFields.length > 1) {
+
+				menuItems.push({ title: $localize`Delete`, action: 'delete' });
+				let positionDisabled = false;
+				let positionTooltip = '';
+
+				if (position !== 1) {
+					menuItems.push({ title: $localize`Move To Top`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movetop' });
+					menuItems.push({ title: $localize`Move Up`, disabled: positionDisabled, tooltip: positionTooltip, action: 'moveup' });
+				}
+				if (position !== this.lookupFields.length) {
+					menuItems.push({ title: $localize`Move Down`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movedown' });
+					menuItems.push({ title: $localize`Move To Bottom`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movebottom' });
+				}
+			}
+
+			item.MenuItems = menuItems;
+		});
+
+		this.cdRef.markForCheck();
 	}
 }
 
