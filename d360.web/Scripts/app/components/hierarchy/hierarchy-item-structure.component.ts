@@ -47,6 +47,7 @@ import { IOutputData } from 'angular-split';
 import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { GridSortData } from '../../services/state.service';
+import { isEmpty } from "lodash-es";
 
 /*global $localize*/
 
@@ -698,7 +699,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		var params = new V2ApiFilters();
 		params._onlyListableFields = false;
 		params._direction = this.treeTable._sortOrder === 1 ? 'ASC' : 'DESC';
-		if (this.treeTable._sortField != null) {
+		if (!isEmpty(this.treeTable._sortField)) {
 			var field = this.columns.filter((f) => f.datafield === this.treeTable._sortField)[0];
 			params._order = field["apiName"];
 		}
