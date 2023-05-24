@@ -45,6 +45,26 @@
 							---
 						</span>
 					</div>
+
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title title="Display on Table" [shouldBePadded]="false" *ngIf="hasIsListable()">
+			<div inputs>
+				<div class="form-group">
+					<div class="row" *ngIf="hasIsListable()">
+						<label class="ig-label" i18n>Is Listable</label>
+						<div class="ig-value">
+							<ng-container *ngIf="fieldType.IsListable; else falseTemplate">
+								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+								<ng-container i18n>True</ng-container>
+							</ng-container>
+							<ng-template #falseTemplate>
+								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+								<ng-container i18n>False</ng-container>
+							</ng-template>
+						</div>
+					</div>
 					<div class="row">
 						<label class="ig-label" i18n>Sort Order</label>
 						<span class="ig-value">
@@ -58,6 +78,7 @@
 						</span>
 					</div>
 				</div>
+
 			</div>
 		</ig-property-group>
 		<ig-property-group *ngIf="currentType == 'Lookup'" i18n-title title="List Configuration" [shouldBePadded]="false">
@@ -480,19 +501,6 @@
 						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
-					<div class="row" *ngIf="hasIsListable()">
-						<label class="ig-label" i18n>Is Listable</label>
-						<div class="ig-value">
-							<ng-container *ngIf="fieldType.IsListable; else falseTemplate">
-								<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-								<ng-container i18n>True</ng-container>
-							</ng-container>
-							<ng-template #falseTemplate>
-								<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-								<ng-container i18n>False</ng-container>
-							</ng-template>
-						</div>
-					</div>
 					<div class="row">
 						<label class="ig-label" i18n>Editable on UI</label>
 						<div class="ig-value">
