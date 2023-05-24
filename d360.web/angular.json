@@ -98,7 +98,7 @@
 			"development": {
 				"optimization": false,
 				"outputHashing": "none",
-				"sourceMap": true,
+				"sourceMap": false,
 				"namedChunks": true,
 				"extractLicenses": true,
 				"vendorChunk": true,

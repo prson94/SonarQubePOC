@@ -49,7 +49,7 @@
 							</ng-template>
 							<ng-template pTemplate="body"
 										 let-item>
-								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
+								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="fieldTypeDisabledTooltip(item).length > 0">
 									<td class="disabled"
 										*ngIf="fieldTypeDisabledTooltip(item), else defaultFieldTypeSelection"
 										i18n-pTooltip
@@ -125,6 +125,7 @@
 												<input igInput
 													   igSize="full"
 													   name="Category"
+													   required
 													   tabindex="20"
 													   formControlName="Category"
 													   [igDataCy]="'Field_Type_Modal_Field_Category'"
@@ -260,7 +261,7 @@
 												   type="text" />
 
 											<div *ngIf="fieldTypeForm.get('LinkDefaultUrl')?.errors?.pattern" class="ig-text-required" i18n>
-												Please start URL with a protocol prefix eg. http:// or https://
+												Please start URL with a protocol prefix eg. http://, https:// or route:
 											</div>
 
 										</div>
@@ -1152,6 +1153,20 @@
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
 							<div inputs>
 								<div class="form-group form-group-checkboxes">
+									<div class="row" *ngIf="enableAllowMultipleValues">
+										<p-checkbox binary="true"
+													formControlName="AllowMultipleValues"
+													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+													label="Allow Multiple Items"
+													i18n-label
+													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If set to true, more than one value can be entered for the field."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
 									<div class="row" *ngIf="showIsEditable">
 										<p-checkbox binary="true"
 													formControlName="IsEditable"
@@ -1198,7 +1213,7 @@
 
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
-											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records"
+											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records."
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
@@ -1229,22 +1244,22 @@
 										</p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
-											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel"
+											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel."
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
-									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList'">
+									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList' && selectedFieldType !== 'JSON'">
 										<div style="margin-left: 16px;">
 											<p-checkbox binary="true"
 														i18n-label
 														i18n-pTooltip
 														formControlName="DisplayInColumn"
-														label="Display In Column"
+														label="Display in Column"
 														[disabled]="isSettingDisabled('DisplayInColumn')">
 											</p-checkbox>
 											<span class="field-tooltip fa fa-question-circle"
 												  i18n-pTooltip
-												  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+												  pTooltip="If 'Show in Details Tab' is checked, you can select this to display the field in a column on the asset details page. Multiple adjecent columns are displayed on the same line and the fields will automatically adjust to fit the page."
 												  tooltipPosition="top"
 												  tooltipStyleClass="ig-tooltip"></span>
 										</div>
@@ -1253,7 +1268,7 @@
 										<p-checkbox binary="true"
 													formControlName="ShowIfEmpty"
 													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
-													label="Show if Empty?"
+													label="Show if Empty"
 													i18n-label
 													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
@@ -1263,15 +1278,13 @@
 											  tooltipStyleClass="ig-tooltip"></span>
 
 									</div>
-									<div class="row">
-										<div *ngIf="enableAllowMultipleValues">
-											<p-checkbox binary="true"
-														formControlName="AllowMultipleValues"
-														[igDataCy]="'FieldType_Field_AllowMultipleValues'"
-														label="Allow Multiple Items"
-														i18n-label
-														[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
-										</div>
+									<div class="row" *ngIf="enableAllowMultipleValues">
+										<p-checkbox binary="true"
+													formControlName="AllowMultipleValues"
+													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+													label="Allow Multiple Items"
+													i18n-label
+													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
 									</div>
 
 									<div class="row">
@@ -1279,9 +1292,14 @@
 											<p-checkbox binary="true"
 														formControlName="IsPrimaryFilter"
 														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
-														label="Persist in filters?"
+														label="Persist in filters"
 														i18n-label
 														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="If selected, the field appears as a persistent filter in the asset list view."
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
 										</div>
 									</div>
 

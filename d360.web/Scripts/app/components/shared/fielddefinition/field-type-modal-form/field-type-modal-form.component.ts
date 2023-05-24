@@ -105,8 +105,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return this.assetTypeUid ? true : false;
 	}
 
-	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
-	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
+	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
+	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
@@ -156,9 +156,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 						title: x
 					});
 				});
-				if (this.categoryTokens.length === 0) {
-					this.categoryTokens.push({ title: $localize`General` });
-				}
+				this.categoryTokens.push({ title: $localize`General` });
+				this.categoryTokens = this.categoryTokens.sort((a, b) => a.title > b.title ? 1 : -1);
 			}
 
 			//lookups
@@ -196,7 +195,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			//asset count
 			if (results[2].length > 0) {
-				this.numberOfAssetsForType = +results[2][0].count;
+				this.numberOfAssetsForType = (+results[2][0].count) + 1;
 			}
 
 			//score types
@@ -313,10 +312,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
 		if (this.selectedFieldType === 'Link') {
-			fieldTypeApiObject.DefaultValue = {
-				Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
-				Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
-			};
+			const hasLink: boolean = ((this.fieldTypeForm.get("LinkDefaultName").value ?? '') as string).length > 0;
+			if (hasLink) {
+				fieldTypeApiObject.DefaultValue = {
+					Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
+					Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
+				};
+			}
 		}
 
 		if (this.selectedFieldType === 'Lookup') {
@@ -405,7 +407,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm = this.fb.group({
 			FriendlyName: [null, { validators: [Validators.required, Validators.maxLength(250)] }],
 			Name: [null, { validators: Validators.compose([Validators.required, this.apiNameValidator(), Validators.maxLength(250)]) }],
-			Category: [null, { validators: Validators.maxLength(100) }],
+			Category: [$localize`General`, { validators: [Validators.maxLength(100), Validators.required] }],
 			AssetPathListSegment: [null],
 			DisplayDescription: [null],
 			FormDescription: [null],
@@ -436,7 +438,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			IntersectTypeUid: [null],
 			FieldTypeName: [null],
 			LinkDefaultName: [null],
-			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }],
+			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\/|(route:)/) }],
 			LookupUid: [null],
 			AllowAllValue: ['false'],
 			AllowAllLabel: [null],
@@ -490,6 +492,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
 		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
+		this.fieldTypeForm.get('Category').setValue($localize`General`);
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -574,7 +577,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
-				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category);
+				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? $localize`General`);
 
 				const type = this.editedFieldType.Type[this.selectedFieldType];
 
@@ -975,12 +978,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	numberDefaultValueValidator(): ValidatorFn {
 		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
-			if (control.value == null || !this.fieldTypeForm) {
+			if (control.value == null || control.value === '' || !this.fieldTypeForm) {
 				return {};
 			}
+
 			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
 			const minValue = this.fieldTypeForm.get("MinimumValue").value;
-
 
 			if (maxValue && +control.value > maxValue) {
 				return {
@@ -1026,7 +1029,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1148,7 +1151,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`Asset type can have only one Tag field type`;
 		}
 
-		return null;
+		return '';
 	}
 
 	isValidPattern: boolean = null;
