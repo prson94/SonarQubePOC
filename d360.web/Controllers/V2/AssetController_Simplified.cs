@@ -207,7 +207,7 @@ namespace d360.web.Controllers.V2
 					Column = $@"P{p.Id}.val as [{p.Name}]",
 					DataStatement = $"outer apply (select string_agg(SubjectDisplayValue, '; ') from dbo.CatalogBrowseSubject where ObjectAssetID = res.objectassetid and PredicateId = {p.Id})P{p.Id}(val)",
 					Position = columns.Max(c => c.Position) + 1,
-					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
+					JoinStatement = $"left join dbo.CatalogBrowseSubject P{p.Id} WITH (NOEXPAND) on P{p.Id}.ObjectAssetID = S.ObjectAssetID and P{p.Id}.PredicateId = {p.Id}",
 					CatalogColumnType = CatalogColumnType.Predicate,
 					Sort = $"P{p.Id}.SubjectDisplayValue"
 				});
@@ -967,7 +967,7 @@ namespace d360.web.Controllers.V2
 
 			string resultsSql = "";
 
-			if (!string.IsNullOrEmpty(simpleFilterTempTable))
+			if (!string.IsNullOrEmpty(simpleFilterTempTable) || hasFilters)
 			{
 				resultsSql = $@"
 				declare @results table (objectassetid int);
@@ -1002,26 +1002,6 @@ namespace d360.web.Controllers.V2
 				{offset}
 				";
 			}
-			resultsSql = $@"
-				declare @results table (objectassetid int);
-
-				if (@FilterSimpleCount = -1 or @FilterSimpleCount > 15000)
-					begin
-						insert into @results
-						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", WithIndex)}
-						{offsetGroupBy}
-						{orderBy}
-						{offset}
-					end
-				else
-					begin
-						insert into @results
-						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", "")}
-						{offsetGroupBy}
-						{orderBy}
-						{offset}
-					end
-				";
 
 			string finalSql = $@"
 				declare @FilterSimpleCount bigint = -1;				

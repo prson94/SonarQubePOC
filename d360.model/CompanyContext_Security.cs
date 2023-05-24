@@ -416,7 +416,7 @@ namespace d360.model
 								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
-						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(cast(@{userParam} as int) as int)
+						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int)
 						option (recompile);
 
 						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
