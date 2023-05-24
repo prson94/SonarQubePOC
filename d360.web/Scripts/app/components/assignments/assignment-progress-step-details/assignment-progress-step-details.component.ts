@@ -30,6 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepId: number;
+	@Input() itemId: number;
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();
@@ -42,12 +43,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	responsibilities: ResponsibilityType[];
 	fields: any[] = [];
 	helper = WorkflowHelpers;
-	private states = [
-		{ value: '0', label: $localize`Pending Add` },
-		{ value: '1', label: $localize`Active` },
-		{ value: '2', label: $localize`Pending Delete` },
-		{ value: '3', label: $localize`Deleted` }
-	];
 	private showAllAnyCondition: boolean = false;
 	private isSatisfyAll: boolean = true;
 
@@ -97,8 +92,8 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						this.reassignments = [];
 						this.activityType = this.getActivityType(this.step);
 						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
-							for (let i = 0; i < this.step.ItemFields.Reassigned.length; i++) {
-								this.reassignments.push(new WorkflowStepReassignment(this.step.ItemFields.Reassigned[i]));
+							for (const element of this.step.ItemFields.Reassigned) {
+								this.reassignments.push(new WorkflowStepReassignment(element));
 							}
 						}
 
@@ -138,23 +133,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		this.visible = false;
 		this.visibleChange.emit(false);
 		this.ref.markForCheck();
-	}
-
-	operatorName(condition: any): string {
-		switch (condition['@Operator']) {
-			case 'C':
-				return '[' + $localize`any value change` + ']';
-			case 'P':
-				return $localize`is populated`;
-			case 'NP':
-				return $localize`is not populated`;
-			default:
-				return condition['@Operator'];
-		}
-	}
-
-	get filteredConditions(): any[] {
-		return this.step.Condition.filter((c) => c['@ContextualFieldID'] == null || c['@ContextualFieldID'].indexOf('Score|') === 0);
 	}
 
 	get reassignmentFieldName(): string {

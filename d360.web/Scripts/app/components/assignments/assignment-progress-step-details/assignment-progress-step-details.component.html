@@ -52,12 +52,77 @@
 						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange">
 						</d3s-assignment-step-relationship-change-details>
 					</ng-container>
+<!--					<ng-container *ngSwitchCase="WorkflowActivityType.Form">-->
+<!--						<ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">-->
+<!--							<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>-->
+<!--						</ng-container>-->
+<!--						<div *ngIf="bulkReassignments.length > 0" class="row">-->
+<!--							<div class="col s12">-->
+<!--								<div class="FieldName" i18n>-->
+<!--									Form was reassigned to another User-->
+<!--								</div>-->
+<!--								<div *ngFor="let r of bulkReassignments; let i = index" i18n>-->
+<!--									{{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last" />-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div *ngIf="step.ItemSettings.hasEmails == false && step.Settings.MessageRecipientType == 'Responsibility'" class="row">-->
+<!--							<div class="col s12">-->
+<!--								<div class="FieldName">-->
+<!--									<ng-container i18n>Form Responsibilities</ng-container>:-->
+<!--								</div>-->
+<!--								<div *ngFor="let res of step.ItemSettings.Responsibilities">-->
+<!--									{{res.name}}-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div class="row">-->
+<!--							<div class="col s12">-->
+<!--								<div class="FieldName">-->
+<!--									<ng-container i18n>Form Description</ng-container>:-->
+<!--								</div>-->
+<!--								<div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description'] | safeHtml">-->
+<!--								</div>-->
+<!--								<div *ngIf="step?.Fields?.form['@description'] == null" class="panel-section FormFieldContent" style="color: #aaa;">-->
+<!--									[empty]-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div *ngIf="reassignment != null">-->
+<!--							<div class="row">-->
+<!--								<div class="col s12 FieldName">-->
+<!--									{{reassignmentFieldName}}-->
+<!--								</div>-->
+<!--							</div>-->
+<!--							<div class="row" *ngIf="reassignment.ReassignType == 'Object'">-->
+<!--								<div class="col s12">-->
+<!--                                <span i18n>-->
+<!--                                    {{reassignment.ByResourceName}} reassigned this action from <strong>{{step?.IssueDetails?.ObjectName}}</strong> to <strong>{{reassignment.ObjectName}}</strong> on {{reassignment.ReassignOn | date: 'medium'}}.-->
+<!--                                    <ng-container *ngIf="reassignment.NewItemId != null">-->
+<!--                                        A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow <i class="fa fa-external-link"></i></a> has been created.-->
+<!--                                    </ng-container>-->
+<!--                                </span>-->
+<!--								</div>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<div class="row">-->
+<!--							<div class="col s12">-->
+<!--                            <span class="FieldName">-->
+<!--                                <ng-container i18n>Form Response Type</ng-container>:-->
+<!--                            </span>-->
+<!--								<span>-->
+<!--                                {{helper.formResponseTypeName(step.Settings.FormResponseType)}}-->
+<!--                            </span>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--						<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>-->
+<!--					</ng-container>-->
 				</ng-container>
 			</div>
 		</ig-property-group>
 		<ig-property-group *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
 						   [shouldBePadded]="false" [showHeaderLine]="false">
-			<d3s-assignment-step-http-response-details [step]="step"></d3s-assignment-step-http-response-details>
+			<d3s-assignment-step-http-response-outputs [step]="step"></d3s-assignment-step-http-response-outputs>
 		</ig-property-group>
 	</div>
 </div>

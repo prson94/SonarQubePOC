@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowStepRelationshipChangeDetail } from '../../../../models/workflow.model';
 import { CompanySettingsService } from '../../../../services/settings.service';

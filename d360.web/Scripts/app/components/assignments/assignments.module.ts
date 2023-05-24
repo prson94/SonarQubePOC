@@ -61,8 +61,8 @@ import {
 	AssignmentStepHttpDetailsComponent
 } from './assignment-progress-step-details/assignment-step-http-details/assignment-step-http-details.component';
 import {
-	AssignmentStepHttpResponseDetailsComponent
-} from './assignment-progress-step-details/assignment-step-http-response-details/assignment-step-http-response-details.component';
+	AssignmentStepHttpResponseOutputsComponent
+} from './assignment-progress-step-details/assignment-step-http-response-outputs/assignment-step-http-response-outputs.component';
 import {
 	AssignmentStepRelationshipChangeDetailsComponent
 } from './assignment-progress-step-details/assignment-step-relationship-change-details/assignment-step-relationship-change-details.component';
@@ -87,7 +87,7 @@ import {
 		AssignmentStepFieldChangeDetailsComponent,
 		AssignmentStepEmailDetailsComponent,
 		AssignmentStepHttpDetailsComponent,
-		AssignmentStepHttpResponseDetailsComponent,
+		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent
 	],
 	imports: [
