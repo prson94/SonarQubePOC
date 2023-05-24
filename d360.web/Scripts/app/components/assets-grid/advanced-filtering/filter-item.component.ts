@@ -32,6 +32,7 @@ import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
 import { DataProfileService } from "../../../services/dataprofile.service";
+import { group } from "@angular/animations";
 
 @Component({
 	selector: "filter-item",
@@ -48,6 +49,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() operators: OperatorModel[] = [];
 	@Input() relationshipTypes: RelationshipType[] = [];
 	@Input() message: string = "";
+	@Input() useFieldCategories: boolean = false;
 
 	@Output() onChange = new EventEmitter();
 
@@ -165,8 +167,21 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		});
 
 		this.allFieldsDropdown = [];
-
-		if (this.fields && this.fields.length > 0) {
+		if (this.useFieldCategories) {
+			Array.from(new Set(this.fields.map((item) => item.Category)))
+				.forEach((cat) => {
+					if (cat === $localize`System Fields`) {
+						return;
+					}
+					const mainFieldGroup: SelectItemGroup = { value: "asset-field", label: cat, items: [] };
+					this.allFieldsDropdown.push(mainFieldGroup);
+					this.fields.filter((f) => f.Category === cat)
+						.forEach((ft) => {
+							mainFieldGroup.items.push({ value: ft.Name, label: ft.FriendlyName });
+						});
+				});
+		}
+		else if (this.fields && this.fields.length > 0) {
 			let label: string;
 
 			if (this.isAssetType) {
@@ -546,6 +561,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			this.condition.fieldType = this.getTypeForCondition(this.condition);
 			this.condition.type = this.currentField;
 			this.uiCurrentOperatorsList = this.getOperators(this.condition);
+
+			if (this.uiCurrentOperatorsList.length === 0) {
+				this.uiCurrentOperatorsList.push({ label: 'is', value: 'Equals' });
+			}
+
 			this.uiFilterLabel = this.condition.getFilterLabel();
 
 			if (this.condition.field === "CreatedBy") {
@@ -898,7 +918,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				this.oldSearchPhrase = params.filter ?? "";
 
 				const loadedData = [];
-				
+
 				const domParser = new DOMParser();
 
 				res.forEach((str) => {
@@ -1516,8 +1536,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			&& this.condition.type.Name === 'relationshiptype'
 			&& this.condition.type["Values"]
 			&& ((this.condition.type["Values"] as any[]).some((x) => x["count"]))
-			)
-		{
+		) {
 			//relationship type filter on relationship tab should not have operators visible
 			return false;
 		}

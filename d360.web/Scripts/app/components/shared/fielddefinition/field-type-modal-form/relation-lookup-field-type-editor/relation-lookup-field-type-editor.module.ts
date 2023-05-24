@@ -22,6 +22,7 @@ import { IgNumberFieldModule } from '../../../controls/number-picker/number-inpu
 import { TableModule } from 'primeng/table';
 import { SearchFieldModule } from '../../../controls/search-field/search-field.component';
 import { InputModule } from '../../../../../directives/ig-input-directive';
+import { AdvancedFiltersModule } from '../../../../assets-grid/advanced-filtering/advanced-filtering.module';
 
 
 
@@ -55,7 +56,8 @@ import { InputModule } from '../../../../../directives/ig-input-directive';
 		IconPickerModule,
 		IgNumberFieldModule,
 		TableModule,
-		SearchFieldModule
+		SearchFieldModule,
+		AdvancedFiltersModule
 	],
 	exports: [
 		RelationLookupFieldTypeEditorComponent
