@@ -223,7 +223,7 @@
     <value>The field you specified for sorting ({0}) could not be found.</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Relationship Type with Uid {0} not allowed because subject and object both are same and associated with Reference Type.</value>
+    <value>Relationship Type with Uid {0} not allowed because subject and object both are same and associated with Reference List.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Relationship Type with Uid {0} could not be found.</value>
