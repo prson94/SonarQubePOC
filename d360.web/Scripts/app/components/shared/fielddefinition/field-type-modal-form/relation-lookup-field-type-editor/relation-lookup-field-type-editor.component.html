@@ -4,18 +4,23 @@
 		<div class="grey-container relationship-types-container" [formGroup]="fieldTypeForm">
 			<div *ngFor="let item of relationshipTypeSelection" class="relationship-type-selector">
 				<label i18n>Relationship Type {{item.index}}</label>
-				<p-dropdown igDropdown
-							igSize="full"
-							[igDataCy]="'RelationshipType_Dropdown'"
-							name="{{item.cntrlName}}"
-							formControlName="{{item.cntrlName}}"
-							appendTo="body"
-							[options]="item.options"
-							[autoDisplayFirst]="false"
-							optionLabel="title"
-							optionValue="value"
-							required
-							(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
+				<div class="picker-grid">
+					<p-dropdown igDropdown
+								igSize="full"
+								[igDataCy]="'RelationshipType_Dropdown'"
+								name="{{item.cntrlName}}"
+								formControlName="{{item.cntrlName}}"
+								appendTo="body"
+								[options]="item.options"
+								[autoDisplayFirst]="false"
+								optionLabel="title"
+								optionValue="value"
+								required
+								(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
+					<div style="width:32px">
+						<button *ngIf="!fieldTypeForm.get(item.cntrlName).disabled" igButton icon="fa-trash" (click)="removeRelationshipHop(item.cntrlName)"></button>
+					</div>
+				</div>
 			</div>
 
 			<div class="new-hop-link-button {{addRelationshipHopEnabled ? 'enabled' : ''}}" (click)="loadNewHop()">

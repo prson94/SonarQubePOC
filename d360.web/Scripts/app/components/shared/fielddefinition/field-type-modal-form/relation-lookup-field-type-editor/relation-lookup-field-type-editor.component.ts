@@ -47,6 +47,13 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 	}
 
+	validateComponents() {
+		var relationshipTypePickers = Object.keys(this.fieldTypeForm.controls).filter((x) => x.startsWith("RelationLookup_Rel_"));
+		relationshipTypePickers.slice(0, -1).forEach((key) => {
+			this.fieldTypeForm.get(key).disable();
+		});
+	}
+
 	load() {
 		this.isLoading = true;
 		if (this.definition) {
@@ -64,13 +71,17 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 	}
 
+	loadingHopDetailsInProgress: boolean = false;
 	loadNewHop() {
+		this.loadingHopDetailsInProgress = true;
 		const lastRel = this.relationshipTypeSelection[this.relationshipTypeSelection.length - 1];
 		this.fieldsService.getStandardRelations(lastRel.assetTypeUid)
 			.subscribe((res) => {
-				const item: RelationshipTypeSelection = { index: lastRel.index + 1, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + lastRel.index + 1 };
+				const item: RelationshipTypeSelection = { index: lastRel.index + 1, options: res, selected: null, cntrlName: 'RelationLookup_Rel_' + (lastRel.index + 1) };
 				this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl('', [Validators.required]));
 				this.relationshipTypeSelection.push(item);
+				this.validateComponents();
+				this.loadingHopDetailsInProgress = false;
 				this.cdRef.markForCheck();
 			})
 	}
@@ -122,7 +133,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	}
 
 	get addRelationshipHopEnabled(): boolean {
-		return (this.relationshipTypeSelection[this.relationshipTypeSelection.length - 1]?.selected ?? '').length > 0;
+		return !this.loadingHopDetailsInProgress && (this.relationshipTypeSelection[this.relationshipTypeSelection.length - 1]?.selected ?? '').length > 0;
 	}
 
 	get fieldTypeControls(): string[] {
@@ -218,6 +229,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.definition.Fields.forEach((field) => {
 			this.addFormFieldForField(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.OverrideDisplayName);
 		});
+		this.validateComponents();
 		this.isLoading = false;
 	};
 
@@ -237,6 +249,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			case 'Both': return 3;
 		}
 		return null;
+	}
+
+	removeRelationshipHop($event) {
+		console.log($event);
 	}
 }
 
