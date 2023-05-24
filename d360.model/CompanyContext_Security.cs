@@ -396,15 +396,15 @@ namespace d360.model
 							from  [dbo].[asset] a
 							inner join [dbo].[ResponsibilityRuleResultAsset] rasset 
 							on (rasset.AssetID = a.ID)
-							where a.AssetTypeID = @{typeParam}
+							where a.AssetTypeID = cast(@{typeParam} as int)
 							union all 
 							select att.ID as AssetTypeID,
 								   rasset.AssetID,
 								   rasset.RuleID
 							from  [dbo].[assettype] att
 							inner join [dbo].[ResponsibilityRuleResultAsset] rasset
-							on (rasset.AssetID = 0 and rasset.AssetTypeID = @{typeParam})
-							where att.ID = @{typeParam}
+							on (rasset.AssetID = 0 and rasset.AssetTypeID = cast(@{typeParam} as int))
+							where att.ID = cast(@{typeParam} as int)
 					)
 					select * into #AssetRule from cte;
 
@@ -416,7 +416,7 @@ namespace d360.model
 								inner join [dbo].[responsibilitytyperelationrule] r on (r.id = rasset.RuleID)		
 								inner join [dbo].[ResponsibilityTypeRelation] rel on (rel.ObjectID = r.ObjectID and rel.ResponsibilityTypeID = r.ResponsibilityTypeID and rel.ObjectType = r.[Object])
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
-						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} 
+						where	rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(cast(@{userParam} as int) as int)
 						option (recompile);
 
 						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
@@ -429,7 +429,7 @@ namespace d360.model
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.id = rresource.RuleID)
 								inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
 								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID 	
-						where	RG.ResourceID = @{userParam}
+						where	RG.ResourceID = cast(@{userParam} as int)
 						option (recompile);
 
 						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
@@ -442,7 +442,7 @@ namespace d360.model
 								inner join [dbo].assettype att on (att.id = a.assettypeid)
 								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)					
 								inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R'
-						where	a.AssetTypeID = @{typeParam} and RES.ResourceID = @{userParam}	
+						where	a.AssetTypeID = cast(@{typeParam} as int) and RES.ResourceID = cast(@{userParam} as int)	
 						option (recompile);
 
 						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
@@ -455,8 +455,8 @@ namespace d360.model
 								inner join [dbo].assettype att on (att.id = a.assettypeid)
 								inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)										
 								inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
-								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @{typeParam}		
-						where	a.AssetTypeID = @{typeParam} and RG.ResourceID = @{userParam}
+								inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = cast(@{typeParam} as int)		
+						where	a.AssetTypeID = cast(@{typeParam} as int) and RG.ResourceID = cast(@{userParam} as int)
 						option (recompile);
 	
 						--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
@@ -470,7 +470,7 @@ namespace d360.model
 								inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
 								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
 						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
-								and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @{userParam} and att.id = @{typeParam}
+								and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@{userParam} as int) and att.id = cast(@{typeParam} as int)
 						option (recompile);
 	
 						insert into #{tempTableName} (PermissionsBitMask, AssetId, AssetTypeID)
@@ -484,16 +484,17 @@ namespace d360.model
 								inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
 								inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
 						where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
-								and RG.ResourceID = @{userParam} and att.id = @{typeParam}
+								and RG.ResourceID = cast(@{userParam} as int) and att.id = cast(@{typeParam} as int)
 						option (recompile);
 	
-						if not exists(select 1 from reporting.Global_Resource where ResourceID = @{userParam} and IsAdministrator = 1)
+						if not exists(select 1 from reporting.Global_Resource where ResourceID = cast(@{userParam} as int) and IsAdministrator = 1)
+							and exists(select 1 from AssetType T where T.DefaultPermissions = 0  and T.ID = cast(@{typeParam} as int))
 						begin
 							drop table if exists #resourceResponsibilities
 		
-							select * 
+							select AssetId 
 							into #resourceResponsibilities
-							from dbo.ResponsibilityDetail where ResourceID = @{userParam}
+							from dbo.ResponsibilityDetail where ResourceID = cast(@{userParam} as int)
 
 							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
 
@@ -501,14 +502,11 @@ namespace d360.model
 							select	
 								0 as PermissionsBitMask,
 								A.ID as AssetID,
-								A.AssetTypeID
-							from
-								dbo.Asset A
-								inner join dbo.AssetType T on T.ID = A.AssetTypeID and T.ID = @{typeParam}
-							where	
-								T.DefaultPermissions = 0 
-								and not exists(select 1 from #resourceResponsibilities where AssetID = A.ID)
-								option (recompile);
+								cast(@{typeParam} as int) AssetTypeID
+							from dbo.Asset A
+							left join #resourceResponsibilities r on r.AssetID = A.ID
+							where	A.AssetTypeID = cast(@{typeParam} as int) and r.AssetID is null
+							option (recompile);
 						end";
 		}
 

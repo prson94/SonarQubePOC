@@ -184,6 +184,7 @@ namespace d360.web.Controllers.V2
 			string simpleFilterTempTable = "";
 			StringBuilder assetsHierarchyTempTable = new StringBuilder();
 			int hierarchyMaxDepth = 0;
+			string WithIndex = "";
 
 			List<string> whereStatements = new List<string>();
 
@@ -545,21 +546,24 @@ namespace d360.web.Controllers.V2
 
 				dbArgs.Add("simpleFilter", simpleFilter);
 				simpleFilterTempTable = $@"
-					drop table if exists #simpleFiltersTempTable
+					drop table if exists #simpleFiltersTempTable;
+					create table #simpleFiltersTempTable(ObjectAssetID bigint);
+					create clustered index idx_simpleFilterTempTable on #simpleFiltersTempTable(ObjectAssetID);
 
+					insert into #simpleFiltersTempTable(ObjectAssetID)
 					select ObjectAssetID
-					into #simpleFiltersTempTable
 					from dbo.CatalogBrowseSubject where SubjectDisplayValue like @simpleFilter
+					option (recompile);
 
 					insert into #simpleFiltersTempTable
 					select ObjectAssetID from dbo.CatalogBrowseObject where ObjectDisplayValue like @simpleFilter
+					option (recompile);
 
 					insert into #simpleFiltersTempTable 
 					select ObjectAssetID from dbo.CatalogBrowseObject
 					inner join AssetPath ap on ap.ID = ObjectAssetID
 					where ap.DisplayPath like @simpleFilter
-
-					create nonclustered index idx on #simpleFiltersTempTable (ObjectAssetID)";
+					option (recompile);";
 			}
 
 			#endregion
@@ -705,32 +709,43 @@ namespace d360.web.Controllers.V2
 			if (hasFilters)
 			{
 				StringBuilder sb = new StringBuilder();
+				List<string> tempColsMax = new List<string>
+				{
+					"AssetId"
+				};
+				
 				List<string> tempCols = new List<string>
 				{
 					"AssetId bigint"
 				};
 				catalogWheres.ForEach(w =>
 				{
-					tempCols.Add($"{w.PropertyName} bit");
+					tempCols.Add($"{w.PropertyName} int");
+					tempColsMax.Add($"Max({w.PropertyName})");
 				});
 
+				bool isMulticatalogWheres = false;
+				string catalogWheres_table_name = "#filteredResults_temp";
+
+				if (catalogWheres.Count() > 1)
+				{
+					isMulticatalogWheres = true;
+					catalogWheres_table_name = "#filteredResults_staging";
+				}
+
+
 				sb.AppendLine($@"
-					drop table if exists #filteredResults_temp
-					create table #filteredResults_temp ({string.Join(",", tempCols)});");
+					drop table if exists {catalogWheres_table_name}
+					create table {catalogWheres_table_name} ({string.Join(",", tempCols)});");
 
 				foreach (var filter in catalogWheres)
 				{
 					sb.AppendLine($@"
-						MERGE #filteredResults_temp AS Target
-						USING (
+						insert into {catalogWheres_table_name}(AssetId,{filter.PropertyName}) 
+						select  Source.ObjectAssetID, 1
+						from (
 						{filter.Query}
 						) AS Source
-						ON Source.ObjectAssetID = Target.AssetId
-						WHEN MATCHED THEN UPDATE SET
-							Target.{filter.PropertyName} = 1
-						WHEN NOT MATCHED BY Target THEN
-							INSERT (AssetId,{filter.PropertyName}) 
-							VALUES (Source.ObjectAssetID, 1)
 						option(recompile);");
 				}
 
@@ -748,14 +763,35 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
+				if (isMulticatalogWheres)
+				{
+					sb.AppendLine($@"
+						drop table if exists #filteredResults_temp
+						create table #filteredResults_temp ({string.Join(",", tempCols)});
+						
+						insert into #filteredResults_temp  
+						select {string.Join(", ", tempColsMax)}
+						from #filteredResults_staging
+						group by AssetId;
+
+						drop table if exists #filteredResults_staging;");
+				}
+
 				sb.AppendLine($@"
-						drop table if exists #filteredResults
+						drop table if exists #filteredResults;
+
+						create table #filteredResults(AssetId bigint);
+						create clustered index idx_filteredResults on #filteredResults(AssetId);
+
+						insert into #filteredResults
 						select AssetId
-						into #filteredResults
 						from #filteredResults_temp fr
 						where {advancedFilterString}
-						option(recompile)");
+						option(recompile);
 
+						drop table if exists #filteredResults_temp;
+
+						");
 				filtersTempTable = sb.ToString();
 			}
 
@@ -805,17 +841,57 @@ namespace d360.web.Controllers.V2
 					create index ix_noreadassets_assetid on #NoReadAssets(AssetId)";
 
 				dbArgs.Add("userId", Company.CurrentResourceID);
-				whereStatements.Add("nra.AssetId is null");
+				if (!hasFilters && string.IsNullOrEmpty(simpleFilterTempTable))
+				{
+					whereStatements.Add("nra.AssetId is null");
+				}
 			}
 
+			string FilterSimplerRemoveNoRead = "";
+			if (hasFilters && !Company.CurrentResourceIsAdmin)
+			{
+				FilterSimplerRemoveNoRead = $@"
+					if exists(select 1 from #NoReadAssets)
+						begin
+							Delete fr
+							from #filteredResults fr
+							inner join #NoReadAssets nra on nra.AssetId = fr.AssetId;
+						end";
+			}
+			else if (!string.IsNullOrEmpty(simpleFilterTempTable) && !Company.CurrentResourceIsAdmin)
+			{
+				FilterSimplerRemoveNoRead = $@"
+					if exists(select 1 from #NoReadAssets)
+						begin
+							Delete sftt
+							from #simpleFiltersTempTable sftt
+							inner join #NoReadAssets nra on nra.AssetId = sftt.ObjectAssetID;
+						end";
+			}
+
+			string PopulateFilteSimpleCount = "";
+			if (hasFilters)
+			{
+				PopulateFilteSimpleCount = $@"
+					select @FilterSimpleCount = count(1)
+						from #filteredResults;
+					";
+			}
+			else if (!string.IsNullOrEmpty(simpleFilterTempTable))
+			{
+				PopulateFilteSimpleCount = $@"
+					select @FilterSimpleCount = count(1)
+						from #simpleFiltersTempTable sftt;
+					";
+			}
 
 			string whereStatement = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
 
 			string baseSQL = $@"
 				select {{0}}
 				from
-				dbo.CatalogBrowseObject S
-				{(!Company.CurrentResourceIsAdmin ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
+				dbo.CatalogBrowseObject S {{1}}
+				{(!Company.CurrentResourceIsAdmin && string.IsNullOrEmpty(FilterSimplerRemoveNoRead) ? "left join #NoReadAssets nra on nra.AssetId = S.ObjectAssetID" : "")}
 				{(hasFilters ? "inner join #filteredResults fr on fr.AssetId = S.ObjectAssetID" : "")}
 				{(!string.IsNullOrEmpty(simpleFilterTempTable) ? "inner join #simpleFiltersTempTable sftt on sftt.ObjectAssetID = s.ObjectAssetID" : "")}
 				{string.Join(Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.JoinStatement) && x.UseAsSortBy == true).Select(x => x.JoinStatement).Distinct())}
@@ -824,7 +900,7 @@ namespace d360.web.Controllers.V2
 
 			string countSql = $@"
 				;with cte as (
-				{string.Format(baseSQL, "count(1) as cnt")}
+				{string.Format(baseSQL, "count(1) as cnt", "WITH (NOEXPAND)")}
 				group by S.ObjectAssetID
 				)
 				select COUNT(1) from cte
@@ -872,24 +948,83 @@ namespace d360.web.Controllers.V2
 				//instead of grouping by 2 columns, use DisplayValuePrefixWithId which contains both for performance
 				offsetGroupBy = offsetGroupBy.Replace("S.ObjectAssetId, S.DisplayValuePrefix", "S.DisplayValuePrefixWithId");
 				orderBy = orderBy.Replace("S.DisplayValuePrefix", "S.DisplayValuePrefixWithId");
+				WithIndex = "WITH (NOEXPAND, index =  IX_CatalogBrowseObject_DisplayValuePrefixWithId)";
 			}
 
 			if (offsetGroupBy.ToLowerInvariant().Contains("S.ObjectAssetId, S.DisplayPath".ToLowerInvariant()))
 			{
 				//when grouping on DisplayPath, no need to group on ObjectAssetId too, as DisplayPath should be unique per
 				offsetGroupBy = offsetGroupBy.Replace("S.ObjectAssetId, S.DisplayPath", "S.AssetPathWithId");
+				WithIndex = "WITH (NOEXPAND, index =  IX_CatalogBrowseObject_AssetPathWithId)";
 			}
 
-			string resultsSql = $@"
+			if (offsetGroupBy.ToLowerInvariant().Contains("S.ObjectAssetId, S.AssetPathWithId".ToLowerInvariant()))
+			{
+				//when grouping on AssetPathWithId, no need to group on ObjectAssetId too, as AssetPathWithId should be unique per
+				offsetGroupBy = offsetGroupBy.Replace("S.ObjectAssetId, S.AssetPathWithId", "S.AssetPathWithId");
+				WithIndex = "WITH (NOEXPAND, index =  IX_CatalogBrowseObject_AssetPathWithId)";
+			}
+
+			string resultsSql = "";
+
+			if (!string.IsNullOrEmpty(simpleFilterTempTable))
+			{
+				resultsSql = $@"
+				declare @results table (objectassetid int);
+
+				if (@FilterSimpleCount = -1 or @FilterSimpleCount > 15000)
+					begin
+						insert into @results
+						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", WithIndex)}
+						{offsetGroupBy}
+						{orderBy}
+						{offset}
+					end
+				else
+					begin
+						insert into @results
+						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", "")}
+						{offsetGroupBy}
+						{orderBy}
+						{offset}
+					end
+				";
+			}
+			else
+			{
+				resultsSql = $@"
 				declare @results table (objectassetid int);
 
 				insert into @results
-				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId")}
+				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", "")}
 				{offsetGroupBy}
 				{orderBy}
-				{offset}";
+				{offset}
+				";
+			}
+			resultsSql = $@"
+				declare @results table (objectassetid int);
+
+				if (@FilterSimpleCount = -1 or @FilterSimpleCount > 15000)
+					begin
+						insert into @results
+						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", WithIndex)}
+						{offsetGroupBy}
+						{orderBy}
+						{offset}
+					end
+				else
+					begin
+						insert into @results
+						{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", "")}
+						{offsetGroupBy}
+						{orderBy}
+						{offset}
+					end
+				";
 
 			string finalSql = $@"
+				declare @FilterSimpleCount bigint = -1;				
 				drop table if exists #v 
 				create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
 
@@ -926,6 +1061,10 @@ namespace d360.web.Controllers.V2
 				{definitionSql}
 
 				{filtersTempTable}
+
+				{FilterSimplerRemoveNoRead}
+
+				{PopulateFilteSimpleCount}
 
 				{countSql}
 
