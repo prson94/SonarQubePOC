@@ -475,12 +475,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 			else if (this.selectedFieldType === 'Relationship' && (value !== null && value !== '')) {
 				const uid = (value as string).split('|')[0].toLowerCase();
-				const type = this.relationshipTypes.find(r => r.Uid.toLowerCase() === uid.toLowerCase());
+				const type = this.relationshipTypes.find((r) => r.Uid.toLowerCase() === uid.toLowerCase());
 
 				if (type.Subject.Uid === this.assetTypeUid) {
-					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Object.DisplayFormat}`
+					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Object.DisplayFormat}`;
 				} else {
-					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Subject.DisplayFormat}`
+					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Subject.DisplayFormat}`;
 				}
 			}
 		});
@@ -489,11 +489,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.loadLookupDefaultValue(value);
 		});
 
-		this.fieldTypeForm.controls["ValidationPattern"].valueChanges.subscribe((value) => {
+		this.fieldTypeForm.controls["ValidationPattern"].valueChanges.subscribe(() => {
 			this.isValidPattern = null;
 		});
 
-		this.fieldTypeForm.controls["RegexTestString"].valueChanges.subscribe((value) => {
+		this.fieldTypeForm.controls["RegexTestString"].valueChanges.subscribe(() => {
 			this.isValidPattern = null;
 		});
 
