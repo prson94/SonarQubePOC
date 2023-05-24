@@ -163,12 +163,29 @@
 													   [igDataCy]="'Field_Type_Modal_Field_ValidationPattern'"
 													   type="text" />
 												<div class="token-popup-menu">
-													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<button igButton
+															type="button"
+															i18n-pTooltip
+															pTooltip="Sample Regular Expression"
+															tooltipPosition="top"
+															tooltipStyleClass="ig-tooltip"
+															icon="fa-ellipsis-v"
+															(click)="tokenMenu.toggle($event);"></button>
 													<ig-popup-menu (onSelect)="fieldTypeForm.get('ValidationPattern').setValue($event.data.value)"
 																   [items]="regexPatternTokens"
 																   [forceOpenBottom]="true"
 																   #tokenMenu
 																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+												<div class="clear-input-container" *ngIf="fieldTypeForm.get('ValidationPattern').value">
+													<button igButton
+															type="button"
+															i18n-pTooltip
+															pTooltip="Clear"
+															tooltipPosition="top"
+															tooltipStyleClass="ig-tooltip"
+															icon="fa-close"
+															(click)="fieldTypeForm.get('ValidationPattern').setValue(null);fieldTypeForm.get('RegexTestString').setValue(null)"></button>
 												</div>
 											</div>
 										</div>
@@ -1248,7 +1265,7 @@
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
-									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList' && selectedFieldType !== 'JSON'">
+									<div class="row" *ngIf="hasDisplayInColumn">
 										<div style="margin-left: 16px;">
 											<p-checkbox binary="true"
 														i18n-label
