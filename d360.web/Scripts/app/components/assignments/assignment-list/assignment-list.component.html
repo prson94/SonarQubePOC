@@ -26,13 +26,12 @@
 					<div class="details-container">
 						<div>
 							<ng-container *ngIf="secondarySidePanel=='assignment-information'">
-								<d3s-workflow-information [objectID]="secondarySidePanelObjectID"
-												 [objectType]="secondarySidePanelObjectType"
-												 [shouldBePadded]="true"
-												 [showHeaderLine]="false"
-												 [isSidePanel]="true"
-												 [interceptLinkClick]="true"
-												 (close)="secondarySidePanelOpen=false;"></d3s-workflow-information>
+								<d3s-workflow-information [shouldBePadded]="true"
+														  [showHeaderLine]="false"
+														  [isSidePanel]="true"
+														  [interceptLinkClick]="true"
+														  [workflowTypeId]="129"
+														  (close)="secondarySidePanelOpen=false;"></d3s-workflow-information>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='workflow-information'">
 								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
@@ -49,7 +48,7 @@
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='step-details'">
 								<d3s-assignment-progress-step-details [itemId]="workflowItemStep.ItemID"
-									[itemStepId]="workflowItemStep.ID"></d3s-assignment-progress-step-details>
+																	  [itemStepId]="workflowItemStep.ID"></d3s-assignment-progress-step-details>
 							</ng-container>
 						</div>
 					</div>
