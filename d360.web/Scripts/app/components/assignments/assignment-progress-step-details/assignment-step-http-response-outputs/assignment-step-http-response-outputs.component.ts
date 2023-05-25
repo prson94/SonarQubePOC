@@ -3,8 +3,8 @@ import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 
 @Component({
-  selector: 'd3s-assignment-step-http-response-outputs',
-  templateUrl: './assignment-step-http-response-outputs.component.html'
+	selector: 'd3s-assignment-step-http-response-outputs',
+	templateUrl: './assignment-step-http-response-outputs.component.html'
 })
 export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent implements OnInit {
 	@Input() step: any;

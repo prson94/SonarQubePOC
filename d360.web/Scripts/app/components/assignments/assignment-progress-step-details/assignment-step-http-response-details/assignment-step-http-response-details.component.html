@@ -1,4 +1,5 @@
-<div class="row">
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading" class="row">
 	<label class="ig-label" i18n>HTTP Request</label>
 	<div class="ig-value">{{ stepName }}</div>
 </div>

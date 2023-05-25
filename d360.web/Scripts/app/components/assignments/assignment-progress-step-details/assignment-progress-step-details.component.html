@@ -48,7 +48,8 @@
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
-						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange">
+						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange"
+						[relationshipUpdate]="step.Settings?.RelationshipUpdate" [itemId]="itemId">
 						</d3s-assignment-step-relationship-change-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.Form">

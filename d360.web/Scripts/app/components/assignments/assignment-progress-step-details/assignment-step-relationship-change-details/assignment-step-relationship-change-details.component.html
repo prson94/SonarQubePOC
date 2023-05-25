@@ -1,12 +1,15 @@
-<div class="row">
-	<label class="ig-label" i18n>Relationship Form Field</label>
-	<div i18n class="ig-value">{{ relationshipChange.TypeName }}</div>
-</div>
-<div class="row">
-	<label class="ig-label" i18n>Clear Relationships?</label>
-	<div i18n class="ig-value">{{ relationshipChange.ClearValue ? 'Yes' : 'No' }}</div>
-</div>
-<div class="row">
-	<label class="ig-label" i18n>Append Relationships?</label>
-	<div i18n class="ig-value">{{ relationshipChange.AppendValue ? 'Yes' : 'No'  }}</div>
-</div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<ng-container *ngIf="!isLoading">
+	<div class="row">
+		<label class="ig-label" i18n>Relationship Form Field</label>
+		<div i18n class="ig-value">{{ relationshipFormField }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Clear Relationships?</label>
+		<div i18n class="ig-value">{{ relationshipChange.ClearValue ? 'Yes' : 'No' }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Append Relationships?</label>
+		<div i18n class="ig-value">{{ relationshipChange.AppendValue ? 'Yes' : 'No'  }}</div>
+	</div>
+</ng-container>

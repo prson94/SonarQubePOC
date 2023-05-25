@@ -4,15 +4,16 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowService } from '../../../../services/workflow.service';
 
 @Component({
-  selector: 'd3s-assignment-step-http-response-details',
-  templateUrl: './assignment-step-http-response-details.component.html'
+	selector: 'd3s-assignment-step-http-response-details',
+	templateUrl: './assignment-step-http-response-details.component.html'
 })
 export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent implements OnInit {
 
-	@Input() itemId: number
-	@Input() step: any
-	private inputStepId: number
-	public stepName: string
+	@Input() itemId: number;
+	@Input() step: any;
+	private inputStepId: number;
+	public stepName: string;
+	public isLoading: boolean = false;
 
 	constructor(
 		private workflowService: WorkflowService,
@@ -21,15 +22,17 @@ export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent im
 	}
 
 	ngOnInit(): void {
-		this.inputStepId = parseInt(this.step.ItemSettings.HTTPResponse.InputStepId)
+		this.inputStepId = parseInt(this.step.ItemSettings.HTTPResponse.InputStepId);
+		this.isLoading = true;
 		this.workflowService.getWorkflowDetailsV2(this.itemId).subscribe((workflowDetails: any) => {
-			for(const element of workflowDetails.Steps) {
+			for (const element of workflowDetails.Steps) {
 				if (element.ID === this.inputStepId) {
-					this.stepName = element.Name
-					break
+					this.stepName = element.Name;
+					break;
 				}
 			}
-		})
+			this.isLoading = false;
+		});
 	}
 
 }
