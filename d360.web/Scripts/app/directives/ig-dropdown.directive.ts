@@ -46,7 +46,6 @@ export class DropdownDirective implements AfterContentInit {
         if (!isPlaceholderSet) {
             if (this.required == null) {
                 this.dropdownRef.placeholder = $localize`Optional`;
-                this.dropdownRef.showClear = true;
             } else {
                 this.dropdownRef.placeholder = $localize`Value required`;
                 this.el.nativeElement.setAttribute("aria-required", true);

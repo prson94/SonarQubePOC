@@ -53,6 +53,8 @@ namespace d360.core.entities
         public int DisplayOrder { get; set; }
         
         public int SortOrder { get; set; }
+
+        public bool SortByAscending { get; set; }
         
         public bool Show { get; set; }
         
@@ -97,6 +99,8 @@ namespace d360.core.entities
         public int DisplayOrder { get; set; }
         
         public int SortOrder { get; set; }
+
+		public bool SortByAscending { get; set; } = true;
         
         public bool Show { get; set; } = true;
         

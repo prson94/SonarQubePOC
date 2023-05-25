@@ -54,7 +54,7 @@
 											formControlName="{{item.fieldNameControl}}"
 											appendTo="body"
 											[panelStyleClass]="'ig-dropdown-grouped'"
-											[options]="fieldOptions"
+											[options]="fieldOptionsForFields"
 											[autoDisplayFirst]="false"
 											[group]="true"
 											required></p-dropdown>
@@ -92,8 +92,8 @@
 
 			<div class="grey-container" [hidden]="!isTableSettingsOpen" [formGroup]="fieldTypeForm">
 				<div class="filters">
-					<label i18n>Filter</label>
 					<div class="filters-container">
+						<label i18n>Filter</label>
 						<advanced-filtering #advancedFilter
 											[useFieldCategories]="true"
 											[enableFilterSaving]="false"
@@ -102,7 +102,77 @@
 					</div>
 
 				</div>
+				<div class="sorts">
+					<p-table [value]="sortFields">
+						<ng-template pTemplate="header">
+							<tr>
+								<th width="300px">Sort Order</th>
+								<th></th>
+								<th width="20px"></th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body" let-item let-index="rowIndex">
+							<tr>
+								<td>
+									<p-dropdown igDropdown
+												igSize="full"
+												[igDataCy]="'SortField_Dropdown'"
+												name="{{item.fieldControl}}"
+												formControlName="{{item.fieldControl}}"
+												appendTo="body"
+												[panelStyleClass]="'ig-dropdown-grouped'"
+												[options]="fieldOptionsForSort"
+												(onChange)="sortChanged()"
+												[showClear]="false"
+												[autoDisplayFirst]="false"
+												[group]="true"></p-dropdown>
+								</td>
+								<td>
+									<ng-container *ngIf="fieldTypeForm.get(item.fieldControl).value">
+										<p-radioButton igRadioButton formControlName="{{item.fieldDirectionControl}}" name="{{item.fieldDirectionControl}}" value="asc" label="Ascending" i18n-label></p-radioButton>
+										<p-radioButton igRadioButton formControlName="{{item.fieldDirectionControl}}" name="{{item.fieldDirectionControl}}" value="desc" label="Descending" i18n-label></p-radioButton>
+									</ng-container>
+								</td>
+								<td width="20px">
+									<div class="token-popup-menu" *ngIf="fieldTypeForm.get(item.fieldControl).value">
+										<button igButton icon="fa-trash" (click)="removeSortOption(item)"></button>
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
 
+				<div class="settings">
+					<div class="form-group" style="display:flex;">
+						<div class="row flex-form-group form-group-3">
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideFilter"
+											[igDataCy]="'FieldType_Field_HideFilter'"
+											label="Hide Table Search"
+											i18n-label>
+								</p-checkbox>
+							</div>
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideHeader"
+											[igDataCy]="'FieldType_Field_HideHeader'"
+											label="Hide Table Column Headers"
+											i18n-label>
+								</p-checkbox>
+							</div>
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideFooter"
+											[igDataCy]="'FieldType_Field_HideFooter'"
+											label="Hide Table Footer"
+											i18n-label>
+								</p-checkbox>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</ng-container>
 

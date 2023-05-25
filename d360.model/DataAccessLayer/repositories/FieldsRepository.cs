@@ -1141,6 +1141,7 @@ namespace d360.model.DataAccessLayer
 						field.SortOrder = i.SortOrder;
 						field.Width = i.Width;
 						field.Show = i.Show;
+						field.SortByAscending = i.SortByAscending;
 						if (i.RelationIndex != null)
 						{
 							if (definitionRelations[i.RelationIndex ?? 0].AssetTypeUid != field.AssetTypeUid)
@@ -2593,11 +2594,13 @@ namespace d360.model.DataAccessLayer
 
 			if (string.IsNullOrEmpty(orderBy) && sortFields.Count > 0)
 			{
-				List<int> idxs = new List<int>();
+				List<string> idxs = new List<string>();
 
 				foreach (var item in sortFields)
 				{
-					idxs.Add(selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1);
+					int fieldIdx = selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1;
+					string sortDirection = item.isAscending ? "asc" : "desc";
+					idxs.Add(fieldIdx + " "+ sortDirection);
 				}
 
 				orderByClause = "order by " + string.Join(",", idxs);
@@ -2708,7 +2711,7 @@ namespace d360.model.DataAccessLayer
 
 							select td.*
 							from #tempdata td
-							{orderByClause} {direction}
+							{orderByClause}
 							offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only
 							option (recompile);
 

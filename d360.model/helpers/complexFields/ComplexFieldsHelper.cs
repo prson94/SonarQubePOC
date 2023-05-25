@@ -462,13 +462,13 @@ namespace d360.model.helpers
 						});
 					}
 
-					Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid" });
-					Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url" });
-					Fields.Add(new GridField { type = "preview", apiName = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", defaultFilter = f.Filter, sortOrder = f.SortOrder });
+					Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Uid", isAscending = f.SortByAscending });
+					Fields.Add(new GridField { type = "text", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_Url", isAscending = f.SortByAscending });
+					Fields.Add(new GridField { type = "preview", apiName = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", name = $"H{f.RelationIndex + 1}_{f.FieldTypeID}_DisplayValue", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending });
 				}
 				else if (f.FieldTypeID > 0)
 				{
-					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
+					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					var ft = fields.FirstOrDefault(x => x.ID == f.FieldTypeID);
 
 					if (ft == null)
@@ -536,8 +536,8 @@ namespace d360.model.helpers
 						gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
 						gColumn.urlfield = $"H{f.RelationIndex + 1}_Url";
 
-						Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
-						Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
+						Fields.Add(new GridField { name = gColumn.uidfield, type = "text", isAscending = f.SortByAscending });
+						Fields.Add(new GridField { name = gColumn.urlfield, type = "text", isAscending = f.SortByAscending });
 					}
 
 					if (f.Show)

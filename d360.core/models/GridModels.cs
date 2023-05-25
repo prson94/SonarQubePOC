@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace d360.core.Models
@@ -135,5 +136,7 @@ namespace d360.core.Models
         public string defaultFilter { get; set; }
 
         public int sortOrder { get; set; }
+
+		public bool isAscending { get; set; } = true;
     }
 }

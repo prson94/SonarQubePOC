@@ -363,6 +363,7 @@ export class DefinitionField {
 	OverrideDisplayName: string;
 	DisplayOrder: number;
 	SortOrder: number = 0;
+	SortByAscending?: boolean;
 	Show: boolean;
 	Width: number;
 	RelationIndex: number;

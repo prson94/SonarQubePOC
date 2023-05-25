@@ -378,6 +378,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		if (this.selectedFieldType === 'ComputedRelationshipLookup') {
 			fieldTypeApiObject.Definition = this.relationLookupEditor.getDefinition();
+			fieldTypeApiObject.HideFilter = this.fieldTypeForm.get("HideFilter").value ?? false;
+			fieldTypeApiObject.HideHeader = this.fieldTypeForm.get("HideHeader").value ?? false;
+			fieldTypeApiObject.HideFooter = this.fieldTypeForm.get("HideFooter").value ?? false;
 		}
 
 		const saveObs = this.fieldsService.putFieldsV2(model);
@@ -686,6 +689,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				if (this.selectedFieldType === 'ComputedRelationshipLookup') {
 					this.computedRelationshipLookupInitialDefinition = type?.Definition ?? null;
+					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null);
+					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null);
+					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null);
 				}
 				else {
 					this.computedRelationshipLookupInitialDefinition = null;

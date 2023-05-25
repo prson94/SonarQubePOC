@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormGroup, UntypedFormControl, Validators } from '@angular/forms';
+import { cloneDeep } from 'lodash-es';
 import { SelectItemGroup } from 'primeng/api';
 import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
 import { ComputedRelationshipLookupDefinition, FieldType } from '../../../../../models/fieldtype-api.model';
@@ -15,6 +16,12 @@ export class LookupField {
 	fieldDisplayNameControl: string;
 	MenuItems: PopupMenuItem[] = [];
 	filterValue?: string;
+}
+
+export class SortField {
+	idx: number;
+	fieldControl: string;
+	fieldDirectionControl: string;
 }
 
 @Component({
@@ -34,24 +41,30 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	relationshipTypeSelection: RelationshipTypeSelection[] = []
 	fieldOptions: SelectItemGroup[] = [];
 
+	fieldOptionsForFields: SelectItemGroup[] = [];
+	fieldOptionsForSort: SelectItemGroup[] = [];
+
 	isLoading: boolean = false;
 	isTableSettingsOpen: boolean = true;
 
 	lookupFields: LookupField[] = [];
-	readonly relationshipFormNamePrefix: string = 'RelationLookup_Rel_';
+	sortFields: SortField[] = [];
 
+	readonly relationshipFormNamePrefix: string = 'RelationLookup_Rel_';
+	readonly sortOrderControlPrefix: string = 'RelationLookup_SortOrder_';
+	lastSortIdx: number = 0;
 	@ViewChild('advancedFilter', { static: false }) advancedFilter: AdvancedFilteringComponent;
 
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private cdRef: ChangeDetectorRef) {
-
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes.isVisible && changes.isVisible.currentValue !== changes.isVisible.previousValue) {
 			this.relationshipTypeSelection = [];
 			this.lookupFields = [];
+			this.sortFields = [];
 
 			Object.keys(this.fieldTypeForm.controls)
 				.filter((x) => x.startsWith('RelationLookup'))
@@ -74,10 +87,13 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	load() {
 		this.isLoading = true;
+
 		if (this.definition) {
 			this.loadDefinition();
 		}
 		else {
+			this.addNewSortIfNoExists();
+
 			this.fieldsService.getStandardRelations(this.assetTypeUid)
 				.subscribe((res) => {
 					const item: RelationshipTypeSelection = { index: 1, options: res, selected: null, cntrlName: this.relationshipFormNamePrefix + "1" };
@@ -87,6 +103,90 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 					this.cdRef.markForCheck();
 				})
 		}
+
+
+		setInterval(() => {
+			this.setDropdowns();
+		}, 250);
+	}
+
+	setDropdowns() {
+		const selectedFields: string[] = [];
+		Object.keys(this.fieldTypeForm.controls)
+			.filter((ctrl) => ctrl.startsWith('RelationLookupField_Name'))
+			.forEach((key) => {
+				if (this.fieldTypeForm.get(key).value) {
+					selectedFields.push(this.fieldTypeForm.get(key).value);
+				}
+			});
+
+		this.fieldOptionsForFields = JSON.parse(JSON.stringify(this.fieldOptions));
+		this.fieldOptionsForFields.forEach((grp) => {
+			grp.items.forEach((item) => {
+				if (selectedFields.some((x) => x.toLowerCase() === item.value.toLowerCase())) {
+					item.disabled = true;
+				}
+			});
+		});
+
+		const selectedSortFields: string[] = [];
+
+		this.sortFields.forEach((x) => {
+			if (this.fieldTypeForm.get(x.fieldControl).value) {
+				selectedSortFields.push(this.fieldTypeForm.get(x.fieldControl).value);
+			}
+		})
+
+		this.fieldOptionsForSort = JSON.parse(JSON.stringify(this.fieldOptions));
+		this.fieldOptionsForSort.forEach((grp) => {
+			grp.items = grp.items.filter((x) => selectedFields.some((f) => f.toLowerCase() === x.value.toLowerCase()));
+
+			grp.items.forEach((item) => {
+				if (selectedSortFields.some((x) => x.toLowerCase() === item.value.toLowerCase())) {
+					item.disabled = true;
+				}
+			});
+		});
+	}
+
+	addNewSortFormElements(field: string = null, sortDirection: string = 'asc') {
+		this.lastSortIdx = this.lastSortIdx + 1;
+		const ctrlName = this.sortOrderControlPrefix + this.lastSortIdx;
+		const ctrlDirection = this.sortOrderControlPrefix + this.lastSortIdx + "_Direction";
+		this.sortFields.push({ idx: this.lastSortIdx + 1, fieldControl: ctrlName, fieldDirectionControl: ctrlDirection });
+		this.fieldTypeForm.addControl(ctrlName, new UntypedFormControl(field));
+		this.fieldTypeForm.addControl(ctrlDirection, new UntypedFormControl(sortDirection));
+	}
+
+	addNewSortIfNoExists() {
+		if (this.sortFields.length === 0 || this.areAllSortsSet) {
+			this.addNewSortFormElements();
+		}
+	}
+
+	get areAllSortsSet(): boolean {
+		let allSet = true;
+		Object.keys(this.fieldTypeForm.controls)
+			.filter((key) => key.startsWith(this.sortOrderControlPrefix))
+			.forEach((key) => {
+				if (!this.fieldTypeForm.get(key).value) {
+					allSet = false;
+				}
+			})
+
+		return allSet;
+	}
+
+	sortChanged() {
+		this.addNewSortIfNoExists();
+	}
+
+	removeSortOption(item: SortField) {
+		this.sortFields.splice(this.sortFields.indexOf(item), 1);
+		this.fieldTypeForm.removeControl(item.fieldControl);
+		this.fieldTypeForm.removeControl(item.fieldDirectionControl);
+
+		this.addNewSortIfNoExists();
 	}
 
 	loadingHopDetailsInProgress: boolean = false;
@@ -230,6 +330,20 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			const relationIndex = +parsedFieldValue[1] - 1;
 			const rel = this.relationshipTypeSelection[relationIndex];
 
+			//get sorts
+			const sortKey = Object.keys(this.fieldTypeForm.controls)
+				.filter((key) => key.startsWith(this.sortOrderControlPrefix))
+				.find((key) => (this.fieldTypeForm.get(key).value as string) === fieldValue);
+
+			let sortOrder: number = null;
+			let sortByAscending: boolean = null;
+
+			if (sortKey) {
+				const sortItem = this.sortFields.find((x) => x.fieldControl === sortKey);
+				sortOrder = this.sortFields.indexOf(sortItem) + 1;
+				sortByAscending = (this.fieldTypeForm.get(sortItem.fieldDirectionControl).value as string) !== 'desc';
+			}
+
 			definition.Fields.push({
 				AssetTypeUid: rel.assetTypeUid,
 				FieldTypeName: fieldName,
@@ -238,8 +352,9 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				Filter: filter ? filter.value : null,
 				RelationIndex: relationIndex,
 				Show: true,
-				SortOrder: null,
-				Width: null
+				SortOrder: sortOrder,
+				Width: null,
+				SortByAscending: sortByAscending
 			});
 		}
 
@@ -278,11 +393,20 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		});
 	}
 	loadDefinitionFields() {
-		this.definition.Fields.forEach((field) => {
-			this.addFormFieldForField(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.OverrideDisplayName);
-		});
-		this.validateComponents();
 		setTimeout(() => {
+			this.definition.Fields.forEach((field) => {
+				this.addFormFieldForField(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.OverrideDisplayName);
+			});
+
+			this.setDropdowns();
+			const sortFields = this.definition.Fields.filter((x) => x.SortOrder !== null && x.SortOrder !== 0).sort((a, b) => a.SortOrder > b.SortOrder ? 1 : -1);
+
+			sortFields.forEach((field) => {
+				this.addNewSortFormElements(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.SortByAscending ? 'asc' : 'desc');
+			});
+
+			this.addNewSortIfNoExists();
+			this.validateComponents();
 			this.isLoading = false;
 			this.cdRef.markForCheck();
 		}, 200);
@@ -419,6 +543,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if ($event && $event.data) {
 			this.filters = $event.data;
 		}
+	}
+
+	getState() {
+		console.log(this.getDefinition());
 	}
 }
 
