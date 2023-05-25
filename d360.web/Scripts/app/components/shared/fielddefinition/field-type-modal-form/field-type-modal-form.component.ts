@@ -708,7 +708,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.cdRef.markForCheck();
 				this.isLoading = false;
 				if (this.changeFormSub) {
-					this.changeFormSub.unsubscribe()
+					this.changeFormSub.unsubscribe();
 				}
 				setTimeout(() => {
 					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
