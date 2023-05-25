@@ -74,6 +74,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 	@Input() isSidePanel: boolean = false;
 	@Input() showCountPanel: boolean = true
 	@Input() hasMenu: boolean = true;
+	@Input() hasZoomButtons: boolean = false;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
@@ -1650,6 +1651,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             {this.backClick();}
     }
 
+	diagramZoom(zoomIn: boolean = true): void {
+		if (zoomIn) {
+			this.diagram.scale += 0.1;
+		} else {
+			this.diagram.scale -= 0.1;
+		}
+	}
+
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
@@ -1819,7 +1828,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private ClipboardPasted(e) {
         if (e != null && e.subject != null) {
             const nodes = e.subject.toArray();
-            
+
             for (let i = 0; i < nodes.length; i++) {
 
                 if (nodes[i].data.DiagramObjectType === DiagramObjectType.Link) {
@@ -1942,6 +1951,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return dg;
     }
 
+
     private createTaskNode(): go.Node {
         const nodeWidth = 150;
         const nodeHeight = 75;
@@ -2008,7 +2018,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             )
         );
     }
-
 
     private createTerminalNode(isStart: boolean): go.Node {
         const nodeWidth = 80;
@@ -2249,6 +2258,5 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 {this.model.Event.LastExecuted = null;}
         });
     }
-
 }
 

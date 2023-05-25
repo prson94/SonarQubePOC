@@ -130,8 +130,7 @@
         </div>
     </div>
 </div>
-<div [class.tile]="!isSidePanel" [class.tile-detail]="!isSidePanel"
-     [hidden]="isLoading">
+<div class="tile tile-detail" [hidden]="isLoading">
     <header class="workflow-tool-header">
         &nbsp;
         <d3s-tile-actions [hasMenu]="hasMenu"
@@ -247,4 +246,12 @@
             </table>
         </div>
     </div>
+	<div [hidden]="isLoading" *ngIf="hasZoomButtons" style="position:relative; bottom: 55px; left: calc(100% - 7rem) ;z-index: 3">
+		<button i18n-pTooltip pTooltip="Zoom In" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton
+				class="ig-button ig-button-icon-only ig-button-margin" icon="fa-search-plus"
+				(click)="diagramZoom()"></button>
+		<button i18n-pTooltip pTooltip="Zoom Out" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton
+				class="ig-button ig-button-icon-only ig-button-margin" icon="fa-search-minus"
+				(click)="diagramZoom(false)"></button>
+	</div>
 </div>

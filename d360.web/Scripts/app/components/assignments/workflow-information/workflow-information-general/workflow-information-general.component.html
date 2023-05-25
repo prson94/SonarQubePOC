@@ -17,7 +17,9 @@
 				</div>
 				<div class="col">
 					<label class="ig-label" i18n>Current Version</label>
-					<div class="ig-value"></div>
+					<div class="ig-value">{{ workflowDiagramModel?.CurrentVersion?.Version }}&nbsp;<span
+						i18n>{{ workflowDiagramModel?.CurrentVersion?.UID === workflowDiagramModel?.PublishedVersion?.UID ? '(Published)' : '(Unpublished)' }}</span>
+					</div>
 				</div>
 			</div>
 		</div>
