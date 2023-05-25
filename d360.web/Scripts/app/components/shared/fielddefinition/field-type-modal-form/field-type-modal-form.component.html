@@ -542,6 +542,28 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'Text'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="DefaultValue"
+												   tabindex="20"
+												   formControlName="DefaultValue"
+												   [igDataCy]="'Field_Type_Modal_Field_DefaultValue'"
+												   type="text" />
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 
 						<ig-property-group *ngIf="selectedFieldType === 'Path'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Asset Path" i18n-title>
 							<div inputs>
@@ -1067,7 +1089,7 @@
 																	 [formControl]="fieldTypeForm.controls['SortOrder']"
 																	 tabindex="60">
 													</ig-number-input>
-													<div class="inline-field">
+													<div class="inline-field" style="padding-left:24px;">
 														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
 														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
 													</div>
@@ -1111,7 +1133,8 @@
 														Prefix
 														<span class="field-tooltip fa fa-question-circle"
 															  i18n-pTooltip
-															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''Status:Certified''"
+															  [escape]="false"
+															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''<b>Status</b>:Certified''"
 															  tooltipPosition="top"
 															  tooltipStyleClass="ig-tooltip"></span>
 													</label>
@@ -1128,6 +1151,7 @@
 														Suffix
 														<span class="field-tooltip fa fa-question-circle"
 															  i18n-pTooltip
+															  [escape]="false"
 															  pTooltip="You can provide a prefix and/or a suffix to be displayed in place of the field label. For example, a suffix 'accurate' could be used to display '96% accurate' instead of '<b>Accuracy</b>: 96%'."
 															  tooltipPosition="top"
 															  tooltipStyleClass="ig-tooltip"></span>
@@ -1295,15 +1319,6 @@
 											  tooltipStyleClass="ig-tooltip"></span>
 
 									</div>
-									<div class="row" *ngIf="enableAllowMultipleValues">
-										<p-checkbox binary="true"
-													formControlName="AllowMultipleValues"
-													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
-													label="Allow Multiple Items"
-													i18n-label
-													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
-									</div>
-
 									<div class="row">
 										<div *ngIf="showPersistInFilters">
 											<p-checkbox binary="true"

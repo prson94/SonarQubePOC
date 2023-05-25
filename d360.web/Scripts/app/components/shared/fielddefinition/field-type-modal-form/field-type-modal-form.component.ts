@@ -154,7 +154,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (results[0]) {
 				this.typeFieldTypes = results[0];
 				const categories = Array.from(new Set(this.typeFieldTypes.map((item) => item.Category)));
-
 				this.categoryTokens = [];
 
 				categories.filter((x) => x && x.length > 0).forEach((x) => {
@@ -162,7 +161,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 						title: x
 					});
 				});
-				this.categoryTokens.push({ title: $localize`General` });
+				if (!this.categoryTokens.some((x) => x.title === $localize`General`)) {
+					this.categoryTokens.push({ title: $localize`General` });
+				}
 				this.categoryTokens = this.categoryTokens.sort((a, b) => a.title > b.title ? 1 : -1);
 			}
 
@@ -706,6 +707,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.isEditFormUpdated = false;
 				this.cdRef.markForCheck();
 				this.isLoading = false;
+				if (this.changeFormSub) {
+					this.changeFormSub.unsubscribe()
+				}
 				setTimeout(() => {
 					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
 						this.isEditFormUpdated = true;
@@ -746,6 +750,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	close() {
+		if (this.changeFormSub) {
+			this.changeFormSub.unsubscribe();
+		}
 		this.setDefaultFormValues();
 
 		if (this.formElement) {
@@ -1056,7 +1063,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType) {
 			return false;
 		}
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text', 'Boolean'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text', 'Boolean', 'Lookup'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1066,7 +1073,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship'];
-		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
@@ -1110,7 +1117,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType || this.isUserType) {
 			return false;
 		}
-		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON';
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag';
 	}
 
 	get isGroupType(): boolean {
