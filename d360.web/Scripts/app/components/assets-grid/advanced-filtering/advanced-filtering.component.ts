@@ -156,23 +156,26 @@ export class AdvancedFilteringComponent implements OnChanges {
 		this.filterMenu[3].isChecked = false;
 
 		this.clearFiltersStorage();
-		this.fields.forEach((field) => {
-			if (field.Type) {
-				var key = Object.keys(field.Type)[0];
-				var isDefaultFilter = false;
-				if (Object.keys(field.Type).some((x) => x === key)) {
-					isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
-				}
+		if (this.fields) {
+			this.fields.forEach((field) => {
+				if (field.Type) {
+					var key = Object.keys(field.Type)[0];
+					var isDefaultFilter = false;
+					if (Object.keys(field.Type).some((x) => x === key)) {
+						isDefaultFilter = field.Type[key]["IsPrimaryFilter"];
+					}
 
-				if (isDefaultFilter === true) {
-					var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
-					defaultFilter.field = field.Name;
-					defaultFilter.isDefaultFilter = true;
-					defaultFilter.isNew = true;
-					this.conditions.filters.push(defaultFilter);
+					if (isDefaultFilter === true) {
+						var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
+						defaultFilter.field = field.Name;
+						defaultFilter.isDefaultFilter = true;
+						defaultFilter.isNew = true;
+						this.conditions.filters.push(defaultFilter);
+					}
 				}
-			}
-		});
+			});
+		}
+
 		this.onItemChange();
 		this.cdRef.markForCheck();
 	}
@@ -249,10 +252,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
 
 			this.onLoad.emit();
-		}
-		);
-
-
+		});
 	}
 
 
@@ -323,7 +323,6 @@ export class AdvancedFilteringComponent implements OnChanges {
 
 		tempFields.forEach((f) => {
 			f.Operators = [];
-
 			this.operators.forEach((op) => {
 				if (f.Type) {
 					var fieldType = FieldTypeHelper.getFieldType(f.Type).toLowerCase();
@@ -427,7 +426,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		});
 	}
 
-	getLocalStorageKey() {	
+	getLocalStorageKey() {
 		return this.loadIdentifier + "_advancedFilters";
 	}
 
@@ -611,6 +610,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		} else if (typeof this.fieldsObserver === "object") {
 			return this.fieldsObserver;
 		}
+		return of([]);
 	}
 
 	getScoreAllocationObs(): Observable<ScoreTypeAllocation[]> {

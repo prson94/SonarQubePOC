@@ -152,14 +152,15 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 					Name: itm.value,
 					FriendlyName: itm.value.split('|')[0],
 					Type: new FieldType("Text"),
-					Category: grp.label,
-					RemovePopulatedOperator: true
+					Category: grp.label
 				})
 			});
 		});
 		setTimeout(() => {
 			if (this.advancedFilter) {
-				this.advancedFilter.processLoadedData(fields, false);
+				this.advancedFilter.clearFilters();
+				this.advancedFilter.initializeData();
+				this.advancedFilter.processLoadedData(fields, true);
 			}
 		}, 300);
 	}
