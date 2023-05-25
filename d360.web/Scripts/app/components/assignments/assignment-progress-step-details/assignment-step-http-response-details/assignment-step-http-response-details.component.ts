@@ -23,9 +23,9 @@ export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent im
 	ngOnInit(): void {
 		this.inputStepId = parseInt(this.step.ItemSettings.HTTPResponse.InputStepId)
 		this.workflowService.getWorkflowDetailsV2(this.itemId).subscribe((workflowDetails: any) => {
-			for(let i=0;i<workflowDetails.Steps.length;i++) {
-				if(workflowDetails.Steps[i].ID === this.inputStepId) {
-					this.stepName = workflowDetails.Steps[i].Name
+			for(const element of workflowDetails.Steps) {
+				if (element.ID === this.inputStepId) {
+					this.stepName = element.Name
 					break
 				}
 			}

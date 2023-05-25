@@ -121,7 +121,11 @@
 		</ig-property-group>
 		<ig-property-group *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
 						   [shouldBePadded]="false" [showHeaderLine]="false">
-			<d3s-assignment-step-http-response-outputs [step]="step"></d3s-assignment-step-http-response-outputs>
+			<div readonly>
+				<ng-container>
+					<d3s-assignment-step-http-response-outputs [step]="step"></d3s-assignment-step-http-response-outputs>
+				</ng-container>
+			</div>
 		</ig-property-group>
 	</div>
 </div>

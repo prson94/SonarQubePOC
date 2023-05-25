@@ -4,17 +4,17 @@
 				 [paginator]="true" [rows]="10">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'FieldName'">
+					<th [pSortableColumn]="'Name'">
 						<ng-container i18n>Name</ng-container>
-						<d3s-sortIcon [field]="'FieldName'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Path'">
+						<ng-container i18n>Path</ng-container>
+						<d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'Value'">
-						<ng-container i18n>Path</ng-container>
-						<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
-					</th>
-					<th [pSortableColumn]="'FormValue'">
 						<ng-container i18n>Value</ng-container>
-						<d3s-sortIcon [field]="'FormValue'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
 					</th>
 				</tr>
 			</ng-template>
