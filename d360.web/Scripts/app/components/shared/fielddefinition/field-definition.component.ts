@@ -36,7 +36,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
 
-	@Input() typeName: string = 'Some Default Type Name';
+	@Input() typeName: string;
 
 	@Input() showAddButton: boolean = true;
 	@Input() showEditButton: boolean = true;
@@ -167,6 +167,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					if (res.length > 0) {
 						var type = res[0];
 						var relationshipName = type.Subject.Name + ' [' + type.Predicate.Name + '] ' + type.Object.Name;
+						this.typeName = type.Subject.Name + ' ' + type.Predicate.Name + ' ' + type.Object.Name;
 						this.title = $localize`Field Definition for ${relationshipName}`;
 					}
 				});
@@ -398,7 +399,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "ComputedRelationshipField":
 			case "FieldFromRelationship": return $localize`Field from Relationship`;
 			case "Html": return $localize`Html`;
-			case "JSON": return $localize`JSON`;
+			case "Json": return $localize`JSON`;
 			case "JsonElement": return $localize`JsonElement`;
 			case "Link": return $localize`Link`;
 			case "Lookup": return $localize`List`;
