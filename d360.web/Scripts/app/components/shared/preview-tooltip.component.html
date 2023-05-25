@@ -50,7 +50,7 @@
                 <d3s-color-display *ngIf="field.Type == 'Color'" [colorsJSON]="field.Value"></d3s-color-display>
                 <ng-container *ngIf="field.Type == 'JSON'">
                     <span (click)="$event.stopPropagation()">
-                        <ig-json-view [data]="GetJSON(field.Value)"></ig-json-view>
+                        <ig-json-viewer [data]="GetJSON(field.Value)"></ig-json-viewer>
                     </span>
                 </ng-container>
                 <ng-container *ngIf="field.Type == 'Tag' && field.Value.length > 2">

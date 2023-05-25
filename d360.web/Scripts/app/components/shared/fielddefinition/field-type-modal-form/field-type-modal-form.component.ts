@@ -6,8 +6,10 @@ import { forkJoin, of, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
+import { RelationshipType } from "../../../../models/relationship.model";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
+import { RelationshipsService } from "../../../../services/relationships.service";
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
@@ -36,9 +38,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@Input() assetTypeUid: string;
 	@Input() relationshipTypeUid: string;
 
-	@Input() showShowInDetailTile: boolean = true;
 	@Input() showDescription: boolean = true;
-	@Input() hasDisplayInColumn: boolean = false;
 
 	@Output() onClose = new EventEmitter();
 	@Output() onUpdated = new EventEmitter();
@@ -46,6 +46,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldType: FieldTypeAPIModel;
 	typeFieldTypes: FieldTypeAPIModelField[] = [];
 	editedFieldType: FieldTypeAPIModelField;
+
+	relationshipTypes: RelationshipType[];
 
 	title = 'unset';
 	subTitle = 'unset';
@@ -91,6 +93,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	isInitialDataLoaded: boolean = false;
 	numberOfAssetsForType: number = 0;
 
+	displayFormatLabel = $localize`Display Format`;
+
 	private fieldTypeNameToApiNameMap = {
 		'FieldFromRelationship': 'ComputedRelationshipField',
 		'OwnershipLookup': 'ComputedOwnershipLookup',
@@ -105,11 +109,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		return this.assetTypeUid ? true : false;
 	}
 
-	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
-	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
+	linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
+	linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http://, https:// or route:`;
 
 	constructor(private fb: FormBuilder,
 		private fieldsService: FieldsObservableService,
+		private relationshipService: RelationshipsService,
 		private assetService: AssetService,
 		private cdRef: ChangeDetectorRef
 	) {
@@ -142,7 +147,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid),
 			this.assetTypeUid ? this.assetService.getAssetCountsByAssetTypeUid(this.assetTypeUid) : of([]),
-			this.assetTypeUid ? this.fieldsService.getAvailableScoreTypes(this.assetTypeUid) : of([])
+			this.assetTypeUid ? this.fieldsService.getAvailableScoreTypes(this.assetTypeUid) : of([]),
+			this.assetTypeUid ? this.relationshipService.getRelationshipTypes(this.assetTypeUid, false, false, true) : of([])
 		).subscribe((results) => {
 			//fields
 			if (results[0]) {
@@ -156,9 +162,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 						title: x
 					});
 				});
-				if (this.categoryTokens.length === 0) {
-					this.categoryTokens.push({ title: $localize`General` });
-				}
+				this.categoryTokens.push({ title: $localize`General` });
+				this.categoryTokens = this.categoryTokens.sort((a, b) => a.title > b.title ? 1 : -1);
 			}
 
 			//lookups
@@ -196,12 +201,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 			//asset count
 			if (results[2].length > 0) {
-				this.numberOfAssetsForType = +results[2][0].count;
+				this.numberOfAssetsForType = (+results[2][0].count) + 1;
 			}
 
 			//score types
 			if (results[3].length > 0) {
 				this.scoreTypeOptions = results[3];
+			}
+
+			//relationship types
+			if (results[4].length > 0) {
+				this.relationshipTypes = results[4];
 			}
 
 			this.setForm();
@@ -313,10 +323,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		fieldTypeApiObject.DefaultValue = this.fieldTypeForm.get("DefaultValue").value ?? null;
 
 		if (this.selectedFieldType === 'Link') {
-			fieldTypeApiObject.DefaultValue = {
-				Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
-				Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
-			};
+			const hasLink: boolean = ((this.fieldTypeForm.get("LinkDefaultName").value ?? '') as string).length > 0;
+			if (hasLink) {
+				fieldTypeApiObject.DefaultValue = {
+					Text: this.fieldTypeForm.get("LinkDefaultName").value ?? null,
+					Url: this.fieldTypeForm.get("LinkDefaultUrl").value ?? null
+				};
+			}
 		}
 
 		if (this.selectedFieldType === 'Lookup') {
@@ -405,7 +418,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm = this.fb.group({
 			FriendlyName: [null, { validators: [Validators.required, Validators.maxLength(250)] }],
 			Name: [null, { validators: Validators.compose([Validators.required, this.apiNameValidator(), Validators.maxLength(250)]) }],
-			Category: [null, { validators: Validators.maxLength(100) }],
+			Category: [$localize`General`, { validators: [Validators.maxLength(100), Validators.required] }],
 			AssetPathListSegment: [null],
 			DisplayDescription: [null],
 			FormDescription: [null],
@@ -436,7 +449,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			IntersectTypeUid: [null],
 			FieldTypeName: [null],
 			LinkDefaultName: [null],
-			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\//) }],
+			LinkDefaultUrl: [null, { validators: Validators.pattern(/^(http|https):\/\/|(route:)/) }],
 			LookupUid: [null],
 			AllowAllValue: ['false'],
 			AllowAllLabel: [null],
@@ -460,10 +473,28 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (this.selectedFieldType === 'ComputedRelationshipField') {
 				this.loadFieldsFromRelationships(value);
 			}
+			else if (this.selectedFieldType === 'Relationship' && (value !== null && value !== '')) {
+				const uid = (value as string).split('|')[0].toLowerCase();
+				const type = this.relationshipTypes.find((r) => r.Uid.toLowerCase() === uid.toLowerCase());
+
+				if (type.Subject.Uid === this.assetTypeUid) {
+					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Object.DisplayFormat}`;
+				} else {
+					this.relationshipDisplayFormatValueOptions[0].label = `${this.displayFormatLabel} : ${type.Subject.DisplayFormat}`;
+				}
+			}
 		});
 
 		this.fieldTypeForm.controls["LookupUid"].valueChanges.subscribe((value) => {
 			this.loadLookupDefaultValue(value);
+		});
+
+		this.fieldTypeForm.controls["ValidationPattern"].valueChanges.subscribe(() => {
+			this.isValidPattern = null;
+		});
+
+		this.fieldTypeForm.controls["RegexTestString"].valueChanges.subscribe(() => {
+			this.isValidPattern = null;
 		});
 
 		this.fieldTypeForm.controls["DisplayAsList"].valueChanges.subscribe((value) => {
@@ -490,6 +521,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
 		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
+		this.fieldTypeForm.get('Category').setValue($localize`General`);
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -574,7 +606,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
-				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category);
+				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? $localize`General`);
 
 				const type = this.editedFieldType.Type[this.selectedFieldType];
 
@@ -975,12 +1007,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	numberDefaultValueValidator(): ValidatorFn {
 		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
-			if (control.value == null || !this.fieldTypeForm) {
+			if (control.value == null || control.value === '' || !this.fieldTypeForm) {
 				return {};
 			}
+
 			const maxValue = this.fieldTypeForm.get("MaximumValue").value;
 			const minValue = this.fieldTypeForm.get("MinimumValue").value;
-
 
 			if (maxValue && +control.value > maxValue) {
 				return {
@@ -1021,39 +1053,82 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
+		if (this.isGroupType) {
+			return false;
+		}
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text', 'Boolean'];
-		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsListable(): boolean {
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean'];
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
+			return false;
+		}
+
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showPersistInFilters(): boolean {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset || this.assetTypeClass === AssetTypeClass.ReferenceItemType) {
+			return false;
+		}
+
+		if (this.isGroupType || this.isUserType) {
+			return false;
+		}
+
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Score', 'Text', 'Tag', 'Boolean'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsEditable(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
-		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean'];
-		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get enableAllowMultipleValues(): boolean {
 		const allowedTypes = ['Lookup'];
-		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get hasFormDescription(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
+
+	get hasDisplayInColumn(): boolean {
+		if (this.relationshipTypeUid) {
+			return false;
+		}
+
+		if (this.isGroupType || this.isUserType) {
+			return false;
+		}
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON';
+	}
+
+	get isGroupType(): boolean {
+		return (this.assetTypeUid ?? '').toLocaleLowerCase() === '00000001-0000-0000-0000-b00000000012'.toLocaleLowerCase();
+	}
+
+	get isUserType(): boolean {
+		return (this.assetTypeUid ?? '').toLocaleLowerCase() === '00000001-0000-0000-0000-a00000000011'.toLocaleLowerCase();
+	}
+
+	get showShowInDetailTile(): boolean {
+		if (this.isGroupType || this.isUserType) {
+			return false;
+		}
+
+		return true;
+	}
+
 
 	public getLocaleDateString(): string {
 		return FormHelpers.getLocaleDateString();
@@ -1148,7 +1223,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`Asset type can have only one Tag field type`;
 		}
 
-		return null;
+		return '';
 	}
 
 	isValidPattern: boolean = null;

@@ -317,21 +317,6 @@ where	a.[class] = @cls
 
 			string order = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
 
-			if (!string.IsNullOrEmpty(isHierachyItem))
-			{
-				if (!string.IsNullOrEmpty(order))
-				{
-					int orderID = 0;
-					order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
-					orderID = int.Parse(order);
-					FieldType orderName = CompanyContext.FieldTypes.FirstOrDefault(f => f.ID == orderID);
-					if (orderName != null)
-					{
-						return true;
-					}
-				}
-			}
-
 			AssetType assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
 			if (assetType == null)
 			{
