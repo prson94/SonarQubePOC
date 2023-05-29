@@ -552,5 +552,10 @@ namespace d360.core.entities.Workflow
         public string ObjectID { get; set; }
     }
 
-    #endregion
+	public class WorkflowAssignmentApiModel : PagedApiBaseViewModel
+	{
+		[DataMember]
+		public List<dynamic> items { get; set; }
+	}	
+	#endregion
 }
