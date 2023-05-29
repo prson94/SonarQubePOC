@@ -62,7 +62,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	lastSortIdx: number = 0;
 	@ViewChild('advancedFilter', { static: false }) advancedFilter: AdvancedFilteringComponent;
 
-	intervalHandle: NodeJS.Timeout;
+	// ignore usage of any keyword
+	// eslint-disable-next-line
+	intervalHandle: any;
+
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private cdRef: ChangeDetectorRef,
@@ -156,7 +159,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			if (this.fieldTypeForm.get(x.fieldControl).value) {
 				selectedSortFields.push(this.fieldTypeForm.get(x.fieldControl).value);
 			}
-		})
+		});
 
 		this.fieldOptionsForSort = JSON.parse(JSON.stringify(this.fieldOptions));
 		this.fieldOptionsForSort.forEach((grp) => {
@@ -225,7 +228,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				this.cdRef.markForCheck();
 			})
 	}
-
+	// ignore Function usage error
+	// eslint-disable-next-line
 	relationshipTypeSelected($event, item: RelationshipTypeSelection, callback: Function = null, addNew: boolean = true) {
 		item.selected = $event.value;
 		const values = item.selected.split('|');
