@@ -297,7 +297,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 						FriendlyName: ft['FriendlyName'],
 						Name: ft['Name'],
 						Type: _rawType
-					})
+					});
 				}
 			});
 			relationIndex++;
@@ -359,12 +359,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 					}
 				}
 
-				//if (filter.value2 && newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
-				//	newfilter.value2 = new Date(filter.value2);
-				//}
-				//else {
-				//	newfilter.value2 = filter.value2;
-				//}
+				
+		
 				res.push(newfilter);
 			}
 		}
