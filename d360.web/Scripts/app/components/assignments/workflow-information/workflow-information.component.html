@@ -1,2 +1,13 @@
-<d3s-workflow-information-general [workflowTypeId]="workflowTypeId"></d3s-workflow-information-general>
-<d3s-workflow-information-diagram [workflowTypeId]="workflowTypeId"></d3s-workflow-information-diagram>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail" [hidden]="isLoading">
+	<div class="asset-detail-header">
+		<div class="asset-name">
+			{{ workflowDiagramModel?.Type?.Name }}
+		</div>
+		<div i18n class="class-name">
+			Workflow
+		</div>
+	</div>
+	<d3s-workflow-information-general [workflowDiagramModel]="workflowDiagramModel"></d3s-workflow-information-general>
+	<d3s-workflow-information-diagram [workflowDiagramModel]="workflowDiagramModel"></d3s-workflow-information-diagram>
+</div>

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { WorkflowDiagramModel } from '../../../../models/workflow.model';
+import { ChangeTypeInfo, WorkflowDiagramModel } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-information-general',
@@ -8,33 +8,23 @@ import { WorkflowDiagramModel } from '../../../../models/workflow.model';
 	styleUrls: ['./workflow-information-general.component.less']
 })
 export class WorkflowInformationGeneralComponent implements OnInit {
-	private id: number = 0;
-	private uid: string = '00000000-0000-0000-0000-000000000000';
-	workflowDiagramModel: WorkflowDiagramModel;
-	isLoading: boolean = false;
+	@Input() set workflowDiagramModel(value: WorkflowDiagramModel) {
+		this._workflowDiagramModel = value;
+		this.changeType = this.changeTypeInfos?.find((changeTypeInfo: ChangeTypeInfo): boolean => changeTypeInfo.ID === this.workflowDiagramModel?.Event?.ChangeType)?.Description;
+	};
 
-	@Input() set workflowTypeId(value: number) {
-		this.id = value;
-		this.getWorkflowTypeDetails();
+	get workflowDiagramModel(): WorkflowDiagramModel {
+		return this._workflowDiagramModel;
 	}
 
-	@Input() set workflowTypeUid(value: string) {
-		this.uid = value;
-		this.getWorkflowTypeDetails();
-	}
+	changeType: string;
+	private _workflowDiagramModel: WorkflowDiagramModel;
+	private changeTypeInfos: ChangeTypeInfo[];
 
 	constructor(private workflowService: WorkflowService) {
 	}
 
 	ngOnInit(): void {
+		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
 	}
-
-	private getWorkflowTypeDetails() {
-		this.isLoading = true;
-		this.workflowService.getWorkflowTypeModel(this.id, this.uid).subscribe((response: WorkflowDiagramModel): void => {
-			this.isLoading = false;
-			this.workflowDiagramModel = response;
-		});
-	}
-
 }

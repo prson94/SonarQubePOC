@@ -1,4 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { WorkflowDiagramModel } from '../../../models/workflow.model';
+import { WorkflowService } from '../../../services/workflow.service';
 
 @Component({
 	selector: 'd3s-workflow-information',
@@ -13,12 +15,34 @@ export class WorkflowInformationComponent implements OnInit {
 	@Input() interceptLinkClick: boolean = false;
 	@Output() linkClick = new EventEmitter();
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
-	@Input() workflowTypeId: number = 129;
 
-	constructor() {
+	workflowDiagramModel: WorkflowDiagramModel;
+	isLoading: boolean = false;
+
+	private id: number = 0;
+	private uid: string = '00000000-0000-0000-0000-000000000000';
+
+	@Input() set workflowTypeId(value: number) {
+		this.id = value;
+		this.getWorkflowTypeDetails();
+	}
+
+	@Input() set workflowTypeUid(value: string) {
+		this.uid = value;
+		this.getWorkflowTypeDetails();
+	}
+
+	constructor(private workflowService: WorkflowService) {
 	}
 
 	ngOnInit(): void {
 	}
 
+	private getWorkflowTypeDetails() {
+		this.isLoading = true;
+		this.workflowService.getWorkflowTypeModel(this.id, this.uid).subscribe((response: WorkflowDiagramModel): void => {
+			this.isLoading = false;
+			this.workflowDiagramModel = response;
+		});
+	}
 }
