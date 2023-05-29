@@ -51,12 +51,13 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	fieldOptionsForSort: SelectItemGroup[] = [];
 
 	isLoading: boolean = false;
+	isFieldsLoading: boolean = false;
 	isTableSettingsOpen: boolean = true;
 
 	lookupFields: LookupField[] = [];
 	sortFields: SortField[] = [];
 	advancedFilterFieldTypes: AdvancedFilterFieldType[] = [];
-
+	
 	readonly relationshipFormNamePrefix: string = 'RelationLookup_Rel_';
 	readonly sortOrderControlPrefix: string = 'RelationLookup_SortOrder_';
 	lastSortIdx: number = 0;
@@ -196,7 +197,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				if (!this.fieldTypeForm.get(key).value) {
 					allSet = false;
 				}
-			})
+			});
 
 		return allSet;
 	}
@@ -241,7 +242,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		else {
 			item.relationshipTypeUid = item.assetTypeUid = item.direction = null;
 		}
-
+		this.isFieldsLoading = true;
 		item.fieldOptions = [];
 		return this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid)
 			.subscribe((fields) => {
@@ -255,6 +256,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				if (callback && allItemsResolved) {
 					callback();
 				}
+				this.isFieldsLoading = false;
 			});
 	}
 
@@ -305,7 +307,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			if (this.advancedFilter) {
 				const filters = this.getExistingFilters();
 				this.advancedFilter.clearFilters();
-				this.advancedFilter.initializeData();
 				this.advancedFilter.processLoadedData(this.advancedFilterFieldTypes, true, filters);
 			}
 		}, 300);

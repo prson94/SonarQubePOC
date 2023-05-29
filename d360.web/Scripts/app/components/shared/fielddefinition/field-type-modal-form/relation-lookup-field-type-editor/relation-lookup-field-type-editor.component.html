@@ -31,6 +31,8 @@
 		<ng-container *ngIf="relationshipTypeSelection.length > 0 && relationshipTypeSelection[0].selected">
 
 			<div class="grey-container" [formGroup]="fieldTypeForm">
+				<d3s-loading [isLoading]="isFieldsLoading" [inline]="true"></d3s-loading>
+
 				<p-table [value]="lookupFields"
 						 [reorderableColumns]="true">
 					<ng-template pTemplate="header">
