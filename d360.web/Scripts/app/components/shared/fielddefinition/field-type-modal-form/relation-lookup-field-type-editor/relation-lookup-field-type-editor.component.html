@@ -98,6 +98,7 @@
 						<label i18n>Filter</label>
 						<div>
 							<advanced-filtering #advancedFilter
+												[onlyResetButton]="true"
 												[useFieldCategories]="true"
 												(onChange)="advancedFiltersChanged($event)">
 							</advanced-filtering>

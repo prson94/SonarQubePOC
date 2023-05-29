@@ -1,5 +1,5 @@
 ﻿<div class="advanced-filtering">
-	<div class="filters-list {{(visible ? '' : 'loading')}}">
+	<div class="filters-list {{(visible ? '' : 'loading')}} {{(onlyResetButton ? 'only-reset' : '')}}">
 		<div class="filters-loader" *ngIf="!visible">
 			<span class="spinner"></span>
 			<span class="loader-text" i18n>Loading filters...</span>
@@ -24,5 +24,5 @@
 			</div>
 		</ng-container>
 	</div>
-	<!--<button *ngIf="onlyResetButton" igButton class="reset-single-button" icon="fa-undo" i18n-tooltip tooltip="Reset" (click)="clearFilters()"></button>-->
+	<button *ngIf="onlyResetButton" igButton class="reset-single-button" icon="fa-undo" i18n-tooltip tooltip="Reset" (click)="clearFilters()"></button>
 </div>

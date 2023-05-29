@@ -213,7 +213,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		}
 	}
 
-	public initializeData(newFiltersPushed: boolean = false) {
+	public initializeData(newFiltersPushed: boolean = false, overrideFields?: AdvancedFilterFieldType[], existingFilters?: AdvancedFilterFieldCondition[]) {
 		if (this.disableMatchAny) {
 			this.filterMenu[3]["disabled"] = this.disableMatchAny;
 		}
@@ -241,11 +241,14 @@ export class AdvancedFilteringComponent implements OnChanges {
 			if (res && res.some((f) => f.Type.ComputedRelationshipField)) {
 				try {
 					//load field types for Field from relationship
-					this.loadFieldFromRelationshipData(res);
+					this.loadFieldFromRelationshipData(res, overrideFields, existingFilters);
 				}
 				catch (ex) {
 					this.processLoadedData(res, newFiltersPushed);
 				}
+			}
+			else if (overrideFields) {
+				this.processLoadedData(overrideFields, newFiltersPushed, existingFilters);
 			}
 			else {
 				this.processLoadedData(res, newFiltersPushed);
@@ -257,7 +260,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	}
 
 
-	private loadFieldFromRelationshipData(res: FieldTypeAPIModelField[]) {
+	private loadFieldFromRelationshipData(res: FieldTypeAPIModelField[], overrideFields: AdvancedFilterFieldType[], existingFilters: AdvancedFilterFieldCondition[] = []) {
 		try {
 			const toLoad: any[] = [];
 			const obsArr: Observable<FieldTypeAPIModelField[]>[] = [];
@@ -289,7 +292,12 @@ export class AdvancedFilteringComponent implements OnChanges {
 						}
 					}
 				});
-				this.processLoadedData(res);
+				if (overrideFields) {
+					this.processLoadedData(overrideFields, true, existingFilters);
+				}
+				else {
+					this.processLoadedData(res);
+				}
 			});
 		}
 		catch (ex) {
@@ -303,7 +311,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	// eslint-disable-next-line
 	public processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false, existingFilters: AdvancedFilterFieldCondition[] = []) {
 		var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
-		
+
 		if (res) {
 			res.forEach((f) => {
 				if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {

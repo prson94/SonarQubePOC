@@ -307,7 +307,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			if (this.advancedFilter) {
 				const filters = this.getExistingFilters();
 				this.advancedFilter.clearFilters();
-				this.advancedFilter.processLoadedData(this.advancedFilterFieldTypes, true, filters);
+				this.advancedFilter.initializeData(true, this.advancedFilterFieldTypes, filters);
 			}
 		}, 300);
 	}
