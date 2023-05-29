@@ -1705,18 +1705,30 @@ namespace d360.web.Controllers.V2
 			var prefix = "Fields.GetRelationLookupDisplayFields => ";
 			var errorMessage = "";
 
+			void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName, DataType fieldType = DataType.Text)
+			{
+				var t = new FieldTypeApiViewModel()
+				{
+
+					Type = new FieldTypeDataTypeApiViewModel(),
+					Name = fieldName,
+					FriendlyName = fieldName,
+				};
+
+				t.Type.Text = new FieldTypeDataTypeTextApiViewModel();
+
+				refList.Add(new RelationLookupDisplayFields
+				{
+					title = fieldName,
+					value = fieldName,
+					fieldType = t
+				});
+			}
+
 			try
 			{
 				SystemObjects type;
 				int id = 0;
-				int intersectTypeID = 0;
-				var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
-
-				if (intersectType != null)
-				{
-					intersectTypeID = intersectType.ID;
-				}
-
 				var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
 
 				if (at != null)
@@ -1730,41 +1742,19 @@ namespace d360.web.Controllers.V2
 				}
 
 				var restrictedTypes = DataType.Text.GetNotAllowedInRelationshipLookup();
-				//var fieldTypes = Company.GetFieldTypesByObject(type, id)
-				//	.Where(i => !restrictedTypes.Contains(i.Type)).ToList();
 
 				var queryParams = new Dictionary<string, string>
 				{
 					{ "assettypeuid", assetTypeUid.ToString() },
 					{ "includeid", "true" }
-
-			};
+				};
+			
 				var fieldTypes = (await FieldsRepository.GetFieldTypes(queryParams)).Item1.items;
-
 				List<RelationLookupDisplayFields> list = new List<RelationLookupDisplayFields>();
 
-				void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName, DataType fieldType = DataType.Text)
+				foreach (var ft in fieldTypes.Where(x=> x.IsForRelationLookupDefinition == true))
 				{
-					var t = new FieldTypeApiViewModel()
-					{
 
-						Type = new FieldTypeDataTypeApiViewModel(),
-						Name = fieldName,
-						FriendlyName = fieldName,
-					};
-
-					t.Type.Text = new FieldTypeDataTypeTextApiViewModel();
-
-					refList.Add(new RelationLookupDisplayFields
-					{
-						title = fieldName,
-						value = fieldName,
-						fieldType = t
-					});
-				}
-
-				foreach (var ft in fieldTypes)
-				{
 					list.Add(new RelationLookupDisplayFields
 					{
 						title = ft.Name,
@@ -1812,7 +1802,7 @@ namespace d360.web.Controllers.V2
 
 				if (relList != null)
 				{
-					foreach (var ft in relList)
+					foreach (var ft in relList.Where(x => x.IsForRelationLookupDefinition == true))
 					{
 						list.Add(new RelationLookupDisplayFields
 						{
@@ -1824,22 +1814,26 @@ namespace d360.web.Controllers.V2
 				}
 
 
-				//var sType = type.ToString();
-				//var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
-				//	(i.SubjectAssetTypeID == at.ID) ||
-				//	(i.ObjectAssetTypeID == at.ID)
-				//	).ToList().Select(i => new
-				//	{
-				//		ID = i.ID,
-				//		Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
-				//	}).Distinct().ToList();
-				//relatedTypeList.ForEach(r =>
-				//{
-				//	if (!list.ContainsKey($"Related Item.{r.Name} ({r.ID})"))
-				//	{
-				//		list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
-				//	}
-				//});
+				var sType = type.ToString();
+				var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
+					(i.SubjectAssetTypeID == at.ID) ||
+					(i.ObjectAssetTypeID == at.ID)
+					).ToList().Select(i => new
+					{
+						ID = i.ID,
+						Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
+					}).Distinct().ToList();
+				relatedTypeList.ForEach(r =>
+				{
+					if (!list.Any((x) => x.title == $"Related Item.{r.Name} ({r.ID})"))
+					{
+						list.Add(new RelationLookupDisplayFields
+						{
+							title = $"Related Item.{r.Name} ({r.ID})",
+							value = $"Related Item.{r.Name} ({r.ID})"
+						});
+					}
+				});
 
 				return Request.CreateResponse(HttpStatusCode.OK, list);
 			}

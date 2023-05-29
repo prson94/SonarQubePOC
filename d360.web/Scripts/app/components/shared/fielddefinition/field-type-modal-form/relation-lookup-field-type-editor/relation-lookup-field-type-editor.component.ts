@@ -12,6 +12,7 @@ import { RelationshipTypeSelection } from './relation-lookup-form.models';
 import { DatePipe } from "@angular/common";
 import { SelectItem } from '../../../../../models/form.model';
 import { OperatorString } from '../../../../../models/operator.model';
+import { ReuseInterceptor } from '../../../../../http-interceptors/reuse.interceptor';
 
 export class LookupField {
 	idx: number;
@@ -63,7 +64,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	constructor(
 		private fieldsService: FieldsObservableService,
 		private cdRef: ChangeDetectorRef,
-		private datePipe: DatePipe) {
+		private datePipe: DatePipe,
+		private reuseInterceptor: ReuseInterceptor) {
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -77,11 +79,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	}
 
 	resetForm() {
-		console.log("resseting form");
-
 		this.relationshipTypeSelection = [];
 		this.lookupFields = [];
 		this.sortFields = [];
+		this.reuseInterceptor.forceRefresh();
 
 		if (this.intervalHandle) {
 			clearInterval(this.intervalHandle);
@@ -102,7 +103,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	}
 
 	load() {
-		console.log("load");
 		this.isLoading = true;
 
 		if (this.definition) {
@@ -292,7 +292,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			relationIndex++;
 		});
 
-		console.log(this.advancedFilterFieldTypes);
 		setTimeout(() => {
 			if (this.advancedFilter) {
 				const filters = this.getExistingFilters();
@@ -323,6 +322,15 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				newfilter.markForDeletion = false;
 				newfilter.relationshipFieldName = ``;
 				newfilter.operator = StringHelpers.getOperatorFromString(filter[1], filter[2]);
+
+				if (newfilter.operator === OperatorString.Contains && value.endsWith('*')) {
+					newfilter.operator = OperatorString.StartsWith;
+				}
+
+				if (newfilter.operator === OperatorString.Contains && value.startsWith('*')) {
+					newfilter.operator = OperatorString.EndsWith;
+				}
+
 				newfilter.type = ft;
 				newfilter.isDefaultFilter = false;
 				newfilter.isPreloaded = true;
@@ -346,7 +354,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				//	newfilter.value2 = filter.value2;
 				//}
 				res.push(newfilter);
-				console.log(newfilter);
 			}
 		}
 		return res;
@@ -451,7 +458,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 				this.fieldOptions.forEach((grp) => {
 					grp.items.forEach((itm) => {
-						if (itm['fieldType'].Name === apiFieldName) {
+						if (itm['fieldType']?.Name === apiFieldName) {
 							selection = itm as SelectItem;
 						}
 					});
@@ -520,8 +527,11 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	loadDefinitionFields() {
 		setTimeout(() => {
-			this.definition.Fields.forEach((field) => {
-				this.addFormFieldForField(`${field.FieldTypeName}|${field.RelationIndex + 1}`, field.OverrideDisplayName);
+			this.definition.Fields.filter((x) => x.Show === true).forEach((field) => {
+				let fieldName = `${field.FieldTypeName}|${field.RelationIndex + 1}`;
+				if (this.getFieldFromFieldOptions(fieldName)) {
+					this.addFormFieldForField(fieldName, field.OverrideDisplayName);
+				}
 			});
 
 			this.setDropdowns();
@@ -536,7 +546,20 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			this.isLoading = false;
 			this.cdRef.markForCheck();
 		}, 200);
-	};
+	}
+
+	getFieldFromFieldOptions(fieldName: string) {
+		let ret = null;
+		this.fieldOptions.forEach((grp) => {
+			grp.items.forEach((item) => {
+				if (item.value === fieldName) {
+					ret = item;
+				}
+			});
+		});
+
+		return ret;
+	}
 
 	resolveDirectionString(id: number): string {
 		switch (id) {
@@ -673,13 +696,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		this.filter = $event.filter;
 	}
-
-	getState() {
-		console.log(this.getDefinition());
-		console.log(this.fieldOptions);
-	}
-
-
 }
 
 

@@ -1187,6 +1187,20 @@ namespace d360.core.entities
 
 		[DataMember]
 		public FieldTypeDataTypeApiViewModel Type { get; set; }
+
+		[IgnoreDataMember]
+		public bool IsForRelationLookupDefinition
+		{
+			get
+			{
+				return Type.ComputedOwnershipLookup == null &&
+					Type.ComputedRelationshipLookup == null &&
+					Type.ComputedRelationshipField == null &&
+					Type.ComputedRelationshipReferenceList == null &&
+					Type.Json == null &&
+					Type.Tag == null;
+			}
+		}
 	}
 
 	public class FieldTypesApiViewModel

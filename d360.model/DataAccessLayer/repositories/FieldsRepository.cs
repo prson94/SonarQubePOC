@@ -340,7 +340,10 @@ namespace d360.model.DataAccessLayer
 										) else null end) as 'Type.ComputedRelationshipLookup.Definition.Relations',
 										JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
 										select	AST.Uid as AssetTypeUid,
-												coalesce(AFT.Name, DF.FieldTypeName) as FieldTypeName,
+												case when DF.FieldTypeName like 'Related Item.%' or DF.FieldTypeName like 'Relation.%'
+													then DF.FieldTypeName									
+												    else coalesce(AFT.Name, DF.FieldTypeName) 
+												end as FieldTypeName,
 												DF.[Filter],
 												DF.OverrideDisplayName,
 												DF.DisplayOrder,
