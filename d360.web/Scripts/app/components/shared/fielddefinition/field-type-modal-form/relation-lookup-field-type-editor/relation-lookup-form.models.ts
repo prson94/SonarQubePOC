@@ -10,4 +10,6 @@ export class RelationshipTypeSelection {
 	relationshipTypeUid?: string;
 	assetTypeUid?: string;
 	direction?: number;
+
+	valuesResolved?: boolean;
 }

@@ -12,6 +12,12 @@ import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { FieldColumnPosition, FieldTypeAPIModel, FieldTypeAPIModelField, RelationshipLookupDefinition } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
 
+class FtItem implements SelectItem {
+	title: string;
+	value: string;
+	fieldType: FieldType;
+}
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -273,7 +279,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			if (typeof i.value === "undefined") {
 				i.value = null;
 			}
-			let option = { label: i.title, value: i.value };
+			const option = { label: i.title, value: i.value };
 			option["fieldType"] = i.fieldType;
 			s.push(option);
 		});
@@ -551,10 +557,4 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			);
 
 	}
-}
-
-class FtItem implements SelectItem {
-	title: string;
-	value: string;
-	fieldType: FieldType;
 }

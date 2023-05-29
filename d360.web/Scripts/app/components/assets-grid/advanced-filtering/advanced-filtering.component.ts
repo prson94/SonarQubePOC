@@ -298,6 +298,8 @@ export class AdvancedFilteringComponent implements OnChanges {
 		}
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	public processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false, existingFilters: AdvancedFilterFieldCondition[] = []) {
 		var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
 		if (res) {

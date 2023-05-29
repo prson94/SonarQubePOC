@@ -1705,9 +1705,9 @@ namespace d360.web.Controllers.V2
 			var prefix = "Fields.GetRelationLookupDisplayFields => ";
 			var errorMessage = "";
 
-			void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName, DataType fieldType = DataType.Text)
+			void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName)
 			{
-				var t = new FieldTypeApiViewModel()
+				var t = new FieldTypeApiViewModel
 				{
 
 					Type = new FieldTypeDataTypeApiViewModel(),
@@ -1780,7 +1780,7 @@ namespace d360.web.Controllers.V2
 					AddDefaultItem(ref list, "FirstName");
 					AddDefaultItem(ref list, "LastName");
 					AddDefaultItem(ref list, "Email");
-					AddDefaultItem(ref list, "LastLoggedInOn", DataType.Date);
+					AddDefaultItem(ref list, "LastLoggedInOn");
 				}
 				else
 				{
@@ -1791,9 +1791,6 @@ namespace d360.web.Controllers.V2
 				{
 					AddDefaultItem(ref list, "_assetPath");
 				}
-
-				//var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-				//	.Where(i => i.Type != DataType.Path.ToString());
 
 				queryParams.Clear();
 				queryParams.Add("relationshiptypeuid", intersectTypeUid.ToString());

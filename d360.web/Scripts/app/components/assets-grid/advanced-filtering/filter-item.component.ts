@@ -32,7 +32,8 @@ import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
 import { DataProfileService } from "../../../services/dataprofile.service";
-import { group } from "@angular/animations";
+
+/*global $localize*/
 
 @Component({
 	selector: "filter-item",

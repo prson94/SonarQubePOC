@@ -1,4 +1,4 @@
-﻿import { Operator, OperatorString } from "../models/operator.model";
+﻿import { OperatorString } from "../models/operator.model";
 
 export class StringHelpers {
 
@@ -15,17 +15,19 @@ export class StringHelpers {
 	}
 
 	static trimChar(string, charToRemove): string {
-		while (string.charAt(0) == charToRemove) {
+		while (string.charAt(0) === charToRemove) {
 			string = string.substring(1);
 		}
 
-		while (string.charAt(string.length - 1) == charToRemove) {
+		while (string.charAt(string.length - 1) === charToRemove) {
 			string = string.substring(0, string.length - 1);
 		}
 
 		return string;
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	static getOperatorFromString(op: string, val: string): OperatorString {
 		if (!op) {
 			return OperatorString.Equals;
@@ -50,8 +52,6 @@ export class StringHelpers {
 				return OperatorString.Contains;
 			case "nct":
 				return OperatorString.NotContains;
-			case "eq":
-				return OperatorString.Equals;
 			case "ne":
 				return OperatorString.NotEquals;
 			case "lt":
