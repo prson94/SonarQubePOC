@@ -24,7 +24,7 @@ using d360.web.Models;
 using d360.web.Services;
 
 using Dapper;
-
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -1700,7 +1700,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage GetRelationLookupDisplayFields(Guid assetTypeUid, Guid intersectTypeUid)
+		public async Task<HttpResponseMessage> GetRelationLookupDisplayFields(Guid assetTypeUid, Guid intersectTypeUid)
 		{
 			var prefix = "Fields.GetRelationLookupDisplayFields => ";
 			var errorMessage = "";
@@ -1730,66 +1730,118 @@ namespace d360.web.Controllers.V2
 				}
 
 				var restrictedTypes = DataType.Text.GetNotAllowedInRelationshipLookup();
-				var list = Company.GetFieldTypesByObject(type, id)
-					.Where(i => !restrictedTypes.Contains(i.Type))
-					.Select(i => new { i.ID, i.Name })
-					.ToDictionary(i => i.Name, i => i.ID);
+				//var fieldTypes = Company.GetFieldTypesByObject(type, id)
+				//	.Where(i => !restrictedTypes.Contains(i.Type)).ToList();
+
+				var queryParams = new Dictionary<string, string>
+				{
+					{ "assettypeuid", assetTypeUid.ToString() },
+					{ "includeid", "true" }
+
+			};
+				var fieldTypes = (await FieldsRepository.GetFieldTypes(queryParams)).Item1.items;
+
+				List<RelationLookupDisplayFields> list = new List<RelationLookupDisplayFields>();
+
+				void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName, DataType fieldType = DataType.Text)
+				{
+					var t = new FieldTypeApiViewModel()
+					{
+
+						Type = new FieldTypeDataTypeApiViewModel(),
+						Name = fieldName,
+						FriendlyName = fieldName,
+					};
+
+					t.Type.Text = new FieldTypeDataTypeTextApiViewModel();
+
+					refList.Add(new RelationLookupDisplayFields
+					{
+						title = fieldName,
+						value = fieldName,
+						fieldType = t
+					});
+				}
+
+				foreach (var ft in fieldTypes)
+				{
+					list.Add(new RelationLookupDisplayFields
+					{
+						title = ft.Name,
+						value = ft.Name,
+						fieldType = ft
+					});
+				}
 
 				if (type == SystemObjects.ReferenceItemType)
 				{
 					if (id == 0)
 					{
-						list.Add("Name", 0);
+						AddDefaultItem(ref list, "Name");
 
-						if (!list.ContainsKey("Description"))
+						if (!list.Any(x => x.title == "Description"))
 						{
-							list.Add("Description", 0);
+							AddDefaultItem(ref list, "Description");
 						}
 					}
 				}
 				else if (type == SystemObjects.ResourceType)
 				{
-					list.Add("FirstName", 0);
-					list.Add("LastName", 0);
-					list.Add("Email", 0);
-					list.Add("LastLoggedInOn", 0);
+					AddDefaultItem(ref list, "FirstName");
+					AddDefaultItem(ref list, "LastName");
+					AddDefaultItem(ref list, "Email");
+					AddDefaultItem(ref list, "LastLoggedInOn", DataType.Date);
 				}
 				else
 				{
-					list.Add("DisplayValue", 0);
+					AddDefaultItem(ref list, "DisplayValue");
 				}
 
 				if (type != SystemObjects.ResourceType)
 				{
-					list.Add("_assetPath", 0);
+					AddDefaultItem(ref list, "_assetPath");
 				}
 
-				var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-					.Where(i => i.Type != DataType.Path.ToString())
-					.Select(i => new { i.ID, i.Name }).ToList();
-				relList.ForEach(r =>
-				{
-					list.Add($"Relation.{r.Name}", r.ID);
-				});
+				//var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
+				//	.Where(i => i.Type != DataType.Path.ToString());
 
-				var sType = type.ToString();
-				var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
-					(i.SubjectAssetTypeID == at.ID) ||
-					(i.ObjectAssetTypeID == at.ID)
-					).ToList().Select(i => new
-					{
-						ID = i.ID,
-						Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
-					}).Distinct().ToList();
-				relatedTypeList.ForEach(r =>
+				queryParams.Clear();
+				queryParams.Add("relationshiptypeuid", intersectTypeUid.ToString());
+				queryParams.Add("includeid", "true");
+				var relList = (await FieldsRepository.GetFieldTypes(queryParams)).Item1.items;
+
+				if (relList != null)
 				{
-					if (!list.ContainsKey($"Related Item.{r.Name} ({r.ID})"))
+					foreach (var ft in relList)
 					{
-						list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
+						list.Add(new RelationLookupDisplayFields
+						{
+							title = $"Relation.{ft.Name}",
+							value = $"Relation.{ft.Name}",
+							fieldType = ft
+						});
 					}
-				});
+				}
 
-				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = $"{i.Key}" }));
+
+				//var sType = type.ToString();
+				//var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
+				//	(i.SubjectAssetTypeID == at.ID) ||
+				//	(i.ObjectAssetTypeID == at.ID)
+				//	).ToList().Select(i => new
+				//	{
+				//		ID = i.ID,
+				//		Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
+				//	}).Distinct().ToList();
+				//relatedTypeList.ForEach(r =>
+				//{
+				//	if (!list.ContainsKey($"Related Item.{r.Name} ({r.ID})"))
+				//	{
+				//		list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
+				//	}
+				//});
+
+				return Request.CreateResponse(HttpStatusCode.OK, list);
 			}
 			catch (RestApiException ex)
 			{
@@ -1801,11 +1853,19 @@ namespace d360.web.Controllers.V2
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
+					{ "Endpoint Method", prefix
+}
 				});
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
+		}
+
+		public class RelationLookupDisplayFields
+		{
+			public string title { get; set; }
+			public string value { get; set; }
+			public FieldTypeApiViewModel fieldType { get; set; }
 		}
 
 		/// <summary>
@@ -1980,7 +2040,7 @@ namespace d360.web.Controllers.V2
 					{
 						var dbArgs = new DynamicParameters();
 						dbArgs.Add("typeId", typeId);
-						StringBuilder stringBuilder	= new StringBuilder();
+						StringBuilder stringBuilder = new StringBuilder();
 						int idx = 0;
 						foreach (var field in model.Position)
 						{

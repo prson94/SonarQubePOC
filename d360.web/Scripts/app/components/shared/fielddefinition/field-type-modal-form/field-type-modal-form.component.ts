@@ -392,6 +392,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					name: model.Fields[0].Name
 				};
 				this.onUpdated.emit(event);
+				if (this.relationLookupEditor) {
+					this.relationLookupEditor.resetForm();
+				}
 				if (addAnother) {
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
@@ -743,7 +746,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	close() {
 		this.setDefaultFormValues();
-
+		if (this.relationLookupEditor) {
+			this.relationLookupEditor.resetForm();
+		}
 		if (this.formElement) {
 			this.formElement.nativeElement.scrollTop = 0;
 		}

@@ -354,6 +354,7 @@ export class Counter implements ICommonOptions {
 export class ComputedRelationshipLookupDefinition {
 	Fields: DefinitionField[] = [];
 	Relations: Relation[] = [];
+	Filters: string;
 }
 
 export class DefinitionField {

@@ -18,7 +18,7 @@
 								required
 								(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
 					<div style="width:32px">
-						<button *ngIf="relationshipTypeSelection.length > 1 && isLast" igButton icon="fa-trash" (click)="removeRelationshipHop(item.cntrlName)"></button>
+						<button *ngIf="isLast" igButton icon="fa-trash" (click)="removeRelationshipHop(item.cntrlName)"></button>
 					</div>
 				</div>
 			</div>
@@ -96,7 +96,6 @@
 						<label i18n>Filter</label>
 						<advanced-filtering #advancedFilter
 											[useFieldCategories]="true"
-											[enableFilterSaving]="false"
 											(onChange)="advancedFiltersChanged($event)">
 						</advanced-filtering>
 					</div>

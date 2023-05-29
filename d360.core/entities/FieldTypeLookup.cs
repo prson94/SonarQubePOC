@@ -77,14 +77,17 @@ namespace d360.core.entities
         public List<FieldTypeComplexLookupDefinitionField> Fields { get; set; }
         
         public List<FieldTypeComplexLookupDefinitionRelation> Relations { get; set; }
-    }
+		public string Filters { get; set; }
+	}
 
-    public class FieldTypeComplexLookupDefinitionApiViewModel
+	public class FieldTypeComplexLookupDefinitionApiViewModel
     {
         public List<FieldTypeComplexLookupDefinitionFieldApiViewModel> Fields { get; set; }
         
         public List<FieldTypeComplexLookupDefinitionRelationApiViewModel> Relations { get; set; }
-    }
+
+		public string Filters { get; set; }
+	}
 
     public class FieldTypeComplexLookupDefinitionFieldApiViewModel
     {

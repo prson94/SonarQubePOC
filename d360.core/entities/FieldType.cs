@@ -1183,6 +1183,9 @@ namespace d360.core.entities
 		public Guid? RelationshipTypeUid { get; set; }
 
 		[DataMember]
+		public int? Id { get; set; }
+
+		[DataMember]
 		public FieldTypeDataTypeApiViewModel Type { get; set; }
 	}
 

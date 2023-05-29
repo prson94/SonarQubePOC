@@ -1,14 +1,17 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormGroup, UntypedFormControl, Validators } from '@angular/forms';
-import { cloneDeep } from 'lodash-es';
 import { SelectItemGroup } from 'primeng/api';
 import { forkJoin, map, Observable, of, Subscription } from 'rxjs';
-import { ComputedRelationshipLookupDefinition, FieldType } from '../../../../../models/fieldtype-api.model';
+import { ComputedRelationshipLookupDefinition, FieldType, FieldTypeAPIModel } from '../../../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../../../services/fieldsObservable.service';
+import { StringHelpers } from '../../../../../static/string-helpers';
 import { AdvancedFilteringComponent } from '../../../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldType } from '../../../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { PopupMenuItem } from '../../../controls/popup-menu/popup-menu.component';
 import { RelationshipTypeSelection } from './relation-lookup-form.models';
+import { DatePipe } from "@angular/common";
+import { SelectItem } from '../../../../../models/form.model';
+import { OperatorString } from '../../../../../models/operator.model';
 
 export class LookupField {
 	idx: number;
@@ -49,33 +52,46 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	lookupFields: LookupField[] = [];
 	sortFields: SortField[] = [];
+	advancedFilterFieldTypes: AdvancedFilterFieldType[] = [];
 
 	readonly relationshipFormNamePrefix: string = 'RelationLookup_Rel_';
 	readonly sortOrderControlPrefix: string = 'RelationLookup_SortOrder_';
 	lastSortIdx: number = 0;
 	@ViewChild('advancedFilter', { static: false }) advancedFilter: AdvancedFilteringComponent;
 
+	intervalHandle: any;
 	constructor(
 		private fieldsService: FieldsObservableService,
-		private cdRef: ChangeDetectorRef) {
+		private cdRef: ChangeDetectorRef,
+		private datePipe: DatePipe) {
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes.isVisible && changes.isVisible.currentValue !== changes.isVisible.previousValue) {
-			this.relationshipTypeSelection = [];
-			this.lookupFields = [];
-			this.sortFields = [];
-
-			Object.keys(this.fieldTypeForm.controls)
-				.filter((x) => x.startsWith('RelationLookup'))
-				.forEach((key) => {
-					this.fieldTypeForm.removeControl(key);
-				});
+			this.resetForm();
 
 			if (this.isVisible) {
 				this.load();
 			}
 		}
+	}
+
+	resetForm() {
+		console.log("resseting form");
+
+		this.relationshipTypeSelection = [];
+		this.lookupFields = [];
+		this.sortFields = [];
+
+		if (this.intervalHandle) {
+			clearInterval(this.intervalHandle);
+		}
+
+		Object.keys(this.fieldTypeForm.controls)
+			.filter((x) => x.startsWith('RelationLookup'))
+			.forEach((key) => {
+				this.fieldTypeForm.removeControl(key);
+			});
 	}
 
 	validateComponents() {
@@ -86,6 +102,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	}
 
 	load() {
+		console.log("load");
 		this.isLoading = true;
 
 		if (this.definition) {
@@ -105,12 +122,15 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 
-		setInterval(() => {
+		this.intervalHandle = setInterval(() => {
 			this.setDropdowns();
 		}, 250);
 	}
 
 	setDropdowns() {
+		if (!this.isVisible || this.isLoading) {
+			return;
+		}
 		const selectedFields: string[] = [];
 		Object.keys(this.fieldTypeForm.controls)
 			.filter((ctrl) => ctrl.startsWith('RelationLookupField_Name'))
@@ -193,9 +213,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	loadNewHop() {
 		this.loadingHopDetailsInProgress = true;
 		const lastRel = this.relationshipTypeSelection[this.relationshipTypeSelection.length - 1];
-		this.fieldsService.getStandardRelations(lastRel.assetTypeUid)
+		this.fieldsService.getStandardRelations(lastRel?.assetTypeUid ?? this.assetTypeUid)
 			.subscribe((res) => {
-				const item: RelationshipTypeSelection = { index: lastRel.index + 1, options: res, selected: null, cntrlName: this.relationshipFormNamePrefix + (lastRel.index + 1) };
+				const idx = lastRel ? lastRel.index + 1 : 1;
+				const item: RelationshipTypeSelection = { index: idx, options: res, selected: null, cntrlName: this.relationshipFormNamePrefix + idx };
 				this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl('', [Validators.required]));
 				this.relationshipTypeSelection.push(item);
 				this.validateComponents();
@@ -219,7 +240,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		item.fieldOptions = [];
 		return this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid)
 			.subscribe((fields) => {
-				item.fieldOptions = fields;
+				item.fieldOptions = JSON.parse(JSON.stringify(fields));
 				if (addNew) {
 					this.addFormFieldForField();
 				}
@@ -233,6 +254,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	setFieldsDropdown() {
 		this.fieldOptions = [];
+
 		this.relationshipTypeSelection.forEach((rel) => {
 			if (rel.fieldOptions && rel.fieldOptions.length > 0) {
 				rel.fieldOptions.filter((item) => (item.value as string).indexOf('|') === -1).forEach((item) => {
@@ -245,24 +267,89 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		//advanced filtering filters
 
-		const fields: AdvancedFilterFieldType[] = [];
+		this.advancedFilterFieldTypes = [];
+
+		let relationIndex: number = 1;
 		this.fieldOptions.forEach((grp) => {
 			grp.items.forEach((itm) => {
-				fields.push({
-					Name: itm.value,
-					FriendlyName: itm.value.split('|')[0],
-					Type: new FieldType("Text"),
-					Category: grp.label
-				})
+				if (itm["fieldType"]) {
+					const ft = itm["fieldType"]
+					const _rawType = ft.Type;
+					const typeName = Object.keys(_rawType)[0];
+
+					if (ft["Id"]) {
+						ft['Name'] = `H${relationIndex}_${ft['Id']}`;
+					}
+					_rawType[typeName]["IsPrimaryFilter"] = false;
+					this.advancedFilterFieldTypes.push({
+						Category: grp.label,
+						FriendlyName: ft['FriendlyName'],
+						Name: ft['Name'],
+						Type: _rawType
+					})
+				}
 			});
+			relationIndex++;
 		});
+
+		console.log(this.advancedFilterFieldTypes);
 		setTimeout(() => {
 			if (this.advancedFilter) {
+				const filters = this.getExistingFilters();
 				this.advancedFilter.clearFilters();
 				this.advancedFilter.initializeData();
-				this.advancedFilter.processLoadedData(fields, true);
+				this.advancedFilter.processLoadedData(this.advancedFilterFieldTypes, true, filters);
 			}
 		}, 300);
+	}
+
+	getExistingFilters(): AdvancedFilterFieldCondition[] {
+		const res: AdvancedFilterFieldCondition[] = [];
+		if (this.definition && this.definition.Filters) {
+			const regexp = /\(.*?\)/g;
+			const matches = this.definition.Filters.match(regexp);
+			for (const match of matches) {
+				const expression = StringHelpers.trimChar(StringHelpers.trimChar(match.trim(), ')'), '(');
+				const filter = expression.split(' ').map((x) => x.trim());
+				const value = StringHelpers.trimChar(filter[2], `'`);
+				var newfilter = new AdvancedFilterFieldCondition(this.datePipe);
+				newfilter.connectingOperator = 'and';
+				newfilter.field = filter[0];
+
+				const ft = this.advancedFilterFieldTypes.find((x) => x.Name === newfilter.field);
+				newfilter.fieldType = Object.keys(ft.Type)[0];
+				newfilter.friendlyFieldName = ft.FriendlyName;
+				newfilter.isRelationship = false;
+				newfilter.markForDeletion = false;
+				newfilter.relationshipFieldName = ``;
+				newfilter.operator = StringHelpers.getOperatorFromString(filter[1], filter[2]);
+				newfilter.type = ft;
+				newfilter.isDefaultFilter = false;
+				newfilter.isPreloaded = true;
+				newfilter.isConfirmed = true;
+
+				const doNotPopulateValue: OperatorString[] = [OperatorString.IsTrue, OperatorString.IsFalse, OperatorString.Populated, OperatorString.Populated];
+
+				if (!doNotPopulateValue.some((x) => x === newfilter.operator)) {
+					if (value && newfilter.type && (newfilter.type.Type.Date || newfilter.type.Type.DateTime)) {
+						newfilter.value = new Date(value);
+					}
+					else {
+						newfilter.value = value;
+					}
+				}
+
+				//if (filter.value2 && newfilter.type && (newfilter.type.Type.Date || filter.type.Type.DateTime)) {
+				//	newfilter.value2 = new Date(filter.value2);
+				//}
+				//else {
+				//	newfilter.value2 = filter.value2;
+				//}
+				res.push(newfilter);
+				console.log(newfilter);
+			}
+		}
+		return res;
 	}
 
 	addFormFieldForField(name = '', displayOverrideName = '') {
@@ -320,8 +407,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				continue;
 			}
 
-			const filter = this.filters.find((x) => x.field === fieldValue);
-
 			const parsedFieldValue = (fieldValue as string).split('|');
 			if (parsedFieldValue.length < 2) {
 				continue;
@@ -349,7 +434,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				FieldTypeName: fieldName,
 				DisplayOrder: i,
 				OverrideDisplayName: overrideDisplayName,
-				Filter: filter ? filter.value : null,
+				Filter: null,
 				RelationIndex: relationIndex,
 				Show: true,
 				SortOrder: sortOrder,
@@ -357,6 +442,46 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				SortByAscending: sortByAscending
 			});
 		}
+
+		//handle filter fields
+		if (this.filters && this.filters.length > 0) {
+			this.filters.forEach((ft) => {
+				const apiFieldName = ft.field;
+				let selection: SelectItem = null;
+
+				this.fieldOptions.forEach((grp) => {
+					grp.items.forEach((itm) => {
+						if (itm['fieldType'].Name === apiFieldName) {
+							selection = itm as SelectItem;
+						}
+					});
+				})
+
+				if (selection) {
+					const fieldName: string = selection.value.split('|')[0];
+					const relIdx: number = +selection.value.split('|')[1] - 1;
+
+					if (!definition.Fields.some((x) => x.RelationIndex === relIdx && x.FieldTypeName === fieldName)) {
+						const _rel = this.relationshipTypeSelection[relIdx];
+
+						definition.Fields.push({
+							AssetTypeUid: _rel.assetTypeUid,
+							FieldTypeName: fieldName,
+							DisplayOrder: null,
+							OverrideDisplayName: null,
+							Filter: null,
+							RelationIndex: relIdx,
+							Show: false,
+							SortOrder: null,
+							Width: null,
+							SortByAscending: null
+						});
+					}
+				}
+			});
+		}
+
+		definition.Filters = this.filter;
 
 		return definition;
 	}
@@ -382,16 +507,17 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				const value = `${x.IntersectTypeUid}|${x.AssetTypeUid}|${this.resolveDirectionId(x.Direction)}`.toUpperCase();
 
 				const isLast = data.indexOf(result) === data.length - 1;
+				this.relationshipTypeSelection.push(item);
 
 				this.relationshipTypeSelected({ value: value }, item, isLast ? this.loadDefinitionFields.bind(this) : null, false);
 
 				this.fieldTypeForm.addControl(item.cntrlName, new UntypedFormControl(value, [Validators.required]));
-				this.relationshipTypeSelection.push(item);
 				this.cdRef.markForCheck();
 				idx++;
 			});
 		});
 	}
+
 	loadDefinitionFields() {
 		setTimeout(() => {
 			this.definition.Fields.forEach((field) => {
@@ -536,6 +662,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	}
 
 	filters: AdvancedFilterFieldCondition[] = [];
+	filter: string = null;
 	advancedFiltersChanged($event) {
 		this.lookupFields.forEach((f) => {
 			f.filterValue = null;
@@ -543,11 +670,16 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if ($event && $event.data) {
 			this.filters = $event.data;
 		}
+
+		this.filter = $event.filter;
 	}
 
 	getState() {
 		console.log(this.getDefinition());
+		console.log(this.fieldOptions);
 	}
+
+
 }
 
 

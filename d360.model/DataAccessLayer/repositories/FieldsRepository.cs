@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -60,17 +61,19 @@ namespace d360.model.DataAccessLayer
 			int? issueTypeID = null;
 			int? intersectTypeID = null;
 
+			bool includeId = false;
+
 			WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK, "", "");
-			
+
 			if (parameters.Any(q => q.Key.ToLower() == "actiontypeuid"))
 			{
 				var actionTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
-				
+
 				if (Guid.TryParse(actionTypeUidString, out Guid ac))
 				{
 					actionTypeUid = ac;
 					var actionType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
-					
+
 					if (actionType != null)
 					{
 						obj = "IssueType";
@@ -82,7 +85,7 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 			}
-			
+
 			if (parameters.Any(q => q.Key.ToLower() == "assettypeuid"))
 			{
 				if (actionTypeUid.HasValue)
@@ -92,12 +95,12 @@ namespace d360.model.DataAccessLayer
 				else
 				{
 					var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
-					
+
 					if (Guid.TryParse(assetTypeUidString, out Guid at))
 					{
 						assetTypeUid = at;
 						var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
-						
+
 						if (assetType != null)
 						{
 							obj = assetType.Object;
@@ -114,7 +117,7 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 			}
-			
+
 			if (parameters.Any(q => q.Key.ToLower() == "relationshiptypeuid"))
 			{
 				if (actionTypeUid.HasValue)
@@ -132,7 +135,7 @@ namespace d360.model.DataAccessLayer
 					{
 						relationshipTypeUid = rt;
 						var intersectType = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
-						
+
 						if (intersectType != null)
 						{
 							obj = "IntersectType";
@@ -145,7 +148,7 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 			}
-			
+
 			if (actionTypeUid.HasValue || assetTypeUid.HasValue || relationshipTypeUid.HasValue)
 			{
 				orderByClause = " order by FT.ColumnOrder, FT.Name ";
@@ -163,7 +166,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			if (issueTypeID.HasValue)
-			{				
+			{
 				dbArgs.Add("@issueTypeID", issueTypeID.Value);
 				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IssueTypeID] = @issueTypeID";
 			}
@@ -211,6 +214,14 @@ namespace d360.model.DataAccessLayer
 					pageSize = 250;
 				}
 			}
+			if (parameters.Any(q => q.Key.ToLower() == "includeid"))
+			{
+				var includeIdString = parameters.FirstOrDefault(q => q.Key.ToLower() == "includeid").Value;
+				if (!bool.TryParse(includeIdString, out includeId))
+				{
+					includeId = false;
+				}
+			}
 
 			StringBuilder additionalApply = new StringBuilder();
 			if (parameters.Any(q => q.Key.ToLower() == "resolvevalues"))
@@ -248,6 +259,7 @@ namespace d360.model.DataAccessLayer
 								@total as 'total',
 								(
 								select	
+										{(includeId ? "FT.Id," : "")}
 										FT.Name,
 										FT.FriendlyName,
 										FT.Category,
@@ -344,6 +356,9 @@ namespace d360.model.DataAccessLayer
 										order by DF.DisplayOrder
 										for json path
 										) else null end) as 'Type.ComputedRelationshipLookup.Definition.Fields',
+										case when FT.Type = 'ComplexRelationLookup' then (
+											select Filters from OPENJSON(FTL.Definition) with (Filters nvarchar(max))
+										) else null end as 'Type.ComputedRelationshipLookup.Definition.Filters',
 										case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
 										case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
 
@@ -702,16 +717,16 @@ namespace d360.model.DataAccessLayer
 						for json path, WITHOUT_ARRAY_WRAPPER";
 
 			var model = await Company.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs, ApiTimeout);
-			
+
 			return new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(model, workHttpStatus);
 		}
 
 		internal class FieldInfo
 		{
 			public int FieldTypeID { get; set; }
-			
+
 			public AssetTypeClass Class { get; set; }
-			
+
 			public string FieldType { get; set; }
 		}
 
@@ -722,7 +737,7 @@ namespace d360.model.DataAccessLayer
 
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			var currentFieldTypes = Company.Filter<FieldType>(f => (f.AssetTypeID==typeIdentifierInfoModel.ID || f.IssueTypeID == typeIdentifierInfoModel.ID || f.IntersectTypeID == typeIdentifierInfoModel.ID), i => i.FieldTypeLookup).ToList();
+			var currentFieldTypes = Company.Filter<FieldType>(f => (f.AssetTypeID == typeIdentifierInfoModel.ID || f.IssueTypeID == typeIdentifierInfoModel.ID || f.IntersectTypeID == typeIdentifierInfoModel.ID), i => i.FieldTypeLookup).ToList();
 			var existingKeyFieldsHash = GetKeyFieldsHash(currentFieldTypes);
 
 			var newFieldTypes = new List<FieldType>();
@@ -731,7 +746,7 @@ namespace d360.model.DataAccessLayer
 			var reservedWords = new List<string>() { "color", "icon", "parentid", "database", "path", "keypath", "displaypath" };
 			var maxColumnIndexItem = currentFieldTypes.OrderByDescending(x => x.ColumnOrder).FirstOrDefault();
 			var maxColumnIndex = 0;
-			
+
 			if (maxColumnIndexItem != null)
 			{
 				maxColumnIndex = maxColumnIndexItem.ColumnOrder;
@@ -744,13 +759,13 @@ namespace d360.model.DataAccessLayer
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
 				}
 
-				if (f.Name.ToLower()== "code" && f.Type.System==null)
+				if (f.Name.ToLower() == "code" && f.Type.System == null)
 				{
-					var assetType  = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
-					if(assetType.Class == AssetTypeClass.Reference)
+					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					if (assetType.Class == AssetTypeClass.Reference)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
-					}					
+					}
 				}
 
 				var newFieldType = new FieldType
@@ -780,13 +795,13 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultValue = null;
 						newFieldType.DefaultFormattedValue = null;
 					}
-					
+
 					if (f.Type.Boolean.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Boolean.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Boolean.Description.Form.SanitizeHtml();
 					}
-					
+
 					if (f.Type.Boolean.Validation != null)
 					{
 						newFieldType.IsRequired = f.Type.Boolean.Validation.IsRequired;
@@ -868,12 +883,12 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.Type = DataType.OwnershipLookup.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedOwnershipLookup.ColumnOrder.HasValue ? f.Type.ComputedOwnershipLookup.ColumnOrder.Value : ++maxColumnIndex;
-					
+
 					if (f.Type.ComputedOwnershipLookup.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.ComputedOwnershipLookup.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.ComputedOwnershipLookup.IsDisplayable;
 					newFieldType.IsEditable = false;
 					newFieldType.IsListable = f.Type.ComputedOwnershipLookup.IsListable;
@@ -885,7 +900,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 					newFieldType.DisplayInColumn = f.Type.ComputedOwnershipLookup.DisplayInColumn;
 
-                    if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
+					if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
 					{
 						int relationshipsTypeId = Company.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
 						{
@@ -909,7 +924,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.FieldFromRelationship.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedRelationshipField.ColumnOrder.HasValue ? f.Type.ComputedRelationshipField.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.ComputedRelationshipField.ColumnWidth;
-					
+
 					if (f.Type.ComputedRelationshipField.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.ComputedRelationshipField.Description.Display.SanitizeHtml();
@@ -929,12 +944,12 @@ namespace d360.model.DataAccessLayer
 						fieldTypeName = f.Type.ComputedRelationshipField.FieldTypeName,
 						assetTypeId = typeIdentifierInfoModel.ID
 					}).FirstOrDefault();
-					
+
 					if (relationshipsFieldType == null)
 					{
 						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeFieldNotFound, string.Format(FieldErrors.RelationshipTypeOrFieldTypeNotFound, f.Type.ComputedRelationshipField.IntersectTypeUid));
 					}
-					
+
 					newFieldType.LookupObjectType = "IntersectType";
 					newFieldType.LookupObjectID = relationshipsFieldType.IntersectTypeID;
 					newFieldType.LookupObjectFieldTypeID = relationshipsFieldType.FieldTypeID;
@@ -980,12 +995,12 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.Type = DataType.ComplexRelationLookup.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder.HasValue ? f.Type.ComputedRelationshipLookup.ColumnOrder.Value : ++maxColumnIndex;
-					
+
 					if (f.Type.ComputedRelationshipLookup.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.ComputedRelationshipLookup.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.ComputedRelationshipLookup.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipLookup.ShowIfEmpty;
 
@@ -1014,7 +1029,7 @@ namespace d360.model.DataAccessLayer
 
 						var relationRefListInfo = Company.Query<dynamic>(
 							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and ((T.objectclass = @AssetTypeClass and T.ObjectAssetTypeID = 0) or (T.SubjectClass = @AssetTypeClass and T.subjectAssetTypeID = 0))",
-							new { intersectUid = i.IntersectTypeUid, AssetTypeClass = AssetTypeClass.Reference}
+							new { intersectUid = i.IntersectTypeUid, AssetTypeClass = AssetTypeClass.Reference }
 						).SingleOrDefault();
 
 						if (relationRefListInfo != null)
@@ -1167,8 +1182,6 @@ namespace d360.model.DataAccessLayer
 						}
 					});
 
-
-
 					if (hasDefinitionError)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, definitionErrorMessage);
@@ -1185,7 +1198,8 @@ namespace d360.model.DataAccessLayer
 						Definition = JsonConvert.SerializeObject(new
 						{
 							Relations = definitionRelations,
-							Fields = definitionFields
+							Fields = definitionFields,
+							Filters = f.Type.ComputedRelationshipLookup.Definition.Filters
 						})
 					};
 				}
@@ -1198,21 +1212,21 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.Type = DataType.RefListRelationship.ToString();
 					newFieldType.ColumnOrder = f.Type.ComputedRelationshipReferenceList.ColumnOrder.HasValue ? f.Type.ComputedRelationshipReferenceList.ColumnOrder.Value : ++maxColumnIndex;
-					
+
 					if (f.Type.ComputedRelationshipReferenceList.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.ComputedRelationshipReferenceList.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.ComputedRelationshipReferenceList.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipReferenceList.ShowIfEmpty;
 					var relationshipsFieldType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
-					
+
 					if (relationshipsFieldType <= 0)
 					{
 						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeNotFoundBasedOnUid, f.Type.ComputedRelationshipReferenceList.IntersectTypeUid));
 					}
-					
+
 					newFieldType.LookupObjectType = "IntersectType";
 					newFieldType.LookupObjectID = relationshipsFieldType;
 					newFieldType.Definition = JsonConvert.SerializeObject(new { f.Type.ComputedRelationshipReferenceList.DisplayRefListDescription });
@@ -1222,7 +1236,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Date.ToString();
 					newFieldType.ColumnOrder = f.Type.Date.ColumnOrder.HasValue ? f.Type.Date.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
-					
+
 					if (f.Type.Date.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.Date.DefaultValue.Value.ToString("M/d/yyyy");
@@ -1240,7 +1254,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DisplayDescription = f.Type.Date.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Date.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Date.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Date.IsEditable;
 					newFieldType.IsListable = f.Type.Date.IsListable;
@@ -1254,7 +1268,7 @@ namespace d360.model.DataAccessLayer
 					{
 						newFieldType.IsRequired = f.Type.Date.Validation.IsRequired;
 					}
-					
+
 					if (f.Type.Date.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Date.Search.AddToResult;
@@ -1262,7 +1276,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.SearchSuffix = f.Type.Date.Search.Suffix;
 						newFieldType.SearchDisplayOrder = f.Type.Date.Search.DisplayOrder;
 					}
-					
+
 					newFieldType.DisplayInColumn = f.Type.Date.DisplayInColumn;
 
 				}
@@ -1271,7 +1285,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.DateTime.ToString();
 					newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder.HasValue ? f.Type.DateTime.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.DateTime.ColumnWidth;
-					
+
 					if (f.Type.DateTime.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.DateTime.DefaultValue.Value.ToString();
@@ -1287,7 +1301,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DisplayDescription = f.Type.DateTime.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.DateTime.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.DateTime.IsDisplayable;
 					newFieldType.IsEditable = f.Type.DateTime.IsEditable;
 					newFieldType.IsListable = f.Type.DateTime.IsListable;
@@ -1302,7 +1316,7 @@ namespace d360.model.DataAccessLayer
 					{
 						newFieldType.IsRequired = f.Type.DateTime.Validation.IsRequired;
 					}
-					
+
 					if (f.Type.DateTime.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.DateTime.Search.AddToResult;
@@ -1316,7 +1330,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Decimal.ToString();
 					newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder.HasValue ? f.Type.Decimal.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
-					
+
 					if (f.Type.Decimal.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
@@ -1333,7 +1347,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DisplayDescription = f.Type.Decimal.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Decimal.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Decimal.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Decimal.IsEditable;
 					newFieldType.IsListable = f.Type.Decimal.IsListable;
@@ -1352,7 +1366,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumValue;
 						newFieldType.Precision = f.Type.Decimal.Validation.Precision;
 					}
-					
+
 					if (f.Type.Decimal.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Decimal.Search.AddToResult;
@@ -1373,9 +1387,9 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultFormattedValue = null;
 					}
 					else
-					{ 
+					{
 						newFieldType.DefaultValue = f.Type.Html.DefaultValue;
-						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;					
+						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
 					}
 
 					if (f.Type.Html.Description != null)
@@ -1383,7 +1397,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DisplayDescription = f.Type.Html.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Html.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Html.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Html.IsEditable;
 					newFieldType.IsListable = f.Type.Html.IsListable;
@@ -1407,18 +1421,18 @@ namespace d360.model.DataAccessLayer
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
 					}
-					
+
 					newFieldType.Type = DataType.JSON.ToString();
 					newFieldType.ColumnOrder = f.Type.Json.ColumnOrder.HasValue ? f.Type.Json.ColumnOrder.Value : ++maxColumnIndex;
-					
+
 					if (f.Type.Json.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Json.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
-					
+
 					if (f.Type.Json.Validation != null)
 					{
 						newFieldType.IsRequired = f.Type.Json.Validation.IsRequired;
@@ -1430,15 +1444,15 @@ namespace d360.model.DataAccessLayer
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseJSONonActionType, f.Name));
 					}
-					
+
 					newFieldType.Type = DataType.JsonElement.ToString();
 					newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
-					
+
 					if (f.Type.JsonElement.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.JsonElement.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.JsonElement.ShowIfEmpty;
 					newFieldType.IsListable = f.Type.JsonElement.IsListable;
@@ -1476,13 +1490,13 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DefaultValue = null;
 						newFieldType.DefaultFormattedValue = null;
 					}
-					
+
 					if (f.Type.Link.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Link.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Link.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Link.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Link.IsEditable;
 					newFieldType.IsListable = f.Type.Link.IsListable;
@@ -1497,7 +1511,7 @@ namespace d360.model.DataAccessLayer
 					{
 						newFieldType.IsRequired = f.Type.Link.Validation.IsRequired;
 					}
-					
+
 					if (f.Type.Link.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Link.Search.AddToResult;
@@ -1511,27 +1525,27 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Lookup.ToString();
 					newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder.HasValue ? f.Type.Lookup.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
-					
+
 					if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
 					{
 						var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
-						
+
 						if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
 						{
 							return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.InvalidparentField, string.Format(FieldErrors.ParentFieldRefernceItemNotfound, f.Type.Lookup.ParentFieldTypeName));
 						}
 						newFieldType.ParentFieldTypeID = parentField.ID;
 					}
-					
+
 					if (f.Type.Lookup.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Lookup.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Lookup.Description.Form.SanitizeHtml();
 					}
-					
+
 					newFieldType.AllowAllLabel = f.Type.Lookup.AllowAllLabel;
 					newFieldType.AllowAllValue = f.Type.Lookup.AllowAllValue ?? false;
-					
+
 					if (f.Type.Lookup.List != null)
 					{
 						newFieldType.AllowMultipleValues = f.Type.Lookup.List.AllowMultipleValues;
@@ -1539,7 +1553,7 @@ namespace d360.model.DataAccessLayer
 						{
 							var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
 							var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
-							
+
 							if (listAssetType != null)
 							{
 								newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
@@ -1576,12 +1590,12 @@ namespace d360.model.DataAccessLayer
 						{
 							var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
 							var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
-							
+
 							if (listAssetType != null)
 							{
 								newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
 								newFieldType.LookupObjectID = listAssetType.ObjectID;
-								
+
 								if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue) && defaultOptions.Any(s => s.uid.ToString() == f.Type.Lookup.DefaultValue))
 								{
 									int defaultListItemID = defaultOptions.First(s => s.uid.ToString() == f.Type.Lookup.DefaultValue).ObjectID;
@@ -1602,13 +1616,13 @@ namespace d360.model.DataAccessLayer
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeListNotSpecified, FieldErrors.LookupNotSpecifiedList);
 					}
-					
+
 					if (f.Type.Lookup.Filter != null)
 					{
 						int? filterFieldType = null;
 						int? filterPredicate = null;
 						bool? filterPredicateDirection = null;
-						
+
 						if (!string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
 						{
 							var filterFieldSQL = "select ID from FieldType where Name = @n";
@@ -1625,9 +1639,9 @@ namespace d360.model.DataAccessLayer
 									break;
 
 							}
-							
+
 							filterFieldType = Company.Query<int>(filterFieldSQL, new { id = typeIdentifierInfoModel.ID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
-							
+
 							if (filterFieldType <= 0)
 							{
 								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
@@ -1638,11 +1652,11 @@ namespace d360.model.DataAccessLayer
 							//IssueTypes can have a Filter just based on Preidcate/Predicate direction. That will be Action/Subject and the filterFieldType is null
 							filterFieldType = null;
 						}
-						
+
 						if (f.Type.Lookup.Filter.PredicateUid.HasValue && f.Type.Lookup.Filter.PredicateUid != Guid.Empty)
 						{
 							filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
-							
+
 							if (filterPredicate <= 0)
 							{
 								return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.FieldTypeNotFound, string.Format(FieldErrors.FieldTypeNotFoundByName, f.Type.Lookup.Filter.FieldTypeName));
@@ -1653,7 +1667,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.FilterPredicateID = filterPredicate;
 						newFieldType.FilterPredicateDirection = filterPredicateDirection;
 					}
-					
+
 					if (f.Type.Lookup.Format != null && !string.IsNullOrEmpty(f.Type.Lookup.Format.Display))
 					{
 						newFieldType.LookupDisplayFormat = f.Type.Lookup.Format.Display;
@@ -1663,7 +1677,7 @@ namespace d360.model.DataAccessLayer
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidLookupDisplayFormat, FieldErrors.MissingListDisplayFormat);
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
 					newFieldType.IsEditable = f.Type.Lookup.IsEditable;
 					newFieldType.IsListable = f.Type.Lookup.IsListable;
@@ -1678,7 +1692,7 @@ namespace d360.model.DataAccessLayer
 					{
 						newFieldType.IsRequired = f.Type.Lookup.Validation.IsRequired;
 					}
-					
+
 					if (f.Type.Lookup.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Lookup.Search.AddToResult;
@@ -1692,7 +1706,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Number.ToString();
 					newFieldType.ColumnOrder = f.Type.Number.ColumnOrder.HasValue ? f.Type.Number.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
-					
+
 					if (f.Type.Number.DefaultValue.HasValue)
 					{
 						newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
@@ -1726,7 +1740,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
 						newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
 					}
-					
+
 					if (f.Type.Number.Search != null)
 					{
 						newFieldType.SearchAddToResult = f.Type.Number.Search.AddToResult;
@@ -1741,18 +1755,18 @@ namespace d360.model.DataAccessLayer
 					newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
 
-                    if (f.Type.Path.Definition != null)
-                    {
-                        var definition = new FieldTypeDataTypePathApiViewModel_Definition();
-                        definition.AssetTypeUid = f.Type.Path.Definition.AssetTypeUid;
-                        newFieldType.Definition = JsonConvert.SerializeObject(definition);
-                    }
+					if (f.Type.Path.Definition != null)
+					{
+						var definition = new FieldTypeDataTypePathApiViewModel_Definition();
+						definition.AssetTypeUid = f.Type.Path.Definition.AssetTypeUid;
+						newFieldType.Definition = JsonConvert.SerializeObject(definition);
+					}
 
-                    if (f.Type.Path.Description != null)
+					if (f.Type.Path.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Path.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = f.Type.Path.IsDisplayable;
 					newFieldType.IsEditable = false;
 					newFieldType.IsListable = f.Type.Path.IsListable;
@@ -1769,20 +1783,20 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Relationship.ToString();
 					newFieldType.ColumnOrder = f.Type.Relationship.ColumnOrder.HasValue ? f.Type.Relationship.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Relationship.ColumnWidth;
-					
+
 					if (f.Type.Relationship.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Relationship.Description.Display.SanitizeHtml();
 						newFieldType.FormDescription = f.Type.Relationship.Description.Form.SanitizeHtml();
 					}
-					
+
 					var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
-					
+
 					if (relationshipType <= 0)
 					{
 						return new WorkHttpStatus(HttpStatusCode.NotFound, FieldErrors.RelationshipTypeNotFound, string.Format(FieldErrors.RelationshipTypeUIdNotFound, f.Type.Relationship.IntersectTypeUid));
 					}
-					
+
 					newFieldType.LookupObjectType = "IntersectType";
 					newFieldType.LookupObjectID = relationshipType;
 					newFieldType.IsDisplayable = f.Type.Relationship.IsDisplayable;
@@ -1858,12 +1872,12 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Tag.ToString();
 					newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder.HasValue ? f.Type.Tag.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
-					
+
 					if (f.Type.Tag.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Tag.Description.Display.SanitizeHtml();
 					}
-					
+
 					newFieldType.IsDisplayable = true;
 					newFieldType.IsEditable = false;
 					newFieldType.IsListable = f.Type.Tag.IsListable;
@@ -1878,7 +1892,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Counter.ToString();
 					newFieldType.ColumnOrder = f.Type.Counter.ColumnOrder.HasValue ? f.Type.Counter.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Counter.ColumnWidth;
-					
+
 					if (f.Type.Counter.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Counter.Description.Display.SanitizeHtml();
@@ -1960,7 +1974,7 @@ namespace d360.model.DataAccessLayer
 				}
 
 				var currentFieldType = currentFieldTypes.SingleOrDefault(c => c.Name == f.Name);
-				
+
 				if (currentFieldType == null)
 				{
 					newFieldTypes.Add(newFieldType);
@@ -1981,7 +1995,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.DefaultValue = newFieldType.DefaultValue;
 					currentFieldType.DefaultFormattedValue = newFieldType.DefaultFormattedValue;
 					currentFieldType.DisplayDescription = newFieldType.DisplayDescription;
-					
+
 					if (currentFieldType.FieldTypeLookup != null)
 					{
 						if (newFieldType.FieldTypeLookup != null)
@@ -2011,7 +2025,7 @@ namespace d360.model.DataAccessLayer
 							};
 						}
 					}
-					
+
 					currentFieldType.FilterFieldTypeID = newFieldType.FilterFieldTypeID;
 					currentFieldType.FilterPredicateDirection = newFieldType.FilterPredicateDirection;
 					currentFieldType.FilterPredicateID = newFieldType.FilterPredicateID;
@@ -2069,7 +2083,7 @@ namespace d360.model.DataAccessLayer
 				action.UpdatedOn = DateTime.UtcNow;
 
 			}
-			
+
 			if (model.RelationshipTypeUid.HasValue)
 			{
 				var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
@@ -2077,7 +2091,7 @@ namespace d360.model.DataAccessLayer
 				intersectType.UpdatedOn = DateTime.UtcNow;
 
 			}
-			
+
 			if (model.AssetTypeUid.HasValue)
 			{
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
@@ -2124,8 +2138,8 @@ namespace d360.model.DataAccessLayer
 				if (!newKeyFieldsHash.Equals(existingKeyFieldsHash))
 				{
 					// Key fields have changed. You need to update the graph for this asset type.
-					Company.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);				
-				
+					Company.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);
+
 				}
 			}
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
@@ -2153,7 +2167,7 @@ namespace d360.model.DataAccessLayer
 		public bool hasResponsibilityUsingField(TypeIdentifierInfoModel typeIdentifierInfoModel, List<FieldType> fieldTypes)
 		{
 			var anyResponsibilityUsingField = false;
-			
+
 			var rules = Company.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
 			foreach (var rule in rules)
 			{
@@ -2269,8 +2283,8 @@ namespace d360.model.DataAccessLayer
 		}
 
 		public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
-		{			
-			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();			
+		{
+			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
 		}
 
 		public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
@@ -2278,7 +2292,7 @@ namespace d360.model.DataAccessLayer
 			var whereSQL = "FT.AssetTypeId = @id";
 			var id = objectId;
 
-			if (objectType==SystemObjects.IntersectType)
+			if (objectType == SystemObjects.IntersectType)
 			{
 				whereSQL = "FT.IntersectTypeId = @id";
 			}
@@ -2370,11 +2384,11 @@ namespace d360.model.DataAccessLayer
 						", new { fieldTypeId = fieldType.ID, assetUid }).ToList());
 
 
-				fields.Insert(fields.IndexOf(fields.First(f=> f.Name == "Code"))+1, new FieldType
-									{
-										Name = "Color",
-										Type = DataType.Color.ToString()
-									});
+				fields.Insert(fields.IndexOf(fields.First(f => f.Name == "Code")) + 1, new FieldType
+				{
+					Name = "Color",
+					Type = DataType.Color.ToString()
+				});
 				return fields;
 			}
 			else
@@ -2542,19 +2556,9 @@ namespace d360.model.DataAccessLayer
 
 			List<string> defaultFilters = new List<string>();
 
-			foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
+			if (!string.IsNullOrEmpty(definition.Filters))
 			{
-				var value = HttpUtility.UrlEncode(field.defaultFilter);
-				
-				if (field.type == "bool")
-				{
-					if (bool.TryParse(field.defaultFilter, out bool parsedResult))
-					{
-						value = parsedResult ? "1" : "0";
-					}
-				}
-
-				defaultFilters.Add($"({field.apiName} ct '{value}')");
+				defaultFilters.Add($"({definition.Filters})");
 			}
 
 			if (defaultFilters.Count > 0)
@@ -2600,7 +2604,7 @@ namespace d360.model.DataAccessLayer
 				{
 					int fieldIdx = selects.FindIndex(x => x.ToLowerInvariant().Contains(item.apiName.ToLowerInvariant())) + 1;
 					string sortDirection = item.isAscending ? "asc" : "desc";
-					idxs.Add(fieldIdx + " "+ sortDirection);
+					idxs.Add(fieldIdx + " " + sortDirection);
 				}
 
 				orderByClause = "order by " + string.Join(",", idxs);
@@ -2800,8 +2804,8 @@ namespace d360.model.DataAccessLayer
 					orderByClause = $"order by {(idx + 1)} {direction}";
 				}
 			}
-			else if(sortFields.Count > 0)
-			{				
+			else if (sortFields.Count > 0)
+			{
 				orderByClause = $"order by {string.Join(",", sortFields.OrderBy(x => x.order).Select(y => y.sql))}";
 			}
 			else
@@ -2845,7 +2849,7 @@ namespace d360.model.DataAccessLayer
 
 			Columns.Add(new GridColumn { text = core.resources.Fields.Responsibility_Name, datafield = "ResponsibilityTypeName", columntype = "textbox" });
 			Columns.Add(new GridColumn { text = core.resources.Fields.AssignedUserGroup_Name, datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
-			
+
 			if (definition.DisplayAssignmentSource)
 			{
 				Columns.Add(new GridColumn { text = core.resources.Fields.Via_Name, datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });

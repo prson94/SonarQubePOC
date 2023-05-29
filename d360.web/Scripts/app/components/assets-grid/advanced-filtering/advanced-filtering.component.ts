@@ -298,7 +298,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		}
 	}
 
-	public processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false) {
+	public processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false, existingFilters: AdvancedFilterFieldCondition[] = []) {
 		var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
 		if (res) {
 			res.forEach((f) => {
@@ -360,11 +360,14 @@ export class AdvancedFilteringComponent implements OnChanges {
 
 		this.fields = tempFields;
 
-		this.cdRef.markForCheck();
 
 		let loadedFilters: AdvancedFilterFieldCondition[] = [];
 		if ((this.enableFilterSaving || this.isGlobalSearch) && !newFiltersPushed) {
 			loadedFilters = this.loadFilters();
+		}
+
+		if (existingFilters && existingFilters.length > 0) {
+			loadedFilters = existingFilters;
 		}
 
 		if (newFiltersPushed) {
@@ -372,6 +375,8 @@ export class AdvancedFilteringComponent implements OnChanges {
 			//we need to add new "Add filter" button with new fields we've just pushed
 			this.conditions.filters.pop();
 		}
+
+		this.cdRef.markForCheck();
 
 		this.fields.forEach((field) => {
 			if (field.Type) {
