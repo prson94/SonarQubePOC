@@ -286,6 +286,9 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 					if (ft["Id"]) {
 						ft['Name'] = `H${relationIndex}_${ft['Id']}`;
 					}
+					else {
+						ft['Name'] = `H${relationIndex}_${ft['Name']}`;
+					}
 					_rawType[`${typeName}`]["IsPrimaryFilter"] = false;
 					this.advancedFilterFieldTypes.push({
 						Category: grp.label,

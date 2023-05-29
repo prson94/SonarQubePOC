@@ -53,6 +53,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	@Input() disableMatchAny: boolean = false;
 	@Input() afMessage: string = '';
 	@Input() useFieldCategories: boolean = false;
+	@Input() onlyResetButton: boolean = false;
 
 	@Output() onChange = new EventEmitter();
 	@Output() onLoad = new EventEmitter();
@@ -302,6 +303,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	// eslint-disable-next-line
 	public processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false, existingFilters: AdvancedFilterFieldCondition[] = []) {
 		var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
+
 		if (res) {
 			res.forEach((f) => {
 				if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
@@ -414,7 +416,6 @@ export class AdvancedFilteringComponent implements OnChanges {
 		this.visible = true;
 
 		this.onItemChange();
-
 		this.cdRef.markForCheck();
 		setInterval(() => {
 			this.customDoCheck();

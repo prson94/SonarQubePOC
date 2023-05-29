@@ -744,7 +744,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 														from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json)D
 														outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, SortByAscending bit, Show bit, Width int, RelationIndex int) DF
 				)D
-				WHERE D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
+				WHERE ISJSON(FTL.Definition) = 1 and D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
 
 				drop table if exists #expressions
 				select FieldTypeID, '(H' + CAST((RelationIndex + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression

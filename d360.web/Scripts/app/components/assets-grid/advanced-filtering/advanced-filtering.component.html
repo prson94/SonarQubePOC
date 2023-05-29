@@ -18,10 +18,11 @@
 							 [message]="afMessage">
 				</filter-item>
 			</div>
-			<div class="filters-list-menu">
+			<div class="filters-list-menu" *ngIf="!onlyResetButton">
 				<button igButton class="menu" icon="fa-ellipsis-v" i18n-tooltip tooltip="More..." (click)="menu.toggle($event)"></button>
 				<ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20" [allowAllUnchecked]="false"></ig-popup-menu>
 			</div>
 		</ng-container>
 	</div>
+	<!--<button *ngIf="onlyResetButton" igButton class="reset-single-button" icon="fa-undo" i18n-tooltip tooltip="Reset" (click)="clearFilters()"></button>-->
 </div>
