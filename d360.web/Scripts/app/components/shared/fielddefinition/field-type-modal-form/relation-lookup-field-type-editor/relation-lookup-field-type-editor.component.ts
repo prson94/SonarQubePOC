@@ -267,7 +267,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			if (rel.fieldOptions && rel.fieldOptions.length > 0) {
 				rel.fieldOptions.filter((item) => (item.value as string).indexOf('|') === -1).forEach((item) => {
 					item.value += "|" + rel.index;
-				})
+				});
 				this.fieldOptions.push({ items: rel.fieldOptions, label: $localize`Relationship Type ` + rel.index, value: this.relationshipFormNamePrefix + rel.index });
 			}
 		});
