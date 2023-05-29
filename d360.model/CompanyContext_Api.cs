@@ -7141,7 +7141,7 @@ where	T.ExecutionID = @ExecutionID
 
 								Update  ER 
 								set     Success = 0, 
-										Message = 'Relationship Type not allowed because SubjectUid and ObjectUid both are same and associated with Reference Type.' 
+										Message = 'Relationship Type not allowed because SubjectUid and ObjectUid both are same and associated with Reference List.' 
 								from    [api].[ExecutionRelationshipType] ER 
 										inner join AssetType AST on AST.UID = ER.ObjectUID and AST.Class = 9
 										inner join AssetType ASTS on ASTS.UID = ER.SubjectUID and ASTS.Class = 9

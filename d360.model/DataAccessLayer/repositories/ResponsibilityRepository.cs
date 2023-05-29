@@ -92,10 +92,15 @@ namespace d360.model.DataAccessLayer
 						WHEN 'G' THEN 'Group'
 						ELSE ''
 						END as ResourceType
-					  from [dbo].[ResponsibilityDetail] R
+					  from (
+						select * from [dbo].[ResponsibilityDetail]
+								where AssetID = @id
+								union all
+								select * from [dbo].[ResponsibilityDetail]
+								where AssetID = 0 and AssetTypeID = @typeId
+						) R
 					  inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
-					  left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'
-				where R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)";
+					  left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'";
 
 			return await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID });
 		}

@@ -54,21 +54,21 @@ namespace d360.model.DataAccessLayer
 
 		private readonly Dictionary<string, string> orderFields = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
 		{
-			{ "baseType", "BaseType" },
-			{ "description", "Description" },
-			{ "effectiveDate", "EffectiveDate" },
-			{ "headerRegExpConfidence", "HeaderFilterConfidence" },
-			{ "matchType", "MatchType" },
-			{ "maximum", "Maximum" },
-			{ "minimum", "Minimum" },
-			{ "minSamples", "MinimumSamples" },
-			{ "minMaxPresent", "MinMaxPresent" },
-			{ "name", "Name" },
-			{ "priority", "Priority" },
-			{ "qualifier", "Qualifier" },
+			{ "baseType", "S.BaseType" },
+			{ "description", "S.Description" },
+			{ "effectiveDate", "S.EffectiveDate" },
+			{ "headerRegExpConfidence", "S.HeaderFilterConfidence" },
+			{ "matchType", "S.MatchType" },
+			{ "maximum", "S.Maximum" },
+			{ "minimum", "S.Minimum" },
+			{ "minSamples", "S.MinimumSamples" },
+			{ "minMaxPresent", "S.MinMaxPresent" },
+			{ "name", "S.Name" },
+			{ "priority", "S.Priority" },
+			{ "qualifier", "S.Qualifier" },
 			{ "status", "StatusString" },
-			{ "threshold", "Threshold" },
-			{ "isDisabled", "case when EffectiveDate < UpdatedOn then 1 else 0 end" }
+			{ "threshold", "S.Threshold" },
+			{ "isDisabled", "case when S.EffectiveDate < S.UpdatedOn then 1 else 0 end" }
 		};
 
 		private void addToChangeLog(string transactionId, string action)

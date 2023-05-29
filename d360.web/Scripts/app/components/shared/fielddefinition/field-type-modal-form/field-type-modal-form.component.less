@@ -18,6 +18,18 @@
         margin: 4px;
       }
     }
+
+    .clear-input-container {
+      position: absolute;
+      top: 0;
+      right: 28px;
+
+      button {
+        width: 24px;
+        height: 24px;
+        margin: 4px;
+      }
+    }
   }
 
   .field-col {
@@ -29,20 +41,35 @@
     }
   }
 
+  .form-group {
+    .row {
+      padding: 0;
+
+      .field-col {
+        label {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
   .flex-form-group {
     display: flex;
     width: 100%;
 
     &.form-group-2 {
       .field-col {
-        width: 50%;
         margin-right: 16px;
       }
     }
 
     &.form-group-3 {
       .field-col {
-        width: 33%;
+        margin-right: 16px;
+
+        .ig-number-input {
+          width: 200px;
+        }
       }
     }
   }
@@ -106,8 +133,8 @@
       }
     }
   }
-}
 
-.simple-search {
-  padding: 0 0 16px 0;
+  .simple-search {
+    padding: 0 0 8px 0;
+  }
 }

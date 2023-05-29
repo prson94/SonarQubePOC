@@ -49,7 +49,7 @@
 							</ng-template>
 							<ng-template pTemplate="body"
 										 let-item>
-								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="disableFieldFromRelationship && item.value === 'ComputedRelationshipField'">
+								<tr [pSelectableRow]="item" [pSelectableRowDisabled]="fieldTypeDisabledTooltip(item).length > 0">
 									<td class="disabled"
 										*ngIf="fieldTypeDisabledTooltip(item), else defaultFieldTypeSelection"
 										i18n-pTooltip
@@ -125,6 +125,7 @@
 												<input igInput
 													   igSize="full"
 													   name="Category"
+													   required
 													   tabindex="20"
 													   formControlName="Category"
 													   [igDataCy]="'Field_Type_Modal_Field_Category'"
@@ -162,12 +163,29 @@
 													   [igDataCy]="'Field_Type_Modal_Field_ValidationPattern'"
 													   type="text" />
 												<div class="token-popup-menu">
-													<button igButton type="button" icon="fa-ellipsis-v" (click)="tokenMenu.toggle($event);"></button>
+													<button igButton
+															type="button"
+															i18n-pTooltip
+															pTooltip="Sample Regular Expression"
+															tooltipPosition="top"
+															tooltipStyleClass="ig-tooltip"
+															icon="fa-ellipsis-v"
+															(click)="tokenMenu.toggle($event);"></button>
 													<ig-popup-menu (onSelect)="fieldTypeForm.get('ValidationPattern').setValue($event.data.value)"
 																   [items]="regexPatternTokens"
 																   [forceOpenBottom]="true"
 																   #tokenMenu
 																   [tabIndex]="1"></ig-popup-menu>
+												</div>
+												<div class="clear-input-container" *ngIf="fieldTypeForm.get('ValidationPattern').value">
+													<button igButton
+															type="button"
+															i18n-pTooltip
+															pTooltip="Clear"
+															tooltipPosition="top"
+															tooltipStyleClass="ig-tooltip"
+															icon="fa-close"
+															(click)="fieldTypeForm.get('ValidationPattern').setValue(null);fieldTypeForm.get('RegexTestString').setValue(null)"></button>
 												</div>
 											</div>
 										</div>
@@ -260,7 +278,7 @@
 												   type="text" />
 
 											<div *ngIf="fieldTypeForm.get('LinkDefaultUrl')?.errors?.pattern" class="ig-text-required" i18n>
-												Please start URL with a protocol prefix eg. http:// or https://
+												Please start URL with a protocol prefix eg. http://, https:// or route:
 											</div>
 
 										</div>
@@ -518,6 +536,28 @@
 													  [style]="{'height':'150px'}"
 													  ngDefaultControl #ed>
 											</p-editor>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
+						<ig-property-group *ngIf="selectedFieldType === 'Text'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Value Selection" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row">
+										<div class="field-col">
+											<label for="DefaultValue" class="ig-label" i18n>
+												Default Value
+											</label>
+
+											<input igInput
+												   igSize="full"
+												   name="DefaultValue"
+												   tabindex="20"
+												   formControlName="DefaultValue"
+												   [igDataCy]="'Field_Type_Modal_Field_DefaultValue'"
+												   type="text" />
 										</div>
 									</div>
 								</div>
@@ -1047,7 +1087,7 @@
 																	 [formControl]="fieldTypeForm.controls['SortOrder']"
 																	 tabindex="60">
 													</ig-number-input>
-													<div class="inline-field">
+													<div class="inline-field" style="padding-left:24px;">
 														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
 														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
 													</div>
@@ -1091,7 +1131,8 @@
 														Prefix
 														<span class="field-tooltip fa fa-question-circle"
 															  i18n-pTooltip
-															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''Status:Certified''"
+															  [escape]="false"
+															  pTooltip="You can provide a prefix to be displayed in the place of the field label. For example, a prefix 'Status is' could be used to display 'Status is certified' instead of ''<b>Status</b>:Certified''"
 															  tooltipPosition="top"
 															  tooltipStyleClass="ig-tooltip"></span>
 													</label>
@@ -1108,6 +1149,7 @@
 														Suffix
 														<span class="field-tooltip fa fa-question-circle"
 															  i18n-pTooltip
+															  [escape]="false"
 															  pTooltip="You can provide a prefix and/or a suffix to be displayed in place of the field label. For example, a suffix 'accurate' could be used to display '96% accurate' instead of '<b>Accuracy</b>: 96%'."
 															  tooltipPosition="top"
 															  tooltipStyleClass="ig-tooltip"></span>
@@ -1150,6 +1192,20 @@
 						<ig-property-group [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Settings" i18n-title>
 							<div inputs>
 								<div class="form-group form-group-checkboxes">
+									<div class="row" *ngIf="enableAllowMultipleValues">
+										<p-checkbox binary="true"
+													formControlName="AllowMultipleValues"
+													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
+													label="Allow Multiple Items"
+													i18n-label
+													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+										<span class="field-tooltip fa fa-question-circle"
+											  i18n-pTooltip
+											  pTooltip="If set to true, more than one value can be entered for the field."
+											  tooltipPosition="top"
+											  tooltipStyleClass="ig-tooltip"></span>
+									</div>
+
 									<div class="row" *ngIf="showIsEditable">
 										<p-checkbox binary="true"
 													formControlName="IsEditable"
@@ -1196,7 +1252,7 @@
 
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
-											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records"
+											  pTooltip="Sets whether or not a field is a 'Key Field' for the selected asset type. A key field is a field in a record that contains unique data which can be used to distinguish that record from all other records."
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
@@ -1227,22 +1283,22 @@
 										</p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
-											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel"
+											  pTooltip="Determines whether or not the field appears on the asset detail page and the information side panel."
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
-									<div class="row" *ngIf="fieldTypeForm.get('IsDisplayable').value && selectedFieldType !== 'ComputedRelationshipReferenceList'">
+									<div class="row" *ngIf="hasDisplayInColumn">
 										<div style="margin-left: 16px;">
 											<p-checkbox binary="true"
 														i18n-label
 														i18n-pTooltip
 														formControlName="DisplayInColumn"
-														label="Display In Column"
+														label="Display in Column"
 														[disabled]="isSettingDisabled('DisplayInColumn')">
 											</p-checkbox>
 											<span class="field-tooltip fa fa-question-circle"
 												  i18n-pTooltip
-												  pTooltip="Set 'Allow all value selection' to True and enter a label for this field below if you want to add a list item that allows the record to always be displayed when filtering."
+												  pTooltip="If 'Show in Details Tab' is checked, you can select this to display the field in a column on the asset details page. Multiple adjecent columns are displayed on the same line and the fields will automatically adjust to fit the page."
 												  tooltipPosition="top"
 												  tooltipStyleClass="ig-tooltip"></span>
 										</div>
@@ -1251,7 +1307,7 @@
 										<p-checkbox binary="true"
 													formControlName="ShowIfEmpty"
 													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
-													label="Show if Empty?"
+													label="Show if Empty"
 													i18n-label
 													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
@@ -1262,24 +1318,18 @@
 
 									</div>
 									<div class="row">
-										<div *ngIf="enableAllowMultipleValues">
-											<p-checkbox binary="true"
-														formControlName="AllowMultipleValues"
-														[igDataCy]="'FieldType_Field_AllowMultipleValues'"
-														label="Allow Multiple Items"
-														i18n-label
-														[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
-										</div>
-									</div>
-
-									<div class="row">
 										<div *ngIf="showPersistInFilters">
 											<p-checkbox binary="true"
 														formControlName="IsPrimaryFilter"
 														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
-														label="Persist in filters?"
+														label="Persist in filters"
 														i18n-label
 														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
+											<span class="field-tooltip fa fa-question-circle"
+												  i18n-pTooltip
+												  pTooltip="If selected, the field appears as a persistent filter in the asset list view."
+												  tooltipPosition="top"
+												  tooltipStyleClass="ig-tooltip"></span>
 										</div>
 									</div>
 
