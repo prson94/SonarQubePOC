@@ -227,7 +227,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				this.validateComponents();
 				this.loadingHopDetailsInProgress = false;
 				this.cdRef.markForCheck();
-			})
+			});
 	}
 	// ignore Function usage error
 	// eslint-disable-next-line
