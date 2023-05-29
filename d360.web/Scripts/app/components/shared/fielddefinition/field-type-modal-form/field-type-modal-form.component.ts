@@ -5,7 +5,7 @@ import { Table } from "primeng/table";
 import { forkJoin, of, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
-import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
+import { ComputedRelationshipLookupDefinition, FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
 import { RelationshipType } from "../../../../models/relationship.model";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";

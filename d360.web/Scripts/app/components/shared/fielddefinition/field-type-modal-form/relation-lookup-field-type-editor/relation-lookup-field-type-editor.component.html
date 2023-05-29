@@ -94,10 +94,13 @@
 				<div class="filters">
 					<div class="filters-container">
 						<label i18n>Filter</label>
-						<advanced-filtering #advancedFilter
-											[useFieldCategories]="true"
-											(onChange)="advancedFiltersChanged($event)">
-						</advanced-filtering>
+						<div>
+							<advanced-filtering #advancedFilter
+												[useFieldCategories]="true"
+												(onChange)="advancedFiltersChanged($event)">
+							</advanced-filtering>
+						</div>
+
 					</div>
 
 				</div>
