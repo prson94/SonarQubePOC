@@ -18,10 +18,16 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	@Input() isLastStep: boolean = false;
 
-	@Output() completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
-		workflowId;
-		stepId;
-		assetId
+	@Input() showCompleteAssignment: boolean = true
+
+	@Output() completeAssignment: EventEmitter<{
+		workflowId: number,
+		stepId: number,
+		assetId: number
+	}> = new EventEmitter<{
+		workflowId: number,
+		stepId: number,
+		assetId: number
 	}>();
 
 	@Output() stepClickChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -36,7 +42,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get status(): string {
-		return this.workflowItemStep.Complete ? 'Done' : 'In Progress';
+		return this.workflowItemStep.Complete ? 'Done' : 'Current step';
 	}
 
 	get message(): string {
@@ -85,8 +91,8 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	completeAssignmentClick() {
 		this.completeAssignment.emit({
-			workflowId: this.workflowItemStep.ID,
-			stepId: this.workflowItemStep.ItemID,
+			workflowId: this.workflowItemStep.ItemID,
+			stepId: this.workflowItemStep.ID,
 			assetId: this.workflowItemStep.ObjectID
 		});
 	}

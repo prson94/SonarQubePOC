@@ -76,6 +76,7 @@
 					<d3s-assignment-progress [workflowItemId]="selectedWorkflowItems[0]?.Id"
 											 (linkClick)="sidePanelLinkClicked($event)"
 											 *ngIf="selectedWorkflowItems?.length === 1"
+											 [isSidePanel]="true"
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>

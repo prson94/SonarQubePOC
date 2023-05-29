@@ -17,10 +17,16 @@ export class AssignmentProgressComponent implements OnInit {
 		this.loadData();
 	}
 
-	@Output() completeAssignment: EventEmitter<{ workflowId, stepId, assetId }> = new EventEmitter<{
-		workflowId;
-		stepId;
-		assetId
+	@Input() isSidePanel: boolean = false
+
+	@Output() completeAssignment: EventEmitter<{
+		workflowId: number,
+		stepId: number,
+		assetId: number
+	}> = new EventEmitter<{
+		workflowId: number,
+		stepId: number,
+		assetId: number
 	}>();
 
 	@Output() stepClickChange: EventEmitter<{ workflowItemStep: WorkflowItemStep, open: boolean }> = new EventEmitter<{
