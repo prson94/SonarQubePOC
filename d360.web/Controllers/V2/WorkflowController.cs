@@ -419,9 +419,9 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				var retval = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
+				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, retval));
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
 			}			
 			catch(GenericException gex)
 			{
