@@ -385,7 +385,8 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_initiatorUid", "Return actions Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_initiatorUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_workflowItemUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowAssignmentApiModel)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Action Type / Asset Type / Relationship Type / Workfflow Type  not found based on Uid provided.", typeof(ErrorResponse)),
@@ -415,9 +416,18 @@ namespace d360.web.Controllers.V2
 					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatorUid").Value;
 					if (!Guid.TryParse(initiatorUidString, out Guid initiatorUid))
 					{
-						throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+						throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
 					}
-				}
+					else
+					{
+						var initiator = Company.GlobalReportingResources.Where(u=>u.Uid==initiatorUid);
+
+						if (initiator == null)
+						{
+							throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+						}
+					}
+				}				
 
 				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
 

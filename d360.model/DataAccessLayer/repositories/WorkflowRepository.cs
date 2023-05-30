@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
@@ -1032,14 +1032,14 @@ namespace d360.model.DataAccessLayer
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
 			{
-				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatorUid").Value;
 				if (Guid.TryParse(value, out Guid initiatorUid))
 				{
 					conditions.Add("GR.uid = @initiatorUid");
 					dbArgs.Add("@initiatorUid", initiatorUid);
 				}
 			}
-
+			
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
@@ -1127,7 +1127,7 @@ namespace d360.model.DataAccessLayer
 				whereConditions += " where " + string.Join(" and ", conditions);
 				whereConditions = whereConditions.Trim();
 			}
-
+			
 			var selects = $@"WI.uid as workflowItemUid, 
 							T.uid as workflowUid, 
 							T.Name as workflowName,
