@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.model.DataAccessLayer.repositories;
-
+using d360.model.helpers.filters;
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using FieldType = d360.core.entities.FieldType;
 
 namespace d360.model.DataAccessLayer
 {
@@ -999,6 +1000,204 @@ namespace d360.model.DataAccessLayer
 						(new CommandDefinition(sql,
 						cancellationToken: cancellationToken.Value,
 						parameters: new { query }));
+		}
+
+		public async Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();
+
+			string simpleFilter = "";
+
+			List<string> conditions = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
+			var selectColumns = new DynamicQuerySelects();
+
+			var queryFieldOptions = new List<DefaultFilter>
+			{
+				new DefaultFilter("initiatorUid", "GR.uid", SqlFieldType.Guid),
+				new DefaultFilter("initiator", "(GR.FirstName + ' ' + GR.LastName)", SqlFieldType.Text),
+				new DefaultFilter("workflowItemUid", "WI.uid", SqlFieldType.Guid),
+				new DefaultFilter("workflowUid", "T.uid", SqlFieldType.Guid),
+				new DefaultFilter("assetDisplayValue", "ADV.DisplayValue", SqlFieldType.Text),
+				new DefaultFilter("startedOn", "WI.StartedOn", SqlFieldType.DateTime),
+				new DefaultFilter("completedOn", "WI.CompletedOn", SqlFieldType.DateTime),
+				new DefaultFilter("status", "(case when WI.CompletedOn is null then 'Pending' else 'Complete' end)", SqlFieldType.Text),
+				new DefaultFilter("assetTypeUid", "ast.uid", SqlFieldType.Guid),
+				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
+				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
+				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
+				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid)
+			};
+
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatorUid").Value;
+				if (Guid.TryParse(value, out Guid initiatorUid))
+				{
+					conditions.Add("GR.uid = @initiatorUid");
+					dbArgs.Add("@initiatorUid", initiatorUid);
+				}
+			}
+			
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+			{
+				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+			}
+
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))			
+			{
+				var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;								
+
+				if (!string.IsNullOrEmpty(filterValue))
+				{
+					CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+					if (advFilterArgs != null && advFilterStatements != null)
+					{
+						dbArgs.AddDynamicParams(advFilterArgs);
+						conditions.AddRange(advFilterStatements);
+
+						if (filterValue.Contains("assignee"))
+						{
+							fieldJoins.Add(@"LEFT JOIN
+											workflow.ItemAssignment IA2 on IA2.ItemStepID = WIS.ID and WIS.CompletedOn is null
+											left JOIN
+											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
+						}
+						
+						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count==1)
+						{
+							var actionFilter = advFilterStatements.Where(f=> f.Contains("IT.uid")).FirstOrDefault();
+							var filterID = actionFilter.Substring(actionFilter.LastIndexOf("@") + 1, actionFilter.Length-(actionFilter.LastIndexOf("@")+2));
+							var actionTypeUid = advFilterArgs.Get<string>(filterID);
+
+							if (Guid.TryParse(actionTypeUid, out Guid atGuid))
+							{
+								IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
+								var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
+								getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);
+
+								foreach (FieldType customField in fieldTypes)
+								{
+									if (queryParams.Any(x => x.Key == customField.Name))
+									{
+										var dynamicFieldFilterValue = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+										conditions.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+
+										dbArgs.Add($"@field{customField.ID}", dynamicFieldFilterValue);
+									}
+									
+									if (!string.IsNullOrWhiteSpace(simpleFilter) || (queryParams.ToList().Any(x => x.Key.ToLower() == "_order")  && !string.IsNullOrWhiteSpace(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value)))
+									{
+										queryFieldOptions.Add(new DefaultFilter(customField.Name, $"F{customField.ID}.FormattedValue", SqlFieldType.Text));																			
+									}
+								}
+							}								
+						}
+
+					}
+				}
+			}
+
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "TRY_CAST(+ Wi.[StartedOn] AS datetime)");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
+			var orderBySql = $" order by {orderColumn} {orderDirection} ";
+
+			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+			int pageSize = CompanyContext.ParsePageSize(queryParams);
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);					
+
+			if (!string.IsNullOrWhiteSpace(simpleFilter))
+			{
+				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
+				if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
+				{
+					dbArgs.AddDynamicParams(simpleFilterArgs);
+
+					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");			
+				}
+			}
+
+			string whereConditions = "";
+
+			if (conditions.Count() > 0)
+			{
+				whereConditions += " where " + string.Join(" and ", conditions);
+				whereConditions = whereConditions.Trim();
+			}
+			
+			var selects = $@"WI.uid as workflowItemUid, 
+							T.uid as workflowUid, 
+							T.Name as workflowName,
+							GR.FirstName + ' ' + GR.LastName as initiator,
+							GR.uid as initiatorUid,									
+							ADV.DisplayValue as assetDisplayValue,
+							WI.StartedOn,
+							WI.CompletedOn,
+							case 
+								when WI.CompletedOn is null 
+									then 'Pending'            
+								else        
+									'Complete' end as [Status],
+							ast.uid as assetTypeUid,
+							IT.uid as actionTypeUid,
+							A.uid as assetUid,
+							AP.DisplayPath as assetPath,
+							Assignments.value as assigneesJson,
+							I.uid as actionUid
+							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
+
+			var sqljoins = $@"FROM workflow.Item WI
+						INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+						INNER JOIN workflow.Version V on V.ID=WI.VersionID
+						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)
+						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
+						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
+						LEFT JOIN asset A on (WI.Object=A.object and WI.ObjectID= A.objectID and WI.Object <> 'Issue') or (WI.Object = 'Issue' and A.ID = I.AssetID)
+						LEFT JOIN AssetPath AP on A.ID=AP.ID
+						LEFT JOIN AssetType AST on AST.ID = A.AssetTypeID
+						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
+						LEFT JOIN workflow.ItemStep WIS on wis.CompletedOn is null and WI.ID = WIS.ItemID
+						LEFT JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.ID = WIS.StepID
+						OUTER APPLY
+							(
+								SELECT 
+								(
+									SELECT 
+										GR1.FirstName + ' ' + GR1.LastName as [Name], 
+										uid  
+									FROM
+										workflow.ItemAssignment IA1 
+										INNER JOIN 
+										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
+									WHERE IA1.ItemStepID = WIS.ID and WIS.CompletedOn is null
+									FOR JSON PATH
+								) as value
+							) Assignments	
+						{string.Join("\n", fieldJoins.GetStatements())}
+						{whereConditions}";
+
+			var sql = $@"SELECT 
+							{selects}
+							{sqljoins}												
+						{orderBySql}
+						{offset}";
+
+			var countSQL = $@"SELECT 
+							count(*)
+							{sqljoins}";
+
+			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
+		
+			var multiSQL = $"{sql}; {countSQL}";
+			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, dbArgs, ApiTimeout))
+			{
+				assignments.items = multi.Read<dynamic>().ToList();
+				assignments.total = multi.Read<int>().First();
+				assignments.pageNum = pageNum;
+				assignments.pageSize = pageSize;
+			}
+
+			return assignments;		
 		}
 	}
 }
