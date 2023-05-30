@@ -56,11 +56,18 @@ namespace d360.model.helpers.filters
 				fieldJoin = @$"left join #scoreTempValues{fieldType.ID} F{fieldType.ID} on F{fieldType.ID}.AssetId = A.ID";
 			}
 
-			List<string> listDataType = new List<string>() { 
-							DataType.FieldFromRelationship.ToString(),DataType.RefListRelationship.ToString(), DataType.JsonElement.ToString(),
-							DataType.Score.ToString(), DataType.Counter.ToString(),DataType.Tag.ToString(),
-							DataType.Lookup.ToString(),DataType.ComplexRelationLookup.ToString(), DataType.OwnershipLookup.ToString(),
-							DataType.Path.ToString()};
+			List<string> listDataType = new List<string>();
+			//add item using add method
+			listDataType.Add(DataType.FieldFromRelationship.ToString());
+			listDataType.Add(DataType.RefListRelationship.ToString());
+			listDataType.Add(DataType.JsonElement.ToString());
+			listDataType.Add(DataType.Score.ToString());
+			listDataType.Add(DataType.Counter.ToString());
+			listDataType.Add(DataType.Tag.ToString());
+			listDataType.Add(DataType.Lookup.ToString());
+			listDataType.Add(DataType.ComplexRelationLookup.ToString());
+			listDataType.Add(DataType.OwnershipLookup.ToString());
+			listDataType.Add(DataType.Path.ToString());
 
 			var match = listDataType.Where(x => x.ToLowerInvariant() == fieldType.Type.ToLowerInvariant()).ToList();
 
