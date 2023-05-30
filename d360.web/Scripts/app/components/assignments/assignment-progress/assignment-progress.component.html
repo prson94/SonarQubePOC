@@ -2,7 +2,7 @@
 	<ig-property-group title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<d3s-assignment-progress-step *ngFor="let workflowItemStep of workflowItemSteps"
-										  [workflowItemStep]="workflowItemStep"
+										  [workflowItemStep]="workflowItemStep" [showCompleteAssignment]="isSidePanel"
 										  (stepClickChange)="stepSelectionChanged(workflowItemStep, $event)"
 										  (completeAssignment)="completeAssignment.emit($event)"
 										  [isLastStep]="workflowItemSteps.indexOf(workflowItemStep) === (workflowItemSteps.length - 1)"
@@ -11,7 +11,7 @@
 	</ig-property-group>
 </div>
 <div class="space-around">
-	<a (click)="linkClick.emit({objectType: 'WorkflowType', objectId: workflowItemSteps?.[0].TypeID })"
+	<a (click)="linkClick.emit({objectType: 'WorkflowType', objectId: workflowItemSteps?.[0]?.TypeID })"
 	   i18n>Show Workflow Diagram and Details</a>
 </div>
-<pre>{{ workflowItemSteps | json }}</pre>
+<!--<pre>{{ workflowItemSteps | json }}</pre>-->

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -13,9 +13,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
-	assetId: number
-	stepId: number
+	assetId: number;
+	stepId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
+	workflowId: number;
 
 	constructor(protected settingsService: CompanySettingsService) {
 		super(settingsService);
@@ -23,16 +24,21 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	ngOnDestroy(): void {
 
-    }
+	}
 
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 	}
 
-	openModal(details: { workflowId; stepId; assetId }): void {
-		if(details && details.assetId) {
-			this.assetId = details.assetId
-			this.stepId = details.stepId
+	openModal(details: {
+		workflowId: number,
+		stepId: number,
+		assetId: number
+	}): void {
+		if (details) {
+			this.assetId = details.assetId;
+			this.stepId = details.stepId;
+			this.workflowId = details.workflowId;
 		}
 		this.isModalVisible = true;
 	}
