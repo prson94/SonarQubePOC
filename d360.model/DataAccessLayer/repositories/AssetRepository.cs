@@ -1631,7 +1631,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			var includedJoins = new DynamicQueryJoins();
-			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
+			includedJoins.Add("left join AssetType T on T.ID = A.AssetTypeID", null);
 
 			fieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
 			{
