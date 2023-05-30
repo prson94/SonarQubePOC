@@ -1006,7 +1006,6 @@ namespace d360.model.DataAccessLayer
 		{
 			var dbArgs = new DynamicParameters();
 
-			List<string> simpleFilters = new List<string>();
 			string simpleFilter = "";
 
 			List<string> conditions = new List<string>();
@@ -1056,7 +1055,7 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.AddDynamicParams(advFilterArgs);
 						conditions.AddRange(advFilterStatements);
-						var t = advFilterArgs.ParameterNames.ToList();
+
 						if (filterValue.Contains("assignee"))
 						{
 							fieldJoins.Add(@"LEFT JOIN
@@ -1064,8 +1063,6 @@ namespace d360.model.DataAccessLayer
 											left JOIN
 											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
 						}
-
-						var i = Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count;
 						
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count==1)
 						{
