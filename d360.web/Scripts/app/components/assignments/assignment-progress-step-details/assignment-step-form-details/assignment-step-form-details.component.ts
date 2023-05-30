@@ -1,0 +1,59 @@
+import { Component, Input, OnInit } from '@angular/core';
+import { BaseComponent } from '../../../shared/base.component';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { GroupService } from '../../../../services/group.service';
+import { WorkflowHelpers } from '../../../../static/workflow-helpers';
+
+@Component({
+	selector: 'd3s-assignment-step-form-details',
+	templateUrl: './assignment-step-form-details.component.html',
+	styleUrls: ['./assignment-step-form-details.component.less']
+})
+export class AssignmentStepFormDetailsComponent extends BaseComponent implements OnInit {
+
+	@Input() step: any;
+	isLoading: boolean = false;
+	groupName: string;
+	showAll: boolean = false;
+	helper = WorkflowHelpers;
+	recipients: any[] = [];
+
+	constructor(
+		private groupService: GroupService,
+		protected settingsService: CompanySettingsService) {
+		super(settingsService);
+	}
+
+	ngOnInit(): void {
+		this.sortNames();
+		if (this.step?.Settings?.MessageRecipientType === 'Group') {
+			this.isLoading = true;
+			this.groupService.getGroupByUid(this.step.Settings.MessageToGroup).subscribe((data) => {
+				this.groupName = data.items[0]?.Name ?? '';
+				this.isLoading = false;
+			});
+		}
+	}
+
+	sortNames(): void {
+		if (this.step?.AssignedUsers) {
+			const sorted: any[] = this.step.AssignedUsers.slice();
+
+			sorted.sort((a, b) => {
+				if (a['FullName']?.toLowerCase() < b['FullName']?.toLowerCase()) {
+					return -1;
+				}
+				if (a['FullName']?.toLowerCase() > b['FullName']?.toLowerCase()) {
+					return 1;
+				}
+				return 0;
+			});
+
+			this.recipients = sorted;
+		}
+	}
+
+	toggleShowAll(): void {
+		this.showAll = !this.showAll;
+	}
+}

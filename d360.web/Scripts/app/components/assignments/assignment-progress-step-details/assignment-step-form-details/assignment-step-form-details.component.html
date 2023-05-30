@@ -1,0 +1,49 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<ng-container *ngIf="step && !isLoading">
+	<div class="row">
+		<label class="ig-label" i18n>Recipient Type</label>
+		<div i18n class="ig-value">{{ helper.recipientTypeName(step.Settings?.MessageRecipientType) }}</div>
+	</div>
+	<div class="row" *ngIf="step.Settings?.MessageRecipientType === 'Responsibility'">
+		<label class="ig-label" i18n>Responsibility</label>
+		<div i18n class="ig-value" *ngFor="let res of step.ItemSettings.Responsibilities; first as isFirst">
+			<span *ngIf="isFirst">{{res.name}}</span>
+			<span *ngIf="!isFirst"><span class="ig-grey-text">Backup: </span>{{res.name}}</span>
+		</div>
+	</div>
+	<div class="row" *ngIf="step.Settings?.MessageRecipientType === 'Group'">
+		<label class="ig-label" i18n>Group</label>
+		<div i18n class="ig-value">{{ groupName }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Recipients</label>
+		<div class="ig-value" *ngIf="step.AssignedUsers.length > 0">
+			<div *ngFor="let recipient of recipients; let i = index">
+				<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
+						<span *ngIf="recipient.FullName != null">
+						<d3s-preview-tooltip [objectType]="'Resource'"
+											 [objectId]="recipient.ResourceID"><a>{{recipient.FullName}}</a></d3s-preview-tooltip>
+						</span>
+					({{recipient.Email}})
+				</ng-container>
+			</div>
+			<div *ngIf="recipients.length > 5 && showAll == false">
+				<a (click)="toggleShowAll()"
+				   style="cursor: pointer" i18n>Show All</a>
+			</div>
+			<div *ngIf="recipients.length > 5 && showAll == true">
+				<a (click)="toggleShowAll()"
+				   style="cursor: pointer" i18n>Show Less</a>
+			</div>
+		</div>
+		<div class="ig-value" *ngIf="step.ItemSettings.hasEmails === false">None</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Form Response Type</label>
+		<div i18n class="ig-value">{{ helper.formResponseTypeName(step.Settings?.FormResponseType) }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Form Description</label>
+		<div i18n class="ig-value" [innerHtml]="step.Fields?.form?.['@description'] | safeHtml"></div>
+	</div>
+</ng-container>

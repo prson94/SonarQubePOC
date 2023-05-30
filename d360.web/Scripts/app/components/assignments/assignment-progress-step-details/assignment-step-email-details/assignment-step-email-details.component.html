@@ -1,41 +1,57 @@
-<div class="row">
-	<label class="ig-label" i18n>Recipient Type</label>
-	<div i18n class="ig-value">{{helper.recipientTypeName(emailSettings.MessageRecipientType)}}</div>
-</div>
-<div class="row" *ngIf="emailSettings.MessageRecipientType === 'Responsibility'">
-	<label class="ig-label" i18n>Responsibility</label>
-	<div i18n class="ig-value" *ngFor="let res of step.ItemSettings.Responsibilities">
-		{{res.name}}
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<ng-container *ngIf="!isLoading">
+	<ng-container *ngIf="!formEmailDetails">
+		<div class="row">
+			<label class="ig-label" i18n>Recipient Type</label>
+			<div i18n class="ig-value">{{helper.recipientTypeName(emailSettings.MessageRecipientType)}}</div>
+		</div>
+		<div class="row" *ngIf="emailSettings.MessageRecipientType === 'Responsibility'">
+			<label class="ig-label" i18n>Responsibility</label>
+			<div i18n class="ig-value" *ngFor="let res of step.ItemSettings.Responsibilities; first as isFirst">
+				<span *ngIf="isFirst">{{res.name}}</span>
+				<span *ngIf="!isFirst"><span class="ig-grey-text">Backup: </span>{{res.name}}</span>
+			</div>
+		</div>
+		<div class="row" *ngIf="emailSettings.MessageRecipientType === 'Group'">
+			<label class="ig-label" i18n>Group</label>
+			<div i18n class="ig-value">{{ groupName }}</div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Recipients</label>
+			<div class="ig-value" *ngIf="step.ItemSettings.hasEmails === true">
+				<div *ngFor="let e of recipients; let i = index">
+					<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
+						<span *ngIf="e.name != null">
+						<d3s-preview-tooltip [objectType]="'Resource'"
+											 [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>
+						</span>
+						({{e['@address']}})
+					</ng-container>
+				</div>
+				<div *ngIf="recipients.length > 5 && showAll == false">
+					<a (click)="toggleShowAll()"
+					   style="cursor: pointer" i18n>Show All</a>
+				</div>
+				<div *ngIf="recipients.length > 5 && showAll == true">
+					<a (click)="toggleShowAll()"
+					   style="cursor: pointer" i18n>Show Less</a>
+				</div>
+			</div>
+			<div class="ig-value" *ngIf="step.ItemSettings.hasEmails === false">None</div>
+		</div>
+	</ng-container>
+	<ng-container *ngIf="formEmailDetails">
+		<div class="row">
+			<label class="ig-label" i18n>Include Previous Form Responses</label>
+			<div class="ig-value" i18n>{{ emailSettings.IncludePreviousFormResponses === 'true' ? 'Yes' : 'No' }}</div>
+		</div>
+	</ng-container>
+	<div class="row">
+		<label class="ig-label" i18n>Email Subject</label>
+		<div class="ig-value" [innerHtml]="emailSettings.MessageSubjectTemplate | safeHtml"></div>
 	</div>
-</div>
-<div class="row">
-	<label class="ig-label" i18n>Recipients</label>
-	<div class="ig-value" *ngIf="step.ItemSettings.hasEmails === true">
-		<div *ngFor="let e of displayEmails; let i = index">
-			<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
-					<span *ngIf="e.name != null">
-                    <d3s-preview-tooltip [objectType]="'Resource'"
-										 [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>
-                	</span>
-				({{e['@address']}})
-			</ng-container>
-		</div>
-		<div *ngIf="displayEmails.length > 5 && showAll == false">
-			<a (click)="toggleShowAll()"
-			   style="cursor: pointer" i18n>Show All</a>
-		</div>
-		<div *ngIf="displayEmails.length > 5 && showAll == true">
-			<a (click)="toggleShowAll()"
-			   style="cursor: pointer" i18n>Show Less</a>
-		</div>
+	<div class="row">
+		<label class="ig-label" i18n>Email Body</label>
+		<div class="panel-section" [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml"></div>
 	</div>
-	<div class="ig-value" *ngIf="step.ItemSettings.hasEmails === false">None</div>
-</div>
-<div class="row">
-	<label class="ig-label" i18n>Email Subject</label>
-	<div class="ig-value" [innerHtml]="emailSettings.MessageSubjectTemplate | safeHtml"></div>
-</div>
-<div class="row">
-	<label class="ig-label" i18n>Email Body</label>
-	<div class="panel-section" [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml"></div>
-</div>
+</ng-container>
