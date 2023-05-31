@@ -11,6 +11,7 @@ using System.Web.Http.Description;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
@@ -374,5 +375,78 @@ namespace d360.web.Controllers.V2
 
 			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(id, query, cancellationToken: cancellationToken));
         }
+
+		[
+			HttpGet,
+			Route("assignments"),			
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are UpdatedOn, CreatedOn. By default the results are ordered by UpdatedOn.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_initiatorUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_workflowItemUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowAssignmentApiModel)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Action Type / Asset Type / Relationship Type / Workfflow Type  not found based on Uid provided.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetWorkflowAssignments()
+		{
+			var prefix = "Workflow.GetWorkflowAssignments => ";
+			var queryParams = Request.GetQueryNameValuePairs();
+			try
+			{
+				var isValid = isPageSizeAndNumValid(queryParams);
+
+				if (!string.IsNullOrEmpty(isValid))
+				{
+					throw new ArgumentException(isValid);
+				}
+
+				if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
+				{
+					throw new ArgumentException(ApiMessages.InvalidDirection);
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatorUid"))
+				{
+					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatorUid").Value;
+					if (!Guid.TryParse(initiatorUidString, out Guid initiatorUid))
+					{
+						throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+					}
+					else
+					{
+						var initiator = Company.GlobalReportingResources.Where(u=>u.Uid==initiatorUid);
+
+						if (initiator == null)
+						{
+							throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+						}
+					}
+				}				
+
+				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+			}			
+			catch(GenericException gex)
+			{
+				return await Task.FromResult(errorMessageResponse(gex.StatusCode, gex.StatusMessage, gex.StatusDescription)).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+			}
+
+		}
     }
 }

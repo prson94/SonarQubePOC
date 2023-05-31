@@ -70,6 +70,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Guid {0} passed for parameter {1}.
+        /// </summary>
+        public static string InvalidGuid {
+            get {
+                return ResourceManager.GetString("InvalidGuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to INVALID MODEL NO FIELDS PASSED.
         /// </summary>
         public static string InvalidModelNoFieldPassed {
