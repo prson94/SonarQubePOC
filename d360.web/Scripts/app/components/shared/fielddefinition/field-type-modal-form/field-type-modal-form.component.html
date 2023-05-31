@@ -103,7 +103,7 @@
 											<input igInput
 												   igSize="full"
 												   name="Name"
-												   tabindex="10"
+												   tabindex="20"
 												   formControlName="Name"
 												   [igDataCy]="'Field_Type_Modal_Field_Name'"
 												   type="text"
@@ -126,7 +126,7 @@
 													   igSize="full"
 													   name="Category"
 													   required
-													   tabindex="20"
+													   tabindex="30"
 													   formControlName="Category"
 													   [igDataCy]="'Field_Type_Modal_Field_Category'"
 													   type="text" />
@@ -158,7 +158,7 @@
 												<input igInput
 													   igSize="full"
 													   name="ValidationPattern"
-													   tabindex="20"
+													   tabindex="40"
 													   formControlName="ValidationPattern"
 													   [igDataCy]="'Field_Type_Modal_Field_ValidationPattern'"
 													   type="text" />
@@ -175,7 +175,7 @@
 																   [items]="regexPatternTokens"
 																   [forceOpenBottom]="true"
 																   #tokenMenu
-																   [tabIndex]="1"></ig-popup-menu>
+																   [tabIndex]="50"></ig-popup-menu>
 												</div>
 												<div class="clear-input-container" *ngIf="fieldTypeForm.get('ValidationPattern').value">
 													<button igButton
@@ -201,7 +201,7 @@
 													<input igInput
 														   igSize="full"
 														   name="RegexTestString"
-														   tabindex="20"
+														   tabindex="60"
 														   formControlName="RegexTestString"
 														   [igDataCy]="'Field_Type_Modal_Field_RegexTestString'"
 														   type="text" />
@@ -231,7 +231,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'MaximumLength'"
 															 [formControl]="fieldTypeForm.controls['MaximumLength']"
-															 tabindex="60">
+															 tabindex="70">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumLength')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('MaximumLength')?.errors[item].message}}
@@ -255,7 +255,7 @@
 											<input igInput
 												   igSize="full"
 												   name="LinkDefaultName"
-												   tabindex="20"
+												   tabindex="80"
 												   formControlName="LinkDefaultName"
 												   [igDataCy]="'Field_Type_Modal_Field_LinkDefaultName'"
 												   type="text" />
@@ -270,7 +270,7 @@
 											<input igInput
 												   igSize="full"
 												   name="LinkDefaultUrl"
-												   tabindex="20"
+												   tabindex="90"
 												   formControlName="LinkDefaultUrl"
 												   placeholder="{{(fieldTypeForm.controls['LinkDefaultName'].value ? linkFieldRequiredPlaceholder : linkFieldOptionalPlaceholder)}}"
 												   [required]="fieldTypeForm.controls['LinkDefaultName'].value ? true : null"
@@ -304,6 +304,7 @@
 														igDropdown
 														[options]="lookupAssetTypes"
 														appendTo="body"
+														tabindex="100"
 														required
 														optionLabel="label"
 														optionValue="value"></p-dropdown>
@@ -318,7 +319,7 @@
 												<input igInput
 													   igSize="full"
 													   name="DisplayFormat"
-													   tabindex="20"
+													   tabindex="110"
 													   formControlName="DisplayFormat"
 													   [igDataCy]="'Field_Type_Modal_Field_Category'"
 													   type="text" />
@@ -342,7 +343,7 @@
 												<input igInput
 													   igSize="full"
 													   name="EditFormat"
-													   tabindex="20"
+													   tabindex="120"
 													   formControlName="EditFormat"
 													   [igDataCy]="'Field_Type_Modal_EditFormat'"
 													   type="text" />
@@ -377,6 +378,7 @@
 														name="DefaultValue"
 														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
 														igDropdown
+														tabindex="130"
 														[options]="lookupDefaultValueOptions"
 														[disabled]="fieldTypeForm.get('LookupUid').value ? false : true"
 														appendTo="body"
@@ -400,7 +402,7 @@
 													   [formControl]="fieldTypeForm.controls['AllowAllValue']"
 													   i18n-trueLabel
 													   i18n-falseLabel
-													   tabindex="90"
+													   tabindex="140"
 													   trueLabel="True"
 													   falseLabel="False"></ig-switch>
 										</div>
@@ -414,7 +416,7 @@
 											<input igInput
 												   igSize="full"
 												   name="AllowAllLabel"
-												   tabindex="10"
+												   tabindex="150"
 												   formControlName="AllowAllLabel"
 												   [igDataCy]="'Field_Type_Modal_Field_AllowAllLabel'"
 												   type="text"
@@ -439,6 +441,7 @@
 														name="DefaultValue"
 														[igDataCy]="'FieldType_Modal_Field_DefaultValue'"
 														igDropdown
+														tabindex="160"
 														[options]="booleanDefaultValueOptions"
 														appendTo="body"
 														optionLabel="label"
@@ -466,7 +469,7 @@
 											</label>
 											<input igInput
 												   name="CounterPrefix"
-												   tabindex="10"
+												   tabindex="170"
 												   formControlName="CounterPrefix"
 												   [igDataCy]="'Field_Type_Modal_Field_CounterPrefix'"
 												   type="text" />
@@ -492,7 +495,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'CounterInitialIndex'"
 															 [formControl]="fieldTypeForm.controls['CounterInitialIndex']"
-															 tabindex="60">
+															 tabindex="180">
 											</ig-number-input>
 										</div>
 									</div>
@@ -511,7 +514,7 @@
 											</label>
 											<ig-date name="DefaultValue"
 													 [appendTo]="'body'"
-													 tabindex="10"
+													 tabindex="190"
 													 [formControl]="fieldTypeForm.controls['DefaultValue']"
 													 formControlName="DefaultValue"></ig-date>
 										</div>
@@ -532,7 +535,7 @@
 											<p-editor formControlName="DefaultValue"
 													  [igDataCy]="'FieldType_Modal_Field_DefaultValue'"
 													  name="DefaultValue"
-													  tabindex="80"
+													  tabindex="200"
 													  [style]="{'height':'150px'}"
 													  ngDefaultControl #ed>
 											</p-editor>
@@ -554,7 +557,7 @@
 											<input igInput
 												   igSize="full"
 												   name="DefaultValue"
-												   tabindex="20"
+												   tabindex="210"
 												   formControlName="DefaultValue"
 												   [igDataCy]="'Field_Type_Modal_Field_DefaultValue'"
 												   type="text" />
@@ -583,6 +586,7 @@
 													name="AssetPathListSegment"
 													[igDataCy]="'FieldType_Modal_Field_AssetPathListSegment'"
 													igDropdown
+													tabindex="220"
 													[options]="assetTypeAncestries"
 													appendTo="body"
 													optionLabel="Name"
@@ -608,6 +612,7 @@
 
 											<p-dropdown formControlName="ResponsibilityTypeUid"
 														[autoDisplayFirst]="false"
+														tabindex="230"
 														name="ResponsibilityTypeUid"
 														[igDataCy]="'FieldType_Modal_Field_ResponsibilityTypeUid'"
 														igDropdown
@@ -630,7 +635,7 @@
 													   [formControl]="fieldTypeForm.controls['ExpandGroupMembership']"
 													   i18n-trueLabel
 													   i18n-falseLabel
-													   tabindex="90"
+													   tabindex="240"
 													   trueLabel="True"
 													   falseLabel="False"></ig-switch>
 										</div>
@@ -658,6 +663,7 @@
 											<p-checkbox binary="true"
 														formControlName="DisplayAssignmentSource"
 														[igDataCy]="'FieldType_Field_DisplayAssignmentSource'"
+														tabindex="250"
 														label="Display Assignment Source"
 														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
 														i18n-label>
@@ -673,12 +679,14 @@
 														formControlName="HideFilter"
 														[igDataCy]="'FieldType_Field_HideFilter'"
 														label="Hide Table Filter"
+														tabindex="260"
 														[disabled]="fieldTypeForm.get('DisplayAsList').value === 'true'"
 														i18n-label>
 											</p-checkbox>
 										</div>
 										<div class="row">
 											<p-checkbox binary="true"
+														tabindex="270"
 														formControlName="HideHeader"
 														[igDataCy]="'FieldType_Field_HideHeader'"
 														label="Hide Table Column Headers"
@@ -688,6 +696,7 @@
 										</div>
 										<div class="row">
 											<p-checkbox binary="true"
+														tabindex="280"
 														formControlName="HideFooter"
 														[igDataCy]="'FieldType_Field_HideFooter'"
 														label="Hide Table Footer"
@@ -726,6 +735,7 @@
 														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
 														igDropdown
 														required
+														tabindex="300"
 														[options]="referenceListFromRelationshipRelations"
 														appendTo="body">
 												<ng-template let-item pTemplate="item">
@@ -747,7 +757,7 @@
 													   [formControl]="fieldTypeForm.controls['DisplayRefListDescription']"
 													   i18n-trueLabel
 													   i18n-falseLabel
-													   tabindex="90"
+													   tabindex="310"
 													   trueLabel="True"
 													   falseLabel="False"></ig-switch>
 										</div>
@@ -772,6 +782,7 @@
 														[igDataCy]="'FieldType_Modal_Field_IntersectTypeUid'"
 														igDropdown
 														required
+														tabindex="320"
 														[options]="relationshipItems"
 														appendTo="body">
 												<ng-template let-item pTemplate="item">
@@ -794,6 +805,7 @@
 														name="UseDisplayFormat"
 														[igDataCy]="'FieldType_Modal_Field_UseDisplayFormat'"
 														igDropdown
+														tabindex="330"
 														required
 														[options]="relationshipDisplayFormatValueOptions"
 														appendTo="body">
@@ -825,6 +837,7 @@
 														name="ScoreType"
 														[igDataCy]="'FieldType_Modal_Field_ScoreType'"
 														igDropdown
+														tabindex="340"
 														required
 														[options]="scoreTypeOptions"
 														appendTo="body">
@@ -857,6 +870,7 @@
 														igDropdown
 														[options]="fieldFromRelationshipItems"
 														appendTo="body"
+														tabindex="350"
 														optionLabel="label"
 														optionValue="value"
 														required>
@@ -883,6 +897,7 @@
 														igDropdown
 														[options]="fieldsFromRelation"
 														appendTo="body"
+														tabindex="360"
 														optionLabel="label"
 														optionValue="value"
 														required>
@@ -907,7 +922,7 @@
 															 (ngModelChange)="onMinValueChange()"
 															 [formControlName]="'MinimumValue'"
 															 [formControl]="fieldTypeForm.controls['MinimumValue']"
-															 tabindex="60">
+															 tabindex="370">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MinimumValue')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('MinimumValue')?.errors[item].message}}
@@ -923,7 +938,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'MaximumValue'"
 															 [formControl]="fieldTypeForm.controls['MaximumValue']"
-															 tabindex="60">
+															 tabindex="380">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('MaximumValue')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('MaximumValue')?.errors[item].message}}
@@ -937,7 +952,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'Precision'"
 															 [formControl]="fieldTypeForm.controls['Precision']"
-															 tabindex="60">
+															 tabindex="390">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Precision')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('Precision')?.errors[item].message}}
@@ -960,7 +975,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'DefaultValue'"
 															 [formControl]="fieldTypeForm.controls['DefaultValue']"
-															 tabindex="60">
+															 tabindex="400">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('DefaultValue')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('DefaultValue')?.errors[item].message}}
@@ -975,7 +990,7 @@
 															 [enforceMaxMin]="true"
 															 [formControlName]="'Increment'"
 															 [formControl]="fieldTypeForm.controls['Increment']"
-															 tabindex="60">
+															 tabindex="410">
 											</ig-number-input>
 											<div *ngFor="let item of getObjectKeys(fieldTypeForm.get('Increment')?.errors)" class="ig-text-required" i18n>
 												{{fieldTypeForm.get('Increment')?.errors[item].message}}
@@ -1002,13 +1017,14 @@
 													  tooltipStyleClass="ig-tooltip"></span>
 											</label>
 
-											<p-editor formControlName="DisplayDescription"
+											<textarea igTextArea
+													  autoResize="'true'"
+													  rows="5"
+													  maxlength="4000"
+													  tabindex="420"
+													  formControlName="DisplayDescription"
 													  [igDataCy]="'FieldType_Modal_Field_DisplayDescription'"
-													  name="DisplayDescription"
-													  tabindex="80"
-													  [style]="{'height':'150px'}"
-													  ngDefaultControl #ed>
-											</p-editor>
+													  name="DisplayDescription"></textarea>
 										</div>
 									</div>
 								</div>
@@ -1024,13 +1040,14 @@
 													  tooltipStyleClass="ig-tooltip"></span>
 											</label>
 
-											<p-editor formControlName="FormDescription"
+											<textarea igTextArea
+													  autoResize="'true'"
+													  rows="5"
+													  maxlength="4000"
+													  tabindex="430"
+													  formControlName="FormDescription"
 													  [igDataCy]="'FieldType_Modal_Field_FormDescription'"
-													  name="FormDescription"
-													  tabindex="80"
-													  [style]="{'height':'150px'}"
-													  ngDefaultControl #ed>
-											</p-editor>
+													  name="FormDescription"></textarea>
 										</div>
 									</div>
 								</div>
@@ -1055,7 +1072,7 @@
 													   [formControl]="fieldTypeForm.controls['IsListable']"
 													   i18n-trueLabel
 													   i18n-falseLabel
-													   tabindex="90"
+													   tabindex="440"
 													   trueLabel="True"
 													   falseLabel="False"></ig-switch>
 
@@ -1072,7 +1089,7 @@
 																 [enforceMaxMin]="true"
 																 [formControlName]="'ColumnWidth'"
 																 [formControl]="fieldTypeForm.controls['ColumnWidth']"
-																 tabindex="60">
+																 tabindex="450">
 												</ig-number-input>
 											</div>
 										</div>
@@ -1087,11 +1104,11 @@
 																	 [enforceMaxMin]="true"
 																	 [formControlName]="'SortOrder'"
 																	 [formControl]="fieldTypeForm.controls['SortOrder']"
-																	 tabindex="60">
+																	 tabindex="460">
 													</ig-number-input>
 													<div class="inline-field" style="padding-left:24px;">
-														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
-														<p-radioButton igRadioButton formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
+														<p-radioButton igRadioButton tabindex="470" formControlName="SortByAscending" name="SortByAscending" value="true" label="Ascending" i18n-label></p-radioButton>
+														<p-radioButton igRadioButton tabindex="480" formControlName="SortByAscending" name="SortByAscending" value="false" label="Descending" i18n-label></p-radioButton>
 													</div>
 												</div>
 											</div>
@@ -1119,7 +1136,7 @@
 													   [formControl]="fieldTypeForm.controls['AddToResult']"
 													   i18n-trueLabel
 													   i18n-falseLabel
-													   tabindex="90"
+													   tabindex="490"
 													   trueLabel="True"
 													   falseLabel="False"></ig-switch>
 
@@ -1141,7 +1158,7 @@
 													<input igInput
 														   igSize="full"
 														   name="Prefix"
-														   tabindex="10"
+														   tabindex="500"
 														   formControlName="Prefix"
 														   [igDataCy]="'Field_Type_Modal_Field_Prefix'"
 														   type="text" />
@@ -1159,7 +1176,7 @@
 													<input igInput
 														   igSize="full"
 														   name="Suffix"
-														   tabindex="10"
+														   tabindex="510"
 														   formControlName="Suffix"
 														   [igDataCy]="'Field_Type_Modal_Field_Suffix'"
 														   type="text" />
@@ -1180,7 +1197,7 @@
 																	 (ngModelChange)="onMinValueChange()"
 																	 [formControlName]="'DisplayOrder'"
 																	 [formControl]="fieldTypeForm.controls['DisplayOrder']"
-																	 tabindex="60">
+																	 tabindex="520">
 													</ig-number-input>
 												</div>
 
@@ -1200,6 +1217,7 @@
 													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
 													label="Allow Multiple Items"
 													i18n-label
+													tabindex="600"
 													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
@@ -1213,6 +1231,7 @@
 													formControlName="IsEditable"
 													[igDataCy]="'FieldType_Field_IsEditable'"
 													label="Editable on UI"
+													tabindex="610"
 													i18n-label
 													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
@@ -1231,6 +1250,7 @@
 																[(ngModel)]="partOfKeyModel"
 																[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
 																label="Key Field"
+																tabindex="620"
 																i18n-label
 																[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
 
@@ -1245,6 +1265,7 @@
 														[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
 														label="Key Field"
 														i18n-label
+														tabindex="630"
 														i18n-pTooltip
 														pTooltip="{{disabledPartOfKeyTooltip}}"
 														tooltipPosition="top"
@@ -1266,6 +1287,7 @@
 													[igDataCy]="'FieldType_Field_IsRequired'"
 													label="Required"
 													i18n-label
+													tabindex="640"
 													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
@@ -1280,6 +1302,7 @@
 													[igDataCy]="'FieldType_Field_IsDisplayable'"
 													label="Show In Details Tab"
 													i18n-label
+													tabindex="650"
 													(ngModelChange)="onShowDetailChange($event);"
 													[disabled]="isSettingDisabled('IsDisplayable')">
 										</p-checkbox>
@@ -1294,6 +1317,7 @@
 											<p-checkbox binary="true"
 														i18n-label
 														i18n-pTooltip
+														tabindex="660"
 														formControlName="DisplayInColumn"
 														label="Display in Column"
 														[disabled]="isSettingDisabled('DisplayInColumn')">
@@ -1310,6 +1334,7 @@
 													formControlName="ShowIfEmpty"
 													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
 													label="Show if Empty"
+													tabindex="670"
 													i18n-label
 													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
@@ -1325,6 +1350,7 @@
 														formControlName="IsPrimaryFilter"
 														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
 														label="Persist in filters"
+														tabindex="680"
 														i18n-label
 														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
 											<span class="field-tooltip fa fa-question-circle"
@@ -1346,17 +1372,17 @@
 		</div>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus class="ig-button-secondary" i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
-		<button *ngIf="formState === 'Form' && !isEditing" igButton igAutoFocus class="ig-button-secondary" i18n-label label="Back" (click)="back()"></button>
+		<button tabindex="1000" igButton igAutoFocus class="ig-button-secondary" i18n-label label="{{closeButtonLabel}}" (click)="close()"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+		<button tabindex="1010" *ngIf="formState === 'Form' && !isEditing" igButton igAutoFocus class="ig-button-secondary" i18n-label label="Back" (click)="back()"></button>
 		<span class="grow"></span>
 		<ng-container *ngIf="formState === 'Form' && !isEditing">
-			<button igButton igAutoFocus i18n-label label="Add and Create Another" class="ig-button-secondary" (click)="save(true)" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button tabindex="1020" igButton igAutoFocus i18n-label label="Add and Create Another" class="ig-button-secondary" (click)="save(true)" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>&nbsp;&nbsp;&nbsp;&nbsp;
 		</ng-container>
 		<ng-container *ngIf="formState === 'Form'">
-			<button igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>
+			<button tabindex="1030" igButton class="ig-button-primary" label="{{saveButtonLabel}}" (click)="save()" [disabled]="isFormDisabled" [loading]="savingInProgress"></button>
 		</ng-container>
 		<ng-container *ngIf="formState === 'FieldTypeSelection'">
-			<button igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypeSelection()" [disabled]="!selectedFieldType"></button>
+			<button tabindex="1040" igButton class="ig-button-primary" label="Define Field >" (click)="confirmTypeSelection()" [disabled]="!selectedFieldType"></button>
 		</ng-container>
 	</div>
 </d3s-modal>
