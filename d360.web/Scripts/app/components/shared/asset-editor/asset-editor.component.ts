@@ -148,6 +148,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 	modalFormMaxHeight = 400;
 	@ViewChild('assetForm', { static: false }) formElement: ElementRef;
+	@ViewChild('headerWrapper', { static: true }) headerWrapper: ElementRef;
 	@ViewChildren(AssetEditorFieldComponent) dyFieldRef: QueryList<AssetEditorFieldComponent>;
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -1204,5 +1205,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 	isActionForm() {
 		return this.objectType === 'Issue';
+	}
+
+	get headerWrapperHeight(): number {
+		return +this.headerWrapper?.nativeElement?.offsetHeight ?? 0;
 	}
 }

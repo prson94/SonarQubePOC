@@ -1,6 +1,6 @@
 ﻿<div class="asset-editor-container">
 	<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
-		<div class="form-header-wrapper">
+		<div #headerWrapper class="form-header-wrapper">
 			<div class="form-header">
 				{{title}}
 				<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
@@ -32,8 +32,9 @@
 		<div class="row" *ngIf="isInError">
 			<div class="err-message">{{isInErrorMessage}}</div>
 		</div>
+
 		<div *ngIf="!isLoading && form; else loading" class="row"
-			 style="position: relative; min-height: calc(100% - 61px);">
+			 style="position: relative; min-height: calc(100% - {{headerWrapperHeight}}px); ">
 			<div class="form-instructions" *ngIf="hasDirections">
 				{{directions}}
 			</div>
