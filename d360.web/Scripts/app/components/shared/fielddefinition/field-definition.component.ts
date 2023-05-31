@@ -801,6 +801,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		return true;
 	}
 	hasDisplayInColumn(field: FieldDisplayModel) {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
+			return false;
+		}
 		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
@@ -815,6 +818,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		return true;
 	}
 	hasIsListable(field: FieldDisplayModel) {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
+			return false;
+		}
 		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
