@@ -358,9 +358,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 						newfilter.value = value;
 					}
 				}
-
 				
-		
 				res.push(newfilter);
 			}
 		}
@@ -472,7 +470,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 							selection = itm as SelectItem;
 						}
 					});
-				})
+				});
 
 				if (selection) {
 					const fieldName: string = selection.value.split('|')[0];
