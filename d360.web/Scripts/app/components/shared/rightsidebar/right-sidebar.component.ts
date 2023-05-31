@@ -155,8 +155,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         }
                     }
                     if (event instanceof NavigationEnd) {
-                        this.previousUrl = event.url;
-                        if (event.url.indexOf('/admin/scoring/') > -1) {
+						this.previousUrl = event.url;
+						if (event.url.indexOf('/admin/scoring/') > -1 && !event.url.endsWith('log')) {
                             this.isScoringScreen = true;
                         }
                         else {
