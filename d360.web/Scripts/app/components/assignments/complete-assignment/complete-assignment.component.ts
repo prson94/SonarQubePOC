@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { WorkflowItemStep } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -17,6 +18,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	stepId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 	workflowId: number;
+	sidePanel: string = 'asset-details';
+	workflowItemStep: WorkflowItemStep;
 
 	constructor(protected settingsService: CompanySettingsService) {
 		super(settingsService);
@@ -57,4 +60,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
+	stepClickChanged(value: { workflowItemStep: WorkflowItemStep, open: boolean }): void {
+		if (value.open) {
+			this.sidePanel = 'step-details';
+			this.workflowItemStep = value.workflowItemStep;
+		} else {
+			this.sidePanel = 'asset-details';
+		}
+	}
 }

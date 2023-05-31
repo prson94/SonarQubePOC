@@ -20,11 +20,11 @@
 		*ngIf="showCompleteAssignment && !workflowItemStep.Complete && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
 		class="ig-button-primary complete-assignment"
 		(click)="completeAssignmentClick()" i18n
->Awaiting your answer&nbsp;<b>Complete the Assignment {{ showCompleteAssignment }}</b><span class="fa fa-pencil"></span>
+>Awaiting your answer&nbsp;<b>Complete the Assignment</b><span class="fa fa-pencil"></span>
 </button>
 <span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
 
 <ng-template #stepHeader>
 </ng-template>
 
-<!--<pre *ngIf="workflowStepDetail">{{ workflowStepDetail | json }}</pre>-->
+<pre style="white-space: pre-wrap" *ngIf="workflowStepDetail">{{ workflowStepDetail | json }}</pre>
