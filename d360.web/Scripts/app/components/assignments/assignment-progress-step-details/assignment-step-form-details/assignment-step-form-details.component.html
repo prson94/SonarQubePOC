@@ -17,7 +17,7 @@
 	</div>
 	<div class="row">
 		<label class="ig-label" i18n>Recipients</label>
-		<div class="ig-value" *ngIf="step.AssignedUsers.length > 0">
+		<div class="ig-value" *ngIf="step.AssignedUsers?.length > 0">
 			<div *ngFor="let recipient of recipients; let i = index">
 				<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
 						<span *ngIf="recipient.FullName != null">

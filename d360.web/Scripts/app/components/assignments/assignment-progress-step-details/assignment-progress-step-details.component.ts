@@ -20,7 +20,6 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
-import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -40,11 +39,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	StepType = StepType;
 	WorkflowActivityType = WorkflowActivityType;
 	WorkflowChangeType = WorkflowChangeType;
-	responsibilities: ResponsibilityType[];
-	fields: any[] = [];
 	helper = WorkflowHelpers;
-	private showAllAnyCondition: boolean = false;
-	private isSatisfyAll: boolean = true;
 
 	constructor(
 		private responsibilityService: ResponsibilityTypeService,
@@ -55,22 +50,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	ngOnInit() {
-		this.load()
-			.pipe(
-				map(() => {
-					this.responsibilityService.getResponsibilityTypes().subscribe((r) => {
-						this.responsibilities = r;
-					});
-				}),
-				map(() => {
-					if (this.step != null) {
-						this.workflowService.getWorkflowFieldTypes(this.step.ObjectTypeID, this.step.ObjectType, true)
-							.subscribe((r) => {
-								this.fields = r;
-							});
-					}
-				})
-			).subscribe();
+		this.load().subscribe()
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -81,7 +61,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 
 	load(): Observable<any> {
 		this.step = null;
-
 		if (this.itemStepId != null) {
 			this.isLoading = true;
 			return this.workflowService.getWorkflowStepDetail(this.itemStepId)
@@ -96,15 +75,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 								this.reassignments.push(new WorkflowStepReassignment(element));
 							}
 						}
-
 						this.ref.markForCheck();
-					}),
-					map(() => {
-						if (typeof this.step.Condition !== 'undefined' && typeof this.step.Condition.length !== 'undefined') {
-
-							this.showAllAnyCondition = this.step.Condition.filter((x) => x['@FieldTypeID']).length > 1;
-							this.isSatisfyAll = this.step.Condition.every((x) => x['@Connector'] === 'AND');
-						}
 					})
 				);
 		} else {
@@ -113,38 +84,20 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 
-	private get bulkReassignments() {
-		return this.reassignments.filter((r) => r.IsBulkReassignment);
+	get bulkReassignments(): WorkflowStepReassignment[] {
+		return this.reassignments.filter((r: WorkflowStepReassignment) => r.IsBulkReassignment);
 	}
 
-	private get reassignment() {
+	get reassignment(): null | WorkflowStepReassignment {
 		if (this.reassignments == null || this.reassignments.length < 1) {
 			return null;
 		} else if (this.reassignments.length === 1 && !this.reassignments[0].IsBulkReassignment) {
 			return this.reassignments[0];
 		} else if (this.reassignments.length > 1) {
-			return this.reassignments.find((r) => !r.IsBulkReassignment);
+			return this.reassignments.find((r: WorkflowStepReassignment) => !r.IsBulkReassignment);
 		} else {
 			return null;
 		}
-	}
-
-	private close() {
-		this.visible = false;
-		this.visibleChange.emit(false);
-		this.ref.markForCheck();
-	}
-
-	get reassignmentFieldName(): string {
-		if (this.reassignment) {
-			if (this.reassignment.ReassignType === 'Object') {
-				return $localize`Action was reassigned to another object`;
-			} else if (this.reassignment.ReassignType === 'Resource') {
-				return $localize`Action is reassigned to Resource`;
-			}
-		}
-
-		return $localize`Action was reassigned`;
 	}
 
 	getActivityType(step: any): string {

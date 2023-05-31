@@ -15,6 +15,52 @@
 					<label class="ig-label" i18n>Activity Type</label>
 					<div i18n class="ig-value">{{ activityType }}</div>
 				</div>
+				<div *ngIf="step.ActivityType === WorkflowActivityType.Form && bulkReassignments?.length > 0"
+					 class="row reassignment-details">
+					<label class="ig-label" i18n>
+						<i class="fa fa-info-circle"></i> Form was reassigned
+					</label>
+					<div i18n class="ig-value" *ngFor="let bulkReassignment of bulkReassignments; let last = last">
+						<d3s-preview-tooltip [objectType]="'Resource'"
+											 [objectId]="bulkReassignment.ByResourceID">
+							<a>{{bulkReassignment.ByResourceName}}</a></d3s-preview-tooltip>
+						reassigned it from
+						<d3s-preview-tooltip [objectType]="'Resource'"
+											 [objectId]="bulkReassignment.FromResourceID">
+							<a>{{bulkReassignment.FromResourceName}}</a></d3s-preview-tooltip>
+						to
+						<d3s-preview-tooltip [objectType]="'Resource'"
+											 [objectId]="bulkReassignment.ToResourceID">
+							<a>{{bulkReassignment.ToResourceName}}</a></d3s-preview-tooltip>
+						on {{(bulkReassignment.ReassignOn | date: 'short')}} <br *ngIf="!last"/>
+					</div>
+				</div>
+				<div *ngIf="step.ActivityType === WorkflowActivityType.Form && reassignment"
+					 class="row reassignment-details">
+					<ng-container *ngIf="reassignment?.ReassignType === 'Object'">
+						<label class="ig-label" i18n>
+							<i class="fa fa-info-circle"></i> Form was reassigned
+						</label>
+						<div i18n class="ig-value">
+							<d3s-preview-tooltip [objectType]="'Resource'"
+												 [objectId]="reassignment.ByResourceID">
+								<a>{{reassignment.ByResourceName}}</a></d3s-preview-tooltip>
+							reassigned this action from
+							<d3s-preview-tooltip [objectType]="'Artifact'"
+												 [objectId]="step?.IssueDetails?.ObjectID">
+								<a>{{step?.IssueDetails?.ObjectName}}</a></d3s-preview-tooltip>
+							to
+							<d3s-preview-tooltip [objectType]="'Artifact'"
+												 [objectId]="reassignment.ObjectID">
+								<a>{{reassignment.ObjectName}}</a></d3s-preview-tooltip>
+							on {{reassignment.ReassignOn | date: 'short'}}.<br/>
+							<ng-container *ngIf="reassignment.NewItemId != null">
+								A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow
+								<i class="fa fa-external-link"></i></a> has been created.
+							</ng-container>
+						</div>
+					</ng-container>
+				</div>
 				<div class="row">
 					<label class="ig-label" i18n>Status</label>
 					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
