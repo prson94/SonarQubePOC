@@ -130,6 +130,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		];
 	}
 
+	setDefaultTitle() {
+		this.title = $localize`Add Field`;
+		this.subTitle = this.assetTypeName;
+		this.cdRef.markForCheck();
+	}
+
 	categoryTokens = [
 		{
 			"title": $localize`General`
@@ -137,6 +143,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	]
 
 	ngOnInit() {
+		this.setDefaultTitle();
 		this.loadBaseData();
 	}
 
@@ -400,9 +407,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
 					this.fieldTypeSelection = null;
+					this.setDefaultTitle();
 					this.loadBaseData();
 					this.setForm();
-
 				}
 				else {
 					this.loadBaseData();
@@ -724,8 +731,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
 			this.setDefaultFormValues();
+			this.cdRef.markForCheck();
 		}
-
 	}
 
 	get isFormDisabled(): boolean {
