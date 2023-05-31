@@ -37,10 +37,11 @@ namespace d360.model.validators
                 throw new Exception("Invalid tag specified [too long].");
             }
 
-			model.Value = model.Value.SanitizeHtml();
+			//model.Value = model.Value.SanitizeHtml();
+			// REGEX: ^[\w\&\-]{1,250}$
 		}
 
-        public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
+		public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
         {
             string isTagBlank = "";
 
@@ -74,7 +75,8 @@ namespace d360.model.validators
                 throw new ArgumentException("Invalid uid specified.");
             }
 
-			model.Value = model.Value.SanitizeHtml();
+			//model.Value = model.Value.SanitizeHtml();
+			// REGEX: ^[\w\&\-]{1,250}$
 		}
-    }
+	}
 }
