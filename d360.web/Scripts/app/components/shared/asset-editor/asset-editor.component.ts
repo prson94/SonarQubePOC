@@ -277,7 +277,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		}
 
 		if (!this.isActionForm()) {
-			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate' && this.objectType !== 'TaskType';
 		}
 
 
