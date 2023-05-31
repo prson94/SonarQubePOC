@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
@@ -10,6 +11,7 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { TreeTableModule } from 'primeng/treetable';
 import { DirectivesModule } from '../../../../directives/directives.module';
+import { AutocompleteDirective } from '../../../../directives/ig-autocomplete-directive';
 import { IgColorPickerModule } from '../../../shared/controls/color-picker/color-picker.module';
 import { ColorSelectorModule } from '../../../shared/controls/color-selector/color-selector.component';
 import { FormFeedbackBadgesModule } from '../../../shared/controls/form-feedback-badges/form-feedback-badges.component';
@@ -52,7 +54,8 @@ import { RelationLookupFieldTypeEditorModule } from './relation-lookup-field-typ
 		IgNumberFieldModule,
 		TableModule,
 		RelationLookupFieldTypeEditorModule,
-		SearchFieldModule
+		SearchFieldModule,
+		AutoCompleteModule
     ],
 	declarations: [
 		ConfigurationFieldTypeModalFormComponent

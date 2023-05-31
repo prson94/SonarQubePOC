@@ -400,7 +400,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			case "FieldFromRelationship": return $localize`Field from Relationship`;
 			case "Html": return $localize`Html`;
 			case "Json": return $localize`JSON`;
-			case "JsonElement": return $localize`JsonElement`;
+			case "JsonElement": return $localize`Json Attribute`;
 			case "Link": return $localize`Link`;
 			case "Lookup": return $localize`List`;
 			case "Number": return $localize`Number`;

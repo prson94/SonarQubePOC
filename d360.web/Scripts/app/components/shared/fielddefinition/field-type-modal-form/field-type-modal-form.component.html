@@ -145,6 +145,60 @@
 							</div>
 						</ig-property-group>
 
+						<ig-property-group *ngIf="selectedFieldType === 'JsonElement'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="JSON Attribute" i18n-title>
+							<div inputs>
+								<div class="form-group">
+									<div class="row flex-form-group form-group-3">
+										<div class="field-col">
+											<label for="JsonAttributeName" class="ig-label" i18n>
+												JSON Field
+											</label>
+
+											<p-dropdown formControlName="JsonAttributeName"
+														[autoDisplayFirst]="false"
+														name="JsonAttributeName"
+														[igDataCy]="'FieldType_Modal_Field_JsonAttributeName'"
+														igDropdown
+														[options]="jsonFields"
+														appendTo="body"
+														required
+														optionLabel="label"
+														optionValue="value"></p-dropdown>
+										</div>
+										<div class="field-col">
+											<label for="JsonAttributePath" class="ig-label" i18n>
+												JSON Attribute Path
+											</label>
+
+											<p-autoComplete igAutocomplete
+															formControlName="JsonAttributePath"
+															[autoDisplayFirst]="false"
+															name="JsonAttributePath"
+															[suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults"
+															(completeMethod)="searchJsonForProperty($event)">
+											</p-autoComplete>
+										</div>
+										<div class="field-col">
+											<label for="JsonAttributeType" class="ig-label" i18n>
+												JSON Attribute Data Type
+											</label>
+
+											<p-dropdown formControlName="JsonAttributeType"
+														[autoDisplayFirst]="false"
+														name="JsonAttributeType"
+														[igDataCy]="'FieldType_Modal_Field_JsonAttributeType'"
+														igDropdown
+														[options]="jsonDataTypes"
+														appendTo="body"
+														required
+														optionLabel="label"
+														optionValue="value"></p-dropdown>
+										</div>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+
 						<ig-property-group *ngIf="selectedFieldType === 'Text'" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Validation" i18n-title>
 							<div inputs>
 								<div class="form-group">
