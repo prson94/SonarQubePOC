@@ -3832,6 +3832,7 @@ select	A.ID as AssetId,
 		A.UID as UID,
 		A.ObjectID ,
 		T.ID as AssetTypeId,
+		isnull (T.HierarchyMaximumDepth,0) as HierarchyMaximumDepth, 
 		P.DisplayPath as TextPath,
 		P.Segments.value('(/path/segment/@level)[last()]', 'int') as [Level],
 		coalesce(L.Name, 'Level ' + P.Segments.value('(/path/segment/@level)[last()]', 'varchar')) as LevelName
@@ -3840,21 +3841,26 @@ from	Asset A
 		inner join AssetPath P on P.ID = A.ID
 		left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = P.Segments.value('(/path/segment/@level)[last()]', 'int')
 where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
+
 					if (policy != null)
 					{
-						model.rows.Add(new DetailReadOnlyRowModel
+						int maxLevel = (int)policy.HierarchyMaximumDepth;
+						if (maxLevel > 1)
 						{
-							columns = 2,
-							FirstColumnFields = new List<ReadOnlyField>
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 2,
+								FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Name = "Level Name", Value = policy.LevelName }
 							},
-							SecondColumnFields = new List<ReadOnlyField>
+								SecondColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
 							},
-							Category = FieldInfo.SystemNoCategory
-						});
+								Category = FieldInfo.SystemNoCategory
+							});
+						}
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
@@ -4514,6 +4520,7 @@ select	A.ID as AssetID,
 		A.UpdatedBy,
 		T.ID as TypeID,
 		T.uid as AssetTypeUid,
+		isnull(T.HierarchyMaximumDepth, 0) as HierarchyMaximumDepth,
 		P.DisplayPath as TextPath,
 		P.Segments.value('(/path/segment/@level)[last()]', 'int') as [Level],
 		coalesce(L.Name, 'Level ' + P.Segments.value('(/path/segment/@level)[last()]', 'varchar')) as LevelName
@@ -4537,19 +4544,22 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 							Category = FieldInfo.SystemNoCategory
 						});
 
-						model.rows.Add(new DetailReadOnlyRowModel
+						if ((int)taxonomy.HierarchyMaximumDepth > 1)
 						{
-							columns = 2,
-							FirstColumnFields = new List<ReadOnlyField>
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 2,
+								FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Name = "Level Name", Value = taxonomy.LevelName }
 							},
-							SecondColumnFields = new List<ReadOnlyField>
+								SecondColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
 							},
-							Category = FieldInfo.SystemNoCategory
-						});
+								Category = FieldInfo.SystemNoCategory
+							});
+						}
 
 						var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
