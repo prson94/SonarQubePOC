@@ -3832,7 +3832,6 @@ select	A.ID as AssetId,
 		A.UID as UID,
 		A.ObjectID ,
 		T.ID as AssetTypeId,
-		isnull (T.HierarchyMaximumDepth,0) as HierarchyMaximumDepth, 
 		P.DisplayPath as TextPath,
 		P.Segments.value('(/path/segment/@level)[last()]', 'int') as [Level],
 		coalesce(L.Name, 'Level ' + P.Segments.value('(/path/segment/@level)[last()]', 'varchar')) as LevelName
@@ -3844,23 +3843,19 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 
 					if (policy != null)
 					{
-						int maxLevel = (int)policy.HierarchyMaximumDepth;
-						if (maxLevel > 1)
+						model.rows.Add(new DetailReadOnlyRowModel
 						{
-							model.rows.Add(new DetailReadOnlyRowModel
-							{
-								columns = 2,
-								FirstColumnFields = new List<ReadOnlyField>
-							{
-								new ReadOnlyField { Name = "Level Name", Value = policy.LevelName }
-							},
-								SecondColumnFields = new List<ReadOnlyField>
-							{
-								new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
-							},
-								Category = FieldInfo.SystemNoCategory
-							});
-						}
+							columns = 2,
+							FirstColumnFields = new List<ReadOnlyField>
+						{
+							new ReadOnlyField { Name = "Level Name", Value = policy.LevelName }
+						},
+							SecondColumnFields = new List<ReadOnlyField>
+						{
+							new ReadOnlyField { Name = "Level Number", Value = policy.Level.ToString() }
+						},
+							Category = FieldInfo.SystemNoCategory
+						});
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
