@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
@@ -52,7 +53,8 @@ import { RelationLookupFieldTypeEditorModule } from './relation-lookup-field-typ
 		IgNumberFieldModule,
 		TableModule,
 		RelationLookupFieldTypeEditorModule,
-		SearchFieldModule
+		SearchFieldModule,
+		AutoCompleteModule
     ],
 	declarations: [
 		ConfigurationFieldTypeModalFormComponent
