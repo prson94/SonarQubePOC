@@ -597,7 +597,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 			if (value.endsWith('|' + relIndex)) {
 				this.deleteField(item);
 			}
-		})
+		});
 		this.fieldTypeForm.removeControl(ctrlName);
 
 		//we can only remove last relationship type so we can sefely remove just last elements here
