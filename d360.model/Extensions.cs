@@ -318,7 +318,6 @@ namespace d360.model
                     f.RelationIndex = definition.Relations.FindIndex(r => r.AssetTypeUid == f.AssetTypeUid);
                 }
             }
-
             return definition;
         }
 

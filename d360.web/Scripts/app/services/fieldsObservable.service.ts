@@ -3,7 +3,7 @@ import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
-import { FieldDefinition, FieldTypeColumnDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
+import { FieldDefinition, FieldType, FieldTypeColumnDefinition, FieldTypeEditorModel, IFieldsService, Lookups } from '../models/fields.model';
 import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -11,6 +11,12 @@ import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { FieldColumnPosition, FieldTypeAPIModel, FieldTypeAPIModelField, RelationshipLookupDefinition } from '../models/fieldtype-api.model';
 import { LookupValuesAPIModel } from '../components/assets-grid/advanced-filtering/advanced-filtering.models';
+
+class FtItem implements SelectItem {
+	title: string;
+	value: string;
+	fieldType: FieldType;
+}
 
 @Injectable({
 	providedIn: 'root'
@@ -116,10 +122,10 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			);
 	}
 
-	getRelationLookupDisplayFields(assetTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
+	getRelationLookupDisplayFields(assetTypeUid: string, intersectTypeUid: string): Observable<FtItem[]> {
 		return this
 			.http
-			.get<SelectItem[]>(`api/v2/fields/GetRelationLookupDisplayFields?assetTypeUid=${assetTypeUid}&intersectTypeUid=${intersectTypeUid}`)
+			.get<FtItem[]>(`api/v2/fields/GetRelationLookupDisplayFields?assetTypeUid=${assetTypeUid}&intersectTypeUid=${intersectTypeUid}`)
 			.pipe(
 				map((response) => <FtItem[]>response),
 				map((r) => this.ftItemToSelectItem(r)),
@@ -273,7 +279,9 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			if (typeof i.value === "undefined") {
 				i.value = null;
 			}
-			s.push({ label: i.title, value: i.value });
+			const option = { label: i.title, value: i.value };
+			option["fieldType"] = i.fieldType;
+			s.push(option);
 		});
 
 		return s;
@@ -549,9 +557,4 @@ export class FieldsObservableService extends BaseObservableService implements IF
 			);
 
 	}
-}
-
-class FtItem {
-	title: string;
-	value: string;
 }

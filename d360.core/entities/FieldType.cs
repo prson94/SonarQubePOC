@@ -1183,7 +1183,24 @@ namespace d360.core.entities
 		public Guid? RelationshipTypeUid { get; set; }
 
 		[DataMember]
+		public int? Id { get; set; }
+
+		[DataMember]
 		public FieldTypeDataTypeApiViewModel Type { get; set; }
+
+		[IgnoreDataMember]
+		public bool IsForRelationLookupDefinition
+		{
+			get
+			{
+				return Type.ComputedOwnershipLookup == null &&
+					Type.ComputedRelationshipLookup == null &&
+					Type.ComputedRelationshipField == null &&
+					Type.ComputedRelationshipReferenceList == null &&
+					Type.Json == null &&
+					Type.Tag == null;
+			}
+		}
 	}
 
 	public class FieldTypesApiViewModel

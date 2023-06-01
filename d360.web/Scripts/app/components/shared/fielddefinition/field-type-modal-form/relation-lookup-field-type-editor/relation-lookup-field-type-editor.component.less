@@ -1,0 +1,98 @@
+@import '../../../../../../../Content/styles/_Variables.less';
+
+.rel-lookup-editor {
+  label {
+    margin-top: 4px;
+    font-weight: bold;
+    color: @ig-black;
+  }
+
+  .sorts {
+    padding-top: 8px;
+
+    .p-radiobutton {
+      margin-left: 16px;
+    }
+
+    label {
+      font-weight: normal;
+      margin: 0;
+    }
+
+    tr,
+    th,
+    td {
+      padding: 0;
+    }
+  }
+
+  .grey-container {
+    padding: 12px;
+    background-color: @ig-grey-t5;
+    border-radius: 4px;
+    margin-bottom: 8px;
+
+    table {
+      tr {
+        background: @ig-grey-t5 !important;
+      }
+    }
+  }
+
+  .link-button {
+    margin-top: 10px;
+    font-size: 14px;
+    display: inline-block;
+    color: @ig-purple;
+    pointer-events: none;
+    opacity: 0.3;
+
+    &.enabled {
+      cursor: pointer;
+      pointer-events: all;
+      opacity: 1;
+    }
+
+    span {
+      padding-left: 4px;
+    }
+  }
+
+  .picker-grid {
+    display: flex;
+  }
+
+  .open-table-settings {
+    padding-left: 12px;
+    margin-bottom: 4px;
+
+    .fa {
+      font-size: 8px;
+      position: relative;
+      top: -2px;
+      left: 4px;
+    }
+  }
+
+  .settings {
+    padding-top: 8px;
+
+    label {
+      font-weight: normal !important;
+    }
+  }
+
+  .advanced-filtering {
+    background: @ig-grey-t5;
+    display: flex;
+
+    .filters-list {
+      background: white;
+    }
+
+    .only-reset {
+      margin-right: 16px;
+      flex-grow: 1;
+    }
+  }
+}

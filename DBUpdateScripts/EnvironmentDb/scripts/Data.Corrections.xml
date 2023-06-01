@@ -717,6 +717,59 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 	</sql>
   </changeSet>
+   <changeSet author="TDuric" id="Data.Corrections.GOV-21136">
+  <comment>Parse Relation Lookup Filters</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+				drop table if exists #temp_values
+				select FTL.FieldTypeID, D.FieldTypeId as FilterFieldId, D.Filter, D.RelationIndex 
+				into #temp_values
+				from FieldTypeLookup FTL
+				cross apply (
+				select	case when DF.FieldTypeId > 1 
+						then cast(DF.FieldTypeId as nvarchar(255)) 
+						else DF.FieldTypeName end as FieldTypeId,
+																DF.FieldTypeName,
+																DF.[Filter],
+																DF.OverrideDisplayName,
+																DF.DisplayOrder,
+																DF.SortOrder,
+																DF.SortByAscending,
+																DF.Show,
+																DF.Width,
+																DF.RelationIndex
+														from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json)D
+														outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, SortByAscending bit, Show bit, Width int, RelationIndex int) DF
+				)D
+				WHERE ISJSON(FTL.Definition) = 1 and D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
+
+				drop table if exists #expressions
+				select FieldTypeID, '(H' + CAST((RelationIndex + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				into #expressions
+				from #temp_values
+
+				select * from #expressions
+
+				drop table if exists #fullExpressions
+
+				select FieldTypeID, concat('(',STRING_AGG(FilterExpression, ' and ' ),')') AS expression
+				into #fullExpressions
+				from #expressions
+				group by FieldTypeID
+
+				UPDATE T
+				SET T.Definition = JSON_MODIFY(T.Definition, '$.Filters', FE.expression) 
+				from FieldTypeLookup T
+				inner join #fullExpressions fe on fe.fieldTypeId = T.FieldTypeID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
 
 

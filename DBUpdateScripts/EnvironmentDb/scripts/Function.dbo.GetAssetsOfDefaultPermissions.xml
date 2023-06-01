@@ -1,0 +1,90 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Function.dbo.GetAssetsOfDefaultPermissions-v1.0">
+    <comment>GOV-28157</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetsOfDefaultPermissions] 
+(	
+	@ResourceID int, 
+	@AssetTypeID int,
+	@DefaultPermissions bit,
+	@IsAdministrator bit,
+	@AssetDetail bit = 0
+)
+RETURNS @tbl TABLE 
+(
+	PermissionsBitMask int,
+	AssetID bigint,	
+	AssetTypeID int,
+	Index idx_tbl clustered(AssetID,AssetTypeID)
+)
+as
+Begin
+	declare @IsResposibilyFortypeID bit = 0;
+	
+	declare @RespAssets table
+	(AssetID Bigint,
+	index ix_RespAssets (AssetID));
+
+
+	if (@DefaultPermissions = 0 and @IsAdministrator = 0)
+	begin
+		-- check entire assettypeid rule exists
+		select top 1 @IsResposibilyFortypeID = 1
+		from ResponsibilityDetail
+		where ResourceID = @ResourceID and AssetTypeID = @AssetTypeID and AssetID = 0 and ApplyToType = 1;
+		
+		if (@IsResposibilyFortypeID = 0)
+		begin
+			insert into @RespAssets
+			select R.assetid
+			from ResponsibilityDetail R
+			inner join Asset A on R.assetid = A.ID and abs(A.AssetTypeID) = @AssetTypeID
+			where r.ResourceID = @ResourceID;
+			
+			if exists (select 1 from @RespAssets)
+				begin
+					insert into @tbl
+					select	0 as PermissionsBitMask,
+							A.ID as AssetID,
+							A.AssetTypeID
+					from Asset A
+					left join  @RespAssets R on R.assetid = A.ID
+					where A.AssetTypeID = @AssetTypeID and R.assetid is null;
+				end
+			else
+				if (@AssetDetail = 0)
+					begin
+						insert into @tbl
+						select	0 as PermissionsBitMask,
+								0 as AssetID,
+								@AssetTypeID AssetTypeID
+					end
+				else
+					begin
+						insert into @tbl
+						select	0 as PermissionsBitMask,
+								A.ID as AssetID,
+								A.AssetTypeID
+						from Asset A
+						where A.AssetTypeID = @AssetTypeID;
+					end
+				
+		end
+	end
+return
+End
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
