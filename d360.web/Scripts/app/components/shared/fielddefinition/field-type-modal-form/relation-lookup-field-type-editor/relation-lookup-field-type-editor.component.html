@@ -1,4 +1,194 @@
-<p>relation-lookup-field-type-editor works!</p>
-field uid : {{uid}} <br />
+<ng-template #relationshipLookupEditor>
+	<d3s-loading [isLoading]="isLoading" [inline]="true"></d3s-loading>
+	<div class="rel-lookup-editor" *ngIf="!isLoading">
+		<div class="grey-container relationship-types-container" [formGroup]="fieldTypeForm">
+			<div *ngFor="let item of relationshipTypeSelection; last as isLast" class="relationship-type-selector">
+				<label i18n>Relationship Type {{item.index}}</label>
+				<div class="picker-grid">
+					<p-dropdown igDropdown
+								igSize="full"
+								[igDataCy]="'RelationshipType_Dropdown'"
+								name="{{item.cntrlName}}"
+								formControlName="{{item.cntrlName}}"
+								appendTo="body"
+								[options]="item.options"
+								[autoDisplayFirst]="false"
+								optionLabel="title"
+								optionValue="value"
+								required
+								(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
+					<div style="width:32px">
+						<button *ngIf="isLast" igButton icon="fa-trash" (click)="removeRelationshipHop(item.cntrlName)"></button>
+					</div>
+				</div>
+			</div>
 
-asset type uid :{{assetTypeUid}}
+			<span class="link-button {{addRelationshipHopEnabled ? 'enabled' : ''}}" (click)="loadNewHop()">
+				<i class="fa fa-plus-circle"></i><span i18n>Add Relationship Hop</span>
+			</span>
+		</div>
+
+		<ng-container *ngIf="relationshipTypeSelection.length > 0 && relationshipTypeSelection[0].selected">
+
+			<div class="grey-container" [formGroup]="fieldTypeForm">
+				<d3s-loading [isLoading]="isFieldsLoading" [inline]="true"></d3s-loading>
+
+				<p-table [value]="lookupFields"
+						 [reorderableColumns]="true">
+					<ng-template pTemplate="header">
+						<tr>
+							<th class="reorder-cell"></th>
+							<th>Reference Column</th>
+							<th>Display Name</th>
+							<th width="20px"></th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-item let-index="rowIndex">
+						<tr>
+							<td [pReorderableRow]="index" class="reorder-cell">
+								<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
+							</td>
+							<td width="250px">
+								<p-dropdown igDropdown
+											igSize="full"
+											[igDataCy]="'RelationshipField_Dropdown'"
+											name="{{item.fieldNameControl}}"
+											formControlName="{{item.fieldNameControl}}"
+											appendTo="body"
+											[panelStyleClass]="'ig-dropdown-grouped'"
+											[options]="fieldOptionsForFields"
+											[autoDisplayFirst]="false"
+											[group]="true"
+											required></p-dropdown>
+							</td>
+							<td>
+								<input igInput
+									   igSize="full"
+									   name="{{item.fieldDisplayNameControl}}"
+									   formControlName="{{item.fieldDisplayNameControl}}"
+									   tabindex="20"
+									   [igDataCy]="'Field_Type_Modal_Field_DisplayName'"
+									   type="text" />
+							</td>
+							<td width="20px">
+								<div class="token-popup-menu" *ngIf="item.MenuItems">
+									<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="$event.stopPropagation();tokenMenu.toggle($event);"></button>
+									<ig-popup-menu [items]="item.MenuItems"
+												   (onSelect)="onMenuItemSelect(item,$event)"
+												   #tokenMenu
+												   [tabIndex]="1"></ig-popup-menu>
+								</div>
+							</td>
+						</tr>
+					</ng-template>
+				</p-table>
+				<span class="link-button enabled" (click)="addFormFieldForField()">
+					<i class="fa fa-plus-circle"></i><span i18n>Add Column</span>
+				</span>
+			</div>
+
+
+			<div class="open-table-settings enabled link-button" (click)="isTableSettingsOpen = !isTableSettingsOpen">
+				<span i18n>Table Settings</span> <i class="fa {{isTableSettingsOpen ? 'fa-chevron-up' : 'fa-chevron-down'}}"></i>
+			</div>
+
+			<div class="grey-container" [hidden]="!isTableSettingsOpen" [formGroup]="fieldTypeForm">
+				<div class="filters">
+					<div class="filters-container">
+						<label i18n>Filter</label>
+						<div>
+							<advanced-filtering #advancedFilter
+												[onlyResetButton]="true"
+												[useFieldCategories]="true"
+												(onChange)="advancedFiltersChanged($event)">
+							</advanced-filtering>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="sorts">
+					<p-table [value]="sortFields">
+						<ng-template pTemplate="header">
+							<tr>
+								<th width="300px">Sort Order</th>
+								<th></th>
+								<th width="20px"></th>
+							</tr>
+						</ng-template>
+						<ng-template pTemplate="body" let-item let-index="rowIndex">
+							<tr>
+								<td>
+									<p-dropdown igDropdown
+												igSize="full"
+												[igDataCy]="'SortField_Dropdown'"
+												name="{{item.fieldControl}}"
+												formControlName="{{item.fieldControl}}"
+												appendTo="body"
+												[panelStyleClass]="'ig-dropdown-grouped'"
+												[options]="fieldOptionsForSort"
+												(onChange)="sortChanged()"
+												[showClear]="false"
+												[autoDisplayFirst]="false"
+												[group]="true"></p-dropdown>
+								</td>
+								<td>
+									<ng-container *ngIf="fieldTypeForm.get(item.fieldControl).value">
+										<p-radioButton igRadioButton formControlName="{{item.fieldDirectionControl}}" name="{{item.fieldDirectionControl}}" value="asc" label="Ascending" i18n-label></p-radioButton>
+										<p-radioButton igRadioButton formControlName="{{item.fieldDirectionControl}}" name="{{item.fieldDirectionControl}}" value="desc" label="Descending" i18n-label></p-radioButton>
+									</ng-container>
+								</td>
+								<td width="20px">
+									<div class="token-popup-menu" *ngIf="fieldTypeForm.get(item.fieldControl).value">
+										<button igButton icon="fa-trash" (click)="removeSortOption(item)"></button>
+									</div>
+								</td>
+							</tr>
+						</ng-template>
+					</p-table>
+				</div>
+
+				<div class="settings">
+					<div class="form-group" style="display:flex;">
+						<div class="row flex-form-group form-group-3">
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideFilter"
+											[igDataCy]="'FieldType_Field_HideFilter'"
+											label="Hide Table Search"
+											i18n-label>
+								</p-checkbox>
+							</div>
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideHeader"
+											[igDataCy]="'FieldType_Field_HideHeader'"
+											label="Hide Table Column Headers"
+											i18n-label>
+								</p-checkbox>
+							</div>
+							<div class="field-col">
+								<p-checkbox binary="true"
+											formControlName="HideFooter"
+											[igDataCy]="'FieldType_Field_HideFooter'"
+											label="Hide Table Footer"
+											i18n-label>
+								</p-checkbox>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+	</div>
+</ng-template>
+
+<ig-property-group *ngIf="isVisible" [showHeaderLine]="false" [igformGroup]="fieldTypeForm" title="Relation Lookup" i18n-title>
+	<div inputs>
+		<div class="form-group">
+			<div class="row">
+				<ng-template [ngTemplateOutlet]="relationshipLookupEditor"></ng-template>
+			</div>
+		</div>
+	</div>
+</ig-property-group>

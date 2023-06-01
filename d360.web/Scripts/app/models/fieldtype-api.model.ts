@@ -36,6 +36,9 @@ export class FieldType {
 			case 'ComplexRelationLookup':
 				this.ComplexRelationLookup = new ComputedRelationshipLookup();
 				break;
+			case 'ComputedRelationshipLookup':
+				this.ComputedRelationshipLookup = new ComputedRelationshipLookup();
+				break;
 			case 'RefListRelationship':
 				this.RefListRelationship = new ComputedRelationshipReferenceList();
 				break;
@@ -351,6 +354,7 @@ export class Counter implements ICommonOptions {
 export class ComputedRelationshipLookupDefinition {
 	Fields: DefinitionField[] = [];
 	Relations: Relation[] = [];
+	Filters: string;
 }
 
 export class DefinitionField {
@@ -360,6 +364,7 @@ export class DefinitionField {
 	OverrideDisplayName: string;
 	DisplayOrder: number;
 	SortOrder: number = 0;
+	SortByAscending?: boolean;
 	Show: boolean;
 	Width: number;
 	RelationIndex: number;

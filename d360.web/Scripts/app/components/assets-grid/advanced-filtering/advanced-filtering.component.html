@@ -1,26 +1,28 @@
 ﻿<div class="advanced-filtering">
-    <div class="filters-list {{(visible ? '' : 'loading')}}">
-        <div class="filters-loader" *ngIf="!visible">
-            <span class="spinner"></span>
-            <span class="loader-text" i18n>Loading filters...</span>
-        </div>
-        <ng-container *ngIf="visible">
-            <div class="filter-item" *ngFor="let item of conditions.filters">
-                <filter-item (onChange)="onItemChange($event)"
-                             [loadIdentifier]="loadIdentifier"
-                             [assetTypeUid]="assetTypeUid"
-                             [condition]="item"
-                             [fields]="fields"
-                             [operators]="operators"
-                             [relationshipTypes]="relationshipTypes"
-                             [gridType]="gridType"
-                             [message]="afMessage">
-                </filter-item>
-            </div>
-            <div class="filters-list-menu">
-                <button igButton class="menu" icon="fa-ellipsis-v" i18n-tooltip tooltip="More..." (click)="menu.toggle($event)"></button>
-                <ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20" [allowAllUnchecked]="false"></ig-popup-menu>
-            </div>
-        </ng-container>
-    </div>
+	<div class="filters-list {{(visible ? '' : 'loading')}} {{(onlyResetButton ? 'only-reset' : '')}}">
+		<div class="filters-loader" *ngIf="!visible">
+			<span class="spinner"></span>
+			<span class="loader-text" i18n>Loading filters...</span>
+		</div>
+		<ng-container *ngIf="visible">
+			<div class="filter-item" *ngFor="let item of conditions.filters">
+				<filter-item (onChange)="onItemChange($event)"
+							 [useFieldCategories]="useFieldCategories"
+							 [loadIdentifier]="loadIdentifier"
+							 [assetTypeUid]="assetTypeUid"
+							 [condition]="item"
+							 [fields]="fields"
+							 [operators]="operators"
+							 [relationshipTypes]="relationshipTypes"
+							 [gridType]="gridType"
+							 [message]="afMessage">
+				</filter-item>
+			</div>
+			<div class="filters-list-menu" *ngIf="!onlyResetButton">
+				<button igButton class="menu" icon="fa-ellipsis-v" i18n-tooltip tooltip="More..." (click)="menu.toggle($event)"></button>
+				<ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20" [allowAllUnchecked]="false"></ig-popup-menu>
+			</div>
+		</ng-container>
+	</div>
+	<button *ngIf="onlyResetButton" igButton class="reset-single-button" icon="fa-undo" i18n-tooltip tooltip="Reset" (click)="clearFilters()"></button>
 </div>

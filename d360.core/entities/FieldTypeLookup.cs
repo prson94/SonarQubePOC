@@ -53,6 +53,8 @@ namespace d360.core.entities
         public int DisplayOrder { get; set; }
         
         public int SortOrder { get; set; }
+
+        public bool SortByAscending { get; set; }
         
         public bool Show { get; set; }
         
@@ -75,14 +77,17 @@ namespace d360.core.entities
         public List<FieldTypeComplexLookupDefinitionField> Fields { get; set; }
         
         public List<FieldTypeComplexLookupDefinitionRelation> Relations { get; set; }
-    }
+		public string Filters { get; set; }
+	}
 
-    public class FieldTypeComplexLookupDefinitionApiViewModel
+	public class FieldTypeComplexLookupDefinitionApiViewModel
     {
         public List<FieldTypeComplexLookupDefinitionFieldApiViewModel> Fields { get; set; }
         
         public List<FieldTypeComplexLookupDefinitionRelationApiViewModel> Relations { get; set; }
-    }
+
+		public string Filters { get; set; }
+	}
 
     public class FieldTypeComplexLookupDefinitionFieldApiViewModel
     {
@@ -97,6 +102,8 @@ namespace d360.core.entities
         public int DisplayOrder { get; set; }
         
         public int SortOrder { get; set; }
+
+		public bool SortByAscending { get; set; } = true;
         
         public bool Show { get; set; } = true;
         

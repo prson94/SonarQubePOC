@@ -5,7 +5,7 @@ import { Table } from "primeng/table";
 import { forkJoin, of, Subscription } from "rxjs";
 import { AssetTypeClass, } from "../../../../models/asset.model";
 import { AssetTypeAncestry } from "../../../../models/fields.model";
-import { FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
+import { ComputedRelationshipLookupDefinition, FieldType, FieldTypeAPIModel, FieldTypeAPIModelField } from "../../../../models/fieldtype-api.model";
 import { RelationshipType } from "../../../../models/relationship.model";
 import { AssetService } from "../../../../services/asset.service";
 import { FieldsObservableService } from "../../../../services/fieldsObservable.service";
@@ -13,6 +13,7 @@ import { RelationshipsService } from "../../../../services/relationships.service
 import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
+import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -46,6 +47,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldType: FieldTypeAPIModel;
 	typeFieldTypes: FieldTypeAPIModelField[] = [];
 	editedFieldType: FieldTypeAPIModelField;
+	computedRelationshipLookupInitialDefinition: ComputedRelationshipLookupDefinition;
 
 	relationshipTypes: RelationshipType[];
 
@@ -60,6 +62,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChild('dt', { static: false }) dt: Table;
+	@ViewChild('relationLookupEditor', { static: false }) relationLookupEditor: RelationLookupFieldTypeEditorComponent;
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -102,7 +105,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	private fieldTypeNameToApiNameMap = {
 		'FieldFromRelationship': 'ComputedRelationshipField',
 		'OwnershipLookup': 'ComputedOwnershipLookup',
-		'RefListRelationship': 'ComputedRelationshipReferenceList'
+		'RefListRelationship': 'ComputedRelationshipReferenceList',
+		'ComplexRelationLookup': 'ComputedRelationshipLookup'
 	}
 
 	get isEditing(): boolean {
@@ -393,6 +397,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.Validation.MaximumLength = this.fieldTypeForm.get("MaximumLength").value ?? null;
 		}
 
+		if (this.selectedFieldType === 'ComputedRelationshipLookup') {
+			fieldTypeApiObject.Definition = this.relationLookupEditor.getDefinition();
+			fieldTypeApiObject.HideFilter = this.fieldTypeForm.get("HideFilter").value ?? false;
+			fieldTypeApiObject.HideHeader = this.fieldTypeForm.get("HideHeader").value ?? false;
+			fieldTypeApiObject.HideFooter = this.fieldTypeForm.get("HideFooter").value ?? false;
+		}
 		if (this.selectedFieldType === 'JsonElement') {
 			fieldTypeApiObject.JsonAttribute.FieldName = this.fieldTypeForm.get("JsonAttributeName").value ?? null;
 			fieldTypeApiObject.JsonAttribute.Path = this.fieldTypeForm.get("JsonAttributePath").value ?? null;
@@ -408,6 +418,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					name: model.Fields[0].Name
 				};
 				this.onUpdated.emit(event);
+				if (this.relationLookupEditor) {
+					this.relationLookupEditor.resetForm();
+				}
 				if (addAnother) {
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
@@ -543,6 +556,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
 		}
 
+		if (this.selectedFieldType === 'ComputedRelationshipLookup') {
+			this.computedRelationshipLookupInitialDefinition = null;
+		}
+
 		this.partOfKeyModel = false;
 
 		switch (this.selectedFieldType) {
@@ -589,6 +606,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				break;
 			case 'Score':
 			case 'Tag':
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				break;
+			case 'ComputedRelationshipLookup':
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
@@ -718,6 +739,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["MaximumLength"].setValue(type?.Validation?.MaximumLength ?? null);
 				}
 
+				if (this.selectedFieldType === 'ComputedRelationshipLookup') {
+					this.computedRelationshipLookupInitialDefinition = type?.Definition ?? null;
+					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null);
+					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null);
+					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null);
+				}
+				else {
+					this.computedRelationshipLookupInitialDefinition = null;
+				}
+
 				if (this.selectedFieldType === 'JsonElement') {
 					this.fieldTypeForm.controls["JsonAttributeName"].setValue(type?.JsonAttribute?.FieldName ?? null);
 					this.fieldTypeForm.controls["JsonAttributePath"].setValue(type?.JsonAttribute?.Path ?? null);
@@ -776,11 +807,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.changeFormSub.unsubscribe();
 		}
 		this.setDefaultFormValues();
-
+		if (this.relationLookupEditor) {
+			this.relationLookupEditor.resetForm();
+		}
 		if (this.formElement) {
 			this.formElement.nativeElement.scrollTop = 0;
 		}
-
+		this.selectedFieldType = null;
 		this.onClose.emit();
 	}
 
@@ -890,14 +923,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (val) {
 			case 'IsDisplayable':
-				return (['ComplexRelationLookup', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
-				return (['ComplexRelationLookup', 'ComputedRelationshipReferenceList', 'Json', 'JSON', 'System'].indexOf(this.selectedFieldType) > -1
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Json', 'JSON', 'System'].indexOf(this.selectedFieldType) > -1
 					|| (this.selectedFieldType === 'Relationship' && !this.isListableRelationship));
 			case 'IsRequired':
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsPartOfKey':
 				this.disabledPartOfKeyTooltip = '';
 
@@ -914,19 +947,19 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					return true;
 				}
 
-				return (['ComplexRelationLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Link', 'System']
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Relationship', 'Tag', 'Score', 'Link', 'System']
 					.indexOf(this.selectedFieldType) > -1
 					|| this.selectedFieldType === 'ReferenceItemType');
 			case 'IsPrimaryFilter':
-				return (!this.supportsPrimaryFilterOption || ['ComputedRelationshipField', 'ComplexRelationLookup', 'ComputedOwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (!this.supportsPrimaryFilterOption || ['ComputedRelationshipField', 'ComputedRelationshipLookup', 'ComputedOwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
 				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.isReferenceItemType && fieldName.toLocaleLowerCase() === "code"));
 			case 'SearchAddToResult':
-				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComplexRelationLookup', 'ComputedRelationshipReferenceList', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'isSettingDisabled':
-				return (['Json', 'JSON', 'JsonElement', 'ComplexRelationLookup', 'Tag', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['Json', 'JSON', 'JsonElement', 'ComputedRelationshipLookup', 'Tag', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'DisplayInColumn':
 				if (this.selectedFieldType === "ComputedOwnershipLookup") {
 					const isDisabled = !(this.fieldTypeForm.get("DisplayAsList").value === 'true');
