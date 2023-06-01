@@ -1,28 +1,28 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
-    ActionEditorModel,
-    ActivityTypeInfo,
-    AllocationAPIModel,
-    AllocationRequestModel,
-    BulkWorkflowFormModel,
-    BulkWorkflowReassignModel,
-    ChangeTypeInfo,
-    EmailTaskRecipientTypeInfo,
-    Issue,
-    IssueDetail,
-    TransitionTypeInfo,
-    WorkflowChangeType,
-    WorkflowDiagramModel,
-    WorkflowForm,
-    WorkflowIssueType,
-    WorkflowItemStep,
-    WorkflowListItem,
-    WorkflowObjectType,
-    WorkflowReassignmentAsset,
-    WorkflowTaskProcedure,
-    WorkflowTypeItem,
-    WorkflowTypeModel,
+	ActionEditorModel,
+	ActivityTypeInfo,
+	AllocationAPIModel,
+	AllocationRequestModel,
+	BulkWorkflowFormModel,
+	BulkWorkflowReassignModel,
+	ChangeTypeInfo,
+	EmailTaskRecipientTypeInfo,
+	Issue,
+	IssueDetail,
+	TransitionTypeInfo, WorkflowAssignments,
+	WorkflowChangeType,
+	WorkflowDiagramModel,
+	WorkflowForm,
+	WorkflowIssueType,
+	WorkflowItemStep,
+	WorkflowListItem,
+	WorkflowObjectType,
+	WorkflowReassignmentAsset,
+	WorkflowTaskProcedure,
+	WorkflowTypeItem,
+	WorkflowTypeModel
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -124,12 +124,20 @@ export class WorkflowService extends BaseObservableService {
             ); 
     }
 
+    getActions(): Observable<any> {
+        return this.http.get('/api/v2/actions')
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
+            );  
+    }
+
     getAdminWorkflowIssueTypes(): Observable<WorkflowIssueType[]> {
         return this.http.get('/api/v2/actions/types')
             .pipe(
                 map((response) => <WorkflowIssueType[]>response),
                 catchError((err) => this.handleError(err))
-            );  
+            );
     }
 
     getIssueByUID(uid: string): Observable<WorkflowIssueType> {
@@ -279,6 +287,14 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get('api/v2/workflow/types')
             .pipe(
             map((response) => <WorkflowTypeItem[]> response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getWorkflowAssignments(): Observable<WorkflowAssignments> {
+        return this.http.get('api/v2/workflow/assignments')
+            .pipe(
+            map((response) => <WorkflowAssignments> response),
                 catchError((err) => this.handleError(err))
             );
     }

@@ -177,8 +177,8 @@ export class HTTPResponseOutput {
 	StepName: string;
 	Id: string;
 	Name: string;
-	Type: string = "text";
-	Format: string = "json";
+	Type: string = 'text';
+	Format: string = 'json';
 	Path: string;
 }
 
@@ -219,7 +219,6 @@ export class NodeFields {
 export class FormField {
 	field: any[] = [];
 }
-
 
 
 export class ActivityTypeInfo {
@@ -295,6 +294,7 @@ export class WorkflowTypeItem {
 
 
 }
+
 export class WorkflowListItem {
 	ID: number;
 	CreatedOn: string;
@@ -326,7 +326,7 @@ export class WorkflowEventRegistration {
 	SettingsObject: any = {};
 	LastExecuted: any;
 	conditions: EventCondition[] = [];
-	IssueObject: string = "";
+	IssueObject: string = '';
 	ScoreType: number;
 }
 
@@ -514,7 +514,7 @@ export class WorkflowItemStep {
 	ObjectID: number;
 	TypeID: number;
 	IsAssignedLoginUser: string;
-	FieldsObject: Record<string, any>
+	FieldsObject: Record<string, any>;
 }
 
 export class BulkWorkflowFormModel {
@@ -723,4 +723,27 @@ export interface WorkflowTypeModel {
 	label?: string;
 	value?: string;
 	ID?: number;
+}
+
+export class WorkflowAssignments {
+	items: WorkflowAssignmentItem[] = [];
+	pageSize: number;
+	pageNum: number;
+	total: number;
+}
+
+export class WorkflowAssignmentItem {
+	workflowItemUid: string;
+	workflowUid: string;
+	workflowName: string;
+	initiator: string;
+	initiatorUid: string;
+	assetDisplayValue: string;
+	StartedOn: string;
+	CompletedOn: string;
+	Status: string;
+	assetTypeUid: string;
+	actionTypeUid: string;
+	assetUid: string;
+	assetPath: string;
 }
