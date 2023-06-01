@@ -396,12 +396,23 @@ export class BaseComponent {
 				else if (this.baseIntersectTypeUid) {
 					url = `/admin/relationships/${this.baseIntersectTypeUid}/log`;
 				}
-				else if (this.baseResponsibilityUid) {
-					url = `/assets/${this.baseResponsibilityUid}/log`;
-				}
 
-				if (this.objectType?.toLowerCase() === "tag") {
-					url = `/tag/${this.uid}/log`;
+				switch (this.objectType?.toLowerCase()) {
+					case 'tag':
+						url = `/tag/${this.uid}/log`;
+						break;
+					case 'grouptype':
+						url = `/admin/groups/${this.uid}/log`;
+						break;
+					case 'metricallocation':
+						url = `/admin/scoring/${this.uid}/log`;
+						break;
+					case 'responsibilitytype':
+						url = `/admin/responsibilities/${this.baseResponsibilityUid}/log`;
+						break;
+					case 'resourcetype':
+						url = `/admin/resources/${this.uid}/log`;
+						break;
 				}
 
 				if (this.baseSemanticTypeUid) {
@@ -1173,6 +1184,7 @@ export class BaseComponent {
 
 			var areaIcon = area === $localize`Configuration` ? 'fa-sliders' : "fa-cog";
 			if (r.Object === 'Tag') { areaIcon = 'fa-tag'; }
+
 			this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
 
 			if (!requestModel.excludeTabs && r?.ObjectType !== 'IssueType') {
