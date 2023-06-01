@@ -451,7 +451,8 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("item/{workflowItemUid:Guid}"),			
-			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails))
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow item details failed.", typeof(WorkflowItemDetails))
 		]
 		public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(Guid workflowItemUid)
 		{
