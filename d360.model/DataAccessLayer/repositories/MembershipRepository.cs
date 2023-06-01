@@ -957,6 +957,17 @@ namespace d360.model.DataAccessLayer
 
 								if (string.Compare(user.Username, resource.Username, true) != 0)
 								{
+									//disallow changing the email/username if the current user is not an admin
+									if (CompanyContext.CurrentResourceIsAdmin == false)
+									{
+										result.Success = false;
+										result.uid = user.uid;
+										result.Message += "Non-administrator users cannot update the email address / username. ";
+										results.Add(result);
+
+										continue;
+									}
+
 									//check if the resource already exists in community
 									var existing = CommunityContext.Filter<Resource>(i => i.Email == user.Username && i.Uid != user.uid).FirstOrDefault();
 

@@ -2583,7 +2583,7 @@ from	IntersectType I
 						{
 							case SqlFieldType.Text:
 								wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
-								dbs.Add($"@S_{f.ApiName}", "%" + value + "%");
+								dbs.Add($"@S_{f.ApiName}", value + "%");
 								break;
 							case SqlFieldType.Boolean:
 								bool filterBool;

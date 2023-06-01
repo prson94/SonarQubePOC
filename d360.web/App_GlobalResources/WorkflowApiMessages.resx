@@ -123,6 +123,9 @@
   <data name="InvalidGuid" xml:space="preserve">
     <value>Invalid Guid {0} passed for parameter {1}</value>
   </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>Invalid Initiator uid provided.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>INVALID MODEL NO FIELDS PASSED</value>
   </data>
@@ -212,6 +215,9 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>Workflow item has been deleted.</value>
+  </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>Workflow Item with Uid {0} could not be found.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Workflow forms reassigned successfully</value>
