@@ -79,6 +79,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Initiator uid provided..
+        /// </summary>
+        public static string InvalidInitiatorUid {
+            get {
+                return ResourceManager.GetString("InvalidInitiatorUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to INVALID MODEL NO FIELDS PASSED.
         /// </summary>
         public static string InvalidModelNoFieldPassed {

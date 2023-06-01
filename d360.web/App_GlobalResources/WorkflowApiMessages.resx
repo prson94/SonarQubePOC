@@ -123,6 +123,9 @@
   <data name="InvalidGuid" xml:space="preserve">
     <value>Invalid Guid {0} passed for parameter {1}</value>
   </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>Invalid Initiator uid provided.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>INVALID MODEL NO FIELDS PASSED</value>
   </data>

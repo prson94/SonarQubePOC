@@ -1011,17 +1011,18 @@ namespace d360.model.DataAccessLayer
 			List<string> conditions = new List<string>();
 			var fieldJoins = new DynamicQueryJoins();
 			var selectColumns = new DynamicQuerySelects();
+			var hasActionFilter = false;
 
 			var queryFieldOptions = new List<DefaultFilter>
 			{
-				new DefaultFilter("initiatorUid", "GR.uid", SqlFieldType.Guid),
-				new DefaultFilter("initiator", "(GR.FirstName + ' ' + GR.LastName)", SqlFieldType.Text),
-				new DefaultFilter("workflowItemUid", "WI.uid", SqlFieldType.Guid),
-				new DefaultFilter("workflowUid", "T.uid", SqlFieldType.Guid),
+				new DefaultFilter("initiatorUid", "WA.initiatorUid", SqlFieldType.Guid),
+				new DefaultFilter("initiator", "WA.initiator", SqlFieldType.Text),
+				new DefaultFilter("workflowItemUid", "WA.workflowItemUid", SqlFieldType.Guid),
+				new DefaultFilter("workflowUid", "WA.workflowUid", SqlFieldType.Guid),
 				new DefaultFilter("assetDisplayValue", "ADV.DisplayValue", SqlFieldType.Text),
-				new DefaultFilter("startedOn", "WI.StartedOn", SqlFieldType.DateTime),
-				new DefaultFilter("completedOn", "WI.CompletedOn", SqlFieldType.DateTime),
-				new DefaultFilter("status", "(case when WI.CompletedOn is null then 'Pending' else 'Complete' end)", SqlFieldType.Text),
+				new DefaultFilter("startedOn", "WA.StartedOn", SqlFieldType.DateTime),
+				new DefaultFilter("completedOn", "WA.CompletedOn", SqlFieldType.DateTime),
+				new DefaultFilter("status", "WA.Status", SqlFieldType.Text),
 				new DefaultFilter("assetTypeUid", "ast.uid", SqlFieldType.Guid),
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
@@ -1029,12 +1030,22 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid)
 			};
 
+			var orderFieldOptions = new List<DefaultFilter>
+			{
+				new DefaultFilter("initiator", "AssignmentList.initiator", SqlFieldType.Text),
+				new DefaultFilter("assetDisplayValue", "AssignmentList.assetDisplayValue", SqlFieldType.Text),
+				new DefaultFilter("startedOn", "AssignmentList.StartedOn", SqlFieldType.DateTime),
+				new DefaultFilter("completedOn", "AssignmentList.CompletedOn", SqlFieldType.DateTime),
+				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
+				new DefaultFilter("displayPath", "AssignmentList.DisplayPath", SqlFieldType.Text),
+			};
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
 			{
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatorUid").Value;
 				if (Guid.TryParse(value, out Guid initiatorUid))
 				{
-					conditions.Add("GR.uid = @initiatorUid");
+					conditions.Add("WA.initiatorUid = @initiatorUid");
 					dbArgs.Add("@initiatorUid", initiatorUid);
 				}
 			}
@@ -1056,25 +1067,32 @@ namespace d360.model.DataAccessLayer
 						dbArgs.AddDynamicParams(advFilterArgs);
 						conditions.AddRange(advFilterStatements);
 
+						if (conditions.Where(c => c.Contains("IT.uid")).Any())
+						{
+							hasActionFilter = true;
+						}
+
 						if (filterValue.Contains("assignee"))
 						{
-							fieldJoins.Add(@"LEFT JOIN
-											workflow.ItemAssignment IA2 on IA2.ItemStepID = WIS.ID and WIS.CompletedOn is null
+							fieldJoins.Add($@"LEFT JOIN											
+											workflow.ItemAssignment IA2 on IA2.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null											
 											left JOIN
 											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
 						}
-						
+												
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count==1)
 						{
 							var actionFilter = advFilterStatements.Where(f=> f.Contains("IT.uid")).FirstOrDefault();
-							var filterID = actionFilter.Substring(actionFilter.LastIndexOf("@") + 1, actionFilter.Length-(actionFilter.LastIndexOf("@")+2));
-							var actionTypeUid = advFilterArgs.Get<string>(filterID);
-
+							var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
+							var endIndex = actionFilter.IndexOf(" ", startIndex) ==-1? actionFilter.IndexOf(")", startIndex) : actionFilter.IndexOf(" ", startIndex);							
+							var filterID = actionFilter.Substring(startIndex+1, endIndex - startIndex);
+							var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
+							
 							if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 							{
 								IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
 								var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
-								getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);
+								getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);								
 
 								foreach (FieldType customField in fieldTypes)
 								{
@@ -1098,7 +1116,7 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "TRY_CAST(+ Wi.[StartedOn] AS datetime)");
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ {(hasActionFilter ? "WA" : "AssignmentList")}.[StartedOn] AS datetime)");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
@@ -1119,46 +1137,83 @@ namespace d360.model.DataAccessLayer
 
 			string whereConditions = "";
 
-			if (conditions.Count() > 0)
+			if (conditions.Any())
 			{
-				whereConditions += " where " + string.Join(" and ", conditions);
-				whereConditions = whereConditions.Trim();
+				whereConditions = " where " + string.Join(" and ", conditions);
+				whereConditions = whereConditions.Trim();				
 			}
+
+			var coreSelects = $@"select 
+										WI.uid as workflowItemUid, 
+										T.uid as workflowUid, 
+										T.Name as workflowName,
+										GR.FirstName + ' ' + GR.LastName as initiator,
+										GR.uid as initiatorUid,		
+										WI.StartedOn,
+										WI.CompletedOn,
+										case 
+											when WI.CompletedOn is null 
+												then 'Pending'            
+											else        
+												'Complete' end as [Status]
+										,WI.Object
+										,WI.ObjectID
+										,WIS.ID as workflowItemStepID
+									FROM workflow.Type T
+															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
+															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
+															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
+															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
 			
-			var selects = $@"WI.uid as workflowItemUid, 
-							T.uid as workflowUid, 
-							T.Name as workflowName,
-							GR.FirstName + ' ' + GR.LastName as initiator,
-							GR.uid as initiatorUid,									
-							ADV.DisplayValue as assetDisplayValue,
-							WI.StartedOn,
-							WI.CompletedOn,
-							case 
-								when WI.CompletedOn is null 
-									then 'Pending'            
-								else        
-									'Complete' end as [Status],
-							ast.uid as assetTypeUid,
-							IT.uid as actionTypeUid,
-							A.uid as assetUid,
-							AP.DisplayPath as assetPath,
-							Assignments.value as assigneesJson,
-							I.uid as actionUid
+			var actionSelects = $@"WA.workflowItemUid, 
+								WA.workflowUid, 
+								WA.workflowName,
+								WA.initiator,
+								WA.initiatorUid,		
+								ADV.DisplayValue as assetDisplayValue,
+								WA.StartedOn,
+								WA.CompletedOn,
+								WA.[Status],
+								AST.uid as assetTypeUid,
+								IT.uid as actionTypeUid,
+								A.uid as assetUid,
+								AP.DisplayPath as assetPath,
+								AssignedUsers.value as assigneesJson,
+								I.uid as actionUid 
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
-			var sqljoins = $@"FROM workflow.Item WI
-						INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
-						INNER JOIN workflow.Version V on V.ID=WI.VersionID
-						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)
-						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
-						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						LEFT JOIN asset A on (WI.Object=A.object and WI.ObjectID= A.objectID and WI.Object <> 'Issue') or (WI.Object = 'Issue' and A.ID = I.AssetID)
-						LEFT JOIN AssetPath AP on A.ID=AP.ID
-						LEFT JOIN AssetType AST on AST.ID = A.AssetTypeID
-						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
-						LEFT JOIN workflow.ItemStep WIS on wis.CompletedOn is null and WI.ID = WIS.ItemID
-						LEFT JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.ID = WIS.StepID
-						OUTER APPLY
+			var assetSelects = $@"WA.workflowItemUid, 
+							WA.workflowUid, 
+							WA.workflowName,
+							WA.initiator,
+							WA.initiatorUid,		
+							ADV.DisplayValue as assetDisplayValue,
+							WA.StartedOn,
+							WA.CompletedOn,
+							WA.[Status],
+							AST.uid as assetTypeUid,
+							null as actionTypeUid,
+							A.uid as assetUid,							
+							AP.DisplayPath as assetPath,
+							AssignedUsers.value as assigneesJson,
+							null as actionUid ";
+
+			var actionJoins = $@"FROM 
+							assignments WA
+							INNER JOIN 
+							Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
+							INNER JOIN 
+							IssueType IT on I.IssueTypeID = IT.ID
+							LEFT JOIN 
+							Asset A on WA.Object = 'Issue' and A.ID = I.AssetID
+							LEFT JOIN 
+							AssetPath AP on A.ID=AP.ID
+							LEFT JOIN 
+							AssetType AST on AST.ID = A.AssetTypeID						
+							LEFT JOIN 
+							AssetDisplayValue ADV on A.id = ADV.AssetID
+							OUTER APPLY
 							(
 								SELECT 
 								(
@@ -1169,22 +1224,93 @@ namespace d360.model.DataAccessLayer
 										workflow.ItemAssignment IA1 
 										INNER JOIN 
 										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
-									WHERE IA1.ItemStepID = WIS.ID and WIS.CompletedOn is null
+									WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
 									FOR JSON PATH
 								) as value
-							) Assignments	
+							) AssignedUsers
 						{string.Join("\n", fieldJoins.GetStatements())}
 						{whereConditions}";
 
-			var sql = $@"SELECT 
-							{selects}
-							{sqljoins}												
+			var assetJoins = $@"FROM
+								assignments WA
+								INNER JOIN 
+								Asset A on WA.Object=A.object and WA.ObjectID= A.objectID and WA.Object <> 'Issue'
+								INNER JOIN 
+								AssetPath AP on A.ID=AP.ID
+								INNER JOIN 
+								AssetType AST on AST.ID = A.AssetTypeID
+								INNER JOIN 
+								AssetDisplayValue ADV on A.id = ADV.AssetID
+								OUTER APPLY
+								(
+									SELECT 
+									(
+										SELECT 
+											GR1.FirstName + ' ' + GR1.LastName as [Name], 
+											uid  
+										FROM
+											workflow.ItemAssignment IA1 
+											INNER JOIN 
+											reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
+										WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
+										FOR JSON PATH
+									) as value
+								) AssignedUsers
+								{string.Join("\n", fieldJoins.GetStatements())}
+								{whereConditions}";
+
+			var assigmentsSQL = $@"SELECT
+							{actionSelects}
+							{actionJoins}
+						union
+						SELECT
+							{assetSelects}
+							{assetJoins}";
+
+			var sql = $@"
+						with assignments as (
+								{coreSelects}
+							)
+						select * from 
+						(
+							
+							{assigmentsSQL}
+						) AssignmentList
 						{orderBySql}
 						{offset}";
 
-			var countSQL = $@"SELECT 
-							count(*)
-							{sqljoins}";
+			var countSQL = $@"							
+							with assignments as (
+									{coreSelects}
+							)
+							SELECT 
+								count(1)
+							from
+							(									
+								{assigmentsSQL}
+							) AssignmentList";
+
+			if (hasActionFilter)
+			{
+				sql = $@"
+						with assignments as (
+							{coreSelects}
+						)
+						SELECT
+						{actionSelects}
+						{actionJoins}
+						{orderBySql}
+						{offset}";
+
+				countSQL = $@"
+							with assignments as (
+								{coreSelects}
+								)
+								SELECT
+								COUNT(1)
+								{actionJoins}
+							";
+			}
 
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
 		
