@@ -64,6 +64,9 @@
 				<div class="row">
 					<label class="ig-label" i18n>Status</label>
 					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
+					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form" class="row">
+						<p>In progress</p>
+					</ng-container>
 				</div>
 				<div class="row">
 					<label class="ig-label" i18n>Started</label>
