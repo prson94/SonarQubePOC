@@ -27,6 +27,8 @@ namespace d360.model.DataAccessLayer
 
         Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int assetTypeId, string query, int resultCount = 100, CancellationToken? cancellationToken = null);
 
-		Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams);	
+
+		Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid);
 	}
 }

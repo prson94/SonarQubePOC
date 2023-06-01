@@ -557,5 +557,25 @@ namespace d360.core.entities.Workflow
 		[DataMember]
 		public List<dynamic> items { get; set; }
 	}	
+	
+	public class WorkflowItemDetails
+	{
+		public Guid WorkflowItemUid { get; set; }
+
+		public Guid WworkflowUid { get; set; }
+
+		public string WorkflowName { get; set; }
+
+		public string Initiator { get; set; }
+
+		public Guid InitiatorUid { get; set; }
+
+		public DateTime StartedOn { get; set; }
+		public string Status { get; set; }
+		public Guid ActionUid { get; set; }
+		public string ChangeType { get; set; }
+		public string InitiatingObjectType { get; set; }
+	}
+
 	#endregion
 }

@@ -216,6 +216,9 @@
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>Workflow item has been deleted.</value>
   </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>Workflow Item with Uid {0} could not be found.</value>
+  </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Workflow forms reassigned successfully</value>
   </data>

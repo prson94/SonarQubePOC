@@ -1325,5 +1325,74 @@ namespace d360.model.DataAccessLayer
 
 			return assignments;		
 		}
+
+		public async Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid)
+		{
+			var dbArgs = new DynamicParameters();
+
+			dbArgs.Add("@workflowItemUid", workflowItemUid);
+
+			var changeTypeStatements = new List<string>();
+			
+			foreach (ChangeTypeInfo changeType in ChangeType.Add.GetList())
+			{
+				changeTypeStatements.Add($"when WER.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
+			}
+
+			
+			var changeTypeSQL = $@"CASE 
+									{string.Join(Environment.NewLine, changeTypeStatements)}
+									else 'Unknown'
+									END as ChangeType,";
+			
+
+			var classCaseStatements = new List<string>();
+
+			foreach (AssetTypeClassInfo assetClass in AssetTypeClass.BusinessAsset.GetAsList())
+			{
+				classCaseStatements.Add($"when class = {(int)assetClass.ID} then '{assetClass.Name}'");
+			}
+
+			
+			var classSQL = $@"CASE when I.ID is not null then 'Action'
+								{string.Join(Environment.NewLine, classCaseStatements)}
+								else 'Unknown'
+								END as InitiatingObjectType";
+						
+
+			string sql = $@"
+						 SELECT 
+							WI.uid as WorkflowItemUid, 
+							T.uid as WorkflowUid, 
+							T.Name as WorkflowName,							
+							GR.FirstName + ' ' + GR.LastName as Initiator,
+							GR.uid as InitiatorUid,																
+							WI.StartedOn,
+							WI.CompletedOn,
+							case 
+								when WI.CompletedOn is null 
+									then 'Pending'            
+								else        
+									'Complete' end as [Status],
+							A.uid as AssetUid,
+							AP.DisplayPath as AssetPath,
+							I.uid as ActionUid,
+							{changeTypeSQL}
+							{classSQL}
+							FROM workflow.Item WI
+						INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+						INNER JOIN workflow.Version V on V.ID=WI.VersionID
+						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
+						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
+						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
+						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object=A.object and WI.ObjectID= A.objectID)
+						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
+						left join workflow.EventRegistration WER on T.ID = WER.TypeID and (WER.AssetTypeID = AST.ID or WER.IssueTypeID = iT.ID)
+						LEFT JOIN AssetPath AP on A.ID=AP.ID
+						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
+						where WI.UID = @workflowItemUid";
+			
+			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);
+		}
 	}
 }
