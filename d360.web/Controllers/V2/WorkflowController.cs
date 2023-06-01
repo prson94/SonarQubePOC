@@ -386,11 +386,10 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_initiatorUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_workflowItemUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowAssignmentApiModel)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Action Type / Asset Type / Relationship Type / Workfflow Type  not found based on Uid provided.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this workflow type is invalid, possibly due to an incorrectly formatted identifier ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetWorkflowAssignments()
@@ -403,28 +402,28 @@ namespace d360.web.Controllers.V2
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
-					throw new ArgumentException(isValid);
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
 				}
 
 				if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 				{
-					throw new ArgumentException(ApiMessages.InvalidDirection);
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidDirection));
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatorUid"))
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
 				{
-					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatorUid").Value;
+					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatoruid").Value;
 					if (!Guid.TryParse(initiatorUidString, out Guid initiatorUid))
 					{
-						throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid")));
 					}
 					else
 					{
-						var initiator = Company.GlobalReportingResources.Where(u=>u.Uid==initiatorUid);
+						var initiator = Company.GlobalReportingResources.Where(u=>u.Uid==initiatorUid).FirstOrDefault();
 
 						if (initiator == null)
 						{
-							throw new ArgumentException(string.Format(WorkflowApiMessages.InvalidGuid, initiatorUidString, "_initiatorUid"));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidInitiatorUid));							
 						}
 					}
 				}				
@@ -447,6 +446,23 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 
+		}    
+
+		[
+			HttpGet,
+			Route("item/{workflowItemUid:Guid}"),			
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails))
+		]
+		public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(Guid workflowItemUid)
+		{
+			var workflowItem = Company.WorkflowItems.Where(wi => wi.UID == workflowItemUid).FirstOrDefault();
+
+			if (workflowItem == null)
+			{
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowItemUidNotFound, workflowItemUid.ToString())));
+			}
+
+			return Ok(await workflowRepository.GetWorkflowItemDetails(workflowItemUid));
 		}
-    }
+	}
 }
