@@ -447,6 +447,23 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 
+		}    
+
+		[
+			HttpGet,
+			Route("item/{workflowItemUid:Guid}"),			
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails))
+		]
+		public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(Guid workflowItemUid)
+		{
+			var workflowItem = Company.WorkflowItems.Where(wi => wi.UID == workflowItemUid).FirstOrDefault();
+
+			if (workflowItem == null)
+			{
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowItemUidNotFound, workflowItemUid.ToString())));
+			}
+
+			return Ok(await workflowRepository.GetWorkflowItemDetails(workflowItemUid));
 		}
-    }
+	}
 }

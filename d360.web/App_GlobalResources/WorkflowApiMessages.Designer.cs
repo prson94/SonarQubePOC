@@ -349,6 +349,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Workflow Item with Uid {0} could not be found..
+        /// </summary>
+        public static string WorkflowItemUidNotFound {
+            get {
+                return ResourceManager.GetString("WorkflowItemUidNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Workflow forms reassigned successfully.
         /// </summary>
         public static string WorkflowReassignSuccess {
