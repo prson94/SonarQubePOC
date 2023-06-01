@@ -794,7 +794,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		return true;
 	}
 	hasRequired(field: FieldDisplayModel) {
-		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}

@@ -97,7 +97,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         }
     }
 
-    focusRequired(event) {
+	focusRequired(event) {
         event.stopPropagation();
         let found = false;
         const fcCount = this.getFormControlCount("required");
@@ -172,7 +172,10 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         }
         else if (inputElement.tagName === 'IG-REGEXP-INPUT') {
             inputElement.querySelector('input').focus();
-        }
+		}
+		else if (inputElement.tagName === 'P-MULTISELECT') {
+			inputElement.querySelector('input').focus();
+		}
         else if (inputElement.tagName === 'P-DROPDOWN') {
             inputElement.scrollIntoView();
             inputElement.querySelector('input').focus();
