@@ -138,13 +138,24 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		];
 	}
 
+	setDefaultTitle() {
+		this.title = $localize`Add Field`;
+		this.subTitle = this.assetTypeName;
+		this.cdRef.markForCheck();
+	}
+
+	get defaultCategoryName(): string {
+		return this.actionTypeUid ? $localize`Form Fields` : $localize`General`;
+	}
+
 	categoryTokens = [
 		{
-			"title": $localize`General`
+			"title": this.defaultCategoryName
 		}
 	]
 
 	ngOnInit() {
+		this.setDefaultTitle();
 		this.loadBaseData();
 	}
 
@@ -169,8 +180,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 						title: x
 					});
 				});
-				if (!this.categoryTokens.some((x) => x.title === $localize`General`)) {
-					this.categoryTokens.push({ title: $localize`General` });
+				if (!this.categoryTokens.some((x) => x.title === this.defaultCategoryName)) {
+					this.categoryTokens.push({ title: this.defaultCategoryName });
 				}
 				this.categoryTokens = this.categoryTokens.sort((a, b) => a.title > b.title ? 1 : -1);
 			}
@@ -425,9 +436,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
 					this.fieldTypeSelection = null;
+					this.setDefaultTitle();
 					this.loadBaseData();
 					this.setForm();
-
 				}
 				else {
 					this.loadBaseData();
@@ -444,7 +455,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm = this.fb.group({
 			FriendlyName: [null, { validators: [Validators.required, Validators.maxLength(250)] }],
 			Name: [null, { validators: Validators.compose([Validators.required, this.apiNameValidator(), Validators.maxLength(250)]) }],
-			Category: [$localize`General`, { validators: [Validators.maxLength(100), Validators.required] }],
+			Category: [this.defaultCategoryName, { validators: [Validators.maxLength(100), Validators.required] }],
 			AssetPathListSegment: [null],
 			DisplayDescription: [null],
 			FormDescription: [null],
@@ -550,7 +561,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
 		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
-		this.fieldTypeForm.get('Category').setValue($localize`General`);
+		this.fieldTypeForm.get('Category').setValue(this.defaultCategoryName);
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -644,7 +655,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
-				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? $localize`General`);
+				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? this.defaultCategoryName);
 
 				const type = this.editedFieldType.Type[this.selectedFieldType];
 
@@ -777,8 +788,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
 			this.setDefaultFormValues();
+			this.cdRef.markForCheck();
 		}
-
 	}
 
 	get isFormDisabled(): boolean {

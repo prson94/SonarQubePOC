@@ -57,6 +57,7 @@
 						i18n-pTooltip
 						tooltipPosition="top"
 						tooltipStyleClass="ig-tooltip"
+						[disabled]="isLoading"
 						class="ig-button-primary"
 						(click)="editedFieldName = null;isModalVisible = true"
 						icon="fa-plus"
