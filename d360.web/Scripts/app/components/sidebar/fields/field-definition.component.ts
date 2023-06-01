@@ -17,7 +17,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
             <div class="col s12">
                     <d3s-field-definition-tile [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
-											   [typeName]="assetType?.Name"
+						[typeName]="assetType?.Name"
                                                [allowSingleSegmentPath]="false"
                                                [title]="objectName"></d3s-field-definition-tile>
             </div>
