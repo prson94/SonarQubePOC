@@ -179,7 +179,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
 				this.responsibilityTypes = results[1].FieldResponsibilityTypes;
-				this.fieldTypes = results[1].DataTypes;
+				this.fieldTypes = results[1].DataTypes.filter((x) => x.value !== 'System');
 
 				this.fieldTypes.forEach((ft) => {
 					if (this.fieldTypeNameToApiNameMap[ft.value]) {
