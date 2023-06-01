@@ -1696,6 +1696,8 @@ a.breadcrumb {
     cursor: pointer;
     display: table-row;
     float: none;
+    background-color: var(--navbarBackColor);
+    color: var(--calculatedBackTextColor);
 
     &.label {
       cursor: default;
@@ -1704,11 +1706,12 @@ a.breadcrumb {
     }
 
     &:hover, &.hover {
-      background-color: @ig-purple-t5;
+      background-color: var(--navbarBackColorSelectedHover);
     }
 
     &:active, &.active {
-      background-color: @ig-purple-t4;
+      background-color: var(--navbarBackColorSelected);
+      color: var(--calculatedNavbarSelectedTextColor);
     }
 
     .mini-menu-line {
