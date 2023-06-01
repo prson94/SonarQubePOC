@@ -1632,6 +1632,10 @@ select	r.uid as ResourceUid,
 				css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
 				css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
 				css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+
+				css.AppendCssVariable("calculatedHeaderTextColorOpacity20", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.2f));
+				css.AppendCssVariable("calculatedHeaderTextColorOpacity40", hexToRGBA(textColorFromBackground(theme.HeaderBackColor), 0.4f));
+
 				css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
 				css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
 				css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));

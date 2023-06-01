@@ -135,7 +135,7 @@
 }
 
 .ng-loading-wrap {
-  background: @ig-purple-s3;
+  background: var(--headerBackColor);
   width: 375px;
   border-radius: 8px;
   position: relative;
@@ -1654,7 +1654,7 @@ a.breadcrumb {
   text-align: center;
 
   &:active, &.active {
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--calculatedHeaderTextColorOpacity40);
 
     .fa {
       color: @ig-white;
@@ -1662,7 +1662,7 @@ a.breadcrumb {
   }
 
   &:hover, &.hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--calculatedHeaderTextColorOpacity20);
   }
 }
 
@@ -1696,6 +1696,8 @@ a.breadcrumb {
     cursor: pointer;
     display: table-row;
     float: none;
+    background-color: var(--navbarBackColor);
+    color: var(--calculatedBackTextColor);
 
     &.label {
       cursor: default;
@@ -1704,11 +1706,12 @@ a.breadcrumb {
     }
 
     &:hover, &.hover {
-      background-color: @ig-purple-t5;
+      background-color: var(--navbarBackColorSelectedHover);
     }
 
     &:active, &.active {
-      background-color: @ig-purple-t4;
+      background-color: var(--navbarBackColorSelected);
+      color: var(--calculatedNavbarSelectedTextColor);
     }
 
     .mini-menu-line {
@@ -3481,6 +3484,7 @@ button.tab-scroller {
     max-width: 32px;
     border-radius: 16px;
     background: var(--headerBackColor);
+    color: var(--calculatedHeaderTextColor);
 
     img {
       max-height: 20px;
