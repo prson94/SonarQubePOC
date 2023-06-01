@@ -124,6 +124,19 @@
 
     .p-multiselect-chip {
       height: unset;
+
+      &.p-focus {
+        background: white;
+        outline: 2px solid #8abddf;
+
+        &.value-required {
+          background: #e4f5f8;
+
+          .p-multiselect-label {
+            background: #e4f5f8;
+          }
+        }
+      }
     }
 
     .p-dropdown-trigger,

@@ -1812,6 +1812,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
 					newFieldType.IsSubject = f.Type.Relationship.IsSubject;
+					newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
 
 					if (f.Type.Relationship.Search != null)
 					{

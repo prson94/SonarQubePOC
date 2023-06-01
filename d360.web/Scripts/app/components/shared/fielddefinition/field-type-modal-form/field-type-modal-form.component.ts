@@ -273,7 +273,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
-
+		
 		const type = model.Fields[0].Type;
 		const fieldTypeApiObject = type[this.selectedFieldType];
 
@@ -1150,7 +1150,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean', 'Relationship'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
