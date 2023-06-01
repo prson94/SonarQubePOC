@@ -8,12 +8,12 @@
 		<div class="col s7 header-text" i18n>
 			{{ header }}
 		</div>
-		<div class="col s4 right-align" i18n>
+		<div class="col s4 right-align" [class.ig-light-grey-text]="workflowItemStep.Complete" i18n>
 			{{ status }}
 		</div>
 	</div>
 	<div class="row" *ngIf="!workflowItemStep.Complete && message">
-		<div class="col offset-s1 preserve-line-break">{{message}}</div>
+		<div class="col offset-s1 preserve-line-break ig-light-grey-text">{{message}}</div>
 	</div>
 </div>
 <button igButton type="button"
