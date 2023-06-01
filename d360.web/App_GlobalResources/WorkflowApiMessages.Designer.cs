@@ -70,6 +70,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Guid {0} passed for parameter {1}.
+        /// </summary>
+        public static string InvalidGuid {
+            get {
+                return ResourceManager.GetString("InvalidGuid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Initiator uid provided..
+        /// </summary>
+        public static string InvalidInitiatorUid {
+            get {
+                return ResourceManager.GetString("InvalidInitiatorUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to INVALID MODEL NO FIELDS PASSED.
         /// </summary>
         public static string InvalidModelNoFieldPassed {
@@ -336,6 +354,15 @@ namespace Resources {
         public static string WorkflowItemDeleted {
             get {
                 return ResourceManager.GetString("WorkflowItemDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workflow Item with Uid {0} could not be found..
+        /// </summary>
+        public static string WorkflowItemUidNotFound {
+            get {
+                return ResourceManager.GetString("WorkflowItemUidNotFound", resourceCulture);
             }
         }
         

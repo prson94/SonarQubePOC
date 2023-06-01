@@ -810,14 +810,68 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					.FirstOrDefault();
 
 
+			string resolvedPermissionsTempTable = string.Empty;
 			if ((restrictions.HasAssetRestriction && !useAsAdmin) || restrictions.HasAssetPermission)
 			{
-				populatePremissionAssetTableSQL = CompanyContext.GetUserPermissionQuery("PermissiondAssets", "userId", "assettypeid");
+				StringBuilder sb = new StringBuilder();
+				sb.AppendLine(CompanyContext.GetUserPermissionQuery("PermissiondAssets", "userId", "assettypeid"));
 
 				if (restrictions.HasAssetRestriction && !useAsAdmin)
 				{
 					whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
 				}
+
+				//Combine both permissions set on asset or applied to whole type than take max allowed permission
+				resolvedPermissionsTempTable = $@"
+										drop table if exists #resolvedAssetPermissions
+										;with asset_permissions as (
+										select pa.AssetId,
+											 case 
+											   when pa.PermissionsBitMask is null then 1
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 1 = 1 then 1
+											 else 0
+											 end as 'ReadAsset',
+											 Case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 8 = 8 then 1
+											 else 0
+											 end as 'ModifyAsset',
+											 case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 4 = 4 then 1
+											 else 0
+											 end as 'DeleteAsset'
+										from #PermissiondAssets pa where pa.AssetId <> 0
+										union
+										select asset.AssetId,
+											 case 
+											   when pa.PermissionsBitMask is null then 1
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 1 = 1 then 1
+											 else 0
+											 end as 'ReadAsset',
+											 Case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 8 = 8 then 1
+											 else 0
+											 end as 'ModifyAsset',
+											 case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 4 = 4 then 1
+											 else 0
+											 end as 'DeleteAsset'
+										from
+										#PermissiondAssets asset 
+										left join #PermissiondAssets pa on pa.AssetId = 0 and pa.AssetTypeID = @assettypeid
+										where asset.AssetId > 0
+										)
+										select AssetId, MAX(ReadAsset) as ReadAsset, MAX(ModifyAsset) as ModifyAsset,MAX(DeleteAsset) as DeleteAsset
+										into #resolvedAssetPermissions
+										from asset_permissions
+										group by AssetId";
+
+				sb.AppendLine(resolvedPermissionsTempTable);
+
+				populatePremissionAssetTableSQL = sb.ToString();
 			}
 
 			var ownershipFieldTypes = fieldTypes.Where(f => f.Type == "OwnershipLookup").ToList();
@@ -1135,32 +1189,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			if (restrictions.HasAssetPermission)
 			{
-				permissionDetailSQL = @"	outer apply (
-				 select top 1 * from
-				 (select PermissionsBitMask from #PermissiondAssets 
-					where AssetID = A.ID 
-				union all 	
-					select PermissionsBitMask from #PermissiondAssets
-					where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
-				   )Permission(mask)";
+				permissionDetailSQL = @"
+				left join #resolvedAssetPermissions [Permissions] on [Permissions].AssetId = A.ID";
 
-				includePermissionFields = @",(SELECT case 
-					   when permission.mask is null then 1
-					   when permission.mask is not null and permission.mask & 1 = 1 then 1
-					 else 0
-					 end as 'ReadAsset',
-					 Case 
-					   when permission.mask is null then @isAdmin
-					   when permission.mask is not null and permission.mask & 8 = 8 then 1
-					 else 0
-					 end as 'ModifyAsset', 
-					 case 
-					   when permission.mask is null then @isAdmin
-					   when permission.mask is not null and permission.mask & 4 = 4 then 1
-					 else 0
-					 end as 'DeleteAsset'
+				includePermissionFields = @",(select 
+					 [Permissions].ReadAsset as 'ReadAsset',
+					 [Permissions].ModifyAsset as 'ModifyAsset', 
+					 [Permissions].DeleteAsset as 'DeleteAsset'
 					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
-					 ) as Permissions";
+					 ) as Permissions ";
 			}
 			else
 			{
@@ -1631,7 +1668,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			var includedJoins = new DynamicQueryJoins();
-			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
+			includedJoins.Add("left join AssetType T on T.ID = A.AssetTypeID", null);
 
 			fieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
 			{

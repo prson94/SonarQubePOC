@@ -24,7 +24,6 @@
       &:focus:not(.p-disabled), &.p-focus:not(.p-disabled) {
         box-shadow: 0 0 0 2px @ig-midblue-t3 !important;
         outline: none !important;
-        background: @ig-white;
       }
 
 
@@ -57,28 +56,27 @@ p-checkbox {
 
 p-tristatecheckbox {
   .ig-checkbox.p-checkbox-box {
-    &.p-highlight {
+    &.p-highlight[aria-checked="true"] {
       background: var(--primaryButtonBackColor);
       color: var(--calculatedPrimaryButtonTextColor);
     }
 
-    .pi-check {
-      border: 1px solid var(--primaryButtonBackColor);
+    &.p-highlight[aria-checked="false"] {
+      background: @ig-white;
+    }
+
+    minusicon {
+      background: var(--primaryButtonBackColor);
+      color: var(--calculatedPrimaryButtonTextColor);
       border-radius: 4px;
     }
 
-    &:not(.p-highlight) span.p-checkbox-icon {
-      &:before {
-        content: "-";
-        font-weight: bold;
-        font-size: 16px;
-      }
+    timesicon {
+      display: none;
     }
 
-    span.pi-times {
-      &:before {
-        content: "";
-      }
+    :nth-child(2) {
+      display: none;
     }
   }
 }

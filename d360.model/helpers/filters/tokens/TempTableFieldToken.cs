@@ -56,9 +56,38 @@ namespace d360.model.helpers.filters
 				fieldJoin = @$"left join #scoreTempValues{fieldType.ID} F{fieldType.ID} on F{fieldType.ID}.AssetId = A.ID";
 			}
 
-			this.tempTableInfo.TempTableQuery = @$"
+			List<string> listDataType = new List<string>();
+			//add item using add method
+			listDataType.Add(DataType.FieldFromRelationship.ToString());
+			listDataType.Add(DataType.RefListRelationship.ToString());
+			listDataType.Add(DataType.JsonElement.ToString());
+			listDataType.Add(DataType.Score.ToString());
+			listDataType.Add(DataType.Counter.ToString());
+			listDataType.Add(DataType.Tag.ToString());
+			listDataType.Add(DataType.Lookup.ToString());
+			listDataType.Add(DataType.ComplexRelationLookup.ToString());
+			listDataType.Add(DataType.OwnershipLookup.ToString());
+			listDataType.Add(DataType.Path.ToString());
+
+			var match = listDataType.Where(x => x.ToLowerInvariant() == fieldType.Type.ToLowerInvariant()).ToList();
+
+			if (match.Count == 0  && fieldJoin.ToLowerInvariant().StartsWith("left join Field ".ToLowerInvariant()))
+			{
+				this.tempTableInfo.TempTableQuery = @$"
 				drop table if exists #advanced_filter_{parameterIdx}
-				create table #advanced_filter_{parameterIdx} (AssetId int)
+				create table #advanced_filter_{parameterIdx} (AssetId bigint)
+
+				insert into #advanced_filter_{parameterIdx}
+				select  F{fieldType.ID}.AssetID 
+				from Field F{fieldType.ID}
+				where F{fieldType.ID}.FieldTypeID = {fieldType.ID} and {filterExpression}
+				option(recompile)";
+			}
+			else
+			{
+				this.tempTableInfo.TempTableQuery = @$"
+				drop table if exists #advanced_filter_{parameterIdx}
+				create table #advanced_filter_{parameterIdx} (AssetId bigint)
 
 				insert into #advanced_filter_{parameterIdx}
 				select A.Id 
@@ -66,6 +95,7 @@ namespace d360.model.helpers.filters
 				{fieldJoin}
 				where a.AssetTypeID = @assettypeid and {filterExpression}
 				option(recompile)";
+			}
 
 			if (sqlParamsRef != null)
 			{

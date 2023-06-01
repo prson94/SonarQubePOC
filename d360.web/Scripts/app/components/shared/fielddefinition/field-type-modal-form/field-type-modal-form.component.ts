@@ -79,11 +79,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	referenceListFromRelationshipRelations: SelectItem[] = [];
 	relationshipItems: SelectItem[] = [];
 
+	public TypeaheadJsonPropertyOptionsForJsonFieldResults: string[] = [];
+
 	relationshipDisplayFormatValueOptions: SelectItem[];
 	booleanDefaultValueOptions: SelectItem[];
 	scoreTypeOptions: SelectItem[];
 
 	lookupAssetTypes: SelectItem[] = [];
+	jsonFields: SelectItem[];
+	jsonDataTypes: SelectItem[];
 	lookupFieldTokens: Record<string, unknown>[] = [];
 	regexPatternTokens: Record<string, unknown>[] = [];
 
@@ -202,6 +206,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				results[1].Patterns.forEach((item) => {
 					this.regexPatternTokens.push({ title: item.label, value: item.value });
 				});
+
+				this.jsonFields = results[1].Field_JsonFields;
+				this.jsonDataTypes = results[1].Field_JsonDataTypes;
 			}
 
 			//asset count
@@ -396,6 +403,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.HideHeader = this.fieldTypeForm.get("HideHeader").value ?? false;
 			fieldTypeApiObject.HideFooter = this.fieldTypeForm.get("HideFooter").value ?? false;
 		}
+		if (this.selectedFieldType === 'JsonElement') {
+			fieldTypeApiObject.JsonAttribute.FieldName = this.fieldTypeForm.get("JsonAttributeName").value ?? null;
+			fieldTypeApiObject.JsonAttribute.Path = this.fieldTypeForm.get("JsonAttributePath").value ?? null;
+			fieldTypeApiObject.JsonAttribute.DataType = this.fieldTypeForm.get("JsonAttributeType").value ?? null;
+		}
 
 		const saveObs = this.fieldsService.putFieldsV2(model);
 
@@ -480,7 +492,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			UseDisplayFormat: [null],
 			ScoreType: [null],
 			ValidationPattern: [null],
-			RegexTestString: [null]
+			RegexTestString: [null],
+			JsonAttributeName: [null],
+			JsonAttributePath: [null],
+			JsonAttributeType: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
@@ -578,6 +593,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["UseDisplayFormat"].setValue(false);
 				break;
 			case 'JSON':
+			case 'JsonElement':
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
@@ -731,6 +747,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 				else {
 					this.computedRelationshipLookupInitialDefinition = null;
+				}
+
+				if (this.selectedFieldType === 'JsonElement') {
+					this.fieldTypeForm.controls["JsonAttributeName"].setValue(type?.JsonAttribute?.FieldName ?? null);
+					this.fieldTypeForm.controls["JsonAttributePath"].setValue(type?.JsonAttribute?.Path ?? null);
+					this.fieldTypeForm.controls["JsonAttributeType"].setValue(type?.JsonAttribute?.DataType ?? null);
 				}
 
 				this.title = $localize`Edit Field`;
@@ -1105,7 +1127,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return false;
 		}
 
-		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship'];
+		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'JsonElement'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1328,5 +1350,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('IsPartOfKey').setValue(this.partOfKeyModel);
 		this.partOfKeyConfirmationModalVisible = false;
 		this.cdRef.markForCheck();
+	}
+
+	searchJsonForProperty(event) {
+		this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(
+			this.fieldTypeForm.get('JsonAttributeName').value,
+			event.query,
+			this.assetTypeUid,
+			this.actionTypeUid,
+			this.relationshipTypeUid).subscribe((data) => {
+				this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
+				this.cdRef.markForCheck();
+			});
 	}
 }
