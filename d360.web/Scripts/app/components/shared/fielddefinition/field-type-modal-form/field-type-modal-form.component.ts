@@ -1082,7 +1082,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
-		if (this.isGroupType) {
+		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.ReferenceItemType
+			|| this.assetTypeClass === AssetTypeClass.Reference
+			|| this.relationshipTypeUid) {
 			return false;
 		}
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text', 'Boolean', 'Lookup'];
@@ -1099,7 +1101,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showPersistInFilters(): boolean {
-		if (this.assetTypeClass === AssetTypeClass.DiagramAsset || this.assetTypeClass === AssetTypeClass.ReferenceItemType) {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset
+			|| this.assetTypeClass === AssetTypeClass.ReferenceItemType
+			|| this.assetTypeClass === AssetTypeClass.Reference
+			|| this.relationshipTypeUid
+		) {
 			return false;
 		}
 
@@ -1151,7 +1157,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showShowInDetailTile(): boolean {
-		if (this.isGroupType || this.isUserType) {
+		if (this.isGroupType || this.isUserType || this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
 		}
 
