@@ -13,7 +13,8 @@ import { WorkflowService } from '../../../services/workflow.service';
 import {
 	StepType,
 	WorkflowActivityType,
-	WorkflowChangeType, WorkflowStepDetail,
+	WorkflowChangeType,
+	WorkflowStepDetail,
 	WorkflowStepReassignment
 } from '../../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
@@ -35,8 +36,9 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	@Output() onCloseClick = new EventEmitter();
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
+	viewFormResponses: string = '';
 	bulkReassignments: WorkflowStepReassignment[] = [];
-	reassignment: WorkflowStepReassignment = null
+	reassignment: WorkflowStepReassignment = null;
 	StepType = StepType;
 	WorkflowActivityType = WorkflowActivityType;
 	WorkflowChangeType = WorkflowChangeType;
@@ -51,7 +53,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	ngOnInit() {
-		this.load().subscribe()
+		this.load().subscribe();
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -70,14 +72,17 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						this.isLoading = false;
 						this.step = r;
 						this.activityType = this.getActivityType(this.step);
+						if (this.step.ItemFields && this.step.ItemFields['@NumberOfResponses']) {
+							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
+						}
 						let reassignments: WorkflowStepReassignment[] = [];
 						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
 							for (const element of this.step.ItemFields.Reassigned) {
 								reassignments.push(new WorkflowStepReassignment(element));
 							}
 						}
-						this.bulkReassignments = this.getBulkReassignments(reassignments)
-						this.reassignment = this.getReassignment(reassignments)
+						this.bulkReassignments = this.getBulkReassignments(reassignments);
+						this.reassignment = this.getReassignment(reassignments);
 						this.ref.markForCheck();
 					})
 				);
@@ -111,5 +116,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
-	protected readonly parseInt = parseInt;
+	openFormResponsesModal(event: boolean): void {
+		console.log('clicked');
+	}
 }

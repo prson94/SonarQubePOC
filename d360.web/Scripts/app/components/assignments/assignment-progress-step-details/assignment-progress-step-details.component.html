@@ -64,14 +64,17 @@
 				<div class="row">
 					<label class="ig-label" i18n>Status</label>
 					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
-					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form" class="row">
+					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form"
+								  class="row">
 						<div>
-							<ng-container i18n>Completed forms</ng-container>:
+							<ng-container i18n>Completed forms</ng-container>
+							:
 							<ng-container>{{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}
 								/{{step.ItemFields['@TotalResources']}}</ng-container>
 						</div>
-						<div *ngIf="parseInt(step.ItemFields['@NumberOfResponses']) > 0">
-							<ng-container i18n>Completed by</ng-container>:
+						<div *ngIf="step.ItemFields['@NumberOfResponses']">
+							<ng-container i18n>Completed by</ng-container>
+							:
 							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
 								<d3s-preview-tooltip [objectType]="'Resource'"
 													 [objectId]="completed['@ResourceID']">
@@ -80,7 +83,8 @@
 							</ng-container>
 						</div>
 						<div>
-							<ng-container i18n>Awaiting forms from</ng-container>:
+							<ng-container i18n>Awaiting forms from</ng-container>
+							:
 							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
 								<d3s-preview-tooltip [objectType]="'Resource'"
 													 [objectId]="pending['ResourceID']">
@@ -138,6 +142,8 @@
 		</ig-property-group>
 		<ng-container *ngIf="step.ActivityType === WorkflowActivityType.Form">
 			<ig-property-group title="Form Details"
+							   [showDetailsLink]="step.ItemFields['@NumberOfResponses'] ? true : false"
+							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal($event)
 							   [shouldBePadded]="false" [showHeaderLine]="false">
 				<div readonly>
 					<ng-container>
