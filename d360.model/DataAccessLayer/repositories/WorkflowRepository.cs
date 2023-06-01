@@ -1074,8 +1074,8 @@ namespace d360.model.DataAccessLayer
 
 						if (filterValue.Contains("assignee"))
 						{
-							fieldJoins.Add(@"LEFT JOIN
-											workflow.ItemAssignment IA2 on IA2.ItemStepID = WIS.ID and WIS.CompletedOn is null
+							fieldJoins.Add($@"LEFT JOIN											
+											workflow.ItemAssignment IA2 on IA2.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null											
 											left JOIN
 											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
 						}
@@ -1083,8 +1083,10 @@ namespace d360.model.DataAccessLayer
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count==1)
 						{
 							var actionFilter = advFilterStatements.Where(f=> f.Contains("IT.uid")).FirstOrDefault();
-							var filterID = actionFilter.Substring(actionFilter.LastIndexOf("@") + 1, actionFilter.Length-(actionFilter.LastIndexOf("@")+2));
-							var actionTypeUid = advFilterArgs.Get<string>(filterID);
+							var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
+							var endIndex = actionFilter.IndexOf(" ", startIndex) ==-1? actionFilter.IndexOf(")", startIndex) : actionFilter.IndexOf(" ", startIndex);							
+							var filterID = actionFilter.Substring(startIndex+1, endIndex - startIndex);
+							var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 							
 							if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 							{
@@ -1254,6 +1256,7 @@ namespace d360.model.DataAccessLayer
 										FOR JSON PATH
 									) as value
 								) AssignedUsers
+								{string.Join("\n", fieldJoins.GetStatements())}
 								{whereConditions}";
 
 			var assigmentsSQL = $@"SELECT
