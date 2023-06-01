@@ -578,6 +578,8 @@ export class WorkflowStepDetail {
 	FieldChanges: WorkflowStepFieldChangeDetail[];
 	RelationshipChange: WorkflowStepRelationshipChangeDetail;
 	StateChange: State;
+	CompletedOn: string;
+	StartedOn: string;
 }
 
 export class WorkflowStepItemFields {
