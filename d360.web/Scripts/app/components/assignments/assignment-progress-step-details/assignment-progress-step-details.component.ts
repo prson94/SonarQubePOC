@@ -13,7 +13,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import {
 	StepType,
 	WorkflowActivityType,
-	WorkflowChangeType,
+	WorkflowChangeType, WorkflowStepDetail,
 	WorkflowStepReassignment
 } from '../../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
@@ -33,9 +33,10 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();
-	step: any = null;
+	step: WorkflowStepDetail = null;
 	activityType: string = '';
-	reassignments: WorkflowStepReassignment[] = [];
+	bulkReassignments: WorkflowStepReassignment[] = [];
+	reassignment: WorkflowStepReassignment = null
 	StepType = StepType;
 	WorkflowActivityType = WorkflowActivityType;
 	WorkflowChangeType = WorkflowChangeType;
@@ -68,13 +69,15 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 					map((r) => {
 						this.isLoading = false;
 						this.step = r;
-						this.reassignments = [];
 						this.activityType = this.getActivityType(this.step);
+						let reassignments: WorkflowStepReassignment[] = [];
 						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
 							for (const element of this.step.ItemFields.Reassigned) {
-								this.reassignments.push(new WorkflowStepReassignment(element));
+								reassignments.push(new WorkflowStepReassignment(element));
 							}
 						}
+						this.bulkReassignments = this.getBulkReassignments(reassignments)
+						this.reassignment = this.getReassignment(reassignments)
 						this.ref.markForCheck();
 					})
 				);
@@ -84,17 +87,17 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 
-	get bulkReassignments(): WorkflowStepReassignment[] {
-		return this.reassignments.filter((r: WorkflowStepReassignment) => r.IsBulkReassignment);
+	private getBulkReassignments(reassignments: WorkflowStepReassignment[]): WorkflowStepReassignment[] {
+		return reassignments.filter((r: WorkflowStepReassignment) => r.IsBulkReassignment);
 	}
 
-	get reassignment(): null | WorkflowStepReassignment {
-		if (this.reassignments == null || this.reassignments.length < 1) {
+	private getReassignment(reassignments: WorkflowStepReassignment[]): null | WorkflowStepReassignment {
+		if (reassignments == null || reassignments.length < 1) {
 			return null;
-		} else if (this.reassignments.length === 1 && !this.reassignments[0].IsBulkReassignment) {
-			return this.reassignments[0];
-		} else if (this.reassignments.length > 1) {
-			return this.reassignments.find((r: WorkflowStepReassignment) => !r.IsBulkReassignment);
+		} else if (reassignments.length === 1 && !reassignments[0].IsBulkReassignment) {
+			return reassignments[0];
+		} else if (reassignments.length > 1) {
+			return reassignments.find((r: WorkflowStepReassignment) => !r.IsBulkReassignment);
 		} else {
 			return null;
 		}
@@ -107,4 +110,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 			return this.helper.stepTypeName(step.StepType);
 		}
 	}
+
+	protected readonly parseInt = parseInt;
 }

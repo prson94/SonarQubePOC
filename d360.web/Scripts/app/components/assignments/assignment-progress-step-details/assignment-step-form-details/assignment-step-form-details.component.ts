@@ -36,14 +36,14 @@ export class AssignmentStepFormDetailsComponent extends BaseComponent implements
 	}
 
 	sortNames(): void {
-		if (this.step?.AssignedUsers) {
-			const sorted: any[] = this.step.AssignedUsers.slice();
+		if (this.step?.ItemSettings?.emails?.email) {
+			const sorted: any[] = this.step.ItemSettings.emails.email.slice();
 
 			sorted.sort((a, b) => {
-				if (a['FullName']?.toLowerCase() < b['FullName']?.toLowerCase()) {
+				if (a['name']?.toLowerCase() < b['name']?.toLowerCase()) {
 					return -1;
 				}
-				if (a['FullName']?.toLowerCase() > b['FullName']?.toLowerCase()) {
+				if (a['name']?.toLowerCase() > b['name']?.toLowerCase()) {
 					return 1;
 				}
 				return 0;

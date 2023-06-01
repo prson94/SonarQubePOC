@@ -17,14 +17,14 @@
 	</div>
 	<div class="row">
 		<label class="ig-label" i18n>Recipients</label>
-		<div class="ig-value" *ngIf="step.AssignedUsers?.length > 0">
+		<div class="ig-value" *ngIf="step.ItemSettings?.emails?.email?.length > 0">
 			<div *ngFor="let recipient of recipients; let i = index">
 				<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
-						<span *ngIf="recipient.FullName != null">
+						<span *ngIf="recipient.name != null">
 						<d3s-preview-tooltip [objectType]="'Resource'"
-											 [objectId]="recipient.ResourceID"><a>{{recipient.FullName}}</a></d3s-preview-tooltip>
+											 [objectId]="recipient.id"><a>{{recipient.name}}</a></d3s-preview-tooltip>
 						</span>
-					({{recipient.Email}})
+					({{recipient['@address']}})
 				</ng-container>
 			</div>
 			<div *ngIf="recipients.length > 5 && showAll == false">

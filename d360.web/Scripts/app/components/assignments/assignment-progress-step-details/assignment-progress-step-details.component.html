@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading && step != null" class="asset-detail">
+<div *ngIf="!isLoading && step" class="asset-detail">
 	<div class="asset-detail-header">
 		<div i18n class="asset-name">
 			{{ step.Name }}
@@ -65,7 +65,29 @@
 					<label class="ig-label" i18n>Status</label>
 					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
 					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form" class="row">
-						<p>In progress</p>
+						<div>
+							<ng-container i18n>Completed forms</ng-container>:
+							<ng-container>{{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}
+								/{{step.ItemFields['@TotalResources']}}</ng-container>
+						</div>
+						<div *ngIf="parseInt(step.ItemFields['@NumberOfResponses']) > 0">
+							<ng-container i18n>Completed by</ng-container>:
+							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
+								<d3s-preview-tooltip [objectType]="'Resource'"
+													 [objectId]="completed['@ResourceID']">
+									<a>{{completed['resourceName']}}</a></d3s-preview-tooltip>
+								<span *ngIf="!last">,</span>
+							</ng-container>
+						</div>
+						<div>
+							<ng-container i18n>Awaiting forms from</ng-container>:
+							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
+								<d3s-preview-tooltip [objectType]="'Resource'"
+													 [objectId]="pending['ResourceID']">
+									<a>{{pending['FullName']}}</a></d3s-preview-tooltip>
+								<span *ngIf="!last">,</span>
+							</ng-container>
+						</div>
 					</ng-container>
 				</div>
 				<div class="row">
