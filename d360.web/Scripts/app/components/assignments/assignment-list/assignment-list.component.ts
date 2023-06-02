@@ -114,7 +114,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			$localize`By Workflow Version`,
 			'byWorkflowVersion',
 			null,
-			'/assignments/by-workflow-version', null, 1);
+			'/assignments/by-workflow-version', null, 0);
 		this.secondaryNavService.showItem(this.fieldNav);
 	}
 

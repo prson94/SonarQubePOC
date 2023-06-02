@@ -72,6 +72,10 @@ import {
 import {
 	AssignmentStepFormDetailsComponent
 } from './assignment-progress-step-details/assignment-step-form-details/assignment-step-form-details.component';
+import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component';
+import {
+	WorkflowVersionGridComponent
+} from './workflow-version-list/workflow-version-grid/workflow-version-grid.component';
 
 
 @NgModule({
@@ -85,18 +89,20 @@ import {
 		AssignmentProgressComponent,
 		AssignmentProgressStepComponent,
 		AssignmentProgressStepDetailsComponent,
+		AssignmentStepEmailDetailsComponent,
+		AssignmentStepFieldChangeDetailsComponent,
+		AssignmentStepFormDetailsComponent,
+		AssignmentStepHttpDetailsComponent,
+		AssignmentStepHttpResponseDetailsComponent,
+		AssignmentStepHttpResponseOutputsComponent,
+		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
 		CompleteAssignmentComponent,
 		WorkflowInformationComponent,
 		WorkflowInformationDiagramComponent,
 		WorkflowInformationGeneralComponent,
-		AssignmentStepFieldChangeDetailsComponent,
-		AssignmentStepEmailDetailsComponent,
-		AssignmentStepHttpDetailsComponent,
-		AssignmentStepHttpResponseOutputsComponent,
-		AssignmentStepRelationshipChangeDetailsComponent,
-		AssignmentStepHttpResponseDetailsComponent,
-		AssignmentStepFormDetailsComponent
+		WorkflowVersionListComponent,
+		WorkflowVersionGridComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -112,6 +118,7 @@ import {
 		DirectivesModule,
 		FormsModule,
 		IgBadgeModule,
+		PipesModule,
 		PopupMenuModule,
 		PropertyGroupModule,
 		RouterModule,
@@ -123,8 +130,7 @@ import {
 		SiteModalModule,
 		TableModule,
 		TooltipModule,
-		WorkflowDiagramModule,
-		PipesModule
+		WorkflowDiagramModule
 	]
 })
 export class AssignmentsModule {

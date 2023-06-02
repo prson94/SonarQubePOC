@@ -1,1 +1,14 @@
-<p>workflow-version-list works!</p>
+<div class="row">
+	<as-split unit="pixel"
+			  direction="horizontal"
+			  [gutterSize]="sidePanelService.draggableAreaWidth"
+			  class="col s12 split"
+			  style="display: flex"
+			  [class.side-panel-close]="!sidePanelOpen"
+			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
+		<as-split-area class="tile tile-detail main-panel">
+			<d3s-workflow-version-grid #assignmentGridComponent
+								 ></d3s-workflow-version-grid>
+		</as-split-area>
+	</as-split>
+</div>
