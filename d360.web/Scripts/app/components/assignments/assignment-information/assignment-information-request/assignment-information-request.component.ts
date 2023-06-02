@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { TooltipInfo } from '../../../../models/tooltip-info.model';
 import { ToolTipService } from '../../../../services/tooltip.service';
-import { WorkflowMonitorItem } from '../../../../models/workflowmonitor.model';
+import { WorkflowAssignmentItem } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-information-request',
@@ -9,9 +9,9 @@ import { WorkflowMonitorItem } from '../../../../models/workflowmonitor.model';
 	styleUrls: ['./assignment-information-request.component.less']
 })
 export class AssignmentInformationRequestComponent implements OnInit {
-	private _workflowAssignmentItem: WorkflowMonitorItem;
+	private _workflowAssignmentItem: WorkflowAssignmentItem;
 
-	@Input() set workflowAssignmentItem(value: WorkflowMonitorItem) {
+	@Input() set workflowAssignmentItem(value: WorkflowAssignmentItem) {
 		this._workflowAssignmentItem = value;
 		this.loadData();
 	}
@@ -27,11 +27,11 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	loadData() {
 		this.isLoading = true;
-		this.toolTipService.getTooltipInfo('Issue', this._workflowAssignmentItem.Id)
-			.subscribe((data) => {
-				this.tooltipInfo = data;
-				this.isLoading = false;
-			});
+		// this.toolTipService.getTooltipInfo('Issue', this._workflowAssignmentItem.Id)
+		// 	.subscribe((data) => {
+		// 		this.tooltipInfo = data;
+		// 		this.isLoading = false;
+		// 	});
 	}
 
 }

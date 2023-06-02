@@ -6,12 +6,11 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { BaseComponent } from '../../shared/base.component';
-import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
-import { WorkflowItemStep } from '../../../models/workflow.model';
+import { WorkflowAssignmentItem, WorkflowItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
 
 @Component({
@@ -29,8 +28,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	secondarySidePanel: string;
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
-	selectedWorkflowItems: WorkflowMonitorItem[] = [];
-	workflowItemStep: WorkflowItemStep
+	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
+	workflowItemStep: WorkflowItemStep;
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Assignment Progress`,
@@ -94,7 +93,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.displayBreadCrumbs();
 	}
 
-	selectRow(rows: WorkflowMonitorItem[]): void {
+	selectRow(rows: WorkflowAssignmentItem[]): void {
 		this.secondarySidePanelOpen = false;
 		if (rows.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
@@ -138,7 +137,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
 
-	workflowSelectionChanged(workflowMonitorItems: WorkflowMonitorItem[]): void {
+	workflowSelectionChanged(workflowMonitorItems: WorkflowAssignmentItem[]): void {
 		this.selectedWorkflowItems = workflowMonitorItems;
 		this.selectRow(workflowMonitorItems);
 	}
@@ -162,7 +161,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	stepClicked(value: { workflowItemStep: WorkflowItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
-		this.workflowItemStep = value.workflowItemStep
+		this.workflowItemStep = value.workflowItemStep;
 		this.secondarySidePanel = 'step-details';
 	}
 

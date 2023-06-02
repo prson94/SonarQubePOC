@@ -672,12 +672,21 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowItemSteps(itemId: number): Observable<WorkflowItemStep[]> {
-        return this.http.get(`services/workflow/item/${itemId}`)
-            .pipe(
-            map((response) => <WorkflowItemStep[]>response),
-                catchError((err) => this.handleError(err))
-            );
+	getWorkflowItemSteps(itemId: number | string): Observable<WorkflowItemStep[] | any[]> {
+		if(typeof itemId === 'number')
+		{
+			return this.http.get(`services/workflow/item/${itemId}`)
+				.pipe(
+					map((response) => <WorkflowItemStep[]>response),
+					catchError((err) => this.handleError(err))
+				);
+		} else {
+			return this.http.get(`GET /api/v2/workflow/${itemId}/steps`)
+				.pipe(
+					map((response) => <any[]>response),
+					catchError((err) => this.handleError(err))
+				);
+		}
     }
 
     exportItemSteps(itemId: number) {

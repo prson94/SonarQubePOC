@@ -45,7 +45,7 @@
 					nesciunt omnis, porro repellendus.
 				</div>
 				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
-					<d3s-assignment-progress [workflowItemId]="workflowId"
+					<d3s-assignment-progress [workflowItemUid]="workflowId"
 											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
 					<d3s-assignment-information [workflowItemId]="workflowId"></d3s-assignment-information>
 				</div>
