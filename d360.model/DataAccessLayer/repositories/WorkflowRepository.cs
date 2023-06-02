@@ -1019,6 +1019,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("initiator", "WA.initiator", SqlFieldType.Text),
 				new DefaultFilter("workflowItemUid", "WA.workflowItemUid", SqlFieldType.Guid),
 				new DefaultFilter("workflowUid", "WA.workflowUid", SqlFieldType.Guid),
+				new DefaultFilter("workflowName", "WA.workflowName", SqlFieldType.Text),
 				new DefaultFilter("assetDisplayValue", "ADV.DisplayValue", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "WA.StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "WA.CompletedOn", SqlFieldType.DateTime),
@@ -1038,6 +1039,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("completedOn", "AssignmentList.CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
 				new DefaultFilter("displayPath", "AssignmentList.DisplayPath", SqlFieldType.Text),
+				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
