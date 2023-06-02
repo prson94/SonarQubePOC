@@ -68,9 +68,9 @@ export class TagService extends BaseObservableService {
     saveTag(tag: TagType): Observable<any> {
         let url = `api/v2/tags/`;
 
-		if (tag.Value) {
-			tag.Value = DOMPurify.sanitize(tag.Value, { USE_PROFILES: { html: false } });
-		}
+		//if (tag.Value) {
+		//	tag.Value = DOMPurify.sanitize(tag.Value, { USE_PROFILES: { html: true } });
+		//}
 
         if (tag.uid == null || !tag.uid) {
             return this.http.post(url, tag)

@@ -120,17 +120,17 @@
                             <p-multiSelect #dropdown
                                            [maxSelectedLabels]="5"
                                            igSize="full"
-                                           styleClass="{{field.Required ? 'value-required' : ''}}"
+                                           styleClass="{{isRequired() ? 'value-required' : ''}}"
                                            [inputId]="field.FieldName + '_input_' + componentUid"
                                            [formControlName]="field.FieldName"
                                            [attr.name]="field.FieldName"
                                            [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                            [options]="field.Items"
                                            (onChange)="onChangeMultiselect($event)"
-                                           [required]="field.Required"
+                                           [required]="isRequired()"
                                            [readonly]="true"
                                            [disabled]="isLookupFieldDisabled"
-                                           placeholder="{{ lookupSelectPlaceholder }}"
+                                           placeholder="{{ getPlaceholder() }}"
                                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                            display="chip">
                                 <ng-template pTemplate="selectedItems" let-items>
@@ -150,7 +150,7 @@
                                         </div>
                                     </ng-container>
                                     <ng-template #placeholder>
-                                        {{ lookupSelectPlaceholder }}
+                                        {{ getPlaceholder() }}
                                     </ng-template>
                                 </ng-template>
                             </p-multiSelect>
@@ -169,7 +169,7 @@
                                     (onSelect)="onSelect($event)"
                                     (onChange)="onDropdownChange($event)"
                                     [disabled]="isLookupFieldDisabled"
-                                    [required]="field.Required"
+                                    [required]="isRequired()"
                                     [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                     (click)="lookupFieldClicked($event)">
                             <ng-template let-item pTemplate="selectedItem">

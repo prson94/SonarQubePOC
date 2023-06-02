@@ -5,8 +5,14 @@
   z-index: 2;
 }
 
+.relationship-detail-flexcontainer {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
 .relationship-detail .relationship-detail-table table {
-  th, 
+  th,
   td {
     &:not(:last-child) {
       padding-right: 16px;
@@ -182,6 +188,6 @@
   position: relative;
 }
 
-.relationship-detail as-split.split as-split-area.main-panel {
+.relationship-detail as-split.split as-split-area.main-panel.modal-dialog-main-panel {
   overflow: unset;
 }

@@ -138,13 +138,24 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		];
 	}
 
+	setDefaultTitle() {
+		this.title = $localize`Add Field`;
+		this.subTitle = this.assetTypeName;
+		this.cdRef.markForCheck();
+	}
+
+	get defaultCategoryName(): string {
+		return this.actionTypeUid ? $localize`Form Fields` : $localize`General`;
+	}
+
 	categoryTokens = [
 		{
-			"title": $localize`General`
+			"title": this.defaultCategoryName
 		}
 	]
 
 	ngOnInit() {
+		this.setDefaultTitle();
 		this.loadBaseData();
 	}
 
@@ -169,8 +180,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 						title: x
 					});
 				});
-				if (!this.categoryTokens.some((x) => x.title === $localize`General`)) {
-					this.categoryTokens.push({ title: $localize`General` });
+				if (!this.categoryTokens.some((x) => x.title === this.defaultCategoryName)) {
+					this.categoryTokens.push({ title: this.defaultCategoryName });
 				}
 				this.categoryTokens = this.categoryTokens.sort((a, b) => a.title > b.title ? 1 : -1);
 			}
@@ -179,7 +190,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
 				this.responsibilityTypes = results[1].FieldResponsibilityTypes;
-				this.fieldTypes = results[1].DataTypes;
+				this.fieldTypes = results[1].DataTypes.filter((x) => x.value !== 'System');
 
 				this.fieldTypes.forEach((ft) => {
 					if (this.fieldTypeNameToApiNameMap[ft.value]) {
@@ -273,7 +284,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
-
+		
 		const type = model.Fields[0].Type;
 		const fieldTypeApiObject = type[this.selectedFieldType];
 
@@ -425,9 +436,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.formState = FormState.FieldTypeSelection;
 					this.selectedFieldType = null;
 					this.fieldTypeSelection = null;
+					this.setDefaultTitle();
 					this.loadBaseData();
 					this.setForm();
-
 				}
 				else {
 					this.loadBaseData();
@@ -444,7 +455,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm = this.fb.group({
 			FriendlyName: [null, { validators: [Validators.required, Validators.maxLength(250)] }],
 			Name: [null, { validators: Validators.compose([Validators.required, this.apiNameValidator(), Validators.maxLength(250)]) }],
-			Category: [$localize`General`, { validators: [Validators.maxLength(100), Validators.required] }],
+			Category: [this.defaultCategoryName, { validators: [Validators.maxLength(100), Validators.required] }],
 			AssetPathListSegment: [null],
 			DisplayDescription: [null],
 			FormDescription: [null],
@@ -550,7 +561,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
 		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
-		this.fieldTypeForm.get('Category').setValue($localize`General`);
+		this.fieldTypeForm.get('Category').setValue(this.defaultCategoryName);
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -644,7 +655,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				this.fieldTypeForm.controls["Name"].setValue(this.editedFieldType.Name);
 				this.fieldTypeForm.controls["FriendlyName"].setValue(this.editedFieldType.FriendlyName);
-				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? $localize`General`);
+				this.fieldTypeForm.controls["Category"].setValue(this.editedFieldType.Category ?? this.defaultCategoryName);
 
 				const type = this.editedFieldType.Type[this.selectedFieldType];
 
@@ -777,8 +788,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
 			this.setDefaultFormValues();
+			this.cdRef.markForCheck();
 		}
-
 	}
 
 	get isFormDisabled(): boolean {
@@ -1115,7 +1126,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
-		if (this.isGroupType) {
+		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.ReferenceItemType
+			|| this.assetTypeClass === AssetTypeClass.Reference
+			|| this.relationshipTypeUid) {
 			return false;
 		}
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Number', 'Text', 'Boolean', 'Lookup'];
@@ -1132,7 +1145,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showPersistInFilters(): boolean {
-		if (this.assetTypeClass === AssetTypeClass.DiagramAsset || this.assetTypeClass === AssetTypeClass.ReferenceItemType) {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset
+			|| this.assetTypeClass === AssetTypeClass.ReferenceItemType
+			|| this.assetTypeClass === AssetTypeClass.Reference
+			|| this.relationshipTypeUid
+		) {
 			return false;
 		}
 
@@ -1150,7 +1167,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsRequired(): boolean {
-		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean'];
+		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean', 'Relationship'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
@@ -1184,7 +1201,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showShowInDetailTile(): boolean {
-		if (this.isGroupType || this.isUserType) {
+		if (this.isGroupType || this.isUserType || this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
 		}
 

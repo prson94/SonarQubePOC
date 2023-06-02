@@ -717,7 +717,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 	</sql>
   </changeSet>
-   <changeSet author="TDuric" id="Data.Corrections.GOV-21136">
+   <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v2">
   <comment>Parse Relation Lookup Filters</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -747,7 +747,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 				WHERE ISJSON(FTL.Definition) = 1 and D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
 
 				drop table if exists #expressions
-				select FieldTypeID, '(H' + CAST((RelationIndex + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
 				into #expressions
 				from #temp_values
 
