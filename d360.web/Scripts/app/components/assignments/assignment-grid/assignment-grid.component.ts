@@ -38,6 +38,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	menuItems: any[] = [
 		{ title: $localize`Delete` }
 	];
+	isExportInProgress: boolean = false;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -74,8 +75,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.destroy.complete();
 	}
 
-	export(): void {
-		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder);
+	canExportRecords() {
+		return this.totalRecords <= this.maxExportRows;
+	}
+
+	export() {
+		this.isExportInProgress = true;
+		this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.maxExportRows, this.simpleFilter, null, this.sortField, this.sortOrder, true, () => {
+			this.isExportInProgress = false;
+		});
 	}
 
 	gridSelectionChange(event: WorkflowAssignmentItem[]): void {
@@ -91,7 +99,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.subItems = this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.rowsPerPage, this.simpleFilter, null , this.sortField, this.sortOrder, false, null)
+		this.subItems = this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.rowsPerPage, this.simpleFilter, null, this.sortField, this.sortOrder, false, null)
 			.subscribe((result) => {
 				this.items = result.items;
 				this.totalRecords = +result.total;
@@ -139,7 +147,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	onSimpleSearch(event: any): void {
-		console.log(event);
+		this.loadData();
 	}
 
 	clickMenuItem(event: any, item: any): void {

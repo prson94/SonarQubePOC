@@ -315,7 +315,7 @@ export class WorkflowService extends BaseObservableService {
 			http
 				.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
 				.subscribe((data) => {
-					const filename = `Filtered Semantic Type List`;
+					const filename = `Filtered Assignment List`;
 					this.downloadFile(data, filename);
 					if (callback) {
 						callback();

@@ -9,12 +9,18 @@
 		</div>
 		<div class="grid-action-buttons">
 			<div>
-				<button igButton
-						class="ig-button-secondary"
-						[igDataCy]="'Assets_Export'"
-						icon="fa-download"
-						(click)="export()">
-				</button>
+				<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					 tooltipPosition="left"
+					 tooltipStyleClass="ig-tooltip">
+					<button igButton
+							class="ig-button-secondary"
+							[disabled]="!canExportRecords() || isExportInProgress"
+							[igDataCy]="'Assets_Export'"
+							icon="fa-download"
+							[loading]="isExportInProgress"
+							(click)="export()">
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>
