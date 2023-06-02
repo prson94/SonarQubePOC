@@ -27,7 +27,7 @@ namespace d360.core.entities
 		public long? AssetID { get; set; }
 
 		[DataMember]
-		public int AssetTypeID { get; set; }
+		public int? AssetTypeID { get; set; }
 
         public virtual IssueType IssueType { get; set; }
 
