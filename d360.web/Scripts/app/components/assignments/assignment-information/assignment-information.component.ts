@@ -27,8 +27,9 @@ export class AssignmentInformationComponent implements OnInit {
 	}
 
 	private loadWorkflowDetails(workflowItemId: number) {
-		this.workflowService.getWorkflowAssignments().subscribe(response => {
-			this.workflowAssignments = response;
-		});
+		// this.workflowService.getWorkflowAssignments().subscribe(response => {
+		// 	this.workflowAssignments = response;
+		// });
+		this.workflowAssignments = null
 	}
 }

@@ -33,6 +33,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
+import { SortOrder } from '../models/enums.model';
 
 @Injectable({
     providedIn: 'root'
@@ -291,13 +292,52 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowAssignments(): Observable<WorkflowAssignments> {
-        return this.http.get('api/v2/workflow/assignments')
-            .pipe(
-            map((response) => <WorkflowAssignments> response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<WorkflowAssignments> {
+		let url = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
+
+		if (simpleFilter) {
+			url += `&_simpleFilter=${simpleFilter}`;
+		}
+
+		if (advancedFilter) {
+			url += `&_filter=${advancedFilter}`;
+		}
+
+		if (order) {
+			url += `&_order=${order}`;
+			if (direction && direction !== SortOrder.None) {
+				url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
+			}
+		}
+
+		if (isExport) {
+			this.
+			http
+				.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+				.subscribe((data) => {
+					const filename = `Filtered Semantic Type List`;
+					this.downloadFile(data, filename);
+					if (callback) {
+						callback();
+					}
+				});
+
+		} else {
+			return this
+				.http
+				.get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' })})
+				.pipe(
+					map((response) => <WorkflowAssignments>response),
+					catchError((err) => {
+						if (err?.status === 409) {
+							return of(new WorkflowAssignments());
+						} else {
+							this.handleError(err, true);
+						}
+					})
+				);
+		}
+	}
 
     getWorkflowTypeId(uid: string):Observable<number> {
         return this.http.get(`api/v2/workflow/type/${uid}/id`)

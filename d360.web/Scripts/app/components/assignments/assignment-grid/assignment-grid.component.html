@@ -39,28 +39,28 @@
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
+				 [globalFilterFields]="['workflowName','Type','TypeName','assetDisplayValue','initiator','StartedOn','CompletedOn']"
 				 [pageLinks]="3"
 				 [paginator]="true"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
-				 (onLazyLoad)="loadWorkflowMonitorItems($event)"
+				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
 				 [selection]="assignments"
 				 (selectionChange)="gridSelectionChange($event)"
 				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'WorkflowName'">
+					<th [pSortableColumn]="'workflowName'">
 						<ng-container i18n>Workflow Name</ng-container>
-						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Asset'">
+					<th [pSortableColumn]="'assetDisplayValue'">
 						<ng-container i18n>Associated with</ng-container>
-						<d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Initiator'">
-						<ng-container i18n>Initiator</ng-container>
-						<d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
+					<th [pSortableColumn]="'initiator'">
+						<ng-container i18n>initiator</ng-container>
+						<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'StartedOn'">
 						<ng-container i18n>Initiated</ng-container>
@@ -74,13 +74,13 @@
 				</tr>
 				<tr [hidden]="showSimpleFilter">
 					<th>
-						<d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter>
+						<d3s-column-filter [field]="'workflowName'" [datatype]="'text'"></d3s-column-filter>
 					</th>
 					<th>
-						<d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter>
+						<d3s-column-filter [field]="'assetDisplayValue'" [datatype]="'text'"></d3s-column-filter>
 					</th>
 					<th>
-						<d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter>
+						<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>
 					</th>
 					<th>
 						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
@@ -92,9 +92,9 @@
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
 				<tr [pSelectableRow]="item" style="word-wrap: break-word">
-					<td class="break-wrap">{{item.WorkflowName}}</td>
-					<td>{{item.Asset}}</td>
-					<td>{{item.Initiator}}</td>
+					<td class="break-wrap">{{item.workflowName}}</td>
+					<td>{{item.assetDisplayValue}}</td>
+					<td>{{item.initiator}}</td>
 					<td>
 						<span>{{item.StartedOn | date: 'shortDate'}}</span>
 					</td>
@@ -134,7 +134,7 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.WorkflowName }} on {{ assignment.Asset }}
+			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue }}
 			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>

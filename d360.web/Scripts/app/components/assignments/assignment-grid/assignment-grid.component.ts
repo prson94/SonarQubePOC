@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
@@ -10,6 +9,8 @@ import { AuthenticationService } from '../../../services/authentication.service'
 import { takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
+import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowAssignmentItem } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-grid',
@@ -19,7 +20,7 @@ import { BaseComponent } from '../../shared/base.component';
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
 
 	title: string = $localize`WorkFlow Items`;
-	items: WorkflowMonitorItem[] = [];
+	items: WorkflowAssignmentItem[] = [];
 	subItems: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
@@ -27,7 +28,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	sortOrder: SortOrder = SortOrder.Descending;
 	isAdmin: boolean = false;
 	selectedCount: number = 0;
-	assignments: WorkflowMonitorItem[] = [];
+	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	showDeletionModal: boolean = false;
 	@Output() selectionChange = new EventEmitter();
@@ -39,6 +40,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	];
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
+				private workflowService: WorkflowService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				public stateService: StateService,
 				private changeDetectorRef: ChangeDetectorRef,
@@ -60,7 +62,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		).subscribe((rowsPerPage) => {
 			this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
 			this.isLoading = true;
-			this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
+			this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
 		});
 	}
 
@@ -76,12 +78,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.wfMonitorService.exportToExcel(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder);
 	}
 
-	gridSelectionChange(event: WorkflowMonitorItem[]): void {
-		if (Array.isArray(event) && event.length === 1) {
-			this.stateService.workflowItemFilters.itemId = event[0].Id;
-		} else {
-			this.stateService.workflowItemFilters.itemId = 0;
-		}
+	gridSelectionChange(event: WorkflowAssignmentItem[]): void {
+		// if (Array.isArray(event) && event.length === 1) {
+		// 	this.stateService.workflowItemFilters.itemId = event[0].Id;
+		// } else {
+		// 	this.stateService.workflowItemFilters.itemId = 0;
+		// }
 		this.assignments = event;
 		this.selectedCount = this.assignments == null ? 0 : this.assignments.length;
 		this.selectionChange.emit(event);
@@ -89,15 +91,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder)
+		this.subItems = this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.rowsPerPage, this.simpleFilter, null , this.sortField, this.sortOrder, false, null)
 			.subscribe((result) => {
-				this.items = result.Items;
-				this.totalRecords = +result.Total;
+				this.items = result.items;
+				this.totalRecords = +result.total;
 				if (this.items != null && this.items.length > 0) {
-					let item: WorkflowMonitorItem;
-					if (this.stateService.workflowItemFilters.itemId !== 0) {
-						item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
-					}
+					let item: WorkflowAssignmentItem;
+					// if (this.stateService.workflowItemFilters.itemId !== 0) {
+					// 	item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
+					// }
 
 					this.assignments = item ? [item] : [this.items[0]];
 					this.selectedCount = 1;
@@ -111,7 +113,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			});
 	}
 
-	loadWorkflowMonitorItems(event: LazyLoadEvent): void {
+	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
 		this.rowsPerPage = event.rows;
 		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
 		this.sortField = event.sortField == null ? '' : event.sortField;
@@ -150,15 +152,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	public deleteAssignments(): void {
 		this.isLoading = true;
 		let itemIds = [];
-		if (Array.isArray(this.assignments)) {
-			itemIds = this.assignments.map((i) => i.Id);
-		} else if (this.assignments != null) {
-			itemIds.push((this.assignments as WorkflowMonitorItem).Id);
-		}
+		// if (Array.isArray(this.assignments)) {
+		// 	itemIds = this.assignments.map((i: WorkflowAssignmentItem) => i.Id);
+		// } else if (this.assignments != null) {
+		// 	itemIds.push((this.assignments as WorkflowAssignmentItem).Id);
+		// }
 		this.wfMonitorService.deleteItems(itemIds).subscribe(
 			(res) => {
 				this.showDeletionModal = false;
-				this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
+				this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
 			}
 		);
 	}
