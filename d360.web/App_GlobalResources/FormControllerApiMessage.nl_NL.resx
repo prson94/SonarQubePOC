@@ -1,0 +1,559 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AnErrorOccurMorethan1OpenCart" xml:space="preserve">
+    <value>Er is een fout opgetreden. Er is meer dan één open winkelwagen voor deze gebruiker</value>
+  </data>
+  <data name="ApiEndPointUriRemoved" xml:space="preserve">
+    <value>URI van API-endpoint is verwijderd.</value>
+  </data>
+  <data name="ApiEndPointVersionRemoved" xml:space="preserve">
+    <value>API-endpointversie is verwijderd.</value>
+  </data>
+  <data name="ApiField" xml:space="preserve">
+    <value>API-veld</value>
+  </data>
+  <data name="ApiFieldRemoved" xml:space="preserve">
+    <value>API-veld is verwijderd.</value>
+  </data>
+  <data name="ApiFieldUpdated" xml:space="preserve">
+    <value>API-veld is bijgewerkt.</value>
+  </data>
+  <data name="APINamespaceNameNull" xml:space="preserve">
+    <value>Naam van API-naamruimte is null</value>
+  </data>
+  <data name="APINamespaceNull" xml:space="preserve">
+    <value>API-naamruimte is null</value>
+  </data>
+  <data name="ApiService" xml:space="preserve">
+    <value>API-service</value>
+  </data>
+  <data name="ApiServiceEndpoint" xml:space="preserve">
+    <value>Endpoint van API-service</value>
+  </data>
+  <data name="APIServiceEndpointNameNull" xml:space="preserve">
+    <value>Naam van endpoint van API-service is null</value>
+  </data>
+  <data name="APIServiceEndpointPrefixNull" xml:space="preserve">
+    <value>Voorvoegsel van endpoint van API-service is null</value>
+  </data>
+  <data name="APIServiceEndpointVersionPrefixNull" xml:space="preserve">
+    <value>Voorvoegsel van endpointversie van API-service is null</value>
+  </data>
+  <data name="APIServiceNameNull" xml:space="preserve">
+    <value>Naam van API-service is null</value>
+  </data>
+  <data name="APIServicePrefixNull" xml:space="preserve">
+    <value>Voorvoegsel van API-service is null</value>
+  </data>
+  <data name="ApiServiceRemoved" xml:space="preserve">
+    <value>API-service is verwijderd.</value>
+  </data>
+  <data name="ApiServiceUriFormatIsNull" xml:space="preserve">
+    <value>URI-indeling van endpointversie van API-service is null</value>
+  </data>
+  <data name="apiserviceversion" xml:space="preserve">
+    <value>API-serviceversie</value>
+  </data>
+  <data name="ApiServiceVersionEntity" xml:space="preserve">
+    <value>API-serviceversie-entiteit</value>
+  </data>
+  <data name="ApiServiceVersionUri" xml:space="preserve">
+    <value>API-serviceversie-URI</value>
+  </data>
+  <data name="AssetType" xml:space="preserve">
+    <value>Assettype</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Geen assettype gevonden voor opgegeven GUID</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>Verificatie mislukt</value>
+  </data>
+  <data name="Contract" xml:space="preserve">
+    <value>Contract</value>
+  </data>
+  <data name="CoultNotFindPermission" xml:space="preserve">
+    <value>Kan bestaande machtiging niet vinden</value>
+  </data>
+  <data name="CustomSynonym" xml:space="preserve">
+    <value>Aangepast synoniem</value>
+  </data>
+  <data name="CustomSynonymNotFound" xml:space="preserve">
+    <value>Aangepast synoniem niet gevonden</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="emailNotValid" xml:space="preserve">
+    <value>Het ingevoerde e-mailadres is niet geldig</value>
+  </data>
+  <data name="endpoint" xml:space="preserve">
+    <value>Endpoint</value>
+  </data>
+  <data name="EndPointRemoved" xml:space="preserve">
+    <value>Endpoint is verwijderd.</value>
+  </data>
+  <data name="FailedGenerateToken" xml:space="preserve">
+    <value>Kan insluitingstoken niet genereren.</value>
+  </data>
+  <data name="FailedToLoadPowerBI" xml:space="preserve">
+    <value>Kan Power BI-werkblad niet laden in werkruimte.</value>
+  </data>
+  <data name="FavoriteMoved" xml:space="preserve">
+    <value>Favoriet is verplaatst.</value>
+  </data>
+  <data name="field" xml:space="preserve">
+    <value>Veld</value>
+  </data>
+  <data name="FieldCreated" xml:space="preserve">
+    <value>Veld is gemaakt.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>Bestand is vereist</value>
+  </data>
+  <data name="FileUploadedAndQueueProcessing" xml:space="preserve">
+    <value>Bestand geüpload en in de wachtrij geplaatst voor verwerking.</value>
+  </data>
+  <data name="FolderAdded" xml:space="preserve">
+    <value>Map is toegevoegd</value>
+  </data>
+  <data name="FolderAlreadySortedToBottom" xml:space="preserve">
+    <value>Deze map is al gesorteerd naar onderen.</value>
+  </data>
+  <data name="FolderAlreadySortedToTop" xml:space="preserve">
+    <value>Deze map is al gesorteerd naar boven</value>
+  </data>
+  <data name="FolderIdNotFound" xml:space="preserve">
+    <value>Map-ID ${id} niet gevonden</value>
+  </data>
+  <data name="FolderItemRemoved" xml:space="preserve">
+    <value>Mapitem is verwijderd.</value>
+  </data>
+  <data name="FolderMoved" xml:space="preserve">
+    <value>Map {0} is verplaatst.</value>
+  </data>
+  <data name="FolderMovedDown" xml:space="preserve">
+    <value>Map {0} is omlaag verplaatst.</value>
+  </data>
+  <data name="FolderMovedToBottom" xml:space="preserve">
+    <value>Map {0} is naar de onderkant verplaatst.</value>
+  </data>
+  <data name="FolderMovedToTop" xml:space="preserve">
+    <value>Map {0} is naar de bovenkant verplaatst.</value>
+  </data>
+  <data name="FolderMovedUp" xml:space="preserve">
+    <value>Map {0} is omhoog verplaatst.</value>
+  </data>
+  <data name="FolderNameAlreadyExists" xml:space="preserve">
+    <value>Map met de naam {0} bestaat al.</value>
+  </data>
+  <data name="FolderNameNotEmpty" xml:space="preserve">
+    <value>Mapnaam mag niet leeg zijn.</value>
+  </data>
+  <data name="FolderRemoved" xml:space="preserve">
+    <value>Map is verwijderd.</value>
+  </data>
+  <data name="FolderUpdated" xml:space="preserve">
+    <value>Map is bijgewerkt.</value>
+  </data>
+  <data name="GrammarAllocationModified" xml:space="preserve">
+    <value>Grammaticatoewijzing is aangepast.</value>
+  </data>
+  <data name="IconIsInvalid" xml:space="preserve">
+    <value>Het pictogram is een ongeldig bestandstype</value>
+  </data>
+  <data name="InvalidCreateType" xml:space="preserve">
+    <value>Ongeldig/niet ondersteund creatie type</value>
+  </data>
+  <data name="InvalidDeleteType" xml:space="preserve">
+    <value>Ongeldig/niet ondersteund verwijdertype</value>
+  </data>
+  <data name="InvalidEditorType" xml:space="preserve">
+    <value>Ongeldig of niet-geïmplementeerde editor type</value>
+  </data>
+  <data name="InvalidEditType" xml:space="preserve">
+    <value>Ongeldig/niet ondersteund bewerktype</value>
+  </data>
+  <data name="InvalidFolder" xml:space="preserve">
+    <value>Ongeldige map.</value>
+  </data>
+  <data name="InvalidIntersectTypeAndTargetUID" xml:space="preserve">
+    <value>Geen geldige snijpunttype-UID of doeltype-UID</value>
+  </data>
+  <data name="invalidObjectPassed" xml:space="preserve">
+    <value>Ongeldig object doorgevoerd</value>
+  </data>
+  <data name="InvalidrelationshipCardinality" xml:space="preserve">
+    <value>Ongeldige relatiecardinaliteit voor meerdere items.</value>
+  </data>
+  <data name="InvalidRelationshipType" xml:space="preserve">
+    <value>Ongeldig relatietype of bronitem.</value>
+  </data>
+  <data name="IssueType" xml:space="preserve">
+    <value>Probleemtype</value>
+  </data>
+  <data name="IssueTypeNotFound" xml:space="preserve">
+    <value>Geen probleemtype gevonden voor opgegeven GUID</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="ItemAddedCart" xml:space="preserve">
+    <value>Het item is toegevoegd aan de winkelwagen</value>
+  </data>
+  <data name="ItemAlreadyInCart" xml:space="preserve">
+    <value>Dit item zit al in de winkelwagen</value>
+  </data>
+  <data name="ItemCannotRelateItself" xml:space="preserve">
+    <value>Het item kan niet worden gekoppeld aan zichzelf</value>
+  </data>
+  <data name="ItemCreatedProcessed" xml:space="preserve">
+    <value>Item is gemaakt en verwerkt.</value>
+  </data>
+  <data name="ItemDate" xml:space="preserve">
+    <value>Itemdatum</value>
+  </data>
+  <data name="ItemRemoved" xml:space="preserve">
+    <value>Item is verwijderd.</value>
+  </data>
+  <data name="ItemUpdatedProcessed" xml:space="preserve">
+    <value>Item is bijgewerkt en verwerkt.</value>
+  </data>
+  <data name="LoadAction" xml:space="preserve">
+    <value>LoadAction</value>
+  </data>
+  <data name="ModelPassedToMethodInvalid" xml:space="preserve">
+    <value>Het model dat aan de methode is doorgegeven, is ongeldig</value>
+  </data>
+  <data name="NamespaceCreated" xml:space="preserve">
+    <value>Naamruimte is gemaakt.</value>
+  </data>
+  <data name="NamespaceRemoved" xml:space="preserve">
+    <value>API-naamruimte is verwijderd.</value>
+  </data>
+  <data name="NamespaceUpdated" xml:space="preserve">
+    <value>Naamruimte is bijgewerkt.</value>
+  </data>
+  <data name="NoAssetTypeFound" xml:space="preserve">
+    <value>Geen assettype gevonden ID {0}</value>
+  </data>
+  <data name="NoAssetTypeIDProvided" xml:space="preserve">
+    <value>Geen assettype-ID opgegeven (parameter id).</value>
+  </data>
+  <data name="NoFavoriteAbove" xml:space="preserve">
+    <value>Geen favoriet boven</value>
+  </data>
+  <data name="NoFavoriteBelow" xml:space="preserve">
+    <value>Geen favoriet onder</value>
+  </data>
+  <data name="NoFavoriteRoute" xml:space="preserve">
+    <value>geen favoriet met opgegeven route</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionEntityToEdit" xml:space="preserve">
+    <value>Kan de opgegeven entiteit van de service-endpointversie niet vinden om te bewerken</value>
+  </data>
+  <data name="NoFoundSericeEndpointVersionToEdit" xml:space="preserve">
+    <value>Kan de opgegeven service-endpointversie niet vinden om te bewerken</value>
+  </data>
+  <data name="NoPermissionToDoThis" xml:space="preserve">
+    <value>U mag deze bewerking niet uitvoeren</value>
+  </data>
+  <data name="NoPremissionAddItemInCart" xml:space="preserve">
+    <value>U mag geen items aan deze winkelwagen toevoegen</value>
+  </data>
+  <data name="NoPremissionClearCart" xml:space="preserve">
+    <value>U mag deze winkelwagen niet leegmaken</value>
+  </data>
+  <data name="NoPremissionEditShortCuts" xml:space="preserve">
+    <value>U mag geen snelkoppelingen bewerken</value>
+  </data>
+  <data name="NoPremissionRemoveItem" xml:space="preserve">
+    <value>U mag dit item niet verwijderen</value>
+  </data>
+  <data name="NoPremissionRequestCart" xml:space="preserve">
+    <value>U mag deze winkelwagen niet aanvragen</value>
+  </data>
+  <data name="NoSelectedItems" xml:space="preserve">
+    <value>Geen geselecteerde items</value>
+  </data>
+  <data name="NoSuchReport" xml:space="preserve">
+    <value>Geen dashboard gevonden</value>
+  </data>
+  <data name="NotAllowedUpdateRelationship" xml:space="preserve">
+    <value>U mag dit relatietype niet bijwerken omdat er veldtypen bestaan die ervan afhankelijk zijn.</value>
+  </data>
+  <data name="NotFoundServiceEdit" xml:space="preserve">
+    <value>Kan de opgegeven service niet vinden om te bewerken</value>
+  </data>
+  <data name="NotFoundShoppingCart" xml:space="preserve">
+    <value>Kan opgegeven winkelwagen niet vinden.</value>
+  </data>
+  <data name="PleaseSpecifyUserNamePassword" xml:space="preserve">
+    <value>Geef een geldige gebruikersnaam en wachtwoord op.</value>
+  </data>
+  <data name="PolicyType" xml:space="preserve">
+    <value>Beleidstype</value>
+  </data>
+  <data name="PolicyTypeLevel" xml:space="preserve">
+    <value>Beleidstypeniveau</value>
+  </data>
+  <data name="PowerBICredentials" xml:space="preserve">
+    <value>Power BI-referenties</value>
+  </data>
+  <data name="PowerBINotSetupOnGovernEnvironment" xml:space="preserve">
+    <value>Power BI is niet ingesteld in deze Govern-omgeving.  U ziet mogelijk rapporten omdat de omgeving uit een andere regio is gekopieerd.  Upload uw Power BI-bestanden opnieuw om dit probleem op te lossen.</value>
+  </data>
+  <data name="Relationship" xml:space="preserve">
+    <value>Relatie</value>
+  </data>
+  <data name="RelationshipNotFound" xml:space="preserve">
+    <value>Relatie niet gevonden.</value>
+  </data>
+  <data name="RelationshipType" xml:space="preserve">
+    <value>Relatietype</value>
+  </data>
+  <data name="Report" xml:space="preserve">
+    <value>Rapport</value>
+  </data>
+  <data name="RequestSubmitted" xml:space="preserve">
+    <value>Uw aanvraag is ingediend</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Gebruikerswachtwoord is bijgewerkt.</value>
+  </data>
+  <data name="Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
+  <data name="Responsibility" xml:space="preserve">
+    <value>Verantwoordelijkheid</value>
+  </data>
+  <data name="ResponsibilityNameMax250" xml:space="preserve">
+    <value>Opgegeven naam mag niet langer zijn dan 250 tekens.</value>
+  </data>
+  <data name="ResponsibilityType" xml:space="preserve">
+    <value>ResponsibilityType</value>
+  </data>
+  <data name="ResponsibilityTypeRule" xml:space="preserve">
+    <value>Verantwoordelijkheidstyperegel</value>
+  </data>
+  <data name="SelectPredicate" xml:space="preserve">
+    <value>Selecteer een predicaat voor deze relatie.</value>
+  </data>
+  <data name="serviceConstant" xml:space="preserve">
+    <value>Service</value>
+  </data>
+  <data name="ServiceCreated" xml:space="preserve">
+    <value>Service is gemaakt.</value>
+  </data>
+  <data name="ServiceEndpointCreated" xml:space="preserve">
+    <value>Service-endpoint is gemaakt.</value>
+  </data>
+  <data name="ShoppingCartCleared" xml:space="preserve">
+    <value>Winkelwagen is leeggemaakt</value>
+  </data>
+  <data name="ShoppingCartNotFound" xml:space="preserve">
+    <value>Kan winkelwagenitem niet vinden</value>
+  </data>
+  <data name="ShoppingCartRemoved" xml:space="preserve">
+    <value>Winkelwagenitem is verwijderd</value>
+  </data>
+  <data name="ShortcutAdded" xml:space="preserve">
+    <value>Snelkoppeling is toegevoegd</value>
+  </data>
+  <data name="ShortcutAlreadySortedBottom" xml:space="preserve">
+    <value>Snelkoppeling is al gesorteerd naar de onderkant.</value>
+  </data>
+  <data name="ShortcutAlreadySortedTop" xml:space="preserve">
+    <value>Snelkoppeling is al gesorteerd naar de bovenkant.</value>
+  </data>
+  <data name="ShortcutDeleted" xml:space="preserve">
+    <value>Snelkoppeling is verwijderd.</value>
+  </data>
+  <data name="ShortcutIDNotFound" xml:space="preserve">
+    <value>Snelkoppelings-ID {0} niet gevonden</value>
+  </data>
+  <data name="ShortcutInvalidURL" xml:space="preserve">
+    <value>De snelkoppelings-URL is ongeldig</value>
+  </data>
+  <data name="ShortcutMissingAnIcon" xml:space="preserve">
+    <value>Pictogram ontbreekt in deze snelkoppeling</value>
+  </data>
+  <data name="ShortcutModified" xml:space="preserve">
+    <value>Snelkoppeling is aangepast</value>
+  </data>
+  <data name="ShortcutMoved" xml:space="preserve">
+    <value>Snelkoppeling {0} is verplaatst {1}.</value>
+  </data>
+  <data name="ShortCutNotFound" xml:space="preserve">
+    <value>Kan snelkoppeling met ID {0} niet vinden.</value>
+  </data>
+  <data name="ShortCutRequireName" xml:space="preserve">
+    <value>Voor deze snelkoppeling is een naam vereist</value>
+  </data>
+  <data name="SiteNavNotFound" xml:space="preserve">
+    <value>Kan de opgegeven sitenavigatie niet vinden</value>
+  </data>
+  <data name="SpecificCartNotFound" xml:space="preserve">
+    <value>Kan de opgegeven winkelwagen niet vinden</value>
+  </data>
+  <data name="Synonym" xml:space="preserve">
+    <value>Synonym</value>
+  </data>
+  <data name="SynonymCreated" xml:space="preserve">
+    <value>Synoniem {0} is gemaakt.</value>
+  </data>
+  <data name="SynRemoved" xml:space="preserve">
+    <value>Synoniem is verwijderd.</value>
+  </data>
+  <data name="TaxonomyType" xml:space="preserve">
+    <value>Taxonomietype</value>
+  </data>
+  <data name="TaxonomyTypeLevel" xml:space="preserve">
+    <value>Taxonomietypeniveau</value>
+  </data>
+  <data name="TypeConstant" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="UnableToFindPowerBISettings" xml:space="preserve">
+    <value>FOUT: KAN ALLE POWER BI-COMMUNITY-INSTELLINGEN NIET VINDEN.</value>
+  </data>
+  <data name="UnsupportedHierarchyAssetTypeAddField" xml:space="preserve">
+    <value>Niet-ondersteund hiërarchie-assettype opgegeven in Hierarchy_AddFields.  Ondersteunde typen zijn taxonomytype en policytype.</value>
+  </data>
+  <data name="UnsupportedHierarchyTypeEditField" xml:space="preserve">
+    <value>Niet-ondersteund hiërarchietype opgegeven in Hierarchy_EditFields.  Ondersteunde typen zijn taxonomie en beleid.</value>
+  </data>
+  <data name="uriConstant" xml:space="preserve">
+    <value>URI</value>
+  </data>
+  <data name="UriCreated" xml:space="preserve">
+    <value>URI is gemaakt.</value>
+  </data>
+  <data name="UserDoesnotAdmin" xml:space="preserve">
+    <value>Gebruiker heeft geen admin-privileges.</value>
+  </data>
+  <data name="version" xml:space="preserve">
+    <value>Versie</value>
+  </data>
+  <data name="VersionCreated" xml:space="preserve">
+    <value>Versie is gemaakt.</value>
+  </data>
+  <data name="VersionUpdated" xml:space="preserve">
+    <value>Versie is bijgewerkt.</value>
+  </data>
+</root>
