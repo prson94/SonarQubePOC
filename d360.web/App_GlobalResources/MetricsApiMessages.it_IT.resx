@@ -115,139 +115,127 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nouveau action ({0}) provoquée.</value>
+  <data name="AssetIdentifierNotFound" xml:space="preserve">
+    <value>Impossibile trovare la risorsa corrispondente all'identificatore di {0}.</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action créée</value>
+  <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
+    <value>[ConditionFieldTypeName] non deve essere vuoto.</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Le type d’action a été supprimé.</value>
+  <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
+    <value>[ConditionIntersectTypeUid] deve essere valido.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Type d’action introuvable</value>
+  <data name="ConditionNotEmpty" xml:space="preserve">
+    <value>È necessario usare [ConditionFieldTypeName] o [ConditionIntersectTypeUid ] all'interno di una condizione.</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Le type d’action dont l’UID est {0} est introuvable.</value>
+  <data name="ConditionValueMaxChar250" xml:space="preserve">
+    <value>Il valore della condizione non deve superare i 250 caratteri.</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Le type d’action a été mis à jour.</value>
+  <data name="CustomAtLeastOneProvided" xml:space="preserve">
+    <value>DEVE essere fornito almeno uno dei seguenti elementi: {0}.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>L’action dont l’UID est {0} est introuvable.</value>
+  <data name="CustomNotValid" xml:space="preserve">
+    <value>{0} {1} non è valido.</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Affectations correctement ajoutées</value>
+  <data name="CustomOrderMessage" xml:space="preserve">
+    <value>{0} Il valore '{1}' non è valido. Il valore deve essere uno dei seguenti: {2}.</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement ajoutée</value>
+  <data name="CustomRequiredParameter" xml:space="preserve">
+    <value>{0} è un parametro obbligatorio</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour cet asset.</value>
+  <data name="CustomStartEndDateMessage" xml:space="preserve">
+    <value>{0} deve essere successivo a {1}.</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>L’asset dont l’UID est {0} est introuvable.</value>
+  <data name="CustomUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare {0} con l'UID {1}.</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>L’asset avec UID {0} est introuvable ou vous n’avez pas la permission de voir l'asset en question.</value>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} {1} non è un UID valido.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’asset.</value>
+  <data name="DescriptionLengthValidation" xml:space="preserve">
+    <value>La lunghezza di [Description] ({0} caratteri) è troppo lunga. La lunghezza massima deve essere di 4000 caratteri.</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Le type d’asset dispose d’un valeur [Class] non valide.</value>
+  <data name="Errorlocatingmetric" xml:space="preserve">
+    <value>Errore durante l'individuazione della metrica</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Le type d’asset dont l’UID est {0} est introuvable.</value>
+  <data name="ErrorRemoveMetric" xml:space="preserve">
+    <value>Errore durante la rimozione della metrica</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>La valeur [AssetTypeUid] ou [AssetUid] doit être fournie.</value>
+  <data name="ErrorRuleResult" xml:space="preserve">
+    <value>Errore durante la rimozione dei risultati della regola</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID de type d’asset valide.</value>
+  <data name="EvalAssetInvalid" xml:space="preserve">
+    <value>Risorsa valutata non valida</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID d’asset valide.</value>
+  <data name="EvalAssetNotFound" xml:space="preserve">
+    <value>Risorsa valutata non trovata</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Des actions sont associées au type d’action. Activez la requête de suppression [cascade].</value>
+  <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>I gruppi non devono avere condizioni.</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Le type d’action sélectionné ({0}) dispose d’actions associées et ne peut donc pas être supprimé.</value>
+  <data name="GroupNotHaveCondition" xml:space="preserve">
+    <value>I gruppi non devono avere condizioni.</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement supprimée.</value>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>Il valore {0} non è una data valida.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Aucun UID de type d’asset n’a été fourni.</value>
+  <data name="InvalidDateYear" xml:space="preserve">
+    <value>Il valore {0} non è una data valida. L'anno deve essere compreso tra il 1900 e l'anno in corso.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Une valeur [ActionTypeUid] valide est requise.</value>
+  <data name="InvalidEffectiveDate" xml:space="preserve">
+    <value>[EffectiveDate] fornito non valido.</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Valeur [AssetTypeUid] fournie non valide.</value>
+  <data name="IsGroupTrueParentMetric" xml:space="preserve">
+    <value>La metrica principale deve avere il valore [IsGroup] impostato su True.</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Valeur [AssetUid] fournie non valide.</value>
+  <data name="MetricAdded" xml:space="preserve">
+    <value>Metrica aggiunta</value>
   </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direction non valide transmise dans la requête.</value>
+  <data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>La metrica specificata è stata aggiunta correttamente</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>La valeur [_limitToActiveWorkflows] n’est pas valide.</value>
+  <data name="MetricNotFound" xml:space="preserve">
+    <value>Metrica non trovata.</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordre non valide transmis dans la requête.</value>
+  <data name="MetricRemoved" xml:space="preserve">
+    <value>Metrica rimossa.</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} est une valeur [responsibilityTypeUid] non valide pour {1}.</value>
+  <data name="MetricRemoveMessage" xml:space="preserve">
+    <value>Metrica rimossa correttamente.</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>La valeur [Name] fournie doit comporter moins de 250 caractères.</value>
+  <data name="MetricRemoveNotAllowed" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per rimuovere questa metrica.</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Chaîne vide fournie pour [Name]. Ne peut être laissé vide.</value>
+  <data name="MetricUidNotFound" xml:space="preserve">
+    <value>Metrica con l'UID {0} non trovata.</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] est un champ obligatoire.</value>
+  <data name="MetricUpdated" xml:space="preserve">
+    <value>Metrica aggiornata</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Aucune allocation correspondante à '{0}' pour le type d’action '{1}'</value>
+  <data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>La metrica specificata è stata aggiornata correttamente</value>
   </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Champ Order By introuvable</value>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>Il nome non deve essere vuoto.</value>
   </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Le champ que vous avez spécifié pour le tri ({0}) est introuvable.</value>
+  <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
+    <value>Non vi è alcuna allocazione per l'UID del tipo di risorsa e il tipo di punteggio specificati.</value>
   </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Le type de relation avec UID {0} n’est pas autorisé car le sujet et l’objet sont identiques et associés à la liste de référence.</value>
+  <data name="NoAllocationForUid" xml:space="preserve">
+    <value>Non vi è alcuna allocazione per l'UID di allocazione specificato.</value>
   </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Le type de relation dont l’UID est {0}  est introuvable.</value>
+  <data name="NotAllowUpdateMetric" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per aggiungere questa metrica.</value>
   </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’existe pas.</value>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>Metrica principale non trovata.</value>
   </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’est pas valide.</value>
+  <data name="ScoreAllocationCorrespondingAssetNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'allocazione del punteggio corrispondente alla risorsa con identificatore di {0}.</value>
   </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Un UID valide est requis.</value>
+  <data name="UseSingleCondition" xml:space="preserve">
+    <value>Non è possibile usare sia [ConditionFieldTypeName] che [ConditionIntersectTypeUid] in una sola condizione</value>
   </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>L’UID fourni n’est pas valide.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>L’allocation existe déjà.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Le nom doit être unique. Ce nom d’action Workflow existe déjà</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>L’UID fourni est déjà utilisé.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>L’utilisateur dont l’UID est {0} est introuvable</value>
+  <data name="WeightDecimalValidation" xml:space="preserve">
+    <value>Il peso deve essere un numero decimale maggiore di 0 e minore o uguale a 1</value>
   </data>
 </root>

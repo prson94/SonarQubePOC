@@ -221,7 +221,7 @@
     <value>No se ha encontrado el campo especificado para la ordenación ({0}).</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>El tipo de relación con UID {0} no permitió el sujeto y el objeto en ambos lados con lista de referencia.</value>
+    <value>Tipo de relación con UID {0} no permitido porque el sujeto y el objeto son el mismo y están relacionados con la lista de referencia.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>No se ha encontrado el tipo de relación con UID {0}.</value>

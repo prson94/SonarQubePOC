@@ -115,139 +115,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Neue/r/s {0} angehoben.</value>
+  <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
+    <value>Impossibile fornire [State] per un nuovo utente</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Aktion erstellt</value>
+  <data name="CurrentPasswordWrong" xml:space="preserve">
+    <value>La password non è stata aggiornata, poiché quella corrente fornita non corrisponde.</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Aktionstyp wurde gelöscht</value>
+  <data name="FieldTypeKeyNotFound" xml:space="preserve">
+    <value>Tipo di campo per la chiave [{0}] non trovato su questa risorsa</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Aktionstyp nicht gefunden</value>
+  <data name="FirstNameMissing" xml:space="preserve">
+    <value>È necessario fornire un [FirstName]</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Aktionstyp mit UID {0} wurde nicht gefunden.</value>
+  <data name="FirstNameTooLong" xml:space="preserve">
+    <value>[FirstName] deve avere una lunghezza inferiore o uguale a 250 caratteri</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Aktionstyp wurde aktualisiert</value>
+  <data name="InternalServerErrorMsg" xml:space="preserve">
+    <value>Si è verificato un errore interno del server</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Aktion mit UID {0} wurde nicht gefunden.</value>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>[Username] non è in un formato e-mail valido</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Zuordnungen hinzugefügt</value>
+  <data name="LastNameMissing" xml:space="preserve">
+    <value>È necessario fornire un [LastName]</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Zuordnung hinzugefügt</value>
+  <data name="LastNameTooLong" xml:space="preserve">
+    <value>[LastName] deve avere una lunghezza inferiore o uguale a 250 caratteri</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Sie dürfen diesem Asset keine Aktionen hinzufügen.</value>
+  <data name="MissingCurrentPasswordParameter" xml:space="preserve">
+    <value>Valore del parametro [CurrentPassword] mancante.</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset mit UID {0} wurde nicht gefunden.</value>
+  <data name="NewAndCurrentNotSame" xml:space="preserve">
+    <value>La nuova password non può essere la stessa di quella corrente</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>Asset mit UID {0} wurde nicht gefunden oder Sie verfügen nicht über die Berechtigung, das betreffende Asset anzuzeigen.</value>
+  <data name="PasswordRule" xml:space="preserve">
+    <value>La password deve avere una lunghezza compresa tra 7 e 25 caratteri, almeno 1 carattere maiuscolo, almeno 1 minuscolo e almeno 1 numero</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Sie dürfen diesem Asset-Typ keine Aktionen hinzufügen.</value>
-  </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset-Typ weist ungültige/n/s [Class] auf.</value>
-  </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset-Typ mit UID {0} wurde nicht gefunden.</value>
-  </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Entweder [AssetTypeUid] oder [AssetUid] muss angegeben werden.</value>
-  </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} ist keine gültige Asset-Typ-UID.</value>
-  </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} ist keine gültige Asset-UID.</value>
-  </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Aktionstyp verfügt über zugeordnete Aktionen. Für '[cascade]'-Anforderung zum Löschen aktivieren.</value>
-  </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Der ausgewählte Aktionstyp ({0}) verfügt über zugeordnete Aktionen und kann daher nicht gelöscht werden.</value>
-  </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Zuordnung entfernt.</value>
-  </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Es wurden keine Asset-Typ-UIDs angegeben.</value>
-  </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Gültige/r/s [ActionTypeUid] erforderlich.</value>
-  </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Ungültige [AssetTypeUid] angegeben.</value>
-  </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Ungültige [AssetUid] angegeben.</value>
-  </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Ungültige Richtung in der Anforderung übergeben.</value>
-  </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Angegebener [_limitToActiveWorkflows]-Wert ist nicht gültig.</value>
-  </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ungültige Reihenfolge in der Anforderung übergeben.</value>
-  </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>'{0}' ist ein/e ungültige/r/s [responsibilityTypeUid] für {1}.</value>
-  </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>[Name] muss weniger als 250 Zeichen lang sein.</value>
-  </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Leere Zeichenfolge für [Name] angegeben. Darf nicht leer sein.</value>
-  </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] ist ein Pflichtfeld.</value>
-  </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Keine passende Zuordnung für '{0}' in Aktionstyp '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Feld 'Sortieren nach' nicht gefunden</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Das angegebene Feld für die Sortierung ({0}) wurde nicht gefunden.</value>
-  </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Beziehungstyp mit UID {0} nicht zulässig, weil Subjekt und Objekt gleich sind und der Referenzliste zugeordnet sind.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Beziehungstyp mit UID {0} wurde nicht gefunden.</value>
+  <data name="ProvideUserUid" xml:space="preserve">
+    <value>È necessario fornire l'UID per l'utente aggiornato</value>
   </data>
   <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Die angegebene Ressourcen-UID ist nicht vorhanden.</value>
+    <value>Risorsa non trovata per questo UID</value>
   </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Die angegebene Ressourcen-UID ist ungültig.</value>
+  <data name="ResourceUserNameExists" xml:space="preserve">
+    <value>Esiste già una risorsa con questo nome utente</value>
   </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Es ist eine gültige UID erforderlich.</value>
+  <data name="UserDeletedMessage" xml:space="preserve">
+    <value>Utente/i eliminato/i correttamente</value>
   </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>Die angegebene UID ist ungültig.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Zuordnung bereits vorhanden.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Der Name muss eindeutig sein. Es ist bereits eine Workflow-Aktion mit diesem Namen vorhanden.</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Die angegebene UID wird bereits verwendet.</value>
+  <data name="UsernameDuplicate" xml:space="preserve">
+    <value>Il nome utente deve essere univoco all'interno della richiesta</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>Benutzer mit UID {0} nicht gefunden</value>
+    <value>Utente per l'UID [{0}] non trovato.</value>
+  </data>
+  <data name="UserUidSystemUser" xml:space="preserve">
+    <value>L'utente per l'UID [{0}] è un utente di sistema e non è possibile eliminarlo.</value>
   </data>
 </root>
