@@ -1121,6 +1121,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showAddToSearch(): boolean {
+		if (this.assetTypeClass === AssetTypeClass.Reference) {
+			return false;
+		}
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'ComputedRelationshipField', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
 		return this.assetTypeUid && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
@@ -1128,6 +1131,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	get showIsPartOfKey(): boolean {
 		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.ReferenceItemType
 			|| this.assetTypeClass === AssetTypeClass.Reference
+			|| this.assetTypeClass === AssetTypeClass.DiagramAsset
 			|| this.relationshipTypeUid) {
 			return false;
 		}
@@ -1331,6 +1335,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	back() {
 		this.storeControlsValues();
 		this.formState = FormState.FieldTypeSelection;
+		this.setDefaultTitle();
 	}
 
 	controlsStoredValue = [];
