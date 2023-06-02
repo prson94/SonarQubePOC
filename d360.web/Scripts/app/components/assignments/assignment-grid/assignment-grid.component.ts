@@ -31,7 +31,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	showDeletionModal: boolean = false;
-	@Output() selectionChange = new EventEmitter();
+	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	@Output() hideDetails = new EventEmitter();
 	private destroy = new Subject<void>();
 	theDeleteCallback: Function;

@@ -12,8 +12,8 @@ export class AssignmentProgressComponent implements OnInit {
 
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
-	@Input() set workflowItemId(value: number) {
-		this._workflowItemId = value;
+	@Input() set workflowItemUid(value: string) {
+		this._workflowItemUid = value;
 		this.loadData();
 	}
 
@@ -38,7 +38,7 @@ export class AssignmentProgressComponent implements OnInit {
 
 	workflowItemSteps: WorkflowItemStep[];
 
-	private _workflowItemId: number;
+	private _workflowItemUid: string;
 
 	constructor(private workflowService: WorkflowService) {
 	}
@@ -48,8 +48,8 @@ export class AssignmentProgressComponent implements OnInit {
 
 	private loadData(): void {
 		this.workflowItemSteps = [];
-		if (this._workflowItemId) {
-			this.workflowService.getWorkflowItemSteps(this._workflowItemId)
+		if (this._workflowItemUid) {
+			this.workflowService.getWorkflowItemSteps(this._workflowItemUid)
 				.subscribe((response: WorkflowItemStep[]): void => {
 					this.workflowItemSteps = response;
 				});

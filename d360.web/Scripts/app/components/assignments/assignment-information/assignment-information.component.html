@@ -1,6 +1,6 @@
 <d3s-assignment-information-request
 	[workflowAssignmentItem]="workflowAssignmentItem"
-	*ngIf="workflowAssignmentItem?.Type === 'Action'"></d3s-assignment-information-request>
+	*ngIf="workflowAssignmentItem?.actionTypeUid === 'Action'"></d3s-assignment-information-request>
 <d3s-assignment-information-general (linkClick)="linkClick.emit($event)"
 									[workflowAssignmentItem]="workflowAssignmentItem"></d3s-assignment-information-general>
 <pre style="white-space: pre-wrap" *ngIf="workflowAssignments">{{ workflowAssignments | json }}</pre>

@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { WorkflowMonitorItem } from '../../../models/workflowmonitor.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowAssignments } from '../../../models/workflow.model';
+import { WorkflowAssignmentItem, WorkflowAssignments } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -10,7 +9,7 @@ import { WorkflowAssignments } from '../../../models/workflow.model';
 })
 export class AssignmentInformationComponent implements OnInit {
 
-	@Input() workflowAssignmentItem: WorkflowMonitorItem;
+	@Input() workflowAssignmentItem: WorkflowAssignmentItem;
 	@Input() isIssueType: boolean = false;
 	workflowAssignments: WorkflowAssignments;
 
@@ -30,6 +29,6 @@ export class AssignmentInformationComponent implements OnInit {
 		// this.workflowService.getWorkflowAssignments().subscribe(response => {
 		// 	this.workflowAssignments = response;
 		// });
-		this.workflowAssignments = null
+		this.workflowAssignments = null;
 	}
 }
