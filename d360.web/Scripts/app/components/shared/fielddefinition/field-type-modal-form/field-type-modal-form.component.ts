@@ -1189,7 +1189,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType || this.isUserType) {
 			return false;
 		}
-		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag';
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
 	}
 
 	get isGroupType(): boolean {
