@@ -5,6 +5,7 @@ import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 
 import { CoreModule } from "../core.module";
+import { PipesModule } from '../../../pipes/pipes.module';
 
 import { SocialBoardComponent } from "./social-board.component";
 import { SocialCommentComponent } from "./social-comment.component";
@@ -31,7 +32,8 @@ import { DirectivesModule } from "../../../directives/directives.module";
         ButtonModule,
         
         //d3s
-        CoreModule,
+		CoreModule,
+		PipesModule,
         DirectivesModule
 
     ],

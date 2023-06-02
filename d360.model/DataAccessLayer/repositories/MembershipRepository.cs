@@ -1288,7 +1288,13 @@ namespace d360.model.DataAccessLayer
 							inner join reporting.Global_Resource gr on gr.ResourceId = ga.ObjectID
 							inner join #auditRecords ar on gr.uid = ar.uid
 							where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')
-							order by ar.uid",
+							order by ar.uid
+
+							insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
+							select 'ObjectIndex', 'U', 'Resource', ResourceID, getdate(), AssetID
+							from api.ExecutionUser 
+							where ExecutionID = @executionid
+							and Success is null",
 							new { executionID, CompanyContext.CurrentResourceID },
 							transaction: trans);
 

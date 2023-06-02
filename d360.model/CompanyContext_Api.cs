@@ -10903,7 +10903,13 @@ where   ER.ExecutionID = @ExecutionID
 															inner join [Asset] AG on AG.Object = 'Group' and AG.ObjectID = g.ID
 															inner join api.ExecutionGroup EF on EF.ExecutionID = @executionID and AG.uid = EF.GroupUid
 															inner join #auditRecords ar on ar.ItemNumber = EF.ItemNumber
-															where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')";
+															where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')
+
+															insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
+															select 'ObjectIndex', 'U', a.[Object], a.[ObjectID], getdate(), a.id as AssetID
+															from api.ExecutionGroup EG
+															inner join dbo.asset a on EG.GroupUid = a.uid
+															where EG.ExecutionID = @executionID and EG.Success is null";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
