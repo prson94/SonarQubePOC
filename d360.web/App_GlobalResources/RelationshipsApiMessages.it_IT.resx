@@ -115,139 +115,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Neue/r/s {0} angehoben.</value>
+  <data name="DirectionAllowedForRelation" xml:space="preserve">
+    <value>Il parametro [_direction] è consentito solo quando [RelationshipTypeUid] o [AssetUid] ha esito positivo</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Aktion erstellt</value>
+  <data name="InvalidIntersectTypeUid" xml:space="preserve">
+    <value>ID del tipo di intersezione fornito {0} non valido.</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Aktionstyp wurde gelöscht</value>
+  <data name="InvalidInverseLength" xml:space="preserve">
+    <value>L'inverso deve contenere meno di 250 caratteri.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Aktionstyp nicht gefunden</value>
+  <data name="InvalidNameLength" xml:space="preserve">
+    <value>Il nome deve contenere meno di 100 caratteri.</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Aktionstyp mit UID {0} wurde nicht gefunden.</value>
+  <data name="InvalidObjectUid" xml:space="preserve">
+    <value>UID oggetto trasmesso nella richiesta non valido</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Aktionstyp wurde aktualisiert</value>
+  <data name="InvalidOrderValue" xml:space="preserve">
+    <value>Valore [_order] non valido nella richiesta</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Aktion mit UID {0} wurde nicht gefunden.</value>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>Il parametro type non è valido.</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Zuordnungen hinzugefügt</value>
+  <data name="InvalidPredicateUid" xml:space="preserve">
+    <value>UID preficato trasmesso nella richiesta non valido</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Zuordnung hinzugefügt</value>
+  <data name="InvalidRelatioshipTypeUid" xml:space="preserve">
+    <value>UID tipo di relazione trasmesso nella richiesta non valido</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Sie dürfen diesem Asset keine Aktionen hinzufügen.</value>
+  <data name="InvalidSubjectUid" xml:space="preserve">
+    <value>UID soggetto trasmesso nella richiesta non valido</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Asset mit UID {0} wurde nicht gefunden.</value>
+  <data name="Invalid_includeTotal" xml:space="preserve">
+    <value>Il parametro [_includeTotal] trasmesso nella richiesta non è valido. Il valore deve essere true, false o non specificato</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>Asset mit UID {0} wurde nicht gefunden oder Sie verfügen nicht über die Berechtigung, das betreffende Asset anzuzeigen.</value>
+  <data name="Invalid_owner" xml:space="preserve">
+    <value>Il parametro [_owner] trasmesso nella richiesta non è valido. La lunghezza massima è 100 caratteri.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Sie dürfen diesem Asset-Typ keine Aktionen hinzufügen.</value>
+  <data name="MaxRelationShipLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} relazioni in questa richiesta. Chiamare l'API BATCH per inviare più di {1} elementi.</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Asset-Typ weist ungültige/n/s [Class] auf.</value>
+  <data name="ObjectUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'oggetto con l'UID [{0}].</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Asset-Typ mit UID {0} wurde nicht gefunden.</value>
+  <data name="OrderForRelation" xml:space="preserve">
+    <value>Il parametro [_order] è consentito solo quando [RelationshipTypeUid] ha esito positivo</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Entweder [AssetTypeUid] oder [AssetUid] muss angegeben werden.</value>
+  <data name="PassedValidForExistingRelationType" xml:space="preserve">
+    <value>UID specificato del tipo di relazione non valido.  Specificare un UID valido per un tipo di relazione esistente.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} ist keine gültige Asset-Typ-UID.</value>
+  <data name="PassedValidRelationTypeUid" xml:space="preserve">
+    <value>UID specificato del tipo di relazione non valido.  Specificare un UID valido.</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} ist keine gültige Asset-UID.</value>
+  <data name="PredicateLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} predicati in questa richiesta.</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Aktionstyp verfügt über zugeordnete Aktionen. Für '[cascade]'-Anforderung zum Löschen aktivieren.</value>
+  <data name="PredicateRequired" xml:space="preserve">
+    <value>Non è stato fornito alcun predicato da elaborare in questa richiesta.</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Der ausgewählte Aktionstyp ({0}) verfügt über zugeordnete Aktionen und kann daher nicht gelöscht werden.</value>
+  <data name="PredicateUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare il predicato con l'UID [{0}].</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Zuordnung entfernt.</value>
+  <data name="RelationNotProvided" xml:space="preserve">
+    <value>Non è stata fornita alcuna relazione da elaborare in questa richiesta.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Es wurden keine Asset-Typ-UIDs angegeben.</value>
+  <data name="RelationshipSucessfullyRemoved" xml:space="preserve">
+    <value>Relazione rimossa correttamente.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Gültige/r/s [ActionTypeUid] erforderlich.</value>
+  <data name="RelationshipTypeLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} tipi di relazioni in questa richiesta.</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Ungültige [AssetTypeUid] angegeben.</value>
+  <data name="RelationShipUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare la relazione specificata con l'UID [{0}].</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Ungültige [AssetUid] angegeben.</value>
+  <data name="SubjectUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare il soggetto con l'UID [{0}].</value>
   </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Ungültige Richtung in der Anforderung übergeben.</value>
-  </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>Angegebener [_limitToActiveWorkflows]-Wert ist nicht gültig.</value>
-  </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ungültige Reihenfolge in der Anforderung übergeben.</value>
-  </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>'{0}' ist ein/e ungültige/r/s [responsibilityTypeUid] für {1}.</value>
-  </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>[Name] muss weniger als 250 Zeichen lang sein.</value>
-  </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Leere Zeichenfolge für [Name] angegeben. Darf nicht leer sein.</value>
-  </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] ist ein Pflichtfeld.</value>
-  </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Keine passende Zuordnung für '{0}' in Aktionstyp '{1}'</value>
-  </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Feld 'Sortieren nach' nicht gefunden</value>
-  </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Das angegebene Feld für die Sortierung ({0}) wurde nicht gefunden.</value>
-  </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Beziehungstyp mit UID {0} nicht zulässig, weil Subjekt und Objekt gleich sind und der Referenzliste zugeordnet sind.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Beziehungstyp mit UID {0} wurde nicht gefunden.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Die angegebene Ressourcen-UID ist nicht vorhanden.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Die angegebene Ressourcen-UID ist ungültig.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Es ist eine gültige UID erforderlich.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>Die angegebene UID ist ungültig.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>Zuordnung bereits vorhanden.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Der Name muss eindeutig sein. Es ist bereits eine Workflow-Aktion mit diesem Namen vorhanden.</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>Die angegebene UID wird bereits verwendet.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>Benutzer mit UID {0} nicht gefunden</value>
+  <data name="ViewthisRelationNotAllowed" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per visualizzare questa relazione.</value>
   </data>
 </root>

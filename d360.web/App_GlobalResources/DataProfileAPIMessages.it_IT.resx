@@ -1,0 +1,400 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApiSheetName" xml:space="preserve">
+    <value>Informazioni API</value>
+  </data>
+  <data name="AssetIdColumn" xml:space="preserve">
+    <value>ID risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetPathColumn" xml:space="preserve">
+    <value>Percorso risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetSheetName" xml:space="preserve">
+    <value>Risorse</value>
+  </data>
+  <data name="AssetTypePathColumn" xml:space="preserve">
+    <value>Percorso tipo di risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetTypeUidColumn" xml:space="preserve">
+    <value>UID tipo di risorsa</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+  <data name="AssetUidColumn" xml:space="preserve">
+    <value>UID risorsa</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
+    <value>Il record non esiste per AssetUid {0} e ProfileSetDate {1}</value>
+  </data>
+  <data name="UrlColumn" xml:space="preserve">
+    <value>URL</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="BaseTypeColumn" xml:space="preserve">
+    <value>Tipo di base</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="DataProfileDeleteMaxLimit" xml:space="preserve">
+    <value>È possibile eliminare solo un massimo di {0} record dataprofile in questa richiesta. Utilizzare l'endpoint dell'API BATCH.</value>
+  </data>
+  <data name="DataProfileRecordsLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} record del profilo dei dati in questa richiesta. Chiamare l'API BATCH per inviare più di {1} elementi.</value>
+  </data>
+  <data name="DescriptionColumn" xml:space="preserve">
+    <value>Descrizione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="DisabledColumn" xml:space="preserve">
+    <value>Disabilitato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Duplica</value>
+  </data>
+  <data name="DuplicateRecordBatchProfile" xml:space="preserve">
+    <value>Record duplicati: {0} Le coppie AssetUid e ProfileSetDate vengono utilizzate come identificatori di record e devono essere univoche all'interno di un batch.</value>
+  </data>
+  <data name="EffectiveFromColumn" xml:space="preserve">
+    <value>Inizio validità:</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="EffectiveThroughColumn" xml:space="preserve">
+    <value>Fine validità:</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ElementBottomKNotEmpty" xml:space="preserve">
+    <value>Gli elementi in bottomK non possono essere stringhe vuote</value>
+  </data>
+  <data name="ElementTopKNotEmpty" xml:space="preserve">
+    <value>Gli elementi in topK non possono essere stringhe vuote</value>
+  </data>
+  <data name="HeaderFilterColumn" xml:space="preserve">
+    <value>Filtro intestazione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="HeaderFilterConfidenceColumn" xml:space="preserve">
+    <value>Confidenza filtro intestazione</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>Valore non valido per il parametro '_order'. I valori consentiti sono 'path' e 'tags'.</value>
+  </data>
+  <data name="InvalidSimilarType" xml:space="preserve">
+    <value>'{0}' è un tipo simile non valido.</value>
+  </data>
+  <data name="InvalidValuesColumn" xml:space="preserve">
+    <value>Valori non validi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="JsonColumn" xml:space="preserve">
+    <value>JSON</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MatchedAssetExportFileName" xml:space="preserve">
+    <value>Elenco campi filtrati {0} {1} _{2}_.xlsx</value>
+  </data>
+  <data name="MatchedAssetIdColumn" xml:space="preserve">
+    <value>ID risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetNameColumn" xml:space="preserve">
+    <value>Nome campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetPathColumn" xml:space="preserve">
+    <value>Percorso risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetTagsColumn" xml:space="preserve">
+    <value>Tag campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetTypePathColumn" xml:space="preserve">
+    <value>Percorso tipo risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetUidColumn" xml:space="preserve">
+    <value>UID risorsa campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetUrlColumn" xml:space="preserve">
+    <value>URL campo {0}</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchTypeColumn" xml:space="preserve">
+    <value>Tipo di corrispondenza</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MaximumColumn" xml:space="preserve">
+    <value>Massimo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinConfidenceInvalid" xml:space="preserve">
+    <value>Il parametro di confidenza minima non è valido</value>
+  </data>
+  <data name="MinimumColumn" xml:space="preserve">
+    <value>Minimo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumMaximumPresentColumn" xml:space="preserve">
+    <value>Massimo e minimo presenti</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumSamplesColumn" xml:space="preserve">
+    <value>Campioni minimi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="NameColumn" xml:space="preserve">
+    <value>Nome</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
+    <value>Firma {0} non trovata per AssetUid {1}</value>
+  </data>
+  <data name="OrderInvalid" xml:space="preserve">
+    <value>Valore non valido per il parametro '_order'. I valori consentiti sono 'confidence', 'path' o 'assettypepath'.</value>
+  </data>
+  <data name="PriorityColumn" xml:space="preserve">
+    <value>Priorità</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ProfileRecordAlreadyExists" xml:space="preserve">
+    <value>Il record esiste già per AssetUid {0} e ProfileSetDate {1}</value>
+  </data>
+  <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
+    <value>La classe di risorsa {0} non supporta la profilazione dei dati. I dati di profilazione possono essere associati solo a tipi di asset Business o Tecnici.</value>
+  </data>
+  <data name="QualifierColumn" xml:space="preserve">
+    <value>Qualificatore</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="RegularExpressionColumn" xml:space="preserve">
+    <value>Espressione regolare</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="RequiredSimilarType" xml:space="preserve">
+    <value>similarType è un campo obbligatorio.</value>
+  </data>
+  <data name="SemanticBaseTypeBoolean" xml:space="preserve">
+    <value>True/False (boleano)</value>
+  </data>
+  <data name="SemanticBaseTypeNumber" xml:space="preserve">
+    <value>Numero ({0})</value>
+  </data>
+  <data name="SemanticMatchTypeAdvanced" xml:space="preserve">
+    <value>Avanzato (JSON)</value>
+  </data>
+  <data name="SemanticMatchTypeList" xml:space="preserve">
+    <value>Elenco di valori</value>
+  </data>
+  <data name="SemanticMatchTypePattern" xml:space="preserve">
+    <value>Modello nei dati</value>
+  </data>
+  <data name="SemanticSourceBuiltIn" xml:space="preserve">
+    <value>Integrato</value>
+  </data>
+  <data name="SemanticSourceUserDefined" xml:space="preserve">
+    <value>Definito dall'utente</value>
+  </data>
+  <data name="SemanticStatusUnderReview" xml:space="preserve">
+    <value>In revisione</value>
+  </data>
+  <data name="SemanticTypeExportFilename" xml:space="preserve">
+    <value>Elenco dei tipi semantici filtrati {0}.xlsx</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeUidColumn" xml:space="preserve">
+    <value>UID di tipo semantico</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeURLColumn" xml:space="preserve">
+    <value>URL di tipo semantico</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
+    <value>Elenco delle risorse filtrate per {0} {1}.xlsx</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+  <data name="Similar" xml:space="preserve">
+    <value>Simile</value>
+  </data>
+  <data name="SourceColumn" xml:space="preserve">
+    <value>Origine semantica</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="StatusColumn" xml:space="preserve">
+    <value>Stato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="TagFieldNotFound" xml:space="preserve">
+    <value>Campo del tag non trovato</value>
+    <comment>Tag field not found</comment>
+  </data>
+  <data name="TagsColumn" xml:space="preserve">
+    <value>Tag</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="ThresholdColumn" xml:space="preserve">
+    <value>Soglia</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="TypeQualifierInvalid" xml:space="preserve">
+    <value>Il parametro del qualificatore del tipo non è valido</value>
+  </data>
+  <data name="ValidLocalesColumn" xml:space="preserve">
+    <value>Impostazioni locali valide</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ValidValuesColumn" xml:space="preserve">
+    <value>Valori validi</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeStatusExportFilename" xml:space="preserve">
+    <value>Elenco stato tipo semantico {0}.xlsx</value>
+  </data>
+  <data name="ColorColumn" xml:space="preserve">
+    <value>Colore</value>
+    <comment>User for Semantic Type Status export</comment>
+  </data>
+  <data name="AssetUrlColumn" xml:space="preserve">
+    <value>URL risorsa</value>
+    <comment>Used for Semantic Types Assets Export</comment>
+  </data>
+  <data name="EndpointNotAccessible" xml:space="preserve">
+    <value>Questo endpoint non è accessibile.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
+  <data name="ErrorOnRequest" xml:space="preserve">
+    <value>Errore nella richiesta.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
+  <data name="TypeQualifierNotFound" xml:space="preserve">
+    <value>Il qualificatore di tipo '{0}' non esiste</value>
+  </data>
+  <data name="SemanticTypeDisabledColumn" xml:space="preserve">
+    <value>Disabilitato</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeEffectiveRangeColumn" xml:space="preserve">
+    <value>Intervallo effettivo</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+</root>

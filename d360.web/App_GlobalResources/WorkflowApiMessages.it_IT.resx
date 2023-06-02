@@ -115,139 +115,112 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nouveau action ({0}) provoquée.</value>
+  <data name="InvalidFormSetting" xml:space="preserve">
+    <value>Impostazioni del modulo mancanti o non valide</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action créée</value>
+  <data name="InvalidModelNoFieldPassed" xml:space="preserve">
+    <value>MODELLO NON VALIDO: NESSUN CAMPO TRASMESSO</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Le type d’action a été supprimé.</value>
+  <data name="InvalidOrderParameterPassed" xml:space="preserve">
+    <value>Ordine non valido trasmesso nella richiesta. I valori validi sono: StartedOn e CompletedOn</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Type d’action introuvable</value>
+  <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
+    <value>Ordine non valido trasmesso nella richiesta. I valori validi sono: VersionNumber, State, CreatedOn e UpdatedOn</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Le type d’action dont l’UID est {0} est introuvable.</value>
+  <data name="InvalidResourceID" xml:space="preserve">
+    <value>ID risorsa non valido</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Le type d’action a été mis à jour.</value>
+  <data name="InvalidSpecificID" xml:space="preserve">
+    <value>ID ELEMENTO DEL WORKFLOW NON VALIDO. IMPOSSIBILE TROVARE WORKFLOWITEMSTEP CON L'ID SPECIFICATO.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>L’action dont l’UID est {0} est introuvable.</value>
+  <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
+    <value>La richiesta di recuperare questa versione del workflow non è valida, probabilmente a causa di un identificatore formattato in modo errato ActionTypeUid/AssetTypeUid/RelationshipTypeUid</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Affectations correctement ajoutées</value>
+  <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
+    <value>La richiesta di recuperare questa versione del workflow non è valida, probabilmente a causa di un identificatore formattato in modo errato ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement ajoutée</value>
+  <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
+    <value>La richiesta di recuperare questa versione del workflow non è valida, probabilmente a causa di un identificatore formattato in modo errato ActionUid/AssetUid/RelationshipUid/WorkflowTypeUid/WorkflowVerionUid</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour cet asset.</value>
+  <data name="InvalidWorkflowID" xml:space="preserve">
+    <value>ID elemento del workflow non valido.</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>L’asset dont l’UID est {0} est introuvable.</value>
+  <data name="InvalidWorkflowRegistration" xml:space="preserve">
+    <value>La registrazione del workflow è mancante o non valida</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>L’asset avec UID {0} est introuvable ou vous n’avez pas la permission de voir l'asset en question.</value>
+  <data name="InvalidWorkflowStepID" xml:space="preserve">
+    <value>ID fase elemento del workflow non valido.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’asset.</value>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Elemento non trovato</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Le type d’asset dispose d’un valeur [Class] non valide.</value>
+  <data name="ItemStepNotFound" xml:space="preserve">
+    <value>IMPOSSIBILE TROVARE LA FASE DELL'ELEMENTO PER I PARAMETRI SPECIFICATI</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Le type d’asset dont l’UID est {0} est introuvable.</value>
+  <data name="ItemStepUnableFound" xml:space="preserve">
+    <value>Impossibile trovare la fase dell'elemento</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>La valeur [AssetTypeUid] ou [AssetUid] doit être fournie.</value>
+  <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
+    <value>Nella richiesta viene trasmesso più di un UID, ovvero ActionTypeUid O AssetTypeUid O RelationshipTypeUid</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID de type d’asset valide.</value>
+  <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
+    <value>Nella richiesta viene trasmesso più di un UID, ovvero ActionTypeUid O AssetTypeUid O RelationshipTypeUid o WorkflowTypeUid</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID d’asset valide.</value>
+  <data name="MoreThanOneUidPassed" xml:space="preserve">
+    <value>Nella richiesta viene trasmesso più di un UID, ovvero ActionUid O AssetUid O RelationshipUid</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Des actions sont associées au type d’action. Activez la requête de suppression [cascade].</value>
+  <data name="MultiVersionFound" xml:space="preserve">
+    <value>PIÙ FASI DELLA VERSIONE SPECIFICATE</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Le type d’action sélectionné ({0}) dispose d’actions associées et ne peut donc pas être supprimé.</value>
+  <data name="NoPermissionBulkReassign" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per la riassegnazione in massa.</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement supprimée.</value>
+  <data name="NoValidItemStep" xml:space="preserve">
+    <value>NESSUNA FASE DELL'ELEMENTO VALIDA TROVATA</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Aucun UID de type d’asset n’a été fourni.</value>
+  <data name="RelationNotFoundIntersectType" xml:space="preserve">
+    <value>L'INPUT DELLA RELAZIONE NON RIESCE A TROVARE IL TIPO DI INTERSEZIONE SPECIFICATO</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Une valeur [ActionTypeUid] valide est requise.</value>
+  <data name="RelationNotFoundIssueObject" xml:space="preserve">
+    <value>L'INPUT DELLA RELAZIONE NON RIESCE A IDENTIFICARE L'OGGETTO DEL PROBLEMA</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Valeur [AssetTypeUid] fournie non valide.</value>
+  <data name="RelationNotFoundRegistration" xml:space="preserve">
+    <value>L'INPUT DELLA RELAZIONE NON RIESCE A IDENTIFICARE LA REGISTRAZIONE DELL'EVENTO DEL WORKFLOW</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Valeur [AssetUid] fournie non valide.</value>
+  <data name="RelatioshipInvalid" xml:space="preserve">
+    <value>L'INPUT DELLA RELAZIONE HA UN VALORE ID INTERSECTTYPE NON VALIDO</value>
   </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direction non valide transmise dans la requête.</value>
+  <data name="StepNotFound" xml:space="preserve">
+    <value>fase non trovata</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>La valeur [_limitToActiveWorkflows] n’est pas valide.</value>
+  <data name="VersionStepIDNotFound" xml:space="preserve">
+    <value>Workflow con ID fase versione specificato non trovato</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordre non valide transmis dans la requête.</value>
+  <data name="WofkFlowXMLNull" xml:space="preserve">
+    <value>DEFINIZIONE DEL MODULO DEL WORKFLOW NON VALIDA. IL MODULO XML È NULL.</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} est une valeur [responsibilityTypeUid] non valide pour {1}.</value>
+  <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
+    <value>L'ID del tipo di workflow {0} è già stato eliminato</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>La valeur [Name] fournie doit comporter moins de 250 caractères.</value>
+  <data name="WorkflowInstanceNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'istanza del workflow specificata.</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Chaîne vide fournie pour [Name]. Ne peut être laissé vide.</value>
+  <data name="WorkflowItemDeleted" xml:space="preserve">
+    <value>L'elemento del workflow è stato eliminato.</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] est un champ obligatoire.</value>
+  <data name="WorkflowReassignSuccess" xml:space="preserve">
+    <value>Moduli del workflow riassegnati correttamente</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Aucune allocation correspondante à '{0}' pour le type d’action '{1}'</value>
+  <data name="WorkflowtypeidNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'ID del tipo di workflow {0}</value>
   </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Champ Order By introuvable</value>
+  <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'UID del tipo di workflow {0}</value>
   </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Le champ que vous avez spécifié pour le tri ({0}) est introuvable.</value>
+  <data name="WorkflowUIDNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'UID del workflow {0}.</value>
   </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Le type de relation avec UID {0} n’est pas autorisé car le sujet et l’objet sont identiques et associés à la liste de référence.</value>
-  </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Le type de relation dont l’UID est {0}  est introuvable.</value>
-  </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’existe pas.</value>
-  </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’est pas valide.</value>
-  </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Un UID valide est requis.</value>
-  </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>L’UID fourni n’est pas valide.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>L’allocation existe déjà.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Le nom doit être unique. Ce nom d’action Workflow existe déjà</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>L’UID fourni est déjà utilisé.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>L’utilisateur dont l’UID est {0} est introuvable</value>
+  <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
+    <value>Impossibile trovare la versione del workflow con l'UID {0}.</value>
   </data>
 </root>

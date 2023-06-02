@@ -116,138 +116,138 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nouveau action ({0}) provoquée.</value>
+    <value>Nuovo {0} inviato.</value>
   </data>
   <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Action créée</value>
+    <value>Azione creata</value>
   </data>
   <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Le type d’action a été supprimé.</value>
+    <value>Il tipo di azione è stato eliminato</value>
   </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Type d’action introuvable</value>
+    <value>Tipo di azione non trovato</value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Le type d’action dont l’UID est {0} est introuvable.</value>
+    <value>Impossibile trovare il tipo di azione con l'UID {0}.</value>
   </data>
   <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Le type d’action a été mis à jour.</value>
+    <value>Il tipo di azione è stato aggiornato.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
-    <value>L’action dont l’UID est {0} est introuvable.</value>
+    <value>Impossibile trovare l'azione con l'UID {0}.</value>
   </data>
   <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Affectations correctement ajoutées</value>
+    <value>Allocazioni aggiunte correttamente</value>
   </data>
   <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement ajoutée</value>
+    <value>Allocazione aggiunta correttamente</value>
   </data>
   <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour cet asset.</value>
+    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questa risorsa.</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
-    <value>L’asset dont l’UID est {0} est introuvable.</value>
+    <value>Impossibile trovare la risorsa con l'UID {0}.</value>
   </data>
   <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>L’asset avec UID {0} est introuvable ou vous n’avez pas la permission de voir l'asset en question.</value>
+    <value>Non è stato possibile trovare la risorsa con l'UID {0} oppure non si dispone dell'autorizzazione per visualizzare la risorsa correlata.</value>
   </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Vous n’êtes pas autorisé à ajouter des actions pour ce type d’asset.</value>
+    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questo tipo di risorsa.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Le type d’asset dispose d’un valeur [Class] non valide.</value>
+    <value>Il tipo di risorsa ha un [Class] non valido</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Le type d’asset dont l’UID est {0} est introuvable.</value>
+    <value>Impossibile trovare il tipo di risorsa con l'UID {0}.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>La valeur [AssetTypeUid] ou [AssetUid] doit être fournie.</value>
+    <value>È necessario fornire [AssetTypeUid] o [AssetUid].</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID de type d’asset valide.</value>
+    <value>{0} non è un UID del tipo di risorsa valido.</value>
   </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} n’est pas un UID d’asset valide.</value>
+    <value>{0} non è un UID della risorsa valido.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Des actions sont associées au type d’action. Activez la requête de suppression [cascade].</value>
+    <value>Il tipo di azione ha azioni associate. Abilitare su richiesta [cascade] per l'eliminazione.</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Le type d’action sélectionné ({0}) dispose d’actions associées et ne peut donc pas être supprimé.</value>
+    <value>Il tipo di azione selezionato ({0}) ha azioni associate, pertanto non è possibile eliminarlo.</value>
   </data>
   <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocation correctement supprimée.</value>
+    <value>Allocazione eliminata correttamente.</value>
   </data>
   <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Aucun UID de type d’asset n’a été fourni.</value>
+    <value>Non è stato fornito alcun UID del tipo di risorsa.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Une valeur [ActionTypeUid] valide est requise.</value>
+    <value>È necessario un [ActionTypeUid] valido.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>Valeur [AssetTypeUid] fournie non valide.</value>
+    <value>[AssetTypeUid] fornito non valido.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Valeur [AssetUid] fournie non valide.</value>
+    <value>[AssetUid] fornito non valido.</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direction non valide transmise dans la requête.</value>
+    <value>Direzione non valida trasmessa nella richiesta.</value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>La valeur [_limitToActiveWorkflows] n’est pas valide.</value>
+    <value> Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordre non valide transmis dans la requête.</value>
+    <value>Ordine non valido trasmesso nella richiesta.</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} est une valeur [responsibilityTypeUid] non valide pour {1}.</value>
+    <value>{0} è un [responsibilityTypeUid] non valido per {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>La valeur [Name] fournie doit comporter moins de 250 caractères.</value>
+    <value>[Name] fornito deve contenere meno di 250 caratteri.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Chaîne vide fournie pour [Name]. Ne peut être laissé vide.</value>
+    <value>Stringa vuota fornita per [Name]. Non può essere vuoto.</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] est un champ obligatoire.</value>
+    <value>[Name] è un campo obbligatorio.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Aucune allocation correspondante à '{0}' pour le type d’action '{1}'</value>
+    <value>Nessuna allocazione corrispondente per '{0}' sul tipo di azione '{1}'</value>
   </data>
   <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Champ Order By introuvable</value>
+    <value>Ordina per campo non trovato</value>
   </data>
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Le champ que vous avez spécifié pour le tri ({0}) est introuvable.</value>
+    <value>Impossibile trovare il campo specificato per l'ordinamento ({0}).</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Le type de relation avec UID {0} n’est pas autorisé car le sujet et l’objet sont identiques et associés à la liste de référence.</value>
+    <value>Il tipo di relazione con l'UID {0} non è consentito perché il soggetto e l'oggetto sono entrambi uguali e sono associati all'elenco di riferimento.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Le type de relation dont l’UID est {0}  est introuvable.</value>
+    <value>Impossibile trovare il tipo di relazione con l'UID {0}.</value>
   </data>
   <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’existe pas.</value>
+    <value>L'UID della risorsa fornito non esiste.</value>
   </data>
   <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L’UID de la ressource fourni n’est pas valide.</value>
+    <value>L'UID della risorsa fornito non è valido.</value>
   </data>
   <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Un UID valide est requis.</value>
+    <value>È necessario un UID valido.</value>
   </data>
   <data name="UidNotValid" xml:space="preserve">
-    <value>L’UID fourni n’est pas valide.</value>
+    <value>L'UID fornito non è valido.</value>
   </data>
   <data name="UniqueAllocation" xml:space="preserve">
-    <value>L’allocation existe déjà.</value>
+    <value>L'allocazione esiste già.</value>
   </data>
   <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Le nom doit être unique. Ce nom d’action Workflow existe déjà</value>
+    <value>Il nome deve essere univoco. Esiste già un'azione del workflow con questo nome</value>
   </data>
   <data name="UniqueUid" xml:space="preserve">
-    <value>L’UID fourni est déjà utilisé.</value>
+    <value>L'UID fornito è già in uso.</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>L’utilisateur dont l’UID est {0} est introuvable</value>
+    <value>Utente con l'UID {0} non trovato</value>
   </data>
 </root>
