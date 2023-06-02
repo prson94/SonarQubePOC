@@ -96,14 +96,12 @@
 				<div class="filters">
 					<div class="filters-container">
 						<label i18n>Filter</label>
-						<div>
-							<advanced-filtering #advancedFilter
-												[onlyResetButton]="true"
-												[useFieldCategories]="true"
-												(onChange)="advancedFiltersChanged($event)">
-							</advanced-filtering>
-						</div>
-
+						<advanced-filtering #advancedFilter
+											[onlyResetButton]="true"
+											[topPositionCorrection]="-40"
+											[useFieldCategories]="true"
+											(onChange)="advancedFiltersChanged($event)">
+						</advanced-filtering>
 					</div>
 
 				</div>
@@ -140,7 +138,7 @@
 								</td>
 								<td width="20px">
 									<div class="token-popup-menu" *ngIf="fieldTypeForm.get(item.fieldControl).value">
-										<button igButton icon="fa-trash" (click)="removeSortOption(item)"></button>
+										<button igButton icon="fa-trash" (click)="removeSortOption(item);removeMarkedSortOptions();"></button>
 									</div>
 								</td>
 							</tr>
