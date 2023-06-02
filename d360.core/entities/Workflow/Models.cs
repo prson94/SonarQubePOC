@@ -562,7 +562,7 @@ namespace d360.core.entities.Workflow
 	{
 		public Guid WorkflowItemUid { get; set; }
 
-		public Guid WworkflowUid { get; set; }
+		public Guid WorkflowUid { get; set; }
 
 		public string WorkflowName { get; set; }
 
@@ -571,10 +571,20 @@ namespace d360.core.entities.Workflow
 		public Guid InitiatorUid { get; set; }
 
 		public DateTime StartedOn { get; set; }
+
+		public DateTime CompletedOn { get; set; }
+
 		public string Status { get; set; }
-		public Guid ActionUid { get; set; }
+
+		public Guid? AssetUid { get; set; }
+
+		public string AssetPath { get; set; }
+
+		public Guid? ActionUid { get; set; }
+
 		public string ChangeType { get; set; }
-		public string InitiatingObjectType { get; set; }
+
+		public string initiatingObjectType { get; set; }
 	}
 
 	#endregion

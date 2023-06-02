@@ -446,15 +446,21 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
 			}
 
-		}    
+		}
 
+		/// <summary>
+		/// Get the details for a specific workflow item.
+		/// </summary>
+		/// <param name="workflowItemUid">Workflow item instance unique identifier</param>
+		/// <returns></returns>
 		[
 			HttpGet,
-			Route("item/{workflowItemUid:Guid}"),			
+			Route("item/{workflowItemUid:Guid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow item details failed.", typeof(WorkflowItemDetails))
 		]
-		public async Task<IHttpActionResult> GetWorkflowReassignmentAssets(Guid workflowItemUid)
+		public async Task<IHttpActionResult> GetWorkflowItemDetails (Guid workflowItemUid)
 		{
 			var workflowItem = Company.WorkflowItems.Where(wi => wi.UID == workflowItemUid).FirstOrDefault();
 
