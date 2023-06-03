@@ -30,8 +30,12 @@ namespace d360.web
 				if (companyID.HasValue)
 				{
 					isPreflight = context.Request.Method == "OPTIONS";
-					var ctx = CreateOwinCompanyContext(companyID.Value);
-					string originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
+
+					string originsSetting = "";
+					using (var ctx = CreateOwinCompanyContext(companyID.Value))
+					{
+						originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
+					}
 
 					List<string> allowedOrigins = new List<string> {
 						"https://shell-dev.dis.cloud.precisely.services",
