@@ -30,11 +30,11 @@
 														  [showHeaderLine]="false"
 														  [isSidePanel]="true"
 														  [interceptLinkClick]="true"
-														  [workflowTypeId]="129"
+														  [workflowTypeUid]="secondarySidePanelObjectUid"
 														  (close)="secondarySidePanelOpen=false;"></d3s-workflow-information>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='workflow-information'">
-								<ig-asset-detail [objectID]="secondarySidePanelObjectID"
+								<ig-asset-detail [objectUID]="secondarySidePanelObjectUid"
 												 [objectType]="secondarySidePanelObjectType"
 												 [useAccordion]="true"
 												 [shouldBePadded]="true"
@@ -47,8 +47,8 @@
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanel=='step-details'">
-								<d3s-assignment-progress-step-details [itemId]="workflowItemStep.ItemID"
-																	  [itemStepId]="workflowItemStep.ID"></d3s-assignment-progress-step-details>
+								<d3s-assignment-progress-step-details [itemId]="assignmentItemStep.ItemID"
+																	  [itemStepId]="assignmentItemStep.ID"></d3s-assignment-progress-step-details>
 							</ng-container>
 						</div>
 					</div>

@@ -1,17 +1,17 @@
 <div class="asset-detail-tabs">
 	<ig-property-group title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
-			<d3s-assignment-progress-step *ngFor="let workflowItemStep of workflowItemSteps"
-										  [workflowItemStep]="workflowItemStep" [showCompleteAssignment]="isSidePanel"
-										  (stepClickChange)="stepSelectionChanged(workflowItemStep, $event)"
+			<d3s-assignment-progress-step *ngFor="let assignmentItemStep of assignmentItemSteps" [workflowItemUid]="workflowItemUid"
+										  [assignmentItemStep]="assignmentItemStep" [showCompleteAssignment]="isSidePanel"
+										  (stepClickChange)="stepSelectionChanged(assignmentItemStep, $event)"
 										  (completeAssignment)="completeAssignment.emit($event)"
-										  [isLastStep]="workflowItemSteps.indexOf(workflowItemStep) === (workflowItemSteps.length - 1)"
+										  [isLastStep]="assignmentItemSteps.indexOf(assignmentItemStep) === (assignmentItemSteps.length - 1)"
 			></d3s-assignment-progress-step>
 		</div>
 	</ig-property-group>
 </div>
 <div class="space-around">
-	<a (click)="linkClick.emit({objectType: 'WorkflowType', objectId: workflowItemSteps?.[0]?.TypeID })"
+	<a (click)="linkClick.emit({objectType: 'WorkflowType', objectUid: workflowItemUid })"
 	   i18n>Show Workflow Diagram and Details</a>
 </div>
-<pre style="white-space: pre-wrap">{{ workflowItemSteps | json }}</pre>
+<pre style="white-space: pre-wrap">{{ assignmentItemSteps | json }}</pre>

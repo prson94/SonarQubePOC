@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChildren } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
 
 @Component({
@@ -17,26 +17,36 @@ export class AssignmentProgressComponent implements OnInit {
 		this.loadData();
 	}
 
-	@Input() isSidePanel: boolean = false
+	get workflowItemUid(): string {
+		return this._workflowItemUid;
+	}
+
+	@Input() isSidePanel: boolean = false;
 
 	@Output() completeAssignment: EventEmitter<{
-		workflowId: number,
-		stepId: number,
-		assetId: number
+		workflowUid: string,
+		stepUid: string,
+		assetUid: string
 	}> = new EventEmitter<{
-		workflowId: number,
-		stepId: number,
-		assetId: number
+		workflowUid: string,
+		stepUid: string,
+		assetUid: string
 	}>();
 
-	@Output() stepClickChange: EventEmitter<{ workflowItemStep: WorkflowItemStep, open: boolean }> = new EventEmitter<{
-		workflowItemStep: WorkflowItemStep,
+	@Output() stepClickChange: EventEmitter<{
+		workflowItemStep: AssignmentItemStep,
+		open: boolean
+	}> = new EventEmitter<{
+		workflowItemStep: AssignmentItemStep,
 		open: boolean
 	}>();
 
-	@Output() linkClick = new EventEmitter();
+	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
+		objectType: string,
+		objectUid: string
+	}>();
 
-	workflowItemSteps: WorkflowItemStep[];
+	assignmentItemSteps: AssignmentItemStep[];
 
 	private _workflowItemUid: string;
 
@@ -47,25 +57,25 @@ export class AssignmentProgressComponent implements OnInit {
 	}
 
 	private loadData(): void {
-		this.workflowItemSteps = [];
+		this.assignmentItemSteps = [];
 		if (this._workflowItemUid) {
-			this.workflowService.getWorkflowItemSteps(this._workflowItemUid)
-				.subscribe((response: WorkflowItemStep[]): void => {
-					this.workflowItemSteps = response;
+			this.workflowService.getAssignmentItemStep(this._workflowItemUid)
+				.subscribe((response: AssignmentItemStep[]): void => {
+					this.assignmentItemSteps = response;
 				});
 		}
 	}
 
-	stepSelectionChanged(workflowItemStep: WorkflowItemStep, open: boolean): void {
+	stepSelectionChanged(workflowItemStep: AssignmentItemStep, open: boolean): void {
 		if (open) {
 			this.deselectWorkflowSteps(workflowItemStep);
 		}
 		this.stepClickChange.emit({ workflowItemStep: workflowItemStep, open: open });
 	}
 
-	deselectWorkflowSteps(workflowItemStepToSkip?: WorkflowItemStep) {
+	deselectWorkflowSteps(workflowItemStepToSkip?: AssignmentItemStep) {
 		for (const assignmentProgressStepComponent of this.assignmentProgressStepComponents) {
-			if (workflowItemStepToSkip !== assignmentProgressStepComponent.workflowItemStep) {
+			if (workflowItemStepToSkip !== assignmentProgressStepComponent.assignmentItemStep) {
 				assignmentProgressStepComponent.selected = false;
 			}
 		}

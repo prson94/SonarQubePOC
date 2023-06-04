@@ -517,6 +517,43 @@ export class WorkflowItemStep {
 	FieldsObject: Record<string, any>;
 }
 
+export class AssignmentItemStep {
+	Uid: string;
+	Name: string;
+	State: string;
+	StepType: string;
+	ActivityType: string;
+	Settings: {
+		settings: {
+			FormResponseType: string;
+			SendFormEmail: string;
+			MessageRecipientType: string;
+			IncludePreviousFormResponses: string;
+			MessageToUser: string;
+		},
+		fields: {
+			'form': {
+				'@title': string;
+				'field': {
+					'@type': string;
+					'@label': string;
+					'@id': string;
+				}
+			}
+		}
+	};
+	Responses: {
+		fields: {
+			'@TotalResources': string;
+		}
+	};
+	Assignments: { AssigneeUid: string }[];
+	StartedByUid: string;
+	StartedOn: string;
+	CompletedByUid: string;
+	CompletedOn: string;
+}
+
 export class BulkWorkflowFormModel {
 	ItemStepIDs: number[] = [];
 	Fields: WorkflowFormField[] = [];

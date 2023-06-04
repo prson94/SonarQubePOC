@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep, WorkflowItemStep } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -14,12 +14,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
-	assetId: number;
-	stepId: number;
+	workflowUid: string;
+	stepUid: string;
+	assetUid: string;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
-	workflowId: number;
 	sidePanel: string = 'asset-details';
-	workflowItemStep: WorkflowItemStep;
+	assignmentItemStep: AssignmentItemStep;
 
 	constructor(protected settingsService: CompanySettingsService) {
 		super(settingsService);
@@ -34,14 +34,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	openModal(details: {
-		workflowId: number,
-		stepId: number,
-		assetId: number
+		workflowUid: string,
+		stepUid: string,
+		assetUid: string
 	}): void {
 		if (details) {
-			this.assetId = details.assetId;
-			this.stepId = details.stepId;
-			this.workflowId = details.workflowId;
+			this.assetUid = details.assetUid;
+			this.stepUid = details.stepUid;
+			this.workflowUid = details.workflowUid;
 		}
 		this.isModalVisible = true;
 	}
@@ -60,10 +60,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
-	stepClickChanged(value: { workflowItemStep: WorkflowItemStep, open: boolean }): void {
+	stepClickChanged(value: { assignmentItemStep: AssignmentItemStep, open: boolean }): void {
 		if (value.open) {
 			this.sidePanel = 'step-details';
-			this.workflowItemStep = value.workflowItemStep;
+			this.assignmentItemStep = value.assignmentItemStep;
 		} else {
 			this.sidePanel = 'asset-details';
 		}
