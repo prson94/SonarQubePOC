@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { SelectItemGroup } from 'primeng/api';
 import { forkJoin, map, Observable } from 'rxjs';
-import { ComputedRelationshipLookupDefinition, FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../../../models/fieldtype-api.model';
+import { ComputedRelationshipLookupDefinition, FieldTypeAPIModelField } from '../../../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../../../services/fieldsObservable.service';
 import { StringHelpers } from '../../../../../static/string-helpers';
 import { AdvancedFilteringComponent } from '../../../../assets-grid/advanced-filtering/advanced-filtering.component';
@@ -329,7 +329,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				const relTypes = [];
 				this.relationshipTypeSelection.forEach((x) => {
 					relTypes.push(...x.relationshipTypes);
-				})
+				});
 				this.advancedFilter.clearFilters();
 				this.advancedFilter.initializeData(true, this.advancedFilterFieldTypes, filters, relTypes);
 			}
