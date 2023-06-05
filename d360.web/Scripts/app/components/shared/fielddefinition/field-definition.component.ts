@@ -184,7 +184,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.AssetTypeUid = field["AssetTypeUid"];
 						displayField.Name = field.Name;
 						displayField.FriendlyName = field.FriendlyName;
-						displayField.Category = field.Category ?? $localize`General`;
+						displayField.Category = field.Category ?? (this.actionTypeUid ? $localize`Form Fields` : $localize`General`);
 						displayField.FieldType = this.getDisplayTypeName(type);
 						displayField.FieldTypeValue = type;
 						displayField.DisplayInColumn = field.Type[`${type}`].DisplayInColumn ?? false;
@@ -787,6 +787,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	}
 
 	hasPartOfKey(field: FieldDisplayModel) {
+		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
+			return false;
+		}
+
 		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;

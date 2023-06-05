@@ -54,6 +54,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	@Input() afMessage: string = '';
 	@Input() useFieldCategories: boolean = false;
 	@Input() onlyResetButton: boolean = false;
+	@Input() topPositionCorrection: number;
 
 	@Output() onChange = new EventEmitter();
 	@Output() onLoad = new EventEmitter();
@@ -650,5 +651,14 @@ export class AdvancedFilteringComponent implements OnChanges {
 			var staticObs = of([]);
 			return staticObs;
 		}
+	}
+
+	removeFiltersByFieldName(fieldName: string) {
+		this.conditions.filters.forEach((cond) => {
+			if (cond.field === fieldName) {
+				cond.markForDeletion = true;
+			}
+			this.onItemChange();
+		});
 	}
 }

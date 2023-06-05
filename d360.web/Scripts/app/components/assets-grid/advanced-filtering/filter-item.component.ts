@@ -51,6 +51,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() relationshipTypes: RelationshipType[] = [];
 	@Input() message: string = "";
 	@Input() useFieldCategories: boolean = false;
+	@Input() topPositionCorrection: number;
 
 	@Output() onChange = new EventEmitter();
 
@@ -339,7 +340,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			var html = this.elRef.nativeElement as HTMLElement;
 			var topPosition = html.getBoundingClientRect().bottom;
 			var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
-
+			if (this.topPositionCorrection) {
+				topPosition = topPosition + this.topPositionCorrection;
+			}
 			if (selectionElement) {
 				selectionElement.style.top = topPosition + "px";
 			}
@@ -623,11 +626,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			setTimeout(() => {
 				this.currentOperator = operator;
 				this.updateOperatorData();
+				this.cdRef.markForCheck();
 			}, 50);
 		}
 
 		this.uiTooltipValue = this.condition.getTooltipValue();
 		this.updateFocus();
+		this.cdRef.markForCheck();
 	}
 
 	loadListLazy(event: LazyLoadEvent) {
