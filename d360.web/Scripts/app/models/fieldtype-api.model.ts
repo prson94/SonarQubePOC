@@ -355,6 +355,7 @@ export class ComputedRelationshipLookupDefinition {
 	Fields: DefinitionField[] = [];
 	Relations: Relation[] = [];
 	Filters: string;
+	FiltersJSON: string;
 }
 
 export class DefinitionField {
