@@ -22,7 +22,7 @@ export class ConfigurationIssueTypeFieldsPageComponent {
 			this.workflowService.getActionTypeByUid(this.issueTypeUid)
 				.subscribe((res) => {
 					this.issueTypeName = res[0].Name;
-				})
+				});
         });
     }
 }
