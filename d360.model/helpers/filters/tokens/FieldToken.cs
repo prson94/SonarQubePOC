@@ -111,10 +111,12 @@ namespace d360.model.helpers.filters
                         formattedSql = "{0}.exist('/path/segment[last()][contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
                         break;
                     case "ct":
-                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 1";
+                        formattedSql = "trim(Node.DisplayPath) like {1}";
+                        value = "%" + value + "%";
                         break;
                     case "nct":
-                        formattedSql = "{0}.exist('/path/segment[contains(lower-case(.),sql:variable(\"{1}\"))]') = 0";
+                        formattedSql = "trim(Node.DisplayPath) not like {1}";
+                        value = "%" + value + "%";
                         break;
                     default: //default is eq
                         string resultValue = "1";
