@@ -2192,7 +2192,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				//handle lookup fields from relation lookup
-				if (assetTypeUid == Guid.Empty && fieldName.ToLower().StartsWith("h") && fieldName.ToLower().Contains("_"))
+				if (assetTypeUid == Guid.Empty && fieldName.ToLowerInvariant().StartsWith("h") && fieldName.ToLowerInvariant().Contains("_"))
 				{
 					var fieldId = int.Parse(fieldName.Split('_')[1]);
 					var ft = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldId);
