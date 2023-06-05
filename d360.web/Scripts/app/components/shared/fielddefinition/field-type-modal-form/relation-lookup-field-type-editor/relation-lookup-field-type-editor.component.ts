@@ -888,7 +888,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 		this.filter = $event.filter;
-		console.log($event);
 		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field);
 	}
 }
