@@ -10,7 +10,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
-import { WorkflowAssignmentItem, WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep, WorkflowAssignmentItem, WorkflowItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
 
 @Component({
@@ -29,7 +29,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
-	workflowItemStep: WorkflowItemStep;
+	assignmentItemStep: AssignmentItemStep;
 	sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Assignment Progress`,
@@ -75,7 +75,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	@ViewChild('assignmentGridComponent', { static: false }) assignmentGridComponent: AssignmentGridComponent;
 	@ViewChild('completeAssignmentComponent', { static: false }) completeAssignmentComponent: CompleteAssignmentComponent;
-	secondarySidePanelObjectID: number;
+	secondarySidePanelObjectUid: string;
 	secondarySidePanelObjectType: string;
 
 	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
@@ -142,11 +142,11 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.selectRow(workflowMonitorItems);
 	}
 
-	sidePanelLinkClicked(link: any): void {
+	sidePanelLinkClicked(value: { objectType: string, objectUid: string }): void {
 		this.secondarySidePanelOpen = true;
 		this.secondarySidePanel = 'assignment-information';
-		this.secondarySidePanelObjectID = link.objectId;
-		this.secondarySidePanelObjectType = link.objectType;
+		this.secondarySidePanelObjectUid = value.objectUid;
+		this.secondarySidePanelObjectType = value.objectType;
 	}
 
 	deleteAssignments(event: boolean): void {
@@ -159,9 +159,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.completeAssignmentComponent.openModal(null);
 	}
 
-	stepClicked(value: { workflowItemStep: WorkflowItemStep; open: boolean }) {
+	stepClicked(value: { workflowItemStep: AssignmentItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
-		this.workflowItemStep = value.workflowItemStep;
+		this.assignmentItemStep = value.workflowItemStep;
 		this.secondarySidePanel = 'step-details';
 	}
 

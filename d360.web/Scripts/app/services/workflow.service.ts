@@ -5,13 +5,15 @@ import {
 	ActivityTypeInfo,
 	AllocationAPIModel,
 	AllocationRequestModel,
+	AssignmentItemStep,
 	BulkWorkflowFormModel,
 	BulkWorkflowReassignModel,
 	ChangeTypeInfo,
 	EmailTaskRecipientTypeInfo,
 	Issue,
 	IssueDetail,
-	TransitionTypeInfo, WorkflowAssignments,
+	TransitionTypeInfo,
+	WorkflowAssignments,
 	WorkflowChangeType,
 	WorkflowDiagramModel,
 	WorkflowForm,
@@ -36,7 +38,7 @@ import { AssetTypeClass } from '../models/asset.model';
 import { SortOrder } from '../models/enums.model';
 
 @Injectable({
-    providedIn: 'root'
+	providedIn: 'root'
 })
 export class WorkflowService extends BaseObservableService {
 
@@ -672,22 +674,21 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowItemSteps(itemId: number | string): Observable<WorkflowItemStep[] | any[]> {
-		if(typeof itemId === 'number')
-		{
-			return this.http.get(`services/workflow/item/${itemId}`)
-				.pipe(
-					map((response) => <WorkflowItemStep[]>response),
-					catchError((err) => this.handleError(err))
-				);
-		} else {
-			return this.http.get(`GET /api/v2/workflow/${itemId}/steps`)
-				.pipe(
-					map((response) => <any[]>response),
-					catchError((err) => this.handleError(err))
-				);
-		}
-    }
+	getWorkflowItemSteps(itemId: number): Observable<WorkflowItemStep[]> {
+		return this.http.get(`services/workflow/item/${itemId}`)
+			.pipe(
+				map((response) => <WorkflowItemStep[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getAssignmentItemStep(itemUid: string): Observable<AssignmentItemStep[]> {
+		return this.http.get(`/api/v2/workflow/${itemUid}/steps`)
+			.pipe(
+				map((response) => <AssignmentItemStep[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     exportItemSteps(itemId: number) {
         this.http.get(`services/workflow/item/${itemId}/excel/excel.xls`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, "Workflow Steps.xlsx"));

@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
+	AssignmentItemStep,
 	StepType,
 	WorkflowActivityType,
-	WorkflowItemStep,
 	WorkflowStepDetail
 } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
@@ -14,20 +14,22 @@ import { WorkflowService } from '../../../../services/workflow.service';
 })
 export class AssignmentProgressStepComponent implements OnInit {
 
-	@Input() workflowItemStep: WorkflowItemStep;
+	@Input() assignmentItemStep: AssignmentItemStep;
+
+	@Input() workflowItemUid: string;
 
 	@Input() isLastStep: boolean = false;
 
-	@Input() showCompleteAssignment: boolean = true
+	@Input() showCompleteAssignment: boolean = true;
 
 	@Output() completeAssignment: EventEmitter<{
-		workflowId: number,
-		stepId: number,
-		assetId: number
+		workflowUid: string,
+		stepUid: string,
+		assetUid: string
 	}> = new EventEmitter<{
-		workflowId: number,
-		stepId: number,
-		assetId: number
+		workflowUid: string,
+		stepUid: string,
+		assetUid: string
 	}>();
 
 	@Output() stepClickChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -38,35 +40,35 @@ export class AssignmentProgressStepComponent implements OnInit {
 	selected: boolean = false;
 
 	get header(): string {
-		return this.workflowItemStep.Name;
+		return this.assignmentItemStep.Name;
 	}
 
 	get status(): string {
-		return this.workflowItemStep.Complete ? 'Done' : 'Current step';
+		return this.assignmentItemStep.CompletedOn ? 'Done' : 'Current step';
 	}
 
 	get message(): string {
-		return 'Assigned to ' + this.workflowItemStep.Assignee + '\nOpen for ' + this.getTimeSpan(Date.parse(this.workflowItemStep.StartedOn));
+		return 'Assigned to ' + this.assignmentItemStep.StartedByUid + '\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
 	}
 
 	get icon(): string {
-		if (this.workflowItemStep.StepType === StepType.Start) {
+		if (this.assignmentItemStep.StepType === StepType.Start.toString()) {
 			return 'fa-play-circle';
-		} else if (this.workflowItemStep.StepType === StepType.Finish) {
+		} else if (this.assignmentItemStep.StepType === StepType.Finish.toString()) {
 			return 'fa-stop-circle';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.EmailNotification) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.EmailNotification.toString()) {
 			return 'fa-envelope';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.Form) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.Form.toString()) {
 			return 'fa-sliders';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.FieldChange) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.FieldChange.toString()) {
 			return 'fa-sliders';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.HTTPRequest) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.HTTPRequest.toString()) {
 			return 'fa-globe';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.HTTPResponse) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.HTTPResponse.toString()) {
 			return 'fa-cogs';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.RelationshipUpdate) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.RelationshipUpdate.toString()) {
 			return 'fa-users';
-		} else if (this.workflowItemStep.ActivityType === WorkflowActivityType.Delete) {
+		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.Delete.toString()) {
 			return 'fa-trash';
 		}
 	}
@@ -75,13 +77,13 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		if (!this.workflowItemStep.Complete) {
-			this.isLoading = true;
-			this.workflowService.getWorkflowStepDetail(this.workflowItemStep.ID).subscribe((response) => {
-				this.workflowStepDetail = response;
-				this.isLoading = false;
-			});
-		}
+		// if (!this.assignmentItemStep.Complete) {
+		// 	this.isLoading = true;
+		// 	this.workflowService.getWorkflowStepDetail(this.assignmentItemStep.ID).subscribe((response) => {
+		// 		this.workflowStepDetail = response;
+		// 		this.isLoading = false;
+		// 	});
+		// }
 	}
 
 	toggleStepDetails(): void {
@@ -91,9 +93,9 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	completeAssignmentClick() {
 		this.completeAssignment.emit({
-			workflowId: this.workflowItemStep.ItemID,
-			stepId: this.workflowItemStep.ID,
-			assetId: this.workflowItemStep.ObjectID
+			workflowUid: this.workflowItemUid,
+			stepUid: this.assignmentItemStep.Uid,
+			assetUid: undefined
 		});
 	}
 
