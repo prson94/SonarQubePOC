@@ -1129,7 +1129,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
-		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.ReferenceItemType
+		if (this.isGroupType || this.isUserType
+			|| this.assetTypeClass === AssetTypeClass.ReferenceItemType
 			|| this.assetTypeClass === AssetTypeClass.Reference
 			|| this.assetTypeClass === AssetTypeClass.DiagramAsset
 			|| this.relationshipTypeUid) {
@@ -1166,6 +1167,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsEditable(): boolean {
+		if (this.isUserType) {
+			return false;
+		}
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
