@@ -9,9 +9,10 @@
 		</div>
 		<div class="grid-action-buttons">
 			<div>
-				<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-					 tooltipPosition="left"
-					 tooltipStyleClass="ig-tooltip">
+				<div
+					pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					tooltipPosition="left"
+					tooltipStyleClass="ig-tooltip">
 					<button igButton
 							class="ig-button-secondary"
 							[disabled]="!canExportRecords() || isExportInProgress"
@@ -28,10 +29,10 @@
 		<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<!--		<advanced-filtering [loadIdentifier]="'SemanticTypes'"-->
-		<!--							[fieldsObserver]="filterFields$"-->
-		<!--							(onLoad)="onFiltersLoaded()"-->
-		<!--							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>-->
+		<advanced-filtering [loadIdentifier]="'Assignments'"
+							[fieldsObserver]="filterFields$"
+							(onLoad)="onFiltersLoaded()"
+							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
 	</div>
 </div>
 <div class="row asset-grid-wrapper">

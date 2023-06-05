@@ -1,9 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
-import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { takeUntil } from 'rxjs/operators';
@@ -11,6 +10,11 @@ import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowAssignmentItem } from '../../../models/workflow.model';
+import {
+	AdvancedFilterFieldType, Filters, LookupValuesAPIModel,
+	LookupValuesAPIParameters
+} from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { FieldType } from '../../../models/fieldtype-api.model';
 
 @Component({
 	selector: 'd3s-assignment-grid',
@@ -24,12 +28,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	subItems: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
+	currentPageNumber: number = 1;
 	sortField: string = undefined;
 	sortOrder: SortOrder = SortOrder.Descending;
 	isAdmin: boolean = false;
 	selectedCount: number = 0;
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
+	advancedFilter: string = "";
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	@Output() hideDetails = new EventEmitter();
@@ -39,11 +45,42 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		{ title: $localize`Delete` }
 	];
 	isExportInProgress: boolean = false;
+	filterFields$: Observable<AdvancedFilterFieldType[]>;
+	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
+	statusValues: string[] = ["Pending", "Complete"];
+
+	filterFieldList: AdvancedFilterFieldType[] = [
+		{
+			Name: 'Status',
+			FriendlyName: $localize`Status`,
+			Type: new FieldType("Lookup"),
+			Category: "",
+			ValueLoader: this.getFilterValues.bind(this, "Status"),
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'assetDisplayValue',
+			FriendlyName: $localize`Associated with`,
+			Type: new FieldType("Text"),
+			Category: ""
+		},
+		{
+			Name: 'CompletedOn',
+			FriendlyName: $localize`Completed`,
+			Type: new FieldType("DateTime"),
+			Category: ""
+		},
+		{
+			Name: 'StartedOn',
+			FriendlyName: $localize`Initiated`,
+			Type: new FieldType("DateTime"),
+			Category: ""
+		},
+	];
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-				public stateService: StateService,
 				private changeDetectorRef: ChangeDetectorRef,
 				protected settingsService: CompanySettingsService,
 				private authenticationService: AuthenticationService) {
@@ -54,6 +91,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
 		this.setRowsPerPage();
+		this.filterFields$ = this.filterFieldsSubject.asObservable();
+		this.filterFieldsSubject.next(this.filterFieldList);
+		this.filterFieldsSubject.complete();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
 
@@ -81,17 +121,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	export() {
 		this.isExportInProgress = true;
-		this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.maxExportRows, this.simpleFilter, null, this.sortField, this.sortOrder, true, () => {
+		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => {
 			this.isExportInProgress = false;
 		});
 	}
 
 	gridSelectionChange(event: WorkflowAssignmentItem[]): void {
-		// if (Array.isArray(event) && event.length === 1) {
-		// 	this.stateService.workflowItemFilters.itemId = event[0].Id;
-		// } else {
-		// 	this.stateService.workflowItemFilters.itemId = 0;
-		// }
 		this.assignments = event;
 		this.selectedCount = this.assignments == null ? 0 : this.assignments.length;
 		this.selectionChange.emit(event);
@@ -99,17 +134,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.subItems = this.workflowService.getWorkflowAssignments(this.stateService.workflowItemFilters.currentPageNumber, this.rowsPerPage, this.simpleFilter, null, this.sortField, this.sortOrder, false, null)
+		this.subItems = this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null)
 			.subscribe((result) => {
 				this.items = result.items;
 				this.totalRecords = +result.total;
 				if (this.items != null && this.items.length > 0) {
-					let item: WorkflowAssignmentItem;
-					// if (this.stateService.workflowItemFilters.itemId !== 0) {
-					// 	item = this.items.find((x) => x.Id === this.stateService.workflowItemFilters.itemId);
-					// }
-
-					this.assignments = item ? [item] : [this.items[0]];
+					this.assignments = [this.items[0]];
 					this.selectedCount = 1;
 					this.selectionChange.emit(this.assignments);
 				} else {
@@ -125,8 +155,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.rowsPerPage = event.rows;
 		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
 		this.sortField = event.sortField == null ? '' : event.sortField;
-		this.rowsPerPage = event.rows;
-		this.stateService.workflowItemFilters.currentPageNumber = event.first / event.rows;
+		this.currentPageNumber = (event.first / event.rows) + 1;
 		this.loadData();
 	}
 
@@ -171,6 +200,24 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
 			}
 		);
+	}
+
+	getFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+		if (params === "Status") {
+			return of({
+				items: this.statusValues,
+				count: this.statusValues.length
+			});
+		}
+	}
+
+	onFiltersLoaded(): void {
+		this.loadData()
+	}
+
+	advancedFiltersChanged($event: Filters): void {
+		this.advancedFilter = $event.filter;
+		this.loadData();
 	}
 
 }
