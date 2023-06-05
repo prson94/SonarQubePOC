@@ -195,9 +195,9 @@ namespace d360.web.Controllers.V2
 					else
 					{
 						var actionType = Company.Filter<IssueType>(it => it.ID == issue.IssueTypeID).FirstOrDefault();
-						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && actionType.uid.ToString().Equals(actionTypeUid, StringComparison.InvariantCultureIgnoreCase))
+						if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid) && !actionType.uid.ToString().Equals(actionTypeUid, StringComparison.InvariantCultureIgnoreCase))
 						{
-							throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.UnrelatedActionAndActionType, actionUid, actionTypeUid)));
 						}
 
 						actionTypeUid = actionType.uid.ToString();
@@ -799,7 +799,7 @@ namespace d360.web.Controllers.V2
 
 			foreach (var issueModel in issueModels)
 			{
-				if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID, Permission.ReadAsset))
+				if (!Company.CurrentResourceIsAdmin && issueModel.Issue.AssetTypeID.HasValue && !Company.HasAssetTypePermission(issueModel.Issue.AssetTypeID.Value, Permission.ReadAsset))
 				{
 					throw new ForbiddenBusinessLayerException(ActionApiMessages.AssetTypeAddActionPermissionsDenied);
 				}
