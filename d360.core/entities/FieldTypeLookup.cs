@@ -78,6 +78,8 @@ namespace d360.core.entities
         
         public List<FieldTypeComplexLookupDefinitionRelation> Relations { get; set; }
 		public string Filters { get; set; }
+
+		public string FiltersJSON { get; set; }
 	}
 
 	public class FieldTypeComplexLookupDefinitionApiViewModel
@@ -87,6 +89,8 @@ namespace d360.core.entities
         public List<FieldTypeComplexLookupDefinitionRelationApiViewModel> Relations { get; set; }
 
 		public string Filters { get; set; }
+
+		public string FiltersJSON { get; set; }
 	}
 
     public class FieldTypeComplexLookupDefinitionFieldApiViewModel

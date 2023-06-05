@@ -420,6 +420,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		loadedFilters.filter((f) => f !== null).forEach((f) => {
 			this.conditions.filters.push(f);
 		});
+
 		this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
 
 		this.visible = true;
