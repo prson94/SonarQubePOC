@@ -49,43 +49,44 @@ namespace igx.functions.consumption
                 {
                     try
                     {
-                        var companyContext = JobDbContextCreator.CreateCompanyContext(
-                            securityContextProvider: new UriSecurityContextProvider
-                                                        {
-                                                            CompanyID = c.CompanyID,
-                                                            CompanyPrefix = c.UrlPrefix,
-                                                            ResourceID = 0,
-                                                            IsAdministrator = true,
-                                                        },
-                            mailProvider: new MandrillMailProvider
-                                            {
-                                                ApiKey = config.GetValue<string>("MandrillApiKey"),
-                                                SubAccount = config.GetValue<string>("MandrillSubAccount")
-                                            },
-                            queueSource: new AzureQueueSource(config),
-                            cachingProvider: new DummyCachingProvider(),
-                            connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+						var securityContext = new UriSecurityContextProvider
+						{
+							CompanyID = c.CompanyID,
+							CompanyPrefix = c.UrlPrefix,
+							ResourceID = 0,
+							IsAdministrator = true,
+						};
+						var mailProvider = new MandrillMailProvider
+						{
+							ApiKey = config.GetValue<string>("MandrillApiKey"),
+							SubAccount = config.GetValue<string>("MandrillSubAccount")
+						};
 
-                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
-                        if (rs.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
-                            try
-                            {
-                                using (var companyConn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-                                {
-                                    companyConn.Open();
-                                    await companyConn.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                            }
-                            finally
-                            {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
-                            }
-                        }
+						using (
+							var companyContext = JobDbContextCreator.CreateCompanyContext(
+								securityContextProvider: securityContext,
+								mailProvider: mailProvider,
+								queueSource: new AzureQueueSource(config),
+								cachingProvider: new DummyCachingProvider(),
+								connectionString: CoreFunction.GetConnectionString("CommunityContext")))
+						{ 
+							var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
+							if (rs.StatusCode == System.Net.HttpStatusCode.OK)
+							{
+								try
+								{
+									companyContext.Connection.Execute("CheckDisplayValues", commandTimeout: 600, commandType: System.Data.CommandType.StoredProcedure);
+								}
+								catch (Exception ex)
+								{
+									CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+								}
+								finally
+								{
+									await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
+								}
+							}						
+						}
                     }
                     catch (Exception ex)
                     {
