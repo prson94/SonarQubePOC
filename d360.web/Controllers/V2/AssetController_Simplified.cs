@@ -970,7 +970,7 @@ namespace d360.web.Controllers.V2
 			if (!string.IsNullOrEmpty(simpleFilterTempTable) || hasFilters)
 			{
 				resultsSql = $@"
-				declare @results table (objectassetid int);
+				declare @results table (objectassetid bigint);
 
 				if (@FilterSimpleCount = -1 or @FilterSimpleCount > 15000)
 					begin
@@ -993,7 +993,7 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				resultsSql = $@"
-				declare @results table (objectassetid int);
+				declare @results table (objectassetid bigint);
 
 				insert into @results
 				{string.Format(baseSQL, "MAX(S.ObjectAssetId) AS ObjectAssetId", "")}
@@ -1008,7 +1008,7 @@ namespace d360.web.Controllers.V2
 				drop table if exists #v 
 				create table #v (PredicateId int, AssetId bigint, DisplayValue nvarchar(500));
 
-				DECLARE @uniqueAssets TABLE (AssetId INT, DisplayValue nvarchar(500));
+				DECLARE @uniqueAssets TABLE (AssetId bigint, DisplayValue nvarchar(500));
 
 				insert into @uniqueAssets (AssetId)
 				SELECT DISTINCT a.Id AS AssetId
