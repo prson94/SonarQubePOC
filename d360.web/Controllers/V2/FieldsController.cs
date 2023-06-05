@@ -1748,11 +1748,11 @@ namespace d360.web.Controllers.V2
 					{ "assettypeuid", assetTypeUid.ToString() },
 					{ "includeid", "true" }
 				};
-			
+
 				var fieldTypes = (await FieldsRepository.GetFieldTypes(queryParams)).Item1.items;
 				List<RelationLookupDisplayFields> list = new List<RelationLookupDisplayFields>();
 
-				foreach (var ft in fieldTypes.Where(x=> x.IsForRelationLookupDefinition == true))
+				foreach (var ft in fieldTypes.Where(x => x.IsForRelationLookupDefinition == true))
 				{
 
 					list.Add(new RelationLookupDisplayFields
@@ -2189,6 +2189,16 @@ namespace d360.web.Controllers.V2
 					{
 						onlyCount = true;
 					}
+				}
+
+				//handle lookup fields from relation lookup
+				if (assetTypeUid == Guid.Empty && fieldName.ToLower().StartsWith("h") && fieldName.ToLower().Contains("_"))
+				{
+					var fieldId = int.Parse(fieldName.Split('_')[1]);
+					var ft = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldId);
+					var at = Company.AssetTypes.FirstOrDefault(x => x.ID == ft.AssetTypeID);
+					assetTypeUid = at.uid;
+					fieldName = ft.Name;
 				}
 
 				if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")

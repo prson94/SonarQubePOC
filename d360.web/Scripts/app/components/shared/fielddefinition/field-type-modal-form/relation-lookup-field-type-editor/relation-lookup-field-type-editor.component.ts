@@ -322,8 +322,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}, 300);
 	}
 
-	// ignore complexity codacy issue
-	// eslint-disable-next-line
 	getExistingFilters(): AdvancedFilterFieldCondition[] {
 		if (this.definition && this.definition.Filters) {
 			if (this.definition.FiltersJSON) {
@@ -335,6 +333,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	getFiltersFromUIJson() {
 		const res: AdvancedFilterFieldCondition[] = [];
 
@@ -370,6 +370,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		return res;
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	getFiltersFromFilterString() {
 		const res: AdvancedFilterFieldCondition[] = [];
 		const regexp = /\(.*?\)/g;
