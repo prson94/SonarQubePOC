@@ -457,6 +457,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action {0} is not instance of Action Type {1}.
+        /// </summary>
+        public static string UnrelatedActionAndActionType {
+            get {
+                return ResourceManager.GetString("UnrelatedActionAndActionType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User with Uid {0} not found.
         /// </summary>
         public static string UserUidNotFound {
