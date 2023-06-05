@@ -25,6 +25,7 @@ using d360.web.Services;
 
 using Dapper;
 using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -1817,17 +1818,31 @@ namespace d360.web.Controllers.V2
 					(i.ObjectAssetTypeID == at.ID)
 					).ToList().Select(i => new
 					{
-						ID = i.ID,
+						i.ID,
+						i.Uid,
+						i.SubjectAssetTypeID,
 						Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
 					}).Distinct().ToList();
 				relatedTypeList.ForEach(r =>
 				{
 					if (!list.Any((x) => x.title == $"Related Item.{r.Name} ({r.ID})"))
 					{
+						var ft = new FieldTypeApiViewModel
+						{
+							Type = new FieldTypeDataTypeApiViewModel(),
+							Name = $"Related Item.{r.Name} ({r.ID})",
+							FriendlyName = $"Related Item.{r.Name} ({r.ID})"
+						};
+
+						ft.Type.Relationship = new FieldTypeDataTypeRelationshipApiViewModel();
+						ft.Type.Relationship.IntersectTypeUid = r.Uid;
+						ft.Type.Relationship.IsSubject = r.SubjectAssetTypeID == at.ID;
+
 						list.Add(new RelationLookupDisplayFields
 						{
 							title = $"Related Item.{r.Name} ({r.ID})",
-							value = $"Related Item.{r.Name} ({r.ID})"
+							value = $"Related Item.{r.Name} ({r.ID})",
+							fieldType = ft
 						});
 					}
 				});

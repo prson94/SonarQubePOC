@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges
 import { FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { SelectItemGroup } from 'primeng/api';
 import { forkJoin, map, Observable } from 'rxjs';
-import { ComputedRelationshipLookupDefinition } from '../../../../../models/fieldtype-api.model';
+import { ComputedRelationshipLookupDefinition, FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../../../services/fieldsObservable.service';
 import { StringHelpers } from '../../../../../static/string-helpers';
 import { AdvancedFilteringComponent } from '../../../../assets-grid/advanced-filtering/advanced-filtering.component';
@@ -13,6 +13,8 @@ import { SelectItem } from '../../../../../models/form.model';
 import { OperatorString } from '../../../../../models/operator.model';
 import { ReuseInterceptor } from '../../../../../http-interceptors/reuse.interceptor';
 import { RelationshipTypeSelection } from './relation-lookup-form.models';
+import { RelationshipsService } from '../../../../../services/relationships.service';
+import { RelationshipType } from '../../../../../models/relationship.model';
 
 /*global $localize*/
 
@@ -74,6 +76,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	constructor(
 		private fieldsService: FieldsObservableService,
+		private relationshipsService: RelationshipsService,
 		private cdRef: ChangeDetectorRef,
 		private datePipe: DatePipe,
 		private reuseInterceptor: ReuseInterceptor) {
@@ -248,20 +251,27 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.removeFieldsFromRel(item.index);
 		this.isFieldsLoading = true;
 		item.fieldOptions = [];
-		return this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid)
-			.subscribe((fields) => {
-				item.fieldOptions = JSON.parse(JSON.stringify(fields));
-				if (addNew) {
-					this.addFormFieldForField();
-				}
-				this.setFieldsDropdown();
-				item.valuesResolved = true;
-				const allItemsResolved: boolean = this.relationshipTypeSelection.filter((x) => x.valuesResolved).length === this.relationshipTypeSelection.length;
-				if (callback && allItemsResolved) {
-					callback();
-				}
-				this.isFieldsLoading = false;
+		return forkJoin(
+			this.fieldsService.getRelationLookupDisplayFields(item.assetTypeUid, item.relationshipTypeUid),
+			this.relationshipsService.getRelationshipsByAssetTypeUid(item.assetTypeUid)
+		).subscribe((results) => {
+			const fields = results[0];
+			item.relationshipTypes = results[1];
+			item.relationshipTypes.forEach((x) => {
+				x["SideOfRelationship"] = x.Subject.Uid.toLocaleLowerCase() === item.assetTypeUid.toLocaleLowerCase() ? 'Subject' : 'Object';
 			});
+			item.fieldOptions = JSON.parse(JSON.stringify(fields));
+			if (addNew) {
+				this.addFormFieldForField();
+			}
+			this.setFieldsDropdown();
+			item.valuesResolved = true;
+			const allItemsResolved: boolean = this.relationshipTypeSelection.filter((x) => x.valuesResolved).length === this.relationshipTypeSelection.length;
+			if (callback && allItemsResolved) {
+				callback();
+			}
+			this.isFieldsLoading = false;
+		});
 	}
 
 	// ignore usage of any
@@ -316,8 +326,12 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.loadAdvFiltersTimeout = setTimeout(() => {
 			if (this.advancedFilter) {
 				const filters = this.getExistingFilters();
+				const relTypes = [];
+				this.relationshipTypeSelection.forEach((x) => {
+					relTypes.push(...x.relationshipTypes);
+				})
 				this.advancedFilter.clearFilters();
-				this.advancedFilter.initializeData(true, this.advancedFilterFieldTypes, filters);
+				this.advancedFilter.initializeData(true, this.advancedFilterFieldTypes, filters, relTypes);
 			}
 		}, 300);
 	}
@@ -377,48 +391,102 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		const regexp = /\(.*?\)/g;
 		const matches = this.definition.Filters.match(regexp);
 		for (const match of matches) {
-			const expression = StringHelpers.trimChar(StringHelpers.trimChar(match.trim(), ')'), '(');
-			const filter = expression.split(' ').map((x) => x.trim());
-			const value = StringHelpers.trimChar(filter[2], `'`);
 			const newfilter = new AdvancedFilterFieldCondition(this.datePipe);
-			newfilter.connectingOperator = 'and';
-			newfilter.field = filter[0] ?? '';
 
-			const ft = this.advancedFilterFieldTypes.find((x) => x.Name === newfilter.field);
-			if (!ft) {
-				continue;
-			}
-			newfilter.fieldType = Object.keys(ft.Type)[0];
-			newfilter.friendlyFieldName = ft.FriendlyName;
-			newfilter.isRelationship = false;
-			newfilter.markForDeletion = false;
-			newfilter.relationshipFieldName = ``;
-			newfilter.operator = StringHelpers.getOperatorFromString(filter[1], filter[2]);
+			const expression = StringHelpers.trimChar(StringHelpers.trimChar(match.trim(), ')'), '(');
 
-			if (newfilter.operator === OperatorString.Contains && value.endsWith('*')) {
-				newfilter.operator = OperatorString.StartsWith;
-			}
-
-			if (newfilter.operator === OperatorString.Contains && value.startsWith('*')) {
-				newfilter.operator = OperatorString.EndsWith;
-			}
-
-			newfilter.type = ft;
-			newfilter.isDefaultFilter = false;
-			newfilter.isPreloaded = true;
-			newfilter.isConfirmed = true;
-
-			const doNotPopulateValue: OperatorString[] = [OperatorString.IsTrue, OperatorString.IsFalse, OperatorString.Populated, OperatorString.Populated];
-
-			if (!doNotPopulateValue.some((x) => x === newfilter.operator)) {
-				if (value && newfilter.type && (newfilter.type.Type.Date || newfilter.type.Type.DateTime)) {
-					newfilter.value = new Date(value);
+			if (expression.toLocaleLowerCase().indexOf('$related') !== -1) {
+				//handle relationship field
+				const relFilterData = expression.toLocaleLowerCase().replace('$related:', '');
+				const filter = relFilterData.split(' ').map((x) => x.trim());
+				const itUid = filter[0];
+				const op = filter[1];
+				const value = StringHelpers.trimChar(filter[2], `'`);
+				let type: RelationshipType;
+				this.relationshipTypeSelection.forEach((r) => {
+					r.relationshipTypes.forEach((item) => {
+						if (item.Uid.toLocaleLowerCase() === itUid) {
+							type = item;
+						}
+					});
+				});
+				let ft: FieldTypeAPIModelField;
+				if (type) {
+					this.fieldOptions.forEach((grp) => {
+						grp.items.forEach((field) => {
+							if (field.value.indexOf(`(${type.Id})`) !== -1) {
+								ft = field["fieldType"];
+							}
+						});
+					});
 				}
-				else {
-					newfilter.value = value;
+
+				newfilter.field = ft.Name;
+				newfilter.fieldType = 'Relationship';
+				newfilter.friendlyFieldName = ft.FriendlyName;
+				newfilter.isConfirmed = true;
+				newfilter.isDefaultFilter = false;
+				newfilter.isNew = false;
+				newfilter.isPreloaded = true;
+				newfilter.isRelationship = true;
+				newfilter.markForDeletion = false;
+				newfilter.operator = StringHelpers.getOperatorFromString(op, value);
+				newfilter.relationshipFieldName = itUid + '|' + itUid;
+				let title: string = value;
+				if (this.definition && this.definition.Fields) {
+					const definitionValue = this.definition.Fields.find((x) => x.FieldTypeName === ft.FriendlyName);
+					title = definitionValue?.Filter;
+				}
+				newfilter.value = [{ title, value }];
+			}
+			else {
+				const filter = expression.split(' ').map((x) => x.trim());
+				const opString = filter[1];
+				const separatedByOperator = expression.split(` ${opString} `).map((x) => x.trim());
+				const _rawValue = separatedByOperator[1];
+
+				const value = StringHelpers.trimChar(_rawValue, `'`);
+				newfilter.connectingOperator = 'and';
+				newfilter.field = filter[0] ?? '';
+
+				const ft = this.advancedFilterFieldTypes.find((x) => x.Name === newfilter.field);
+				if (!ft) {
+					continue;
+				}
+				newfilter.fieldType = Object.keys(ft.Type)[0];
+				newfilter.friendlyFieldName = ft.FriendlyName;
+				newfilter.isRelationship = false;
+				newfilter.markForDeletion = false;
+				newfilter.relationshipFieldName = ``;
+				newfilter.operator = StringHelpers.getOperatorFromString(filter[1], _rawValue);
+
+				if (newfilter.operator === OperatorString.Contains && value.endsWith('*')) {
+					newfilter.operator = OperatorString.StartsWith;
+				}
+
+				if (newfilter.operator === OperatorString.Contains && value.startsWith('*')) {
+					newfilter.operator = OperatorString.EndsWith;
+				}
+
+				newfilter.type = ft;
+				newfilter.isDefaultFilter = false;
+				newfilter.isPreloaded = true;
+				newfilter.isConfirmed = true;
+
+				const doNotPopulateValue: OperatorString[] = [OperatorString.IsTrue, OperatorString.IsFalse, OperatorString.Populated, OperatorString.Populated];
+
+				if (!doNotPopulateValue.some((x) => x === newfilter.operator)) {
+					if (value && newfilter.type && (newfilter.type.Type.Date || newfilter.type.Type.DateTime)) {
+						newfilter.value = new Date(value);
+					}
+					else if (newfilter.fieldType === 'Lookup') {
+						newfilter.value = [{ title: value, value }];
+					}
+					else {
+						newfilter.value = value;
+					}
 				}
 			}
-
 			res.push(newfilter);
 		}
 		return res;
@@ -820,6 +888,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 		this.filter = $event.filter;
+		console.log($event);
 		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field);
 	}
 }

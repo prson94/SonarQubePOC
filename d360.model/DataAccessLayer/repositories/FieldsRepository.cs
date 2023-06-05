@@ -2566,7 +2566,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(definition.Filters))
 			{
-				defaultFilters.Add($"({definition.Filters})");
+				defaultFilters.Add($"({HttpUtility.UrlDecode(definition.Filters)})");
 			}
 
 			if (defaultFilters.Count > 0)
