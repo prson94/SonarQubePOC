@@ -1179,12 +1179,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	get showIsEditable(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
-		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean', 'Relationship'];
-		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get enableAllowMultipleValues(): boolean {
@@ -1202,7 +1202,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return false;
 		}
 
-		if (this.isGroupType || this.isUserType) {
+		if (this.isGroupType || this.isUserType || this.actionTypeUid) {
 			return false;
 		}
 		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
