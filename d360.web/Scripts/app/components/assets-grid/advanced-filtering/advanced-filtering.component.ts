@@ -55,6 +55,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 	@Input() useFieldCategories: boolean = false;
 	@Input() onlyResetButton: boolean = false;
 	@Input() topPositionCorrection: number;
+	@Input() includeRelationshipFilters: boolean = true;
 
 	@Output() onChange = new EventEmitter();
 	@Output() onLoad = new EventEmitter();
