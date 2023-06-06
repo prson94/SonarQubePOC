@@ -38,19 +38,25 @@ export class DropdownDirective implements AfterContentInit {
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
 
-        var placeholder = this.el.nativeElement.getAttribute("placeholder");
-        this.el.nativeElement.tabIndex = -1;
+		var placeholder = this.el.nativeElement.getAttribute("placeholder");
+
+		this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
         const isPlaceholderSet = !(placeholder == null || placeholder === "");
 
-        if (!isPlaceholderSet) {
-            if (this.required == null) {
-                this.dropdownRef.placeholder = $localize`Optional`;
-            } else {
-                this.dropdownRef.placeholder = $localize`Value required`;
-                this.el.nativeElement.setAttribute("aria-required", true);
-            }
-        }
+		if (this.required) {
+			this.el.nativeElement.setAttribute("aria-required", true);
+		}
+
+		if (!isPlaceholderSet) {
+			if (this.required == null) {
+				this.dropdownRef.placeholder = $localize`Optional`;
+			} else {
+				this.dropdownRef.placeholder = $localize`Value required`;
+			}
+		} else {
+			this.dropdownRef.placeholder = placeholder;
+		}
         this.dropdownRef.scrollHeight = "340px";
 
 		if (this.alwaysShowFilter) {

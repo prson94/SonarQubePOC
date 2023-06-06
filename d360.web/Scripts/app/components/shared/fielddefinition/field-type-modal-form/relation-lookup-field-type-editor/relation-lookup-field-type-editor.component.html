@@ -31,7 +31,6 @@
 		<ng-container *ngIf="relationshipTypeSelection.length > 0 && relationshipTypeSelection[0].selected">
 
 			<div class="grey-container" [formGroup]="fieldTypeForm">
-				<d3s-loading [isLoading]="isFieldsLoading" [inline]="true"></d3s-loading>
 
 				<p-table [value]="lookupFields"
 						 [reorderableColumns]="true">
@@ -56,8 +55,10 @@
 											formControlName="{{item.fieldNameControl}}"
 											appendTo="body"
 											[panelStyleClass]="'ig-dropdown-grouped'"
-											[options]="fieldOptionsForFields"
+											[options]="fieldOptionsForFields | dropdownCategoryFilter:item.relIdxRequired"
 											[autoDisplayFirst]="false"
+											i18n-placeholder
+											[attr.placeholder]="getPlaceholderForField(item)"
 											[group]="true"
 											required></p-dropdown>
 							</td>
@@ -82,7 +83,10 @@
 						</tr>
 					</ng-template>
 				</p-table>
-				<span class="link-button enabled" (click)="addFormFieldForField()">
+
+				<d3s-loading [isLoading]="isFieldsLoading" [inline]="true"></d3s-loading>
+
+				<span class="link-button {{(isAddFieldDisabled || isFieldsLoading ? '' : 'enabled')}}" (click)="addFormFieldForField()">
 					<i class="fa fa-plus-circle"></i><span i18n>Add Column</span>
 				</span>
 			</div>
@@ -99,6 +103,7 @@
 						<advanced-filtering #advancedFilter
 											[onlyResetButton]="true"
 											[topPositionCorrection]="-40"
+											[includeRelationshipFilters]="false"
 											[useFieldCategories]="true"
 											(onChange)="advancedFiltersChanged($event)">
 						</advanced-filtering>

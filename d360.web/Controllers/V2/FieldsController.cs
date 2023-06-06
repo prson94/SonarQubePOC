@@ -1706,21 +1706,21 @@ namespace d360.web.Controllers.V2
 			var prefix = "Fields.GetRelationLookupDisplayFields => ";
 			var errorMessage = "";
 
-			void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName)
+			void AddDefaultItem(ref List<RelationLookupDisplayFields> refList, string fieldName, string fieldFriendlyName)
 			{
 				var t = new FieldTypeApiViewModel
 				{
 
 					Type = new FieldTypeDataTypeApiViewModel(),
 					Name = fieldName,
-					FriendlyName = fieldName,
+					FriendlyName = fieldFriendlyName,
 				};
 
 				t.Type.Text = new FieldTypeDataTypeTextApiViewModel();
 
 				refList.Add(new RelationLookupDisplayFields
 				{
-					title = fieldName,
+					title = fieldFriendlyName,
 					value = fieldName,
 					fieldType = t
 				});
@@ -1758,7 +1758,7 @@ namespace d360.web.Controllers.V2
 
 					list.Add(new RelationLookupDisplayFields
 					{
-						title = ft.Name,
+						title = ft.FriendlyName,
 						value = ft.Name,
 						fieldType = ft
 					});
@@ -1768,29 +1768,29 @@ namespace d360.web.Controllers.V2
 				{
 					if (id == 0)
 					{
-						AddDefaultItem(ref list, "Name");
+						AddDefaultItem(ref list, "Name", "Name");
 
 						if (!list.Any(x => x.title == "Description"))
 						{
-							AddDefaultItem(ref list, "Description");
+							AddDefaultItem(ref list, "Description", "Description");
 						}
 					}
 				}
 				else if (type == SystemObjects.ResourceType)
 				{
-					AddDefaultItem(ref list, "FirstName");
-					AddDefaultItem(ref list, "LastName");
-					AddDefaultItem(ref list, "Email");
-					AddDefaultItem(ref list, "LastLoggedInOn");
+					AddDefaultItem(ref list, "FirstName", "First Name");
+					AddDefaultItem(ref list, "LastName", "Last Name");
+					AddDefaultItem(ref list, "Email", "Email");
+					AddDefaultItem(ref list, "LastLoggedInOn", "Last Logged In On");
 				}
 				else
 				{
-					AddDefaultItem(ref list, "DisplayValue");
+					AddDefaultItem(ref list, "DisplayValue", "Display Value");
 				}
 
 				if (type != SystemObjects.ResourceType)
 				{
-					AddDefaultItem(ref list, "_assetPath");
+					AddDefaultItem(ref list, "_assetPath", "Asset Path");
 				}
 
 				queryParams.Clear();
@@ -1804,7 +1804,7 @@ namespace d360.web.Controllers.V2
 					{
 						list.Add(new RelationLookupDisplayFields
 						{
-							title = $"Relation.{ft.Name}",
+							title = $"Relation.{ft.FriendlyName}",
 							value = $"Relation.{ft.Name}",
 							fieldType = ft
 						});

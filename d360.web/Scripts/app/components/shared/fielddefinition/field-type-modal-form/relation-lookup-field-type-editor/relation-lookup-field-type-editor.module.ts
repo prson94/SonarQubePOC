@@ -23,6 +23,7 @@ import { TableModule } from 'primeng/table';
 import { SearchFieldModule } from '../../../controls/search-field/search-field.component';
 import { InputModule } from '../../../../../directives/ig-input-directive';
 import { AdvancedFiltersModule } from '../../../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { PipesModule } from '../../../../../pipes/pipes.module';
 
 
 
@@ -41,6 +42,7 @@ import { AdvancedFiltersModule } from '../../../../assets-grid/advanced-filterin
 		DirectivesModule,
 		CoreModule,
 		TooltipModule,
+		PipesModule,
 
 		SiteModalModule,
 		PropertyGroupModule,
