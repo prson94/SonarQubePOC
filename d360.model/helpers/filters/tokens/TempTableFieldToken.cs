@@ -71,7 +71,7 @@ namespace d360.model.helpers.filters
 
 			var match = listDataType.Where(x => x.ToLowerInvariant() == fieldType.Type.ToLowerInvariant()).ToList();
 
-			if (string.IsNullOrEmpty(fieldType.DefaultFormattedValue) && string.IsNullOrEmpty(fieldType.DefaultValue) && match.Count == 0 && fieldJoin.ToLowerInvariant().StartsWith("left join Field ".ToLowerInvariant()))
+			if (!IsNullValue && string.IsNullOrEmpty(fieldType.DefaultFormattedValue) && string.IsNullOrEmpty(fieldType.DefaultValue) && match.Count == 0 && fieldJoin.ToLowerInvariant().StartsWith("left join Field ".ToLowerInvariant()))
 			{
 				this.tempTableInfo.TempTableQuery = @$"
 				drop table if exists #advanced_filter_{parameterIdx}
