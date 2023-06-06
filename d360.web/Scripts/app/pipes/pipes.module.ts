@@ -21,6 +21,7 @@ import { ReplaceStringPipe } from './replace.pipe';
 import { SanitizePipe } from './sanitize.pipe';
 import { IconNamePipe } from "./icon-name.pipe";
 import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
+import { DropdownCategoryGroupPipe } from './dropdown-category-filter.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -44,7 +45,8 @@ import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
         EnumToSelectitemPipe,
         SanitizePipe,
         IconNamePipe,
-        AssetTypeClassDisplayPipe
+		AssetTypeClassDisplayPipe,
+		DropdownCategoryGroupPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -66,7 +68,8 @@ import { AssetTypeClassDisplayPipe } from "./asset-type-class-display.pipe";
         EnumToSelectitemPipe,
         SanitizePipe,
         IconNamePipe,
-        AssetTypeClassDisplayPipe
+		AssetTypeClassDisplayPipe,
+		DropdownCategoryGroupPipe
     ]
 })
 export class PipesModule { }

@@ -26,6 +26,7 @@ export class LookupField {
 	filterValue?: string;
 
 	markForDeletion?: boolean = false;
+	relIdxRequired?: number = null;
 }
 
 export class SortField {
@@ -240,6 +241,11 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 	relationshipTypeSelected($event, item: RelationshipTypeSelection, callback: Function = null, addNew: boolean = true) {
 		item.selected = $event.value;
 		const values = item.selected.split('|');
+
+		if (typeof item.relationshipTypeUid !== 'undefined' && item.relationshipTypeUid !== null) {
+			this.removeFieldsFromRel(item.index);
+		}
+
 		if (values.length === 3) {
 			item.relationshipTypeUid = values[0];
 			item.assetTypeUid = values[1];
@@ -248,7 +254,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		else {
 			item.relationshipTypeUid = item.assetTypeUid = item.direction = null;
 		}
-		this.removeFieldsFromRel(item.index);
 		this.isFieldsLoading = true;
 		item.fieldOptions = [];
 		return forkJoin(
@@ -492,18 +497,46 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		return res;
 	}
 
-	addFormFieldForField(name = '', displayOverrideName = '') {
+	addFormFieldForField(name = '', displayOverrideName = '', requiredIndexOverride: number = null) {
 		const fieldIndex = this.lastFieldIdx + 1;
 		const fieldNameControl = 'RelationLookupField_Name_' + fieldIndex;
 		const fieldDisplayNameControl = 'RelationLookupField_DisplayName_' + fieldIndex;
+
+		let relIdxRequired: number = null;
+		const relIndexes = this.relationshipTypeSelection.map((x) => x.index);
+		relIndexes.forEach((x) => {
+			if (!this.lookupFields.some((f) => f.relIdxRequired === x)) {
+				relIdxRequired = x;
+			}
+		});
+
+		if (requiredIndexOverride !== null) {
+			relIdxRequired = requiredIndexOverride;
+		}
+
+		if (relIdxRequired === null && this.isAddFieldDisabled) {
+			return;
+		}
+
 		this.lookupFields.push(
-			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [] }
+			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired }
 		);
 		this.fieldTypeForm.addControl(fieldNameControl, new UntypedFormControl(name, [Validators.required]));
 		this.fieldTypeForm.addControl(fieldDisplayNameControl, new UntypedFormControl(displayOverrideName));
 		this.lastFieldIdx++;
 		this.updateMenuItems();
 		this.cdRef.markForCheck();
+	}
+
+	get isAddFieldDisabled(): boolean {
+		let ret = false;
+		this.lookupFields.forEach((f) => {
+			const ctrl = this.fieldTypeForm.get(f.fieldNameControl);
+			if (ctrl && !ctrl.value) {
+				ret = true;
+			}
+		});
+		return ret;
 	}
 
 	get addRelationshipHopEnabled(): boolean {
@@ -669,10 +702,19 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	loadDefinitionFields() {
 		setTimeout(() => {
+			const requiredIndexes: number[] = [];
+
 			this.definition.Fields.filter((x) => x.Show === true).forEach((field) => {
 				const fieldName = `${field.FieldTypeName}|${field.RelationIndex + 1}`;
 				if (this.getFieldFromFieldOptions(fieldName)) {
-					this.addFormFieldForField(fieldName, field.OverrideDisplayName);
+					const relIdx = field.RelationIndex + 1;
+					if (requiredIndexes.some((x) => x === relIdx)) {
+						this.addFormFieldForField(fieldName, field.OverrideDisplayName);
+					}
+					else {
+						this.addFormFieldForField(fieldName, field.OverrideDisplayName, relIdx);
+						requiredIndexes.push(relIdx);
+					}
 				}
 			});
 
@@ -737,6 +779,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		this.fieldTypeForm.removeControl(ctrlName);
 		this.relationshipTypeSelection.splice(this.relationshipTypeSelection.length - 1, 1);
+		this.updateMenuItems();
 		this.validateComponents();
 	}
 
@@ -749,6 +792,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		});
 
 		this.removeMarkedFields();
+		this.updateMenuItems();
 
 		//we can only remove last relationship type so we can sefely remove just last elements here
 		this.fieldOptions.splice(this.fieldOptions.length - 1, 1);
@@ -777,10 +821,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.lookupFields.forEach((item) => {
 			position++;
 			const menuItems = [];
+			menuItems.push({ title: $localize`Delete`, action: 'delete' });
 
 			if (this.lookupFields.length > 1) {
 
-				menuItems.push({ title: $localize`Delete`, action: 'delete' });
 				const positionDisabled = false;
 				const positionTooltip = '';
 
@@ -831,6 +875,11 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 	removeMarkedFields() {
 		this.lookupFields = this.lookupFields.filter((x) => x.markForDeletion !== true);
+		const needsNewRequiredField = this.lookupFields.filter((x) => x.relIdxRequired !== null).length !== this.relationshipTypeSelection.length;
+		if (this.lookupFields.length === 0
+			|| needsNewRequiredField) {
+			this.addFormFieldForField();
+		}
 		this.cdRef.markForCheck();
 	}
 
@@ -889,6 +938,13 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		this.filter = $event.filter;
 		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field);
+	}
+
+	getPlaceholderForField(item: LookupField): string {
+		if (item.relIdxRequired !== null) {
+			return $localize`Value required: relationship type ` + item.relIdxRequired;
+		}
+		return $localize`Value required`;
 	}
 }
 
