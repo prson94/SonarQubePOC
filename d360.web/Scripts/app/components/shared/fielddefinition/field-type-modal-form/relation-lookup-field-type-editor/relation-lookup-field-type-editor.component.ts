@@ -519,7 +519,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 		this.lookupFields.push(
-			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired: relIdxRequired }
+			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired }
 		);
 		this.fieldTypeForm.addControl(fieldNameControl, new UntypedFormControl(name, [Validators.required]));
 		this.fieldTypeForm.addControl(fieldDisplayNameControl, new UntypedFormControl(displayOverrideName));
