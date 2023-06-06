@@ -937,7 +937,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 		this.filter = $event.filter;
-		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field);
+		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field && !x.markForDeletion);
 	}
 
 	getPlaceholderForField(item: LookupField): string {
