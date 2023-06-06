@@ -710,7 +710,6 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				const fieldName = `${field.FieldTypeName}|${field.RelationIndex + 1}`;
 				if (this.getFieldFromFieldOptions(fieldName)) {
 					const relIdx = field.RelationIndex + 1;
-					debugger;
 					if (requiredIndexes.some((x) => x === relIdx)) {
 						this.addFormFieldForField(fieldName, field.OverrideDisplayName);
 					}
