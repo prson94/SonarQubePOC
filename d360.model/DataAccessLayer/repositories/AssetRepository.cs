@@ -1311,7 +1311,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 							sb.AppendLine(@"
 								drop table if exists #filtered_parents_simple_filter
-								create table #filtered_parents_simple_filter(AssetId int)");
+								create table #filtered_parents_simple_filter(AssetId bigint)");
 
 							List<string> filtersPerField = new List<string>();
 							foreach (var uid in assetTypeUids)
@@ -1393,7 +1393,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						simpleFilterTempTables.Append($@"
 							declare @parentAssetTypeId int;
 							declare @parentIntersectTypeId int;
-							declare @parentAssets table (assetid int)
+							declare @parentAssets table (assetid bigint)
 
 							select top 1 
 								@parentAssetTypeId = it.SubjectAssetTypeID,
@@ -1628,7 +1628,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 						{string.Join("\n", fieldJoins.GetStatements())}
-						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " inner join AssetPath Node on Node.ID = a.ID" : "")} 
+						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join AssetPath Node on Node.ID = a.ID" : "")} 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 						{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1707,7 +1707,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				return $@"
 				select  A.ID
 				from    Asset A 
-				{(needsNodeData ? "inner join AssetPath Node on Node.ID = a.ID" : "")} 
+				{(needsNodeData ? "left join AssetPath Node on Node.ID = a.ID" : "")} 
 				{(excludeFilterQueries && containsAnyFilter ? "inner join #filtered_results fr on fr.AssetId = a.ID" : "")}
 				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
@@ -1740,7 +1740,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 				filteredResultsTempTable = @$"
 					drop table if exists #filtered_results
-					create table #filtered_results (AssetId int)
+					create table #filtered_results (AssetId bigint)
 
 					--procedure that will insert data into #filtered_results if there are cached results for user & request
 					exec CachedAssetFiltersProvider 'FETCH', @userId, @requesthash, @assetTypeId
@@ -1755,6 +1755,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 						insert into #filtered_results
 						{GetBaseQuery()}
+						option(recompile);
 
 						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
 
@@ -1840,7 +1841,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(useTempTableForResults ? " into #results " : "")}
 				from #tempasset TempA
 				inner join Asset A on TempA.AssetId = A.ID
-				inner join AssetPath Node on Node.ID = a.ID
+				left join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{fieldJoins.SQLJoinStatement}

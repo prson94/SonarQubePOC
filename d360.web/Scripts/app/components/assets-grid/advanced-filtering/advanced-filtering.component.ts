@@ -214,7 +214,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		}
 	}
 
-	public initializeData(newFiltersPushed: boolean = false, overrideFields?: AdvancedFilterFieldType[], existingFilters?: AdvancedFilterFieldCondition[]) {
+	public initializeData(newFiltersPushed: boolean = false, overrideFields?: AdvancedFilterFieldType[], existingFilters?: AdvancedFilterFieldCondition[], overrideRelationshipTypes?: RelationshipType[]) {
 		if (this.disableMatchAny) {
 			this.filterMenu[3]["disabled"] = this.disableMatchAny;
 		}
@@ -234,6 +234,10 @@ export class AdvancedFilteringComponent implements OnChanges {
 			const res = response[1] as AdvancedFilterFieldType[];
 			this.allocations = response[2];
 			this.relationshipTypes = response[3];
+
+			if (overrideRelationshipTypes) {
+				this.relationshipTypes = overrideRelationshipTypes;
+			}
 
 			if (this.externalAllocations && this.externalAllocations.length > 0) {
 				this.allocations = this.externalAllocations;
@@ -420,6 +424,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 		loadedFilters.filter((f) => f !== null).forEach((f) => {
 			this.conditions.filters.push(f);
 		});
+
 		this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
 
 		this.visible = true;

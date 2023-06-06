@@ -538,9 +538,9 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("PathField ct 'Action test' and PathField ct 'GC 1'", "Node.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1 and Node.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_2\"))]') = 1")]
-        [InlineData("PathField ct 'Action test' or PathField ct 'GC 565'", "Node.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1 or Node.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_2\"))]') = 1")]
-        [InlineData("PathField nct 'SON'", "Node.Segments.exist('/path/segment[contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 0")]
+        [InlineData("PathField ct 'Action test' and PathField ct 'GC 1'", "trim(Node.DisplayPath) like @filter_1 and trim(Node.DisplayPath) like @filter_2")]
+        [InlineData("PathField ct 'Action test' or PathField ct 'GC 565'", "trim(Node.DisplayPath) like @filter_1 or trim(Node.DisplayPath) like @filter_2")]
+        [InlineData("PathField nct 'SON'", "trim(Node.DisplayPath) not like @filter_1")]
         [InlineData("PathField eq 'Action test > SON > GC 1'", "Node.Segments.exist('/path/segment[1][lower-case(.)=sql:variable(\"@filter_1_0\")]') = 1 and Node.Segments.exist('/path/segment[2][lower-case(.)=sql:variable(\"@filter_1_1\")]') = 1 and Node.Segments.exist('/path/segment[3][lower-case(.)=sql:variable(\"@filter_1_2\")]') = 1")]
         [InlineData("PathField ne 'Action test > SON > GC 1'", "Node.Segments.exist('/path/segment[1][lower-case(.)=sql:variable(\"@filter_1_0\")]') = 0 and Node.Segments.exist('/path/segment[2][lower-case(.)=sql:variable(\"@filter_1_1\")]') = 0 and Node.Segments.exist('/path/segment[3][lower-case(.)=sql:variable(\"@filter_1_2\")]') = 0")]
         [InlineData("PathField ct 'Action test*'", "Node.Segments.exist('/path/segment[1][contains(lower-case(.),sql:variable(\"@filter_1\"))]') = 1")]
