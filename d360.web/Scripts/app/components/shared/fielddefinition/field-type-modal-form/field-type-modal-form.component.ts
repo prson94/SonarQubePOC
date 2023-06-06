@@ -1178,16 +1178,13 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsEditable(): boolean {
-		if (this.isUserType) {
-			return false;
-		}
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
-		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get showIsRequired(): boolean {
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text', 'Boolean', 'Relationship'];
-		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get enableAllowMultipleValues(): boolean {
@@ -1205,7 +1202,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return false;
 		}
 
-		if (this.isGroupType || this.isUserType) {
+		if (this.isGroupType || this.isUserType || this.actionTypeUid) {
 			return false;
 		}
 		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
@@ -1220,7 +1217,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showShowInDetailTile(): boolean {
-		if (this.isGroupType || this.isUserType || this.assetTypeClass === AssetTypeClass.DiagramAsset) {
+		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
 		}
 
