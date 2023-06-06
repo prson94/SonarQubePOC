@@ -292,6 +292,14 @@ export class WorkflowService extends BaseObservableService {
             map((response) => <WorkflowTypeItem[]> response),
                 catchError((err) => this.handleError(err))
             );
+	}
+
+	getActionTypeByUid(uid: string): Observable<WorkflowTypeItem[]> {
+		return this.http.get(`/api/v2/actions/types?_actionTypeUid=${uid}`)
+            .pipe(
+            map((response) => <WorkflowTypeItem[]> response),
+                catchError((err) => this.handleError(err))
+            );
     }
 
 	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<WorkflowAssignments> {

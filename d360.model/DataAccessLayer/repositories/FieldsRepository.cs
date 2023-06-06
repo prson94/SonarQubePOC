@@ -362,6 +362,9 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'ComplexRelationLookup' then (
 											select Filters from OPENJSON(FTL.Definition) with (Filters nvarchar(max))
 										) else null end as 'Type.ComputedRelationshipLookup.Definition.Filters',
+										case when FT.Type = 'ComplexRelationLookup' then (
+											select FiltersJSON from OPENJSON(FTL.Definition) with (FiltersJSON nvarchar(max))
+										) else null end as 'Type.ComputedRelationshipLookup.Definition.FiltersJSON',
 										case when FT.Type = 'ComplexRelationLookup' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipLookup.IsDisplayable',
 										case when FT.Type = 'ComplexRelationLookup' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipLookup.ShowIfEmpty',
 
@@ -1202,7 +1205,8 @@ namespace d360.model.DataAccessLayer
 						{
 							Relations = definitionRelations,
 							Fields = definitionFields,
-							Filters = f.Type.ComputedRelationshipLookup.Definition.Filters
+							Filters = f.Type.ComputedRelationshipLookup.Definition.Filters,
+							FiltersJSON = f.Type.ComputedRelationshipLookup.Definition.FiltersJSON
 						})
 					};
 				}
@@ -1812,7 +1816,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					newFieldType.UseDisplayFormat = f.Type.Relationship.UseDisplayFormat;
 					newFieldType.IsSubject = f.Type.Relationship.IsSubject;
-					newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
+					newFieldType.IsRequired = f.Type.Relationship.Validation?.IsRequired ?? false;
 
 					if (f.Type.Relationship.Search != null)
 					{
@@ -2562,7 +2566,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(definition.Filters))
 			{
-				defaultFilters.Add($"({definition.Filters})");
+				defaultFilters.Add($"({HttpUtility.UrlDecode(definition.Filters)})");
 			}
 
 			if (defaultFilters.Count > 0)

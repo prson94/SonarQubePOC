@@ -1,4 +1,5 @@
 ﻿import { SelectItem } from 'primeng/api';
+import { RelationshipType } from '../../../../../models/relationship.model';
 
 export class RelationshipTypeSelection {
 	cntrlName: string;
@@ -12,4 +13,5 @@ export class RelationshipTypeSelection {
 	direction?: number;
 
 	valuesResolved?: boolean;
+	relationshipTypes?: RelationshipType[] = [];
 }

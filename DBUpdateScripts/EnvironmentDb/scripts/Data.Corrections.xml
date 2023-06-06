@@ -717,7 +717,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 	</sql>
   </changeSet>
-   <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v2">
+   <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v3">
   <comment>Parse Relation Lookup Filters</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -725,13 +725,16 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
             stripComments="false">
 		<![CDATA[
 				drop table if exists #temp_values
-				select FTL.FieldTypeID, D.FieldTypeId as FilterFieldId, D.Filter, D.RelationIndex 
+				select FTL.FieldTypeID, D.FieldTypeId as FilterFieldId, D.[Filter], D.RelationIndex ,D.IsRelationship
 				into #temp_values
 				from FieldTypeLookup FTL
 				cross apply (
 				select	case when DF.FieldTypeId > 1 
 						then cast(DF.FieldTypeId as nvarchar(255)) 
 						else DF.FieldTypeName end as FieldTypeId,
+						case when DF.FieldTypeName like 'Related Item.%'
+						then 1
+						else 0 end as IsRelationship,
 																DF.FieldTypeName,
 																DF.[Filter],
 																DF.OverrideDisplayName,
@@ -746,18 +749,51 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 				)D
 				WHERE ISJSON(FTL.Definition) = 1 and D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
 
-				drop table if exists #expressions
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
-				into #expressions
-				from #temp_values
+				declare @expressions table (FieldTypeId int, FilterExpression nvarchar(2000))
 
-				select * from #expressions
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Number','Decimal')
+
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Boolean')
+
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ''' + Filter+ ''')' as FilterExpression
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Lookup')
+
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type not in ('Number','Decimal','Boolean','Lookup')
+
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				from #temp_values tv
+				where ISNUMERIC(tv.FilterFieldId) = 0 and tv.IsRelationship = 0
+
+
+				insert into @expressions (FieldTypeId, FilterExpression)
+				select tv.FieldTypeID,
+				CONCAT('($Related:', CAST(it.uid as nvarchar(max)),' eq ', '''', CAST(FilterAsset.uid as nvarchar(max)) ,''')') as FilterExpression
+				from #temp_values tv
+				inner join IntersectType it on it.id = tv.FilterFieldId
+				cross apply (
+				select top 1 a.uid from asset a
+				inner join AssetDisplayValue adv on adv.AssetID = a.ID and adv.DisplayValue = tv.[Filter]
+				where a.AssetTypeID in (it.ObjectAssetTypeID, it.SubjectAssetTypeID)
+				)FilterAsset
+				where tv.IsRelationship = 1 order by FilterAsset.uid
 
 				drop table if exists #fullExpressions
 
 				select FieldTypeID, concat('(',STRING_AGG(FilterExpression, ' and ' ),')') AS expression
 				into #fullExpressions
-				from #expressions
+				from @expressions
 				group by FieldTypeID
 
 				UPDATE T

@@ -284,7 +284,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		model.Fields[0].Category = this.fieldTypeForm.get("Category").value ?? null;
 
 		model.Fields[0].Type = new FieldType(this.selectedFieldType);
-		
+
 		const type = model.Fields[0].Type;
 		const fieldTypeApiObject = type[this.selectedFieldType];
 
@@ -357,6 +357,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		if (this.selectedFieldType === 'Lookup') {
 			fieldTypeApiObject.List.Uid = this.fieldTypeForm.get("LookupUid").value ?? null;
+
+			//handle special case when we are picking Model class and not asset type
+			if (fieldTypeApiObject.List.Uid === 'TaxonomyType') {
+				fieldTypeApiObject.List.Uid = null;
+				fieldTypeApiObject.List.Class = "Model";
+			}
 			fieldTypeApiObject.List.AllowMultipleValues = this.fieldTypeForm.get("AllowMultipleValues").value ?? null;
 			fieldTypeApiObject.AllowAllValue = this.fieldTypeForm.get("AllowAllValue").value ?? null;
 			fieldTypeApiObject.AllowAllLabel = this.fieldTypeForm.get("AllowAllLabel").value ?? null;
@@ -719,6 +725,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
 					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
 					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
+
+					//handle special case when we are picking Model class and not asset type
+					if ((type?.List?.Uid === null || typeof type?.List?.Uid === 'undefined') && type?.List?.Class === 'Model') {
+						this.fieldTypeForm.controls["LookupUid"].setValue('TaxonomyType');
+					}
 				}
 
 				if (this.selectedFieldType === 'ComputedOwnershipLookup') {
@@ -1129,7 +1140,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsPartOfKey(): boolean {
-		if (this.isGroupType || this.assetTypeClass === AssetTypeClass.ReferenceItemType
+		if (this.isGroupType || this.isUserType
+			|| this.assetTypeClass === AssetTypeClass.ReferenceItemType
 			|| this.assetTypeClass === AssetTypeClass.Reference
 			|| this.assetTypeClass === AssetTypeClass.DiagramAsset
 			|| this.relationshipTypeUid) {
@@ -1166,6 +1178,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsEditable(): boolean {
+		if (this.isUserType) {
+			return false;
+		}
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
 		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
