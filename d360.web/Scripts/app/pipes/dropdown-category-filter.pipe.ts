@@ -3,7 +3,7 @@ import { SelectItemGroup } from 'primeng/api';
 
 @Pipe({ name: 'dropdownCategoryFilter' })
 export class DropdownCategoryGroupPipe implements PipeTransform {
-	transform(items: SelectItemGroup[], relIdx: number): any {
+	transform(items: SelectItemGroup[], relIdx: number): SelectItemGroup[] {
 		let selectlist: SelectItemGroup[] = [];
 		if (!relIdx) {
 			return items;
