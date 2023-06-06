@@ -144,7 +144,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		this.intervalHandle = setInterval(() => {
 			this.setDropdowns();
-		}, 250);
+		}, 1000);
 	}
 
 	setDropdowns() {
