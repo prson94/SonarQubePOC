@@ -52,6 +52,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() message: string = "";
 	@Input() useFieldCategories: boolean = false;
 	@Input() topPositionCorrection: number;
+	@Input() includeRelationshipFilters: boolean = true;
 
 	@Output() onChange = new EventEmitter();
 
@@ -172,7 +173,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		if (this.useFieldCategories) {
 			Array.from(new Set(this.fields.map((item) => item.Category)))
 				.forEach((cat) => {
-					if (cat === $localize`System Fields`) {
+					if (cat === $localize`System Fields`
+						|| (!this.includeRelationshipFilters && cat === $localize`Relationships`)
+					) {
 						return;
 					}
 					const mainFieldGroup: SelectItemGroup = { value: "asset-field", label: cat, items: [] };
