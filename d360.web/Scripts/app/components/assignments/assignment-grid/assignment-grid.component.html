@@ -39,6 +39,7 @@
 	<div class="col s12">
 		<p-table #dt
 				 [loading]="isLoading"
+				 [tableStyle]="{'min-width': 'max-content'}"
 				 loadingIcon="fa fa-spinner"
 				 [value]="items"
 				 selectionMode="multiple"
@@ -46,7 +47,7 @@
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['workflowName','Type','TypeName','assetDisplayValue','initiator','StartedOn','CompletedOn']"
+				 [globalFilterFields]="['workflowName','assetDisplayValue','initiator','StartedOn','assigneesJson','Status']"
 				 [pageLinks]="3"
 				 [paginator]="true"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
@@ -66,12 +67,16 @@
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'initiator'">
-						<ng-container i18n>initiator</ng-container>
+						<ng-container i18n>Initiator</ng-container>
 						<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'StartedOn'">
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'assigneesJson'">
+						<ng-container i18n>Assignee</ng-container>
+						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
@@ -93,17 +98,26 @@
 						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
 					</th>
 					<th>
+						<d3s-column-filter [field]="'assigneesJson'" [datatype]="'text'"></d3s-column-filter>
+					</th>
+					<th>
 						<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
 					</th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
-				<tr [pSelectableRow]="item" style="word-wrap: break-word">
+				<tr [pSelectableRow]="item" class="assignments-table-data">
 					<td class="break-wrap">{{item.workflowName}}</td>
 					<td>{{item.assetDisplayValue}}</td>
 					<td>{{item.initiator}}</td>
 					<td>
 						<span>{{item.StartedOn | date: 'shortDate'}}</span>
+					</td>
+					<td>
+						<span [innerText]="getAssignees(JSON.parse(item.assigneesJson),2)"></span>
+						<span class="more-assignee-count" [pTooltip]="getAssignees(JSON.parse(item.assigneesJson))"
+							  *ngIf="JSON.parse(item.assigneesJson)?.length > 2"> + {{ (JSON.parse(item.assigneesJson).length - 2) }}
+							others </span>
 					</td>
 					<td>
 						<span>{{item.Status}}</span>
@@ -112,7 +126,7 @@
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>
-						<div style="display:inline-block">
+						<div class="menu-icon">
 							<button igButton
 									type="button"
 									icon="fa-ellipsis-v"

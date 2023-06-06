@@ -11,7 +11,9 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowAssignmentItem } from '../../../models/workflow.model';
 import {
-	AdvancedFilterFieldType, Filters, LookupValuesAPIModel,
+	AdvancedFilterFieldType,
+	Filters,
+	LookupValuesAPIModel,
 	LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
@@ -35,7 +37,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	selectedCount: number = 0;
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
-	advancedFilter: string = "";
+	advancedFilter: string = '';
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	@Output() hideDetails = new EventEmitter();
@@ -47,35 +49,36 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
-	statusValues: string[] = ["Pending", "Complete"];
+	statusValues: string[] = ['Pending', 'Complete'];
+	protected readonly JSON: JSON = JSON;
 
 	filterFieldList: AdvancedFilterFieldType[] = [
 		{
 			Name: 'Status',
 			FriendlyName: $localize`Status`,
-			Type: new FieldType("Lookup"),
-			Category: "",
-			ValueLoader: this.getFilterValues.bind(this, "Status"),
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'Status'),
 			RemovePopulatedOperator: true
 		},
 		{
 			Name: 'assetDisplayValue',
 			FriendlyName: $localize`Associated with`,
-			Type: new FieldType("Text"),
-			Category: ""
+			Type: new FieldType('Text'),
+			Category: ''
 		},
 		{
 			Name: 'CompletedOn',
 			FriendlyName: $localize`Completed`,
-			Type: new FieldType("DateTime"),
-			Category: ""
+			Type: new FieldType('DateTime'),
+			Category: ''
 		},
 		{
 			Name: 'StartedOn',
 			FriendlyName: $localize`Initiated`,
-			Type: new FieldType("DateTime"),
-			Category: ""
-		},
+			Type: new FieldType('DateTime'),
+			Category: ''
+		}
 	];
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
@@ -203,7 +206,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	getFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-		if (params === "Status") {
+		if (params === 'Status') {
 			return of({
 				items: this.statusValues,
 				count: this.statusValues.length
@@ -212,7 +215,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	onFiltersLoaded(): void {
-		this.loadData()
+		this.loadData();
 	}
 
 	advancedFiltersChanged($event: Filters): void {
@@ -220,4 +223,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
+	getAssignees(assigneeList: any[], count?: number): string {
+		let assigneeNames: string = '';
+		if (assigneeList && assigneeList.length > 0) {
+			const assigneeNameList: any[] = assigneeList.map((assignee) => assignee.Name)?.sort()
+			assigneeNames = count ? assigneeNameList?.slice(0, 2)?.join() : assigneeNameList?.join();
+		}
+		return assigneeNames;
+	}
 }
