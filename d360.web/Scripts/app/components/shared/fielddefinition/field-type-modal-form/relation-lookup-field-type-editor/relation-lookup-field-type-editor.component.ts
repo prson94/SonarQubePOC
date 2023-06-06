@@ -519,9 +519,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if (relIdxRequired === null && this.isAddFieldDisabled) {
 			return;
 		}
-
-		console.log(name, relIdxRequired);
-
+		
 		this.lookupFields.push(
 			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired }
 		);
