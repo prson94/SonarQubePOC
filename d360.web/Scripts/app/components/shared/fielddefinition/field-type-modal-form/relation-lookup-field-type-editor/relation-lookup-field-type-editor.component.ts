@@ -8,7 +8,7 @@ import { StringHelpers } from '../../../../../static/string-helpers';
 import { AdvancedFilteringComponent } from '../../../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { AdvancedFilterFieldCondition, AdvancedFilterFieldType } from '../../../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { PopupMenuItem } from '../../../controls/popup-menu/popup-menu.component';
-import { DatePipe, registerLocaleData } from "@angular/common";
+import { DatePipe } from "@angular/common";
 import { SelectItem } from '../../../../../models/form.model';
 import { OperatorString } from '../../../../../models/operator.model';
 import { ReuseInterceptor } from '../../../../../http-interceptors/reuse.interceptor';
