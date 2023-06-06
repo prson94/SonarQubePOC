@@ -503,12 +503,14 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		const fieldDisplayNameControl = 'RelationLookupField_DisplayName_' + fieldIndex;
 
 		let relIdxRequired: number = null;
-		const relIndexes = this.relationshipTypeSelection.map((x) => x.index);
-		relIndexes.forEach((x) => {
-			if (!this.lookupFields.some((f) => f.relIdxRequired === x)) {
-				relIdxRequired = x;
-			}
-		});
+		if (!name) {
+			const relIndexes = this.relationshipTypeSelection.map((x) => x.index);
+			relIndexes.forEach((x) => {
+				if (!this.lookupFields.some((f) => f.relIdxRequired === x)) {
+					relIdxRequired = x;
+				}
+			});
+		}
 
 		if (requiredIndexOverride !== null) {
 			relIdxRequired = requiredIndexOverride;
@@ -517,6 +519,8 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if (relIdxRequired === null && this.isAddFieldDisabled) {
 			return;
 		}
+
+		console.log(name, relIdxRequired);
 
 		this.lookupFields.push(
 			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired }
@@ -708,6 +712,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 				const fieldName = `${field.FieldTypeName}|${field.RelationIndex + 1}`;
 				if (this.getFieldFromFieldOptions(fieldName)) {
 					const relIdx = field.RelationIndex + 1;
+					debugger;
 					if (requiredIndexes.some((x) => x === relIdx)) {
 						this.addFormFieldForField(fieldName, field.OverrideDisplayName);
 					}
