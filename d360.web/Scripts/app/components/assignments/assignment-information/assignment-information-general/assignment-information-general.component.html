@@ -4,7 +4,7 @@
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Name</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem?.workflowItemUid })">{{ workflowAssignmentItem?.workflowName }}</a>
+					(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: workflowAssignmentItem?.workflowUid })">{{ workflowAssignmentItem?.workflowName }}</a>
 				</div>
 			</div>
 			<div class="row">
@@ -14,7 +14,7 @@
 			<div class="row">
 				<label class="ig-label" i18n>Associated with</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({objectType: workflowAssignmentItem.assetTypeUid, objectId: workflowAssignmentItem.assetUid })">{{ workflowAssignmentItem?.assetDisplayValue }}</a>
+					(click)="linkClick.emit({ objectType: 'asset-information', objectUid: workflowAssignmentItem.assetUid })">{{ workflowAssignmentItem?.assetDisplayValue }}</a>
 				</div>
 			</div>
 			<div class="row">
@@ -24,7 +24,7 @@
 			<div class="row">
 				<label class="ig-label" i18n>Initiator</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({ resourceUid: workflowAssignmentItem.initiatorUid })">{{ workflowAssignmentItem?.initiator }}</a>
+					(click)="linkClick.emit({objectType: 'user-information', objectUid: workflowAssignmentItem.initiatorUid })">{{ workflowAssignmentItem?.initiator }}</a>
 				</div>
 			</div>
 			<div class="row">
