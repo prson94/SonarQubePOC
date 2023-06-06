@@ -45,7 +45,7 @@
 												 [interceptLinkClick]="true"
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
 							</ng-container>
-							<ng-container *ngIf="secondarySidePanel=='step-details'">
+							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
 								<d3s-assignment-progress-step-details [itemId]="assignmentItemStep.ItemID"
 																	  [itemStepId]="assignmentItemStep.ID"></d3s-assignment-progress-step-details>
 							</ng-container>
@@ -68,7 +68,7 @@
 						[setMinMaxWidth]="false"
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
-					<d3s-assignment-information [workflowAssignmentItem]="selectedWorkflowItems[0]"
+					<d3s-assignment-information [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
 												*ngIf="selectedWorkflowItems?.length === 1"
 												(linkClick)="sidePanelLinkClicked($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>

@@ -1,37 +1,38 @@
-<div class="asset-detail-tabs">
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail-tabs" [hidden]="isLoading">
 	<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Name</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: workflowAssignmentItem?.workflowUid })">{{ workflowAssignmentItem?.workflowName }}</a>
+					(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: assignmentItem?.WorkflowUid })">{{ assignmentItem?.WorkflowName }}</a>
 				</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Workflow Type</label>
-				<div class="ig-value">{{ workflowAssignmentItem?.workflowUid }}</div>
+				<div class="ig-value">{{ assignmentItem?.ChangeType }}</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Associated with</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({ objectType: 'asset-information', objectUid: workflowAssignmentItem.assetUid })">{{ workflowAssignmentItem?.assetDisplayValue }}</a>
+					(click)="linkClick.emit({ objectType: 'asset-information', objectUid: assignmentItem?.AssetUid })">{{ assignmentItem?.AssetPath }}</a>
 				</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Initiated</label>
-				<div class="ig-value">{{ workflowAssignmentItem?.StartedOn | date: 'medium' }}</div>
+				<div class="ig-value">{{ assignmentItem?.StartedOn | date: 'medium' }}</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Initiator</label>
 				<div class="ig-value"><a
-					(click)="linkClick.emit({objectType: 'user-information', objectUid: workflowAssignmentItem.initiatorUid })">{{ workflowAssignmentItem?.initiator }}</a>
+					(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentItem?.InitiatorUid })">{{ assignmentItem?.Initiator }}</a>
 				</div>
 			</div>
 			<div class="row">
 				<label class="ig-label" i18n>Status</label>
-				<div class="ig-value">{{ workflowAssignmentItem?.Status }}</div>
+				<div class="ig-value">{{ assignmentItem?.Status }}</div>
 			</div>
 		</div>
 	</ig-property-group>
 </div>
-<pre style="white-space: pre-wrap">{{ workflowAssignmentItem | json }}</pre>
+<pre style="white-space: pre-wrap">{{ assignmentItem | json }}</pre>

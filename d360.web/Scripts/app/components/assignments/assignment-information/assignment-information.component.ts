@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowAssignmentItem, WorkflowAssignments } from '../../../models/workflow.model';
+import { AssignmentItem } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -8,14 +8,12 @@ import { WorkflowAssignmentItem, WorkflowAssignments } from '../../../models/wor
 	styleUrls: ['./assignment-information.component.less']
 })
 export class AssignmentInformationComponent implements OnInit {
+	@Input() assignmentItem: AssignmentItem;
+	isLoading: boolean = false;
 
-	@Input() workflowAssignmentItem: WorkflowAssignmentItem;
-	@Input() isIssueType: boolean = false;
-	workflowAssignments: WorkflowAssignments;
-
-	@Input() set workflowItemId(value: number) {
-		this.loadWorkflowDetails(value);
-	}
+	@Input() set workflowItemUid(value: string) {
+		this.load(value);
+	};
 
 	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
@@ -23,12 +21,14 @@ export class AssignmentInformationComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+
 	}
 
-	private loadWorkflowDetails(workflowItemId: number) {
-		// this.workflowService.getWorkflowAssignments().subscribe(response => {
-		// 	this.workflowAssignments = response;
-		// });
-		this.workflowAssignments = null;
+	load(workflowItemUid: string): void {
+		this.isLoading = true;
+		this.workflowService.getAssignmentItem(workflowItemUid).subscribe(response => {
+			this.isLoading = false;
+			this.assignmentItem = response;
+		});
 	}
 }

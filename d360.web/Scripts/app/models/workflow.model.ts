@@ -554,6 +554,22 @@ export class AssignmentItemStep {
 	CompletedOn: string;
 }
 
+export class AssignmentItem {
+	WorkflowItemUid: string;
+	WorkflowUid: string;
+	WorkflowName: string;
+	Initiator: string;
+	InitiatorUid: string;
+	StartedOn: string;
+	CompletedOn: string;
+	Status: string;
+	AssetUid: string;
+	AssetPath: string;
+	ActionUid: string;
+	ChangeType: string;
+	initiatingObjectType: string;
+}
+
 export class BulkWorkflowFormModel {
 	ItemStepIDs: number[] = [];
 	Fields: WorkflowFormField[] = [];

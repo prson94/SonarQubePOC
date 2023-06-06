@@ -4,7 +4,7 @@ import {
 	ActionEditorModel,
 	ActivityTypeInfo,
 	AllocationAPIModel,
-	AllocationRequestModel,
+	AllocationRequestModel, AssignmentItem,
 	AssignmentItemStep,
 	BulkWorkflowFormModel,
 	BulkWorkflowReassignModel,
@@ -694,6 +694,14 @@ export class WorkflowService extends BaseObservableService {
 		return this.http.get(`/api/v2/workflow/${itemUid}/steps`)
 			.pipe(
 				map((response) => <AssignmentItemStep[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getAssignmentItem(itemUid: string): Observable<AssignmentItem> {
+		return this.http.get(`/api/v2/workflow/item/${itemUid}`)
+			.pipe(
+				map((response) => <AssignmentItem>response),
 				catchError((err) => this.handleError(err))
 			);
 	}
