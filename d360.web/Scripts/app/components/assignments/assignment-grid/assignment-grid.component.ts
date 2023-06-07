@@ -5,11 +5,11 @@ import { WorkflowMonitorService } from '../../../services/workflowmonitor.servic
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AuthenticationService } from '../../../services/authentication.service';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowAssignmentItem } from '../../../models/workflow.model';
+import { WorkflowAssignmentItem, WorkflowTypeModel } from '../../../models/workflow.model';
 import {
 	AdvancedFilterFieldType,
 	Filters,
@@ -78,6 +78,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			FriendlyName: $localize`Initiated`,
 			Type: new FieldType('DateTime'),
 			Category: ''
+		},
+		{
+			Name: 'workflowName',
+			FriendlyName: $localize`Workflow Name`,
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'workflowName'),
+			RemovePopulatedOperator: true
 		}
 	];
 
@@ -205,12 +213,24 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		);
 	}
 
-	getFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-		if (params === 'Status') {
+	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+		if (lookupType === 'Status') {
+			const values: string[] = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 			return of({
-				items: this.statusValues,
-				count: this.statusValues.length
+				items: values,
+				count: values.length
 			});
+		}
+		if (lookupType === 'workflowName') {
+			return this.workflowService.getTypes().pipe(
+				map((workflowTypeList: WorkflowTypeModel[]) => {
+					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel) => workflowTypeModel.Name) ?? [];
+					workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: workflowNameList,
+						count: workflowNameList.length
+					};
+				}));
 		}
 	}
 
@@ -226,7 +246,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	getAssignees(assigneeList: any[], count?: number): string {
 		let assigneeNames: string = '';
 		if (assigneeList && assigneeList.length > 0) {
-			const assigneeNameList: any[] = assigneeList.map((assignee) => assignee.Name)?.sort()
+			const assigneeNameList: any[] = assigneeList.map((assignee) => assignee.Name)?.sort();
 			assigneeNames = count ? assigneeNameList?.slice(0, 2)?.join() : assigneeNameList?.join();
 		}
 		return assigneeNames;
