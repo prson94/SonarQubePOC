@@ -550,7 +550,7 @@ namespace d360.model.helpers
 				else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
 				{
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
-					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
+					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
 					gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
@@ -566,7 +566,7 @@ namespace d360.model.helpers
 				else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 				{
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
-					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
+					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
 					gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
@@ -590,7 +590,7 @@ namespace d360.model.helpers
 						Columns.Add(gColumn);
 					}
 
-					var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
+					var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text", isAscending = f.SortByAscending };
 					Fields.Add(gField);
 				}
 				else
@@ -615,7 +615,8 @@ namespace d360.model.helpers
 							type = "text",
 							apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
 							defaultFilter = f.Filter,
-							sortOrder = f.SortOrder
+							sortOrder = f.SortOrder,
+							isAscending = f.SortByAscending
 						};
 						if (f.Show)
 						{
