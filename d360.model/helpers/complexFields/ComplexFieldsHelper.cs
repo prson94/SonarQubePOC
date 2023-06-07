@@ -159,7 +159,7 @@ namespace d360.model.helpers
 				model.NeedsFullCheck = false;
 			}
 			return ret;
-        }
+		}
 
 		public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping, List<FieldTypeRelationShipType> fieldtypeRelationshipType)
 		{
@@ -550,7 +550,7 @@ namespace d360.model.helpers
 				else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
 				{
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
-					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
+					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
 					gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
@@ -566,7 +566,12 @@ namespace d360.model.helpers
 				else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 				{
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
-					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
+					if (gColumn.text.ToLowerInvariant() == "_assetpath")
+					{
+						gColumn.text = "Asset Path";
+					}
+
+					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
 					gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
@@ -590,7 +595,7 @@ namespace d360.model.helpers
 						Columns.Add(gColumn);
 					}
 
-					var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
+					var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text", isAscending = f.SortByAscending };
 					Fields.Add(gField);
 				}
 				else
@@ -615,7 +620,8 @@ namespace d360.model.helpers
 							type = "text",
 							apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
 							defaultFilter = f.Filter,
-							sortOrder = f.SortOrder
+							sortOrder = f.SortOrder,
+							isAscending = f.SortByAscending
 						};
 						if (f.Show)
 						{
@@ -701,7 +707,7 @@ namespace d360.model.helpers
 			}
 			selects.Add("A.[uid] as [Uid]");
 			foreach (var ft in fields)
-			{				
+			{
 				if (ft.Name == "Code" && ft.Type == DataType.System.ToString())
 				{
 					selects.Add("A.[Code] as [Code]");
@@ -749,9 +755,9 @@ namespace d360.model.helpers
 
 					selects.Add($"{selectField} AS [{fieldAlias}]");
 
-					if (ft.SortOrder > 0 && sortFields!=null)
+					if (ft.SortOrder > 0 && sortFields != null)
 					{
-						sortFields.Add((ft.SortOrder, $"{selectField} {(ft.SortByAscending ? "" : "desc")}" ));
+						sortFields.Add((ft.SortOrder, $"{selectField} {(ft.SortByAscending ? "" : "desc")}"));
 					}
 
 					var HasDefaultValue = !string.IsNullOrEmpty(ft.DefaultFormattedValue) ? 1 : 0;
@@ -772,7 +778,7 @@ namespace d360.model.helpers
                             {string.Join(", ", selects)}
                             from Asset A
                             {string.Join("\n", joins)}";
-        }
+		}
 
 		public static string GetOwnershipLookupCountQuery(FieldTypeLookup ftl)
 		{
