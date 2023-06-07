@@ -72,7 +72,8 @@
 												*ngIf="selectedWorkflowItems?.length === 1"
 												(linkClick)="sidePanelLinkClicked($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
-					<d3s-assignment-progress [workflowItemUid]="selectedWorkflowItems[0]?.workflowItemUid"
+					<d3s-assignment-progress [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
+											 [workflowUid]="selectedWorkflowItems?.[0]?.workflowUid"
 											 (linkClick)="sidePanelLinkClicked($event)"
 											 *ngIf="selectedWorkflowItems?.length === 1"
 											 [isSidePanel]="true"

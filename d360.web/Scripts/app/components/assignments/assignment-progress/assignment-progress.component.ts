@@ -12,6 +12,8 @@ export class AssignmentProgressComponent implements OnInit {
 
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
+	@Input() workflowUid: string;
+
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
 		this.loadData();
