@@ -1,6 +1,7 @@
-<d3s-assignment-information-request
-	[workflowAssignmentItem]="workflowAssignmentItem"
-	*ngIf="workflowAssignmentItem?.actionTypeUid === 'Action'"></d3s-assignment-information-request>
-<d3s-assignment-information-general (linkClick)="linkClick.emit($event)"
-									[workflowAssignmentItem]="workflowAssignmentItem"></d3s-assignment-information-general>
-<pre style="white-space: pre-wrap" *ngIf="workflowAssignments">{{ workflowAssignments | json }}</pre>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<d3s-assignment-information-request [hidden]="isLoading"
+	[assignmentItem]="assignmentItem"
+	*ngIf="assignmentItem?.initiatingObjectType === 'Action'"></d3s-assignment-information-request>
+<d3s-assignment-information-general (linkClick)="linkClick.emit($event)" [hidden]="isLoading"
+									[assignmentItem]="assignmentItem"></d3s-assignment-information-general>
+<pre style="white-space: pre-wrap" *ngIf="assignmentItem">{{ assignmentItem | json }}</pre>

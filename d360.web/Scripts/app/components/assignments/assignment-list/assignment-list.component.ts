@@ -25,7 +25,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	sidePanelOpen: boolean = false;
 	sidePanelTab: string = 'information';
 	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
-	secondarySidePanel: string;
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
@@ -144,7 +143,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	sidePanelLinkClicked(value: { objectType: string, objectUid: string }): void {
 		this.secondarySidePanelOpen = true;
-		this.secondarySidePanel = 'assignment-information';
 		this.secondarySidePanelObjectUid = value.objectUid;
 		this.secondarySidePanelObjectType = value.objectType;
 	}
@@ -162,7 +160,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	stepClicked(value: { workflowItemStep: AssignmentItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
 		this.assignmentItemStep = value.workflowItemStep;
-		this.secondarySidePanel = 'step-details';
 	}
 
 	closeSecondarySidePanel() {
