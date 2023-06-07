@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AssignmentItem } from '../../../../models/workflow.model';
+import { AssignmentItem, ChangeTypeInfo } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 
 @Component({
@@ -9,16 +9,27 @@ import { WorkflowService } from '../../../../services/workflow.service';
 })
 export class AssignmentInformationGeneralComponent implements OnInit {
 	isLoading: boolean = false;
+	changeTypeInfos: ChangeTypeInfo[] = [];
+	private workflowChangeType: string;
+	private _assignmentItem: AssignmentItem;
 
 	@Input() set workflowItemUid(value: string) {
 		this.load(value);
 	}
 
-	@Input() assignmentItem: AssignmentItem;
+	@Input() set assignmentItem(value: AssignmentItem) {
+		this._assignmentItem = value;
+		this.workflowChangeType = this.changeTypeInfos.find(changeTypeInfo => changeTypeInfo.Name === this.assignmentItem.ChangeType)?.Description;
+	}
+
+	get assignmentItem(): AssignmentItem {
+		return this._assignmentItem;
+	}
 
 	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
 	constructor(private workflowService: WorkflowService) {
+		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
 	}
 
 	ngOnInit(): void {
@@ -30,5 +41,9 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 			this.isLoading = false;
 			this.assignmentItem = response;
 		});
+	}
+
+	get workflowType(): string {
+		return this.workflowChangeType + ': ' + this.assignmentItem.initiatingObjectType;
 	}
 }
