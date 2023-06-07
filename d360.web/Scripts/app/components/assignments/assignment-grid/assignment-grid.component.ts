@@ -17,6 +17,7 @@ import {
 	LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
 	selector: 'd3s-assignment-grid',
@@ -58,16 +59,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			FriendlyName: $localize`Status`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'status'),
-			RemovePopulatedOperator: true
+			ValueLoader: this.getFilterValues.bind(this, 'status')
 		},
 		{
 			Name: 'actionTypeUid',
 			FriendlyName: $localize`Action`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'action'),
-			RemovePopulatedOperator: true
+			ValueLoader: this.getFilterValues.bind(this, 'action')
 		},
 		{
 			Name: 'assetDisplayValue',
@@ -88,12 +87,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			Category: ''
 		},
 		{
+			Name: 'assetTypeUid',
+			FriendlyName: $localize`Type Name`,
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'typeName')
+		},
+		{
 			Name: 'workflowName',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'workflowName'),
-			RemovePopulatedOperator: true
+			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
 		}
 	];
 
@@ -101,6 +106,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private workflowService: WorkflowService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				private changeDetectorRef: ChangeDetectorRef,
+				private assetTypeService: AssetTypeService,
 				protected settingsService: CompanySettingsService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
@@ -243,13 +249,35 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		if (lookupType === 'action') {
 			return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
 				map((workflowIssueTypeList: WorkflowIssueType[]) => {
-					let workflowActionList: any[] = workflowIssueTypeList?.map((workflowIssueTypeList: WorkflowIssueType) => {
+					let workflowActionList: {
+						'name': string,
+						'value': string
+					}[] = workflowIssueTypeList?.map((workflowIssueTypeList: WorkflowIssueType): {
+						'name': string,
+						'value': string
+					} => {
 						return { 'name': workflowIssueTypeList.Name, 'value': workflowIssueTypeList.Uid };
 					}) ?? [];
 					workflowActionList = workflowActionList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 					return {
 						items: workflowActionList,
 						count: workflowActionList.length
+					};
+				}));
+		}
+		if (lookupType === 'typeName') {
+			return this.assetTypeService.getAssetTypesDetails().pipe(
+				map((AssetType: any[]) => {
+					let assetTypeList: { 'name': string, 'value': string }[] = AssetType?.map((assetType): {
+						'name': string,
+						'value': string
+					} => {
+						return { 'name': assetType.Name, 'value': assetType.uid };
+					}) ?? [];
+					assetTypeList = assetTypeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: assetTypeList,
+						count: assetTypeList.length
 					};
 				}));
 		}
