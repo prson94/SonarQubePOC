@@ -9,7 +9,7 @@ import { map, takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowAssignmentItem, WorkflowTypeModel } from '../../../models/workflow.model';
+import { WorkflowAssignmentItem, WorkflowIssueType, WorkflowTypeModel } from '../../../models/workflow.model';
 import {
 	AdvancedFilterFieldType,
 	Filters,
@@ -58,7 +58,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			FriendlyName: $localize`Status`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'Status'),
+			ValueLoader: this.getFilterValues.bind(this, 'status'),
+			RemovePopulatedOperator: true
+		},
+		{
+			Name: 'actionTypeUid',
+			FriendlyName: $localize`Action`,
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'action'),
 			RemovePopulatedOperator: true
 		},
 		{
@@ -214,7 +222,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-		if (lookupType === 'Status') {
+		if (lookupType === 'status') {
 			const values: string[] = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 			return of({
 				items: values,
@@ -224,11 +232,24 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		if (lookupType === 'workflowName') {
 			return this.workflowService.getTypes().pipe(
 				map((workflowTypeList: WorkflowTypeModel[]) => {
-					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel) => workflowTypeModel.Name) ?? [];
+					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
 					workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 					return {
 						items: workflowNameList,
 						count: workflowNameList.length
+					};
+				}));
+		}
+		if (lookupType === 'action') {
+			return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
+				map((workflowIssueTypeList: WorkflowIssueType[]) => {
+					let workflowActionList: any[] = workflowIssueTypeList?.map((workflowIssueTypeList: WorkflowIssueType) => {
+						return { 'name': workflowIssueTypeList.Name, 'value': workflowIssueTypeList.Uid };
+					}) ?? [];
+					workflowActionList = workflowActionList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: workflowActionList,
+						count: workflowActionList.length
 					};
 				}));
 		}
