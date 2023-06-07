@@ -365,7 +365,6 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-
     getTypes(): Observable<WorkflowTypeModel[]> {
         return this.http.get('services/workflow/types')
             .pipe(
@@ -690,7 +689,7 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentItemStep(itemUid: string): Observable<AssignmentItemStep[]> {
+	getAssignmentItemSteps(itemUid: string): Observable<AssignmentItemStep[]> {
 		return this.http.get(`/api/v2/workflow/${itemUid}/steps`)
 			.pipe(
 				map((response) => <AssignmentItemStep[]>response),

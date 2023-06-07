@@ -12,7 +12,9 @@ export class AssignmentInformationComponent implements OnInit {
 	isLoading: boolean = false;
 
 	@Input() set workflowItemUid(value: string) {
-		this.load(value);
+		if (value) {
+			this.load(value);
+		}
 	};
 
 	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();

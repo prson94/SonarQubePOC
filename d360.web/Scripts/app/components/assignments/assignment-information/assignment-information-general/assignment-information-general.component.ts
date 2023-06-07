@@ -14,12 +14,14 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 	private _assignmentItem: AssignmentItem;
 
 	@Input() set workflowItemUid(value: string) {
-		this.load(value);
+		if (value) {
+			this.load(value);
+		}
 	}
 
 	@Input() set assignmentItem(value: AssignmentItem) {
 		this._assignmentItem = value;
-		this.workflowChangeType = this.changeTypeInfos.find(changeTypeInfo => changeTypeInfo.Name === this.assignmentItem.ChangeType)?.Description;
+		this.workflowChangeType = this.changeTypeInfos.find(changeTypeInfo => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
 	}
 
 	get assignmentItem(): AssignmentItem {
@@ -44,6 +46,6 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 	}
 
 	get workflowType(): string {
-		return this.workflowChangeType + ': ' + this.assignmentItem.initiatingObjectType;
+		return this.workflowChangeType + ': ' + this.assignmentItem?.initiatingObjectType;
 	}
 }

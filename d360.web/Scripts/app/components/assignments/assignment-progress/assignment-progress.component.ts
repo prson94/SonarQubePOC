@@ -59,7 +59,7 @@ export class AssignmentProgressComponent implements OnInit {
 	private loadData(): void {
 		this.assignmentItemSteps = [];
 		if (this._workflowItemUid) {
-			this.workflowService.getAssignmentItemStep(this._workflowItemUid)
+			this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
 				.subscribe((response: AssignmentItemStep[]): void => {
 					this.assignmentItemSteps = response;
 				});

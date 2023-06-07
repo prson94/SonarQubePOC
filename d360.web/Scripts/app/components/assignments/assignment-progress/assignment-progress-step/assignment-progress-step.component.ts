@@ -52,23 +52,23 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get icon(): string {
-		if (this.assignmentItemStep.StepType === StepType.Start.toString()) {
+		if (StepType[this.assignmentItemStep.StepType] === StepType.Start) {
 			return 'fa-play-circle';
-		} else if (this.assignmentItemStep.StepType === StepType.Finish.toString()) {
+		} else if (StepType[this.assignmentItemStep.StepType] === StepType.Finish) {
 			return 'fa-stop-circle';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.EmailNotification.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.EmailNotification) {
 			return 'fa-envelope';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.Form.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Form) {
 			return 'fa-sliders';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.FieldChange.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.FieldChange) {
 			return 'fa-sliders';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.HTTPRequest.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPRequest) {
 			return 'fa-globe';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.HTTPResponse.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPResponse) {
 			return 'fa-cogs';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.RelationshipUpdate.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.RelationshipUpdate) {
 			return 'fa-users';
-		} else if (this.assignmentItemStep.ActivityType === WorkflowActivityType.Delete.toString()) {
+		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Delete) {
 			return 'fa-trash';
 		}
 	}
