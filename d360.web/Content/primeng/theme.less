@@ -1490,9 +1490,9 @@ button.p-button.p-highlight, .p-button.p-highlight {
 .p-checkbox-box.p-focus.p-checkbox-checked,
 .p-checkbox-box.p-highlight,
 .p-checkbox-box.p-state-active {
-  border: 1px solid @ig-black;
-  background: var(--primaryButtonBackColor);
-  color: var(--calculatedPrimaryButtonTextColor);
+  border: 1px solid @ig-black !important;
+  background: var(--primaryButtonBackColor) !important;
+  color: var(--calculatedPrimaryButtonTextColor) !important;
   line-height: 1px;
 }
 
@@ -1718,6 +1718,11 @@ p-datatable .p-datatable .p-datatable-thead > tr > th {
 
   i {
     font-size: 80%;
+  }
+
+  .p-icon {
+    width: 12px;
+    height: 12px;
   }
 }
 

@@ -101,7 +101,7 @@
 								 [loadingIcon]="'fa fa-spinner fa-spin'"
 								 [showLoader]="true"
 								 (onNodeExpand)="nodeExpanded($event)"
-								 (onPage)="numberOfRowsByCategoryService.onPage($event)"
+								 (onPage)="numberOfRowsByCategoryService.onPage($event);updatePaginatorIcons();"
 								 (onNodeCollapse)="nodeCollapsed($event)">
 						<ng-template pTemplate="header">
 							<tr>
@@ -111,8 +111,8 @@
 									[style.width]="column.columnWidth ? column.columnWidth + 'px' : null"
 									[style.maxWidth]="column.columnWidth === 0 ? '500px' : null">
 									{{column.text}}
-									<p-treeTableSortIcon *ngIf="column.sortable === true"
-														 [field]="column.datafield"></p-treeTableSortIcon>
+									<d3s-sortIcon *ngIf="column.sortable === true"
+												  [field]="column.datafield"></d3s-sortIcon>
 								</th>
 								<th class="asset-grid-tools" style="width: 40px"></th>
 								<th style="width: 0; padding: 0"></th>
