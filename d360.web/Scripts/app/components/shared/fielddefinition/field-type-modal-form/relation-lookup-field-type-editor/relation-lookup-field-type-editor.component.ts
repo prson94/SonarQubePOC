@@ -144,7 +144,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		this.intervalHandle = setInterval(() => {
 			this.setDropdowns();
-		}, 250);
+		}, 1000);
 	}
 
 	setDropdowns() {
@@ -503,12 +503,14 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		const fieldDisplayNameControl = 'RelationLookupField_DisplayName_' + fieldIndex;
 
 		let relIdxRequired: number = null;
-		const relIndexes = this.relationshipTypeSelection.map((x) => x.index);
-		relIndexes.forEach((x) => {
-			if (!this.lookupFields.some((f) => f.relIdxRequired === x)) {
-				relIdxRequired = x;
-			}
-		});
+		if (!name) {
+			const relIndexes = this.relationshipTypeSelection.map((x) => x.index);
+			relIndexes.forEach((x) => {
+				if (!this.lookupFields.some((f) => f.relIdxRequired === x)) {
+					relIdxRequired = x;
+				}
+			});
+		}
 
 		if (requiredIndexOverride !== null) {
 			relIdxRequired = requiredIndexOverride;
@@ -517,7 +519,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		if (relIdxRequired === null && this.isAddFieldDisabled) {
 			return;
 		}
-
+		
 		this.lookupFields.push(
 			{ idx: fieldIndex, fieldNameControl, fieldDisplayNameControl, MenuItems: [], relIdxRequired }
 		);
@@ -937,7 +939,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		}
 
 		this.filter = $event.filter;
-		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field);
+		this.filters = ($event.data as AdvancedFilterFieldCondition[]).filter((x) => x.field && !x.markForDeletion);
 	}
 
 	getPlaceholderForField(item: LookupField): string {
