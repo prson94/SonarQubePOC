@@ -824,6 +824,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				//Combine both permissions set on asset or applied to whole type than take max allowed permission
 				resolvedPermissionsTempTable = $@"
 										drop table if exists #resolvedAssetPermissions
+										declare @Readasset int,
+												@ModifyAsset int,
+												@DeleteAsset int;
 										;with asset_permissions as (
 										select pa.AssetId,
 											 case 
@@ -842,32 +845,28 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 											 else 0
 											 end as 'DeleteAsset'
 										from #PermissiondAssets pa where pa.AssetId <> 0
-										union
-										select asset.AssetId,
-											 case 
-											   when pa.PermissionsBitMask is null then 1
-											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 1 = 1 then 1
-											 else 0
-											 end as 'ReadAsset',
-											 Case 
-											   when pa.PermissionsBitMask is null then @isAdmin
-											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 8 = 8 then 1
-											 else 0
-											 end as 'ModifyAsset',
-											 case 
-											   when pa.PermissionsBitMask is null then @isAdmin
-											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 4 = 4 then 1
-											 else 0
-											 end as 'DeleteAsset'
-										from
-										#PermissiondAssets asset 
-										left join #PermissiondAssets pa on pa.AssetId = 0 and pa.AssetTypeID = @assettypeid
-										where asset.AssetId > 0
 										)
 										select AssetId, MAX(ReadAsset) as ReadAsset, MAX(ModifyAsset) as ModifyAsset,MAX(DeleteAsset) as DeleteAsset
 										into #resolvedAssetPermissions
 										from asset_permissions
-										group by AssetId";
+										group by AssetId;
+										select @Readasset = max(case 
+											   when pa.PermissionsBitMask is null then 1
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 1 = 1 then 1
+											 else 0
+											 end),
+											 @ModifyAsset = max(Case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 8 = 8 then 1
+											 else 0
+											 end),
+											 @DeleteAsset = max(case 
+											   when pa.PermissionsBitMask is null then @isAdmin
+											   when pa.PermissionsBitMask is not null and pa.PermissionsBitMask & 4 = 4 then 1
+											 else 0
+											 end)
+										from #PermissiondAssets pa 
+										where pa.AssetId = 0 and pa.AssetTypeID = @assettypeid;";
 
 				sb.AppendLine(resolvedPermissionsTempTable);
 
@@ -1187,15 +1186,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 			}
 
-			if (restrictions.HasAssetPermission)
+			if (restrictions.HasAssetPermission && !CompanyContext.CurrentResourceIsAdmin)
 			{
 				permissionDetailSQL = @"
 				left join #resolvedAssetPermissions [Permissions] on [Permissions].AssetId = A.ID";
 
 				includePermissionFields = @",(select 
-					 [Permissions].ReadAsset as 'ReadAsset',
-					 [Permissions].ModifyAsset as 'ModifyAsset', 
-					 [Permissions].DeleteAsset as 'DeleteAsset'
+					 greatest([Permissions].ReadAsset,@ReadAsset) as 'ReadAsset',
+					 greatest([Permissions].ModifyAsset,@ModifyAsset) as 'ModifyAsset', 
+					 greatest([Permissions].DeleteAsset,@DeleteAsset) as 'DeleteAsset'
 					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
 					 ) as Permissions ";
 			}
