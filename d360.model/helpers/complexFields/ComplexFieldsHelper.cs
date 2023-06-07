@@ -159,7 +159,7 @@ namespace d360.model.helpers
 				model.NeedsFullCheck = false;
 			}
 			return ret;
-        }
+		}
 
 		public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping, List<FieldTypeRelationShipType> fieldtypeRelationshipType)
 		{
@@ -566,6 +566,12 @@ namespace d360.model.helpers
 				else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 				{
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+
+					if (gColumn.text.ToLowerInvariant() == "_assetpath")
+					{
+						gColumn.text = "Asset Path";
+					}
+
 					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
@@ -701,7 +707,7 @@ namespace d360.model.helpers
 			}
 			selects.Add("A.[uid] as [Uid]");
 			foreach (var ft in fields)
-			{				
+			{
 				if (ft.Name == "Code" && ft.Type == DataType.System.ToString())
 				{
 					selects.Add("A.[Code] as [Code]");
@@ -749,9 +755,9 @@ namespace d360.model.helpers
 
 					selects.Add($"{selectField} AS [{fieldAlias}]");
 
-					if (ft.SortOrder > 0 && sortFields!=null)
+					if (ft.SortOrder > 0 && sortFields != null)
 					{
-						sortFields.Add((ft.SortOrder, $"{selectField} {(ft.SortByAscending ? "" : "desc")}" ));
+						sortFields.Add((ft.SortOrder, $"{selectField} {(ft.SortByAscending ? "" : "desc")}"));
 					}
 
 					var HasDefaultValue = !string.IsNullOrEmpty(ft.DefaultFormattedValue) ? 1 : 0;
@@ -772,7 +778,7 @@ namespace d360.model.helpers
                             {string.Join(", ", selects)}
                             from Asset A
                             {string.Join("\n", joins)}";
-        }
+		}
 
 		public static string GetOwnershipLookupCountQuery(FieldTypeLookup ftl)
 		{
