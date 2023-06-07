@@ -1192,9 +1192,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				left join #resolvedAssetPermissions [Permissions] on [Permissions].AssetId = A.ID";
 
 				includePermissionFields = @",(select 
-					 greatest([Permissions].ReadAsset,@ReadAsset) as 'ReadAsset',
-					 greatest([Permissions].ModifyAsset,@ModifyAsset) as 'ModifyAsset', 
-					 greatest([Permissions].DeleteAsset,@DeleteAsset) as 'DeleteAsset'
+					 coalesce(greatest([Permissions].ReadAsset,@ReadAsset),1) as 'ReadAsset',
+					 coalesce(greatest([Permissions].ModifyAsset,@ModifyAsset),@Isadmin) as 'ModifyAsset', 
+					 coalesce(greatest([Permissions].DeleteAsset,@DeleteAsset),@Isadmin) as 'DeleteAsset'
 					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
 					 ) as Permissions ";
 			}
