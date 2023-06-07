@@ -1753,16 +1753,19 @@ namespace d360.web.Controllers.V2
 				var fieldTypes = (await FieldsRepository.GetFieldTypes(queryParams)).Item1.items;
 				List<RelationLookupDisplayFields> list = new List<RelationLookupDisplayFields>();
 
-				foreach (var ft in fieldTypes.Where(x => x.IsForRelationLookupDefinition == true))
+				if (fieldTypes != null)
 				{
-
-					list.Add(new RelationLookupDisplayFields
+					foreach (var ft in fieldTypes.Where(x => x.IsForRelationLookupDefinition == true))
 					{
-						title = ft.FriendlyName,
-						value = ft.Name,
-						fieldType = ft
-					});
+						list.Add(new RelationLookupDisplayFields
+						{
+							title = ft.FriendlyName,
+							value = ft.Name,
+							fieldType = ft
+						});
+					}
 				}
+
 
 				if (type == SystemObjects.ReferenceItemType)
 				{
