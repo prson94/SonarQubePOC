@@ -1086,7 +1086,7 @@ namespace d360.model.DataAccessLayer
 						{
 							var actionFilter = advFilterStatements.Where(f=> f.Contains("IT.uid")).FirstOrDefault();
 							var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
-							var endIndex = actionFilter.IndexOf(" ", startIndex) ==-1? actionFilter.IndexOf(")", startIndex) : actionFilter.IndexOf(" ", startIndex);							
+							var endIndex = actionFilter.IndexOf(" ", startIndex) ==-1? actionFilter.IndexOf(")", startIndex)-1 : actionFilter.IndexOf(" ", startIndex);							
 							var filterID = actionFilter.Substring(startIndex+1, endIndex - startIndex);
 							var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 							
