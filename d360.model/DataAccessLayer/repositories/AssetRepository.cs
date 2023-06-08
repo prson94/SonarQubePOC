@@ -1753,8 +1753,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						{simpleFiltersTempTablesQuery}
 
 						insert into #filtered_results
-						{GetBaseQuery()}
-						option(recompile);
+						{GetBaseQuery()};
 
 						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
 
