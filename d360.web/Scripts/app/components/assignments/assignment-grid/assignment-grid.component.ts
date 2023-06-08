@@ -53,55 +53,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	statusValues: string[] = ['Pending', 'Complete'];
 	protected readonly JSON: JSON = JSON;
 
-	filterFieldList: AdvancedFilterFieldType[] = [
-		{
-			Name: 'Status',
-			FriendlyName: $localize`Status`,
-			Type: new FieldType('Lookup'),
-			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'status')
-		},
-		{
-			Name: 'actionTypeUid',
-			FriendlyName: $localize`Action`,
-			Type: new FieldType('Lookup'),
-			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'action')
-		},
-		{
-			Name: 'assetDisplayValue',
-			FriendlyName: $localize`Associated with`,
-			Type: new FieldType('Text'),
-			Category: ''
-		},
-		{
-			Name: 'CompletedOn',
-			FriendlyName: $localize`Completed`,
-			Type: new FieldType('DateTime'),
-			Category: ''
-		},
-		{
-			Name: 'StartedOn',
-			FriendlyName: $localize`Initiated`,
-			Type: new FieldType('DateTime'),
-			Category: ''
-		},
-		{
-			Name: 'assetTypeUid',
-			FriendlyName: $localize`Type Name`,
-			Type: new FieldType('Lookup'),
-			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'typeName')
-		},
-		{
-			Name: 'workflowName',
-			FriendlyName: $localize`Workflow Name`,
-			Type: new FieldType('Lookup'),
-			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
-		}
-	];
-
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
@@ -116,9 +67,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
 		this.setRowsPerPage();
-		this.filterFields$ = this.filterFieldsSubject.asObservable();
-		this.filterFieldsSubject.next(this.filterFieldList);
-		this.filterFieldsSubject.complete();
+		this.createFilterFields();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
 
@@ -299,5 +248,62 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			assigneeNames = count ? assigneeNameList?.slice(0, 2)?.join() : assigneeNameList?.join();
 		}
 		return assigneeNames;
+	}
+
+	createFilterFields(): void {
+		let filterFieldList: AdvancedFilterFieldType[] = [];
+		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
+		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = true;
+		filterFieldList = [
+			{
+				Name: 'Status',
+				FriendlyName: $localize`Status`,
+				Type: lookupFieldTypePrimaryFilter,
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'status')
+			},
+			{
+				Name: 'actionTypeUid',
+				FriendlyName: $localize`Action`,
+				Type: lookupFieldTypePrimaryFilter,
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'action')
+			},
+			{
+				Name: 'assetDisplayValue',
+				FriendlyName: $localize`Associated with`,
+				Type: new FieldType('Text'),
+				Category: ''
+			},
+			{
+				Name: 'CompletedOn',
+				FriendlyName: $localize`Completed`,
+				Type: new FieldType('DateTime'),
+				Category: ''
+			},
+			{
+				Name: 'StartedOn',
+				FriendlyName: $localize`Initiated`,
+				Type: new FieldType('DateTime'),
+				Category: ''
+			},
+			{
+				Name: 'assetTypeUid',
+				FriendlyName: $localize`Type Name`,
+				Type: new FieldType('Lookup'),
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'typeName')
+			},
+			{
+				Name: 'workflowName',
+				FriendlyName: $localize`Workflow Name`,
+				Type: new FieldType('Lookup'),
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'workflowName')
+			}
+		];
+		this.filterFields$ = this.filterFieldsSubject.asObservable();
+		this.filterFieldsSubject.next(filterFieldList);
+		this.filterFieldsSubject.complete();
 	}
 }
