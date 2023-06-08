@@ -76,6 +76,7 @@ namespace d360.model.helpers.filters
 				this.tempTableInfo.TempTableQuery = @$"
 				drop table if exists #advanced_filter_{parameterIdx}
 				create table #advanced_filter_{parameterIdx} (AssetId bigint)
+				create clustered index idx_advanced_filter_{parameterIdx} on #advanced_filter_{parameterIdx}(AssetId);
 
 				insert into #advanced_filter_{parameterIdx}
 				select  F{fieldType.ID}.AssetID 
@@ -88,6 +89,7 @@ namespace d360.model.helpers.filters
 				this.tempTableInfo.TempTableQuery = @$"
 				drop table if exists #advanced_filter_{parameterIdx}
 				create table #advanced_filter_{parameterIdx} (AssetId bigint)
+				create clustered index idx_advanced_filter_{parameterIdx} on #advanced_filter_{parameterIdx}(AssetId);
 
 				insert into #advanced_filter_{parameterIdx}
 				select A.Id 
@@ -102,7 +104,7 @@ namespace d360.model.helpers.filters
 				sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 			}
 
-			return $"(A.ID in (select AssetID from #advanced_filter_{parameterIdx}))";
+			return $"(exists (select 1 from #advanced_filter_{parameterIdx} af{parameterIdx} where af{parameterIdx}.AssetID = A.ID))";
 		}
 
 		string UpdateTokenForNullValue()
