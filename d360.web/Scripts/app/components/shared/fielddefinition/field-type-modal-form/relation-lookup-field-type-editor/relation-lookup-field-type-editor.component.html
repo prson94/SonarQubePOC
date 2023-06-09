@@ -8,8 +8,8 @@
 					<p-dropdown igDropdown
 								igSize="full"
 								[igDataCy]="'RelationshipType_Dropdown'"
-								name="{{item.cntrlName}}"
-								formControlName="{{item.cntrlName}}"
+								[attr.name]="item.cntrlName"
+								[formControlName]="item.cntrlName"
 								appendTo="body"
 								[options]="item.options"
 								[autoDisplayFirst]="false"
@@ -51,8 +51,8 @@
 								<p-dropdown igDropdown
 											igSize="full"
 											[igDataCy]="'RelationshipField_Dropdown'"
-											name="{{item.fieldNameControl}}"
-											formControlName="{{item.fieldNameControl}}"
+											[attr.name]="item.fieldNameControl"
+											[formControlName]="item.fieldNameControl"
 											appendTo="body"
 											[panelStyleClass]="'ig-dropdown-grouped'"
 											[options]="fieldOptionsForFields | dropdownCategoryFilter:item.relIdxRequired"
