@@ -64,7 +64,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			nothingSelectedMessage: $localize`Select multiple assignments from the list to display its information`,
 			notApplicableMessage: $localize`Information data is not available for the selected assignments`,
 			multipleSelectedMessage: $localize`multiple assignments selected`,
-			key: 'information',
+			key: 'delete',
 			icon: 'fa-info-circle',
 			disabled: false,
 			visible: true,
@@ -97,6 +97,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		if (rows.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
+			this.sidePanelTab = 'delete'
 		}
 	}
 
