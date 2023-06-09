@@ -378,7 +378,8 @@ namespace d360.web.Controllers.V2
 
 		[
 			HttpGet,
-			Route("assignments"),			
+			Route("assignments"),
+			ApiExplorerSettings(IgnoreApi = true),
 			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are UpdatedOn, CreatedOn. By default the results are ordered by UpdatedOn.", DataType = "string", ParameterType = "query", Required = false),
@@ -456,6 +457,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("item/{workflowItemUid:Guid}"),
+			ApiExplorerSettings(IgnoreApi = true),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow item details failed.", typeof(WorkflowItemDetails))
