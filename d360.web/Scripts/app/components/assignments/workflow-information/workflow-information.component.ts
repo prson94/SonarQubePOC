@@ -21,6 +21,7 @@ export class WorkflowInformationComponent implements OnInit {
 
 	private id: number = 0;
 	private uid: string = '00000000-0000-0000-0000-000000000000';
+	private version: number;
 
 	@Input() set workflowTypeId(value: number) {
 		this.id = value;
@@ -32,6 +33,11 @@ export class WorkflowInformationComponent implements OnInit {
 		this.getWorkflowTypeDetails();
 	}
 
+	@Input() set workflowTypeVersion(value: number){
+		this.version = value;
+		this.getWorkflowTypeDetails();
+	}
+
 	constructor(private workflowService: WorkflowService) {
 	}
 
@@ -40,7 +46,7 @@ export class WorkflowInformationComponent implements OnInit {
 
 	private getWorkflowTypeDetails() {
 		this.isLoading = true;
-		this.workflowService.getWorkflowTypeModel(this.id, this.uid).subscribe((response: WorkflowDiagramModel): void => {
+		this.workflowService.getWorkflowDiagram(this.id, this.uid, this.version).subscribe(response => {
 			this.isLoading = false;
 			this.workflowDiagramModel = response;
 		});
