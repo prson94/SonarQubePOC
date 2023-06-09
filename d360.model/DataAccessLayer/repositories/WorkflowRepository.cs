@@ -1067,7 +1067,7 @@ namespace d360.model.DataAccessLayer
 					if (advFilterArgs != null && advFilterStatements != null)
 					{
 						dbArgs.AddDynamicParams(advFilterArgs);
-						conditions.AddRange(advFilterStatements);						
+						conditions.AddRange(advFilterStatements);
 
 						if (filterValue.Contains("assignee"))
 						{
@@ -1076,46 +1076,50 @@ namespace d360.model.DataAccessLayer
 											left JOIN
 											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
 						}
-												
-						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count==1)
+
+						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count > 0)
 						{
-							var actionFilter = advFilterStatements.Where(f=> f.Contains("IT.uid")).FirstOrDefault();
-							var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
-							if (startIndex > 0)
+							hasActionFilter = true;						
+
+							if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1)
 							{
-								if (conditions.Where(c => c.Contains("IT.uid")).Any())
+								var actionFilter = advFilterStatements.Where(f => f.Contains("IT.uid")).FirstOrDefault();
+								var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
+								if (startIndex > 0)
 								{
-									hasActionFilter = true;
-								}
-								var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
-								var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
-								var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
+									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
+									var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
+									var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 
-								if (Guid.TryParse(actionTypeUid, out Guid atGuid))
-								{
-									IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
-									var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
-									getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);
-
-									foreach (FieldType customField in fieldTypes)
+									if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 									{
-										if (queryParams.Any(x => x.Key == customField.Name))
-										{
-											var dynamicFieldFilterValue = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-											conditions.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+										IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
+										var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
+										getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);
 
-											dbArgs.Add($"@field{customField.ID}", dynamicFieldFilterValue);
-										}
-
-										if (!string.IsNullOrWhiteSpace(simpleFilter) || (queryParams.ToList().Any(x => x.Key.ToLower() == "_order") && !string.IsNullOrWhiteSpace(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value)))
+										foreach (FieldType customField in fieldTypes)
 										{
-											queryFieldOptions.Add(new DefaultFilter(customField.Name, $"F{customField.ID}.FormattedValue", SqlFieldType.Text));
+											if (queryParams.Any(x => x.Key == customField.Name))
+											{
+												var dynamicFieldFilterValue = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+												conditions.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+
+												dbArgs.Add($"@field{customField.ID}", dynamicFieldFilterValue);
+											}
+
+											if (!string.IsNullOrWhiteSpace(simpleFilter) || (queryParams.ToList().Any(x => x.Key.ToLower() == "_order") && !string.IsNullOrWhiteSpace(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value)))
+											{
+												queryFieldOptions.Add(new DefaultFilter(customField.Name, $"F{customField.ID}.FormattedValue", SqlFieldType.Text));
+											}
 										}
 									}
 								}
-							}															
+								else
+								{
+									hasActionFilter = false;
+								}
+							}
 						}
-
 					}
 				}
 			}
