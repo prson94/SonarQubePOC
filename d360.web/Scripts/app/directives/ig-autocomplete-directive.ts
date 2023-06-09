@@ -3,6 +3,8 @@ import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 import { AutoComplete } from 'primeng/autocomplete';
 
+/*global $localize*/
+
 @Directive({
 	selector: '[igAutocomplete]'
 
