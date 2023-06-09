@@ -21,7 +21,7 @@
 	<div class="grid-actions-header-row">
 		<button igButton type="button" class="ig-button-primary" margin (click)="selectAll()" i18n-label
 				label="Select All"
-				[disabled]="items.length < 1"></button>
+				[disabled]="workflowsWithStatus.length < 1"></button>
 		<!--		<advanced-filtering [loadIdentifier]="'SemanticTypes'"-->
 		<!--							[fieldsObserver]="filterFields$"-->
 		<!--							(onLoad)="onFiltersLoaded()"-->
@@ -33,73 +33,48 @@
 		<p-table #dt
 				 [loading]="isLoading"
 				 loadingIcon="fa fa-spinner"
-				 [value]="items"
+				 [value]="workflowsWithStatus"
 				 selectionMode="multiple"
 				 [metaKeySelection]="true"
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['WorkflowName','Type','TypeName','Asset','Initiator','StartedOn','CompletedOn']"
+				 [globalFilterFields]="['Name','Version','Status']"
 				 [pageLinks]="3"
 				 [paginator]="true"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
-				 (onLazyLoad)="loadWorkflowMonitorItems($event)"
-				 [selection]="assignments"
+				 (onLazyLoad)="loadWorkflowsByType($event)"
+				 [selection]="selectedWorkflowsByType"
 				 (selectionChange)="gridSelectionChange($event)"
 				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'WorkflowName'">
+					<th pSortableColumn="Name">
 						<ng-container i18n>Workflow Name</ng-container>
-						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+						<d3s-sortIcon field="Name"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Asset'">
-						<ng-container i18n>Associated with</ng-container>
-						<d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
+					<th pSortableColumn="Version">
+						<ng-container i18n>Version</ng-container>
+						<d3s-sortIcon field="Version"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Initiator'">
-						<ng-container i18n>Initiator</ng-container>
-						<d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
-					</th>
-					<th [pSortableColumn]="'StartedOn'">
-						<ng-container i18n>Initiated</ng-container>
-						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
-					</th>
-					<th [pSortableColumn]="'Status'">
-						<ng-container i18n>Status</ng-container>
-						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+					<th pSortableColumn="Status">
+						<ng-container i18n>Outstanding Assignments</ng-container>
+						<d3s-sortIcon field="Status"></d3s-sortIcon>
 					</th>
 					<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
-				</tr>
-				<tr [hidden]="showSimpleFilter">
-					<th>
-						<d3s-column-filter [field]="'WorkflowName'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'Asset'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'Initiator'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
-					</th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
 				<tr [pSelectableRow]="item" style="word-wrap: break-word">
-					<td class="break-wrap">{{item.WorkflowName}}</td>
-					<td>{{item.Asset}}</td>
-					<td>{{item.Initiator}}</td>
+					<td class="break-wrap">{{item.Name}}</td>
+					<td>{{item.Version}}</td>
 					<td>
-						<span>{{item.StartedOn | date: 'shortDate'}}</span>
-					</td>
-					<td>
-						<span>{{item.Status}}</span>
+						<span i18n *ngIf="item.awaiting > 0"><ig-badge
+							[text]="item.awaiting"></ig-badge> Awaiting</span>
+						<span i18n *ngIf="item.complete > 0"> <ig-badge
+							[text]="item.complete"></ig-badge> Complete</span>
+						<span i18n *ngIf="item.incomplete > 0"> <ig-badge [text]="item.incomplete"></ig-badge> Incomplete</span>
 					</td>
 					<td class="asset-grid-tools"
 						style="flex: 0 0 30px"

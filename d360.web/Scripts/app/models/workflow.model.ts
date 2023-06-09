@@ -802,3 +802,33 @@ export class WorkflowAssignmentItem {
 	assetUid: string;
 	assetPath: string;
 }
+
+export class WorkflowByType {
+	TypeID: number;
+	Name: string;
+	VersionName: string;
+	Version: number;
+	UpdatedOn: string;
+	UpdatedBy: string;
+	ObjectTypeName: string;
+	Object: string;
+	ObjectID: number;
+	NgUrl: string;
+	VersionID: number;
+	ObjectNames: string;
+	Responsibility: string;
+	SpecificUser: string;
+	Status: string;
+	CurrentStepID: number;
+	Settings: string;
+	ActivityType: number;
+	StepType: number;
+	ResponsibleUser: string;
+	StartedBy: string;
+}
+
+export class WorkflowWithStatus extends WorkflowByType {
+	awaiting: number;
+	complete: number;
+	incomplete: number;
+}

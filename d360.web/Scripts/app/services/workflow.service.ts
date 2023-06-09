@@ -13,7 +13,7 @@ import {
 	Issue,
 	IssueDetail,
 	TransitionTypeInfo,
-	WorkflowAssignments,
+	WorkflowAssignments, WorkflowByType,
 	WorkflowChangeType,
 	WorkflowDiagramModel,
 	WorkflowForm,
@@ -540,20 +540,23 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowsByTypeList(types: string, filteredObject?: string, filteredObjectId?: number):Observable<any> {
-        let uri = `services/workflow/typelist?types=${types}`;
+	getWorkflowsByTypeList(types?: string, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowByType[]> {
+		let uri = 'services/workflow/typelist';
+		uri += (types ? `?types=${types}` : '?types=all');
 
-        if (filteredObject != null && filteredObjectId != null) {
-            uri += `&filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
-        }
+		if (filteredObject != null && filteredObjectId != null) {
+			uri += `&filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+		}
 
-        return this.http.get(uri)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
+		// TODO: switch to actual web service when merging the main branch
+		return of(require('./workflows-by-type-list.mock.json'));
 
-    }
+		// return this.http.get(uri)
+		// 	.pipe(
+		// 		map((response) => response),
+		// 		catchError((err) => this.handleError(err))
+		// 	);
+	}
 
     getWorkflowVersionStepHistory(id: number, filteredObject?: string, filteredObjectId?: number):Observable<any> {
         let uri = `services/workflow/versionstep/history/${id}`;
