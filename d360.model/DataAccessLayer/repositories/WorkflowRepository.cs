@@ -1067,12 +1067,7 @@ namespace d360.model.DataAccessLayer
 					if (advFilterArgs != null && advFilterStatements != null)
 					{
 						dbArgs.AddDynamicParams(advFilterArgs);
-						conditions.AddRange(advFilterStatements);
-
-						if (conditions.Where(c => c.Contains("IT.uid")).Any())
-						{
-							hasActionFilter = true;
-						}
+						conditions.AddRange(advFilterStatements);						
 
 						if (filterValue.Contains("assignee"))
 						{
@@ -1088,6 +1083,10 @@ namespace d360.model.DataAccessLayer
 							var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
 							if (startIndex > 0)
 							{
+								if (conditions.Where(c => c.Contains("IT.uid")).Any())
+								{
+									hasActionFilter = true;
+								}
 								var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
 								var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
 								var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
@@ -1261,6 +1260,10 @@ namespace d360.model.DataAccessLayer
 										FOR JSON PATH
 									) as value
 								) AssignedUsers
+								outer apply (
+									select 
+										null as uid  										
+								) as IT
 								{string.Join("\n", fieldJoins.GetStatements())}
 								{whereConditions}";
 
