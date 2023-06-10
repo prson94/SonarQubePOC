@@ -24,7 +24,7 @@ import {
 	WorkflowReassignmentAsset,
 	WorkflowTaskProcedure,
 	WorkflowTypeItem,
-	WorkflowTypeModel
+	WorkflowTypeModel, WorkflowVersion
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -186,18 +186,23 @@ export class WorkflowService extends BaseObservableService {
 
     //#region diagram
 
-    public getWorkflowDiagram(id: number,uid:string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
-        let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`;
+	public getWorkflowDiagram(id: number, uid: string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
+		if ((id == null || id < 1) && (uid == null || uid === '00000000-0000-0000-0000-000000000000')) {
+			return of(null);
+		}
 
-        if (filteredObject != null && filteredObjectId != null)
-            {uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;}
+		let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`;
 
-        return this.http.get(uri)
-            .pipe(
-                map((response) => <WorkflowDiagramModel>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		if (filteredObject != null && filteredObjectId != null) {
+			uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+		}
+
+		return this.http.get(uri)
+			.pipe(
+				map((response) => <WorkflowDiagramModel>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     //#endregion
 
@@ -480,10 +485,10 @@ export class WorkflowService extends BaseObservableService {
            
     }
 
-    getWorkflowVersions(id: number): Observable<any[]> {
+    getWorkflowVersions(id: number): Observable<WorkflowVersion[]> {
         return this.http.get(`services/workflow/type/${id}/versions`)
             .pipe(
-                map((response) => <any[]>response),
+                map((response) => <WorkflowVersion[]>response),
                 catchError((err) => this.handleError(err))
             );
     }

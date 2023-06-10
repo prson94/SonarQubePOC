@@ -7,8 +7,26 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<d3s-workflow-version-grid #assignmentGridComponent
-								 ></d3s-workflow-version-grid>
+			<d3s-workflow-version-grid #assignmentGridComponent (selectionChange)="selectedWorkflowByType = $event"
+			></d3s-workflow-version-grid>
+		</as-split-area>
+		<as-split-area [size]="getSidePanelWidth()"
+					   [minSize]="getSidePanelMinWidth()"
+					   [maxSize]="getSidePanelMaxWidth()"
+					   class="tile tile-detail side-panel"
+					   *ngIf="showSidePanel">
+			<side-panel [(expanded)]="sidePanelOpen"
+						[storageKey]="sidePanelStorageKey"
+						[selectedItem]="selectedWorkflowByType?.[0]"
+						[selectedItemsCount]="selectedWorkflowByType?.length"
+						[extraButtons]="sidePanelButtons"
+						[setMinMaxWidth]="false"
+						[hasDetail]="false">
+				<ng-container *ngIf="sidePanelOpen">
+					<d3s-workflow-information [workflowTypeVersion]="selectedWorkflowByType?.[0]?.Version"
+						[workflowTypeId]="selectedWorkflowByType?.[0]?.TypeID"></d3s-workflow-information>
+				</ng-container>
+			</side-panel>
 		</as-split-area>
 	</as-split>
 </div>
