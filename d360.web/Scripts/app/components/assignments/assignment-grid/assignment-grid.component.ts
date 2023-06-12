@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
@@ -18,6 +18,7 @@ import {
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 @Component({
 	selector: 'd3s-assignment-grid',
@@ -28,7 +29,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	title: string = $localize`WorkFlow Items`;
 	items: WorkflowAssignmentItem[] = [];
-	subItems: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
@@ -39,10 +39,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	advancedFilter: string = '';
+	singleActionTypeUidSelected: boolean = false;
+	singleActionTypeUidFilter: string = '';
+	actionFormFields: any[] = [];
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
-	@Output() hideDetails = new EventEmitter();
-	private destroy = new Subject<void>();
+	@Output() hideDetails: EventEmitter<any> = new EventEmitter();
+	private destroy: Subject<void> = new Subject<void>();
 	theDeleteCallback: Function;
 	menuItems: any[] = [
 		{ title: $localize`Delete` }
@@ -59,6 +62,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private changeDetectorRef: ChangeDetectorRef,
 				private assetTypeService: AssetTypeService,
 				protected settingsService: CompanySettingsService,
+				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteAssignments.bind(this);
@@ -82,9 +86,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnDestroy(): void {
-		if (this.subItems) {
-			this.subItems.unsubscribe();
-		}
 		this.destroy.next();
 		this.destroy.complete();
 	}
@@ -108,21 +109,25 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.subItems = this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null)
-			.subscribe((result) => {
-				this.items = result.items;
-				this.totalRecords = +result.total;
-				if (this.items != null && this.items.length > 0) {
-					this.assignments = [this.items[0]];
-					this.selectedCount = 1;
-					this.selectionChange.emit(this.assignments);
-				} else {
-					this.selectedCount = 0;
-					this.selectionChange.emit(null);
-				}
-				this.isLoading = false;
-				this.changeDetectorRef.markForCheck();
-			});
+		let sources: Observable<any>[] = [
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null),
+			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
+		];
+		forkJoin(sources).subscribe((results: any[]) => {
+			this.items = results[0].items;
+			this.totalRecords = +results[0].total;
+			if (this.items != null && this.items.length > 0) {
+				this.assignments = [this.items[0]];
+				this.selectedCount = 1;
+				this.selectionChange.emit(this.assignments);
+			} else {
+				this.selectedCount = 0;
+				this.selectionChange.emit(null);
+			}
+			this.actionFormFields = results[1] && results[1].length > 0 ? results[1] : [];
+			this.isLoading = false;
+			this.changeDetectorRef.markForCheck();
+		});
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
@@ -238,6 +243,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
+		let advancedFilterData: any[] = $event.data;
+		for (let i: number = 0; i < advancedFilterData?.length; i++) {
+			if (advancedFilterData[i].field === 'actionTypeUid') {
+				this.singleActionTypeUidSelected = advancedFilterData[i].value?.length === 1;
+				this.singleActionTypeUidFilter = advancedFilterData[i].value && advancedFilterData[i].value[0]?.value;
+			}
+		}
 		this.loadData();
 	}
 

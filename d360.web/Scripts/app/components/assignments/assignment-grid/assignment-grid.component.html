@@ -58,14 +58,22 @@
 				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'workflowName'">
-						<ng-container i18n>Workflow Name</ng-container>
-						<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
-					</th>
+					<ng-container *ngIf="actionFormFields.length === 0">
+						<th [pSortableColumn]="'workflowName'">
+							<ng-container i18n>Workflow Name</ng-container>
+							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
+						</th>
+					</ng-container>
 					<th [pSortableColumn]="'assetDisplayValue'">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
+					<ng-container *ngFor="let field of actionFormFields">
+						<th [pSortableColumn]="field.FriendlyName">
+							<ng-container i18n>{{ field.FriendlyName }}</ng-container>
+							<d3s-sortIcon [field]="field.FriendlyName"></d3s-sortIcon>
+						</th>
+					</ng-container>
 					<th [pSortableColumn]="'initiator'">
 						<ng-container i18n>Initiator</ng-container>
 						<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
@@ -85,12 +93,19 @@
 					<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
 				</tr>
 				<tr [hidden]="showSimpleFilter">
-					<th>
-						<d3s-column-filter [field]="'workflowName'" [datatype]="'text'"></d3s-column-filter>
-					</th>
+					<ng-container *ngIf="actionFormFields.length === 0">
+						<th>
+							<d3s-column-filter [field]="'workflowName'" [datatype]="'text'"></d3s-column-filter>
+						</th>
+					</ng-container>
 					<th>
 						<d3s-column-filter [field]="'assetDisplayValue'" [datatype]="'text'"></d3s-column-filter>
 					</th>
+					<ng-container *ngFor="let field of actionFormFields">
+						<th>
+							<d3s-column-filter [field]="field.FriendlyName" [datatype]="'text'"></d3s-column-filter>
+						</th>
+					</ng-container>
 					<th>
 						<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>
 					</th>
@@ -107,8 +122,13 @@
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
 				<tr [pSelectableRow]="item" class="assignments-table-data">
-					<td class="break-wrap">{{item.workflowName}}</td>
+					<ng-container *ngIf="actionFormFields.length === 0">
+						<td>{{item.workflowName}}</td>
+					</ng-container>
 					<td>{{item.assetDisplayValue}}</td>
+					<ng-container *ngFor="let field of actionFormFields">
+						<td [innerHTML]="item[field.Name]"></td>
+					</ng-container>
 					<td>{{item.initiator}}</td>
 					<td>
 						<span>{{item.StartedOn | date: 'shortDate'}}</span>
