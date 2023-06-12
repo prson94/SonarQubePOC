@@ -15,6 +15,7 @@
 								[autoDisplayFirst]="false"
 								optionLabel="title"
 								optionValue="value"
+								[showClear]="false"
 								required
 								(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
 					<div style="width:32px">
@@ -60,6 +61,7 @@
 											i18n-placeholder
 											[attr.placeholder]="getPlaceholderForField(item)"
 											[group]="true"
+											[showClear]="false"
 											required></p-dropdown>
 							</td>
 							<td>
