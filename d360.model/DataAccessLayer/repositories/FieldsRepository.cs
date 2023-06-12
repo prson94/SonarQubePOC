@@ -2623,7 +2623,7 @@ namespace d360.model.DataAccessLayer
 				var index = selects.IndexOf(el);
 				if (index > 0)
 				{
-					orderByClause = "order by " + (index + 1);
+					orderByClause = $"order by {(index + 1)} {direction}";
 				}
 			}
 
