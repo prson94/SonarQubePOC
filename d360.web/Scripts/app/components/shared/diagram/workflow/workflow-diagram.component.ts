@@ -166,10 +166,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         const isSelectedStepIdChanged = changes['selectedStepId'] && changes['selectedStepId'].currentValue !== changes['selectedStepId'].previousValue;
 
         if (isVelueReadOnly) {
-            this.isReadOnly = this.readonly.toString().toLowerCase() === 'true' ? true : false;
+            this.isReadOnly = this.readonly.toString().toLowerCase() === 'true';
         }
 
         if (isModelPassed) {
+			if (this.diagram?.div) {
+				this.diagram.div = null;
+			}
+			if (this.palette?.div) {
+				this.palette.div = null;
+			}
             this.selectedData = null;
             this.initializeDiagram();
             this.initializeMenuItems();
@@ -1994,7 +2000,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
                     margin: 5,
-					visible: this.showCountPanel
+                    visible: this.showCountPanel
                 },
                     this.makeCountPanel(nodeFontSize)
                 ),
@@ -2055,7 +2061,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
                     margin: 0,
-					visible: this.showCountPanel
+                    visible: this.showCountPanel
                 },
                     this.makeTerminalCountPanel(nodeFontSize, isStart)
                 ),
