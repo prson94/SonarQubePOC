@@ -513,7 +513,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 
 		let relIdxRequired: number = null;
 		if (!name) {
-			const lastRelationshipIndex = Math.max.apply(Math, this.relationshipTypeSelection.map((x) => x.index));
+			const lastRelationshipIndex = Math.max(...this.relationshipTypeSelection.map((x) => x.index));
 			if (!this.lookupFields.some((f) => f.relIdxRequired === lastRelationshipIndex)) {
 				relIdxRequired = lastRelationshipIndex;
 			}
@@ -900,7 +900,7 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		this.lookupFields = this.lookupFields.filter((x) => x.markForDeletion !== true);
 
 		if (checkRequiredFields) {
-			const lastRelationshipIndex = Math.max.apply(Math, this.relationshipTypeSelection.map((x) => x.index));
+			const lastRelationshipIndex = Math.max(...this.relationshipTypeSelection.map((x) => x.index));
 			let needsNewRequiredField = !this.lookupFields.some((f) => f.relIdxRequired === lastRelationshipIndex);
 
 			if (needsNewRequiredField) {
