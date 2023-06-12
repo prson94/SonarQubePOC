@@ -1087,7 +1087,11 @@ namespace d360.model.DataAccessLayer
 								var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
 								if (startIndex > 0)
 								{
-									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
+									var a = actionFilter.IndexOf(" ", startIndex);
+									var b = actionFilter.IndexOf(")", startIndex);
+									var c = actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex);
+
+									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 || actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex) ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);                                    
 									var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
 									var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 
