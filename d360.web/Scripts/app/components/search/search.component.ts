@@ -210,7 +210,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public filterCheckTree(selectedNodes: CheckTreeNode[]) {
         this.doSearch(true);
     }
-    public doSearch(resetPage: boolean = false) {
+	public doSearch(resetPage: boolean = false) {
         this.resultSelected(null);
         this.searchStateService.search(this.searchText, resetPage);
     }
@@ -220,7 +220,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     }
 
     public doExport() {
-        var fileName = "SearchResults";
+        const fileName = "SearchResults";
         this.isExportInProgress = true;
 
         this.searchStateService.getExcel(this.exportLimit)
@@ -256,7 +256,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     }
 
     private setFieldsObsservable() {
-        var fields: AdvancedFilterFieldType[] = [];
+        const fields: AdvancedFilterFieldType[] = [];
         fields.push({
             Name: "Name", FriendlyName: "Name", Type: new FieldType("Text"), Category: "", RemovePopulatedOperator: true
         });
@@ -304,11 +304,9 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         return JSON.stringify(state);
     }
 
-    public onFiltersLoaded() {
-        this.advancedFiltersLoaded = true;
-        if (this.searchText.length > 0) {
-            this.doSearch();
-        }
+	public onFiltersLoaded() {
+		this.advancedFiltersLoaded = true;
+		this.doSearch();
     }
 
     private parseOperator(op: string): SearchOperator {

@@ -77,7 +77,7 @@ export class SearchStateService extends BaseObservableService {
     private _searchTypes: string[];
     private _initial: boolean = false;
 
-    loadState(term: string, searchCategories: string[], keepFilters: boolean) {
+	loadState(term: string, searchCategories: string[], keepFilters: boolean) {
         this._loading.next(true);
         this.reset(keepFilters);
         this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x !== a[i - 1]);
@@ -92,7 +92,7 @@ export class SearchStateService extends BaseObservableService {
             this._checkTreeKeys = state.CheckTreeKeys;
             this.advancedFilters = state.AdvancedFilters;
             this._connector = state.SearchConnector;
-        }
+		}
     }
 
     private saveState() {
@@ -183,7 +183,7 @@ export class SearchStateService extends BaseObservableService {
     /**
      * Performs search and updates observable values
      */
-    private doSearch() {
+	private doSearch() {
         this._connectionError.next(false);
         this.saveState();
 
@@ -292,7 +292,7 @@ export class SearchStateService extends BaseObservableService {
             )
         ).subscribe(
             (res) => {
-                var filterTree = this.buildTree(res.Aggregations.category.map((val) => {
+                const filterTree = this.buildTree(res.Aggregations.category.map((val) => {
                     return {
                         "key": val.Name,
                         "label": this.getDisplayLookup(val.Name),
@@ -326,15 +326,13 @@ export class SearchStateService extends BaseObservableService {
             }
         );
 
-        let initialQuery = true;
-
         //Main query - results goes in the card list
         this.MainQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
-            tap((val) => { this._loading.next(true); }),
+            tap(() => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery).pipe(
-                catchError((err) => {
+				catchError((err) => {
                     if (err === "ConnectionError") {
                         this._connectionError.next(true);
                     }
@@ -342,16 +340,12 @@ export class SearchStateService extends BaseObservableService {
                 })
             ))
         ).subscribe(
-            (res) => {
-                if (initialQuery && res.ElapsedMS.Query === 0) {
-                    initialQuery = false;
-                } else {
-					const pageNumber = (this._query.From ?? 0) / (this._query.Size ?? 25);
-                    this._resultCount.next(res.Matches);
-                    this._pageNumber.next(pageNumber);
-                    this._results.next(res.Results);
-                    this._loading.next(false);
-                }
+			(res) => {
+				const pageNumber = (this._query.From ?? 0) / (this._query.Size ?? 25);
+                this._resultCount.next(res.Matches);
+                this._pageNumber.next(pageNumber);
+                this._results.next(res.Results);
+                this._loading.next(false);
             }
         );
     }
