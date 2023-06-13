@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Web.Http.OData.Extensions;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -36,7 +35,6 @@ using Newtonsoft.Json.Linq;
 using Resources;
 
 using SpreadsheetLight;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace d360.web.Controllers.Services
 {
