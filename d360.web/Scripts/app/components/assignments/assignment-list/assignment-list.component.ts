@@ -94,7 +94,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	selectRow(rows: WorkflowAssignmentItem[]): void {
 		this.secondarySidePanelOpen = false;
-		if (rows.length > 1) {
+		if (rows && rows.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';

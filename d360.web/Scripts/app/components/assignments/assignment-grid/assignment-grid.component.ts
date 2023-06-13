@@ -167,13 +167,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	public deleteAssignments(): void {
 		this.isLoading = true;
-		let itemIds = [];
-		// if (Array.isArray(this.assignments)) {
-		// 	itemIds = this.assignments.map((i: WorkflowAssignmentItem) => i.Id);
-		// } else if (this.assignments != null) {
-		// 	itemIds.push((this.assignments as WorkflowAssignmentItem).Id);
-		// }
-		this.wfMonitorService.deleteItems(itemIds).subscribe(
+		let itemIds: string[] = [];
+		if (Array.isArray(this.assignments)) {
+			itemIds = this.assignments.map((i: WorkflowAssignmentItem) => i.workflowItemUid);
+		} else if (this.assignments != null) {
+			itemIds.push((this.assignments as WorkflowAssignmentItem).workflowItemUid);
+		}
+		this.wfMonitorService.deleteItemsByUid(itemIds).subscribe(
 			(res) => {
 				this.showDeletionModal = false;
 				this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
