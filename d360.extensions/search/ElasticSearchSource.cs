@@ -214,7 +214,7 @@ namespace d360.extensions.search
             
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
-			d3sFields.Add("DefaultPermissions", item.DefaultPermisisons == true ? "true" : "false");
+			d3sFields.Add("DefaultPermissions", item.DefaultPermissions == true ? "true" : "false");
 
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
             {

@@ -42,7 +42,7 @@ namespace d360.core.queue
 
         public Guid? AssetTypeUid { get; set; }
 
-		public bool DefaultPermisisons { get; set; } = true;
+		public bool DefaultPermissions { get; set; } = true;
 
         public Dictionary<string, string> Fields { get; set; }
 

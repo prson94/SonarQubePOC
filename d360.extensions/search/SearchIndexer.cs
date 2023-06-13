@@ -685,7 +685,7 @@ namespace d360.extensions.search
 							Uid = o.Uid,
 							AssetTypeUid = o.AssetTypeUid,
 							AssetPath = GetPathArrayFromSegments(o.Segments),
-							DefaultPermisisons = o.DefaultPermissions == 1,
+							DefaultPermissions = o.DefaultPermissions == 1,
 							Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue }
                             }
@@ -726,7 +726,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
                             AssetTypeUid = o.AssetTypeUid,
                             AssetPath = o.Path.Split(new[] { pathSeperator }, StringSplitOptions.RemoveEmptyEntries),
-							DefaultPermisisons = o.DefaultPermissions == 1,
+							DefaultPermissions = o.DefaultPermissions == 1,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
@@ -785,7 +785,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"users/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
-							DefaultPermisisons = true,
+							DefaultPermissions = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue },
                                 { "Email", o.Email },
@@ -842,7 +842,7 @@ namespace d360.extensions.search
                             RelativeUrl = $"group/{o.ID}",
                             Uid = o.Uid,
                             AssetTypeUid = o.AssetTypeUid,
-							DefaultPermisisons = true,
+							DefaultPermissions = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.DisplayValue },
                                 { "Description", o.Description }
@@ -888,7 +888,7 @@ namespace d360.extensions.search
                             ItemUniqueID = o.Qualifier,
                             RelativeUrl = $"semantics/{o.Uid.ToString().ToLower()}",
                             Uid = o.Uid,
-							DefaultPermisisons = true,
+							DefaultPermissions = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description },
@@ -969,7 +969,7 @@ namespace d360.extensions.search
                             ItemUniqueID = $"intersect|{o.ID}|{o.Direction}",
                             RelativeUrl = o.Url,
                             Uid = o.Uid,
-							DefaultPermisisons = true,
+							DefaultPermissions = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
@@ -1013,7 +1013,7 @@ namespace d360.extensions.search
                             ItemUniqueID = $"custom|{o.ID}",
                             RelativeUrl = o.Url,
                             Uid = o.Uid,
-							DefaultPermisisons = true,
+							DefaultPermissions = true,
                             Fields = new Dictionary<string, string>() {
                                 { "Name", o.Synonym },
                                 { "NymType", o.PredicateName },
@@ -1036,7 +1036,7 @@ namespace d360.extensions.search
                         Name,
                         Description,
                         uid as AssetTypeUid,
-						DefaultPermisisons
+						DefaultPermissions
                     FROM [dbo].[AssetType] att
                     WHERE [Object] = 'ReferenceItemType'
                     {where}";
@@ -1050,7 +1050,7 @@ namespace d360.extensions.search
                             AssetType = "Reference List",
                             RelativeUrl = $"assets/{o.AssetTypeUid.ToString().ToLower()}",
 							AssetTypeUid = o.AssetTypeUid,
-							DefaultPermisisons = (bool)o.DefaultPermisisons,
+							DefaultPermissions = o.DefaultPermissions == 1,
 							Fields = new Dictionary<string, string>() {
                                 { "Name", o.Name },
                                 { "Description", o.Description }
@@ -1131,7 +1131,7 @@ namespace d360.extensions.search
                     };
                 }
 
-				if (DefaultPermissionsResponsibilityQuery != null && item.DefaultPermisisons == false)
+				if (DefaultPermissionsResponsibilityQuery != null && item.DefaultPermissions == false)
 				{
 					var secset = DefaultPermissionsResponsibilityQuery.GetByAssetID(item.AssetID);
 					item.CanRead = new Dictionary<string, List<int>> {
