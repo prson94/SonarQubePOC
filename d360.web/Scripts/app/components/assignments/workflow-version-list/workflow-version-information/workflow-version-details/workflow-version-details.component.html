@@ -1,0 +1,30 @@
+<div class="asset-detail-tabs">
+	<ig-property-group title="Workflow Version Details" [shouldBePadded]="false" [showHeaderLine]="false"
+					   [expanded]="true">
+		<div readonly>
+			<div class="row">
+				<div class="col">
+					<label class="ig-label" i18n>Name</label>
+					<div class="ig-value">{{ workflowDiagramModel?.Type?.Name }}</div>
+				</div>
+				<div class="col">
+					<label class="ig-label" i18n>Type</label>
+					<div class="ig-value"> {{ changeType }}</div>
+				</div>
+				<div class="col">
+					<label class="ig-label" i18n>Version</label>
+					<div>{{ version }}</div>
+				</div>
+				<div class="col">
+					<label class="ig-label" i18n>Update On</label>
+					<div class="ig-value"></div>
+				</div>
+				<div class="col">
+					<label class="ig-label" i18n>Update By</label>
+					<div class="ig-value"></div>
+				</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>
+<pre style="white-space: pre-wrap" *ngIf="workflowDiagramModel">{{ workflowDiagramModel | json }}</pre>
