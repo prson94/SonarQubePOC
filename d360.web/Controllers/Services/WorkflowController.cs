@@ -1213,8 +1213,20 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpDelete, Route("deleteItemsByUid")]
+		public HttpResponseMessage DeleteWorkflowItemsByUid([FromBody] List<Guid> items)
+		{
+			long[] itemIds = {};
+			if (items.Any())
+			{
+				itemIds = Company.WorkflowItems.Where(i => items.Contains(i.UID.Value)).Select(i => i.ID).ToArray();
+			}
+
+			return DeleteWorkfowItems(itemIds);
+		}
+
 		[HttpDelete, Route("deleteItems")]
-		public HttpResponseMessage DeleteWorkfowItems([FromBody] int[] items)
+		public HttpResponseMessage DeleteWorkfowItems([FromBody] long[] items)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
