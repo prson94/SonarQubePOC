@@ -118,6 +118,12 @@
   <data name="InvalidFormSetting" xml:space="preserve">
     <value>Formulareinstellungen fehlen oder sind ungültig</value>
   </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>Ungültige Guid {0} für Parameter {1} übergeben</value>
+  </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>Ungültige Initiator-UID angegeben.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>UNGÜLTIGES MODELL; KEINE FELDER ÜBERGEBEN</value>
   </data>
@@ -207,6 +213,9 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>Workflow-Element wurde gelöscht.</value>
+  </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>Workflow-Element mit UID {0} wurde nicht gefunden.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Workflow-Formulare neu zugewiesen</value>

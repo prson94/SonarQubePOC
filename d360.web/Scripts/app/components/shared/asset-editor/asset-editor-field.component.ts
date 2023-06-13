@@ -702,8 +702,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
     }
 
-    isRequired() {
-
+	isRequired() {
         if (this.field.FieldType === "Link") {
             var nameControl = this.form.controls[this.field.FieldName + '_Name'];
             if (nameControl.value) {
@@ -711,7 +710,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
         }
 
-        return this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') === true;
+		return (this.field.Validations && this.field.Validations.some((x) => x.rule === 'required') === true) || this.field.Required;
     }
 
     getPlaceholder() {

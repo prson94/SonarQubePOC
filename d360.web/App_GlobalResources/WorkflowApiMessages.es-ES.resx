@@ -118,6 +118,12 @@
   <data name="InvalidFormSetting" xml:space="preserve">
     <value>Falta la configuración del formulario o no es válida</value>
   </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>GUID {0} no válido pasado para el parámetro {1}</value>
+  </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>UID del iniciador proporcionado no válido.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>MODELO NO VÁLIDO, NINGÚN CAMPO PASADO</value>
   </data>
@@ -207,6 +213,9 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>El elemento de flujo de trabajo se ha eliminado.</value>
+  </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>No se ha encontrado el elemento del flujo de trabajo con UID {0}.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Formularios de flujo de trabajo reasignados correctamente</value>
