@@ -10,7 +10,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
-import { AssignmentItemStep, WorkflowAssignmentItem, WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep, WorkflowAssignmentItem } from '../../../models/workflow.model';
 import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
 
 @Component({
@@ -97,7 +97,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		if (rows.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
-			this.sidePanelTab = 'delete'
+			this.sidePanelTab = 'delete';
 		}
 	}
 
