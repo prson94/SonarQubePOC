@@ -49,17 +49,19 @@
 								<span class="reorder-icon" [pReorderableRowHandle]="rowIndex"></span>
 							</td>
 							<td width="250px">
-								<p-dropdown igDropdown
+								<p-dropdown #ddlElement
+											igDropdown
 											igSize="full"
 											[igDataCy]="'RelationshipField_Dropdown'"
 											[attr.name]="item.fieldNameControl"
 											[formControlName]="item.fieldNameControl"
 											appendTo="body"
+											(onChange)="fieldTypeSelected($event,item);"
 											[panelStyleClass]="'ig-dropdown-grouped'"
 											[options]="fieldOptionsForFields | dropdownCategoryFilter:item.relIdxRequired"
 											[autoDisplayFirst]="false"
 											i18n-placeholder
-											[attr.placeholder]="getPlaceholderForField(item)"
+											[attr.placeholder]="getPlaceholderForField(item, ddlElement)"
 											[group]="true"
 											[showClear]="false"
 											required></p-dropdown>
