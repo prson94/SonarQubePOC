@@ -3289,8 +3289,25 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
-		[Route("step/detail/{itemStepId:int}"), HttpGet]
-		public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(int itemStepId)
+		[Route("step/detailByUid/{itemStepUid:Guid}"), HttpGet]
+		public async Task<HttpResponseMessage> GetWorkflowVersionStepDetailByUid(Guid itemStepUid)
+		{
+			if (itemStepUid == null || itemStepUid == Guid.Empty)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));
+				//return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));				
+			}
+
+			var itemStepId = Company.WorkflowItemSteps.Where(wis => wis.UID == itemStepUid).Select(s=>s.ID).FirstOrDefault();
+			if (itemStepId <= 0)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.StepNotFound);				
+			}
+			return GetWorkflowVersionStepDetail(itemStepId).Result;
+		}
+
+		[Route("step/detail/{itemStepId:long}"), HttpGet]
+		public async Task<HttpResponseMessage> GetWorkflowVersionStepDetail(long itemStepId)
 		{
 			var itemStep = Company.WorkflowItemSteps.FirstOrDefault(i => i.ID == itemStepId);
 
