@@ -717,7 +717,7 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 	</sql>
   </changeSet>
-   <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v3">
+   <changeSet author="TDuric" id="Data.Corrections.GOV-21136-v4">
   <comment>Parse Relation Lookup Filters</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -748,31 +748,60 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 														outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, SortByAscending bit, Show bit, Width int, RelationIndex int) DF
 				)D
 				WHERE ISJSON(FTL.Definition) = 1 and D.[Filter] is not null and LTRIM(RTRIM(D.[Filter])) <> ''
+				
+				drop table if exists #fieldTypeRelationIndex
+				select TV.FieldTypeID, R.AssetTypeUid, R.IntersectTypeUid, R.Row# as RelationIndex
+				into #fieldTypeRelationIndex
+				from #temp_values TV
+				inner join FieldTypeLookup FTL on FTL.FieldTypeID = TV.FieldTypeID
+				cross apply (
+							select a.*,ROW_NUMBER() OVER(ORDER BY (select 0) ASC) AS Row# from (select * from OPENJSON(FTL.[Definition], N'lax $.Relations')
+							with (
+									IntersectTypeUid uniqueidentifier, 
+									AssetTypeUid uniqueidentifier,
+									RelationType int, 
+									Direction int
+							))a
+				)  R
+
+				update tv
+				set tv.RelationIndex = ftri.RelationIndex
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and ft.ID = tv.FilterFieldId
+				inner join AssetType at on at.ID = ft.AssetTypeID
+				inner join #fieldTypeRelationIndex ftri on ftri.AssetTypeUid = at.uid and tv.FieldTypeID = ftri.FieldTypeID
+
+				update tv
+				set tv.RelationIndex = ftri.RelationIndex
+				from #temp_values tv
+				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and ft.ID = tv.FilterFieldId
+				inner join IntersectType it on it.ID = ft.IntersectTypeID
+				inner join #fieldTypeRelationIndex ftri on ftri.IntersectTypeUid = it.uid and tv.FieldTypeID = ftri.FieldTypeID
 
 				declare @expressions table (FieldTypeId int, FilterExpression nvarchar(2000))
 
 				insert into @expressions (FieldTypeId, FilterExpression)
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
+				select FieldTypeID, '(H' + CAST(isnull(RelationIndex,1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
 				from #temp_values tv
 				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Number','Decimal')
 
 				insert into @expressions (FieldTypeId, FilterExpression)
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
+				select FieldTypeID, '(H' + CAST(isnull(RelationIndex,1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ' + Filter+ ')' as FilterExpression
 				from #temp_values tv
 				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Boolean')
 
 				insert into @expressions (FieldTypeId, FilterExpression)
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ''' + Filter+ ''')' as FilterExpression
+				select FieldTypeID, '(H' + CAST(isnull(RelationIndex,1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' eq ''' + Filter+ ''')' as FilterExpression
 				from #temp_values tv
 				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type in ('Lookup')
 
 				insert into @expressions (FieldTypeId, FilterExpression)
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				select FieldTypeID, '(H' + CAST(isnull(RelationIndex,1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
 				from #temp_values tv
 				inner join FieldType ft on ISNUMERIC(tv.FilterFieldId) = 1 and tv.IsRelationship = 0 and ft.ID = tv.FilterFieldId and ft.Type not in ('Number','Decimal','Boolean','Lookup')
 
 				insert into @expressions (FieldTypeId, FilterExpression)
-				select FieldTypeID, '(H' + CAST((isnull(RelationIndex,0) + 1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
+				select FieldTypeID, '(H' + CAST(isnull(RelationIndex,1) as nvarchar(255)) + '_' + CAST(FilterFieldId as nvarchar(255))+ +' ct ''' + Filter+ ''')' as FilterExpression
 				from #temp_values tv
 				where ISNUMERIC(tv.FilterFieldId) = 0 and tv.IsRelationship = 0
 
