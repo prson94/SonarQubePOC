@@ -8,13 +8,14 @@
 					<p-dropdown igDropdown
 								igSize="full"
 								[igDataCy]="'RelationshipType_Dropdown'"
-								name="{{item.cntrlName}}"
-								formControlName="{{item.cntrlName}}"
+								[attr.name]="item.cntrlName"
+								[formControlName]="item.cntrlName"
 								appendTo="body"
 								[options]="item.options"
 								[autoDisplayFirst]="false"
 								optionLabel="title"
 								optionValue="value"
+								[showClear]="false"
 								required
 								(onChange)="relationshipTypeSelected($event,item);"></p-dropdown>
 					<div style="width:32px">
@@ -51,8 +52,8 @@
 								<p-dropdown igDropdown
 											igSize="full"
 											[igDataCy]="'RelationshipField_Dropdown'"
-											name="{{item.fieldNameControl}}"
-											formControlName="{{item.fieldNameControl}}"
+											[attr.name]="item.fieldNameControl"
+											[formControlName]="item.fieldNameControl"
 											appendTo="body"
 											[panelStyleClass]="'ig-dropdown-grouped'"
 											[options]="fieldOptionsForFields | dropdownCategoryFilter:item.relIdxRequired"
@@ -60,6 +61,7 @@
 											i18n-placeholder
 											[attr.placeholder]="getPlaceholderForField(item)"
 											[group]="true"
+											[showClear]="false"
 											required></p-dropdown>
 							</td>
 							<td>

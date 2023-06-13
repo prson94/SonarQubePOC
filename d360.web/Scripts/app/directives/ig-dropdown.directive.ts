@@ -48,6 +48,11 @@ export class DropdownDirective implements AfterContentInit {
 			this.el.nativeElement.setAttribute("aria-required", true);
 		}
 
+		if (typeof this.dropdownRef.showClear === 'undefined' && !this.required) {
+			//optional fields without showClear property explicitly set should default to true
+			this.dropdownRef.showClear = true;
+		}
+
 		if (!isPlaceholderSet) {
 			if (this.required == null) {
 				this.dropdownRef.placeholder = $localize`Optional`;
