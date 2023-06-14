@@ -2621,7 +2621,7 @@ namespace d360.model.DataAccessLayer
 			{
 				var el = selects.Where(x => x != null && x.ToLowerInvariant().Contains(orderBy.ToLowerInvariant())).FirstOrDefault();
 				var index = selects.IndexOf(el);
-				if (index > 0)
+				if (index != -1)
 				{
 					orderByClause = $"order by {(index + 1)} {direction}";
 				}
