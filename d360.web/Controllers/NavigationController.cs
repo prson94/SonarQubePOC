@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Xml.Linq;
@@ -58,7 +59,7 @@ namespace d360.web.Controllers
 						Url = el.Element("url").Value,
 						Disabled = el.Element("disabled")?.Value == "1",
 						ShowChildren = showChildren,
-						Description = (el.Elements("Description").Any() && el.Element("Description") != null ? el.Element("Description").Value : null)						
+						Description = (el.Elements("Description").Any() && el.Element("Description") != null ? parseNavDescription(el.Element("Description").Value) : null)
 					};
 
 					if (el.Element("items") != null)
@@ -89,14 +90,14 @@ namespace d360.web.Controllers
 			{
 				List<string> toggleVisibilityURLs = new List<string> {
 					"assets/"};
-
+				
 				nodes.ForEach(n =>
 				{
 					n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
 						new List<NavigationItem>() :
 						parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), showChildren);
 
-
+					n.Description = parseNavDescription(n.Description);
 					var urls = n.NavigationItems.Select(x => x.Url).ToList();
 					var counts = 0;
 					foreach (var urlPart in toggleVisibilityURLs)
@@ -1605,6 +1606,11 @@ namespace d360.web.Controllers
 				responseModel.AssetTypeClass = AssetTypeClass.User;
 				responseModel.Uid = asset.uid;
 			}
+		}
+
+		public string parseNavDescription(string description)
+		{
+			return description== null || string.IsNullOrWhiteSpace(Regex.Replace(description, "<.*?>", String.Empty)) ? null : description;					
 		}
 	}
 }
