@@ -832,3 +832,24 @@ export class WorkflowWithStatus extends WorkflowByType {
 	complete: number;
 	incomplete: number;
 }
+
+export class Actions {
+	pageSize: number;
+	pageNum: number;
+	total: number;
+	items: [
+		{
+			Uid: string;
+			CompletedOn: string;
+			AssetUid: string;
+			AssetTypeUid: string;
+			AssetTypeName: string;
+			ActionTypeUid: string;
+			ActionTypeName: string;
+			CreatedOn: string;
+			CreatedByUid: string;
+			UpdatedOn: string;
+			UpdatedByUid: string;
+		}
+	];
+}

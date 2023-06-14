@@ -2,12 +2,12 @@
 <div class="asset-detail-tabs" [hidden]="isLoading">
 	<ig-property-group title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
-			<div class="row">
-				<label class="ig-label" i18n>Question</label>
-				<div class="ig-value">
-					<pre style="white-space: pre-wrap">{{ tooltipInfo | json }}</pre>
-				</div>
+			<div class="row" *ngFor="let fieldTypeModelField of fieldTypeModelFields">
+				<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
+				<div class="ig-value" [innerHTML]="actions.items?.[0]?.[fieldTypeModelField.Name]"></div>
 			</div>
 		</div>
 	</ig-property-group>
 </div>
+<pre style="white-space: pre-wrap" *ngIf="actions">{{ actions | json }}</pre>
+<pre style="white-space: pre-wrap" *ngIf="fieldTypeModelFields">{{ fieldTypeModelFields | json }}</pre>
