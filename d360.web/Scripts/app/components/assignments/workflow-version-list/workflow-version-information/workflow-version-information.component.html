@@ -1,5 +1,6 @@
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="asset-detail" [hidden]="isLoading">
-	<d3s-workflow-version-details [workflowDiagramModel]="workflowDiagramModel" [version]="version"></d3s-workflow-version-details>
-	<d3s-workflow-pending-assignments [workflowDiagramModel]="workflowDiagramModel"></d3s-workflow-pending-assignments>
+<div class="asset-detail">
+	<d3s-workflow-version-details [workflowTypeVersionId]="workflowTypeVersionId"></d3s-workflow-version-details>
+	<d3s-workflow-pending-assignments [workflowTypeId]="workflowTypeId"
+									  [workflowTypeUid]="workflowTypeUid"
+									  [workflowTypeVersion]="workflowTypeVersion"></d3s-workflow-pending-assignments>
 </div>

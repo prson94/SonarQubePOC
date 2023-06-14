@@ -1,8 +1,11 @@
-<div class="asset-detail-tabs">
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail-tabs" [hidden]="isLoading">
 	<ig-property-group title="Pending Assignments" [shouldBePadded]="false" [showHeaderLine]="false" [expanded]="true">
 		<div readonly>
-			<d3s-workflow-diagram *ngIf="workflowDiagramModel" [hasHeader]="false" [readonly]="true" [isSidePanel]="true" [model]="workflowDiagramModel"
+			<d3s-workflow-diagram *ngIf="workflowDiagramModel" [hasHeader]="false" [readonly]="true"
+								  [isSidePanel]="true" [model]="workflowDiagramModel"
 								  [hasMenu]="false" [hasZoomButtons]="true"></d3s-workflow-diagram>
 		</div>
 	</ig-property-group>
 </div>
+<pre style="white-space: pre-wrap" *ngIf="workflowDiagramModel">{{ workflowDiagramModel | json }}</pre>
