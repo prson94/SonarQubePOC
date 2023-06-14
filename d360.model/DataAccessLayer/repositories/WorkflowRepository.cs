@@ -10,6 +10,7 @@ using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -1094,6 +1095,10 @@ namespace d360.model.DataAccessLayer
 									if (Guid.TryParse(actionTypeUid, out Guid atGuid))
 									{
 										IssueType issueType = CompanyContext.Filter<IssueType>(i => i.uid == atGuid).SingleOrDefault();
+										if (issueType == null)
+										{
+											throw new ArgumentException(Workflows.InvalidActionTypeUid);
+										}
 										var fieldTypes = CompanyContext.Filter<FieldType>(f => f.IssueTypeID == issueType.ID).ToList();
 										getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "I.ID", objectType: core.SystemObjects.Issue);
 
