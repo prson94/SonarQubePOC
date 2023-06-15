@@ -24,6 +24,7 @@
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-workflow-version-information [workflowTypeVersion]="selectedWorkflowByType?.[0]?.Version"
+													  [workflowTypeVersionId]="selectedWorkflowByType?.[0]?.VersionID"
 													  [workflowTypeId]="selectedWorkflowByType?.[0]?.TypeID"></d3s-workflow-version-information>
 				</ng-container>
 			</side-panel>

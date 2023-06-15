@@ -1,7 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { TooltipInfo } from '../../../../models/tooltip-info.model';
-import { ToolTipService } from '../../../../services/tooltip.service';
-import { AssignmentItem } from '../../../../models/workflow.model';
+import {Component, Input, OnInit} from '@angular/core';
+import {Actions} from '../../../../models/workflow.model';
+import {WorkflowService} from '../../../../services/workflow.service';
+import {FieldsObservableService} from '../../../../services/fieldsObservable.service';
+import {FieldTypeAPIModelField} from '../../../../models/fieldtype-api.model';
 
 @Component({
 	selector: 'd3s-assignment-information-request',
@@ -9,19 +10,19 @@ import { AssignmentItem } from '../../../../models/workflow.model';
 	styleUrls: ['./assignment-information-request.component.less']
 })
 export class AssignmentInformationRequestComponent implements OnInit {
-	private _workflowItemUid: string;
+	private _workflowActionUid: string;
+	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
-	@Input() set workflowItemUid(value: string) {
-		this._workflowItemUid = value;
+	@Input() set workflowActionUid(value: string) {
+		this._workflowActionUid = value;
 		this.loadData();
 	}
 
-	@Input() assignmentItem: AssignmentItem;
-
 	isLoading: boolean;
-	tooltipInfo: TooltipInfo;
+	actions: Actions;
 
-	constructor(private toolTipService: ToolTipService) {
+	constructor(private workflowService: WorkflowService,
+				private fieldsObservableService: FieldsObservableService) {
 	}
 
 	ngOnInit(): void {
@@ -29,11 +30,19 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	loadData() {
 		this.isLoading = true;
-		// this.toolTipService.getTooltipInfo('Issue', this._workflowItemUid.Id)
-		// 	.subscribe((data) => {
-		// 		this.tooltipInfo = data;
-		// 		this.isLoading = false;
-		// 	});
+		this.workflowService.getActions(this._workflowActionUid)
+			.subscribe(response => {
+				this.actions = response;
+				if (this.actions.items?.length > 0) {
+					this.fieldsObservableService.getFieldsV2(null, this.actions.items[0].ActionTypeUid, null)
+						.subscribe(response => {
+							this.fieldTypeModelFields = response;
+							this.isLoading = false;
+						});
+				} else {
+					this.isLoading = false;
+				}
+			});
 	}
 
 }

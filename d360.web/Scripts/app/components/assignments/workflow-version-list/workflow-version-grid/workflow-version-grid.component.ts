@@ -35,7 +35,7 @@ export class WorkflowVersionGridComponent extends BaseComponent implements OnIni
 	private destroy = new Subject<void>();
 	theDeleteCallback: Function;
 	menuItems: any[] = [
-		{ title: $localize`Delete` }
+		{title: $localize`Delete`}
 	];
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
@@ -61,7 +61,7 @@ export class WorkflowVersionGridComponent extends BaseComponent implements OnIni
 		).subscribe((rowsPerPage) => {
 			this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
 			this.isLoading = true;
-			this.loadWorkflowsByType({ rows: this.rowsPerPage, first: 0 });
+			this.loadWorkflowsByType({rows: this.rowsPerPage, first: 0});
 		});
 	}
 
@@ -94,7 +94,7 @@ export class WorkflowVersionGridComponent extends BaseComponent implements OnIni
 		this.subscription = this.workflowService.getWorkflowsByTypeList()
 			.subscribe((workflowsByType) => {
 				workflowsByType.forEach(workflowByType => {
-					let existingWorkflowWithStatus = this.workflowsWithStatus.find(workflowWithStatus => workflowWithStatus.Name === workflowByType.Name && workflowWithStatus.Version === workflowByType.Version);
+					let existingWorkflowWithStatus: WorkflowWithStatus = this.workflowsWithStatus.find(workflowWithStatus => workflowWithStatus.Name === workflowByType.Name && workflowWithStatus.Version === workflowByType.Version);
 					if (!existingWorkflowWithStatus) {
 						existingWorkflowWithStatus = workflowByType as WorkflowWithStatus;
 						existingWorkflowWithStatus.incomplete = 0;
@@ -171,7 +171,7 @@ export class WorkflowVersionGridComponent extends BaseComponent implements OnIni
 		this.wfMonitorService.deleteItems(itemIds).subscribe(
 			(res) => {
 				this.showDeletionModal = false;
-				this.loadWorkflowsByType({ rows: this.rowsPerPage, first: 0 });
+				this.loadWorkflowsByType({rows: this.rowsPerPage, first: 0});
 			}
 		);
 	}

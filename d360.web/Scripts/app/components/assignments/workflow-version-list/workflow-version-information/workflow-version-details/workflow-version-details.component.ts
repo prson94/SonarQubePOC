@@ -1,32 +1,31 @@
-import {Component, Input} from '@angular/core';
-import {ChangeTypeInfo, WorkflowDiagramModel} from "../../../../../models/workflow.model";
-import {WorkflowService} from "../../../../../services/workflow.service";
+import { Component, Input } from '@angular/core';
+import { WorkflowService } from "../../../../../services/workflow.service";
+import { ObjectDetailService } from '../../../../../services/object-detail.service';
 
 @Component({
-  selector: 'd3s-workflow-version-details',
-  templateUrl: './workflow-version-details.component.html',
-  styleUrls: ['./workflow-version-details.component.less']
+	selector: 'd3s-workflow-version-details',
+	templateUrl: './workflow-version-details.component.html',
+	styleUrls: ['./workflow-version-details.component.less']
 })
 export class WorkflowVersionDetailsComponent {
-	@Input() set workflowDiagramModel(value: WorkflowDiagramModel) {
-		this._workflowDiagramModel = value;
-		this.changeType = this.changeTypeInfos?.find((changeTypeInfo: ChangeTypeInfo): boolean => changeTypeInfo.ID === this.workflowDiagramModel?.Event?.ChangeType)?.Description;
-	};
+	isLoading: boolean;
+	versionDetails: any;
 
-	@Input() version: number;
-
-	get workflowDiagramModel(): WorkflowDiagramModel {
-		return this._workflowDiagramModel;
+	@Input() set workflowTypeVersionId(value: number) {
+		if (value) {
+			this.loadVersionDetails(value);
+		}
 	}
 
-	changeType: string;
-	private _workflowDiagramModel: WorkflowDiagramModel;
-	private changeTypeInfos: ChangeTypeInfo[];
-
-	constructor(private workflowService: WorkflowService) {
+	constructor(private workflowService: WorkflowService,
+				private objectDetailService: ObjectDetailService) {
 	}
 
-	ngOnInit(): void {
-		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
+	private loadVersionDetails(versionId: number) {
+		this.isLoading = true;
+		this.objectDetailService.getObjectDetail(versionId, 'Monitor').subscribe(response => {
+			this.versionDetails = response;
+			this.isLoading = false;
+		});
 	}
 }
