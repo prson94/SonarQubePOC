@@ -350,13 +350,6 @@ namespace d360.web.Controllers.V2
 
 				var countSql = $@"select count(1) from #tempAuditData A {whereSql}";
 
-				string clusterindex = "";
-
-				if (!string.IsNullOrEmpty(orderColumn.Trim()))
-				{
-					clusterindex = $@"create clustered index cx_tempaudit on #tempAuditData ({orderColumn})";
-				}
-
 				var sql = $@"
 							drop table if exists #tempselect;
 							select * 
@@ -381,8 +374,6 @@ namespace d360.web.Controllers.V2
 				select *
 				into #tempAuditData
 				from ({baseSql}) a;
-
-				{clusterindex}
 
 				{(isStreamResponse ? " " : countSql)}
 
