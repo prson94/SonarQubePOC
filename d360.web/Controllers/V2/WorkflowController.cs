@@ -432,8 +432,12 @@ namespace d360.web.Controllers.V2
 				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
-			}			
-			catch(GenericException gex)
+			}
+			catch (ArgumentException aex)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, aex.Message)).ConfigureAwait(false);
+			}
+			catch (GenericException gex)
 			{
 				return await Task.FromResult(errorMessageResponse(gex.StatusCode, gex.StatusMessage, gex.StatusDescription)).ConfigureAwait(false);
 			}
