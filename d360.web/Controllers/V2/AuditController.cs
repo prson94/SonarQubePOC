@@ -364,7 +364,7 @@ namespace d360.web.Controllers.V2
 							from #tempselect t
 
 							select *
-							from #tempselect
+							from #tempselect A
 							{orderBySql} 
 							";
 
