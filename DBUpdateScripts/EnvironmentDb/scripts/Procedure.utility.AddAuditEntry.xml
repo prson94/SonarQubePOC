@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.utility.AddAuditEntry-v23.1">
-  <comment>GOV-20267</comment>
+  <changeSet author="PuneetGupta" id="Procedure.utility.AddAuditEntry-v24">
+  <comment>GOV-28254</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -405,6 +405,8 @@ begin
 		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
 	end
 
+	if (@Action = 'Created')
+		begin
 	insert into @tbl  
 			select	FieldTypeID, 
 					FieldName as FriendlyName, 
@@ -412,6 +414,17 @@ begin
 					0, 
 					0 
 			from	@AuditFieldTable where [value] is not null
+		end
+	else
+		begin
+			insert into @tbl  
+					select	FieldTypeID, 
+							FieldName as FriendlyName, 
+							Value as FormattedValue, 
+							0, 
+							0 
+					from	@AuditFieldTable
+		end
 	
 	if @MainObject = 'CompanySettings'
 	begin
@@ -474,7 +487,7 @@ begin
 
 					update	T
 					set		T.MostRecentVersion = coalesce(S.[Version], 0),
-							T.Updated = case when T.NewValue = S.Value then 0
+							T.Updated = case when T.NewValue = S.Value COLLATE SQL_Latin1_General_CP1_CS_AS then 0
 											 when T.NewValue is null and S.Value is null then 0
 											 else 1
 											 end
@@ -493,7 +506,7 @@ begin
 
 					update	T
 					set		T.MostRecentVersion = coalesce(S.[Version], 0),
-							T.Updated = case when T.NewValue = S.Value then 0
+							T.Updated = case when T.NewValue = S.Value COLLATE SQL_Latin1_General_CP1_CS_AS  then 0
 											 when T.NewValue is null and S.Value is null then 0
 											 else 1
 											 end
@@ -1130,6 +1143,8 @@ begin
 		set @MainObjectName = 'Tag'
 	end
 
+	if @MainObject <> 'Intersect'
+	begin
 	insert into @tempAuditField(FieldTypeID, FieldName, [Version],[Value])
 	select distinct F.FieldTypeID,
 		   case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
@@ -1138,6 +1153,7 @@ begin
 	from reporting.Global_Audit A
 	inner join reporting.Global_FieldAudit F on F.AuditID = A.ID
 	where A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID;
+	end
 	
 	if not exists(select 1 from @tempAuditField)
 	   begin
@@ -1146,8 +1162,8 @@ begin
 					T.Updated = case when T.NewValue is null then 0 else 1 end
 			from	@tbl T
 	   end
-	else
-		Begin
+	else if @Action <> 'Created'
+		begin
 			insert into @MaxVersion(FieldTypeID, FieldName, [Version])
 			select 
 			F.FieldTypeID,
@@ -1206,13 +1222,8 @@ begin
 			@updated bit
 	select	@max = max(ID) from @tbl
 
-	-- test if there is a previous created entry in global audit for this then it cant be a create change to update..
-	if (@Action = 'Created' and exists(select 1 from reporting.Global_Audit where [Object] = @DependentObject and [ObjectID] = @DependentObjectID) and (@DependentObject != 'MetricAllocation'))
-	begin
-		set @Action = 'Updated';
-	end
 	-- this is the case where the last value of a field was removed and the asset remains its not the asset being deleted just an update.
-	else if @Action = 'Removed' and exists(select 1 from asset where [object] = @DependentObject and [ObjectID] = @DependentObjectID)
+	if @Action = 'Removed' and exists(select 1 from asset where [object] = @DependentObject and [ObjectID] = @DependentObjectID)
 	begin
 		set @Action = 'Updated';
 	end

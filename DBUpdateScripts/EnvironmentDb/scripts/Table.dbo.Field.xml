@@ -270,8 +270,8 @@ END
 	</rollback>
   </changeSet> 
   
-    <changeSet author="Tomislav Duric" id="Table.dbo.Field-Field_AfterUpsert-v18">
-    <comment>GOV-20545</comment>
+    <changeSet author=" PuneetGupta" id="Table.dbo.Field-Field_AfterUpsert-v19">
+    <comment>GOV-28254</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -370,6 +370,316 @@ AS
 	--------------------------------------------
    	-- audit field value changes													
 	--------------------------------------------
+
+	drop table if exists #tempInserted;
+	drop table if exists #tempDeleted;
+
+	select distinct AssetID, IntersectID, ID, UpdatedBy, cast('Add' as nvarchar(20)) ActionName
+	into #tempInserted
+	from inserted;
+
+	create clustered index cx_tempInserted on #tempInserted(AssetID,ID);
+	
+	select distinct AssetID, IntersectID
+	into #tempDeleted
+	from DELETED;
+	
+	declare @resourceId int = null;
+	
+
+
+	if exists (select 1 from #tempInserted where AssetID is not null)
+	begin
+	
+		if (select count(distinct updatedby) from #tempInserted where AssetID is not null) > 1
+		begin
+			set @resourceid = 0
+		end
+	
+		drop table if exists #tempInsertedAsset;
+
+		select t.AssetID,
+		Max(t.ActionName) ActionName,
+		max(t.UpdatedBy) UpdatedBy
+		into #tempInsertedAsset
+		from #tempInserted t
+		where t.AssetID is not null
+		group by t.AssetID; 
+		
+		select t.AssetID
+		into #tempFieldAssetID
+		from #tempInsertedAsset t
+		inner join Field F on F.AssetID = t.AssetID
+		where F.AssetID is not null
+		and not exists(select 1 from #tempInserted  ti where ti.assetid = F.assetid and ti.id = F.id)
+		group by t.AssetID;
+		
+		update t
+		set t.ActionName = 'Update'
+		from #tempInsertedAsset t
+		inner join #tempFieldAssetID tf on t.AssetID = tf.AssetID 
+		where t.AssetID is not null; 
+		
+		
+		update t
+		set t.ActionName = 'Update'
+		from #tempInsertedAsset t
+		inner join #tempDeleted F on t.AssetID = F.AssetID 
+		where t.AssetID is not null; 
+		
+		select F.AssetID,
+			   F.FieldTypeID,
+			   FT.FriendlyName,
+			   f.FormattedValue
+		into #TempFieldData
+		from #tempInsertedAsset I
+		inner join Field F on f.AssetID = I.AssetID
+		inner join fieldtype ft on f.fieldtypeid = ft.id 
+		
+		create clustered index ci_TempFieldData on #TempFieldData(AssetID);
+
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+			select	I.ActionName, 
+				a.Object, 
+				coalesce(a.ObjectID,0),
+				(
+					select 	I2.ActionName as Action,
+						a.Object as ActionObject,
+						a.ObjectID as ActionObjectID,
+							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
+						(
+						select	f.FieldTypeID,
+									f.FriendlyName as [Name], 
+								f.FormattedValue as [Value] 
+							from	#TempFieldData f 
+							where	f.AssetID = I.AssetID 
+						for json path
+						) as Fields
+					from #tempInsertedAsset I2 
+					where I2.AssetID = I.AssetID
+					group by I2.AssetID, I2.ActionName, coalesce(@resourceId, i2.UpdatedBy, 0)
+				for json path, WITHOUT_ARRAY_WRAPPER
+				) as [Custom],
+					coalesce(I.AssetID,0) as [AssetID]
+		from	
+				#tempInsertedAsset I 
+			inner join asset a on a.ID = i.AssetID
+			inner join AssetType Att on Att.ID = A.AssetTypeID
+		where Att.Class != 12 and I.[AssetID] Is not null;
+
+			-- remove temporary tables
+			drop table if exists #tempInsertedAsset;
+			drop table if exists #TempFieldData;
+			drop table if exists #tempFieldAssetID;
+			
+	end
+
+	-- handle relationships both sides need audit entries
+	if exists(select 1 from #tempInserted i where i.[IntersectID] is not null)
+	begin
+
+		if (select count(distinct updatedby) from #tempInserted where IntersectID is not null) > 1
+	begin
+			set @resourceid = 0
+		end
+	
+		drop table if exists #tempInsertedIntersect;
+
+		select t.IntersectID,
+		Max(t.ActionName) ActionName,
+		max(t.UpdatedBy) UpdatedBy
+		into #tempInsertedIntersect
+		from #tempInserted t
+		where t.IntersectID is not null
+		group by t.IntersectID; 
+		
+
+		select t.IntersectID
+		into #tempFieldIntersectID
+		from #tempInsertedIntersect t
+		inner join Field F on F.IntersectID = t.IntersectID
+		where F.IntersectID is not null
+		and not exists(select 1 from #tempInserted  ti where ti.IntersectID = F.IntersectID and ti.id = F.id)
+		group by t.IntersectID;
+
+		update t
+		set t.ActionName = 'Update'
+		from #tempInsertedIntersect t
+		inner join #tempFieldIntersectID tf on t.IntersectID = tf.IntersectID 
+		where t.IntersectID is not null; 
+
+		update t
+		set t.ActionName = 'Update'
+		from #tempInsertedIntersect t
+		inner join #tempDeleted F on t.IntersectID = F.IntersectID 
+		where t.IntersectID is not null; 
+				
+	
+	    drop table if exists #tempinterdata;
+		
+		with rsdata as (
+		select IntersectID,inter.ObjectAssetID,inter.SubjectAssetID, ActionName, UpdatedBy
+		from #tempInsertedIntersect i
+		inner join [intersect] inter on(i.IntersectID = inter.ID)
+		where i.[IntersectID] is not null)
+		select distinct a.*
+		into #tempinterdata
+		from 
+		(
+		select IntersectID, ActionName, UpdatedBy, SubjectAssetID AssetID
+		from rsdata
+		union all
+		select IntersectID, ActionName, UpdatedBy, ObjectAssetID AssetID
+		from rsdata) a;
+		
+		create clustered index idx_tempinterdata on #tempinterdata(IntersectID,AssetID)
+		
+		drop table if exists #TempFieldDataIntersect;
+		
+		select F.IntersectID,
+			   F.FieldTypeID,
+			   FT.FriendlyName,
+			   f.FormattedValue
+		into #TempFieldDataIntersect
+		from #tempInsertedAsset I
+		inner join Field F on f.IntersectID = I.IntersectID 
+		inner join fieldtype ft on f.fieldtypeid = ft.id ;
+			
+		
+		create clustered index ci_TempFieldDataIntersect on #TempFieldDataIntersect(IntersectID);
+		
+		-- object side of relationship
+		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+			select	i.ActionName, 
+					'Intersect', 
+					i.IntersectID ID,
+					(
+					select 	i2.ActionName as Action,
+							a.Object as ActionObject,
+							a.ObjectID as ActionObjectID,
+							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
+							(
+							select	f.FieldTypeID,
+									f.FriendlyName as [Name], 
+									f.FormattedValue as [Value] 
+							from	#TempFieldDataIntersect f 
+							where	f.IntersectID = i2.IntersectID
+							for json path
+							) as Fields
+					from #tempinterdata i2 
+					where i2.IntersectID = i.IntersectID
+					group by i.ActionName, a.Object, a.ObjectID, coalesce(@resourceId, i2.UpdatedBy, 0)
+					for json path, WITHOUT_ARRAY_WRAPPER
+					) as [Custom],
+					coalesce(a.ID,0) as [AssetID]
+			from	#tempinterdata i 
+					inner join asset a on(a.ID = i.AssetID);
+
+		drop table if exists #tempInsertedIntersect;
+		drop table if exists #TempFieldDataIntersect;
+		drop table if exists #tempinterdata;
+		drop table if exists #tempFieldIntersectID;
+
+	end
+	drop table if exists #tempInserted;
+	drop table if exists #tempDeleted;
+]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
+	ON [dbo].[Field]
+	FOR INSERT, UPDATE
+AS
+	SET NOCOUNT ON;
+
+	-- formatted value logic only needs to run in cases where value is not null
+	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
+	begin
+
+		if exists (select 1 from inserted where AssetID IS NOT NULL)
+			begin
+		UPDATE	T
+		SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+		FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
+				INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
+		
+		if exists (select 1 from inserted where IntersectID IS NOT NULL)
+			begin
+				UPDATE	T
+				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
+
+		if exists (select 1 from inserted where IssueID IS NOT NULL)
+			begin
+				UPDATE	T
+				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field T 
+						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
+						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+			end
+
+		drop table if exists #insertedFields;
+		create table #insertedFields (ObjectType varchar(250), ObjectID int);
+		create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
+
+		drop table if exists #distinctFieldTypeIDs;
+		create table #distinctFieldTypeIDs (ID int);
+		create clustered index IX_distinctFieldTypeIDs ON #distinctFieldTypeIDs (ID);
+		
+
+		insert into #distinctFieldTypeIDs
+		select distinct I.FieldTypeID
+		from inserted i
+		where exists (select 1 from deleted d where d.id = i.id);
+
+
+		insert into #insertedFields
+		select distinct
+			replace(AT.[Object],'Type',''),
+			AT.ObjectID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID
+		inner join assettype AT on AT.ID = FT.AssetTypeID and FT.AssetTypeID is not Null
+		union
+		select 'Intersect',
+			FT.IntersectTypeID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID and FT.IntersectTypeID is not Null
+		union
+		select 'Issue',
+			FT.IssueTypeID
+		from #distinctFieldTypeIDs i
+		inner join FieldType FT on FT.ID = i.ID and FT.IssueTypeID is not Null;
+		
+		drop table if exists #lookupFieldTypes
+		select distinct FT.ID 
+		into #lookupFieldTypes
+		from #insertedFields SF
+		inner join FieldType FT on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID
+
+		if exists(
+			select top 1 1 from #lookupFieldTypes
+			)
+		begin
+		
+			UPDATE	TF
+			SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
+			from	Field TF
+					inner join #lookupFieldTypes LFT ON LFT.ID = TF.FieldTypeID
+					inner join FieldType FT on FT.ID = TF.FieldTypeID
+					where TF.[Value] is not null;
+		end
+	end
+
+	--------------------------------------------
+   	-- audit field value changes													
+	--------------------------------------------
 	Declare @ActionName varchar(20)  = 'Add';
 	IF EXISTS(SELECT * FROM DELETED)
 	BEGIN
@@ -419,7 +729,7 @@ AS
 		
 		with rsdata as (
 		select IntersectID,inter.ObjectAssetID,inter.SubjectAssetID
-		from inserted i
+			from	inserted i 
 		inner join [intersect] inter on(i.IntersectID = inter.ID)
 		where i.[IntersectID] is not null)
 		select distinct a.*
@@ -435,7 +745,7 @@ AS
 		create index idx_tempinterdata on #tempinterdata(IntersectID,AssetID)
 		
 		
-		
+
 		-- object side of relationship
 		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
 			select	@ActionName, 
@@ -465,178 +775,6 @@ AS
 					inner join asset a on(a.ID = i.AssetID);
 
 	end
-
-]]>
-    </sql>
-	<rollback>
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
-	ON [dbo].[Field]
-	FOR INSERT, UPDATE
-AS
-	SET NOCOUNT ON;
-
-	-- formatted value logic only needs to run in cases where value is not null
-	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
-	begin
-
-		UPDATE	T
-		SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-		FROM	Field T 
-				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.[Value] is not null
-				INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-		
-
-		drop table if exists #insertedFields;
-		create table #insertedFields (ObjectType varchar(250), ObjectID int);
-		create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
-
-		insert into #insertedFields
-		select distinct
-			replace(FT.[Object],'Type',''),
-			FT.ObjectID
-		from inserted i
-		inner join FieldType FT on FT.ID = i.FieldTypeID
-		where exists (select 1 from deleted d where d.id = i.id);
-
-
-		if exists(
-			select 1 from 	Field TF
-					inner join FieldType FT on FT.ID = TF.FieldTypeID
-					inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
-					where TF.[Value] is not null)
-		begin
-		
-			UPDATE	TF
-			SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
-			from	Field TF
-					inner join FieldType FT on FT.ID = TF.FieldTypeID
-					inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
-					where TF.[Value] is not null;
-		end
-	end
-
-  -- only update the assetid field if one was not already provided
-  if exists( select 1 from inserted where AssetID is null )
-  begin
-		UPDATE	T
-		SET		T.AssetID = A.ID
-		FROM	Field T 
-				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
-				inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
-   end
-
-      
-	--------------------------------------------
-   	-- audit field value changes													
-	--------------------------------------------
-	Declare @ActionName varchar(20)  = 'Add';
-	IF EXISTS(SELECT * FROM DELETED)
-	BEGIN
-		-- this is an update statement 
-		set @ActionName = 'Update';
-	END
-
-
-
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-		select	distinct
-				@ActionName, 
-				i.ObjectType, 
-				i.ObjectID,
-				(
-				select 	@ActionName as Action,
-						i2.ObjectType as ActionObject,
-						i2.ObjectID as ActionObjectID,
-						coalesce(i2.UpdatedBy, 0) as ResourceID,
-						(
-						select	f.FieldTypeID,
-								ft.FriendlyName as [Name], 
-								f.FormattedValue as [Value] 
-						from	field f 
-								inner join fieldtype ft on f.fieldtypeid = ft.id 
-						where	f.objectid = i.objectid 
-								and f.objecttype = i.objecttype 
-						for json path
-						) as Fields
-				from inserted i2 
-				where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-				group by ObjectType, ObjectID, UpdatedBy
-				for json path, WITHOUT_ARRAY_WRAPPER
-				) as [Custom],
-				coalesce(i.AssetID,0) as [AssetID]
-		from	inserted i 
-		where	i.[ObjectType] != 'Intersect' and i.[ObjectType] != 'Group';
-
-
-	-- handle relationships both sides need audit entries
-	if exists(select 1 from inserted where [objecttype]= 'Intersect')
-	begin
-		-- object side of relationship
-		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	distinct
-					@ActionName, 
-					i.ObjectType, 
-					i.ObjectID,
-					(
-					select 	@ActionName as Action,
-							a.Object as ActionObject,
-							a.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							(
-							select	f.FieldTypeID,
-									ft.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-							from	field f 
-									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.objectid = i.objectid 
-									and f.objecttype = i.objecttype 
-							for json path
-							) as Fields
-					from inserted i2 
-					where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-					group by ObjectType, ObjectID, UpdatedBy
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as [Custom],
-					coalesce(a.ID,0) as [AssetID]
-			from	inserted i 
-					inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
-					inner join asset a on(a.ObjectID = inter.ObjectID and a.[Object] = inter.[Object])
-			where	i.[ObjectType] = 'Intersect';
-
-			-- subject side
-		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	distinct
-					@ActionName, 
-					i.ObjectType, 
-					i.ObjectID,
-					(
-					select 	@ActionName as Action,
-							a.Object as ActionObject,
-							a.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							(
-							select	f.FieldTypeID,
-									ft.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-							from	field f 
-									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.objectid = i.objectid 
-									and f.objecttype = i.objecttype 
-							for json path
-							) as Fields
-					from inserted i2 
-					where i2.ObjectID = i.ObjectID and i2.ObjectType = i.ObjectType
-					group by ObjectType, ObjectID, UpdatedBy
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as [Custom],
-					coalesce(a.ID,0) as [AssetID]
-				from	inserted i 
-						inner join [intersect] inter on(i.ObjectID = inter.ID and i.[ObjectType] = 'Intersect')
-						inner join asset a on(a.ObjectID = inter.SubjectID and a.[Object] = inter.[Subject])
-				where	i.[ObjectType] = 'Intersect';
-	end
-
 ]]>
 	</rollback>
   </changeSet>

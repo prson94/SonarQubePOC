@@ -21,7 +21,6 @@ using d360.web.Services;
 using d360.web.Utilities;
 
 using Dapper;
-
 using Microsoft.Web.Http;
 
 using Resources;
@@ -349,12 +348,57 @@ namespace d360.web.Controllers.V2
 				int pageSize = Company.ParsePageSize(queryParams);
 				string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
 
-				var countSql = string.Format(@"select count(1) from ({0}) A {1}", baseSql, whereSql);
-				var sql = string.Format(@"select * from ({0}) A {1}", baseSql, whereSql);
+				var countSql = $@"select count(1) from #tempAuditData A {whereSql}";
 
-				sql += " " + orderBySql + " " + offsetSql;
+				string clusterindex = "";
 
-				var items = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout).ToList();
+				if (!string.IsNullOrEmpty(orderColumn.Trim()))
+				{
+					clusterindex = $@"create clustered index cx_tempaudit on #tempAuditData ({orderColumn})";
+				}
+
+				var sql = $@"
+							drop table if exists #tempselect;
+							select * 
+							into #tempselect
+							from #tempAuditData A {whereSql}
+							{orderBySql} 
+							{offsetSql}
+							
+							update t
+							set newvalue = case when newvalue is null then 'N/A' when newvalue = '' then '---' else newvalue end,
+								PreviousValue =  case when PreviousValue is null then 'N/A' when PreviousValue = '' then '---' else PreviousValue end
+							from #tempselect t
+
+							select *
+							from #tempselect
+							{orderBySql} 
+							";
+
+				var getAllQuery = $@"
+				drop table if exists #tempAuditData;
+
+				select *
+				into #tempAuditData
+				from ({baseSql}) a;
+
+				{clusterindex}
+
+				{(isStreamResponse ? " " : countSql)}
+
+				{sql}
+				";
+
+				var multiQuery = await Company.QueryMultipleAsync(getAllQuery, dbArgs, ApiTimeout);
+
+				int? count = null;
+
+				if (!isStreamResponse)
+				{
+					count = multiQuery.Read<int?>().FirstOrDefault();
+				}
+
+				var items = multiQuery.Read<AssetAuditApiItemModel>().ToList();
 
 				//Translate actionObject values
 				items.ForEach(r =>
@@ -394,7 +438,7 @@ namespace d360.web.Controllers.V2
 				{
 					var model = new AssetsApiViewModel
 					{
-						total = Company.Query<int>(countSql, dbArgs, ApiTimeout).First(),
+						total = count,
 						pageNum = pageNum,
 						pageSize = pageSize,
 						items = items
