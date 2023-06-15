@@ -77,13 +77,13 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		// if (!this.assignmentItemStep.Complete) {
-		// 	this.isLoading = true;
-		// 	this.workflowService.getWorkflowStepDetail(this.assignmentItemStep.ID).subscribe((response) => {
-		// 		this.workflowStepDetail = response;
-		// 		this.isLoading = false;
-		// 	});
-		// }
+		if (!this.assignmentItemStep.CompletedOn) {
+			this.isLoading = true;
+			this.workflowService.getAssignmentStepDetail(this.assignmentItemStep.Uid).subscribe((response) => {
+				this.workflowStepDetail = response;
+				this.isLoading = false;
+			});
+		}
 	}
 
 	toggleStepDetails(): void {
