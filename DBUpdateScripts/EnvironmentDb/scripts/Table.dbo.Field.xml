@@ -406,6 +406,8 @@ AS
 		where t.AssetID is not null
 		group by t.AssetID; 
 		
+		drop table if exists #tempFieldAssetID;
+
 		select t.AssetID
 		into #tempFieldAssetID
 		from #tempInsertedAsset t
@@ -494,6 +496,8 @@ AS
 		group by t.IntersectID; 
 		
 
+		drop table if exists #tempFieldIntersectID;
+		
 		select t.IntersectID
 		into #tempFieldIntersectID
 		from #tempInsertedIntersect t
@@ -518,7 +522,7 @@ AS
 	    drop table if exists #tempinterdata;
 		
 		with rsdata as (
-		select IntersectID,inter.ObjectAssetID,inter.SubjectAssetID, ActionName, UpdatedBy
+		select i.IntersectID,inter.ObjectAssetID,inter.SubjectAssetID, i.ActionName, i.UpdatedBy
 		from #tempInsertedIntersect i
 		inner join [intersect] inter on(i.IntersectID = inter.ID)
 		where i.[IntersectID] is not null)
@@ -541,7 +545,7 @@ AS
 			   FT.FriendlyName,
 			   f.FormattedValue
 		into #TempFieldDataIntersect
-		from #tempInsertedAsset I
+		from #tempInsertedIntersect I
 		inner join Field F on f.IntersectID = I.IntersectID 
 		inner join fieldtype ft on f.fieldtypeid = ft.id ;
 			
@@ -568,7 +572,7 @@ AS
 							) as Fields
 					from #tempinterdata i2 
 					where i2.IntersectID = i.IntersectID
-					group by i.ActionName, a.Object, a.ObjectID, coalesce(@resourceId, i2.UpdatedBy, 0)
+					group by i2.IntersectID,i2.ActionName, coalesce(@resourceId, i2.UpdatedBy, 0)
 					for json path, WITHOUT_ARRAY_WRAPPER
 					) as [Custom],
 					coalesce(a.ID,0) as [AssetID]
