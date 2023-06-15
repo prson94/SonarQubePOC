@@ -760,6 +760,18 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var f in model.Fields)
 			{
+				if (string.IsNullOrEmpty(f.Category))
+				{
+					if (model.ActionTypeUid.HasValue)
+					{
+						f.Category =  "Form Fields";
+					}
+					else
+					{
+						f.Category = "General";
+					}
+				}
+
 				if (reservedWords.Contains(f.Name.ToLower()))
 				{
 					return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
