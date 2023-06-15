@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Action Type Uid provided..
+        /// </summary>
+        public static string InvalidActionTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidActionTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Closed.
         /// </summary>
         public static string State_Closed {
