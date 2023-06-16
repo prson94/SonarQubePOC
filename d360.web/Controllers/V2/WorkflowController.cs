@@ -523,8 +523,6 @@ namespace d360.web.Controllers.V2
 				}				
 			}
 
-			var ab = filterValue.Substring(filterValue.IndexOf("actionTypeUid") + 13).TrimStart().StartsWith("eq");
-
 			if (!string.IsNullOrEmpty(filterValue) && Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1 && filterValue.Substring(filterValue.IndexOf("actionTypeUid") + 13).TrimStart().StartsWith("eq"))
 			{
 				var actionTypeValue = filterValue.Substring(filterValue.IndexOf("actionTypeUid")).Substring(filterValue.IndexOf("'")+1);
@@ -640,7 +638,7 @@ namespace d360.web.Controllers.V2
 			if (isRequestExport)
 			{
 				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowMonitor_Initiator, assignments.items[0].initiator });
-				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_InitiatorUid, initiatorUid.ToString() });
+				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_InitiatorUid, initiatorUid });
 			}
 
 			if (hasSingleActionFilter)
