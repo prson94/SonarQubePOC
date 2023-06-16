@@ -66,26 +66,26 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		this.step = null;
 		if (this.itemStepUid != null) {
 			this.isLoading = true;
-			// return this.workflowService.getWorkflowStepDetail(this.itemStepUid)
-			// 	.pipe(
-			// 		map((r) => {
-			// 			this.isLoading = false;
-			// 			this.step = r;
-			// 			this.activityType = this.getActivityType(this.step);
-			// 			if (this.step.ItemFields && this.step.ItemFields['@NumberOfResponses']) {
-			// 				this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
-			// 			}
-			// 			let reassignments: WorkflowStepReassignment[] = [];
-			// 			if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
-			// 				for (const element of this.step.ItemFields.Reassigned) {
-			// 					reassignments.push(new WorkflowStepReassignment(element));
-			// 				}
-			// 			}
-			// 			this.bulkReassignments = this.getBulkReassignments(reassignments);
-			// 			this.reassignment = this.getReassignment(reassignments);
-			// 			this.ref.markForCheck();
-			// 		})
-			// 	);
+			return this.workflowService.getAssignmentStepDetail(this.itemStepUid)
+				.pipe(
+					map((r) => {
+						this.isLoading = false;
+						this.step = r;
+						this.activityType = this.getActivityType(this.step);
+						if (this.step.ItemFields && this.step.ItemFields['@NumberOfResponses']) {
+							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
+						}
+						let reassignments: WorkflowStepReassignment[] = [];
+						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
+							for (const element of this.step.ItemFields.Reassigned) {
+								reassignments.push(new WorkflowStepReassignment(element));
+							}
+						}
+						this.bulkReassignments = this.getBulkReassignments(reassignments);
+						this.reassignment = this.getReassignment(reassignments);
+						this.ref.markForCheck();
+					})
+				);
 		} else {
 			return of();
 		}

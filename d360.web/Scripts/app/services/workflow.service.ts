@@ -728,6 +728,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
+    getAssignmentStepDetail(itemStepUid: string):Observable<any> {
+        return this.http.get(`services/workflow/step/detailByUid/${itemStepUid}`)
+            .pipe(
+                map((response) => response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
     postWorkflowBulkReassign(model: BulkWorkflowReassignModel):Observable<any> {
         return this.http.post('services/workflow/ReassignWorkflowResource/bulk', model)
             .pipe(

@@ -72,8 +72,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		})
 	];
 
-	@ViewChild('assignmentGridComponent', { static: false }) assignmentGridComponent: AssignmentGridComponent;
-	@ViewChild('completeAssignmentComponent', { static: false }) completeAssignmentComponent: CompleteAssignmentComponent;
+	@ViewChild('assignmentGridComponent') assignmentGridComponent: AssignmentGridComponent;
+	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	secondarySidePanelObjectUid: string;
 	secondarySidePanelObjectType: string;
 
@@ -161,6 +161,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	stepClicked(value: { workflowItemStep: AssignmentItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
 		this.assignmentItemStep = value.workflowItemStep;
+		this.secondarySidePanelObjectType = 'step-details';
 	}
 
 	closeSecondarySidePanel() {
