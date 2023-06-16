@@ -1,6 +1,6 @@
 ﻿import { AfterViewInit, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SelectItem } from 'primeng/api';
+import { SelectItem, OverlayOptions } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -16,7 +16,13 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
-    searchObjectTypes: SelectItem[] = [];
+	searchObjectTypes: SelectItem[] = [];
+
+	overlayOpts: OverlayOptions = {
+		showTransitionOptions: "0ms ease-out",
+		hideTransitionOptions: "0ms ease-in",
+		baseZIndex: 2
+	};
 
     constructor(
         protected authenticationService: AuthenticationService,
@@ -35,7 +41,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
                     value: set.value
                 };
             });
-            var availableTypes = this.searchObjectTypes.map((x) => x.value);
+            const availableTypes = this.searchObjectTypes.map((x) => x.value);
             this.searchTypes = this.searchTypes.filter((st) => availableTypes.indexOf(st) >= 0);
 
             this.setEventTypeLabel();
@@ -70,7 +76,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
 	setLabelInterval;
 	private setSelectAllLabel() {
-		var searchMultiSelect = document.getElementById('searchMultiSelect');
+		const searchMultiSelect = document.getElementById('searchMultiSelect');
 		if (!searchMultiSelect) {
 			return;
 		}
@@ -80,7 +86,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 			if (this.setLabelInterval) {
 				clearInterval(this.setLabelInterval);
 			}
-			var selectAllLabel = document.createElement("span");
+			const selectAllLabel = document.createElement("span");
 			selectAllLabel.className = "select-all-label";
 			selectAllLabel.innerText = $localize`Search All Categories`;
 			document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header")[0]

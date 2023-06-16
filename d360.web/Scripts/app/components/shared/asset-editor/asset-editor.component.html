@@ -27,7 +27,7 @@
 			</ig-form-feedback-badges>
 		</div>
 		<ng-template #loading>
-			<d3s-loading [isLoading]="true"></d3s-loading>
+			<d3s-loading [isLoading]="true && !isInError"></d3s-loading>
 		</ng-template>
 		<div class="row" *ngIf="isInError">
 			<div class="err-message">{{isInErrorMessage}}</div>
