@@ -587,5 +587,14 @@ namespace d360.core.entities.Workflow
 		public string initiatingObjectType { get; set; }
 	}
 
+	public class WorkflowAssignee
+	{
+		[DataMember]
+		public Guid uid { get; set; }
+
+		[DataMember]
+		public string Name { get; set; }
+	}
+
 	#endregion
 }
