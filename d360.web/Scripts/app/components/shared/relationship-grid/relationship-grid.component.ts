@@ -393,7 +393,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 if (type.length > 0) {
                     i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
 
-                    if ((this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) && type[0].HasFieldTypes) {
+                    if (this.assetPermissions.EditRelationships && type[0].HasFieldTypes) {
                         i[this.menuKey].push({ title: $localize`Edit Relationship` });
                     }
                 }
