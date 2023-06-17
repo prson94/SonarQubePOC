@@ -436,7 +436,7 @@ namespace d360.web.Controllers
 
         protected internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
         {
-            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
+            Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
         }
 
         protected internal string applyFilteringSuffix(string sql, HttpRequestMessage Request)
@@ -1524,7 +1524,7 @@ namespace d360.web.Controllers
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
         {
-            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
+            Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
         }
 
         internal string getFilteringConditionBind(string field, string condition, int filterNumber, DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false, FieldType ft = null)

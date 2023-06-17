@@ -1,0 +1,443 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1">
+    <comment></comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+create or alter procedure [dbo].[PatchCatalog] 
+	@executionId int,
+	@type char(1),
+	@resourceId int,
+	@date datetime
+as
+begin
+	if @type = 'B'
+	begin
+		-- Update the execution record.
+		update	T 
+		set		T.[State] = 1,
+				T.ProcessingStartedOn = getutcdate(),
+				T.MarkedForProcessing = 1,
+				T.[Total] = mT.[Total]
+		from	api.Execution T
+				cross apply (select count(1) as [Total] from api.ExecutionCatalogItem where ExecutionId = T.Id) mT
+		where	T.Id = @executionId;
+	end
+
+	if @type = 'A'
+	begin
+		-- Locate asset type based on the incoming SourceId,
+		update	T
+		set		T.TypeId = S.Id,
+				--T.[Object] = REPLACE(S.[Object], 'Type', ''),
+				T.Success = iif(S.Id is null, 0, null),
+				T.[Message] = iif(S.Id is null, 'Asset Type not found based on SourceId; ', T.[Message])
+		from	api.ExecutionCatalogItem T
+				left join AssetType S on S.SourceId = T.TypeSourceId
+		where	T.ExecutionId = @executionId
+				and T.[Type] = @type;
+
+		-- Does asset exist based on the incoming SourceId.
+		update	T
+		set		T.Id = S.Id,
+				T.Uid = S.Uid,
+				T.[Action] = 'U'
+		from	api.ExecutionCatalogItem  T
+				inner join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Updated field types based on property names
+		update	T
+		set		T.FieldTypeId = S.ID,
+				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
+				T.ValueAssetTypeId = L.ID
+		from	api.ExecutionCatalogItemProperty  T
+				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type
+				inner join FieldType S on S.AssetTypeID = I.TypeId and S.Name = T.Name
+				left join AssetType L on L.Object = S.LookupObjectType+'Type' and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+
+		-- Resolve ValueId (the legacy ObjectId) for Code value / lookup fields
+		update	T
+		set		T.ValueId = S.ObjectId
+		from	api.ExecutionCatalogItemProperty T
+				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.[Value] and T.[Value] is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Capture new asset records.
+		declare @new_assets table(Id bigint, Uid uniqueidentifier, AssetTypeID int, SourceId nvarchar(500));
+
+		-- Insert new assets.
+		insert into Asset (AssetTypeId, SourceId, [Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+		output inserted.Id, inserted.Uid, inserted.AssetTypeID, inserted.SourceId into @new_assets
+			select	I.TypeId, I.SourceId, replace(A.[Object], 'Type', ''), @resourceId, @date, @resourceId, @date
+			from	api.ExecutionCatalogItem I
+					inner join AssetType A on A.ID = I.TypeId
+			where	I.ExecutionId = @executionId
+					and I.[Type] = @type
+					and I.Id is null 
+					and I.Success is null;
+
+		-- Update the Items table with the newly generated asset Ids.
+		update	T
+		set		T.Id = S.Id,
+				T.Uid = S.Uid,
+				T.[Action] = 'A'
+		from	api.ExecutionCatalogItem T
+				inner join @new_assets S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeId and T.Success is null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Update Code field if any reference item assets.
+		update	T
+		set		T.Code = P.CodeValue
+		from	Asset T
+				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type
+				inner join api.ExecutionCatalogItemProperty P on P.SourceId = S.SourceId and P.Name = 'Code' and T.Code <> P.CodeValue and P.CodeValue is not null;
+
+		-- Add/update field data.
+		merge	Field as T
+		using	(
+				select	distinct
+						I.Id,
+						A.Object,
+						A.ObjectId,
+						P.FieldTypeId,
+						P.Value,
+						P.ValueId
+				from	api.ExecutionCatalogItem I
+						inner join api.ExecutionCatalogItemProperty P on 
+							P.SourceId = I.SourceId 
+							and P.ExecutionId = I.ExecutionId 
+							and P.[Type] = I.[Type] 
+							and I.ExecutionId = @executionId 
+							and I.[Type] = @type 
+							and I.Success is null 
+							and P.FieldTypeID is not null
+						inner join Asset A on A.ID = I.Id
+				) as S
+		on		(S.Id = T.AssetId and S.FieldTypeId = T.FieldTypeID)
+		when	matched then
+		update	set
+				T.[Value] = iif(S.ValueId is null, null, S.ValueId),
+				T.FormattedValue = iif(S.ValueId is null, S.[Value], null),
+				T.UpdatedBy = @resourceId,
+				T.UpdatedOn = @date
+		when	not matched by target then
+		insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue)
+		values	(S.Id, S.Object, S.ObjectId, S.FieldTypeId, iif(S.ValueId is null, null, S.ValueId), iif(S.ValueId is null, S.[Value], null));
+
+		update	api.ExecutionCatalogItem 
+		set		Success = 1
+		where	ExecutionId = @executionId 
+				and [Type] = @type
+				and [Action] is not null
+				and Success is null;
+	end
+
+	if @type = 'R'
+	begin
+		-- Locate relation type based on the incoming SourceId
+		update	T
+		set		T.TypeId = S.Id,
+				T.Success = iif(S.Id is null, 0, null),
+				T.[Message] = iif(S.Id is null, 'Relation Type not found based on SourceId; ', T.[Message])
+		from	api.ExecutionCatalogItem T
+				left join IntersectType S on S.SourceId = T.TypeSourceId
+		where	T.ExecutionId = @executionId
+				and T.[Type] = @type;
+
+		-- Locate subject asset exist based on the incoming SourceId,
+		update	T
+		set		T.SubjectId = S.Id,
+				T.ObjectId = O.Id
+		from	api.ExecutionCatalogItem T
+				inner join IntersectType IT on IT.ID = T.TypeId and T.ExecutionId = @executionId and T.[Type] = @type and T.Success is null
+				inner join Asset S on S.AssetTypeID = IT.SubjectAssetTypeID and S.SourceId = T.SubjectSourceId
+				inner join Asset O on O.AssetTypeID = IT.ObjectAssetTypeID and O.SourceId = T.ObjectSourceId;
+
+		-- Mark errors, if any.
+		update	api.ExecutionCatalogItem
+		set		Success = 0,
+				[Message] = 'Subject Asset not found based on SubjectSourceId; ' + coalesce([Message], '')
+		from	api.ExecutionCatalogItem
+		where	ExecutionId = @executionId 
+				and [Type] = @type
+				and SubjectId is null;
+
+		update	api.ExecutionCatalogItem
+		set		Success = 0,
+				[Message] = 'Object Asset not found based on ObjectSourceId; ' + coalesce([Message], '')
+		from	api.ExecutionCatalogItem
+		where	ExecutionId = @executionId 
+				and [Type] = @type
+				and ObjectId is null;
+
+		-- Determine if this is an update to relation.
+		update	T
+		set		T.ID = I.ID,
+				T.Uid = I.Uid,
+				T.[Action] = 'U'
+		from	api.ExecutionCatalogItem T
+				inner join [Intersect] I on I.IntersectTypeID = T.TypeID 
+					and T.ExecutionId = @executionId 
+					and T.[Type] = @type 
+					and T.Success is null 
+					and I.SubjectAssetID = T.SubjectID 
+					and I.ObjectAssetID = T.ObjectID;
+
+		-- Updated field types based on property names
+		update	T
+		set		T.FieldTypeId = S.ID,
+				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
+				T.ValueAssetTypeId = L.ID
+		from	api.ExecutionCatalogItemProperty T
+				inner join api.ExecutionCatalogItem I on 
+					I.ExecutionId = T.ExecutionId and I.ExecutionId = @executionId 
+					and I.[Type] = T.[Type] and I.[Type] = @type 
+					and I.Success is null 
+					and I.SubjectSourceId = T.SubjectSourceId 
+					and I.ObjectSourceId = T.ObjectSourceId 
+				inner join FieldType S on S.IntersectTypeID = I.TypeId and S.Name = T.Name
+				left join AssetType L on L.Object = S.LookupObjectType and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+
+		-- Resolve ValueId (the legacy ObjectId) for Code value / lookup fields
+		update	T
+		set		T.ValueId = S.ObjectId
+		from	api.ExecutionCatalogItemProperty T
+				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.CodeValue and T.CodeValue is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Capture new relation records.
+		declare @new table(Id bigint, IntersectTypeId int, SourceId nvarchar(1000), Uid uniqueidentifier);
+
+		-- Insert new relations.
+		insert into [Intersect] (IntersectTypeId, SourceId, SubjectAssetId, ObjectAssetId, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+		output inserted.Id, inserted.IntersectTypeID, inserted.SourceId, inserted.Uid into @new
+			select	TypeId, '['+SubjectSourceId+'].['+ObjectSourceId+']', SubjectId, ObjectId, @resourceId, @date, @resourceId, @date
+			from	api.ExecutionCatalogItem
+			where	ExecutionId = @executionId
+					and [Type] = @type
+					and TypeId is not null
+					and Id is null 
+					and Success is null;
+
+		-- Update the Items table with the newly generated asset Ids.
+		update	T
+		set		T.Id = S.Id,
+				T.Uid = S.Uid,
+				T.[Action] = 'A'
+		from	api.ExecutionCatalogItem T
+				inner join @new S on S.SourceId = '['+T.SubjectSourceId+'].['+T.ObjectSourceId+']' and T.TypeId = S.IntersectTypeId and T.ExecutionId = @executionId and T.[Type] = @type and T.Success is null;
+
+		-- Update Code field if any reference item assets.
+		update	T
+		set		T.Code = P.CodeValue
+		from	Asset T
+				inner join api.ExecutionCatalogItem S on S.Id = T.Id
+				inner join api.ExecutionCatalogItemProperty P on P.SourceId = S.SourceId and P.Name = 'Code' and S.ExecutionId = @executionId and S.[Type] = @type and S.ExecutionId = P.ExecutionId and S.[Type] = P.[Type];
+
+		-- Add/update field data.
+		merge	Field as T
+		using	(
+				select	I.Id,
+						'Intersect' as Object,
+						I.Id as ObjectId,
+						P.FieldTypeId,
+						P.Value,
+						P.ValueId
+				from	api.ExecutionCatalogItem I
+						inner join api.ExecutionCatalogItemProperty P on P.SourceId = I.SourceId 
+							and I.ExecutionId = @executionId 
+							and I.[Type] = @type 
+							and I.ExecutionId = P.ExecutionId 
+							and I.[Type] = P.[Type] 
+							and I.Success is null
+							and P.FieldTypeID is not null
+				) as S
+		on		(S.Id = T.AssetId and S.FieldTypeId = T.FieldTypeID)
+		when	matched then
+		update	set
+				T.[Value] = iif(S.ValueId is null, null, S.ValueId),
+				T.FormattedValue = iif(S.ValueId is null, S.[Value], null),
+				T.UpdatedBy = @resourceId,
+				T.UpdatedOn = @date
+		when	not matched by target then
+		insert	(IntersectID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue)
+		values	(S.Id, S.Object, S.ObjectId, S.FieldTypeId, iif(S.ValueId is null, null, S.ValueId), iif(S.ValueId is null, S.[Value], null));
+
+		update	api.ExecutionCatalogItem 
+		set		Success = 1
+		where	ExecutionId = @executionId 
+				and [Type] = @type
+				and [Action] is not null
+				and Success is null;
+	end
+	
+	if @type = 'P' -- path processing
+	begin
+		drop table if exists #ids;
+		drop table if exists #incoming;
+		drop table if exists #hierarchy;
+		drop table if exists #tbl;
+
+		create table #ids (
+			GroupID bigint, 
+			ID bigint, 
+			ParentID bigint, 
+			[Path] nvarchar(2500), 
+			Segments xml
+		);
+		create table #incoming (ID bigint);
+		create table #hierarchy (
+			GroupID bigint,
+			AssetTypeID int,
+			ID bigint,
+			[Level] int,
+			ParentID bigint,
+			Code nvarchar(250)
+		);
+		create table #tbl (
+			GroupID bigint,
+			AssetTypeID int,
+
+			ID bigint,
+			[Level] int,
+			[Position] decimal(5,3),
+
+			ParentID bigint,
+			ParentLevel int,
+			ParentPosition decimal(5,3),
+
+			ColumnOrder int,
+			FormattedValue nvarchar(max)
+		);
+
+		insert into #incoming 
+			select	Id
+			from	api.ExecutionCatalogItem
+			where	ExecutionId = @executionId
+					and [Type] = 'A'
+					and Success = 1;
+
+		create clustered index CIX_TempIncoming on #incoming (ID);
+
+		with descendants as (
+			select	I.SubjectAssetID,
+					I.ObjectAssetID
+			from	#incoming O
+					inner join Asset A on O.ID = A.ID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.SubjectAssetID = O.ID
+					inner join Asset C on C.ID = I.ObjectAssetID
+			union all
+			select	I.SubjectAssetID,
+					I.ObjectAssetID
+			from	descendants c
+					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.SubjectAssetID = c.ObjectAssetID
+					inner join Asset A on A.ID = I.ObjectAssetID
+		)
+		insert into #incoming
+			select ObjectAssetID from descendants;
+		
+		with hierarchy as (
+			select	A.ID as GroupID,
+					A.AssetTypeID,
+					A.ID,
+					I.ObjectAssetID,
+					I.SubjectAssetID as ParentObjectAssetID,
+					A.Code,
+					0 as [Level]
+			from	Asset A
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
+					inner join #incoming O on O.ID = A.ID
+			union all
+			select	c.GroupID,
+					A.AssetTypeID,
+					A.ID,
+					A.ID ObjectAssetID,
+					I.SubjectAssetID as ParentObjectAssetID,
+					A.Code,
+					c.[Level]-1 as [Level]
+			from	hierarchy c
+					inner join Asset A on c.ParentObjectAssetID = A.ID
+					outer apply (
+						select	I.SubjectAssetID
+						from	PredicateIntersect I 
+						where	I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
+					) I
+		)
+
+		insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+			select	A.GroupID,
+					A.AssetTypeID,
+					A.ID,
+					A.[Level],
+					P.ID,
+					A.Code
+			from	hierarchy A
+					left join Asset P on P.ID = A.ParentObjectAssetID;
+
+		-- Get field data.
+		create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
+
+		insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+			select	distinct
+					A.GroupID, 
+					A.AssetTypeID,
+					A.ID,
+					A.[Level],
+					cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
+					A.ParentID,
+					A.[Level] - 1,
+					FT.ColumnOrder,
+					coalesce(F.FormattedValue, FT.DefaultFormattedValue) as FormattedValue
+			from	#hierarchy A
+					inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+					left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+			where 	coalesce(F.FormattedValue, FT.DefaultFormattedValue) is not null
+
+		--handle counter fields
+		insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+			select	distinct
+					A.GroupID, 
+					A.AssetTypeID,
+					A.ID,
+					A.[Level],
+					cast(cast(A.[Level] as varchar) + '.' + cast(FT.ColumnOrder as varchar) as decimal(5,3)) as Position,
+					A.ParentID,
+					A.[Level] - 1,
+					FT.ColumnOrder,
+					coalesce(FT.CounterPrefix,'')+ cast(FCV.Value as nvarchar(20)) as FormattedValue
+			from	#hierarchy A
+					inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1 and FT.Type = 'Counter'
+					inner join FieldCounterValue FCV on FCV.AssetId = A.Id and FCV.FieldTypeId = FT.Id;
+
+		create clustered index CIX_TempTbl on #tbl (GroupID);
+
+		exec api.ParseAssetPaths;
+		exec CheckDisplayValues;
+	end
+
+	if @type = 'E'
+	begin
+		-- Clear out the data we do not need any more.
+		delete	api.ExecutionCatalogItemProperty
+		where	ExecutionID = @executionId;
+
+		-- Update the execution record.
+		update	T 
+		set		T.[State] = 4,
+				T.CompletedOn = getutcdate(),
+				T.MarkedForProcessing = 0,
+				T.[Processed] = mP.[Processed],
+				T.[Error] = mE.[Error]
+		from	api.Execution T
+				cross apply (select count(1) as [Processed] from api.ExecutionCatalogItem where ExecutionId = T.Id and [Action] is not null) mP
+				cross apply (select count(1) as [Error] from api.ExecutionCatalogItem where ExecutionId = T.Id and Success = 0) mE
+		where	T.Id = @executionId;
+	end
+end
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

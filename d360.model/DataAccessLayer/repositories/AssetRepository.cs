@@ -163,6 +163,15 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (queryParams.Any(q => q.Key.ToLower() == "sourceid"))
+				{
+					var sourceId = queryParams.FirstOrDefault(q => q.Key.ToLower() == "sourceid").Value;
+					int sourceIdMaxLength = sourceId.Length > 500 ? 500 : sourceId.Length;
+					sourceId = sourceId.Substring(0, sourceIdMaxLength);
+					condition += " and A.SourceID=@sourceId ";
+					dbArgs.Add("sourceId", sourceId);
+				}
+
 				if (queryParams.Any(q => q.Key.ToLowerInvariant() == "includeCustomExportTemplatesFlag".ToLowerInvariant()))
 				{
 					var includeString = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "includeCustomExportTemplatesFlag".ToLowerInvariant()).Value;
@@ -311,6 +320,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 									,ISNULL(A.[Description],'') as Description
 									,A.[Class] as ClassID
 									,ISNULL(A.[Notes],'') as Notes
+									,A.SourceID
 									,A.[uid]
 									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
@@ -3113,12 +3123,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						DisplayFormat = model.DisplayFormat,
 						Description = model.Description.SanitizeHtml(),
 						Object = parentType.ToString(),
+						SourceID = model.SourceID,
 						State = State.Active,
 						UpdatedBy = resourceId,
 						UpdatedOn = DateTime.UtcNow,
 						CreatedBy = resourceId,
 						CreatedOn = DateTime.UtcNow,
-						Hierarchical = false,
 						Class = model.Class,
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
@@ -3154,12 +3164,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						Description = model.Description.SanitizeHtml(),
 						HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
 						Object = objectType.ToString(),
+						SourceID = model.SourceID,
 						State = State.Active,
 						UpdatedBy = resourceId,
 						UpdatedOn = DateTime.UtcNow,
 						CreatedBy = resourceId,
 						CreatedOn = DateTime.UtcNow,
-						Hierarchical = true,
 						UseAsTransformation = model.UseAsTransformation,
 						Class = model.Class,
 						CanEditParent = model.CanEditParent,
@@ -3200,6 +3210,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						Description = model.Description.SanitizeHtml(),
 						Notes = model.Notes,
 						Object = SystemObjects.ReferenceItemType.ToString(),
+						SourceID = model.SourceID,
 						State = State.Active,
 						UpdatedBy = resourceId,
 						UpdatedOn = DateTime.UtcNow,
@@ -3235,7 +3246,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						UpdatedOn = DateTime.UtcNow,
 						CreatedBy = resourceId,
 						CreatedOn = DateTime.UtcNow,
-						Hierarchical = true,
 						Class = model.Class,
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
@@ -3395,6 +3405,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					}
 					assetType.Class = model.Class;
 					assetType.Notes = model.Notes;
+					if (!string.IsNullOrEmpty(model.SourceID))
+					{
+						assetType.SourceID = model.SourceID;
+					}
 
 					if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
 					{
@@ -3654,186 +3668,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return CompanyContext.Filter<AssetType>(x => x.ObjectID == model.ObjectID && x.Object == model.Object).SingleOrDefault();
 		}
 
-		public ApiExecution GetExecutionItemByUid(Guid executionUid)
-		{
-			return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
-		}
-
-		public async Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams)
-		{
-			string orderDirection = "asc";
-			string filterSql = "";
-			if (queryParams.Any(x => x.Key == "_direction"))
-			{
-				var allowedDirections = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "asc", "desc" };
-				var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim();
-				if (!allowedDirections.Contains(order))
-				{
-					return new APIExecutionAPIModelResult
-					{
-						Message = AssetTypeErrors.InvalidDirection,
-						StatusCode = HttpStatusCode.BadRequest
-					};
-				}
-				orderDirection = order;
-			}
-
-			string orderBySql = "";
-			if (!queryParams.Any(p => p.Key == "_order"))
-			{
-				orderBySql = $" order by [CompletedOn] {orderDirection} ";
-			}
-			else
-			{
-
-				var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-				var validOrderByFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-					"executionid", "resourceuid", "resource", "total",
-					"processed", "error", "errormessage", "processingstartedon",
-					"startedon", "completedon", "method", "route", "fields", "applicationid" };
-				if (!validOrderByFields.Contains(orderByCol))
-				{
-					return new APIExecutionAPIModelResult
-					{
-						Message = AssetTypeErrors.InvalidOrderPassed,
-						StatusCode = HttpStatusCode.BadRequest
-					};
-				}
-
-				orderBySql = $" order by [{orderByCol}] {orderDirection} ";
-			}
-
-			int pageNum = 1;
-			if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-				{
-				}
-			}
-
-			int pageSize = 200;
-			if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-				{
-				}
-			}
-
-			if (pageSize > 0 || pageNum > 0)
-			{
-				if (pageSize < 1)
-				{
-					pageSize = 1;
-				}
-
-				if (pageNum < 1)
-				{
-					pageNum = 1;
-				}
-
-				if (pageSize > 25000)
-				{
-					pageSize = 25000;
-				}
-
-				if (pageNum > 10000)
-				{
-					pageNum = 10000;
-				}
-			}
-
-			if (queryParams.Any(p => p.Key == "_status"))
-			{
-				if (Enum.TryParse(queryParams.FirstOrDefault(p => p.Key == "_status").Value, out ExecutionInternalStatus status))
-				{
-					switch (status)
-					{
-						case ExecutionInternalStatus.Pending:
-							filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NULL";
-							break;
-						case ExecutionInternalStatus.Running:
-							filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NOT NULL";
-							break;
-						case ExecutionInternalStatus.Completed:
-							filterSql = "WHERE Ex.CompletedOn IS NOT NULL";
-							break;
-
-					}
-				}
-			}
-
-			var sql = $@"
-						SELECT Ex.[ExecutionID]
-							  ,GR.[uid] as ResourceUid
-							  ,CONCAT(GR.[FirstName],' ', GR.[LastName]) as [Resource]
-							  ,[Total]
-							  ,[Processed]
-							  ,[Error]
-							  ,coalesce(ERR.[Message],ex.errormessage) as ErrorMessage
-							  ,[ProcessingStartedOn] 
-							  ,[StartedOn] 
-							  ,[CompletedOn]
-							  ,[Method]
-							  ,[Route]
-							  ,[Fields]
-							  ,[ApplicationId]
-						  FROM [api].[Execution] Ex
-						  INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
-						  LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
-						  {filterSql}
-						  {orderBySql}
-						  offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only
-						";
-
-			var countSQL = $@"
-						SELECT count(*)
-						  FROM [api].[Execution] Ex
-						  INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
-						  LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
-						  {filterSql}
-						";
-
-			var multiSQL = $"{sql}; {countSQL}";
-			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, null, ApiTimeout))
-			{
-				var executions = multi.Read<dynamic>().ToList();
-				var count = multi.Read<int>().First();
-
-				var items = executions.Select(x =>
-				{
-					var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
-					return new APIExecutionAPIModel
-					{
-						CompletedOn = x.CompletedOn,
-						Error = x.Error,
-						ErrorMessage = x.ErrorMessage,
-						ExecutionID = x.ExecutionID,
-						Fields = JsonConvert.DeserializeObject<dynamic>(f),
-						Method = x.Method,
-						Processed = x.Processed,
-						ProcessingStartedOn = x.ProcessingStartedOn,
-						Resource = x.Resource,
-						ResourceUid = x.ResourceUid,
-						Route = x.Route,
-						StartedOn = x.StartedOn,
-						Total = x.Total,
-						ApplicationId = x.ApplicationId
-					};
-				});
-
-				var resultsModel = new APIExecutionAPIModelResult
-				{
-					items = items,
-					total = count,
-					pageNum = pageNum,
-					pageSize = pageSize,
-					StatusCode = HttpStatusCode.OK
-				};
-
-				return resultsModel;
-			}
-		}
-
 		public async Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string component, string status)
 		{
 			string orderDirection = "desc";
@@ -4027,7 +3861,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
 			{
 				var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
-				var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
+				var transformationUids = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Select(i => i.uid).ToList();
+				int totalUseAsTransform = transformationUids.Count;
+				if (transformationUids.Contains(model.Uid))
+				{
+					totalUseAsTransform -= 1;
+				}
 				if (totalUseAsTransform > useAsTransformationLimit)
 				{
 					reached = true;
@@ -4359,45 +4198,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid }, ApiTimeout);
 		}
 
-		public async Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true)
-		{
-			ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
 
-			if (dbExecutionItem == null)
-			{
-				throw new ArgumentException(AssetTypeErrors.ExecutionUIDNotFound);
-			}
-
-			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
-
-			List<DatabaseBulkAssetResult> results = null;
-			bool finished = ((dbExecutionItem.Processed + dbExecutionItem.Error) >= dbExecutionItem.Total)
-				|| (dbExecutionItem.CompletedOn.HasValue);
-
-			if (includeResults && finished)
-			{
-				try
-				{
-					results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<DatabaseBulkAssetResult>>(info.StorageFolder, info.ResponseFileName);
-				}
-				catch
-				{
-				}
-			}
-
-			var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
-
-			return new
-			{
-				Total = dbExecutionItem.Total,
-				Processed = dbExecutionItem.Processed,
-				Error = dbExecutionItem.Error,
-				Fields = JsonConvert.DeserializeObject<dynamic>(f),
-				StartedOn = dbExecutionItem.StartedOn,
-				CompletedOn = dbExecutionItem.CompletedOn,
-				Results = results
-			};
-		}
 
 		public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
 		{
@@ -4508,7 +4309,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						select  A.ID as AssetId,
 								A.[uid] as AssetUid,
 								A.AssetTypeId,
-								T.[uid] as AssetTypeUid,
+								A.SourceID, 
+								T.[uid] as AssetTypeUid, 
 								P.[Uid] as ParentAssetUid,
 								P.DisplayValue as ParentDisplayName,
 								A.CreatedOn,

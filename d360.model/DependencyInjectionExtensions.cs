@@ -25,7 +25,8 @@ namespace d360.model
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
             builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
             builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
-            builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
+			builder.RegisterType<ExecutionsRepository>().As<IExecutionsRepository>().InstancePerRequest();
+			builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
             builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
             builder.RegisterType<ResourceRepository>().As<IResourceRepository>().InstancePerRequest();

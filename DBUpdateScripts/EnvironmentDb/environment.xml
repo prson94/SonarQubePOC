@@ -172,6 +172,8 @@
 
 	<include file="scripts/Table.api.Execution.xml"/>
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionCatalogItem.xml"/>
+	<include file="scripts/Table.api.ExecutionCatalogItemProperty.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>	

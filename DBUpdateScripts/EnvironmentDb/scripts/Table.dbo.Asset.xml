@@ -5,11 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Asset-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+  <changeSet author="Pappas" id="Table.dbo.Asset-v7">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Asset')
 BEGIN
@@ -28,6 +25,8 @@ BEGIN
 		[FieldHash] [varchar](50) NULL,
 		[uid] [uniqueidentifier] CONSTRAINT [DF_Asset_uid] DEFAULT (newid()) NOT NULL,
 		[Code] [nvarchar](250) NULL,
+		[Color] [varchar](19) NULL,
+		[Icon] [varchar](50) NULL,
 		CONSTRAINT [PK_Asset] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
 		CONSTRAINT [UC_Asset_Object_ObjectID] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
 	)
@@ -38,7 +37,16 @@ BEGIN
 	ALTER TABLE [dbo].[Asset] WITH CHECK ADD  CONSTRAINT [FK_Asset_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID])
 	ALTER TABLE [dbo].[Asset] CHECK CONSTRAINT [FK_Asset_AssetType]
 END
-
+		]]>
+    </sql>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Asset')
 BEGIN
 	CREATE CLUSTERED INDEX [CIX_Asset] ON [dbo].[Asset] ( [AssetTypeID] ASC, [State] ASC, [Object] ASC, [ObjectID] ASC, [ID] ASC )
@@ -88,142 +96,13 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.dbo.Asset-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
-begin
-	alter table [dbo].[Asset] add [Color] varchar(7) null
-end
-
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Icon')
-begin
-	alter table [dbo].[Asset] add [Icon] varchar(50) null
-end
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
-begin
-	alter table [dbo].[Asset] drop column [Color]
-end
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Icon')
-begin
-	alter table [dbo].[Asset] drop column [Icon]
-end
-]]>
-	</rollback>
-  </changeSet>
-  
-  <changeSet author="TDuric" id="Table.dbo.Asset-v4">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-
-IF  EXISTS(SELECT 1 FROM sys.columns 
-          WHERE Name = N'Diagram'
-          AND Object_ID = Object_ID(N'dbo.Asset'))
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_SourceID')
 BEGIN
-	ALTER TABLE dbo.Asset
-	DROP COLUMN Diagram 
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset] ( AssetTypeID, SourceID )
 END
-]]>
+		]]>
     </sql>
-	<rollback>
-<![CDATA[
-
-
-]]>
-	</rollback>
-  </changeSet>
-
-    <changeSet author="Bhoward" id="Table.dbo.Asset-v5">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
-begin
-	alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(19)
-end
-
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
-begin
-		alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(7)
-end
-]]>
-	</rollback>
-  </changeSet>
-  
-<changeSet author="Puneet Gupta" id="Table.dbo.Asset-v6">
-<comment>GOV-12821</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-declare @count int=0;
-
-select @count = count(1)
-from 
-(
-	select top 1 uid
-	from dbo.asset
-	group by uid
-	having count(1)>1
-) a
-
-if (exists (select * from sys.indexes where name = 'IX_Asset_uid' and is_unique = 0) and @count = 0)
-begin
-	if exists (select * from sys.indexes si where name = 'IX_Asset_uid' and object_name(object_id) = 'Asset' 
-	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
-	begin
-		drop INDEX [IX_Asset_uid] ON [dbo].[Asset];
-	end
-	if not exists (select * from sys.indexes where name = 'IX_Asset_uid')
-		begin
-			CREATE UNIQUE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ([uid] asc)
-		end
-end
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-if exists (select * from sys.indexes where name = 'IX_Asset_uid' and is_unique = 1)
-begin
-	if exists (select * from sys.indexes si where name = 'IX_Asset_uid' and object_name(object_id) = 'Asset' 
-	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
-	begin
-		drop INDEX [IX_Asset_uid] ON [dbo].[Asset]
-	end
-	if not exists (select * from sys.indexes where name = 'IX_Asset_uid')
-		begin
-			CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ([uid] asc)
-		end
-end
-]]>
-	</rollback>
   </changeSet>
 
   <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">

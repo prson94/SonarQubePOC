@@ -21,8 +21,59 @@ using Newtonsoft.Json;
 
 namespace d360.model
 {
+	internal class BulkLoadExecutionFields_Assets
+	{
+		public Guid AssetTypeUid { get; set; }
+
+		public int LoadID { get; set; }
+	}
+
+	internal class BulkLoadExecutionFields_Relationships
+	{
+		public Guid IntersectTypeUid { get; set; }
+
+		public int LoadID { get; set; }
+	}
+
+	public partial interface ICompanyContext : IBaseContext
+	{
+		string BulkLoadStatusMsg { get; set; }
+
+		#region DbSets
+
+		DbSet<LoadColumn> LoadColumns { get; set; }
+        
+        DbSet<LoadItemColumn> LoadItemColumns { get; set; }
+        
+        DbSet<LoadItem> LoadItems { get; set; }
+        
+        DbSet<Load> Loads { get; set; }
+
+		#endregion
+
+		#region Methods
+
+		IEnumerable<dynamic> GetLoadColumnDetails(int id);
+
+		BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues);
+
+		BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues);
+
+		LoadDetail GetLoadDetail(int id);
+
+		IEnumerable<LoadDetail> GetLoadDetails();
+
+		IEnumerable<dynamic> GetLoadItemDetails(int id);
+
+		#endregion
+	}
+
 	public partial class CompanyContext : BaseContext
 	{
+		private const int timeout = 3600;
+		private const int defaultBulkLoadLoopSize = 500;
+		private readonly List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
+		
 		public string BulkLoadStatusMsg { get; set; }
 
 		#region DbSets
@@ -37,9 +88,169 @@ namespace d360.model
 
 		#endregion
 
-		#region Engine Methods
+		#region Utility
+		
+		private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
+		{
+			await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id and ExecutionItemUid is null", new { id = load.ID }, timeout: timeout);
+		}	
+		
+		private int getAssetIDFieldIndex(AssetTypeClass @class, int assetTypeId, string name, List<LoadColumn> columns)
+		{
+			if (@class == AssetTypeClass.Reference && assetTypeId == 0)
+			{
+				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Type Uid", x.Name, true) == 0).FirstOrDefault();
 
-		#region Get Methods
+				if (col == null)
+				{
+					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
+				}
+
+				columns.Remove(col);
+
+				return col.ColumnIndex;
+			}
+			else
+			{
+				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Uid", x.Name, true) == 0).FirstOrDefault();
+
+				if (col == null)
+				{
+					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
+				}
+
+				columns.Remove(col);
+
+				return col.ColumnIndex;
+			}
+		}	
+		
+		private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
+		{
+			return (await QueryAsync<string>(@"select
+												   K.KeyHash
+											from    LoadItem T
+													left join	(
+														select		RowIndex,
+																	CONVERT(
+																		varchar(32), 
+																		SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
+																		2) as KeyHash
+														from		(
+																		select top 100 percent
+																			IC.RowIndex, 
+																			FT.ID as FieldTypeID, 
+																			coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value] 
+																		from LoadColumn LC
+																		inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
+																		inner join FieldType FT on FT.AssetTypeID=@atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+																		where LC.LoadID = @id and LC.ColumnIndex in (
+																			select		LC.ColumnIndex 
+																			from		AssetType ATT
+																						inner join (
+																							select	AssetTypeID, [Level], [Name] 
+																							from	AssetTypeLevel L
+																							where	L.AssetTypeID = @atID
+																							union all
+																							select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+																							from	AssetType T
+																									outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+																							where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+																									and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
+																						) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+																						inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+																						inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+																			where		ATT.ObjectID = @ObjectID and L.[Level] = @currLevel
+																			)
+																	) A
+														group by	A.RowIndex
+													) K on K.RowIndex = T.RowIndex
+											where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, atID = assetType.ID, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
+		}
+
+		private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level)
+		{
+			return (await QueryAsync<string>(@"
+			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), ' > ') as [Value]
+				from LoadColumn LC
+				inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
+				inner join FieldType FT on FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+					where LC.LoadID = @id and LC.ColumnIndex in (
+						select		LC.ColumnIndex 
+						from		AssetType ATT
+							inner join (
+								select	AssetTypeID, [Level], [Name] 
+								from	AssetTypeLevel L
+								where	L.AssetTypeID = @atID
+								union all
+								select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
+								from	AssetType T
+										outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
+								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
+										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level]) 
+							) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+							inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+							inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+						where		ATT.ObjectID = @ObjectID and L.[Level] not like @currLevel)"
+					, new
+					{
+						id = item.LoadID,
+						rowIndex = item.RowIndex,
+						currLevel = level,
+						atID = assetType.ID,
+						@object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object },
+						objectID = assetType.ObjectID
+					}, timeout: timeout)).FirstOrDefault();
+		}		
+		
+		internal ApiExecution getPromoteApiExecution(Load load, int total)
+		{
+			ApiExecution execution = new ApiExecution
+			{
+				ExecutionID = Guid.NewGuid(),
+				StartedOn = DateTime.UtcNow,
+				Route = null,
+				Method = "BULK",
+				ResourceID = load.UpdatedBy ?? 0,
+				Total = total,
+				Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
+					new BulkLoadExecutionFields_Assets
+					{
+						AssetTypeUid = (Guid)load.AssetTypeUid,
+						LoadID = load.ID
+					}) : null,
+				Error = 0,
+				Processed = 0,
+				ApplicationId = "Internal/BulkLoad/Promote"
+			};
+
+			return execution;
+		}
+		
+		internal ApiExecution getRelateApiExecution(Load load, int total)
+		{
+			ApiExecution execution = new ApiExecution
+			{
+				ExecutionID = Guid.NewGuid(),
+				StartedOn = DateTime.UtcNow,
+				Route = null,
+				Method = null,
+				ResourceID = load.UpdatedBy ?? 0,
+				Total = total,
+				Fields = load.IntersectTypeUid.HasValue ? JsonConvert.SerializeObject(
+					new BulkLoadExecutionFields_Relationships
+					{
+						IntersectTypeUid = (Guid)load.IntersectTypeUid,
+						LoadID = load.ID
+					}) : null,
+				Error = 0,
+				Processed = 0,
+				ApplicationId = "Internal/BulkLoad/Relate"
+			};
+
+			return execution;
+		}
+
 		private static string LoadDetailBaseSql 
 		{
 			get {
@@ -100,436 +311,9 @@ namespace d360.model
 			}
 		}
 
-		public IEnumerable<LoadDetail> GetLoadDetails()
-		{
-			string countSql = @"
-				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
-
-			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
-		}
-
-		public LoadDetail GetLoadDetail(int id)
-		{
-			Load load = GetById<Load>(id);
-			bool useExecutionTable = false;
-
-			if (v2ApiActions.Contains(load.Action) && (load.PostExecutionID != null || load.PutExecutionID != null))
-			{
-				useExecutionTable = true;
-			}
-
-			string countSql = "";
-
-			if (useExecutionTable)
-			{
-				switch (load.Action)
-				{
-					case "P":
-						countSql = @"
-							cross apply (
-									select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
-								) S
-							cross apply (
-								select sum(I) as C from (
-									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
-									union all
-									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-									) R
-								) E
-							cross apply (
-									select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
-								) I
-							cross apply (
-								select sum(I) as C from (
-									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-									union all
-									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-									) R
-								) T";
-						break;
-					case "R":
-						countSql = @"		
-							cross apply (
-									select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 1
-								) S
-							cross apply (
-								select sum(I) as C from (
-									select Error as I from api.Execution where ExecutionID = L.PostExecutionID
-									union all
-									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
-									) R
-								) E
-							cross apply (
-								select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
-								) I
-							cross apply (
-								select sum(I) as C from (
-									select Total as I from api.Execution where ExecutionID = L.PostExecutionID
-									union all
-									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
-									) R
-								) T";
-						break;
-					case "U":
-						countSql = @"
-							cross apply (
-									select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 1
-								) S
-							cross apply (
-								select sum(I) as C from (
-									select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
-									union all
-									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
-									) R
-								) E
-							cross apply (
-									select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success is null
-								) I
-							cross apply (
-								select sum(I) as C from (
-									select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
-									union all
-									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
-									) R
-								) T";
-						break;
-				}
-			}
-			else
-			{
-				countSql = @"
-					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-					cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
-			}
-
-			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " where L.ID = " + id).SingleOrDefault();
-		}
-
-		public IEnumerable<dynamic> GetLoadColumnDetails(int id)
-		{
-			return Query<dynamic>(@"
-									select		'Column' + cast(LC.ColumnIndex as varchar) as datafield,
-												LC.Name as text,
-												Lower(coalesce(FT1.[Type],FT2.[Type])) as type
-									from		LoadColumn LC
-										inner join Load L on (LC.LoadID = L.ID)
-										left join 
-										AssetType ast on L.[Object] <> 'IntersectType' and ast.[Object] = L.[Object] and ast.[ObjectID] = L.[ObjectID] 
-										left Join 
-										FieldType FT1 on ast.ID = FT1.AssetTypeID and LC.Name = FT1.Name
-										left join 
-										FieldType FT2 on L.[Object] = 'IntersectType' and FT2.[IntersectTypeID] = L.[ObjectID] and LC.Name = FT2.Name
-									where		LoadID = @id
-									order by	ColumnIndex", new { id });
-		}
-
-		public IEnumerable<dynamic> GetLoadItemDetails(int id)
-		{
-			Load load = GetById<Load>(id);
-			bool useExecutionTable = false;
-
-			if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
-			{
-				useExecutionTable = true;
-			}
-
-			List<LoadColumn> columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
-			string sql = "";
-			string sqlColumns = "";
-			string sqlTables = "";
-
-			if (useExecutionTable)
-			{
-				switch (load.Action)
-				{
-					case "P":
-						AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
-						AssetType parentAssetType = assetType == null ? null : GetParentType(assetType.ID);
-
-						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-						sqlTables = @"
-							from (
-								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
-								union all
-								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
-							 ) EA
-							 left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
-						columns.ForEach(c =>
-						{
-							int i = c.ColumnIndex;
-
-							if (parentAssetType != null && c.Name == parentAssetType.Name)
-							{
-								sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
-								sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
-							}
-							else
-							{
-								sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-								sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-								sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
-							}
-
-						});
-						sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
-
-						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-						sql += $"union all\n";
-						sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
-
-						break;
-					case "R":
-						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-						sqlTables = @"from LoadItem I
-									  left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
-									  left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
-									  left join api.Execution E on E.ExecutionID = @postExecutionID ";
-						columns.ForEach(c =>
-						{
-							int i = c.ColumnIndex;
-							sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-							sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
-
-						});
-						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
-
-						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
-
-						break;
-					case "U":
-						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-						sqlTables = @"from LoadItem I
-										left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
-						columns.ForEach(c =>
-						{
-							int i = c.ColumnIndex;
-							sqlColumns += $",C{i}.[Value] as Column{i}\n";
-							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-
-						});
-						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
-
-						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
-						break;
-				}
-
-				return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
-			}
-			else
-			{
-				sqlColumns = "select I.LoadID, I.RowIndex";
-				sqlTables = "from LoadItem I";
-				columns.ForEach(c =>
-				{
-					sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
-					sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
-				});
-				sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
-
-				sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
-
-				return Query<dynamic>(sql, new { id });
-			}
-		}
-
-		public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues)
-		{
-			return GetLoadColumns(action, type.ToString(), id, includeLookupValues);
-		}
-
-		public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues)
-		{
-			IEnumerable<string> jsonItems = Query<string>($"bulkload.GetLoadColumns @action, @type, @id, @getLookups", new { action, type, id, getLookups = includeLookupValues });
-			string json = string.Concat(jsonItems);
-			BulkLoadGetLoadColumnsModel model = JsonConvert.DeserializeObject<BulkLoadGetLoadColumnsModel>(json);
-
-			return model;
-		}
-
 		#endregion
 
-		#region Process Data Methods
-
-		private int getAssetIDFieldIndex(AssetTypeClass @class, int assetTypeId, string name, List<LoadColumn> columns)
-		{
-			if (@class == AssetTypeClass.Reference && assetTypeId == 0)
-			{
-				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Type Uid", x.Name, true) == 0).FirstOrDefault();
-
-				if (col == null)
-				{
-					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
-				}
-
-				columns.Remove(col);
-
-				return col.ColumnIndex;
-			}
-			else
-			{
-				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Uid", x.Name, true) == 0).FirstOrDefault();
-
-				if (col == null)
-				{
-					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
-				}
-
-				columns.Remove(col);
-
-				return col.ColumnIndex;
-			}
-		}
-
-		#endregion
-
-		#region v2 API Methods
-
-		private const int timeout = 3600;
-		private const int defaultBulkLoadLoopSize = 500;
-		private readonly List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
-
-		internal class BulkLoadExecutionFields_Assets
-		{
-			public Guid AssetTypeUid { get; set; }
-
-			public int LoadID { get; set; }
-		}
-
-		internal class BulkLoadExecutionFields_Relationships
-		{
-			public Guid IntersectTypeUid { get; set; }
-
-			public int LoadID { get; set; }
-		}
-
-		internal ApiExecution getPromoteApiExecution(Load load, int total)
-		{
-			ApiExecution execution = new ApiExecution
-			{
-				ExecutionID = Guid.NewGuid(),
-				StartedOn = DateTime.UtcNow,
-				Route = null,
-				Method = "BULK",
-				ResourceID = load.UpdatedBy ?? 0,
-				Total = total,
-				Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
-					new BulkLoadExecutionFields_Assets
-					{
-						AssetTypeUid = (Guid)load.AssetTypeUid,
-						LoadID = load.ID
-					}) : null,
-				Error = 0,
-				Processed = 0,
-				ApplicationId = "Internal/BulkLoad/Promote"
-			};
-
-			return execution;
-		}
-
-		internal ApiExecution getRelateApiExecution(Load load, int total)
-		{
-			ApiExecution execution = new ApiExecution
-			{
-				ExecutionID = Guid.NewGuid(),
-				StartedOn = DateTime.UtcNow,
-				Route = null,
-				Method = null,
-				ResourceID = load.UpdatedBy ?? 0,
-				Total = total,
-				Fields = load.IntersectTypeUid.HasValue ? JsonConvert.SerializeObject(
-					new BulkLoadExecutionFields_Relationships
-					{
-						IntersectTypeUid = (Guid)load.IntersectTypeUid,
-						LoadID = load.ID
-					}) : null,
-				Error = 0,
-				Processed = 0,
-				ApplicationId = "Internal/BulkLoad/Relate"
-			};
-
-			return execution;
-		}
-
-		private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
-		{
-			await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id and ExecutionItemUid is null", new { id = load.ID }, timeout: timeout);
-		}
-
-		public async Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId)
-		{
-			await Connection.OpenIfClosed();
-
-			return await Connection.QueryAsync<BulkTagAsset>(@"
-				DECLARE @assetTypeUid uniqueidentifier;
-				DECLARE @fieldTypeid int;
-				DECLARE @tagColumnIndex int;
-				DECLARE @actionColumnIndex int;
-
-				SELECT	@assetTypeUid = AssetTypeUid 
-				FROM	[Load] 
-				WHERE	ID = @loadid;
-
-
-				SELECT	@fieldTypeid = ft.id 
-				FROM	FieldType FT
-						INNER JOIN AssetType T on T.UID = @assetTypeUid and FT.AssetTypeID = T.ID
-				WHERE	FT.Type = 'Tag';
-
-				SELECT	@tagColumnIndex = ColumnIndex 
-				FROM	LoadColumn 
-				WHERE	LoadID = @loadid AND [Name] = (SELECT [Name] FROM FieldType WHERE ID = @fieldTypeid);
-
-				SELECT	@actionColumnIndex = ColumnIndex 
-				FROM	LoadColumn 
-				WHERE	LoadID = @loadid AND [Name] = 'Tag Action';
-
-				DROP TABLE IF EXISTS #bulkTags;
-				CREATE TABLE #bulkTags
-				(
-				Id int identity not null,
-				AssetUid uniqueidentifier not null,
-				Tag nvarchar(max),
-				[Action] nvarchar(20)
-				)
-
-				INSERT INTO #bulkTags
-				SELECT	A.Uid as AssetUid, 
-						T.tag as Tag, 
-						LCA.Value as Action 
-				FROM	LoadItem LI
-						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
-						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
-						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
-						CROSS APPLY (
-							SELECT	[Value] as tag 
-							FROM	STRING_SPLIT(LCT.[Value], '|', 0)
-						) T
-				WHERE	LI.LoadID = @loadid AND COALESCE(T.Tag,'') != '';
-
-				INSERT INTO #bulkTags
-				SELECT	A.Uid as AssetUid, 
-						NULL as Tag, 
-						coalesce(LCA.Value,'Append') as Action 
-				FROM	LoadItem LI
-						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
-						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
-						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
-				WHERE	LI.LoadID = @loadid AND LCA.Value = 'Replace' AND COALESCE(LCT.[Value], '') = ''
-
-				SELECT	AssetUid, Tag, [Action] 
-				FROM	#bulkTags", new { loadId, executionId }); 
-		}
-
-		#region Bulk Promote
+		#region Methods
 
 		public async Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository)
 		{
@@ -1216,89 +1000,7 @@ inner join AssetPath P on P.ID = A.ID
 
 			await SaveChangesAsync();
 		}
-
-		private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
-		{
-			return (await QueryAsync<string>(@"select
-												   K.KeyHash
-											from    LoadItem T
-													left join	(
-														select		RowIndex,
-																	CONVERT(
-																		varchar(32), 
-																		SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-																		2) as KeyHash
-														from		(
-																		select top 100 percent
-																			IC.RowIndex, 
-																			FT.ID as FieldTypeID, 
-																			coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value] 
-																		from LoadColumn LC
-																		inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-																		inner join FieldType FT on FT.AssetTypeID=@atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
-																		where LC.LoadID = @id and LC.ColumnIndex in (
-																			select		LC.ColumnIndex 
-																			from		AssetType ATT
-																						inner join (
-																							select	AssetTypeID, [Level], [Name] 
-																							from	AssetTypeLevel L
-																							where	L.AssetTypeID = @atID
-																							union all
-																							select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
-																							from	AssetType T
-																									outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
-																							where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
-																									and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
-																						) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
-																						inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-																						inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-																			where		ATT.ObjectID = @ObjectID and L.[Level] = @currLevel
-																			)
-																	) A
-														group by	A.RowIndex
-													) K on K.RowIndex = T.RowIndex
-											where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, atID = assetType.ID, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
-		}
-
-		private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level)
-		{
-			return (await QueryAsync<string>(@"
-			select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), ' > ') as [Value]
-				from LoadColumn LC
-				inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-				inner join FieldType FT on FT.AssetTypeID = @atID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
-					where LC.LoadID = @id and LC.ColumnIndex in (
-						select		LC.ColumnIndex 
-						from		AssetType ATT
-							inner join (
-								select	AssetTypeID, [Level], [Name] 
-								from	AssetTypeLevel L
-								where	L.AssetTypeID = @atID
-								union all
-								select	T.ID, N.Level, 'Level ' + cast(N.Level as nvarchar(30)) 
-								from	AssetType T
-										outer apply (select top 100 row_number() over (order by (select null)) [Level] FROM sys.objects) N
-								where	T.ID = @atID and N.[Level] <= T.HierarchyMaximumDepth
-										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level]) 
-							) L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
-							inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-							inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-						where		ATT.ObjectID = @ObjectID and L.[Level] not like @currLevel)"
-					, new
-					{
-						id = item.LoadID,
-						rowIndex = item.RowIndex,
-						currLevel = level,
-						atID = assetType.ID,
-						@object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object },
-						objectID = assetType.ObjectID
-					}, timeout: timeout)).FirstOrDefault();
-		}
-
-		#endregion
-
-		#region Bulk Relate/Unrelate
-
+		
 		public async Task BulkRelation(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository, BulkRelationshipOperation operation)
 		{
 			if (load == null)
@@ -1488,10 +1190,326 @@ inner join AssetPath P on P.ID = A.ID
 
 			await SaveChangesAsync();
 		}
+		
+		public async Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId)
+		{
+			await Connection.OpenIfClosed();
 
-		#endregion
+			return await Connection.QueryAsync<BulkTagAsset>(@"
+				DECLARE @assetTypeUid uniqueidentifier;
+				DECLARE @fieldTypeid int;
+				DECLARE @tagColumnIndex int;
+				DECLARE @actionColumnIndex int;
 
-		#endregion
+				SELECT	@assetTypeUid = AssetTypeUid 
+				FROM	[Load] 
+				WHERE	ID = @loadid;
+
+
+				SELECT	@fieldTypeid = ft.id 
+				FROM	FieldType FT
+						INNER JOIN AssetType T on T.UID = @assetTypeUid and FT.AssetTypeID = T.ID
+				WHERE	FT.Type = 'Tag';
+
+				SELECT	@tagColumnIndex = ColumnIndex 
+				FROM	LoadColumn 
+				WHERE	LoadID = @loadid AND [Name] = (SELECT [Name] FROM FieldType WHERE ID = @fieldTypeid);
+
+				SELECT	@actionColumnIndex = ColumnIndex 
+				FROM	LoadColumn 
+				WHERE	LoadID = @loadid AND [Name] = 'Tag Action';
+
+				DROP TABLE IF EXISTS #bulkTags;
+				CREATE TABLE #bulkTags
+				(
+				Id int identity not null,
+				AssetUid uniqueidentifier not null,
+				Tag nvarchar(max),
+				[Action] nvarchar(20)
+				)
+
+				INSERT INTO #bulkTags
+				SELECT	A.Uid as AssetUid, 
+						T.tag as Tag, 
+						LCA.Value as Action 
+				FROM	LoadItem LI
+						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
+						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
+						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
+						CROSS APPLY (
+							SELECT	[Value] as tag 
+							FROM	STRING_SPLIT(LCT.[Value], '|', 0)
+						) T
+				WHERE	LI.LoadID = @loadid AND COALESCE(T.Tag,'') != '';
+
+				INSERT INTO #bulkTags
+				SELECT	A.Uid as AssetUid, 
+						NULL as Tag, 
+						coalesce(LCA.Value,'Append') as Action 
+				FROM	LoadItem LI
+						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
+						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
+						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
+				WHERE	LI.LoadID = @loadid AND LCA.Value = 'Replace' AND COALESCE(LCT.[Value], '') = ''
+
+				SELECT	AssetUid, Tag, [Action] 
+				FROM	#bulkTags", new { loadId, executionId }); 
+		}
+
+		public IEnumerable<LoadDetail> GetLoadDetails()
+		{
+			string countSql = @"
+				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+
+			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
+		}
+
+		public LoadDetail GetLoadDetail(int id)
+		{
+			Load load = GetById<Load>(id);
+			bool useExecutionTable = false;
+
+			if (v2ApiActions.Contains(load.Action) && (load.PostExecutionID != null || load.PutExecutionID != null))
+			{
+				useExecutionTable = true;
+			}
+
+			string countSql = "";
+
+			if (useExecutionTable)
+			{
+				switch (load.Action)
+				{
+					case "P":
+						countSql = @"
+							cross apply (
+									select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
+								) S
+							cross apply (
+								select sum(I) as C from (
+									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
+									union all
+									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+									) R
+								) E
+							cross apply (
+									select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
+								) I
+							cross apply (
+								select sum(I) as C from (
+									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+									union all
+									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+									) R
+								) T";
+						break;
+					case "R":
+						countSql = @"		
+							cross apply (
+									select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 1
+								) S
+							cross apply (
+								select sum(I) as C from (
+									select Error as I from api.Execution where ExecutionID = L.PostExecutionID
+									union all
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+									) R
+								) E
+							cross apply (
+								select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
+								) I
+							cross apply (
+								select sum(I) as C from (
+									select Total as I from api.Execution where ExecutionID = L.PostExecutionID
+									union all
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+									) R
+								) T";
+						break;
+					case "U":
+						countSql = @"
+							cross apply (
+									select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 1
+								) S
+							cross apply (
+								select sum(I) as C from (
+									select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
+									union all
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+									) R
+								) E
+							cross apply (
+									select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success is null
+								) I
+							cross apply (
+								select sum(I) as C from (
+									select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
+									union all
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
+									) R
+								) T";
+						break;
+				}
+			}
+			else
+			{
+				countSql = @"
+					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+					cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+			}
+
+			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " where L.ID = " + id).SingleOrDefault();
+		}
+
+		public IEnumerable<dynamic> GetLoadColumnDetails(int id)
+		{
+			return Query<dynamic>(@"
+									select		'Column' + cast(LC.ColumnIndex as varchar) as datafield,
+												LC.Name as text,
+												Lower(coalesce(FT1.[Type],FT2.[Type])) as type
+									from		LoadColumn LC
+										inner join Load L on (LC.LoadID = L.ID)
+										left join 
+										AssetType ast on L.[Object] <> 'IntersectType' and ast.[Object] = L.[Object] and ast.[ObjectID] = L.[ObjectID] 
+										left Join 
+										FieldType FT1 on ast.ID = FT1.AssetTypeID and LC.Name = FT1.Name
+										left join 
+										FieldType FT2 on L.[Object] = 'IntersectType' and FT2.[IntersectTypeID] = L.[ObjectID] and LC.Name = FT2.Name
+									where		LoadID = @id
+									order by	ColumnIndex", new { id });
+		}
+
+		public IEnumerable<dynamic> GetLoadItemDetails(int id)
+		{
+			Load load = GetById<Load>(id);
+			bool useExecutionTable = false;
+
+			if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+			{
+				useExecutionTable = true;
+			}
+
+			List<LoadColumn> columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
+			string sql = "";
+			string sqlColumns = "";
+			string sqlTables = "";
+
+			if (useExecutionTable)
+			{
+				switch (load.Action)
+				{
+					case "P":
+						AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+						AssetType parentAssetType = assetType == null ? null : GetParentType(assetType.ID);
+
+						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+						sqlTables = @"
+							from (
+								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
+								union all
+								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
+							 ) EA
+							 left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+						columns.ForEach(c =>
+						{
+							int i = c.ColumnIndex;
+
+							if (parentAssetType != null && c.Name == parentAssetType.Name)
+							{
+								sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
+								sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+							}
+							else
+							{
+								sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+								sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+								sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+							}
+
+						});
+						sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+
+						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
+						sql += $"union all\n";
+						sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+
+						break;
+					case "R":
+						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+						sqlTables = @"from LoadItem I
+									  left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
+									  left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
+									  left join api.Execution E on E.ExecutionID = @postExecutionID ";
+						columns.ForEach(c =>
+						{
+							int i = c.ColumnIndex;
+							sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+							sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+
+						});
+						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
+						sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+
+						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
+
+						break;
+					case "U":
+						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+						sqlTables = @"from LoadItem I
+										left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
+						columns.ForEach(c =>
+						{
+							int i = c.ColumnIndex;
+							sqlColumns += $",C{i}.[Value] as Column{i}\n";
+							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+
+						});
+						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+						sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+
+						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
+						break;
+				}
+
+				return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
+			}
+			else
+			{
+				sqlColumns = "select I.LoadID, I.RowIndex";
+				sqlTables = "from LoadItem I";
+				columns.ForEach(c =>
+				{
+					sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
+					sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
+				});
+				sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage";
+
+				sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id order by I.RowIndex";
+
+				return Query<dynamic>(sql, new { id });
+			}
+		}
+
+		public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues)
+		{
+			return GetLoadColumns(action, type.ToString(), id, includeLookupValues);
+		}
+
+		public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues)
+		{
+			IEnumerable<string> jsonItems = Query<string>($"bulkload.GetLoadColumns @action, @type, @id, @getLookups", new { action, type, id, getLookups = includeLookupValues });
+			string json = string.Concat(jsonItems);
+			BulkLoadGetLoadColumnsModel model = JsonConvert.DeserializeObject<BulkLoadGetLoadColumnsModel>(json);
+
+			return model;
+		}
 
 		#endregion
 	}

@@ -39,6 +39,8 @@ namespace d360.core.entities
 
 		Guid? ParentUid { get; set; }
 
+		string SourceID { get; set; }
+
 		Dictionary<string, string> Fields { get; set; }
 	}
 
@@ -67,6 +69,9 @@ namespace d360.core.entities
 		public HierarchyInsert Hierarchy { get; set; }
 
 		public IconStyleInsert IconStyle { get; set; }
+
+		[DataMember, MaxLength(500, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
+		public string SourceID { get; set; }
 
 		[DataMember]
 		public Guid? ParentUid { get; set; }
@@ -164,6 +169,9 @@ namespace d360.core.entities
 		public Guid? ParentUid { get; set; }
 
 		[DataMember]
+		public string SourceID { get; set; }
+
+		[DataMember]
 		public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
 	}
 
@@ -180,7 +188,97 @@ namespace d360.core.entities
 		public Guid? ParentUid { get; set; }
 
 		[DataMember]
+		public string SourceID { get; set; }
+
+		[DataMember]
 		public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+	}
+
+	public class PatchBulkCatalogPropertyRequestModel
+	{
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("value")]
+		public string Value { get; set; }
+	}
+
+	public class PatchBulkCatalogAssetRequestModel
+	{
+		[JsonProperty("id")]
+		public string SourceId { get; set; }
+
+		[JsonProperty("properties")]
+		public List<PatchBulkCatalogPropertyRequestModel> Properties { get; set; }
+	}
+
+	public class PatchBulkCatalogAssetByTypeRequestModel
+	{
+		[JsonProperty("assetTypeId")]
+		public string AssetTypeSourceId { get; set; }
+
+		[JsonProperty("items")]
+		public List<PatchBulkCatalogAssetRequestModel> Items { get; set; }
+	}
+
+	public class PatchBulkCatalogRelationRequestModel
+	{
+		[JsonProperty("subjectId")]
+		public string SubjectSourceId { get; set; }
+
+		[JsonProperty("objectId")]
+		public string ObjectSourceId { get; set; }
+
+		[JsonProperty("properties")]
+		public List<PatchBulkCatalogPropertyRequestModel> Properties { get; set; }
+	}
+
+	public class PatchBulkCatalogRelationByTypeRequestModel
+	{
+		[JsonProperty("relationTypeId")]
+		public string RelationTypeSourceId { get; set; }
+
+		[JsonProperty("items")]
+		public List<PatchBulkCatalogRelationRequestModel> Items { get; set; }
+	}
+
+	public class PatchBulkCatalogRequestModel
+	{
+		//[JsonProperty("source")]
+		//public string Source { get; set; }
+
+		[JsonProperty("assets")]
+		public List<PatchBulkCatalogAssetByTypeRequestModel> Assets { get; set; }
+
+		[JsonProperty("relations")]
+		public List<PatchBulkCatalogRelationByTypeRequestModel> Relations { get; set; }
+	}
+
+	public class PatchBulkCatalogItemResponseModel
+	{
+		[JsonProperty("uid")]
+		public string Uid { get; set; }
+
+		[JsonProperty("id")]
+		public string SourceId { get; set; }
+
+		[JsonIgnore]
+		public string Action { get; set; }
+
+		[JsonProperty("success")]
+		public bool Success { get; set; }
+
+		[JsonProperty("message")]
+		public string Message { get; set; }
+	}
+
+	public class PatchBulkCatalogResponseModel
+	{
+		[JsonProperty("assets")]
+		public List<PatchBulkCatalogItemResponseModel> Assets { get; set; }
+
+		[JsonProperty("relations")]
+		public List<PatchBulkCatalogItemResponseModel> Relations { get; set; }
 	}
 
 	public class AssetPathResult
@@ -448,6 +546,9 @@ namespace d360.core.entities
 		public Guid? ExecutionItemUid { get; set; }
 
 		[DataMember]
+		public string SourceID { get; set; }
+
+		[DataMember]
 		public string Message { get; set; }
 
 		[DataMember]
@@ -500,6 +601,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Cardinality ObjectCardinality { get; set; }
+
+		[DataMember]
+		public string SourceID { get; set; }
 	}
 
 	public class RelationshipTypeUpdate
@@ -524,6 +628,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public Cardinality ObjectCardinality { get; set; }
+
+		[DataMember]
+		public string SourceID { get; set; }
 	}
 
 	public class RelationshipTypeDelete

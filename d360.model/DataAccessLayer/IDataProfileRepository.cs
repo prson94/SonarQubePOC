@@ -9,15 +9,15 @@ namespace d360.model.DataAccessLayer
 {
     public interface IDataProfileRepository
     {
-        List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileModels, ApiExecution execution, bool isInsert);
+        Task<List<DataProfileUpsertResponse>> UpsertAsync(List<DataProfileUpsertModel> DataProfileModels, ApiExecution execution, bool isInsert);
 
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams);
 
-        List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
+        Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
 
-		List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 

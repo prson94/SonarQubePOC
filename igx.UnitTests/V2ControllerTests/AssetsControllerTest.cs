@@ -46,7 +46,7 @@ namespace igx.UnitTests
 
 			AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
 
-            this.assetsController = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
+            this.assetsController = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), AssetTypeRepositoryMock.Object, GetExecutionsRepository(), GetFieldsRepository(), GetRelationshipRepository(), GetTagRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -839,7 +839,7 @@ namespace igx.UnitTests
                 return Task.FromResult<object>(Task.CompletedTask);
             });
 
-            var assetsControllerTemp = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
+            var assetsControllerTemp = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, AssetTypeRepositoryMock.Object, GetExecutionsRepository(), GetFieldsRepository(), GetRelationshipRepository(), GetTagRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

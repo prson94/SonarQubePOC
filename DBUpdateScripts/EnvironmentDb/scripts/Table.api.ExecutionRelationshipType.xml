@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.api.ExecutionRelationshipType-v2">
+  <changeSet author="Pappas" id="Table.api.ExecutionRelationshipType-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -74,13 +74,13 @@ if exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'Execution
 begin
 	alter table [api].[ExecutionRelationshipType] drop column [ObjectID]
 end
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionRelationshipType' and COLUMN_NAME = 'SourceID')
+begin
+	alter table [api].[ExecutionRelationshipType] add SourceID nvarchar(500) null
+end
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
   </changeSet>
 
 </databaseChangeLog>

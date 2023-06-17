@@ -16,6 +16,9 @@ using Resources;
 using d360.utils.excel;
 using SpreadsheetLight;
 using d360.core;
+using System.Web.Http.Results;
+using d360.web.Models;
+using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
@@ -381,6 +384,20 @@ namespace d360.web.Controllers.V2
 				{
 					return default;
 				}
+			}
+		}
+
+		internal IHttpActionResult resolveEndpointPayloadResponse<T>(EndpointPayloadResponse<T> res)
+		{
+			if (res.Code == HttpStatusCode.OK || res.Code == HttpStatusCode.Created)
+			{
+				return Ok(res.Payload);
+			}
+			else
+			{
+				var message = new ResponseMessageResult(Request.CreateResponse(res.Code));
+				message.Response.ReasonPhrase = res.Message;
+				return message;
 			}
 		}
 
@@ -980,6 +997,28 @@ namespace d360.web.Controllers.V2
 			result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
 			return ResponseMessage(result);
+		}
+
+		internal async Task<IHttpActionResult> sendConflictNotAccessible()
+		{
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible)).ConfigureAwait(false);
+		}
+
+		internal async Task<IHttpActionResult> sendExecutionProcessingResponse(ApiExecutionInfo execution, HttpStatusCode statusCode = HttpStatusCode.OK)
+		{
+			var message = new ResponseMessageResult(Request.CreateResponse(statusCode));
+			message.Response.Headers.Location = new Uri($"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}");
+			message.Response.ReasonPhrase = ApiMessages.ExecutionIDStatus;
+
+			var content = new ApiExecutionRecievedResponse
+			{
+				ExecutionID = execution.ExecutionID,
+				Message = ApiMessages.ExecutionIDStatus,
+				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}"
+			};
+
+			message.Response.Content = new StringContent(JsonConvert.SerializeObject(content), encoding: System.Text.Encoding.UTF8, "application/json");
+			return await Task.FromResult<IHttpActionResult>(message);
 		}
 	}
 }

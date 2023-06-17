@@ -272,6 +272,7 @@ namespace d360.model.DataAccessLayer
 
 			return new WorkHttpStatus(HttpStatusCode.OK, AssetTypeErrors.Success, MemberShipErrors.UserDeletedMessage);
 		}
+
 		public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
 		{
 			CompanyContext.Add(execution);

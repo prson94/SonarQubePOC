@@ -537,20 +537,7 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
 
 			var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
-
-			return await Task.FromResult<IHttpActionResult>(
-				ResponseMessage(
-					Request.CreateResponse(
-						HttpStatusCode.OK,
-						new ApiExecutionRecievedResponse
-						{
-							ExecutionID = executionInfo.ExecutionID,
-							Message = ApiMessages.ExecutionIDStatus,
-							Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-						}
-					)
-				)
-			).ConfigureAwait(false);
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		private async Task<(TypeIdentifierInfoModel, WorkHttpStatus)> GetTypeIdentifierInfoModelAndValidate(FieldTypesApiDeleteModel model)
@@ -3314,10 +3301,7 @@ namespace d360.web.Controllers.V2
 		]
 		public HttpResponseMessage GetRelationLookupDetails(Guid assetTypeUid, string fieldName)
 		{
-			var prefix = "Fields.GetRelationLookupDetails => ";
-			try
-			{
-				string sql = $@"
+			string sql = $@"
 declare @fieldTypeId int = (select ft.ID from AssetType 
 inner join fieldtype ft on ft.name = @fieldname and ft.assettypeid = AssetType.ID
 where uid = @assettypeuid)
@@ -3332,11 +3316,11 @@ select @hideHeader = HideHeader, @hideFooter = HideFooter, @hideFilter = HideFil
 
 SELECT Parsed.*, ITD.SubjectName, ITD.PredicateName, ITD.PredicateInverse, ITD.ObjectName, ITD.Name AS RelationshipTypeName
 FROM OPENJSON(@definition,'$.Relations') WITH (
-    RelationType int '$.RelationType',
-    Direction int '$.Direction',
-    AssetTypeUid uniqueidentifier '$.AssetTypeUid',
-    IntersectTypeUid uniqueidentifier '$.IntersectTypeUid'
-    ) Parsed
+RelationType int '$.RelationType',
+Direction int '$.Direction',
+AssetTypeUid uniqueidentifier '$.AssetTypeUid',
+IntersectTypeUid uniqueidentifier '$.IntersectTypeUid'
+) Parsed
 inner join IntersectTypeDetail ITD ON ITD.uid = Parsed.IntersectTypeUid
 
 
@@ -3355,27 +3339,18 @@ RelationIndex int '$.RelationIndex'
 ) Parsed
 outer apply (select top 1 ITD.Name from IntersectTypeDetail ITD WHERE ITD.ID = Parsed.FieldTypeId and Parsed.FieldTypeName like 'Related Item%') RelName(name)
 
-
 select @hideHeader as hideHeader, @hideFooter as hideFooter, @hideFilter as hideFilter";
 
-				var reader = Company.Database.Connection.QueryMultiple(sql, new { assetTypeUid, fieldName });
+			var reader = Company.Database.Connection.QueryMultiple(sql, new { assetTypeUid, fieldName });
 
-				var response = new
-				{
-					relationships = reader.Read<dynamic>(),
-					fields = reader.Read<dynamic>(),
-					details = reader.Read<dynamic>().FirstOrDefault(),
-				};
-
-				return Request.CreateResponse(HttpStatusCode.OK, response);
-			}
-			catch (Exception ex)
+			var response = new
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> { { "Endpoint Method", prefix } });
+				relationships = reader.Read<dynamic>(),
+				fields = reader.Read<dynamic>(),
+				details = reader.Read<dynamic>().FirstOrDefault(),
+			};
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Request.CreateResponse(HttpStatusCode.OK, response);
 		}
 	}
 }

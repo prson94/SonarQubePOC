@@ -85,40 +85,21 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetDataProfilesByAsset(Guid assetUid)
         {
-            var prefix = "DataProfiles.GetDataProfiles => ";
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-                var queryParams = Request.GetQueryNameValuePairs();
-                var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
 
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
-
-                var results = await DataProfiles.GetDataProfiles(assetUid, queryParams);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (GenericException ex)
+            if (validationResult.StatusCode != HttpStatusCode.OK)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }
+            var results = await DataProfiles.GetDataProfiles(assetUid, queryParams);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
 
 
@@ -143,40 +124,21 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetDataProfilesByIdentifier(string profileIdentifier)
         {
-            var prefix = "DataProfiles.GetDataProfilesByIdentifier => ";
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-                var queryParams = Request.GetQueryNameValuePairs();
-                var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
 
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
-
-                var results = await DataProfiles.GetDataProfiles(profileIdentifier, queryParams);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (GenericException ex)
+            if (validationResult.StatusCode != HttpStatusCode.OK)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }
+            var results = await DataProfiles.GetDataProfiles(profileIdentifier, queryParams);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
 
         private WorkHttpStatus ValidateDataProfileGetParameters(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -292,45 +254,26 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PostDataProfiles => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }				               
+				return await sendConflictNotAccessible();
+			}				               
 
-                var validationResult = ValidateDataProfileUpsertRequest(models, true);
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
-
-                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-                }
-
-                var execution = getApiExecution(models.Count);
-                var results = DataProfiles.UpsertDataProfiles(models, execution, true);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (GenericException ex)
+            var validationResult = ValidateDataProfileUpsertRequest(models, true);
+            if (validationResult.StatusCode != HttpStatusCode.OK)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
             }
+
+            var execution = getApiExecution(models.Count);
+            var results = DataProfiles.UpsertAsync(models, execution, true);
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
 
         /// <summary>
@@ -350,46 +293,27 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PutDataProfiles => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }				
+				return await sendConflictNotAccessible();
+			}				
 
-				var validationResult = ValidateDataProfileUpsertRequest(models, false);
+			var validationResult = ValidateDataProfileUpsertRequest(models, false);
 
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
-                }
-
-                if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-                }
-
-                var execution = getApiExecution(models.Count);
-                var results = DataProfiles.UpsertDataProfiles(models, execution, false);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
-            }
-            catch (GenericException ex)
+            if (validationResult.StatusCode != HttpStatusCode.OK)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+            if (models.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
             }
+
+            var execution = getApiExecution(models.Count);
+            var results = DataProfiles.UpsertAsync(models, execution, false);
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
 
         /// <summary>
@@ -412,63 +336,44 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
         {
-            var prefix = "DataProfiles.PostDataProfiles => ";
             var execution = getApiExecution(1);
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-				if (!Company.CurrentResourceIsAdmin)
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
+
+				if (noPermissions)
 				{
-					var noPermissions = !Company.HasAssetPermissionByUid(assetUid, Permission.EditAsset);
-
-					if (noPermissions)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-					}
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
 				}
+			}
 
-				Asset asset = AssetRepository.GetAssetByUID(assetUid);
+			Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
-                if (asset == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
-                }
-
-                var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
-
-                if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataProfileAPIMessages.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-                }
-
-                if (startDate > endDate)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StartEndDateValidation)).ConfigureAwait(false);
-                }
-
-                var results = DataProfiles.DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
-            }
-            catch (GenericException ex)
+            if (asset == null)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+            var recordCount = Company.AssetDataProfile.Count(x => x.ID == asset.ID && x.ProfileSetDate >= startDate.Date && x.ProfileSetDate <= endDate.Date);
+
+            if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataProfileAPIMessages.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
             }
+
+            if (startDate > endDate)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StartEndDateValidation)).ConfigureAwait(false);
+            }
+
+            var results = await DataProfiles.DeleteAsync(asset, startDate, endDate, execution, cascade);
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
         }
 
 		/// <summary>
@@ -508,7 +413,7 @@ namespace d360.web.Controllers.V2
 				// FeatureFlag Check
 				if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
 				{
-					throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+					return await sendConflictNotAccessible();
 				}
 
 				if (!Company.CurrentResourceIsAdmin)
@@ -588,7 +493,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataProfileAPIMessages.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}				
 
-				var results = DataProfiles.DeleteDataProfiles(asset, execution, queryParams);
+				var results = await DataProfiles.DeleteAsync(asset, execution, queryParams);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
 			}
@@ -623,53 +528,24 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PostBulkDataProfilesAsync => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+				return await sendConflictNotAccessible();
+			}
+
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            foreach (var model in models)
+            {
+                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                if (!isValid)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
                 }
-
-
-                List<ValidationResult> validationResults = new List<ValidationResult>();
-                foreach (var model in models)
-                {
-                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-                    if (!isValid)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
-                    }
-                }
-
-                var execution = getApiExecution(models.Count);
-                ApiExecutionInfo executionInfo = await DataProfiles.PostBatchDataProfiles(models, execution);
-                var result = Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            new ApiExecutionRecievedResponse
-                            {
-                                ExecutionID = executionInfo.ExecutionID,
-                                Message = "Now processing request. Please check back with this ExecutionID for status.",
-                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
-                            });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
             }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            var execution = getApiExecution(models.Count);
+            ApiExecutionInfo executionInfo = await DataProfiles.PostBatchDataProfiles(models, execution);
+			return await sendExecutionProcessingResponse(executionInfo);
         }
 
         /// <summary>
@@ -688,55 +564,24 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            var prefix = "DataProfiles.PutBulkDataProfilesAsync => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+				return await sendConflictNotAccessible();
+            }
+
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            foreach (var model in models)
+            {
+                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+                if (!isValid)
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
                 }
-
-
-                List<ValidationResult> validationResults = new List<ValidationResult>();
-                foreach (var model in models)
-                {
-                    bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-                    if (!isValid)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage)).ConfigureAwait(false);
-                    }
-                }
-
-                var execution = getApiExecution(models.Count);
-
-                ApiExecutionInfo executionInfo = await DataProfiles.PutBatchDataProfiles(models, execution);
-
-                var result = Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            new ApiExecutionRecievedResponse
-                            {
-                                ExecutionID = executionInfo.ExecutionID,
-                                Message = "Now processing request. Please check back with this ExecutionID for status.",
-                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
-                            });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
             }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            var execution = getApiExecution(models.Count);
+            ApiExecutionInfo executionInfo = await DataProfiles.PutBatchDataProfiles(models, execution);
+			return await sendExecutionProcessingResponse(executionInfo);
         }
 
         /// <summary>
@@ -756,43 +601,14 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteBulkDataProfilesAsync(List<AssetDataProfileDeleteModel> models)
         {
-            var prefix = "DataProfiles.DeleteBulkDataProfilesAsync => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-
-				var execution = getApiExecution(models.Count);
-                ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
-                var result = Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            new ApiExecutionRecievedResponse
-                            {
-                                ExecutionID = executionInfo.ExecutionID,
-                                Message = "Now processing request. Please check back with this ExecutionID for status.",
-                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
-                            });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
-            }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+			var execution = getApiExecution(models.Count);
+            ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
+			return await sendExecutionProcessingResponse(executionInfo);
         }
 
         /// <summary>
@@ -856,12 +672,11 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
             try
-            {
-                // FeatureFlag Check                
+            {              
                 if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+					return await sendConflictNotAccessible();
+				}
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -947,41 +762,22 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetMatchingAssetCount(Guid assetUid, string similarType)
         {
-            var prefix = "DataProfiles.GetMatchingAssetCount => ";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
-                // FeatureFlag Check
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
-
-                var queryParams = Request.GetQueryNameValuePairs();
-                var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
-
-                if (validationResult.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
-                }
-
-                var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.total));
+				return await sendConflictNotAccessible();
             }
-            catch (GenericException ex)
+
+            var queryParams = Request.GetQueryNameValuePairs();
+            var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
+
+            if (validationResult.StatusCode != HttpStatusCode.OK)
             {
-                throw;
+                return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-            }
+            var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.total));
         }
 
         /// <summary>
@@ -1033,11 +829,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                // FeatureFlag Check                
                 if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+					return await sendConflictNotAccessible();
+				}
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -1447,12 +1242,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetSemanticTypes(CancellationToken cancellationToken)
         {
             try
-            {
-                // FeatureFlag Check                
+            {               
                 if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+					return await sendConflictNotAccessible();
+				}
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -1526,28 +1320,16 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
-        {
-            try
+        {         
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                // FeatureFlag Check                
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-                var queryParams = Request.GetQueryNameValuePairs();
-                var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
+            var queryParams = Request.GetQueryNameValuePairs();
+            var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
-            }
-            catch (GenericException ex)
-            {
-                throw;
-            }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving semantic types", ApiMessages.UnknownErrorInvestigatingMessage);
-            }
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
         }
 
         /// <summary>
@@ -1561,12 +1343,10 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeBaseTypes()
         {
-            // FeatureFlag Check            
             if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-            }
-
+				return sendConflictNotAccessible().Result;
+			}
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticBaseType.LocalDate.GetAsList()));
         }
 
@@ -1581,11 +1361,10 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeMatchTypes()
         {
-            // FeatureFlag Check            
             if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-            }
+				return sendConflictNotAccessible().Result;
+			}
 
             var queryParams = Request.GetQueryNameValuePairs();
             var orderBy = "name";
@@ -1609,11 +1388,10 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetSemanticTypeStatuses()
         {
-            // FeatureFlag Check
             if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-            }
+				return await sendConflictNotAccessible();
+			}
 
             var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
             List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
@@ -1691,12 +1469,11 @@ namespace d360.web.Controllers.V2
             const string ERROR_HEADING = "Error patching semantic types";
 
             try
-            {
-                // FeatureFlag Check                
+            {           
                 if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+					return await sendConflictNotAccessible();
+				}
 
                 if (!Company.CurrentResourceIsAdmin)
                 {
@@ -1746,11 +1523,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                // FeatureFlag Check                
                 if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
                 {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+					return await sendConflictNotAccessible();
+				}
 
                 if (!Company.CurrentResourceIsAdmin)
                 {
@@ -1797,33 +1573,19 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
         {
-            const string ERROR_HEADING = "Error updating semantic types";
-
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                // FeatureFlag Check                
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                }
-
-                var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModels));
-            }
-            catch (GenericException ex)
+            if (!Company.CurrentResourceIsAdmin)
             {
-                throw;
+                return errorMessageResponse(HttpStatusCode.Forbidden, "Error updating semantic types", ApiMessages.EndpointNotAuthorizedMessage);
             }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
-            }
+
+            var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModels));
         }
 
         /// <summary>
@@ -1845,32 +1607,19 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
         {
-            const string ERROR_HEADING = "Error deleting semantic type";
-            try
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
-                // FeatureFlag Check                
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
-                }
+				return await sendConflictNotAccessible();
+			}
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                }
-
-                var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
-
-                return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Semantic type removed." }));
-            }
-            catch (GenericException ex)
+            if (!Company.CurrentResourceIsAdmin)
             {
-                throw;
+                return errorMessageResponse(HttpStatusCode.Forbidden, "Error deleting semantic type", ApiMessages.EndpointNotAuthorizedMessage);
             }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
-            }
+
+            var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
+
+            return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Semantic type removed." }));
         }
 
 		[

@@ -307,7 +307,7 @@ namespace d360.model.DataAccessLayer
 		}
 
 
-		public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
+		public async Task<List<DataProfileUpsertResponse>> UpsertAsync(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
 		{
 			CompanyContext.Add(execution);
 
@@ -315,7 +315,8 @@ namespace d360.model.DataAccessLayer
 
 			try
 			{
-				results = CompanyContext.UpsertDataProfiles(DataProfileUpsertModels, execution, isInsert);
+				await CompanyContext.UpsertDataProfilesAsync(DataProfileUpsertModels, execution, isInsert);
+				results = await CompanyContext.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
 
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
@@ -333,7 +334,7 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
-		public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
+		public async Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false)
 		{
 			CompanyContext.Add(execution);
 
@@ -348,8 +349,9 @@ namespace d360.model.DataAccessLayer
 
 			try
 			{
-				results = CompanyContext.DeleteDataProfiles(models, execution);
-
+				await CompanyContext.DeleteDataProfilesAsync(models, execution);
+				results = await CompanyContext.GetExecutionDeleteDataProfileResultsAsync(execution.ExecutionID);
+				
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
@@ -1211,7 +1213,7 @@ namespace d360.model.DataAccessLayer
 			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where qualifier = @qualifier", new { qualifier })).FirstOrDefault() > 0;
 		}
 
-		public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			var startDate = new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
 			var endDate = DateTime.MaxValue;
@@ -1248,7 +1250,7 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_cascade").Value, out cascade);				
 			}
 
-			return DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
+			return await DeleteAsync(asset, startDate, endDate, execution, cascade);
 		}
 	}
 }

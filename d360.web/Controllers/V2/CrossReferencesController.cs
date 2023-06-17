@@ -28,16 +28,18 @@ namespace d360.web.Controllers.V2
     public class CrossReferencesController : BaseV2ApiController
     {
         private const int DEFAULT_DELETE_TIMEOUT = 90;
-        private readonly ICrossReferencesRepository crossReferencesRepository;
-        private readonly IAssetRepository assetRepository;
+        private readonly IAssetRepository AssetRepository;
+		private readonly ICrossReferencesRepository CrossReferencesRepository;
+		private readonly IExecutionsRepository ExecutionsRepository;
 
-        #region DI
+		#region DI
 
-        public CrossReferencesController(ICoreComponentSet set, ICrossReferencesRepository crossReferencesRepository, IAssetRepository assetRepository)
+		public CrossReferencesController(ICoreComponentSet set, IAssetRepository assetRepository, ICrossReferencesRepository crossReferencesRepository, IExecutionsRepository executionsRepository)
             : base(set)
         {
-            this.crossReferencesRepository = crossReferencesRepository;
-            this.assetRepository = assetRepository;
+			this.AssetRepository = assetRepository;
+			this.CrossReferencesRepository = crossReferencesRepository;
+			this.ExecutionsRepository = executionsRepository;
         }
 
         #endregion
@@ -64,7 +66,7 @@ namespace d360.web.Controllers.V2
             }
 
             var queryParams = Request.GetQueryNameValuePairs();
-            var assetCrossReferences = await crossReferencesRepository.GetCrossReferences(queryParams);
+            var assetCrossReferences = await CrossReferencesRepository.GetCrossReferences(queryParams);
 
             return Request.CreateResponse(assetCrossReferences);
         }
@@ -89,7 +91,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
-            var result = await crossReferencesRepository.GetByAssetUid(assetUid);
+            var result = await CrossReferencesRepository.GetByAssetUid(assetUid);
 
             return Request.CreateResponse(result);
         }
@@ -115,7 +117,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
-            var result = await crossReferencesRepository.GetCrossReferenceByTypeId(type, externalId);
+            var result = await CrossReferencesRepository.GetCrossReferenceByTypeId(type, externalId);
 
             return Request.CreateResponse(result);
         }
@@ -140,7 +142,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
-            var result = await crossReferencesRepository.GetCrossReferenceByType(type);
+            var result = await CrossReferencesRepository.GetCrossReferenceByType(type);
 
             return Request.CreateResponse(result);
         }
@@ -165,7 +167,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
-            var result = await crossReferencesRepository.GetCrossReferenceByDataSource(dataSource);
+            var result = await CrossReferencesRepository.GetCrossReferenceByDataSource(dataSource);
 
             return Request.CreateResponse(result);
         }
@@ -198,7 +200,7 @@ namespace d360.web.Controllers.V2
             }
 
             //check if the item already exists   
-            bool exists = await crossReferencesRepository.XrefExists(model);
+            bool exists = await CrossReferencesRepository.XrefExists(model);
 
             if (exists)
             {
@@ -206,7 +208,7 @@ namespace d360.web.Controllers.V2
             }
 
             //create the new record
-            int res = await crossReferencesRepository.CreateNewCrossReference(model);
+            int res = await CrossReferencesRepository.CreateNewCrossReference(model);
 
             if (res <= 0)
             {
@@ -242,7 +244,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var execution = getApiExecution(models.Count);
-                var results = crossReferencesRepository.PostBulkCrossReference(models, execution);
+                var results = await CrossReferencesRepository.PostBulkCrossReferenceAsync(models, execution);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
             }
@@ -290,7 +292,7 @@ namespace d360.web.Controllers.V2
             }
 
             //create the new record
-            int res = await crossReferencesRepository.PutCrossReference(uid, dataSource, type, model);
+            int res = await CrossReferencesRepository.PutCrossReference(uid, dataSource, type, model);
 
             if (res > 0)
             {
@@ -329,7 +331,7 @@ namespace d360.web.Controllers.V2
             }
 
             //create the new record
-            int res = await crossReferencesRepository.PutCrossReference(uid, model);
+            int res = await CrossReferencesRepository.PutCrossReference(uid, model);
 
             if (res > 0)
             {
@@ -360,7 +362,7 @@ namespace d360.web.Controllers.V2
             }
 
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByUid(uid);
+            int res = await CrossReferencesRepository.DeleteCrossReferenceByUid(uid);
 
             if (res > 0)
             {
@@ -398,7 +400,7 @@ namespace d360.web.Controllers.V2
             }
 
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
+            int res = await CrossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
 
             if (res > 0)
             {
@@ -435,7 +437,7 @@ namespace d360.web.Controllers.V2
             }
 
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByType(type, GetTimeoutFromQueryString());
+            int res = await CrossReferencesRepository.DeleteCrossReferenceByType(type, GetTimeoutFromQueryString());
 
             if (res > 0)
             {
@@ -472,7 +474,7 @@ namespace d360.web.Controllers.V2
             }
 
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, GetTimeoutFromQueryString());
+            int res = await CrossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, GetTimeoutFromQueryString());
 
             if (res > 0)
             {
@@ -504,45 +506,20 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
             }
 
-            var prefix = "CrossReferences.PostBatchCrossReferenceAsync => ";
-            string errorMessage;
-            try
+            if (crossReferences == null)
             {
-                if (crossReferences == null)
-                {
-                    crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;
-                }
-
-                if (crossReferences == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
-                }
-
-                var execution = getApiExecution(crossReferences.Count);
-
-                ApiExecutionInfo executionInfo = await crossReferencesRepository.PostBatchCrossReference(crossReferences, execution);
-
-                var result = Request.CreateResponse(
-                                 HttpStatusCode.OK,
-                                new ApiExecutionRecievedResponse
-                                {
-                                    ExecutionID = executionInfo.ExecutionID,
-                                    Message = ApiMessages.ExecutionIDStatus,
-                                    Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/crossreferences/executions/{executionInfo.ExecutionID}/status"
-                                });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+                crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;
             }
-            catch (Exception ex)
+
+            if (crossReferences == null)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix },
-                   { "CrossReferencesCount", $"{((crossReferences != null) ? crossReferences.Count : 0)}" }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
+
+            var execution = getApiExecution(crossReferences.Count);
+
+            ApiExecutionInfo executionInfo = await CrossReferencesRepository.PostBatchCrossReference(crossReferences, execution);
+			return await sendExecutionProcessingResponse(executionInfo);
         }
 
         /// <summary>
@@ -551,8 +528,8 @@ namespace d360.web.Controllers.V2
         /// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
-            HttpGet,
-            Route("executions/{executionID:Guid}/status"),
+			Obsolete, ApiExplorerSettings(IgnoreApi = true),
+			HttpGet, Route("executions/{executionID:Guid}/status"),
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json", "application/xml"),
             SwaggerProduces("application/json"),
@@ -566,14 +543,14 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                ApiExecution execution = assetRepository.GetExecutionItemByUid(executionID);
+                ApiExecution execution = ExecutionsRepository.GetExecutionItemByUid(executionID);
 
                 if (execution == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionIDNotFound)).ConfigureAwait(false);
                 }
 
-                var bulkResult = crossReferencesRepository.GetExecutionStatus(execution);
+                var bulkResult = CrossReferencesRepository.GetExecutionStatus(execution);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, bulkResult))).ConfigureAwait(false);
             }

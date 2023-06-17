@@ -1,4 +1,16 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.extensions;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using Resources;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,25 +19,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.queue;
-using d360.extensions;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-
-using Microsoft.Web.Http;
-
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
-
 using static d360.core.entities.Resource;
 
 namespace d360.web.Controllers.V2
@@ -39,18 +32,20 @@ namespace d360.web.Controllers.V2
 		#region DI
 
 		private readonly IAssetRepository AssetRepository;
+		private readonly IExecutionsRepository ExecutionsRepository;
 		private readonly IStorageProvider Storage;
 
-		public ExecutionsController(ICoreComponentSet set, IAssetRepository repository, IStorageProvider storage)
+		public ExecutionsController(ICoreComponentSet set, IAssetRepository repository, IExecutionsRepository executionsRepo, IStorageProvider storage)
 			: base(set)
 		{
 			Storage = storage;
 			AssetRepository = repository;
+			ExecutionsRepository = executionsRepo;
 		}
 
 		#endregion
 
-		#region Executions
+		#region EXECUTIONS
 
 		/// <summary>
 		/// GETs all execution records, including the results for the execution.
@@ -89,7 +84,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var executions = await AssetRepository.GetExecutionItems(queryParams);
+			var executions = await ExecutionsRepository.GetExecutions(queryParams);
 
 			if (executions.StatusCode != HttpStatusCode.OK)
 			{
@@ -98,6 +93,39 @@ namespace d360.web.Controllers.V2
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions))).ConfigureAwait(false);
 		}
+
+		/// <summary>
+		/// Creates or updates a set of assets across asset types and relations across relation types.
+		/// </summary>
+		/// <remarks>
+		/// All `id` properties are intended to be your own identifiers from your source system. As long as they are unique across all assets within a type then the system will match based on that custom identifier.
+		/// You do not have to include all properties of an asset, including required properties.
+		/// </remarks>
+		/// <param name="payload">The payload of your request.</param>
+		/// <returns>An HTTP status code and message.</returns>
+		[
+			HttpPatch,
+			Route(""),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.Accepted, "A response that provides the Location header to check on the status of your request."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PatchExecutionsAsync(PatchBulkCatalogRequestModel payload)
+		{
+			if (payload == null)
+			{
+				payload = readRequestJsonContent<PatchBulkCatalogRequestModel>(Request).Result;
+			}
+
+			if (payload == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+			}
+
+			var executionInfo = await ExecutionsRepository.BulkPatchAssetAndRelations(payload);
+			return await sendExecutionProcessingResponse(executionInfo, HttpStatusCode.Accepted);
+		}
+
 
 		/// <summary>
 		/// Cancel an API Execution by Execution UID
@@ -114,72 +142,54 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CancelExecution(Guid executionID)
 		{
-			var prefix = "Executions.DeleteExecution => ";
-			var errorMessage = "";
-
-			try
+			if (!Company.CurrentResourceIsAdmin)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-				}
-
-				var response = new ConfirmResponse();
-				var execution = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == executionID);
-
-				if (execution == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
-				}
-
-				if (execution.State == core.enums.State.Deleted)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
-				}
-
-				if (execution.CompletedOn != null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDFinishedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
-				}
-
-				if (execution.ProcessingStartedOn != null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDStartedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
-				}
-
-				if (!execution.Route.Contains("batch"))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
-				}
-
-				execution.State = core.enums.State.Deleted;
-				execution.CompletedOn = DateTime.UtcNow;
-				execution.ErrorMessage = ApiMessages.ExecutionCancelByUser;
-
-				bool isDone = Company.Update(execution);
-
-				response.message = string.Format(ApiMessages.ExecutionCancel, executionID.ToString());
-
-				if (isDone)
-				{
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
-				}
-				else
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel)).ConfigureAwait(false);
-				}
-
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix },
-					{ "ExecutionID", executionID.ToString() },
-					{ "ExecutionUid", executionID.ToString() }, //left to prevent a breaking change
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+			var response = new ConfirmResponse();
+			var execution = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == executionID);
+
+			if (execution == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
+			}
+
+			if (execution.State == core.enums.State.Deleted)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
+			}
+
+			if (execution.CompletedOn != null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDFinishedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+			}
+
+			if (execution.ProcessingStartedOn != null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDStartedCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+			}
+
+			if (!execution.Route.Contains("batch"))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
+			}
+
+			execution.State = core.enums.State.Deleted;
+			execution.CompletedOn = DateTime.UtcNow;
+			execution.ErrorMessage = ApiMessages.ExecutionCancelByUser;
+
+			bool isDone = Company.Update(execution);
+
+			response.message = string.Format(ApiMessages.ExecutionCancel, executionID.ToString());
+
+			if (isDone)
+			{
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
+			}
+			else
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel)).ConfigureAwait(false);
 			}
 		}
 
@@ -198,49 +208,21 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
 		{
-
-			var prefix = "Executions.GetExecutionStatus => ";
-			var errorMessage = "";
 			var summaryOnly = false;
 			var queryParams = Request.GetQueryNameValuePairs();
 
-			try
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
 			{
-				if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
-				{
-					bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
-				}
-
-				var res = await AssetRepository.GetExecutionStatusModel(executionID, !summaryOnly);
-
-				if (res == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object))).ConfigureAwait(false);
+				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 			}
-			catch (ArgumentException)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix },
-					{ "ExecutionID", executionID.ToString() },
-					{ "ExecutionUid", executionID.ToString() }, //left to prevent a breaking change
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly);
+			return resolveEndpointPayloadResponse(res);
 		}
 
 		/// <summary>
 		/// Added analyze connector status and needed immediate result.
-		/// </summary>        
-
+		/// </summary>
 		/// <remarks>
 		/// Status Possible values are:  
 		/// - START
@@ -291,29 +273,41 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult PostConnectorStatus(ApiExecutionExternalRequestModel model)
 		{
+			var res = new EndpointPayloadResponse<ApiExecutionExternalViewModel> {
+				Code = HttpStatusCode.Created
+			};
+
 			if (model == null)
 			{
-				throw new ArgumentException(ApiMessages.ErrorInvalidDatasetMessage);
+				res.Code = HttpStatusCode.BadRequest;
+				res.Message = ApiMessages.ErrorInvalidDatasetMessage;
 			}
 
 			if (model?.Status == null)
 			{
-				throw new ArgumentException(ApiMessages.StatusRequied);
+				res.Code = HttpStatusCode.BadRequest;
+				res.Message = ApiMessages.StatusRequied;
 			}
 
 			if (model.Component?.Length > 250)
 			{
-				throw new ArgumentException(ApiMessages.ComponentMaxSize250);
+				res.Code = HttpStatusCode.BadRequest;
+				res.Message = ApiMessages.ComponentMaxSize250;
 			}
 
 			if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
 			{
-				throw new ArgumentException(ApiMessages.StatusInvalid);
+				res.Code = HttpStatusCode.BadRequest;
+				res.Message = ApiMessages.StatusInvalid;
 			}
 
-			ApiExecutionExternalViewModel result = AssetRepository.AddConnectorStatus(model);
+			if (res.Code != HttpStatusCode.Created)
+			{
+				return resolveEndpointPayloadResponse(res);
+			}
 
-			return Ok(result);
+			res.Payload = AssetRepository.AddConnectorStatus(model);
+			return resolveEndpointPayloadResponse(res);
 		}
 
 		/// <summary>
@@ -460,7 +454,10 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
+
 		#endregion
+
+		#region BULK LOAD
 
 		/// <summary>
 		/// Retrieves bulk load info.
@@ -1466,5 +1463,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
 			}
 		}
+
+		#endregion BULK LOAD
 	}
 }

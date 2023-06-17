@@ -60,10 +60,6 @@ namespace d360.model.DataAccessLayer
         
         AssetType GetAssetTypeByModel(AssetTypeUpsert model);
         
-        ApiExecution GetExecutionItemByUid(Guid executionUid);
-        
-        Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams);
-        
         Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string status, string component);
         
         void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx");
@@ -89,8 +85,6 @@ namespace d360.model.DataAccessLayer
         Task<AssetsCountModel> GetAssetsCounts();
        
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
-        
-        Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true);
         
         List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
         

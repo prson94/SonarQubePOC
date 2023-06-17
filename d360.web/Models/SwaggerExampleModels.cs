@@ -19,7 +19,8 @@ namespace d360.web.Models
                     Fields = new Dictionary<string, string>() {
                         { "MyApiFieldName1", "My Field value" },
                         { "MyApiFieldName2", "My Field value" }
-                    }
+                    },
+					SourceID = "optionalCustomIdentifier"
                 };
         }
     }
@@ -41,8 +42,9 @@ namespace d360.web.Models
                 UseAsTransformation = false,
                 AutoDisplayParent = true,
                 CanEditParent = true,
-				IsDefaultReadAccessEnabled = true
-            };
+				IsDefaultReadAccessEnabled = true,
+				SourceID = "myCustomIdentifier"
+			};
         }
     }
 
@@ -62,8 +64,9 @@ namespace d360.web.Models
                 ParentUid = Guid.Empty,
                 Notes = "Notes about usage or any other topic.",
                 UseAsTransformation = false,
-                AutoDisplayParent = true
-            };
+                AutoDisplayParent = true,
+				SourceID = "myCustomIdentifier"
+			};
         }
     }
 
@@ -72,15 +75,16 @@ namespace d360.web.Models
         public object GetExamples()
         {
             return new AssetUpdate
-                {
-                    ExecutionItemUid = Guid.Empty,
-                    Uid = Guid.Empty,
-                    ParentUid = Guid.Empty,
-                    Fields = new Dictionary<string, string>() {
-                        { "MyApiFieldName1", "My Field value" },
-                        { "MyApiFieldName2", "My Field value" }
-                    }
-                };
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                ParentUid = Guid.Empty,
+                Fields = new Dictionary<string, string>() {
+                    { "MyApiFieldName1", "My Field value" },
+                    { "MyApiFieldName2", "My Field value" }
+                },
+				SourceID = "optionalCustomIdentifier"
+			};
         }
     }
 
@@ -137,8 +141,9 @@ namespace d360.web.Models
                 SubjectUid = Guid.Empty,
                 ObjectUid = Guid.Empty,
                 SubjectCardinality = Cardinality.Many,
-                ObjectCardinality = Cardinality.Many
-            };
+                ObjectCardinality = Cardinality.Many,
+				SourceID = "myCustomIdentifier"
+			};
         }
     }
 
@@ -154,7 +159,8 @@ namespace d360.web.Models
                 SubjectUid = Guid.Empty,
                 ObjectUid = Guid.Empty,
                 SubjectCardinality = Cardinality.Many,
-                ObjectCardinality = Cardinality.Many
+                ObjectCardinality = Cardinality.Many,
+				SourceID = "myCustomIdentifier"
             };
         }
     }

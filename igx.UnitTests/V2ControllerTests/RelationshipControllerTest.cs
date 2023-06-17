@@ -42,7 +42,7 @@ namespace igx.UnitTests.V2ControllerTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-	        this.relationshipsController = new RelationshipsController(GetCoreComponentSet(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository())
+	        relationshipsController = new RelationshipsController(GetCoreComponentSet(), GetQueue(), GetStorage(), GetAssetRepository(), GetExecutionsRepository(), GetFieldsRepository(), GetRelationshipRepository())
             {
                 Request = new HttpRequestMessage()
                 {
