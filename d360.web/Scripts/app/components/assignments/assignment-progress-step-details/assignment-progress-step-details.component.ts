@@ -6,7 +6,7 @@ import {
 	OnChanges,
 	OnInit,
 	Output,
-	SimpleChanges
+	SimpleChanges, ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -22,6 +22,7 @@ import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AssignmentFormResponseComponent } from './assignment-form-response/assignment-form-response.component';
 
 @Component({
 	selector: 'd3s-assignment-progress-step-details',
@@ -34,6 +35,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();
+	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
 	viewFormResponses: string = '';
@@ -72,11 +74,13 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						this.isLoading = false;
 						this.step = r;
 						this.activityType = this.getActivityType(this.step);
-						if (this.step.ItemFields && this.step.ItemFields['@NumberOfResponses']) {
+						if (this.step.ItemFields?.['@NumberOfResponses']) {
 							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
+						} else {
+							this.viewFormResponses = ''
 						}
 						let reassignments: WorkflowStepReassignment[] = [];
-						if (this.step.ItemFields != null && this.step.ItemFields.Reassigned != null) {
+						if (this.step.ItemFields?.Reassigned != null) {
 							for (const element of this.step.ItemFields.Reassigned) {
 								reassignments.push(new WorkflowStepReassignment(element));
 							}
@@ -117,6 +121,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	openFormResponsesModal(event: boolean): void {
-		console.log('clicked');
+		console.log(event);
+		this.assignmentFormResponseComponent.openModal()
 	}
 }
