@@ -8,10 +8,10 @@ import { WorkflowStepDetail } from '../../../../models/workflow.model';
 })
 export class AssignmentFormResponseComponent {
 	isModalVisible: boolean = false;
-	step: WorkflowStepDetail = null
+	step: WorkflowStepDetail = null;
 
 	openModal(step: WorkflowStepDetail): void {
-		this.step = step
-		this.isModalVisible = true
+		this.step = step;
+		this.isModalVisible = true;
 	}
 }

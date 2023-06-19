@@ -8,11 +8,19 @@
 		   (onClose)="isModalVisible = false">
 	<div *ngIf="step" class="content">
 		<ig-property-group title="Information" [shouldBePadded]="false" [showHeaderLine]="false">
-			<div readonly>
-				<ng-container>
-
-				</ng-container>
+			<div class="information" *ngIf="step.Fields?.form" readonly>
+				<label class="ig-label">{{ step.Fields.form["@title"] }}</label>
+				<span class="ig-value" [innerHTML]="step.Fields.form['@description']"></span>
 			</div>
 		</ig-property-group>
+		<ng-container *ngFor="let response of step.ItemFields?.form;index as i">
+			<ig-property-group title="{{ 'Response ' + i+1 + ' by ' + response.resourceName}}" [shouldBePadded]="false"
+							   [showHeaderLine]="false">
+				<div class="fields" readonly *ngFor="let field of response?.field">
+					<label class="ig-label">{{ field?.["@label"] }}</label>
+					<span class="ig-value">{{ field?.["@displayvalue"] }}</span>
+				</div>
+			</ig-property-group>
+		</ng-container>
 	</div>
 </d3s-modal>
