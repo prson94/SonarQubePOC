@@ -620,10 +620,22 @@ namespace d360.web.Controllers.V2
 			{
 				IEnumerable<string> fieldFilters = queryRequest.FieldFilters.Select(f => f.Field);
 				IEnumerable<string> unsupportedFields = fieldFilters.Except(supportedFields);
+				var unsupportedTags = new List<string>();
 
 				if (unsupportedFields.Any())
 				{
 					return string.Format(SearchApiMessages.FieldUnsupported, string.Join(", ", unsupportedFields));
+				}
+
+				queryRequest.FieldFilters.Where(f => f.Field == "Tags").ToList().ForEach(f =>
+				{
+					var foo = f.Values.Where(v => !Company.Tags.Any(t => t.Value == v)).ToList();
+					unsupportedTags.AddRange(foo);
+				});
+
+				if(unsupportedTags.Any())
+				{
+					return string.Format(SearchApiMessages.TagsNotAvailable, string.Join(", ", unsupportedTags));
 				}
 			}
 

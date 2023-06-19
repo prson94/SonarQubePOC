@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class ExcelExports {
@@ -75,6 +75,15 @@ namespace d360.core.resources {
         public static string Common_ExcelDateFormat {
             get {
                 return ResourceManager.GetString("Common_ExcelDateFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1}.
+        /// </summary>
+        public static string Common_ExportName {
+            get {
+                return ResourceManager.GetString("Common_ExportName", resourceCulture);
             }
         }
         
@@ -363,6 +372,96 @@ namespace d360.core.resources {
         public static string Relationships_Subject_UID {
             get {
                 return ResourceManager.GetString("Relationships_Subject_UID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Type Name.
+        /// </summary>
+        public static string WorkflowAssignments_ActionTypeName {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_ActionTypeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Type UID.
+        /// </summary>
+        public static string WorkflowAssignments_ActionTypeUID {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_ActionTypeUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assignees.
+        /// </summary>
+        public static string WorkflowAssignments_Assignees {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_Assignees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assignments.
+        /// </summary>
+        public static string WorkflowAssignments_Assignments {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_Assignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Associated With.
+        /// </summary>
+        public static string WorkflowAssignments_AssociatedWith {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_AssociatedWith", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Date.
+        /// </summary>
+        public static string WorkflowAssignments_ExportDate {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_ExportDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Info.
+        /// </summary>
+        public static string WorkflowAssignments_ExportInfoTab {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_ExportInfoTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initiated.
+        /// </summary>
+        public static string WorkflowAssignments_Initiated {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_Initiated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Initiator UID.
+        /// </summary>
+        public static string WorkflowAssignments_InitiatorUid {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_InitiatorUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requests.
+        /// </summary>
+        public static string WorkflowAssignments_Requests {
+            get {
+                return ResourceManager.GetString("WorkflowAssignments_Requests", resourceCulture);
             }
         }
         

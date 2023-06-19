@@ -298,4 +298,34 @@
 	</rollback>
   </changeSet>
   
+ <changeSet author="PuneetGupta" id="Column.dbo.AssetDataProfile-FilterCount-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+					 AND name = 'FilterCount'
+			)
+			BEGIN
+
+				ALTER TABLE [dbo].[AssetDataProfile] ADD [FilterCount] BIGINT NULL		
+
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [dbo].[AssetDataProfile] 
+		DROP 
+			COLUMN IF EXISTS [FilterCount]
+
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>
