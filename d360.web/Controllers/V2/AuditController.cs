@@ -359,8 +359,8 @@ namespace d360.web.Controllers.V2
 							{offsetSql}
 							
 							update t
-							set newvalue = case when newvalue is null then 'N/A' when newvalue = '' then '---' else newvalue end,
-								PreviousValue =  case when PreviousValue is null then 'N/A' when PreviousValue = '' then '---' else PreviousValue end
+							set newvalue = case when newvalue is null then '---' else newvalue end,
+								PreviousValue =  case when PreviousValue is null and action !='Created' then '---' else PreviousValue end
 							from #tempselect t
 
 							select *
