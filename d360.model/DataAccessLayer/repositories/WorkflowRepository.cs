@@ -1056,7 +1056,7 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-			}
+			}			
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))			
 			{
@@ -1080,9 +1080,9 @@ namespace d360.model.DataAccessLayer
 
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count > 0)
 						{
-							hasActionFilter = true;						
-
-							if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1)
+							hasActionFilter = true;
+							
+							if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1 && filterValue.Substring(filterValue.ToLower().IndexOf("actiontypeuid") + 13).TrimStart().StartsWith("eq"))
 							{
 								var actionFilter = advFilterStatements.Where(f => f.Contains("IT.uid")).FirstOrDefault();
 								var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
@@ -1129,6 +1129,15 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_actionsonly"))
+			{
+				var actionsOnlyValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_actionsonly");
+				if (bool.TryParse(actionsOnlyValue.Value, out bool _actionsOnly))
+				{
+					hasActionFilter = _actionsOnly;
+				}
+			}
+
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ {(hasActionFilter ? "WA" : "AssignmentList")}.[StartedOn] AS datetime)");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
@@ -1155,6 +1164,17 @@ namespace d360.model.DataAccessLayer
 				whereConditions = " where " + string.Join(" and ", conditions);
 				whereConditions = whereConditions.Trim();				
 			}
+
+			var classCaseStatements = new List<string>();
+
+			foreach (AssetTypeClassInfo assetClass in AssetTypeClass.BusinessAsset.GetAsList())
+			{
+				classCaseStatements.Add($"when AST.class = {(int)assetClass.ID} then '{assetClass.Name}'");
+			}
+
+			var classSQL = $@"CASE {string.Join(Environment.NewLine, classCaseStatements)}
+								else 'Unknown'
+								END as initiatingObjectType";
 
 			var coreSelects = $@"select 
 										WI.uid as workflowItemUid, 
@@ -1193,7 +1213,9 @@ namespace d360.model.DataAccessLayer
 								A.uid as assetUid,
 								AP.DisplayPath as assetPath,
 								AssignedUsers.value as assigneesJson,
-								I.uid as actionUid 
+								I.uid as actionUid,
+								'Action' as initiatingObjectType,
+								IT.Name as initiatingObjectTypeName
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
 			var assetSelects = $@"WA.workflowItemUid, 
@@ -1210,7 +1232,10 @@ namespace d360.model.DataAccessLayer
 							A.uid as assetUid,							
 							AP.DisplayPath as assetPath,
 							AssignedUsers.value as assigneesJson,
-							null as actionUid ";
+							null as actionUid, 
+							{classSQL},
+							AST.Name as initiatingObjectTypeName
+							";
 
 			var actionJoins = $@"FROM 
 							assignments WA

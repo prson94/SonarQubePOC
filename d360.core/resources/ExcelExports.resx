@@ -123,6 +123,9 @@
   <data name="Common_ExcelDateFormat" xml:space="preserve">
     <value>mm/dd/yyyy</value>
   </data>
+  <data name="Common_ExportName" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
   <data name="Common_ItemsSheetName" xml:space="preserve">
     <value>Items</value>
   </data>
@@ -218,6 +221,36 @@
   </data>
   <data name="Relationships_Subject_UID" xml:space="preserve">
     <value>Subject UID</value>
+  </data>
+  <data name="WorkflowAssignments_ActionTypeName" xml:space="preserve">
+    <value>Action Type Name</value>
+  </data>
+  <data name="WorkflowAssignments_ActionTypeUID" xml:space="preserve">
+    <value>Action Type UID</value>
+  </data>
+  <data name="WorkflowAssignments_Assignees" xml:space="preserve">
+    <value>Assignees</value>
+  </data>
+  <data name="WorkflowAssignments_Assignments" xml:space="preserve">
+    <value>Assignments</value>
+  </data>
+  <data name="WorkflowAssignments_AssociatedWith" xml:space="preserve">
+    <value>Associated With</value>
+  </data>
+  <data name="WorkflowAssignments_ExportDate" xml:space="preserve">
+    <value>Export Date</value>
+  </data>
+  <data name="WorkflowAssignments_ExportInfoTab" xml:space="preserve">
+    <value>Export Info</value>
+  </data>
+  <data name="WorkflowAssignments_Initiated" xml:space="preserve">
+    <value>Initiated</value>
+  </data>
+  <data name="WorkflowAssignments_InitiatorUid" xml:space="preserve">
+    <value>Initiator UID</value>
+  </data>
+  <data name="WorkflowAssignments_Requests" xml:space="preserve">
+    <value>Requests</value>
   </data>
   <data name="WorkflowMonitor_Asset" xml:space="preserve">
     <value>Asset</value>
