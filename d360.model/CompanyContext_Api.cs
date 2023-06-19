@@ -11332,6 +11332,7 @@ where   ER.ExecutionID = @ExecutionID
 					DataProfileTable.Columns.Add("PopularityCount", typeof(long));
 					DataProfileTable.Columns.Add("IsAuthorizedForPopularity", typeof(bool));
 					DataProfileTable.Columns.Add("SourceLastModified", typeof(DateTime));
+					DataProfileTable.Columns.Add("FilterCount", typeof(long));
 
 					DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
                     DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
@@ -11400,7 +11401,8 @@ where   ER.ExecutionID = @ExecutionID
 
 						row["PopularityCount"] = item.PopularityCount ?? (object)DBNull.Value;
 						row["IsAuthorizedForPopularity"] = item.IsAuthorizedForPopularity ?? (object)DBNull.Value;
-						row["SourceLastModified"] = item.SourceLastModified ?? (object)DBNull.Value;						
+						row["SourceLastModified"] = item.SourceLastModified ?? (object)DBNull.Value;
+						row["FilterCount"] = item.FilterCount ?? (object)DBNull.Value;
 
 
 						DataProfileTable.Rows.Add(row);
@@ -11751,6 +11753,7 @@ where   ER.ExecutionID = @ExecutionID
 								bulkCopy.ColumnMappings.Add("PopularityCount", "PopularityCount");
 								bulkCopy.ColumnMappings.Add("IsAuthorizedForPopularity", "IsAuthorizedForPopularity");
 								bulkCopy.ColumnMappings.Add("SourceLastModified", "SourceLastModified");
+								bulkCopy.ColumnMappings.Add("FilterCount", "FilterCount");
 
 								bulkCopy.WriteToServer(DataProfileTable);
                             }
@@ -11982,6 +11985,7 @@ where   ER.ExecutionID = @ExecutionID
 													,[PopularityCount]
 													,[IsAuthorizedForPopularity]
 													,[SourceLastModified]
+													,[FilterCount]
 													,[CreatedBy]
 													,[CreatedOn]
 													,[UpdatedBy]
@@ -12024,6 +12028,7 @@ where   ER.ExecutionID = @ExecutionID
 													,EDP.PopularityCount
 													,EDP.IsAuthorizedForPopularity
 													,EDP.SourceLastModified
+													,EDP.FilterCount
 													,@CurrentResourceID
 													,GETDATE()
 													,@CurrentResourceID
@@ -12081,6 +12086,7 @@ where   ER.ExecutionID = @ExecutionID
 											,ADP.[PopularityCount] = EDP.[PopularityCount]
 											,ADP.[IsAuthorizedForPopularity] = EDP.[IsAuthorizedForPopularity]
 											,ADP.[SourceLastModified] = EDP.[SourceLastModified]
+											,ADP.[FilterCount] = EDP.[FilterCount]
 											,ADP.[UpdatedBy] = @CurrentResourceID
 											,ADP.[UpdatedOn] = GETDATE()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
