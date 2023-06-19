@@ -14,8 +14,8 @@ import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule 
 import { TooltipModule } from 'primeng/tooltip';
 import { throttle } from "lodash-es";
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
-import { Subject } from 'rxjs';
-import { startWith, takeUntil, tap } from 'rxjs/operators';
+import { Observable, of, Subject, Subscriber, Subscription } from 'rxjs';
+import { debounceTime, startWith, takeUntil, tap } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -29,21 +29,23 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     @Input() igformGroup: UntypedFormGroup;
     @Input() inputContainer: ElementRef;
 
-    $destroy = new Subject<void>();
-
     invalidCount: number = 0;
     requiredCount: number = 0;
 
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
-    delayedRefresh = throttle(() => {
-        this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
-        this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
-        this.ref.markForCheck();
-    }, 200);
+	formFieldChangeSub: Subscription;
 
-    constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
+	subjectLoadGrid = new Subject<void>();
+	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
+		this.subjectLoadGrid.pipe(
+			debounceTime(150))
+			.subscribe(() => {
+				this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+				this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+				this.ref.markForCheck();
+			});
     }
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -52,23 +54,13 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
             return;
         }
 
-        this.$destroy.next();
-        this.delayedRefresh.cancel();
-
-        if (this.igformGroup) {
-            this.igformGroup.valueChanges
-                .pipe(
-                    startWith(null),
-                    takeUntil(this.$destroy),
-                    tap(() => this.delayedRefresh())
-                )
-                .subscribe();
-
-            this.igformGroup.statusChanges
-                .pipe(
-                    takeUntil(this.$destroy),
-                    tap(() => this.delayedRefresh())
-                ).subscribe();
+		if (this.igformGroup) {
+			if (this.formFieldChangeSub) {
+				this.formFieldChangeSub.unsubscribe();
+			}
+			this.formFieldChangeSub = this.igformGroup.valueChanges.subscribe((res) => {
+				this.subjectLoadGrid.next();
+			});
         }
     }
 
@@ -238,7 +230,9 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.$destroy.next();
+		if (this.formFieldChangeSub) {
+			this.formFieldChangeSub.unsubscribe();
+		}
     }
 }
 

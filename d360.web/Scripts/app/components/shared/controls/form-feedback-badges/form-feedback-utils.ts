@@ -4,11 +4,11 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 export function getFormControlDomElement({ formContainer, controlName }: { formContainer: ElementRef; controlName: string; }) {
     if (formContainer == null) {
         return null;
-    }
+	}
 
-    return formContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]").length > 0
-        ? formContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]")[0]
-        : null;
+	const controls = formContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]") as any[];
+
+	return controls.length > 0 ? controls[0] : null;
 }
 
 export function getRequiredCount({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): number {
