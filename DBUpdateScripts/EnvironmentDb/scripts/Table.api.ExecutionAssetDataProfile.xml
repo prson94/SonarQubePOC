@@ -272,4 +272,34 @@ ALTER COLUMN [StandardDeviation] FLOAT;
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="PuneetGupta" id="Column.dbo.ExecutionAssetDataProfile-FilterCount-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+					 AND name = 'FilterCount'
+			)
+			BEGIN
+
+				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [FilterCount] BIGINT NULL
+
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [api].[ExecutionAssetDataProfile] 
+		DROP 
+			COLUMN IF EXISTS [FilterCount], 
+
+		]]>
+	</rollback>
+  </changeSet>  
 </databaseChangeLog>
