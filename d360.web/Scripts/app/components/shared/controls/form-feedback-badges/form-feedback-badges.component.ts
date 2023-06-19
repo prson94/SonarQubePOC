@@ -12,10 +12,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import { throttle } from "lodash-es";
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
-import { Observable, of, Subject, Subscriber, Subscription } from 'rxjs';
-import { debounceTime, startWith, takeUntil, tap } from 'rxjs/operators';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -58,7 +57,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 			if (this.formFieldChangeSub) {
 				this.formFieldChangeSub.unsubscribe();
 			}
-			this.formFieldChangeSub = this.igformGroup.valueChanges.subscribe((res) => {
+			this.formFieldChangeSub = this.igformGroup.valueChanges.subscribe(() => {
 				this.subjectLoadGrid.next();
 			});
         }
