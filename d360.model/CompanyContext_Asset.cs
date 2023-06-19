@@ -106,7 +106,7 @@ namespace d360.model
             return escapedValue;
         }
 
-		private int DeleteAssetsByChunk(ApiExecution execution, AssetType at, int timeout, Dictionary<string, double> metrics, int step, DateTime dt, bool canHaveProcess, Stopwatch sw, PredicateType? predicateType, int beginItemNumber, int endItemNumber, int currentLoop, int retryCount, string querySuffix, SqlTransaction trans)
+		private int DeleteAssetsByChunk(ApiExecution execution, int timeout, Dictionary<string, double> metrics, int step, DateTime dt, bool canHaveProcess, Stopwatch sw, PredicateType? predicateType, int beginItemNumber, int endItemNumber, int currentLoop, int retryCount, string querySuffix, SqlTransaction trans)
 		{
 			#region Delete workflow items
 
@@ -845,7 +845,10 @@ namespace d360.model
 			{
 				enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
 			}
-			catch { }
+			catch 
+			{
+				// Safely ignore. Just assume it is false.
+			}
 
 			FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
@@ -1220,19 +1223,15 @@ namespace d360.model
 							addMeasurement(metrics, "CopyFieldLookupValuesAsIs-Begin", 0, ++step);
 							CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
 							addMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);
-							sw.Restart();
 						}
 						else
 						{
 							addMeasurement(metrics, "ResolveFieldLookupValues-Begin", 0, ++step);
 							ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
 							addMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
-							sw.Restart();
 						}
-					}
+						sw.Restart();
 
-					if (hasLookupFieldTypes)
-					{
 						addMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
 						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
 						addMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
@@ -1378,12 +1377,72 @@ namespace d360.model
 								{
 									switch (at.Class)
 									{
-										case AssetTypeClass.Policy:
-										case AssetTypeClass.BusinessAsset:
-										case AssetTypeClass.TechnicalAsset:
-										case AssetTypeClass.Diagram:
-										case AssetTypeClass.Model:
-										case AssetTypeClass.Rule:
+										case AssetTypeClass.Reference:
+											sw.Restart();
+											if (isInsert)
+											{
+												Connection.Execute($@"
+																	create table #ObjectMergeTableResult (ID bigint, ObjectID int, ItemNumber int, [Operation] varchar(10));
+																	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+																	merge   [Asset] as T
+																	using   (
+																			select  A.ItemNumber,
+																					A.Uid,
+																					A.SourceID,
+																					C.FieldValue as [Code],
+																					CR.LookupValue as [Color],
+																					I.FieldValue as [Icon]
+																			from    api.ExecutionAsset A
+																					inner join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
+																					left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+																					left join {ApiExecutionFieldTable} I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
+																			where   A.ExecutionID = @ExecutionID
+																					and A.Success is null
+																					and A.ItemNumber between @beginItemNumber and @endItemNumber
+																			) S
+																	on      (1 = 0)
+																	when    not matched then
+																	insert  (Uid, AssetTypeID,State,SourceID,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+																	values  (isnull(S.Uid,newid()), @AssetTypeID,1,S.SourceID,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
+																	output  inserted.ID, inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
+
+																	update  T
+																	set     T.AssetID = S.ID,
+																			T.Object = 'ReferenceItem',
+																			T.ObjectID = S.ObjectID,
+																			T.IsNew = 1
+																	from    api.ExecutionAsset T
+																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+																	{updateAssetInfoOnExecutionRecordsSql}",
+												new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
+												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+											}
+											else
+											{
+												Connection.Execute($@"
+																	update	T
+																	set		T.[Code] = C.FieldValue,
+																			T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
+																			T.[Icon] = I.FieldValue,
+																			T.SourceID = coalesce(S.SourceID,T.SourceID),
+																			T.UpdatedBy = @R,
+																			T.UpdatedOn = @D
+																	from	Asset T
+																			inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
+																			inner join {ApiExecutionFieldTable} C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
+																			left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+																			left join {ApiExecutionFieldTable} I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
+
+																	update	api.ExecutionAsset
+																	set		IsNew = 0
+																	where	{executionAssetWhereSql};",
+												new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+											}
+											break;
+										default:
 											string @object = "Artifact";
 
 											if (at.Class == AssetTypeClass.Policy)
@@ -1470,72 +1529,6 @@ namespace d360.model
 																	where	{executionAssetWhereSql};",
 											new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 												addMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											break;
-
-										case AssetTypeClass.Reference:
-											sw.Restart();
-											if (isInsert)
-											{
-												Connection.Execute($@"
-																	create table #ObjectMergeTableResult (ID bigint, ObjectID int, ItemNumber int, [Operation] varchar(10));
-																	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-																	merge   [Asset] as T
-																	using   (
-																			select  A.ItemNumber,
-																					A.Uid,
-																					A.SourceID,
-																					C.FieldValue as [Code],
-																					CR.LookupValue as [Color],
-																					I.FieldValue as [Icon]
-																			from    api.ExecutionAsset A
-																					inner join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
-																					left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-																					left join {ApiExecutionFieldTable} I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
-																			where   A.ExecutionID = @ExecutionID
-																					and A.Success is null
-																					and A.ItemNumber between @beginItemNumber and @endItemNumber
-																			) S
-																	on      (1 = 0)
-																	when    not matched then
-																	insert  (Uid, AssetTypeID,State,SourceID,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-																	values  (isnull(S.Uid,newid()), @AssetTypeID,1,S.SourceID,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
-																	output  inserted.ID, inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
-
-																	update  T
-																	set     T.AssetID = S.ID,
-																			T.Object = 'ReferenceItem',
-																			T.ObjectID = S.ObjectID,
-																			T.IsNew = 1
-																	from    api.ExecutionAsset T
-																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-																	{updateAssetInfoOnExecutionRecordsSql}",
-												new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											else
-											{
-												Connection.Execute($@"
-																	update	T
-																	set		T.[Code] = C.FieldValue,
-																			T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
-																			T.[Icon] = I.FieldValue,
-																			T.SourceID = coalesce(S.SourceID,T.SourceID),
-																			T.UpdatedBy = @R,
-																			T.UpdatedOn = @D
-																	from	Asset T
-																			inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-																			inner join {ApiExecutionFieldTable} C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
-																			left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-																			left join {ApiExecutionFieldTable} I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
-
-																	update	api.ExecutionAsset
-																	set		IsNew = 0
-																	where	{executionAssetWhereSql};",
-												new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 											}
 											break;
 									}
@@ -1836,6 +1829,7 @@ namespace d360.model
 									}
 									catch
 									{
+										// If rollback fails, do not mess up the transaction. Just continue with looping.
 									}
 									retryCount++;
 
@@ -1927,7 +1921,6 @@ namespace d360.model
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			int step = 0;
 			List<DatabaseBulkAssetResult> results = new List<DatabaseBulkAssetResult>();
-			List<DatabaseBulkAssetResult> graphResults = new List<DatabaseBulkAssetResult>();
 			DateTime dt = DateTime.UtcNow;
 			bool generalChecksCompleted = false;
 
@@ -2394,7 +2387,7 @@ where	T.ExecutionID = @ExecutionID
 													  new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 
-												step = DeleteAssetsByChunk(execution, at, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
+												step = DeleteAssetsByChunk(execution, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
 												// Update success flag
 												Connection.Execute(
 													$"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{chunksQueryString} and S.AssetID is not null;",
@@ -2515,7 +2508,6 @@ where	T.ExecutionID = @ExecutionID
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 
 			var results = new List<DatabaseBulkAssetTypeResult>();
-			DateTime dt = DateTime.UtcNow;
 
 			SetApiExecutionProcessingStartTime(execution.ExecutionID);
 

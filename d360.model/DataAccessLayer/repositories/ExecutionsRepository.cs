@@ -176,7 +176,7 @@ namespace d360.model.DataAccessLayer
 						case ExecutionInternalStatus.Running:
 							filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NOT NULL";
 							break;
-						case ExecutionInternalStatus.Completed:
+						default:	// Basically, ExecutionInternalStatus.Completed
 							filterSql = "WHERE Ex.CompletedOn IS NOT NULL";
 							break;
 
@@ -275,13 +275,7 @@ namespace d360.model.DataAccessLayer
 
 			if (includeResults && dbExecutionItem.CompletedOn.HasValue)
 			{
-				try
-				{
-					results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
-				}
-				catch
-				{
-				}
+				results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
 			}
 
 			var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
@@ -455,8 +449,6 @@ namespace d360.model.DataAccessLayer
 					);
 				}
 			}
-
-			//return response;
 		}
 	}
 }

@@ -104,8 +104,6 @@ namespace d360.model
 
 		public async Task ImportCrossReferencesAsync(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
 		{
-			List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
-
 			SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
 			#region Build data tables for bulk load

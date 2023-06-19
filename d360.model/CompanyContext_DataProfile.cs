@@ -63,7 +63,6 @@ namespace d360.model
 			const string METHOD_NAME = "DeleteDataProfiles";
 			bool isLog = true; // trace info for all assets is extermely useful            
 
-			DynamicParameters dbArgs = new DynamicParameters();
 			bool generalChecksCompleted = false;
 			int itemNumber = 1;
 			List<DataProfileDeleteResponse> results = new List<DataProfileDeleteResponse>();
@@ -398,6 +397,7 @@ namespace d360.model
 									}
 									catch
 									{
+										// Continue through loops, do not kill the entire process.
 									}
 
 									retryCount++;

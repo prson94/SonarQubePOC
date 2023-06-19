@@ -2559,16 +2559,15 @@ namespace d360.web.Controllers.V2
 
 				if (res == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound));
-				}
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							res as object
+					return await Task.FromResult(
+						errorMessageResponse(
+							HttpStatusCode.NotFound, 
+							ApiMessages.NotFound, 
+							ApiMessages.ExecutionUIDNotFound
 						)
-					)
-				);
+					);
+				}
+				return resolveEndpointPayloadResponse(res);
 			}
 			catch (ArgumentException)
 			{

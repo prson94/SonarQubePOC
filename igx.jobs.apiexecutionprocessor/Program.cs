@@ -418,7 +418,6 @@ namespace igx.jobs.apiexecutionprocessor
 
 						if (!string.IsNullOrEmpty(resultsSql))
 						{
-							var parameters = new List<SqlParameter>();
 							var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
 							await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, results);
 						}

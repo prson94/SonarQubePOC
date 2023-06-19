@@ -122,6 +122,19 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
 			}
 
+			if (payload.Assets == null && payload.Relations == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
+			}
+			if (payload.Assets == null)
+			{
+				payload.Assets = new List<PatchBulkCatalogAssetByTypeRequestModel>();
+			}
+			if (payload.Relations == null)
+			{
+				payload.Relations = new List<PatchBulkCatalogRelationByTypeRequestModel>();
+			}
+
 			var executionInfo = await ExecutionsRepository.BulkPatchAssetAndRelations(payload);
 			return await sendExecutionProcessingResponse(executionInfo, HttpStatusCode.Accepted);
 		}

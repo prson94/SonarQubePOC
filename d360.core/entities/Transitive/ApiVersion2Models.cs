@@ -244,9 +244,6 @@ namespace d360.core.entities
 
 	public class PatchBulkCatalogRequestModel
 	{
-		//[JsonProperty("source")]
-		//public string Source { get; set; }
-
 		[JsonProperty("assets")]
 		public List<PatchBulkCatalogAssetByTypeRequestModel> Assets { get; set; }
 

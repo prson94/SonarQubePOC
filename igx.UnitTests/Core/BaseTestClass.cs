@@ -384,9 +384,17 @@ namespace igx.UnitTests
 			   {
 				   Code = HttpStatusCode.OK,
 				   Message = "",
-				   Payload = new List<DatabaseBulkAssetResult>()
+				   Payload = new {
+					   Total = 1,
+					   Processed = 1,
+					   Error = 0,
+					   Fields = new { },
+					   StartedOn = DateTime.Now,
+					   CompletedOn = DateTime.Now,
+					   Results = new List<DatabaseBulkAssetResult>()
+				   }
 			   })
-			   : Task.FromResult(new EndpointPayloadResponse<dynamic>()));
+			   : Task.FromResult(new EndpointPayloadResponse<dynamic> { Code = HttpStatusCode.NotFound, Message = "Not found", Payload = null }));
 
 			mockRepo.Setup(x => x.PatchCatalog(It.IsAny<int>(), It.IsAny<PatchBulkCatalogRequestModel>())).Returns(Task.CompletedTask);
 

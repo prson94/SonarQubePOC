@@ -3610,7 +3610,7 @@ namespace d360.model
 							{
 								try
 								{
-									Connection.Execute(assetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber, userId = CurrentResourceID, requestDate = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+									Connection.Execute(assetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber, userId = CurrentResourceID, requestDate = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 									trans.Commit();
 									runCompleted = true;
 								}
@@ -3625,6 +3625,7 @@ namespace d360.model
 									}
 									catch
 									{
+										// Continue through loops, do not kill entire process.
 									}
 
 									retryCount++;
