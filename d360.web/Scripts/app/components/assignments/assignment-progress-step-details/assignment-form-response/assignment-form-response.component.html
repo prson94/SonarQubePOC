@@ -1,10 +1,18 @@
 <d3s-modal [title]="'Form Responses'"
-		   [subtitle]="'This is a sub title'"
+		   [subtitle]="step?.Name"
 		   [isVisible]="isModalVisible"
-		   showActionBar="true"
+		   [showActionBar]="true"
+		   [showConfirm]="false"
+		   cancelButtonLabel="Close"
 		   [additionalClasses]="'medium-dialog'"
 		   (onClose)="isModalVisible = false">
-	<div class="content">
-		<p>hello world</p>
+	<div *ngIf="step" class="content">
+		<ig-property-group title="Information" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container>
+
+				</ng-container>
+			</div>
+		</ig-property-group>
 	</div>
 </d3s-modal>

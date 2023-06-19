@@ -143,7 +143,7 @@
 		<ng-container *ngIf="step.ActivityType === WorkflowActivityType.Form">
 			<ig-property-group title="Form Details"
 							   [showDetailsLink]="step.ItemFields['@NumberOfResponses'] ? true : false"
-							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal($event)
+							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal()
 							   [shouldBePadded]="false" [showHeaderLine]="false">
 				<div readonly>
 					<ng-container>

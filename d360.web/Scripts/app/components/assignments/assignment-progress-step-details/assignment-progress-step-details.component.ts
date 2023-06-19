@@ -121,8 +121,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
-	openFormResponsesModal(event: boolean): void {
-		console.log(event);
-		this.assignmentFormResponseComponent.openModal();
+	openFormResponsesModal(): void {
+		this.assignmentFormResponseComponent.openModal(this.step)
 	}
 }

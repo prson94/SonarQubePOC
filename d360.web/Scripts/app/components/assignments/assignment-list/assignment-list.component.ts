@@ -154,10 +154,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	openCompleteAssignment(): void {
-		this.completeAssignmentComponent.openModal(null);
-	}
-
 	stepClicked(value: { assignmentItemStep: AssignmentItemStep; open: boolean }) {
 		this.secondarySidePanelOpen = value.open;
 		this.assignmentItemStep = value.assignmentItemStep;

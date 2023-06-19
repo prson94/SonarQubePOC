@@ -1,6 +1,6 @@
 <d3s-modal [showTitle]="false"
 		   [isVisible]="isModalVisible"
-		   showActionBar="true"
+		   [showActionBar]="true"
 		   [additionalClasses]="'xlarge-dialog'"
 		   (onConfirm)="submit()"
 		   (onClose)="isModalVisible = false">
@@ -73,8 +73,7 @@
 						[hasModifyRelationshipsPermissions]="false"
 						[hasDeleteRelationshipsPermissions]="false"
 						[interceptLinkClick]="true"></ig-asset-detail>
-					<d3s-assignment-progress-step-details [itemId]="assignmentItemStep?.ItemID"
-														  *ngIf="sidePanel === 'step-details'"
+					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'" [itemId]="assignmentItemStep?.ItemID"
 														  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
 				</ng-container>
 			</side-panel>

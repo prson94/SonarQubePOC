@@ -91,11 +91,11 @@ export class AssignmentProgressStepComponent implements OnInit {
 		this.stepClickChange.emit(this.selected);
 	}
 
-	completeAssignmentClick() {
+	completeAssignmentClick(): void {
 		this.completeAssignment.emit({
 			workflowUid: this.workflowItemUid,
 			stepUid: this.assignmentItemStep.Uid,
-			assetId: this.workflowStepDetail.AssetId
+			assetId: this.workflowStepDetail.ObjectID
 		});
 	}
 

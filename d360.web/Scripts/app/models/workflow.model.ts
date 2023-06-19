@@ -716,6 +716,7 @@ export class WorkflowStepIssueDetail {
 	ObjectID: number;
 	ObjectType: string;
 	ObjectTypeID: number;
+	AssetId: number;
 }
 
 export class WorkflowStepFieldChangeDetail {
