@@ -39,7 +39,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 	subjectLoadGrid = new Subject<void>();
 	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
 		this.subjectLoadGrid.pipe(
-			debounceTime(150))
+			debounceTime(300))
 			.subscribe(() => {
 				this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
 				this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
