@@ -25,7 +25,10 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     @Input() title: string = $localize`Default Title`;
     @Input() additionalClasses: string = '';
     @Input() isVisible: boolean = false;
-    @Input() showConfirm: boolean = false;
+    @Input() showConfirm: boolean = true;
+	@Input() showActionBar: boolean = false;
+	@Input() confirmButtonLabel: string = 'Confirm';
+	@Input() cancelButtonLabel: string = 'Cancel';
     @Input() showTitle: boolean = true;
     @Input() includePreciselyLogo: boolean = false;
     @Input() subtitle: string;

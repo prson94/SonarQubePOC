@@ -10,11 +10,11 @@
             <ig-portal-renderer *ngIf="formFeedbackPortalName != null" [name]="formFeedbackPortalName"></ig-portal-renderer>
         </div>
         <ng-content></ng-content>
-        <div *ngIf="showConfirm" class="action-bar">
-            <button igButton class="ig-button-secondary" (click)="closePopUp()" i18n>Cancel</button>
+        <div *ngIf="showActionBar" class="action-bar">
+            <button igButton class="ig-button-secondary" (click)="closePopUp()" i18n>{{ cancelButtonLabel }}</button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" (click)="confirm()">
-                <ng-container i18n>Confirm</ng-container>
+            <button *ngIf="showConfirm" igButton class="ig-button-primary" (click)="confirm()">
+                <ng-container i18n>{{ confirmButtonLabel }}</ng-container>
             </button>
         </div>
         <img *ngIf="includePreciselyLogo" class="about-binary" src="../../../../../Content/images/About-Binary.png" />

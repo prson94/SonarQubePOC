@@ -16,7 +16,7 @@
         <d3s-modal [title]="modalBasic.title"
                    [subtitle]="modalBasic.subtitle"
                    [isVisible]="modalBasic.isVisible"
-                   [showConfirm]="modalBasic.showConfirm"
+                   [showActionBar]="modalBasic.showActionBar"
                    [additionalClasses]="modalBasic.additionalClasses"
                    (onClose)="registerEvent('onClose', $event); modalBasic.isVisible = false"
                    (onConfirm)="registerEvent('onConfirm', $event)">
@@ -45,8 +45,8 @@
                     <ig-switch id="showTitle" trueLabel="True" falseLabel="False" [(ngModel)]="modalBasic.showTitle"></ig-switch>
                 </div>
                 <div class="row">
-                    <label for="showConfirm">showConfirm</label><br />
-                    <ig-switch id="showConfirm" trueLabel="True" falseLabel="False" [(ngModel)]="modalBasic.showConfirm"></ig-switch>
+                    <label for="showActionBar">showActionBar</label><br />
+                    <ig-switch id="showActionBar" trueLabel="True" falseLabel="False" [(ngModel)]="modalBasic.showActionBar"></ig-switch>
                 </div>
                 <div class="row">
                     <label for="additionalClasses">additionalClasses</label><br />
@@ -76,7 +76,7 @@
         <button igButton label="Open Modal" (click)="isModalVisible = true" tabindex="3"></button><br />
         <d3s-modal [showTitle]="false"
                    [isVisible]="isModalVisible"
-                   [showConfirm]="false"
+                   [showActionBar]="false"
                    [additionalClasses]="sidePanelModalAdditionalClasses"
                    (onClose)="isModalVisible = false">
             <div class="modal-with-side-panel">
