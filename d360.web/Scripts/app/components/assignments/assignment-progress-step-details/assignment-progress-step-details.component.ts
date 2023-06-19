@@ -6,7 +6,8 @@ import {
 	OnChanges,
 	OnInit,
 	Output,
-	SimpleChanges, ViewChild
+	SimpleChanges,
+	ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -35,7 +36,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();
-	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent
+	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent;
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
 	viewFormResponses: string = '';
@@ -59,7 +60,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue !== changes['itemStepId'].previousValue))) {
+		if (changes['itemStepUid'] != null && (changes['itemStepUid'].isFirstChange || (changes['itemStepId'].currentValue !== changes['itemStepUid'].previousValue))) {
 			this.load().subscribe();
 		}
 	}
@@ -77,7 +78,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						if (this.step.ItemFields?.['@NumberOfResponses']) {
 							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
 						} else {
-							this.viewFormResponses = ''
+							this.viewFormResponses = '';
 						}
 						let reassignments: WorkflowStepReassignment[] = [];
 						if (this.step.ItemFields?.Reassigned != null) {
@@ -122,6 +123,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 
 	openFormResponsesModal(event: boolean): void {
 		console.log(event);
-		this.assignmentFormResponseComponent.openModal()
+		this.assignmentFormResponseComponent.openModal();
 	}
 }

@@ -16,7 +16,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	sidePanelOpen: boolean = false;
 	workflowUid: string;
 	stepUid: string;
-	assetUid: string;
+	assetId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 	sidePanel: string = 'asset-details';
 	assignmentItemStep: AssignmentItemStep;
@@ -36,10 +36,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	openModal(details: {
 		workflowUid: string,
 		stepUid: string,
-		assetUid: string
+		assetId: number
 	}): void {
 		if (details) {
-			this.assetUid = details.assetUid;
+			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowUid = details.workflowUid;
 		}

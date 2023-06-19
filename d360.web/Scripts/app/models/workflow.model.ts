@@ -532,9 +532,9 @@ export class AssignmentItemStep {
 			MessageToUser: string;
 		},
 		fields: {
-			'form': {
+			form: {
 				'@title': string;
-				'field': {
+				field: {
 					'@type': string;
 					'@label': string;
 					'@id': string;
@@ -595,44 +595,59 @@ export class EmailTaskRecipientTypeInfo {
 }
 
 export class WorkflowStepDetail {
-	ID: number;
-	StepType: StepType;
 	ActivityType: WorkflowActivityType;
-	SettingsXml: string;
+	AssetId: number;
+	AssignedUsers: WorkflowStepAssignedUser[] = [];
+	ChangeType: WorkflowChangeType;
+	CompletedBy: number;
+	CompletedOn: string;
+	Condition: any;
+	ConditionXml: string;
+	EventSettings: any;
+	EventSettingsXml: string;
+	FieldChanges: WorkflowStepFieldChangeDetail[];
+	Fields: {
+		form: {
+			'@title': string;
+			field: [
+				{
+					'@type': string;
+					'@label': string;
+					'@required': string;
+					'@id': string;
+				}
+			]
+		}
+	};
 	FieldsXml: string;
-	Settings: any;
-	Fields: any;
-	ItemSettingsXml: string;
-	ItemFieldsXml: string;
-	ItemSettings: WorkflowStepItemSettings;
+	ID: number;
+	IsAssignedLoginUser: boolean;
+	IsIssueType: boolean;
+	IsPublishedVersion: boolean;
+	IssueDetails: WorkflowStepIssueDetail;
 	ItemFields: WorkflowStepItemFields;
+	ItemFieldsXml: string;
+	ItemID: number;
+	ItemSettings: WorkflowStepItemSettings;
+	ItemSettingsXml: string;
+	ItemStepID: number;
 	Name: string;
-	ObjectType: string;
-	ObjectTypeID: number;
-	ObjectTypeName: string;
 	Object: string;
 	ObjectID: number;
 	ObjectName: string;
-	ChangeType: WorkflowChangeType;
-	ConditionXml: string;
-	Condition: any;
-	EventSettingsXml: string;
-	EventSettings: any;
-	IsIssueType: boolean;
-	Version: number;
-	IsPublishedVersion: boolean;
-	IssueDetails: WorkflowStepIssueDetail;
-	AssignedUsers: WorkflowStepAssignedUser[] = [];
-	StepID: number;
-	TypeID: number;
-	IsAssignedLoginUser: boolean;
-	ItemID: number;
-	ItemStepID: number;
-	FieldChanges: WorkflowStepFieldChangeDetail[];
+	ObjectType: string;
+	ObjectTypeID: number;
+	ObjectTypeName: string;
 	RelationshipChange: WorkflowStepRelationshipChangeDetail;
-	StateChange: State;
-	CompletedOn: string;
+	Settings: NodeSettings;
+	SettingsXml: string;
+	StartedBy: number;
 	StartedOn: string;
+	StateChange: State;
+	StepID: number;
+	StepType: StepType;
+	TypeID: number;
+	Version: number;
 }
 
 export class WorkflowStepItemFields {

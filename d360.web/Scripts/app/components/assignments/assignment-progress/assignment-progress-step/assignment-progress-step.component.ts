@@ -25,11 +25,11 @@ export class AssignmentProgressStepComponent implements OnInit {
 	@Output() completeAssignment: EventEmitter<{
 		workflowUid: string,
 		stepUid: string,
-		assetUid: string
+		assetId: number
 	}> = new EventEmitter<{
 		workflowUid: string,
 		stepUid: string,
-		assetUid: string
+		assetId: number
 	}>();
 
 	@Output() stepClickChange: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -95,7 +95,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 		this.completeAssignment.emit({
 			workflowUid: this.workflowItemUid,
 			stepUid: this.assignmentItemStep.Uid,
-			assetUid: undefined
+			assetId: this.workflowStepDetail.AssetId
 		});
 	}
 

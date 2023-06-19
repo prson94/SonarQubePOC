@@ -28,18 +28,18 @@ export class AssignmentProgressComponent implements OnInit {
 	@Output() completeAssignment: EventEmitter<{
 		workflowUid: string,
 		stepUid: string,
-		assetUid: string
+		assetId: number
 	}> = new EventEmitter<{
 		workflowUid: string,
 		stepUid: string,
-		assetUid: string
+		assetId: number
 	}>();
 
 	@Output() stepClickChange: EventEmitter<{
-		workflowItemStep: AssignmentItemStep,
+		assignmentItemStep: AssignmentItemStep,
 		open: boolean
 	}> = new EventEmitter<{
-		workflowItemStep: AssignmentItemStep,
+		assignmentItemStep: AssignmentItemStep,
 		open: boolean
 	}>();
 
@@ -68,11 +68,11 @@ export class AssignmentProgressComponent implements OnInit {
 		}
 	}
 
-	stepSelectionChanged(workflowItemStep: AssignmentItemStep, open: boolean): void {
+	stepSelectionChanged(assignmentItemStep: AssignmentItemStep, open: boolean): void {
 		if (open) {
-			this.deselectWorkflowSteps(workflowItemStep);
+			this.deselectWorkflowSteps(assignmentItemStep);
 		}
-		this.stepClickChange.emit({ workflowItemStep: workflowItemStep, open: open });
+		this.stepClickChange.emit({ assignmentItemStep: assignmentItemStep, open: open });
 	}
 
 	deselectWorkflowSteps(workflowItemStepToSkip?: AssignmentItemStep) {
