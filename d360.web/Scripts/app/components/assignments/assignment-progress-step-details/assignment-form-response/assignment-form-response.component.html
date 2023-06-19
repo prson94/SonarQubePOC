@@ -14,7 +14,7 @@
 			</div>
 		</ig-property-group>
 		<ng-container *ngFor="let response of step.ItemFields?.form;index as i">
-			<ig-property-group title="{{ 'Response ' + i+1 + ' by ' + response.resourceName}}" [shouldBePadded]="false"
+			<ig-property-group title="{{ 'Response ' + (i+1) + ' by ' + response.resourceName}}" [shouldBePadded]="false"
 							   [showHeaderLine]="false">
 				<div class="fields" readonly *ngFor="let field of response?.field">
 					<label class="ig-label">{{ field?.["@label"] }}</label>

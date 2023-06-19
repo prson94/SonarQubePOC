@@ -11,7 +11,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 export class AssignmentStepRelationshipChangeDetailsComponent extends BaseComponent implements OnInit {
 	@Input() relationshipChange: WorkflowStepRelationshipChangeDetail;
 	@Input() relationshipUpdate: any;
-	@Input() itemId: number;
+	@Input() workflowItemUId: string;
 	public relationshipFormField: string;
 	public isLoading: boolean = false;
 
@@ -26,7 +26,7 @@ export class AssignmentStepRelationshipChangeDetailsComponent extends BaseCompon
 		let formFieldId: string = this.relationshipUpdate?.Relationship['@FormFieldId'] ?? null;
 		this.isLoading = true;
 		if (formStepId && formFieldId) {
-			this.workflowService.getWorkflowDetailsV2(this.itemId).subscribe((workflowDetails: any) => {
+			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: any) => {
 				for (const step of workflowDetails.ItemSteps) {
 					if (step.StepID === formStepId) {
 						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: any) => {

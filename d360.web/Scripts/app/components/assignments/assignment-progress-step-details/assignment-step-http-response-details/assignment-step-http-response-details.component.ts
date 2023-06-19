@@ -9,7 +9,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 })
 export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent implements OnInit {
 
-	@Input() itemId: number;
+	@Input() workflowItemUId: string;
 	@Input() step: any;
 	private inputStepId: number;
 	public stepName: string;
@@ -24,7 +24,7 @@ export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent im
 	ngOnInit(): void {
 		this.inputStepId = parseInt(this.step.ItemSettings.HTTPResponse.InputStepId);
 		this.isLoading = true;
-		this.workflowService.getWorkflowDetailsV2(this.itemId).subscribe((workflowDetails: any) => {
+		this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: any) => {
 			for (const element of workflowDetails.Steps) {
 				if (element.ID === this.inputStepId) {
 					this.stepName = element.Name;

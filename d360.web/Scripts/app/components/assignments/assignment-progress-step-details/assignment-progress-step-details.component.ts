@@ -32,7 +32,7 @@ import { AssignmentFormResponseComponent } from './assignment-form-response/assi
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepUid: string;
-	@Input() itemId: string;
+	@Input() workflowItemUId: string;
 	@Input() visible: boolean = true;
 	@Output() visibleChange = new EventEmitter();
 	@Output() onCloseClick = new EventEmitter();

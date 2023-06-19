@@ -119,13 +119,13 @@
 						<d3s-assignment-step-http-details [step]="step"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						<d3s-assignment-step-http-response-details [step]="step" [itemId]="itemId">
+						<d3s-assignment-step-http-response-details [step]="step" [workflowItemUId]="workflowItemUId">
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
 						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange"
 																		 [relationshipUpdate]="step.Settings?.RelationshipUpdate"
-																		 [itemId]="itemId">
+																		 [workflowItemUId]="workflowItemUId">
 						</d3s-assignment-step-relationship-change-details>
 					</ng-container>
 				</ng-container>

@@ -46,7 +46,7 @@
 												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
-								<d3s-assignment-progress-step-details [itemId]="assignmentItemStep.ItemID"
+								<d3s-assignment-progress-step-details [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"
 																	  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
 							</ng-container>
 						</div>

@@ -485,8 +485,15 @@ export class WorkflowService extends BaseObservableService {
                 map((response) => response),
                 catchError((err) => this.handleError(err))
             );
-
     }
+
+	getWorkflowDetailsV2ByUid(Uid: string): Observable<any> {
+		return this.http.get(`services/workflow/item/detailByUid/${Uid}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getWorkflowVersions(id: number): Observable<WorkflowVersion[]> {
         return this.http.get(`services/workflow/type/${id}/versions`)
