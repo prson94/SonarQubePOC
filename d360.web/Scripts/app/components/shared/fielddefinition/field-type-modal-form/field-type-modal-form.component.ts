@@ -926,7 +926,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!this.fieldTypeForm) {
 			return;
 		}
-		const props = ['AllowMultipleValues', 'IsEditable', 'IsPartOfKey', 'IsRequired', 'IsDisplayable', 'DisplayInColumn', 'ShowIfEmpty', 'IsPrimaryFilter']
+		const props = ['AllowMultipleValues', 'IsEditable', 'IsPartOfKey', 'IsRequired', 'IsDisplayable', 'DisplayInColumn', 'ShowIfEmpty', 'IsPrimaryFilter'];
 
 		props.forEach((prop) => {
 			if (this.isSettingDisabled(prop)) {
