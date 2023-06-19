@@ -1346,14 +1346,14 @@ namespace d360.web.Controllers.Services
 		[Route("item/detailByUid/{itemUid:Guid}"), HttpGet]
 		public HttpResponseMessage GetItemDetailByUid(Guid itemUid)
 		{
-			var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.UID == itemUid).FirstOrDefault();
+			var item = Company.WorkflowItems.AsNoTracking().Where(x => x.UID == itemUid).Select(x=>x.ID).FirstOrDefault();
 
-			if (item == null)
+			if (item == default)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound);
 			}
 
-			return GetItemDetail(item.ID);
+			return GetItemDetail(item);
 		}
 
 		[Route("item/detail/{itemId:int}"), HttpGet]
