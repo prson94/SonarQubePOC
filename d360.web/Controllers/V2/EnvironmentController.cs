@@ -1643,11 +1643,12 @@ select	r.uid as ResourceUid,
 				css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
 				css.AppendLine("");
 
+				var imgVersionString = $"?v={theme.UpdatedOn.Ticks.ToString()}";
 				var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
-				css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri})");
+				css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri}{imgVersionString})");
 
 				var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
-				css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri})");
+				css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri}{imgVersionString})");
 
 				css.AppendLine("}");
 
