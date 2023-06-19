@@ -2,7 +2,7 @@
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 
 	<div *ngIf="isDetailsPage" class="header-edit-button">
-		<button igButton class="ig-button-primary" icon="fa-pencil" label="Edit" i18n-label (click)="showEditor = true"></button>
+		<button igButton class="ig-button-primary" icon="fa-pencil" label="Edit" i18n-label (click)="showEditor = true" [disabled]="!hasEdit"></button>
 	</div>
 
 	<div *ngIf="!isLoading && !isDetailsPage" class="asset-detail-header">
