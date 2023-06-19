@@ -1343,8 +1343,21 @@ namespace d360.web.Controllers.Services
 			return Request.CreateResponse(HttpStatusCode.OK, types);
 		}
 
+		[Route("item/detailByUid/{itemUid:Guid}"), HttpGet]
+		public HttpResponseMessage GetItemDetailByUid(Guid itemUid)
+		{
+			var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.UID == itemUid).FirstOrDefault();
+
+			if (item == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound);
+			}
+
+			return GetItemDetail(item.ID);
+		}
+
 		[Route("item/detail/{itemId:int}"), HttpGet]
-		public HttpResponseMessage GetItemDetail(int itemId)
+		public HttpResponseMessage GetItemDetail(long itemId)
 		{
 			var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.ID == itemId).FirstOrDefault();
 
