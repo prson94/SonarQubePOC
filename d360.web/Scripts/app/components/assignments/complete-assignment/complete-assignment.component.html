@@ -45,9 +45,9 @@
 					nesciunt omnis, porro repellendus.
 				</div>
 				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
-					<d3s-assignment-progress [workflowItemUid]="workflowUid"
+					<d3s-assignment-progress [workflowItemUid]="workflowItemUid"
 											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-					<d3s-assignment-information [workflowItemUid]="workflowUid"></d3s-assignment-information>
+					<d3s-assignment-information [workflowItemUid]="workflowItemUid"></d3s-assignment-information>
 				</div>
 			</div>
 		</div>
@@ -73,7 +73,7 @@
 						[hasModifyRelationshipsPermissions]="false"
 						[hasDeleteRelationshipsPermissions]="false"
 						[interceptLinkClick]="true"></ig-asset-detail>
-					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'" [workflowItemUId]="workflowUid"
+					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'" [workflowItemUId]="workflowItemUid"
 														  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
 				</ng-container>
 			</side-panel>

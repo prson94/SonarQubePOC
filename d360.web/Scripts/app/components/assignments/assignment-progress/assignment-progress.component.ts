@@ -26,11 +26,11 @@ export class AssignmentProgressComponent implements OnInit {
 	@Input() isSidePanel: boolean = false;
 
 	@Output() completeAssignment: EventEmitter<{
-		workflowUid: string,
+		workflowItemUid: string,
 		stepUid: string,
 		assetId: number
 	}> = new EventEmitter<{
-		workflowUid: string,
+		workflowItemUid: string,
 		stepUid: string,
 		assetId: number
 	}>();

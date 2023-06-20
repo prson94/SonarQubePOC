@@ -1,20 +1,20 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep, WorkflowItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep } from '../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-complete-assignment',
 	templateUrl: './complete-assignment.component.html',
 	styleUrls: ['./complete-assignment.component.less']
 })
-export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
+export class CompleteAssignmentComponent extends BaseComponent implements OnInit {
 
 	isModalVisible: boolean = false;
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
-	workflowUid: string;
+	workflowItemUid: string;
 	stepUid: string;
 	assetId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
@@ -25,23 +25,19 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		super(settingsService);
 	}
 
-	ngOnDestroy(): void {
-
-	}
-
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 	}
 
 	openModal(details: {
-		workflowUid: string,
+		workflowItemUid: string,
 		stepUid: string,
 		assetId: number
 	}): void {
 		if (details) {
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
-			this.workflowUid = details.workflowUid;
+			this.workflowItemUid = details.workflowItemUid;
 		}
 		this.isModalVisible = true;
 	}
