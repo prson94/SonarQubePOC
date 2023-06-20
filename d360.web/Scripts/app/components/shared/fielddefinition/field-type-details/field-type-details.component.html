@@ -457,7 +457,7 @@
 							{{fieldType.FieldTypeREF.Type[currentType]?.Description?.Display ?? '---'}}
 						</div>
 					</div>
-					<div class="row">
+					<div class="row" *ngIf="hasFormDescription()">
 						<label class="ig-label" i18n>Form Description</label>
 						<div class="ig-value">
 							{{fieldType.FieldTypeREF.Type[currentType]?.Description?.Form ?? '---'}}
@@ -501,7 +501,7 @@
 						   [shouldBePadded]="false">
 			<div inputs>
 				<div class="form-group">
-					<div class="row">
+					<div class="row" *ngIf="hasEditableOnUI()">
 						<label class="ig-label" i18n>Editable on UI</label>
 						<div class="ig-value">
 							<ng-container *ngIf="fieldType.EditableOnUI; else falseTemplate">

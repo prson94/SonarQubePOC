@@ -47,14 +47,23 @@ export class FieldTypeDetailsComponent implements OnChanges {
 		return true;
 	}
 	hasShowIfEmpty() {
-		const excludeTypes: string[] = ['Path', 'Json', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
 		return true;
 	}
+
+	hasFormDescription() {
+		const excludeTypes: string[] = ['Path', 'Counter', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
+	}
+
 	hasIsListable() {
-		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
+		const excludeTypes: string[] = [, 'Relationship'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
@@ -67,5 +76,13 @@ export class FieldTypeDetailsComponent implements OnChanges {
 			return true;
 		}
 		return false;
+	}
+
+	hasEditableOnUI() {
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
+		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
+			return false;
+		}
+		return true;
 	}
 }
