@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.1">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -414,7 +414,29 @@ begin
 		create clustered index CIX_TempTbl on #tbl (GroupID);
 
 		exec api.ParseAssetPaths;
-		exec CheckDisplayValues;
+
+
+		-- Recalculate display values.
+		merge       AssetDisplayValue as T
+		using       (
+				select		A.Id,
+							ADV.DisplayValue,
+							CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+							SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+					from    #incoming A
+							cross apply GetAssetDisplayValueById(A.Id)ADV
+					where   ADV.DisplayValue is not null
+					) as S
+		on          ( T.AssetID = S.Id )
+		when		matched then
+		update		set
+						T.DisplayValue = S.DisplayValue,
+						T.DisplayValueHash = S.DisplayValueHash,
+						T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+						T.UpdatedOn = @date
+		when		not matched by target then
+		insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+		values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @date);
 	end
 
 	if @type = 'E'
