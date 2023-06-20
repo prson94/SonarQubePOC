@@ -1,23 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
+using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
+using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
+using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 
 using Resources;
 
@@ -386,7 +391,9 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_initiatorUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerParameter("_actionsOnly", "If true only assignments where the workflow is triggered by an action are returned. Default value is false", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerConsumes("application/json"), 
+			SwaggerProduces("application/json", "application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowAssignmentApiModel)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
@@ -399,6 +406,7 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				var isValid = isPageSizeAndNumValid(queryParams);
+				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
@@ -430,6 +438,18 @@ namespace d360.web.Controllers.V2
 
 				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
 
+				if (isStreamResponse)
+				{
+					ExcelDocument document = CreateResponseDocumentForAssignmentsExport(response, queryParams);				
+					var stream = new MemoryStream();
+					var sldoc = document.ToSLDocument();
+					sldoc.SelectWorksheet(ExcelExports.WorkflowAssignments_Assignments);
+					sldoc.SaveAs(stream);
+					byte[] bytes = stream.ToArray();
+
+					return ResponseMessage(createFileResponseMessage(HttpStatusCode.OK, $"{string.Format(document.Name.GetSafeFilename(), DateTime.Now.ToString("ddd MMM dd yyyy"))}.xlsx", bytes));
+				}
+			
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
 			}
 			catch (ArgumentException aex)
@@ -474,6 +494,175 @@ namespace d360.web.Controllers.V2
 			}
 
 			return Ok(await workflowRepository.GetWorkflowItemDetails(workflowItemUid));
+		}
+
+		/// <summary>
+		/// Create the Excel document for export
+		/// </summary>
+		/// <returns>A spreadsheet populated with a list of Assignments/Requests</returns>
+		private ExcelDocument CreateResponseDocumentForAssignmentsExport(WorkflowAssignmentApiModel assignments, IEnumerable<KeyValuePair<string, string>> queryParams)
+		{			
+
+			var exportName = ExcelExports.WorkflowAssignments_Assignments;
+			var hasSingleActionFilter = false;
+			var isRequestExport = false;
+			Guid actionTypeUid = new Guid();
+			var actionTypeName = "";
+			List<core.entities.FieldType> fieldTypes = new List<core.entities.FieldType>();
+			var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+			var initiatorUid = "";
+
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
+			{
+				initiatorUid = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatoruid").Value;
+				
+				if(queryParams.ToList().Any(q => q.Key.ToLower() == "_actionsonly") && queryParams.FirstOrDefault(x => x.Key.ToLower() == "_actionsonly").Value.ToLower() == "true")
+				{
+					exportName = ExcelExports.WorkflowAssignments_Requests;
+					isRequestExport = true;
+				}				
+			}
+
+			if (!string.IsNullOrEmpty(filterValue) && Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1 && filterValue.Substring(filterValue.IndexOf("actionTypeUid") + 13).TrimStart().StartsWith("eq"))
+			{
+				var actionTypeValue = filterValue.Substring(filterValue.IndexOf("actionTypeUid")).Substring(filterValue.IndexOf("'")+1);
+				hasSingleActionFilter = true;
+
+				if (!string.IsNullOrEmpty(actionTypeValue))
+				{
+					actionTypeValue = actionTypeValue.Substring(0, actionTypeValue.IndexOf("'"));
+
+					if (Guid.TryParse(actionTypeValue, out actionTypeUid))
+					{
+						var issueType = Company.IssueTypes.Where(i => i.uid == actionTypeUid).SingleOrDefault();
+						
+						if (issueType == null)
+						{
+							throw new ArgumentException(Workflows.InvalidActionTypeUid);
+						}
+
+						actionTypeName = issueType.Name;			
+						exportName = $"{issueType.Name} {exportName}";	
+						fieldTypes = Company.FieldTypes.Where(ft => ft.IssueTypeID == issueType.ID).ToList();
+					}
+					else
+					{
+						throw new ArgumentException(Workflows.InvalidActionTypeUid);						
+					}
+				}
+			}
+
+			var headers = new List<ExcelRow>();
+			var assignmentSheetRows = new List<ExcelRow>();
+
+			var headerRow = new ExcelRow
+									{
+										ExcelExports.WorkflowMonitor_WorkflowName,
+										ExcelExports.WorkflowAssignments_AssociatedWith,
+									};
+
+			if (!hasSingleActionFilter)
+			{
+				headerRow.Add(ExcelExports.WorkflowMonitor_Type);
+				headerRow.Add(ExcelExports.WorkflowMonitor_TypeName);
+			}
+
+			if (!isRequestExport)
+			{
+				headerRow.Add(ExcelExports.WorkflowMonitor_Initiator);
+			}
+				
+			headerRow.Add(ExcelExports.WorkflowAssignments_Initiated);
+			headerRow.Add(ExcelExports.WorkflowAssignments_Assignees);
+			headerRow.Add(ExcelExports.WorkflowMonitor_Completed);
+			headerRow.Add(ExcelExports.WorkflowMonitor_Status);
+														
+			foreach(var fieldtype in fieldTypes)
+			{
+				headerRow.Add(fieldtype.FriendlyName);
+			}
+
+			headerRow.Add(ExcelExports.WorkflowMonitor_WorkflowInstanceUID);
+			headerRow.Add(ExcelExports.WorkflowMonitor_Url);
+
+			headers.Add(headerRow);			
+
+			foreach(var item in assignments.items)
+			{
+				var row = new ExcelRow();
+
+				row.Add(item.workflowName);
+				row.Add(item.assetDisplayValue);
+				if (!hasSingleActionFilter)
+				{
+					row.Add(item.initiatingObjectType);
+					row.Add(item.initiatingObjectTypeName);
+				}
+
+				if (!isRequestExport)
+				{
+					row.Add(item.initiator);
+				}
+
+				row.Add(item.StartedOn.ToString());
+
+				var assigneesStr = "";
+				if (!string.IsNullOrWhiteSpace(item.assigneesJson))
+				{
+					List<WorkflowAssignee> assignees = JsonConvert.DeserializeObject<List<WorkflowAssignee>>(item.assigneesJson);
+					assigneesStr = assignees.Count > 0 ? string.Join("|", assignees.Select(a => a.Name).ToArray()) : "";
+				}
+				row.Add(assigneesStr);
+				row.Add(item.CompletedOn?.ToString());
+				row.Add(item.Status);
+
+				var itemRow = (IDictionary<string, object>)item;
+				foreach (var fieldtype in fieldTypes)
+				{					
+					var fieldValue = itemRow[fieldtype.Name]?.ToString();
+					row.Add(fieldValue);
+				}
+
+				row.Add(item.workflowItemUid.ToString());
+				row.Add($"/workflow/details/{item.workflowItemUid}");
+				assignmentSheetRows.Add(row);
+			}
+
+			var exportSheetRows = new List<ExcelRow> {
+				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("mm/dd/yyyy hh:mm:ss")},
+				new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString()},
+				new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString()},
+				new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString()}
+			};
+
+			if (isRequestExport)
+			{
+				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowMonitor_Initiator, assignments.items[0].initiator });
+				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_InitiatorUid, initiatorUid });
+			}
+
+			if (hasSingleActionFilter)
+			{
+				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeName, actionTypeName });
+				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeUID, actionTypeUid.ToString() });
+			}
+
+			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
+			{
+				new ExcelSheet(ExcelExports.WorkflowAssignments_Assignments)
+				{
+					HeaderRows = headers,
+
+					ValueRows = assignmentSheetRows,
+				},
+
+				new ExcelSheet(ExcelExports.WorkflowAssignments_ExportInfoTab)
+				{
+					ValueRows = exportSheetRows
+				}
+			};
+
+			return document;
 		}
 	}
 }

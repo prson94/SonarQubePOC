@@ -123,6 +123,8 @@ namespace d360.core.entities
 		[DataMember]
 		public DateTime? SourceLastModified { get; set; }
 
+		[DataMember]
+		public long? FilterCount { get; set; }
 
 		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
@@ -336,6 +338,9 @@ namespace d360.core.entities
 		[DataMember(Name = "sourceLastModified")]
 		public DateTime? SourceLastModified { get; set; }
 
+		[DataMember(Name = "filterCount")]
+		public long? FilterCount { get; set; }
+
 		public DataProfileModel() { }
 
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
@@ -377,7 +382,7 @@ namespace d360.core.entities
 			PopularityCount = profile.PopularityCount;	
 			IsAuthorizedForPopularity = profile.IsAuthorizedForPopularity;
 			SourceLastModified = profile.SourceLastModified;
-
+			FilterCount = profile.FilterCount;
 
 			//populate sample details
 			Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>

@@ -1027,6 +1027,7 @@ namespace d360.model.DataAccessLayer
 								,ADP.PopularityCount
 								,ADP.IsAuthorizedForPopularity
 								,ADP.SourceLastModified
+								,ADP.FilterCount
 							from 
 								AssetDataProfile ADP
 								{(!string.IsNullOrWhiteSpace(joinSql) ? joinSql : "")}

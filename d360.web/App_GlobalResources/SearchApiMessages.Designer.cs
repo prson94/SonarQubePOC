@@ -113,5 +113,14 @@ namespace Resources {
                 return ResourceManager.GetString("SizeTooBig", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The values &apos;{0}&apos; are not valid for [Tags]..
+        /// </summary>
+        public static string TagsNotAvailable {
+            get {
+                return ResourceManager.GetString("TagsNotAvailable", resourceCulture);
+            }
+        }
     }
 }
