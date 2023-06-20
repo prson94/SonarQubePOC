@@ -63,7 +63,7 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	}
 
 	hasIsListable() {
-		const excludeTypes: string[] = [, 'Relationship'];
+		const excludeTypes: string[] = ['Relationship'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
