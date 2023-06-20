@@ -65,7 +65,6 @@ namespace d360.model
 
 			bool generalChecksCompleted = false;
 			int itemNumber = 1;
-			List<DataProfileDeleteResponse> results = new List<DataProfileDeleteResponse>();
 			CurrentExecutionLocationModel currentLocation = null;
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			Stopwatch sw = Stopwatch.StartNew();
@@ -453,7 +452,6 @@ namespace d360.model
 			const string METHOD_NAME = "UpsertDataProfiles";
 			bool isLog = true; // trace info for all assets is extermely useful
 
-			DynamicParameters dbArgs = new DynamicParameters();
 			bool generalChecksCompleted = false;
 			int itemNumber = 1;
 			CurrentExecutionLocationModel currentLocation = null;
@@ -1380,6 +1378,7 @@ namespace d360.model
 									}
 									catch
 									{
+										// Do not interrupt loop if only this instance fails.
 									}
 
 									retryCount++;

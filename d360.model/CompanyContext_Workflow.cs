@@ -3671,67 +3671,60 @@ namespace d360.model
 		
 		public void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null)
 		{
-			try
+			List<EventInfo> events = new List<EventInfo>();
+
+			Dictionary<string, int[]> fieldUpdatePairs = new Dictionary<string, int[]>();
+
+			if (fieldUpdates == null)
 			{
-				List<EventInfo> events = new List<EventInfo>();
+				fieldUpdates = new List<AssetFieldTypeUpdate>();
+			}
 
-				Dictionary<string, int[]> fieldUpdatePairs = new Dictionary<string, int[]>();
+			foreach (IGrouping<string, AssetFieldTypeUpdate> item in fieldUpdates.GroupBy(x => x.Object + x.ObjectId))
+			{
+				fieldUpdatePairs.Add(item.Key, item.Select(x => x.Id).ToArray());
+			}
 
-				if (fieldUpdates == null)
+			foreach (IWorkflowEnabledAsset result in results)
+			{
+				if (result.Success)
 				{
-					fieldUpdates = new List<AssetFieldTypeUpdate>();
-				}
+					List<int> changedFieldsIDS = new List<int>();
 
-				foreach (IGrouping<string, AssetFieldTypeUpdate> item in fieldUpdates.GroupBy(x => x.Object + x.ObjectId))
-				{
-					fieldUpdatePairs.Add(item.Key, item.Select(x => x.Id).ToArray());
-				}
-
-				foreach (IWorkflowEnabledAsset result in results)
-				{
-					if (result.Success)
+					if (fieldUpdatePairs.ContainsKey(result.Object + result.ObjectID))
 					{
-						List<int> changedFieldsIDS = new List<int>();
+						changedFieldsIDS = fieldUpdatePairs[result.Object + result.ObjectID].ToList();
+					}
 
-						if (fieldUpdatePairs.ContainsKey(result.Object + result.ObjectID))
+					events.Add(new EventInfo
+					{
+						CompanyID = CurrentCompanyID,
+						DomainPrefix = CurrentCompanyDomain,
+						ResourceID = CurrentResourceID,
+						Action = changeTypeOverride ?? result.ChangeType,
+						Object = new EventObjectInfo
 						{
-							changedFieldsIDS = fieldUpdatePairs[result.Object + result.ObjectID].ToList();
+							Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
+							ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectType),
+							ObjectID = result.ObjectID,
+							ObjectTypeID = objectTypeID,
+							ChangedFieldIds = changedFieldsIDS,
+							ScoreType = scoreType
 						}
+					});
 
-						events.Add(new EventInfo
-						{
-							CompanyID = CurrentCompanyID,
-							DomainPrefix = CurrentCompanyDomain,
-							ResourceID = CurrentResourceID,
-							Action = changeTypeOverride ?? result.ChangeType,
-							Object = new EventObjectInfo
-							{
-								Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
-								ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectType),
-								ObjectID = result.ObjectID,
-								ObjectTypeID = objectTypeID,
-								ChangedFieldIds = changedFieldsIDS,
-								ScoreType = scoreType
-							}
-						});
-
-						if (events.Count > WorkflowSendBatchSize)
-						{
-							QueueSource.CreateTopicMessages(events);
-							events.Clear();
-						}
+					if (events.Count > WorkflowSendBatchSize)
+					{
+						QueueSource.CreateTopicMessages(events);
+						events.Clear();
 					}
 				}
-
-				if (events.Count > 0)
-				{
-					QueueSource.CreateTopicMessages(events);
-					events.Clear();
-				}
 			}
-			catch (Exception)
-			{
 
+			if (events.Count > 0)
+			{
+				QueueSource.CreateTopicMessages(events);
+				events.Clear();
 			}
 		}
 

@@ -70,7 +70,7 @@ namespace d360.model.DataAccessLayer
 			// Save to queue.
 			if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
 			{
-				throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+				throw new ApplicationException(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}
 
 			return executionInfo;
@@ -128,17 +128,13 @@ namespace d360.model.DataAccessLayer
 			int pageNum = 1;
 			if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-				{
-				}
+				int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum);
 			}
 
 			int pageSize = 200;
 			if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-				{
-				}
+				int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize);
 			}
 
 			if (pageSize > 0 || pageNum > 0)

@@ -1048,7 +1048,7 @@ namespace d360.model
 								{
 									if (model.SourceID.Length > 500)
 									{
-										row["SourceID"] = model.SourceID.Substring(0, 500); ;
+										row["SourceID"] = model.SourceID.Substring(0, 500);
 									}
 									else
 									{
@@ -1375,100 +1375,100 @@ namespace d360.model
 							{
 								try
 								{
-									switch (at.Class)
+									if (at.Class == AssetTypeClass.Reference)
 									{
-										case AssetTypeClass.Reference:
-											sw.Restart();
-											if (isInsert)
-											{
-												Connection.Execute($@"
-																	create table #ObjectMergeTableResult (ID bigint, ObjectID int, ItemNumber int, [Operation] varchar(10));
-																	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+										sw.Restart();
+										if (isInsert)
+										{
+											Connection.Execute($@"
+																create table #ObjectMergeTableResult (ID bigint, ObjectID int, ItemNumber int, [Operation] varchar(10));
+																CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-																	merge   [Asset] as T
-																	using   (
-																			select  A.ItemNumber,
-																					A.Uid,
-																					A.SourceID,
-																					C.FieldValue as [Code],
-																					CR.LookupValue as [Color],
-																					I.FieldValue as [Icon]
-																			from    api.ExecutionAsset A
-																					inner join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
-																					left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-																					left join {ApiExecutionFieldTable} I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
-																			where   A.ExecutionID = @ExecutionID
-																					and A.Success is null
-																					and A.ItemNumber between @beginItemNumber and @endItemNumber
-																			) S
-																	on      (1 = 0)
-																	when    not matched then
-																	insert  (Uid, AssetTypeID,State,SourceID,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-																	values  (isnull(S.Uid,newid()), @AssetTypeID,1,S.SourceID,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
-																	output  inserted.ID, inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
+																merge   [Asset] as T
+																using   (
+																		select  A.ItemNumber,
+																				A.Uid,
+																				A.SourceID,
+																				C.FieldValue as [Code],
+																				CR.LookupValue as [Color],
+																				I.FieldValue as [Icon]
+																		from    api.ExecutionAsset A
+																				inner join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
+																				left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+																				left join {ApiExecutionFieldTable} I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
+																		where   A.ExecutionID = @ExecutionID
+																				and A.Success is null
+																				and A.ItemNumber between @beginItemNumber and @endItemNumber
+																		) S
+																on      (1 = 0)
+																when    not matched then
+																insert  (Uid, AssetTypeID,State,SourceID,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+																values  (isnull(S.Uid,newid()), @AssetTypeID,1,S.SourceID,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
+																output  inserted.ID, inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
-																	update  T
-																	set     T.AssetID = S.ID,
-																			T.Object = 'ReferenceItem',
-																			T.ObjectID = S.ObjectID,
-																			T.IsNew = 1
-																	from    api.ExecutionAsset T
-																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+																update  T
+																set     T.AssetID = S.ID,
+																		T.Object = 'ReferenceItem',
+																		T.ObjectID = S.ObjectID,
+																		T.IsNew = 1
+																from    api.ExecutionAsset T
+																		inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-																	{updateAssetInfoOnExecutionRecordsSql}",
-												new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											else
-											{
-												Connection.Execute($@"
-																	update	T
-																	set		T.[Code] = C.FieldValue,
-																			T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
-																			T.[Icon] = I.FieldValue,
-																			T.SourceID = coalesce(S.SourceID,T.SourceID),
-																			T.UpdatedBy = @R,
-																			T.UpdatedOn = @D
-																	from	Asset T
-																			inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-																			inner join {ApiExecutionFieldTable} C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
-																			left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-																			left join {ApiExecutionFieldTable} I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
+																{updateAssetInfoOnExecutionRecordsSql}",
+											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
+											addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+										}
+										else
+										{
+											Connection.Execute($@"
+																update	T
+																set		T.[Code] = C.FieldValue,
+																		T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
+																		T.[Icon] = I.FieldValue,
+																		T.SourceID = coalesce(S.SourceID,T.SourceID),
+																		T.UpdatedBy = @R,
+																		T.UpdatedOn = @D
+																from	Asset T
+																		inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
+																		inner join {ApiExecutionFieldTable} C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
+																		left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+																		left join {ApiExecutionFieldTable} I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
 
-																	update	api.ExecutionAsset
-																	set		IsNew = 0
-																	where	{executionAssetWhereSql};",
-												new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											break;
-										default:
-											string @object = "Artifact";
+																update	api.ExecutionAsset
+																set		IsNew = 0
+																where	{executionAssetWhereSql};",
+											new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+											addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+										}
+									}
+									else 
+									{
+										string @object = "Artifact";
 
-											if (at.Class == AssetTypeClass.Policy)
-											{
-												@object = "Policy";
-											}
+										if (at.Class == AssetTypeClass.Policy)
+										{
+											@object = "Policy";
+										}
 
-											if (at.Class == AssetTypeClass.Rule)
-											{
-												@object = "Rule";
-											}
+										if (at.Class == AssetTypeClass.Rule)
+										{
+											@object = "Rule";
+										}
 
-											if (at.Class == AssetTypeClass.Diagram)
-											{
-												@object = "Task";
-											}
+										if (at.Class == AssetTypeClass.Diagram)
+										{
+											@object = "Task";
+										}
 
-											if (at.Class == AssetTypeClass.Model)
-											{
-												@object = "Taxonomy";
-											}
+										if (at.Class == AssetTypeClass.Model)
+										{
+											@object = "Taxonomy";
+										}
 
-											sw.Restart();
-											if (isInsert)
-											{
-												Connection.Execute($@"
+										sw.Restart();
+										if (isInsert)
+										{
+											Connection.Execute($@"
 																	create table #ObjectMergeTableResult (ID bigint, ObjectID int, ItemNumber int, [Operation] varchar(10));
 																	CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
@@ -1508,12 +1508,12 @@ namespace d360.model
 																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
 																	{updateAssetInfoOnExecutionRecordsSql}",
-													new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											else
-											{
-												Connection.Execute($@"
+												new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
+											addMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+										}
+										else
+										{
+											Connection.Execute($@"
 																	update	T
 																	set		T.UpdatedBy = @R,
 																			T.UpdatedOn = @D,
@@ -1527,10 +1527,9 @@ namespace d360.model
 																	update	api.ExecutionAsset
 																	set		IsNew = 0
 																	where	{executionAssetWhereSql};",
-											new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-												addMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-											}
-											break;
+										new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+											addMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+										}
 									}
 
 									#region Parent/Child Relationship
@@ -1881,7 +1880,7 @@ namespace d360.model
 					}
 					catch
 					{
-
+						// Should continue on here, and not fail the enire process.
 					}
 
 					#region Send score recalculation notifications.
