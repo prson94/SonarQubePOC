@@ -497,6 +497,54 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
+		/// Get the possible Assignees for which an open workflow instance exists.
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("possibleAssignees"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "List of Resource Uids with associated resource name"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleAssignees()
+		{			
+			return Ok(await workflowRepository.GetPossibleAssignees());
+		}
+
+		/// <summary>
+		/// Get the possible Initiators for which a workflow instance exists.
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("possibleInitiators"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "List of Resource Uids with associated resource name"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleInitiators()
+		{
+			return Ok(await workflowRepository.GetPossibleInitiators());
+		}
+
+		/// <summary>
+		/// Get the asset types for which a workflow exists.
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("relevantAssetTypes"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "List of Asset type Uids with associated type name"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetRelevantAssetTypes()
+		{
+			return Ok(await workflowRepository.GetRelevantAssetTypes());
+		}
+
+		/// <summary>
 		/// Create the Excel document for export
 		/// </summary>
 		/// <returns>A spreadsheet populated with a list of Assignments/Requests</returns>

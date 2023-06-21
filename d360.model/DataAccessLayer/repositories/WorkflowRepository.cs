@@ -1435,6 +1435,88 @@ namespace d360.model.DataAccessLayer
 						where WI.UID = @workflowItemUid";
 			
 			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);
+		}		
+
+		public async Task<IEnumerable<dynamic>> GetPossibleAssignees()
+		{
+			var sql = @"with assignees as (
+							select 
+							distinct wia.resourceObjectID
+							from 
+								workflow.item WI 
+								inner join 
+								workflow.itemassignment wia on wi.id = wia.itemid and wi.completedOn is null
+								inner join								
+								workflow.itemStep wis on wis.id = wia.ItemStepID and wis.completedOn is null
+						) 
+						select
+							GR.uid, GR.FirstName + ' ' + GR.LastName as Name
+						from 
+							assignees wia
+							inner join 
+							reporting.Global_Resource GR on GR.resourceid = wia.resourceObjectID
+						order by 
+							GR.FirstName + ' ' + GR.LastName";
+
+			var results = await CompanyContext.QueryAsync(sql);
+
+			return results;
 		}
+
+		public async Task<IEnumerable<dynamic>> GetPossibleInitiators()
+		{
+			var sql = @"with initiators as (
+							select 
+								distinct startedBy as initiator
+							from 
+								workflow.item WI 
+						) 
+						select
+							GR.uid, GR.FirstName + ' ' + GR.LastName as Name
+						from 
+							initiators wi
+							inner join 
+							reporting.Global_Resource GR on GR.resourceid = wi.initiator
+						order by 
+							GR.FirstName + ' ' + GR.LastName";
+
+			var results = await CompanyContext.QueryAsync(sql);
+
+			return results;
+		}
+
+		public async Task<IEnumerable<dynamic>> GetRelevantAssetTypes()
+		{
+			var sql = @"with workflowdetails as (
+							SELECT 
+								[Object] as ObjectType, 
+								ObjectID
+							FROM 
+								workflow.type T 
+								INNER JOIN 
+								workflow.EventRegistration E on E.TypeID = T.ID and E.object <> 'IssueType'
+							union
+							SELECT 
+								E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') as ObjectType, 
+								E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') as ObjectID
+							FROM 
+								workflow.type T 
+								INNER JOIN 
+								workflow.EventRegistration E on E.TypeID = T.ID and E.object = 'IssueType'
+							where
+								E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') IS NOT NULL
+						)
+						select 
+							distinct ast.uid, ast.name 
+						from 
+							workflowdetails wd
+							inner join 
+							assetType ast on wd.objectType = ast.[Object] and wd.[ObjectID]=ast.[ObjectID]
+						order by ast.name asc";
+
+			var results = await CompanyContext.QueryAsync(sql);
+
+			return results;
+		}				
 	}
 }

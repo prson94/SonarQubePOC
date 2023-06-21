@@ -29,6 +29,12 @@ namespace d360.model.DataAccessLayer
 
 		Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams);	
 
-		Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid);
+		Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid);		
+
+		Task<IEnumerable<dynamic>> GetPossibleAssignees();
+
+		Task<IEnumerable<dynamic>> GetPossibleInitiators();
+
+		Task<IEnumerable<dynamic>> GetRelevantAssetTypes();
 	}
 }
