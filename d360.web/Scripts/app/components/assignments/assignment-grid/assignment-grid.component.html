@@ -90,7 +90,7 @@
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
 					</th>
-					<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
+					<th *ngIf="isAdmin" class="asset-grid-tools" style="flex: 0 0 30px"></th>
 				</tr>
 				<tr [hidden]="showSimpleFilter">
 					<ng-container *ngIf="actionFormFields.length === 0">
@@ -142,7 +142,7 @@
 					<td>
 						<span>{{item.Status}}</span>
 					</td>
-					<td class="asset-grid-tools"
+					<td *ngIf="isAdmin" class="asset-grid-tools"
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>
