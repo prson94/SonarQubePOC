@@ -116,138 +116,138 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nuovo {0} inviato.</value>
+    <value>Nieuwe {0} ingediend.</value>
   </data>
   <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Azione creata</value>
+    <value>Actie gemaakt</value>
   </data>
   <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Il tipo di azione è stato eliminato</value>
+    <value>Actietype is verwijderd</value>
   </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Tipo di azione non trovato</value>
+    <value>Actietype niet gevonden</value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Impossibile trovare il tipo di azione con l'UID {0}.</value>
+    <value>Kan actietype met UID {0} niet vinden.</value>
   </data>
   <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Il tipo di azione è stato aggiornato.</value>
+    <value>Actietype is bijgewerkt.</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare l'azione con l'UID {0}.</value>
+    <value>Kan actie met UID {0} niet vinden.</value>
   </data>
   <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocazioni aggiunte correttamente</value>
+    <value>Toewijzingen toegevoegd</value>
   </data>
   <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione aggiunta correttamente</value>
+    <value>Toewijzing toegevoegd</value>
   </data>
   <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questa risorsa.</value>
+    <value>U mag geen acties toevoegen aan deze asset.</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
-    <value>Impossibile trovare la risorsa con l'UID {0}.</value>
+    <value>Kan asset met UID {0} niet vinden.</value>
   </data>
   <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>Non è stato possibile trovare la risorsa con l'UID {0} oppure non si dispone dell'autorizzazione per visualizzare la risorsa correlata.</value>
+    <value>Kan asset met UID {0} niet vinden of u hebt geen machtiging om de gerelateerde asset weer te geven.</value>
   </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questo tipo di risorsa.</value>
+    <value>U mag geen acties toevoegen aan dit assettype.</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Il tipo di risorsa ha un [Class] non valido</value>
+    <value>Assettype heeft een ongeldige [Class]</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di risorsa con l'UID {0}.</value>
+    <value>Kan assettype met UID {0} niet vinden.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>È necessario fornire [AssetTypeUid] o [AssetUid].</value>
+    <value>Er moet ofwel [AssetTypeUid] of [AssetUid] worden opgegeven.</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID del tipo di risorsa valido.</value>
+    <value>{0} is geen geldige assettype-UID.</value>
   </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID della risorsa valido.</value>
+    <value>{0} is geen geldige asset-UID.</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Il tipo di azione ha azioni associate. Abilitare su richiesta [cascade] per l'eliminazione.</value>
+    <value>Actietype heeft gekoppelde acties. Inschakelen bij [cascade] aanvraag voor verwijderen.</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Il tipo di azione selezionato ({0}) ha azioni associate, pertanto non è possibile eliminarlo.</value>
+    <value>Het geselecteerde actietype ({0}) heeft gekoppelde acties en kan daarom niet worden verwijderd.</value>
   </data>
   <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione eliminata correttamente.</value>
+    <value>Toewijzing verwijderd.</value>
   </data>
   <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Non è stato fornito alcun UID del tipo di risorsa.</value>
+    <value>Er zijn geen assettype-UID's opgegeven.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>È necessario un [ActionTypeUid] valido.</value>
+    <value>Er is een geldige [ActionTypeUid] vereist.</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>[AssetTypeUid] fornito non valido.</value>
+    <value>Ongeldige [AssetTypeUid] opgegeven.</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>[AssetUid] fornito non valido.</value>
+    <value>Ongeldige [AssetUid] opgegeven.</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direzione non valida trasmessa nella richiesta.</value>
+    <value>Ongeldige richting doorgevoerd in de aanvraag.</value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value> Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
+    <value>De opgegeven waarde [_limitToActiveWorkflows] is ongeldig.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordine non valido trasmesso nella richiesta.</value>
+    <value>Ongeldige volgorde doorgevoerd in de aanvraag.</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} è un [responsibilityTypeUid] non valido per {1}.</value>
+    <value>{0} is een ongeldige [responsibilityTypeUid] voor {1}.</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>[Name] fornito deve contenere meno di 250 caratteri.</value>
+    <value>Opgegeven [Name] mag niet langer zijn dan 250 tekens.</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Stringa vuota fornita per [Name]. Non può essere vuoto.</value>
+    <value>Lege tekenreeks opgegeven voor [Name]. Mag niet leeg zijn.</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] è un campo obbligatorio.</value>
+    <value>[Name] is een vereist veld.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Nessuna allocazione corrispondente per '{0}' sul tipo di azione '{1}'</value>
+    <value>Geen overeenkomende toewijzing voor '{0}' op actietype '{1}'</value>
   </data>
   <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Ordina per campo non trovato</value>
+    <value>Sorteren op veld niet gevonden</value>
   </data>
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Impossibile trovare il campo specificato per l'ordinamento ({0}).</value>
+    <value>Kan het veld dat u hebt opgegeven voor sorteren ({0}) niet vinden.</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Il tipo di relazione con l'UID {0} non è consentito per il soggetto e l'oggetto su entrambi i lati con l'elenco di riferimento.</value>
+    <value>Relatietype met UID {0} is niet toegestaan omdat onderwerp en object hetzelfde zijn en zijn gekoppeld aan de referentielijst.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di relazione con l'UID {0}.</value>
+    <value>Kan relatietype met UID {0} niet vinden.</value>
   </data>
   <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L'UID della risorsa fornito non esiste.</value>
+    <value>De opgegeven resource-UID bestaat niet.</value>
   </data>
   <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L'UID della risorsa fornito non è valido.</value>
+    <value>De opgegeven resource-UID is ongeldig.</value>
   </data>
   <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>È necessario un UID valido.</value>
+    <value>Er is een geldige UID vereist.</value>
   </data>
   <data name="UidNotValid" xml:space="preserve">
-    <value>L'UID fornito non è valido.</value>
+    <value>De opgegeven UID is ongeldig.</value>
   </data>
   <data name="UniqueAllocation" xml:space="preserve">
-    <value>L'allocazione esiste già.</value>
+    <value>Toewijzing bestaat al.</value>
   </data>
   <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Il nome deve essere univoco. Esiste già un'azione del workflow con questo nome</value>
+    <value>De naam moet uniek zijn. Er bestaat al een workflowactie met deze naam.</value>
   </data>
   <data name="UniqueUid" xml:space="preserve">
-    <value>L'UID fornito è già in uso.</value>
+    <value>De opgegeven UID wordt al gebruikt.</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>Utente con l'UID {0} non trovato</value>
+    <value>Geen gebruiker met UID {0} gevonden</value>
   </data>
 </root>

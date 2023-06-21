@@ -247,9 +247,6 @@
   <data name="UniqueUid" xml:space="preserve">
     <value>L’UID fourni est déjà utilisé.</value>
   </data>
-  <data name="UnrelatedActionAndActionType" xml:space="preserve">
-    <value>L'action {0} n’est pas une instance du type d’action {1}</value>
-  </data>
   <data name="UserUidNotFound" xml:space="preserve">
     <value>L’utilisateur dont l’UID est {0} est introuvable</value>
   </data>

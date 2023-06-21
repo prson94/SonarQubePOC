@@ -115,112 +115,22 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFormSetting" xml:space="preserve">
-    <value>Formulareinstellungen fehlen oder sind ungültig</value>
+  <data name="AggregationFilterUnsupported" xml:space="preserve">
+    <value>De aggregatiefilters “{0}” worden niet ondersteund</value>
   </data>
-  <data name="InvalidModelNoFieldPassed" xml:space="preserve">
-    <value>UNGÜLTIGES MODELL; KEINE FELDER ÜBERGEBEN</value>
+  <data name="AggregationUnsupported" xml:space="preserve">
+    <value>De aggregaties “{0}” worden niet ondersteund</value>
   </data>
-  <data name="InvalidOrderParameterPassed" xml:space="preserve">
-    <value>Ungültige Reihenfolge in der Anforderung übergeben. Gültige Werte: StartedOn und CompletedOn</value>
+  <data name="CategoryNotAvailable" xml:space="preserve">
+    <value>De waarden '{0}' zijn niet geldig voor [Category].</value>
   </data>
-  <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
-    <value>Ungültige Reihenfolge in der Anforderung übergeben. Gültige Werte: VersionNumber, State, CreatedOn und UpdatedOn</value>
+  <data name="FieldUnsupported" xml:space="preserve">
+    <value>De veldfilters “{0}” worden niet ondersteund</value>
   </data>
-  <data name="InvalidResourceID" xml:space="preserve">
-    <value>Ungültige Ressourcen-ID</value>
+  <data name="NoSearchServerConnection" xml:space="preserve">
+    <value>Kan geen verbinding maken met de zoekserver</value>
   </data>
-  <data name="InvalidSpecificID" xml:space="preserve">
-    <value>UNGÜLTIGE WORKFLOW-ELEMENT-ID, WORKFLOWITEMSTEP MIT ANGEGEBENER ID NICHT GEFUNDEN.</value>
-  </data>
-  <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
-    <value>Ihre Anforderung zum Abrufen dieser Workflow-Version ist ungültig; möglicherweise ist eine Kennung falsch formatiert ActionTypeUid/AssetTypeUid/RelationshipTypeUid</value>
-  </data>
-  <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
-    <value>Ihre Anforderung zum Abrufen dieser Workflow-Version ist ungültig; möglicherweise ist eine Kennung falsch formatiert ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid</value>
-  </data>
-  <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
-    <value>Ihre Anforderung zum Abrufen dieser Workflow-Version ist ungültig; möglicherweise ist eine Kennung falsch formatiert ActionUid / AssetUid / RelationshipUid / WorkflowTypeUid / WorkflowVerionUid</value>
-  </data>
-  <data name="InvalidWorkflowID" xml:space="preserve">
-    <value>Ungültige Workflow-Element-ID.</value>
-  </data>
-  <data name="InvalidWorkflowRegistration" xml:space="preserve">
-    <value>Workflow-Registrierung fehlt oder ist ungültig</value>
-  </data>
-  <data name="InvalidWorkflowStepID" xml:space="preserve">
-    <value>Ungültige Workflow-Elementschritt-ID.</value>
-  </data>
-  <data name="ItemNotFound" xml:space="preserve">
-    <value>Element nicht gefunden</value>
-  </data>
-  <data name="ItemStepNotFound" xml:space="preserve">
-    <value>ELEMENTSCHRITT FÜR DIE ANGEGEBENEN PARAMETER NICHT GEFUNDEN</value>
-  </data>
-  <data name="ItemStepUnableFound" xml:space="preserve">
-    <value>Elementschritt wurde nicht gefunden</value>
-  </data>
-  <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
-    <value>Mehr als eine UID in der Anforderung übergeben, entweder ActionTypeUid ODER AssetTypeUid ODER RelationshipTypeUid</value>
-  </data>
-  <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
-    <value>Mehr als eine UID in der Anforderung übergeben, entweder ActionTypeUid ODER AssetTypeUid ODER RelationshipTypeUid or WorkflowTypeUid</value>
-  </data>
-  <data name="MoreThanOneUidPassed" xml:space="preserve">
-    <value>Mehr als eine UID in der Anforderung übergeben, entweder ActionUid ODER AssetUid ODER RelationshipUid</value>
-  </data>
-  <data name="MultiVersionFound" xml:space="preserve">
-    <value>MEHRERE VERSIONSSCHRITTE ANGEGEBEN</value>
-  </data>
-  <data name="NoPermissionBulkReassign" xml:space="preserve">
-    <value>Sie verfügen nicht über die Berechtigung zur erneuten Massenzuweisung.</value>
-  </data>
-  <data name="NoValidItemStep" xml:space="preserve">
-    <value>KEINE GÜLTIGEN ELEMENTSCHRITTE GEFUNDEN</value>
-  </data>
-  <data name="RelationNotFoundIntersectType" xml:space="preserve">
-    <value>BEZIEHUNGSEINGABE KANN DEN ANGEGEBENEN ÜBERSCHNEIDUNGSTYP NICHT FINDEN</value>
-  </data>
-  <data name="RelationNotFoundIssueObject" xml:space="preserve">
-    <value>BEZIEHUNGSEINGABE KANN DAS FREIGABEOBJEKT NICHT IDENTIFIZIEREN</value>
-  </data>
-  <data name="RelationNotFoundRegistration" xml:space="preserve">
-    <value>BEZIEHUNGSEINGABE KANN DIE WORKFLOW-EREIGNISREGISTRIERUNG NICHT IDENTIFIZIEREN</value>
-  </data>
-  <data name="RelatioshipInvalid" xml:space="preserve">
-    <value>BEZIEHUNGSEINGABE WEIST EINEN UNGÜLTIGEN ÜBERSCHNEIDUNGSTYP-ID-WERT AUF</value>
-  </data>
-  <data name="StepNotFound" xml:space="preserve">
-    <value>Schritt nicht gefunden</value>
-  </data>
-  <data name="VersionStepIDNotFound" xml:space="preserve">
-    <value>Workflow mit angegebener Versionsschritt-ID nicht gefunden</value>
-  </data>
-  <data name="WofkFlowXMLNull" xml:space="preserve">
-    <value>UNGÜLTIGE WORKFLOW-FORMULARDEFINITION, FORMULAR XML IST NULL.</value>
-  </data>
-  <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
-    <value>Workflow-Typ-ID {0} bereits gelöscht</value>
-  </data>
-  <data name="WorkflowInstanceNotFound" xml:space="preserve">
-    <value>Die angegebene Workflow-Instanz wurde nicht gefunden.</value>
-  </data>
-  <data name="WorkflowItemDeleted" xml:space="preserve">
-    <value>Workflow-Element wurde gelöscht.</value>
-  </data>
-  <data name="WorkflowReassignSuccess" xml:space="preserve">
-    <value>Workflow-Formulare neu zugewiesen</value>
-  </data>
-  <data name="WorkflowtypeidNotFound" xml:space="preserve">
-    <value>Workflow-Typ-ID {0} wurde nicht gefunden</value>
-  </data>
-  <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
-    <value>Workflow-Typ-UID {0} wurde nicht gefunden</value>
-  </data>
-  <data name="WorkflowUIDNotFound" xml:space="preserve">
-    <value>Workflow-UID {0} wurde nicht gefunden.</value>
-  </data>
-  <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
-    <value>Workflow-Version mit UID {0} wurde nicht gefunden.</value>
+  <data name="SizeTooBig" xml:space="preserve">
+    <value>De maximumwaarde voor de grootte is {0}</value>
   </data>
 </root>

@@ -115,112 +115,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidFormSetting" xml:space="preserve">
-    <value>Falta la configuración del formulario o no es válida</value>
+  <data name="DirectionAllowedForRelation" xml:space="preserve">
+    <value>Il parametro [_direction] è consentito solo quando [RelationshipTypeUid] o [AssetUid] ha esito positivo</value>
   </data>
-  <data name="InvalidModelNoFieldPassed" xml:space="preserve">
-    <value>MODELO NO VÁLIDO, NINGÚN CAMPO PASADO</value>
+  <data name="InvalidIntersectTypeUid" xml:space="preserve">
+    <value>ID del tipo di intersezione fornito {0} non valido.</value>
   </data>
-  <data name="InvalidOrderParameterPassed" xml:space="preserve">
-    <value>Orden no válida pasada en la solicitud. Los valores válidos son: StartedOn y CompletedOn</value>
+  <data name="InvalidInverseLength" xml:space="preserve">
+    <value>L'inverso deve contenere meno di 250 caratteri.</value>
   </data>
-  <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
-    <value>Orden no válida pasada en la solicitud. Los valores válidos son: VersionNumber, State, CreatedOn y UpdatedOn</value>
+  <data name="InvalidNameLength" xml:space="preserve">
+    <value>Il nome deve contenere meno di 100 caratteri.</value>
   </data>
-  <data name="InvalidResourceID" xml:space="preserve">
-    <value>ID de recurso no válido</value>
+  <data name="InvalidObjectUid" xml:space="preserve">
+    <value>UID oggetto trasmesso nella richiesta non valido</value>
   </data>
-  <data name="InvalidSpecificID" xml:space="preserve">
-    <value>ID DE ELEMENTO DE FLUJO DE TRABAJO NO VÁLIDO, NO SE PUEDE ENCONTRAR WORKFLOWITEMSTEP CON EL ID ESPECIFICADO.</value>
+  <data name="InvalidOrderValue" xml:space="preserve">
+    <value>Valore [_order] non valido nella richiesta</value>
   </data>
-  <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
-    <value>Su solicitud para recuperar la versión de este flujo de trabajo no es válida. Posiblemente se deba a un identificador con formato incorrecto ActionTypeUid/AssetTypeUid/RelationshipTypeUid</value>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>Il parametro type non è valido.</value>
   </data>
-  <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
-    <value>Su solicitud para recuperar la versión de este flujo de trabajo no es válida. Posiblemente se deba a un identificador con formato incorrecto ActionTypeUid/AssetTypeUid/RelationshipTypeUid/WorkflowTypeUid</value>
+  <data name="InvalidPredicateUid" xml:space="preserve">
+    <value>UID preficato trasmesso nella richiesta non valido</value>
   </data>
-  <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
-    <value>Su solicitud para recuperar la versión de este flujo de trabajo no es válida. Posiblemente se deba a un identificador con formato incorrecto ActionUid/AssetUid/RelationshipUid/WorkflowTypeUid/WorkflowVerionUid</value>
+  <data name="InvalidRelatioshipTypeUid" xml:space="preserve">
+    <value>UID tipo di relazione trasmesso nella richiesta non valido</value>
   </data>
-  <data name="InvalidWorkflowID" xml:space="preserve">
-    <value>ID del elemento de flujo de trabajo no válido.</value>
+  <data name="InvalidSubjectUid" xml:space="preserve">
+    <value>UID soggetto trasmesso nella richiesta non valido</value>
   </data>
-  <data name="InvalidWorkflowRegistration" xml:space="preserve">
-    <value>Falta el registro del flujo de trabajo o no es válido</value>
+  <data name="Invalid_includeTotal" xml:space="preserve">
+    <value>Il parametro [_includeTotal] trasmesso nella richiesta non è valido. Il valore deve essere true, false o non specificato</value>
   </data>
-  <data name="InvalidWorkflowStepID" xml:space="preserve">
-    <value>ID del paso del elemento del flujo de trabajo no válido.</value>
+  <data name="Invalid_owner" xml:space="preserve">
+    <value>Il parametro [_owner] trasmesso nella richiesta non è valido. La lunghezza massima è 100 caratteri.</value>
   </data>
-  <data name="ItemNotFound" xml:space="preserve">
-    <value>Elemento no encontrado</value>
+  <data name="MaxRelationShipLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} relazioni in questa richiesta. Chiamare l'API BATCH per inviare più di {1} elementi.</value>
   </data>
-  <data name="ItemStepNotFound" xml:space="preserve">
-    <value>NO SE PUEDE ENCONTRAR EL PASO DEL ELEMENTO PARA LOS PARÁMETROS ESPECIFICADOS</value>
+  <data name="ObjectUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'oggetto con l'UID [{0}].</value>
   </data>
-  <data name="ItemStepUnableFound" xml:space="preserve">
-    <value>No se ha encontrado el paso del elemento</value>
+  <data name="OrderForRelation" xml:space="preserve">
+    <value>Il parametro [_order] è consentito solo quando [RelationshipTypeUid] ha esito positivo</value>
   </data>
-  <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
-    <value>Se ha pasado más de un UID en la solicitud, ya sea ActionTypeUid, AssetTypeUid o RelationshipTypeUid</value>
+  <data name="PassedValidForExistingRelationType" xml:space="preserve">
+    <value>UID specificato del tipo di relazione non valido.  Specificare un UID valido per un tipo di relazione esistente.</value>
   </data>
-  <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
-    <value>Se ha pasado más de un UID en la solicitud, ya sea ActionTypeUid, AssetTypeUid, RelationshipTypeUid o WorkflowTypeUid</value>
+  <data name="PassedValidRelationTypeUid" xml:space="preserve">
+    <value>UID specificato del tipo di relazione non valido.  Specificare un UID valido.</value>
   </data>
-  <data name="MoreThanOneUidPassed" xml:space="preserve">
-    <value>Se ha pasado más de un UID en la solicitud, ya sea ActionUid, AssetUid o RelationshipUid</value>
+  <data name="PredicateLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} predicati in questa richiesta.</value>
   </data>
-  <data name="MultiVersionFound" xml:space="preserve">
-    <value>VARIOS PASOS DE VERSIONES ESPECIFICADOS</value>
+  <data name="PredicateRequired" xml:space="preserve">
+    <value>Non è stato fornito alcun predicato da elaborare in questa richiesta.</value>
   </data>
-  <data name="NoPermissionBulkReassign" xml:space="preserve">
-    <value>No tiene permiso para reasignar en bloque.</value>
+  <data name="PredicateUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare il predicato con l'UID [{0}].</value>
   </data>
-  <data name="NoValidItemStep" xml:space="preserve">
-    <value>NO SE HAN ENCONTRADO PASOS DE ELEMENTOS VÁLIDOS</value>
+  <data name="RelationNotProvided" xml:space="preserve">
+    <value>Non è stata fornita alcuna relazione da elaborare in questa richiesta.</value>
   </data>
-  <data name="RelationNotFoundIntersectType" xml:space="preserve">
-    <value>"LA ENTRADA DE LA RELACIÓN NO PUEDE ENCONTRAR EL TIPO DE INTERSECCIÓN ESPECIFICADO</value>
+  <data name="RelationshipSucessfullyRemoved" xml:space="preserve">
+    <value>Relazione rimossa correttamente.</value>
   </data>
-  <data name="RelationNotFoundIssueObject" xml:space="preserve">
-    <value>LA ENTRADA DE LA RELACIÓN NO PUEDE IDENTIFICAR EL OBJETO DEL PROBLEMA</value>
+  <data name="RelationshipTypeLimit" xml:space="preserve">
+    <value>È possibile fornire solo un massimo di {0} tipi di relazioni in questa richiesta.</value>
   </data>
-  <data name="RelationNotFoundRegistration" xml:space="preserve">
-    <value>LA ENTRADA DE LA RELACIÓN NO PUEDE IDENTIFICAR EL REGISTRO DE EVENTOS DEL FLUJO DE TRABAJO</value>
+  <data name="RelationShipUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare la relazione specificata con l'UID [{0}].</value>
   </data>
-  <data name="RelatioshipInvalid" xml:space="preserve">
-    <value>LA ENTRADA DE LA RELACIÓN TIENE UN VALOR DE ID INTERSECTTYPE NO VÁLIDO</value>
+  <data name="SubjectUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare il soggetto con l'UID [{0}].</value>
   </data>
-  <data name="StepNotFound" xml:space="preserve">
-    <value>paso no encontrado</value>
-  </data>
-  <data name="VersionStepIDNotFound" xml:space="preserve">
-    <value>No se ha encontrado el flujo de trabajo con el identificador de paso de versión especificado</value>
-  </data>
-  <data name="WofkFlowXMLNull" xml:space="preserve">
-    <value>DEFINICIÓN DE FORMULARIO DE FLUJO DE TRABAJO NO VÁLIDA, EL FORMULARIO XML ES NULO.</value>
-  </data>
-  <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
-    <value>El ID del tipo de flujo de trabajo {0} ya está eliminado</value>
-  </data>
-  <data name="WorkflowInstanceNotFound" xml:space="preserve">
-    <value>No se encuentra la instancia del flujo de trabajo especificada.</value>
-  </data>
-  <data name="WorkflowItemDeleted" xml:space="preserve">
-    <value>El elemento de flujo de trabajo se ha eliminado.</value>
-  </data>
-  <data name="WorkflowReassignSuccess" xml:space="preserve">
-    <value>Formularios de flujo de trabajo reasignados correctamente</value>
-  </data>
-  <data name="WorkflowtypeidNotFound" xml:space="preserve">
-    <value>No se ha encontrado el ID del tipo de flujo de trabajo {0}</value>
-  </data>
-  <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
-    <value>No se ha encontrado el UID del tipo de flujo de trabajo {0}</value>
-  </data>
-  <data name="WorkflowUIDNotFound" xml:space="preserve">
-    <value>No se ha encontrado el UID del flujo de trabajo {0}</value>
-  </data>
-  <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
-    <value>No se ha encontrado la versión del flujo de trabajo con UID {0}.</value>
+  <data name="ViewthisRelationNotAllowed" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per visualizzare questa relazione.</value>
   </data>
 </root>

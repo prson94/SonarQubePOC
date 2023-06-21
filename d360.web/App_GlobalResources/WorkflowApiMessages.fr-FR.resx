@@ -118,12 +118,6 @@
   <data name="InvalidFormSetting" xml:space="preserve">
     <value>Les paramètres du formulaire sont manquants ou non valides</value>
   </data>
-  <data name="InvalidGuid" xml:space="preserve">
-    <value>GUID {0} non valide transmis pour le paramètre {1}</value>
-  </data>
-  <data name="InvalidInitiatorUid" xml:space="preserve">
-    <value>UID de l’initiateur non valide fourni.</value>
-  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>MODÈLE NON VALIDE AUCUN CHAMP TRANSMIS</value>
   </data>
@@ -213,9 +207,6 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>L’élément de workflow a été supprimé.</value>
-  </data>
-  <data name="WorkflowItemUidNotFound" xml:space="preserve">
-    <value>L’élément de workflow dont l’UID {0} est introuvable.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Réaffectation des formulaires de workflow réussie</value>

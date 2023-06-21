@@ -115,139 +115,127 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nuovo {0} inviato.</value>
+  <data name="AssetIdentifierNotFound" xml:space="preserve">
+    <value>Kan asset dat overeenkomt met ID {0} niet vinden.</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Azione creata</value>
+  <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
+    <value>[ConditionFieldTypeName] mag niet leeg zijn.</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Il tipo di azione è stato eliminato</value>
+  <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
+    <value>[ConditionIntersectTypeUid] moet geldig zijn.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Tipo di azione non trovato</value>
+  <data name="ConditionNotEmpty" xml:space="preserve">
+    <value>U moet ofwel een [ConditionFieldTypeName] of [ConditionIntersectTypeUid ] in een voorwaarde gebruiken.</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Impossibile trovare il tipo di azione con l'UID {0}.</value>
+  <data name="ConditionValueMaxChar250" xml:space="preserve">
+    <value>Waarde voor voorwaarde mag niet langer zijn dan 250 tekens.</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Il tipo di azione è stato aggiornato.</value>
+  <data name="CustomAtLeastOneProvided" xml:space="preserve">
+    <value>Ten minste een van de volgende elementen MOET worden opgegeven: {0}.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare l'azione con l'UID {0}.</value>
+  <data name="CustomNotValid" xml:space="preserve">
+    <value>{0} {1} is niet geldig.</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocazioni aggiunte correttamente</value>
+  <data name="CustomOrderMessage" xml:space="preserve">
+    <value>{0}-waarde {1} is niet geldig. Waarde moet een van de volgende zijn: {2}.</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione aggiunta correttamente</value>
+  <data name="CustomRequiredParameter" xml:space="preserve">
+    <value>{0} is een vereiste parameter</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questa risorsa.</value>
+  <data name="CustomStartEndDateMessage" xml:space="preserve">
+    <value>{0} moet na {1} liggen.</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Impossibile trovare la risorsa con l'UID {0}.</value>
+  <data name="CustomUidNotFound" xml:space="preserve">
+    <value>Kan {0} met UID {1} niet vinden.</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>Non è stato possibile trovare la risorsa con l'UID {0} oppure non si dispone dell'autorizzazione per visualizzare la risorsa correlata.</value>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} {1} is geen geldige UID</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questo tipo di risorsa.</value>
+  <data name="DescriptionLengthValidation" xml:space="preserve">
+    <value>De lengte van [Description] ({0} tekens) is te lang. De lengte mag maximaal 4000 tekens zijn.</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Il tipo di risorsa ha un [Class] non valido</value>
+  <data name="Errorlocatingmetric" xml:space="preserve">
+    <value>Fout bij zoeken van metrisch gegeven</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di risorsa con l'UID {0}.</value>
+  <data name="ErrorRemoveMetric" xml:space="preserve">
+    <value>Fout bij ophalen van metrisch gegeven</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>È necessario fornire [AssetTypeUid] o [AssetUid].</value>
+  <data name="ErrorRuleResult" xml:space="preserve">
+    <value>Fout bij verwijderen van regelresultaten</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID del tipo di risorsa valido.</value>
+  <data name="EvalAssetInvalid" xml:space="preserve">
+    <value>Geëvalueerde asset is ongeldig</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID della risorsa valido.</value>
+  <data name="EvalAssetNotFound" xml:space="preserve">
+    <value>Geëvalueerde asset niet gevonden</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Il tipo di azione ha azioni associate. Abilitare su richiesta [cascade] per l'eliminazione.</value>
+  <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>Groepen mogen geen voorwaarden hebben.</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Il tipo di azione selezionato ({0}) ha azioni associate, pertanto non è possibile eliminarlo.</value>
+  <data name="GroupNotHaveCondition" xml:space="preserve">
+    <value>Groepen mogen geen voorwaarden hebben.</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione eliminata correttamente.</value>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>De waarde {0} is geen geldige datum.</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Non è stato fornito alcun UID del tipo di risorsa.</value>
+  <data name="InvalidDateYear" xml:space="preserve">
+    <value>De waarde {0} is geen geldige datum. Het jaar moet tussen 1900 en het huidige jaar liggen.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>È necessario un [ActionTypeUid] valido.</value>
+  <data name="InvalidEffectiveDate" xml:space="preserve">
+    <value>Ongeldige [EffectiveDate] opgegeven!</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>[AssetTypeUid] fornito non valido.</value>
+  <data name="IsGroupTrueParentMetric" xml:space="preserve">
+    <value>Voor bovenliggend metrisch gegeven moet de waarde [IsGroup] zijn ingesteld op True.</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>[AssetUid] fornito non valido.</value>
+  <data name="MetricAdded" xml:space="preserve">
+    <value>Metrisch gegeven toegevoegd</value>
   </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direzione non valida trasmessa nella richiesta.</value>
+  <data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>Het opgegeven metrische gegeven is toegevoegd</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value> Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
+  <data name="MetricNotFound" xml:space="preserve">
+    <value>Metrisch gegeven niet gevonden.</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordine non valido trasmesso nella richiesta.</value>
+  <data name="MetricRemoved" xml:space="preserve">
+    <value>Metrisch gegeven verwijderd.</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} è un [responsibilityTypeUid] non valido per {1}.</value>
+  <data name="MetricRemoveMessage" xml:space="preserve">
+    <value>Metrisch gegeven is verwijderd.</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>[Name] fornito deve contenere meno di 250 caratteri.</value>
+  <data name="MetricRemoveNotAllowed" xml:space="preserve">
+    <value>U mag dit metrische gegeven niet verwijderen.</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Stringa vuota fornita per [Name]. Non può essere vuoto.</value>
+  <data name="MetricUidNotFound" xml:space="preserve">
+    <value>Metrisch gegeven met UID {0} niet gevonden.</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] è un campo obbligatorio.</value>
+  <data name="MetricUpdated" xml:space="preserve">
+    <value>Metrisch gegeven bijgewerkt</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Nessuna allocazione corrispondente per '{0}' sul tipo di azione '{1}'</value>
+  <data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>Het opgegeven metrische gegeven is bijgewerkt</value>
   </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Ordina per campo non trovato</value>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>Naam mag niet leeg zijn.</value>
   </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Impossibile trovare il campo specificato per l'ordinamento ({0}).</value>
+  <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
+    <value>Er is geen toewijzing voor de opgegeven assettype-UID en het opgegeven scoretype.</value>
   </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Il tipo di relazione con l'UID {0} non è consentito per il soggetto e l'oggetto su entrambi i lati con l'elenco di riferimento.</value>
+  <data name="NoAllocationForUid" xml:space="preserve">
+    <value>Er is geen toewijzing voor de opgegeven toewijzings-UID.</value>
   </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di relazione con l'UID {0}.</value>
+  <data name="NotAllowUpdateMetric" xml:space="preserve">
+    <value>U mag dit metrische gegeven niet bijwerken.</value>
   </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L'UID della risorsa fornito non esiste.</value>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>Bovenliggend metrisch gegeven niet gevonden.</value>
   </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L'UID della risorsa fornito non è valido.</value>
+  <data name="ScoreAllocationCorrespondingAssetNotFound" xml:space="preserve">
+    <value>Kan scoretoewijzing die overeenkomt met asset met ID {0} niet vinden.</value>
   </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>È necessario un UID valido.</value>
+  <data name="UseSingleCondition" xml:space="preserve">
+    <value>U mag niet zowel [ConditionFieldTypeName] als [ConditionIntersectTypeUid] in een enkele voorwaarde gebruiken</value>
   </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>L'UID fornito non è valido.</value>
-  </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>L'allocazione esiste già.</value>
-  </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Il nome deve essere univoco. Esiste già un'azione del workflow con questo nome</value>
-  </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>L'UID fornito è già in uso.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>Utente con l'UID {0} non trovato</value>
+  <data name="WeightDecimalValidation" xml:space="preserve">
+    <value>Gewicht moet een decimaal getal zijn dat groter is dan 0 en minder dan of gelijk is aan 1</value>
   </data>
 </root>

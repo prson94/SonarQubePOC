@@ -115,139 +115,136 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nuovo {0} inviato.</value>
+  <data name="AssetId_Description" xml:space="preserve">
+    <value>De asset-ID is de unieke ID voor deze asset in alle Data360-assets.</value>
   </data>
-  <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Azione creata</value>
+  <data name="AssetId_Name" xml:space="preserve">
+    <value>Asset-ID</value>
   </data>
-  <data name="ActionTypeDeleted" xml:space="preserve">
-    <value>Il tipo di azione è stato eliminato</value>
+  <data name="CreatedOn_Description" xml:space="preserve">
+    <value>De datum waarop dit item is gemaakt in Data360.</value>
   </data>
-  <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Tipo di azione non trovato</value>
+  <data name="CreatedOn_Name" xml:space="preserve">
+    <value>Gemaakt op</value>
   </data>
-  <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Impossibile trovare il tipo di azione con l'UID {0}.</value>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Beschrijving</value>
   </data>
-  <data name="ActionTypeUpdated" xml:space="preserve">
-    <value>Il tipo di azione è stato aggiornato.</value>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>De weergave-indeling moet worden opgegeven om de tekstgebaseerde weergavewaarde van het item op de juiste manier weer te geven.</value>
   </data>
-  <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare l'azione con l'UID {0}.</value>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Weergave-indeling</value>
   </data>
-  <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Allocazioni aggiunte correttamente</value>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
   </data>
-  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione aggiunta correttamente</value>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Naam</value>
   </data>
-  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questa risorsa.</value>
+  <data name="Parent_Description" xml:space="preserve">
+    <value>De eigenaar voor dit item.</value>
   </data>
-  <data name="AssetNotFound" xml:space="preserve">
-    <value>Impossibile trovare la risorsa con l'UID {0}.</value>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Eigenaar/bovenliggend element</value>
   </data>
-  <data name="AssetNotFoundOrPermission" xml:space="preserve">
-    <value>Non è stato possibile trovare la risorsa con l'UID {0} oppure non si dispone dell'autorizzazione per visualizzare la risorsa correlata.</value>
+  <data name="RuleType_Description" xml:space="preserve">
+    <value>Het type van de regel categoriseert de regel volgens het doel ervan.</value>
   </data>
-  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Non si dispone dell'autorizzazione per aggiungere azioni su questo tipo di risorsa.</value>
+  <data name="RuleType_Name" xml:space="preserve">
+    <value>Type</value>
   </data>
-  <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Il tipo di risorsa ha un [Class] non valido</value>
+  <data name="SystemFieldCategory" xml:space="preserve">
+    <value>Systeemvelden</value>
   </data>
-  <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di risorsa con l'UID {0}.</value>
+  <data name="SystemNoCategory" xml:space="preserve">
+    <value>Geen</value>
   </data>
-  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>È necessario fornire [AssetTypeUid] o [AssetUid].</value>
+  <data name="UID_Description" xml:space="preserve">
+    <value>De UID is de unieke ID voor dit item in Data360.</value>
   </data>
-  <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID del tipo di risorsa valido.</value>
+  <data name="Asset_UID_Description" xml:space="preserve">
+    <value>De asset-UID is de unieke ID voor dit item in Data360.</value>
   </data>
-  <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} non è un UID della risorsa valido.</value>
+  <data name="AssetType_UID_Description" xml:space="preserve">
+    <value>De assettype-UID is de unieke ID voor het assettype in Data360.</value>
   </data>
-  <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Il tipo di azione ha azioni associate. Abilitare su richiesta [cascade] per l'eliminazione.</value>
+  <data name="UID_Name" xml:space="preserve">
+    <value>UID</value>
   </data>
-  <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Il tipo di azione selezionato ({0}) ha azioni associate, pertanto non è possibile eliminarlo.</value>
+  <data name="Asset_UID_Name" xml:space="preserve">
+    <value>Asset-UID</value>
   </data>
-  <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Allocazione eliminata correttamente.</value>
+  <data name="AssetType_UID_Name" xml:space="preserve">
+    <value>Assettype-UID</value>
   </data>
-  <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Non è stato fornito alcun UID del tipo di risorsa.</value>
+  <data name="UpdatedOn_Description" xml:space="preserve">
+    <value>De datum waarop dit item voor het laatst is aangepast in Data360.</value>
   </data>
-  <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>È necessario un [ActionTypeUid] valido.</value>
+  <data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Datum laatste aanpassing</value>
   </data>
-  <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>[AssetTypeUid] fornito non valido.</value>
+  <data name="RuleID_Name" xml:space="preserve">
+    <value>Regel-ID</value>
   </data>
-  <data name="InvalidAssetUid" xml:space="preserve">
-    <value>[AssetUid] fornito non valido.</value>
+  <data name="CreatedBy_Name" xml:space="preserve">
+    <value>Gemaakt door</value>
   </data>
-  <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>Direzione non valida trasmessa nella richiesta.</value>
+  <data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
+    <value>is een Active Directory-groep</value>
   </data>
-  <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value> Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
+  <data name="PrimaryOwner_Name" xml:space="preserve">
+    <value>Primaire eigenaar</value>
   </data>
-  <data name="InvalidOrder" xml:space="preserve">
-    <value>Ordine non valido trasmesso nella richiesta.</value>
+  <data name="SecondaryOwner_Name" xml:space="preserve">
+    <value>Secundaire eigenaar</value>
   </data>
-  <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} è un [responsibilityTypeUid] non valido per {1}.</value>
+  <data name="UpdatedBy_Name" xml:space="preserve">
+    <value>Laatst aangepast door</value>
   </data>
-  <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>[Name] fornito deve contenere meno di 250 caratteri.</value>
+  <data name="Relationship_Type_Name" xml:space="preserve">
+    <value>Relatietype</value>
   </data>
-  <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>Stringa vuota fornita per [Name]. Non può essere vuoto.</value>
+  <data name="Relationship_UID_Name" xml:space="preserve">
+    <value>Relatie-UID</value>
   </data>
-  <data name="NameNotNull" xml:space="preserve">
-    <value>[Name] è un campo obbligatorio.</value>
+  <data name="Load_Action" xml:space="preserve">
+    <value>Actie</value>
   </data>
-  <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Nessuna allocazione corrispondente per '{0}' sul tipo di azione '{1}'</value>
+  <data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Foutberichten</value>
   </data>
-  <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Ordina per campo non trovato</value>
+  <data name="Load_Errors" xml:space="preserve">
+    <value>Fouten</value>
   </data>
-  <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Impossibile trovare il campo specificato per l'ordinamento ({0}).</value>
+  <data name="Load_Incompletes" xml:space="preserve">
+    <value>Onvolledige items</value>
   </data>
-  <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Il tipo di relazione con l'UID {0} non è consentito per il soggetto e l'oggetto su entrambi i lati con l'elenco di riferimento.</value>
+  <data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>minder dan een minuut</value>
   </data>
-  <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Impossibile trovare il tipo di relazione con l'UID {0}.</value>
+  <data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>minuut/minuten</value>
   </data>
-  <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>L'UID della risorsa fornito non esiste.</value>
+  <data name="Load_Notes" xml:space="preserve">
+    <value>Opmerkingen</value>
   </data>
-  <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>L'UID della risorsa fornito non è valido.</value>
+  <data name="Load_Status" xml:space="preserve">
+    <value>Status</value>
   </data>
-  <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>È necessario un UID valido.</value>
+  <data name="Load_Successes" xml:space="preserve">
+    <value>Successen</value>
   </data>
-  <data name="UidNotValid" xml:space="preserve">
-    <value>L'UID fornito non è valido.</value>
+  <data name="Load_Target" xml:space="preserve">
+    <value>Doel</value>
   </data>
-  <data name="UniqueAllocation" xml:space="preserve">
-    <value>L'allocazione esiste già.</value>
+  <data name="Load_TookMinutes" xml:space="preserve">
+    <value>Duurde (minuten)</value>
   </data>
-  <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Il nome deve essere univoco. Esiste già un'azione del workflow con questo nome</value>
+  <data name="Load_Total" xml:space="preserve">
+    <value>Totaal</value>
   </data>
-  <data name="UniqueUid" xml:space="preserve">
-    <value>L'UID fornito è già in uso.</value>
-  </data>
-  <data name="UserUidNotFound" xml:space="preserve">
-    <value>Utente con l'UID {0} non trovato</value>
+  <data name="Load_UploadedBy" xml:space="preserve">
+    <value>Geüpload door</value>
   </data>
 </root>
