@@ -1,8 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { BaseComponent } from '../../shared/base.component';
@@ -11,6 +8,8 @@ import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.comp
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { AssignmentItemStep, WorkflowAssignmentItem } from '../../../models/workflow.model';
 import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
+import { Router } from '@angular/router';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
 	selector: 'd3s-assignment-list',
@@ -23,7 +22,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelTab: string = 'information';
-	sidePanelStorageKey: string = 'AssignmentList_' + this.settingsService.CurrentResourceID;
+	sidePanelStorageKey: string = 'Assignment_' + this.settingsService.CurrentResourceID;
+	isRequestsFlow: boolean = false; // flag determines flow is assignments or requests
+	isAdmin: boolean = false;
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
@@ -76,23 +77,21 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	secondarySidePanelObjectUid: string;
 	secondarySidePanelObjectType: string;
 
-	constructor(headerBreadcrumbService: HeaderBreadcrumbService,
-				private titleService: Title,
-				public sidePanelService: SidePanelService,
-				secondaryNavService: SecondaryNavService,
-				protected settingsService: CompanySettingsService) {
+	constructor(
+		public sidePanelService: SidePanelService,
+		private router: Router,
+		private authenticationService: AuthenticationService,
+		protected settingsService: CompanySettingsService) {
 		super(settingsService);
-		this.secondaryNavService = secondaryNavService;
-		this.breadcrumbsService = headerBreadcrumbService;
 	}
 
 	ngOnInit(): void {
-
+		this.isAdmin = this.authenticationService.isAdmin;
 	}
 
 	selectRow(rows: WorkflowAssignmentItem[]): void {
 		this.secondarySidePanelOpen = false;
-		if (rows && rows.length > 1) {
+		if (this.isAdmin && rows && rows.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';

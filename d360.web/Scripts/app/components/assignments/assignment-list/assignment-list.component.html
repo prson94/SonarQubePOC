@@ -83,7 +83,7 @@
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
-					<d3s-assignment-multi-delete *ngIf="selectedWorkflowItems?.length > 1"
+					<d3s-assignment-multi-delete *ngIf="isAdmin && (selectedWorkflowItems?.length > 1)"
 												 (confirmDelete)="deleteAssignments($event)">
 					</d3s-assignment-multi-delete>
 				</ng-container>
