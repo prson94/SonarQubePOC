@@ -417,7 +417,7 @@ namespace d360.web.Controllers.V2
 				{
 					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidDirection));
 				}
-
+					
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
 				{
 					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatoruid").Value;
@@ -507,7 +507,6 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),						
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowInstanceDetailsByVersionAPIModel)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 		]
@@ -518,7 +517,6 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				var isValid = isPageSizeAndNumValid(queryParams);
-				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
