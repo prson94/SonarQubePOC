@@ -4,8 +4,8 @@
 	<div class="row" *ngFor="let rel of definition.relationships; let i = index">
 		<label class="ig-label" i18n>Relationship Type {{i+1}}</label>
 		<div class="ig-value">
-			<ng-container *ngIf="rel.Direction === 1">{{rel.PredicateName}} {{rel.ObjectName}} (->)</ng-container>
-			<ng-container *ngIf="rel.Direction === 2">{{rel.PredicateInverse}} {{rel.SubjectName}} {{'(<-)'}}</ng-container>
+			<ng-container *ngIf="rel.Direction === 2">{{rel.PredicateName}} {{rel.ObjectName}} (->)</ng-container>
+			<ng-container *ngIf="rel.Direction === 1">{{rel.PredicateInverse}} {{rel.SubjectName}} {{'(<-)'}}</ng-container>
 			<ng-container *ngIf="rel.Direction === 3">{{rel.RelationshipTypeName}} {{'(<->)'}}</ng-container>
 		</div>
 	</div>
