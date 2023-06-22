@@ -361,8 +361,7 @@ export class BaseComponent {
 		hasGroups?: boolean,
 		hasFollowing?: boolean,
 		hasItemOwn?: boolean,
-		hasWhereUsed?: boolean,
-		hasWorkflowByVersion?: boolean
+		hasWhereUsed?: boolean
 	}) {
 		if (this.secondaryNavService && this.objectType) {
 			this.clearSidebar();
@@ -589,15 +588,6 @@ export class BaseComponent {
 					`/connectorLabel/${this.uid}/whereUsed`
 					, null, 1);
 				this.secondaryNavService.showItem(this.whereUsedSidebar);
-			}
-
-			if(opts.hasWorkflowByVersion) {
-				this.secondaryNavService.showItem(new SecondaryNavItem(
-					$localize`By Workflow Version`,
-					'byWorkflowVersion',
-					null,
-					`/assignments/by-workflow-version`
-					, null, 100));
 			}
 
 			if (isCommonAsset) {

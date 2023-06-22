@@ -88,6 +88,10 @@ import {
 import {
 	AssignmentFormResponseComponent
 } from './assignment-progress-step-details/assignment-form-response/assignment-form-response.component';
+import { TabsModule } from '../shared/tabs/tabs.module';
+import { AssignmentHeaderComponent } from './assignment-header/assignment-header.component';
+import { PortalsModule } from '../shared/portals/portals.module';
+import { PageHeaderModule } from '../shared/page-header/page-header.module';
 
 
 @NgModule({
@@ -118,7 +122,8 @@ import {
 		WorkflowVersionGridComponent,
 		WorkflowVersionInformationComponent,
 		WorkflowVersionListComponent,
-		AssignmentFormResponseComponent
+		AssignmentFormResponseComponent,
+  AssignmentHeaderComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -146,7 +151,10 @@ import {
 		SiteModalModule,
 		TableModule,
 		TooltipModule,
-		WorkflowDiagramModule
+		WorkflowDiagramModule,
+		TabsModule,
+		PortalsModule,
+		PageHeaderModule
 	]
 })
 export class AssignmentsModule {

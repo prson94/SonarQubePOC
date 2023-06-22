@@ -7,7 +7,6 @@ import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { BaseComponent } from '../../shared/base.component';
 import { SidePanelButton } from '../../../models/side-panel.model';
-import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { AssignmentGridComponent } from '../assignment-grid/assignment-grid.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { AssignmentItemStep, WorkflowAssignmentItem } from '../../../models/workflow.model';
@@ -88,8 +87,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnInit(): void {
-		this.clearSidebar();
-		this.displayBreadCrumbs();
+
 	}
 
 	selectRow(rows: WorkflowAssignmentItem[]): void {
@@ -99,18 +97,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';
 		}
-	}
-
-	displayBreadCrumbs(): void {
-		this.setBrowserTitle(this.titleService, 'Assignments');
-		this.breadcrumbsService.clearBreadcrumbs();
-		this.breadcrumbsService.clearCurrentObjectInfo();
-		this.secondaryNavService.clearItems();
-		this.secondaryNavService.clearCurrentObject();
-		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Assignments`);
-		this.secondaryNavService.showHeader(true);
-		this.objectType = 'Assignment';
-		this.setCommonSecondaryNavTabs({hasAudit: false, hasWorkflowByVersion: true});
 	}
 
 	ngOnDestroy(): void {
