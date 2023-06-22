@@ -780,6 +780,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.title = $localize`Edit Field`;
 
 				this.isEditFormUpdated = false;
+				this.updateDisableSettings();
 				this.cdRef.markForCheck();
 				this.isLoading = false;
 				if (this.changeFormSub) {
@@ -799,6 +800,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			this.fieldTypeSelection = null;
 			this.selectedFieldType = '';
 			this.setDefaultFormValues();
+			this.updateDisableSettings();
 			this.cdRef.markForCheck();
 		}
 	}
@@ -883,6 +885,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		this.setDefaultFormValues();
 		this.restoreControlsValues();
+		this.updateDisableSettings();
 		this.cdRef.markForCheck();
 	}
 
@@ -918,9 +921,26 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	disabledPartOfKeyTooltip: string = '';
 
+
+	updateDisableSettings() {
+		if (!this.fieldTypeForm) {
+			return;
+		}
+		const props = ['AllowMultipleValues', 'IsEditable', 'IsPartOfKey', 'IsRequired', 'IsDisplayable', 'DisplayInColumn', 'ShowIfEmpty', 'IsPrimaryFilter'];
+
+		props.forEach((prop) => {
+			if (this.isSettingDisabled(prop)) {
+				this.fieldTypeForm.get(prop).disable();
+			}
+			else {
+				this.fieldTypeForm.get(prop).enable();
+			}
+		});
+	}
+
 	// ignore complexity
 	// eslint-disable-next-line
-	isSettingDisabled(val: string) {
+	private isSettingDisabled(val: string) {
 		if (!this.fieldTypeForm) {
 			return;
 		}
@@ -977,7 +997,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'AllowMultipleValues':
 				return (['Lookup'].indexOf(this.selectedFieldType) === -1);
 			case 'ShowIfEmpty':
-				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1 || (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value) || (this.isReferenceItemType && fieldName.toLocaleLowerCase() === "code"));
+				return (['Path', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1
+					|| (this.selectedFieldType === 'Score' && !this.fieldTypeForm.get("IsDisplayable").value)
+					|| (this.isReferenceItemType && fieldName.toLocaleLowerCase() === "code"));
 			case 'SearchAddToResult':
 				return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Score', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'isSettingDisabled':

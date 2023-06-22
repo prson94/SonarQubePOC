@@ -101,9 +101,11 @@ export class ThemeEditorComponent implements OnChanges {
 
     setForm() {
         let _th: Theme;
-        if (this.theme) {
-            this.theme.headerLogo = this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault;
-            this.theme.homeBackground = this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault;
+		if (this.theme) {
+			const versionString = `?v=${new Date(this.theme.updatedOn).getTime()}`;
+
+			this.theme.headerLogo = this.theme.headerLogoUri ? this.theme.headerLogoUri + versionString : this.brandingService.headerLogoDefault;
+			this.theme.homeBackground = this.theme.homeBackgroundUri ? this.theme.homeBackgroundUri + versionString : this.brandingService.homeBackgroundDefault;
             this.theme.icon = this.theme.iconUri ?? this.brandingService.iconDefault;
 
             _th = this.theme;

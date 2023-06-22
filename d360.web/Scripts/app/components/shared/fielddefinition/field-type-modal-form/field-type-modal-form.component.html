@@ -34,7 +34,7 @@
 								 [value]="fieldTypes"
 								 selectionMode="single"
 								 [globalFilterFields]="['label']"
-								 (selectionChange)="selectedFieldType = $event.value"
+								 (selectionChange)="selectedFieldType = $event.value;"
 								 [(selection)]="fieldTypeSelection"
 								 responsiveLayout="scroll"
 								 [tableStyle]="{'min-width': 'max-content'}"
@@ -1270,8 +1270,7 @@
 													[igDataCy]="'FieldType_Field_AllowMultipleValues'"
 													label="Allow Multiple Items"
 													i18n-label
-													tabindex="600"
-													[disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
+													tabindex="600"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
 											  pTooltip="If set to true, more than one value can be entered for the field."
@@ -1285,8 +1284,7 @@
 													[igDataCy]="'FieldType_Field_IsEditable'"
 													label="Editable on UI"
 													tabindex="610"
-													i18n-label
-													[disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
+													i18n-label></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
 											  pTooltip="Sets whether or not the field value can be edited. This settings only applies to the user interface, and does not prevent you from editing a field value via the APIs."
@@ -1304,8 +1302,7 @@
 																[igDataCy]="'FieldType_Modal_Field_IsPartOfKey'"
 																label="Key Field"
 																tabindex="620"
-																i18n-label
-																[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+																i18n-label></p-checkbox>
 
 												</div>
 
@@ -1322,8 +1319,7 @@
 														i18n-pTooltip
 														pTooltip="{{disabledPartOfKeyTooltip}}"
 														tooltipPosition="top"
-														tooltipStyleClass="ig-tooltip"
-														[disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
+														tooltipStyleClass="ig-tooltip"></p-checkbox>
 										</ng-template>
 
 										<span class="field-tooltip fa fa-question-circle"
@@ -1340,8 +1336,7 @@
 													[igDataCy]="'FieldType_Field_IsRequired'"
 													label="Required"
 													i18n-label
-													tabindex="640"
-													[disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
+													tabindex="640"></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
 											  pTooltip="Sets whether or not a particular field is required when completing a form, such as adding a new user and needing to specify their title."
@@ -1356,8 +1351,7 @@
 													label="Show In Details Tab"
 													i18n-label
 													tabindex="650"
-													(ngModelChange)="onShowDetailChange($event);"
-													[disabled]="isSettingDisabled('IsDisplayable')">
+													(ngModelChange)="onShowDetailChange($event);">
 										</p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
@@ -1372,8 +1366,7 @@
 														i18n-pTooltip
 														tabindex="660"
 														formControlName="DisplayInColumn"
-														label="Display in Column"
-														[disabled]="isSettingDisabled('DisplayInColumn')">
+														label="Display in Column">
 											</p-checkbox>
 											<span class="field-tooltip fa fa-question-circle"
 												  i18n-pTooltip
@@ -1388,8 +1381,7 @@
 													[igDataCy]="'FieldType_Field_ShowIfEmpty'"
 													label="Show if Empty"
 													tabindex="670"
-													i18n-label
-													[disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
+													i18n-label></p-checkbox>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
 											  pTooltip="If this option is selected, the field will always be displayed on an asset detail page, even if there is no specific value."
@@ -1404,8 +1396,7 @@
 														[igDataCy]="'FieldType_Field_IsPrimaryFilter'"
 														label="Persist in filters"
 														tabindex="680"
-														i18n-label
-														[disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
+														i18n-label></p-checkbox>
 											<span class="field-tooltip fa fa-question-circle"
 												  i18n-pTooltip
 												  pTooltip="If selected, the field appears as a persistent filter in the asset list view."
