@@ -3,34 +3,36 @@
 	<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<div class="row">
-				<label class="ig-label" i18n>Workflow Name</label>
-				<div class="ig-value"><a
-					(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: assignmentItem?.WorkflowUid })">{{ assignmentItem?.WorkflowName }}</a>
+				<div class="category-column">
+					<label class="ig-label" i18n>Workflow Name</label>
+					<div class="ig-value"><a
+						(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: assignmentItem?.WorkflowUid })">{{ assignmentItem?.WorkflowName }}</a>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Workflow Type</label>
-				<div class="ig-value" i18n>{{ workflowType }}</div>
-			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Associated with</label>
-				<div class="ig-value">{{ assetPathTextPart }}<a
-					(click)="linkClick.emit({ objectType: 'asset-information', objectUid: assignmentItem?.AssetUid })">{{ assetPathLinkPart }}</a>
+				<div class="category-column">
+					<label class="ig-label" i18n>Workflow Type</label>
+					<div class="ig-value" i18n>{{ workflowType }}</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Initiated</label>
-				<div class="ig-value">{{ assignmentItem?.StartedOn | date: 'medium' }}</div>
-			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Initiator</label>
-				<div class="ig-value"><a
-					(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentItem?.InitiatorUid })">{{ assignmentItem?.Initiator }}</a>
+				<div class="category-column">
+					<label class="ig-label" i18n>Associated with</label>
+					<div class="ig-value">{{ assetPathTextPart }}<a
+						(click)="linkClick.emit({ objectType: 'asset-information', objectUid: assignmentItem?.AssetUid })">{{ assetPathLinkPart }}</a>
+					</div>
 				</div>
-			</div>
-			<div class="row">
-				<label class="ig-label" i18n>Status</label>
-				<div class="ig-value">{{ assignmentItem?.Status }}</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Initiated</label>
+					<div class="ig-value">{{ assignmentItem?.StartedOn | date: 'medium' }}</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Initiator</label>
+					<div class="ig-value"><a
+						(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentItem?.InitiatorUid })">{{ assignmentItem?.Initiator }}</a>
+					</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Status</label>
+					<div class="ig-value">{{ assignmentItem?.Status }}</div>
+				</div>
 			</div>
 		</div>
 	</ig-property-group>
