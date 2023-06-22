@@ -12,6 +12,7 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 	changeTypeInfos: ChangeTypeInfo[] = [];
 	private workflowChangeType: string;
 	private _assignmentItem: AssignmentItem;
+	private assetPathPartIndex: number = -1;
 
 	@Input() set workflowItemUid(value: string) {
 		if (value) {
@@ -22,13 +23,22 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 	@Input() set assignmentItem(value: AssignmentItem) {
 		this._assignmentItem = value;
 		this.workflowChangeType = this.changeTypeInfos.find(changeTypeInfo => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
+		this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
 	}
+
+	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
 	get assignmentItem(): AssignmentItem {
 		return this._assignmentItem;
 	}
 
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
+	get assetPathLinkPart(): string {
+		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
+	}
+
+	get assetPathTextPart(): string {
+		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
+	}
 
 	constructor(private workflowService: WorkflowService) {
 		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
