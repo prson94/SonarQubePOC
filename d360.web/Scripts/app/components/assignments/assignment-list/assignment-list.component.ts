@@ -109,12 +109,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.secondaryNavService.clearCurrentObject();
 		this.secondaryNavService.setCurrentArea('Assignments', 'fa-list-ul', $localize`Assignments`);
 		this.secondaryNavService.showHeader(true);
-		this.fieldNav = new SecondaryNavItem(
-			$localize`By Workflow Version`,
-			'byWorkflowVersion',
-			null,
-			'/assignments/by-workflow-version', null, 0);
-		this.secondaryNavService.showItem(this.fieldNav);
+		this.objectType = 'Assignment';
+		this.setCommonSecondaryNavTabs({hasAudit: false, hasWorkflowByVersion: true});
 	}
 
 	ngOnDestroy(): void {
