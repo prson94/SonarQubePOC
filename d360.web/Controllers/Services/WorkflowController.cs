@@ -702,6 +702,16 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpPost, Route("SubmitWorkflowFormByUid/bulk")]
+		public async Task<HttpResponseMessage> SubmitBulkWorkflowFormByUid(BulkWorkflowFormUidModel model)
+		{			
+			List<long> itemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+			
+			var response = await SubmitBulkWorkflowForm(new BulkWorkflowFormModel { ItemStepIDs = itemStepIDs, Fields = model.Fields });
+
+			return response;
+		}
+
 		[HttpPost, Route("SubmitWorkflowForm/bulk")]
 		public async Task<HttpResponseMessage> SubmitBulkWorkflowForm(BulkWorkflowFormModel model)
 		{
@@ -1076,6 +1086,16 @@ namespace d360.web.Controllers.Services
 				AllowReassignResource = allowReassignResource,
 				IsClearAssignementsAllowed
 			});
+		}
+
+		[Route("formbyUid/bulk"), HttpPost]
+		public async Task<HttpResponseMessage> GetBulkWorkflowFormByUid(BulkWorkflowFormUidModel model)
+		{
+			List<long> itemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+
+			var response = await GetBulkWorkflowForm(new BulkWorkflowFormModel { ItemStepIDs = itemStepIDs, Fields = model.Fields });
+
+			return response;
 		}
 
 		[Route("form/bulk"), HttpPost]
