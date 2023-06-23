@@ -439,8 +439,30 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpPost, Route("SubmitWorkflowFormByUid/{itemUID:Guid}/{itemStepUID:Guid}")]
+		public async Task<HttpResponseMessage> SubmitWorkflowFormByUid(Guid itemUID, Guid itemStepUID, List<WorkflowFormModelField> model)
+		{			
+			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();			
+
+			if (item == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemNotFound);
+			}
+
+			var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).FirstOrDefault();
+
+			if (itemStepsModel == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
+			}
+
+			var response = await SubmitWorkflowForm(item.ID, itemStepsModel.ID, model);			
+
+			return response;
+		}
+
 		[HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
-		public async Task<HttpResponseMessage> SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
+		public async Task<HttpResponseMessage> SubmitWorkflowForm(long itemId, long itemStepId, List<WorkflowFormModelField> model)
 		{
 			try
 			{
@@ -735,8 +757,25 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[Route("formByUid/{typeUID:Guid}/{itemStepUID:Guid}"), HttpGet]
+		public async Task<HttpResponseMessage> GetWorkflowFormByUid(Guid typeUID, Guid itemStepUID)
+		{
+			var itemStep = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
+
+			if (itemStep == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
+			}
+
+			var type = Company.WorkflowTypes.Where(x => x.UID == typeUID).FirstOrDefault();
+
+			var response = await GetWorkflowForm((type == null ? 0 : type.ID), itemStep.ID);
+
+			return response;
+		}
+
 		[Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
-		public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
+		public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, long itemStepID)
 		{
 			var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
 
