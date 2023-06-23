@@ -38,6 +38,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	isLoading: boolean = false;
 	selected: boolean = false;
+	private assigneeNames: string[];
 
 	get header(): string {
 		return this.assignmentItemStep.Name;
@@ -48,7 +49,9 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get message(): string {
-		return 'Assigned to ' + this.assignmentItemStep.StartedByUid + '\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
+		return 'Assigned to ' + this.assigneeNames.slice(0, 2)?.join(', ') +
+			(this.assigneeNames.length > 2 ? ` + ${this.assigneeNames.length - 2} others` : '') +
+			'\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
 	}
 
 	get icon(): string {
@@ -82,6 +85,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 			this.workflowService.getAssignmentStepDetail(this.assignmentItemStep.Uid).subscribe((response) => {
 				this.workflowStepDetail = response;
 				this.isLoading = false;
+				this.assigneeNames = this.workflowStepDetail.AssignedUsers.map((assignee) => assignee.FullName)?.sort();
 			});
 		}
 	}

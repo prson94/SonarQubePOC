@@ -257,7 +257,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		let assigneeNames: string = '';
 		if (assigneeList && assigneeList.length > 0) {
 			const assigneeNameList: any[] = assigneeList.map((assignee) => assignee.Name)?.sort();
-			assigneeNames = count ? assigneeNameList?.slice(0, 2)?.join() : assigneeNameList?.join();
+			assigneeNames = count ? assigneeNameList?.slice(0, count)?.join(', ') : assigneeNameList?.join(', ');
 		}
 		return assigneeNames;
 	}

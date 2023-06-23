@@ -13,17 +13,16 @@ export class AssignmentProgressComponent implements OnInit {
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
 	@Input() workflowUid: string;
-
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
 		this.loadData();
 	}
 
+	@Input() isSidePanel: boolean = false;
+
 	get workflowItemUid(): string {
 		return this._workflowItemUid;
 	}
-
-	@Input() isSidePanel: boolean = false;
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
@@ -48,6 +47,7 @@ export class AssignmentProgressComponent implements OnInit {
 		objectUid: string
 	}>();
 
+	isLoading: boolean = false;
 	assignmentItemSteps: AssignmentItemStep[];
 
 	private _workflowItemUid: string;
@@ -61,11 +61,17 @@ export class AssignmentProgressComponent implements OnInit {
 	private loadData(): void {
 		this.assignmentItemSteps = [];
 		if (this._workflowItemUid) {
-			this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
-				.subscribe((response: AssignmentItemStep[]): void => {
-					this.assignmentItemSteps = response;
-				});
+			this.loadAssignmentSteps();
 		}
+	}
+
+	private loadAssignmentSteps() {
+		this.isLoading = true;
+		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
+			.subscribe((response: AssignmentItemStep[]): void => {
+				this.isLoading = false;
+				this.assignmentItemSteps = response;
+			});
 	}
 
 	stepSelectionChanged(assignmentItemStep: AssignmentItemStep, open: boolean): void {
