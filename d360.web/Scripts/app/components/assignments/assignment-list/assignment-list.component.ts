@@ -19,43 +19,19 @@ import { AuthenticationService } from '../../../services/authentication.service'
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
 
 	@ViewChild(AssignmentProgressComponent) assignmentProgressComponent: AssignmentProgressComponent;
+	isRequestsFlow: boolean = false; // flag checks if url is requests
+	flowContext: string = 'Assignment'; // to store flow context
+	sidePanelStorageKey: string;
 	showSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelTab: string = 'information';
-	sidePanelStorageKey: string = 'Assignment_' + this.settingsService.CurrentResourceID;
-	isRequestsFlow: boolean = false; // flag determines flow is assignments or requests
+	showAssignmentHeader: boolean = true;
 	isAdmin: boolean = false;
 	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
 	assignmentItemStep: AssignmentItemStep;
-	sidePanelButtons: SidePanelButton[] = [
-		new SidePanelButton({
-			label: $localize`Assignment Progress`,
-			tooltip: $localize`Assignment Progress`,
-			disabledTooltip: null,
-			nothingSelectedMessage: $localize`Select an Assignment from the list to display its progress`,
-			notApplicableMessage: $localize`Progress data is not available for the selected Assignment`,
-			multipleSelectedMessage: $localize`Select a single Assignment to display it’s progress`,
-			key: 'progress',
-			icon: 'fa-step-forward',
-			disabled: false,
-			visible: true,
-			needsSelection: true
-		}), new SidePanelButton({
-			label: $localize`Assignment Information`,
-			tooltip: $localize`Assignment Information`,
-			disabledTooltip: null,
-			nothingSelectedMessage: $localize`Select an Assignment from the list to display its information`,
-			notApplicableMessage: $localize`Information data is not available for the selected Assignment`,
-			multipleSelectedMessage: $localize`Select a single Assignment to display it’s information`,
-			key: 'information',
-			icon: 'fa-info-circle',
-			disabled: false,
-			visible: true,
-			needsSelection: true
-		})
-	];
+	sidePanelButtons: SidePanelButton[] = [];
 	sidePanelMultiSelectButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`${this.selectedWorkflowItems?.length} Assignments Selected`,
@@ -87,11 +63,47 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
+		if (this.router.url === '/requests') {
+			this.flowContext = 'Request';
+			this.isRequestsFlow = true;
+		}
+		this.setFlowSpecificDetails();
+	}
+
+	setFlowSpecificDetails(): void {
+		this.sidePanelStorageKey = this.flowContext + '_' + this.settingsService.CurrentResourceID;
+		this.sidePanelButtons = [
+			new SidePanelButton({
+				label: $localize`${this.flowContext} Progress`,
+				tooltip: $localize`${this.flowContext} Progress`,
+				disabledTooltip: null,
+				nothingSelectedMessage: $localize`Select ${this.flowContext} from the list to display its progress`,
+				notApplicableMessage: $localize`Progress data is not available for the selected Assignment`,
+				multipleSelectedMessage: $localize`Select a single ${this.flowContext} to display it’s progress`,
+				key: 'progress',
+				icon: 'fa-step-forward',
+				disabled: false,
+				visible: true,
+				needsSelection: true
+			}), new SidePanelButton({
+				label: $localize`${this.flowContext} Information`,
+				tooltip: $localize`${this.flowContext} Information`,
+				disabledTooltip: null,
+				nothingSelectedMessage: $localize`Select ${this.flowContext} from the list to display its information`,
+				notApplicableMessage: $localize`Information data is not available for the selected Assignment`,
+				multipleSelectedMessage: $localize`Select a single ${this.flowContext} to display it’s information`,
+				key: 'information',
+				icon: 'fa-info-circle',
+				disabled: false,
+				visible: true,
+				needsSelection: true
+			})
+		];
 	}
 
 	selectRow(rows: WorkflowAssignmentItem[]): void {
 		this.secondarySidePanelOpen = false;
-		if (this.isAdmin && rows && rows.length > 1) {
+		if (this.isAdmin && !this.isRequestsFlow && rows?.length > 1) {
 			this.sidePanelMultiSelectButtons[0].label = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';

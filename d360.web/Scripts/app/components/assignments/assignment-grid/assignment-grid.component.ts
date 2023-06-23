@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { forkJoin, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
@@ -26,7 +26,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 	styleUrls: ['./assignment-grid.component.less']
 })
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
-
+    @Input() isRequestsFlow: boolean = false
 	title: string = $localize`WorkFlow Items`;
 	items: WorkflowAssignmentItem[] = [];
 	totalRecords: number;

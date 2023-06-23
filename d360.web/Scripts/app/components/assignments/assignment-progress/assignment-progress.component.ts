@@ -18,11 +18,11 @@ export class AssignmentProgressComponent implements OnInit {
 		this.loadData();
 	}
 
-	@Input() isSidePanel: boolean = false;
-
 	get workflowItemUid(): string {
 		return this._workflowItemUid;
 	}
+
+	@Input() showCompleteAssignment: boolean = true;
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,

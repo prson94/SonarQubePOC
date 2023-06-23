@@ -74,10 +74,12 @@
 							<d3s-sortIcon [field]="field.FriendlyName"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'initiator'">
-						<ng-container i18n>Initiator</ng-container>
-						<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
-					</th>
+					<ng-container *ngIf="!isRequestsFlow">
+						<th [pSortableColumn]="'initiator'">
+							<ng-container i18n>Initiator</ng-container>
+							<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
+						</th>
+					</ng-container>
 					<th [pSortableColumn]="'StartedOn'">
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
@@ -90,7 +92,7 @@
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
 					</th>
-					<th *ngIf="isAdmin" class="asset-grid-tools" style="flex: 0 0 30px"></th>
+					<th *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools" style="flex: 0 0 30px"></th>
 				</tr>
 				<tr [hidden]="showSimpleFilter">
 					<ng-container *ngIf="actionFormFields.length === 0">
@@ -106,9 +108,11 @@
 							<d3s-column-filter [field]="field.FriendlyName" [datatype]="'text'"></d3s-column-filter>
 						</th>
 					</ng-container>
-					<th>
-						<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>
-					</th>
+					<ng-container *ngIf="!isRequestsFlow">
+						<th>
+							<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>
+						</th>
+					</ng-container>
 					<th>
 						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
 					</th>
@@ -129,7 +133,7 @@
 					<ng-container *ngFor="let field of actionFormFields">
 						<td [innerHTML]="item[field.Name]"></td>
 					</ng-container>
-					<td>{{item.initiator}}</td>
+					<td *ngIf="!isRequestsFlow">{{item.initiator}}</td>
 					<td>
 						<span>{{item.StartedOn | date: 'shortDate'}}</span>
 					</td>
@@ -142,7 +146,7 @@
 					<td>
 						<span>{{item.Status}}</span>
 					</td>
-					<td *ngIf="isAdmin" class="asset-grid-tools"
+					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools"
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>

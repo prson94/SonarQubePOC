@@ -3,7 +3,7 @@
 	<ig-property-group title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<d3s-assignment-progress-step *ngFor="let assignmentItemStep of assignmentItemSteps" [workflowItemUid]="workflowItemUid"
-										  [assignmentItemStep]="assignmentItemStep" [showCompleteAssignment]="isSidePanel"
+										  [assignmentItemStep]="assignmentItemStep" [showCompleteAssignment]="showCompleteAssignment"
 										  (stepClickChange)="stepSelectionChanged(assignmentItemStep, $event)"
 										  (completeAssignment)="completeAssignment.emit($event)"
 										  [isLastStep]="assignmentItemSteps.indexOf(assignmentItemStep) === (assignmentItemSteps.length - 1)"

@@ -1,14 +1,15 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Tab } from '../../shared/tabs/tabs.models';
 
 @Component({
 	selector: 'd3s-assignment-header',
 	templateUrl: './assignment-header.component.html'
 })
-export class AssignmentHeaderComponent {
-	@Input() icon: string = 'fa-list-ul';
-	@Input() header: string = 'Assignments';
-	@Input() showTabs: boolean = true;
+export class AssignmentHeaderComponent implements OnInit {
+	@Input() flowContext: string = 'Assignment';
+	icon: string;
+	header: string;
+	showTabs: boolean = true;
 	tabs: Tab[] = [
 		{
 			url: `/assignments`,
@@ -19,4 +20,15 @@ export class AssignmentHeaderComponent {
 			title: $localize`By Workflow Version`
 		}
 	];
+
+	ngOnInit(): void {
+		if (this.flowContext === 'Assignment') {
+			this.showTabs = true;
+			this.icon = 'fa-list-ul';
+			this.header = 'Assignments'
+		} else if(this.flowContext === 'Request') {
+			this.showTabs = false
+			this.header = 'Requests'
+		}
+	}
 }
