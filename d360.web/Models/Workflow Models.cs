@@ -42,19 +42,16 @@ namespace d360.web.Models
     {
         public List<long> ItemStepIDs { get; set; } = new List<long>();
 
-        public List<WorkflowFormModelField> Fields { get; set; } = new List<WorkflowFormModelField>();
-    }
-
-	public class BulkWorkflowFormUidModel
-	{
 		public List<Guid> ItemStepUIDs { get; set; } = new List<Guid>();
 
 		public List<WorkflowFormModelField> Fields { get; set; } = new List<WorkflowFormModelField>();
-	}
+    }	
 
 	public class BulkWorkflowReassignModel
     {
-        public List<long> ItemStepIDs { get; set; } = new List<long>();
+		public List<Guid> ItemStepUIDs { get; set; } = new List<Guid>();
+
+		public List<long> ItemStepIDs { get; set; } = new List<long>();
 
         public bool SendFormEmails { get; set; } = true;
 

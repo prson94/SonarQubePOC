@@ -723,11 +723,17 @@ namespace d360.web.Controllers.Services
 		}
 
 		[HttpPost, Route("SubmitWorkflowFormByUid/bulk")]
-		public async Task<HttpResponseMessage> SubmitBulkWorkflowFormByUid(BulkWorkflowFormUidModel model)
-		{			
-			List<long> itemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+		public async Task<HttpResponseMessage> SubmitBulkWorkflowFormByUid(BulkWorkflowFormModel model)
+		{
+
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
 			
-			var response = await SubmitBulkWorkflowForm(new BulkWorkflowFormModel { ItemStepIDs = itemStepIDs, Fields = model.Fields });
+			var response = await SubmitBulkWorkflowForm(model);
 
 			return response;
 		}
@@ -1109,11 +1115,16 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("formbyUid/bulk"), HttpPost]
-		public async Task<HttpResponseMessage> GetBulkWorkflowFormByUid(BulkWorkflowFormUidModel model)
+		public async Task<HttpResponseMessage> GetBulkWorkflowFormByUid(BulkWorkflowFormModel model)
 		{
-			List<long> itemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
 
-			var response = await GetBulkWorkflowForm(new BulkWorkflowFormModel { ItemStepIDs = itemStepIDs, Fields = model.Fields });
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+
+			var response = await GetBulkWorkflowForm(model);
 
 			return response;
 		}
@@ -4135,6 +4146,21 @@ namespace d360.web.Controllers.Services
 				total,
 				results
 			});
+		}
+
+		[Route("ReassignWorkflowResource/bulk")]
+		public async Task<HttpResponseMessage> BulkReassignFormByUid(BulkWorkflowReassignModel model)
+		{
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+
+			var response = await BulkReassignForm(model);
+
+			return response;
 		}
 
 		[Route("ReassignWorkflowResource/bulk")]
