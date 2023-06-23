@@ -226,7 +226,7 @@ namespace d360.model
         
         void AddOrUpdateFields(List<Field> items);
         
-        Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
+        Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, long itemId, int workflowId, int objectId, string @object);
         
         List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation);
         

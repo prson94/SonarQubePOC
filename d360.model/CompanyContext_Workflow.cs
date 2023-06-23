@@ -310,7 +310,7 @@ namespace d360.model
 					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
 		}
 
-		public Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
+		public Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, long itemId, int workflowId, int objectId, string @object)
 		{
 			WorkflowItem item = WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
 
