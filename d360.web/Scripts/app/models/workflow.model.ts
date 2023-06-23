@@ -518,40 +518,40 @@ export class WorkflowItemStep {
 }
 
 export class AssignmentItemStep {
-	Uid: string;
-	Name: string;
-	State: string;
-	StepType: string;
 	ActivityType: string;
-	Settings: {
-		settings: {
-			FormResponseType: string;
-			SendFormEmail: string;
-			MessageRecipientType: string;
-			IncludePreviousFormResponses: string;
-			MessageToUser: string;
-		},
-		fields: {
-			form: {
-				'@title': string;
-				field: {
-					'@type': string;
-					'@label': string;
-					'@id': string;
-				}
-			}
-		}
-	};
+	Assignments: { AssigneeUid: string }[];
+	CompletedByUid: string;
+	CompletedOn: string;
+	Name: string;
 	Responses: {
 		fields: {
 			'@TotalResources': string;
 		}
 	};
-	Assignments: { AssigneeUid: string }[];
+	Settings: {
+		settings: {
+			FormResponseType: string;
+			IncludePreviousFormResponses: string;
+			MessageRecipientType: string;
+			MessageToUser: string;
+			SendFormEmail: string;
+		},
+		fields: {
+			form: {
+				'@title': string;
+				field: {
+					'@id': string;
+					'@label': string;
+					'@type': string;
+				}
+			}
+		}
+	};
 	StartedByUid: string;
 	StartedOn: string;
-	CompletedByUid: string;
-	CompletedOn: string;
+	State: string;
+	StepType: string;
+	Uid: string;
 }
 
 export class AssignmentItem {
@@ -663,9 +663,17 @@ export class WorkflowStepItemSettings {
 }
 
 export class WorkflowStepAssignedUser {
-	ResourceID: number;
+	CreatedOn: string;
+	Email: string;
 	FirstName: string;
+	FullName: string;
+	IsAdministrator: boolean;
+	LastLoggedInOn: string;
 	LastName: string;
+	ResourceID: number;
+	State: number;
+	Uid: string;
+	UpdatedOn: string;
 }
 
 export class WorkflowStepReassignment {
