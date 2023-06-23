@@ -363,7 +363,25 @@ namespace d360.web.Controllers.V2
 			return Ok(result.ID);
         }
 
-        [
+		[
+			HttpGet,
+			Route("reassignmentByUid/objects/{Uid:Guid}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetApiModel>))
+		]
+		public async Task<IHttpActionResult> GetWorkflowReassignmentAssetsByUid(Guid workflowItemUid, string query, CancellationToken cancellationToken)
+		{
+			var result = Company.WorkflowItems.FirstOrDefault(i => i.UID == workflowItemUid);
+
+			if (result == null)
+			{
+				throw new NotFoundBusinessLayerException(WorkflowApiMessages.WorkflowInstanceNotFound);
+			}
+
+			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(result.ID, query, cancellationToken: cancellationToken));
+		}
+
+		[
             HttpGet,
             Route("reassignment/objects/{id:int}"),
             ApiExplorerSettings(IgnoreApi = true),

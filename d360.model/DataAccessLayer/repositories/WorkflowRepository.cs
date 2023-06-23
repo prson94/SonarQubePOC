@@ -913,7 +913,7 @@ namespace d360.model.DataAccessLayer
 			return model;
 		}
 
-		public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
+		public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(long workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
 		{
 			if (!string.IsNullOrEmpty(query))
 			{
