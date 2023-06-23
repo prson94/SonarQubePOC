@@ -34,6 +34,17 @@ namespace d360.model
 	[DbConfigurationType(typeof(AzureConfiguration))]
 	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
+		#region Classes
+
+		private class EnvironmentSetting
+		{
+			public Setting ID { get; set; }
+
+			public string Value { get; set; }
+		}
+
+		#endregion
+
 		internal IQueueSource QueueSource;
 		internal IMailProvider Mail;
 		private readonly CommunityContext Community;
@@ -41,6 +52,11 @@ namespace d360.model
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
+
+		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
+		private TelemetryClient _externalTelemetryClient;
+		private readonly Lazy<TelemetryClient> _telemetryClient = new Lazy<TelemetryClient>(() => new TelemetryClient());
+		private TelemetryClient TelemetryClient { get => _externalTelemetryClient ?? _telemetryClient.Value; }
 
 		#region Ctors
 
@@ -181,14 +197,289 @@ namespace d360.model
 
 		public DbSet<Audit> Audits { get; set; }
 
-		public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
+		#endregion
+
+		#region Utility
+
+		private void addMeasurement(Dictionary<string, double> metrics, string key, double value, int stepNumber)
+		{
+			metrics[$"{stepNumber}-{key}"] = value;
+		}
 		
-		public DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
-		public DbSet<AssetDataProfileSampleJson> AssetDataProfileSampleJson { get; set; }
+		private void addMetric(TelemetryClient client, ApiExecution execution, string methodName, Dictionary<string, double> metrics, bool isLog)
+		{
+			if (!isLog)
+			{
+				return;
+			}
+
+			Dictionary<string, string> propsToSend = new Dictionary<string, string> {
+				{ "MethodName", methodName },
+				{ "CompanyID", CurrentCompanyID.ToString() },
+				{ "ExecutionID", execution.ExecutionID.ToString() }
+			};
+
+			client.TrackEvent($"API v2 Execution ID[{execution.ExecutionID}]", propsToSend, metrics);
+		}
+		
+		private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
+		{
+			// if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
+			if (item.AssetTypeID > 0 && item.ObjectTypeID <= 0)
+			{
+				AssetType assetType = AssetTypes.FirstOrDefault(x => x.ID == item.AssetTypeID);
+
+				if (assetType != null)
+				{
+					item.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), assetType.Object);
+					item.ObjectTypeID = assetType.ObjectID;
+				}
+			}
+
+			events.Add(new EventInfo
+			{
+				CompanyID = CurrentCompanyID,
+				DomainPrefix = CurrentCompanyDomain,
+				ResourceID = CurrentResourceID,
+				Action = action,
+				Object = item
+			});
+		}
+
+		private void createEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
+		{
+			//get any objects that implement EventTrackedEntity so we can add messages for them
+			List<EventInfo> events = new List<EventInfo>();
+			List<EventObjectInfo> fieldEvents = new List<EventObjectInfo>();
+
+			//we need to create event objects for field changes. Add them here
+			if (changedFields != null)
+			{
+				foreach (Field field in changedFields)
+				{
+					FieldType fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
+					EventObjectInfo eventInfo = fieldEvents.FirstOrDefault(f => ((f.ObjectID == field.IssueID && f.ObjectType == SystemObjects.Issue) || (f.ObjectID == field.IntersectID && f.ObjectType == SystemObjects.Intersect) || (f.ObjectID == field.AssetID && f.ObjectType != SystemObjects.Issue && f.ObjectType != SystemObjects.Intersect)));
+
+					if (eventInfo != null)
+					{
+						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+					}
+					else
+					{
+						eventInfo = new EventObjectInfo
+						{
+							Object = ((field.IssueID.HasValue && field?.IssueID.Value > 0) ? SystemObjects.Issue : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? SystemObjects.Intersect : SystemObjects.Artifact),
+							ObjectID = (int)((field.IssueID.HasValue && field?.IssueID.Value > 0) ? field.IssueID : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? field.IntersectID : field.AssetID),
+							ObjectType = SystemObjects.FieldType,
+							ObjectTypeID = fieldType.ID
+						};
+						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+						fieldEvents.Add(eventInfo);
+					}
+				}
+			}
+
+			foreach (EventObjectInfo fieldEvent in fieldEvents)
+			{
+				addQE(events, ChangeType.Update, fieldEvent);
+			}
+
+			if (modifiedEntities != null)
+			{
+				foreach (IEventTrackedEntity modified in modifiedEntities)
+				{
+					addQE(events, ChangeType.Update, modified.GetEventObjectInfo());
+				}
+			}
+
+			if (addedEntities != null)
+			{
+				foreach (IEventTrackedEntity added in addedEntities)
+				{
+					addQE(events, ChangeType.Add, added.GetEventObjectInfo());
+				}
+			}
+
+			if (deletedEntities != null)
+			{
+				foreach (IEventTrackedEntity deleted in deletedEntities)
+				{
+					addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
+				}
+			}
+
+			if (events.Any())
+			{
+				QueueSource.CreateTopicMessages(events);
+			}
+		}
+
+		private string renderTemplate(string templateType, string action, SystemObjects type, int id)
+		{
+			string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty, CurrentResourceID);
+			RenderTemplateModel model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
+			string html = "";
+
+			if (model != null)
+			{
+				html = model.Body;
+			}
+
+			return html;
+		}
 
 		#endregion
 
-		#region Repository Methods
+		#region Methods
+
+		public override bool Add<T>(T item)
+		{
+			Set<T>().Add(item);
+			bool returnValue = SaveChanges() > 0;
+
+			return returnValue;
+		}
+
+		public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID)
+		{
+			Intersect intersect = null;
+			IntersectDetail dtl = null;
+
+			ObjectDetail subjectDetail = GetObjectDetail(subject, subjectID);
+			ObjectDetail objectDetail = GetObjectDetail(@object, objectID);
+
+			if (subjectDetail == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.Subject);
+			}
+
+			if (objectDetail == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.Object);
+			}
+
+			if (subject == "ReferenceItemType")
+			{
+				subjectDetail.TypeID = 0;
+			}
+
+			if (@object == "ReferenceItemType")
+			{
+				objectDetail.TypeID = 0;
+			}
+
+			IntersectType intersectType = GetById<IntersectType>(intersectTypeID);
+
+			if (intersectType == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.IntersectType);
+			}
+
+			if (
+				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
+				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
+				)
+			{
+				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
+						(i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
+						(i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
+					)
+				).SingleOrDefault();
+
+				if (dtl == null)
+				{
+					intersect = new Intersect { IntersectTypeID = intersectType.ID };
+
+					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
+					{
+						intersect.SubjectAssetID = subjectDetail.AssetID;
+						intersect.ObjectAssetID = objectDetail.AssetID;
+					}
+					else
+					{
+						intersect.SubjectAssetID = objectDetail.AssetID;
+						intersect.ObjectAssetID = subjectDetail.AssetID;
+					}
+					Intersects.Add(intersect);
+					SaveChanges();
+
+					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
+				}
+
+				return dtl;
+			}
+			else
+			{
+				throw new NotFoundException(CompanyContextErrors.IntersectType);
+			}
+		}
+
+		public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
+		{
+			Intersect intersect = null;
+			IntersectDetail dtl = null;
+
+			string sSubject = subject.ToString();
+			string sObject = @object.ToString();
+
+			ObjectDetail subjectDetail = GetObjectDetail(subject.ToString(), subjectID);
+			ObjectDetail objectDetail = GetObjectDetail(@object.ToString(), objectID);
+
+			if (subjectDetail == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.Subject);
+			}
+
+			if (objectDetail == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.Object);
+			}
+
+			IntersectType intersectType = GetById<IntersectType>(intersectTypeID);
+
+			if (intersectType == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.IntersectType);
+			}
+
+			if (
+				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
+				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
+				)
+			{
+				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
+						(i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
+						(i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
+					)
+				).SingleOrDefault();
+
+				if (dtl == null)
+				{
+					intersect = new Intersect { IntersectTypeID = intersectType.ID };
+
+					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
+					{
+						intersect.SubjectAssetID = subjectDetail.AssetID;
+						intersect.ObjectAssetID = objectDetail.AssetID;
+					}
+					else
+					{
+						intersect.SubjectAssetID = objectDetail.AssetID;
+						intersect.ObjectAssetID = subjectDetail.AssetID;
+					}
+					Intersects.Add(intersect);
+					SaveChanges();
+
+					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
+				}
+
+				return dtl;
+			}
+			else
+			{
+				throw new NotFoundException(CompanyContextErrors.IntersectType);
+			}
+		}
 
 		public void AddOrUpdateFields(List<Field> items)
 		{
@@ -250,41 +541,212 @@ namespace d360.model
 			}
 		}
 
+		public void CreateEventsForAddedActions(List<Issue> actions)
+		{
+			createEventsForObjectsRequiringTracking(null, actions, null, null);
+		}
+
+		public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
+		{
+			Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type", ""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
+		}
+
+		public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
+		{
+			//check if assettype is part of custom folder, if so, update its value
+			SiteNav navSiteItem = SiteNav.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId && x.ParentID != null);
+
+			if (navSiteItem != null)
+			{
+				string assetTypeName = AssetTypes.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId)?.Name;
+				if (!string.IsNullOrEmpty(assetTypeName))
+				{
+					navSiteItem.Title = navSiteItem.Name = assetTypeName;
+
+					SaveChanges();
+				}
+			}
+
+			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+		}
+
+		/// <summary>
+		/// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+		/// </summary>
+		[Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
+		public override bool Delete<T>(Expression<Func<T, bool>> predicate)
+		{
+			List<T> items = Filter(predicate).ToList();
+			bool allDeleted = true;
+
+			items.ForEach(i =>
+			{
+				if (!Delete(i))
+				{
+					allDeleted = false;
+				}
+			});
+
+			return allDeleted;
+		}
+
+		/// <summary>
+		/// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
+		/// </summary>
+		public override bool Delete<T>(T entity)
+		{
+			try
+			{
+				Set<T>().Remove(entity);
+
+				return SaveChanges() > 0;
+			}
+			catch (Exception ex)
+			{
+				throw resolveToRealException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
+		/// </summary>
+		public async Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T : BaseObject
+		{
+			try
+			{
+				List<T> items = await Filter(predicate).ToListAsync();
+				items.ForEach(i => Set<T>().Remove(i));
+
+				await SaveChangesAsync();
+			}
+			catch (Exception ex)
+			{
+				throw resolveToRealException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
+		/// </summary>
+		public bool Delete(SystemObjects type, int id)
+		{
+			try
+			{
+				//needs to be before delete before we say goodbye to our little friend.
+				ObjectDetail det = GetObjectDetail(type.ToString(), id);
+
+				Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
+
+				// add a removed message to the service bus
+				if (IsEventingEnabled)
+				{
+					if (det != null)
+					{
+						List<EventInfo> events = new List<EventInfo>();
+						addQE(events, ChangeType.Delete, new EventObjectInfo
+						{
+							Object = type,
+							ObjectID = id,
+							ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), det.Type),
+							ObjectTypeID = det.TypeID
+						});
+						QueueSource.CreateTopicMessages(events);
+					}
+				}
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				throw resolveToRealException(ex);
+			}
+		}
+
+		public bool DeleteRelationship(int id)
+		{
+			Intersect item = GetById<Intersect>(id);
+
+			if (item == null)
+			{
+				throw new NotFoundException(CompanyContextErrors.Relationship);
+			}
+
+			var intersectDetail = IntersectDetails.Single(i => i.ID == id);
+
+			Audits.AddRange(new List<Audit>
+			{
+				new Audit {
+					Action = "Deleted",
+					ActionDescription = "Relationship removed.",
+					ActionObject = "Intersect",
+					ActionObjectID = id,
+					ActionObjectName = intersectDetail.ObjectName,
+					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
+					Date = DateTime.UtcNow,
+					Object = intersectDetail.Subject,
+					ObjectID = intersectDetail.SubjectID,
+					ObjectName = intersectDetail.SubjectName,
+					ResourceID = CurrentResourceID
+				},
+				new Audit {
+					Action = "Deleted",
+					ActionDescription = "Relationship removed.",
+					ActionObject = "Intersect",
+					ActionObjectID = id,
+					ActionObjectName = intersectDetail.SubjectName,
+					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
+					Date = DateTime.UtcNow,
+					Object = intersectDetail.Object,
+					ObjectID = intersectDetail.ObjectID,
+					ObjectName = intersectDetail.ObjectName,
+					ResourceID = CurrentResourceID
+				}
+			});
+			Delete<Field>(f => f.IntersectID == id);
+			Delete(item);
+
+			QueueSource.CreateTopicMessage(new EventInfo
+			{
+				CompanyID = CurrentCompanyID,
+				Action = ChangeType.Delete,
+				ResourceID = CurrentResourceID,
+				Object = new EventObjectInfo
+				{
+					Object = SystemObjects.Intersect,
+					ObjectID = id,
+					ObjectType = SystemObjects.IntersectType,
+					ObjectTypeID = item.IntersectTypeID
+				},
+				DomainPrefix = CurrentCompanyDomain
+			});
+
+			return true;
+		}
+
+		public void DeleteSetting(Setting setting)
+		{
+			// In essence, this would set back to the default, if any.
+			Connection.Execute("delete Setting where ID = @id", new { id = (int)setting });
+			Caching.RemoveItem(SettingsCacheKey);
+		}
+
 		public void Enqueue(string queueName, QueueObject item)
 		{
 			QueueSource.CreateMessage(queueName, item);
 		}
 
-		public JObject GetPageInformation(Guid assetUid)
+		public async Task<T> ExecuteGetRelationshipQuery<T>(string query, CancellationToken cancellationToken, DynamicParameters dbArgs, int timeout = 90)
 		{
-			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @assetUid, @rid", new { assetUid, rid = CurrentResourceID });
-			if (jsonRows.Count() == 0)
-			{
-				return null;
-			}
 
-			return JObject.Parse(string.Concat(jsonRows));
-		}
+			IEnumerable<string> jsonStrings = await Database.Connection.QueryAsync<string>(
+			  new CommandDefinition(query,
+			  cancellationToken: cancellationToken,
+			  parameters: dbArgs,
+			  commandTimeout: ApiTimeout
+			));
+			string json = string.Join("", jsonStrings);
 
-		public async Task<TypeIdentifierInfoModel> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
-		{
-			IEnumerable<TypeIdentifierInfoModel> result;
-			switch (type)
-			{
-				case TypeIdentifierInfoModelType.ActionType:
-					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
-					break;
-				case TypeIdentifierInfoModelType.AssetType:
-					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
-					break;
-				case TypeIdentifierInfoModelType.RelationshipType:
-					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
-					break;
-				default:
-					throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
-			}
-
-			return result.FirstOrDefault();
+			return JsonConvert.DeserializeObject<T>(json);
 		}
 
 		public List<AllocationPossibility> GetAllocationOptions()
@@ -304,7 +766,7 @@ namespace d360.model
 
 			return list;
 		}
-
+		
 		public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null)
 		{
 			return await Database.Connection.QueryAsync<AllowedIntersectionType>(
@@ -316,24 +778,300 @@ namespace d360.model
 				}).ConfigureAwait(false);
 		}
 
-		public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
+		public Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
 		{
-			return Database
-					.Connection
-					.Query<string>(@"
-									declare @type varchar(25),
-											@format nvarchar(250),
-											@lo varchar(25),
-											@loid int
+			string sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
+							from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
+							where AT.class in({string.Join(",", assetClassIds.ToArray())})";
 
-									select  @type = [Type],
-											@format = LookupDisplayFormat,
-											@lo = LookupObjectType,
-											@loid = LookupObjectID
-									from    FieldType 
-									where ID = @fieldTypeID
+			return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
+		}
 
-									select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldValue)", new { fieldTypeID, fieldValue }).First();
+		public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
+		{
+			return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
+		}	
+		
+		public AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid)
+		{
+			AssetType assetType = Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
+			if (assetType != null)
+			{
+				return GetAssetTypeStyle(assetType.ID);
+			}
+
+			return null;
+		}	
+		
+		public AssetTypeStyle GetAssetTypeStyle(string type, int id)
+		{
+			AssetType assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
+			if (assetType != null)
+			{
+				return GetAssetTypeStyle(assetType.ID);
+			}
+
+			return null;
+		}
+
+		public string GetCounterFieldValue(int fieldTypeId, long assetId)
+		{
+			return Query<string>(@"
+				select top 1 ISNULL(FT.CounterPrefix,'') + cast(fcv.value as nvarchar(20) )
+				from fieldcountervalue fcv
+				inner join FieldType FT on FT.ID = fcv.FieldTypeId
+				where fcv.AssetId=@assetId and fcv.FieldTypeId=@fieldTypeId",
+							  new { fieldTypeId, assetId }).FirstOrDefault();
+		}
+
+		public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90)
+		{
+			IEnumerable<string> jsonStrings = await QueryAsync<string>(query, dbArgs, timeout).ConfigureAwait(false);
+			string json = string.Join("", jsonStrings);
+
+			return JsonConvert.DeserializeObject<T>(json);
+		}
+
+		public string GetDiagramUrlForDiagramAsset(Guid assetUid)
+		{
+			string diagramUrl = $@"select 
+							'/asset/'+lower(cast(a.uid as nvarchar(36)))+'/diagrams/Process/' + lower(cast(@assetUid as nvarchar(36)))
+							from AssetProcessDiagram APD
+							cross apply (SELECT *
+							FROM OPENJSON(APD.Diagram,'$.nodeDataArray')
+							WITH (   
+			
+										  uid uniqueidentifier '$.key'
+							 ) 
+							)Json
+							inner join asset a on a.id = apd.AssetID
+							where json.uid = @assetUid";
+			return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
+		}
+
+		public void GetDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
+		{
+			StringBuilder columnbuilder = new StringBuilder();
+			columns = "";
+			StringBuilder joinbuilder = new StringBuilder();
+			joins = "";
+
+			string fieldTypeRelationType = type;
+
+			if (fields == null)
+			{
+				if (type == "Rule" && ruleMeansEvent)
+				{
+					type = "Event";
+				}
+				else if (!fieldTypeRelationType.EndsWith("Type"))
+				{
+					fieldTypeRelationType += "Type";
+				}
+
+				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldTypeRelationType);
+				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));
+
+				if (listableOnly)
+				{
+					fieldQry = fieldQry.Where(i => i.IsListable);
+				}
+				if (includeKeyColumnOnly)
+				{
+					fieldQry = fieldQry.Where(x => x.IsPartOfKey);
+				}
+				fields = fieldQry.OrderBy(i => i.ColumnOrder).ToList();
+			}
+
+			var assetTypeID = (fields.Count > 0) ? fields[0].AssetTypeID.GetValueOrDefault() : Filter<AssetType>(a => a.Object == fieldTypeRelationType && a.ObjectID == typeID).FirstOrDefault().ID;
+
+			List<RelationshipDirectionFieldInfo> relationFieldInfos = GetRelationFieldData(assetTypeID, fields);
+
+			foreach (FieldType f in fields)
+			{
+				string name = $"Field{f.ID}";
+				string friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
+
+				if (f.Type == DataType.Relationship.ToString())
+				{
+					if (enableRelationshipFields)
+					{
+						var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+						if (relationFieldInfo != null)
+						{
+							bool isReferenceItemType = relationFieldInfo.AssetClass == AssetTypeClass.Reference;
+
+							columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
+							columnbuilder.Append(isReferenceItemType ? $"{name}_AS.Name" : $"{name}_ASP.DisplayPath");
+							columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
+							joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+							joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
+
+							if (isReferenceItemType)
+							{
+								joinbuilder.Append($" left join AssetType {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetTypeID" : "SubjectAssetTypeID"));
+							}
+							else
+							{
+								joinbuilder.Append($" left join Asset {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
+								joinbuilder.Append($" left join AssetPath {name}_ASP on {name}_AS.ID = {name}_ASP.ID");
+							}
+						}
+					}
+				}
+				else if (f.Type == DataType.FieldFromRelationship.ToString())
+				{
+					if (enableRelationshipFields)
+					{
+						RelationshipDirectionFieldInfo relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
+
+						if (relationFieldInfo != null)
+						{
+							FieldType relationshipLookupFieldType = GetById<FieldType>(f.LookupObjectFieldTypeID ?? 0);
+
+							if (relationshipLookupFieldType != null)
+							{
+								if (relationshipLookupFieldType.Type == DataType.JsonElement.ToString())
+								{
+									FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
+									string sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
+
+									columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
+									columnbuilder.Append($"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
+
+									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
+									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}");
+									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
+									joinbuilder.Append($" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
+								}
+								else
+								{
+									if (includeIdColumn)
+									{
+										columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
+									}
+									columnbuilder.Append($"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
+
+									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
+									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}");
+									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
+									joinbuilder.Append(" ");
+								}
+							}
+						}
+					}
+				}
+				else if (f.Type == DataType.Decimal.ToString())
+				{
+					if (includeIdColumn)
+					{
+						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
+					}
+					columnbuilder.Append($@"case     
+												when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
+												when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
+												else null 
+											end as [{(useFriendlyName ? friendlyName : name)}], ");
+
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
+										   left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+				}
+				else if (f.Type == DataType.Number.ToString())
+				{
+					if (includeIdColumn)
+					{
+						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
+					}
+					columnbuilder.Append($@"case     
+												when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
+												when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
+												else null 
+											end as [{(useFriendlyName ? friendlyName : name)}], ");
+
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
+											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+				}
+				else if (f.Type == DataType.JsonElement.ToString())
+				{
+					FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+
+					string sqlType = DetermineSqlDataTypeForFieldType(f);
+
+					columnbuilder.Append($@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
+
+					joinbuilder.Append($@" 
+										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
+										left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
+				}
+				else if (f.Type == DataType.Path.ToString())
+				{
+					columnbuilder.Append($@"{name}_GAN.DisplayPath as [{(useFriendlyName ? friendlyName : name)}], ");
+					joinbuilder.Append($@" inner join AssetPath {name}_GAN on {name}_GAN.ID = A.ID ");
+				}
+				else if (f.Type == DataType.Score.ToString())
+				{
+					columnbuilder.Append($@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
+					joinbuilder.Append($@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ");
+				}
+				else if (f.Type == DataType.Tag.ToString())
+				{
+					string assetIdPath = "A.Id";
+
+					if (includeIdColumn)
+					{
+						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
+					}
+
+					columnbuilder.Append($@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ");
+
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
+										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+				}
+				else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
+				{
+					string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
+					string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "try_cast(fi.Value as int) and datalength(fi.Value) < 1000";
+					string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.AssetID = A.ID" : "fi.AssetID = A.Id";
+					fieldJoin = $@"{fieldJoin} left join [intersect] I on fi.intersectID = I.ID";
+					columnbuilder.Append($"{name}_T.value as [{name}],");
+					joinbuilder.Append($@" outer apply(
+							select value = (
+								SELECT
+								COALESCE(ADV.DisplayValue, AC.Code) as name,
+								COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
+								FROM field fi
+								{fieldJoin}
+								inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
+								cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
+								inner join AssetDisplayValue ADV on ADV.AssetID = AC.ID
+								where FieldTypeID = {f.ID} and {whereClause}
+								for json path)
+							){name}_T(value)");
+				}
+				else
+				{
+					if (includeIdColumn)
+					{
+						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
+					}
+
+					columnbuilder.Append($@"case 
+												when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
+												when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
+												when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
+												else '' 
+											end as [{(useFriendlyName ? friendlyName : name)}], ");
+
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}' 
+											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+				}
+			}
+
+			columns = columnbuilder.ToString();
+			joins = joinbuilder.ToString();
+			fields = null;
 		}
 
 		public async Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id)
@@ -416,6 +1154,14 @@ namespace d360.model
 			}).ConfigureAwait(false);
 		}
 
+		public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
+		{
+			return Query<int>(@"select value
+								  from[dbo].[FieldLookupValue]
+								  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
+								  new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
+		}
+
 		public IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id)
 		{
 			string sType = type.ToString();
@@ -427,6 +1173,398 @@ namespace d360.model
 				)
 				.OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName)
 				.AsQueryable();
+		}
+
+		/// <summary>
+		/// Get a list of those following the current object.
+		/// </summary>
+		public IQueryable<FollowDetail> GetFollowersByObject(int? assetTypeid, long? assetid)
+		{
+			string sql;
+			long? id;
+
+			if (assetid != 0)
+			{
+				id = assetid;
+				sql = @"select f.* from FollowDetail f
+						inner join reporting.Global_Resource r on
+						r.ResourceID = f.ResourceID
+						where r.State = @userStatus  and f.assetid = @Id";
+			}
+			else
+			{
+				id = assetTypeid;
+				sql = @"select f.* from FollowDetail f
+						inner join reporting.Global_Resource r on
+						r.ResourceID = f.ResourceID
+						where r.State = @userStatus  and f.assettypeid = @Id";
+			}
+
+			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, ID = id }).AsQueryable();
+		}
+
+		public Follow GetFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
+		{
+			FollowDetail fd = null;
+
+			if (!resourceID.HasValue)
+			{
+				resourceID = CurrentResourceID;
+			}
+
+			if (AssetID != 0)
+			{
+				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetID == AssetID).FirstOrDefault();
+			}
+			else if (AssetTypeID != 0)
+			{
+				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetTypeID == AssetTypeID && i.AssetID == null).FirstOrDefault();
+			}
+
+			if (fd != null)
+			{
+				int followID = fd.FollowID;
+				return GetById<Follow>(followID);
+			}
+			else
+			{
+				return null;
+			}
+		}
+		
+		public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
+		{
+			return Database
+					.Connection
+					.Query<string>(@"
+									declare @type varchar(25),
+											@format nvarchar(250),
+											@lo varchar(25),
+											@loid int
+
+									select  @type = [Type],
+											@format = LookupDisplayFormat,
+											@lo = LookupObjectType,
+											@loid = LookupObjectID
+									from    FieldType 
+									where ID = @fieldTypeID
+
+									select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldValue)", new { fieldTypeID, fieldValue }).First();
+		}
+		
+		public string GetIntersectTypeName(IntersectType intersectType)
+		{
+			string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
+			string itName = Query<string>(sql, new { id = intersectType.ID }).FirstOrDefault();
+
+			return itName != null ? itName : "Name";
+		}
+
+		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
+		{
+			List<string> whereStatements = new List<string>();
+
+			if (limitToClasses != null && limitToClasses.Count > 0)
+			{
+				if (subjectUid.HasValue)
+				{
+					var IsReferenceClass = Filter<AssetType>(i => i.uid == subjectUid.Value && i.Class == AssetTypeClass.Reference).Count();
+					if (IsReferenceClass > 0)
+					{
+						whereStatements.Add($@"T.[uid] != '{subjectUid.Value}'");
+					}
+				}
+				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
+			}
+
+			Predicate predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
+
+			if (predicate != null && predicate.Type == PredicateType.DiagramReference)
+			{
+				whereStatements.Add($@"exists(select top 1 it.id from intersecttype it
+				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
+				 where it.SubjectAssetTypeID = T.ID)");
+			}
+
+			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
+
+			var sql = $@"
+						SELECT		I.ID,
+									I.Uid,
+									I.Name,
+									I.Type
+						FROM		(
+									select	T.ID as AssetTypeID,
+											T.Object as Type,
+											T.ObjectID as ID,
+											T.Uid,
+											case 
+												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
+												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
+												when T.Object = 'GroupType' then 'Security : '
+												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
+												when T.Object = 'ReferenceItemType' then 'Reference : '
+												when T.Object = 'ResourceType' then 'Security : '
+												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
+												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} : ' 
+												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
+											end + coalesce(P.[Path], T.Name) as Name
+									from	AssetType T
+											cross apply dbo.GetAssetTypeTextPathById(T.ID, ' > ') P
+									{whereStatement}
+									) I";
+
+			if (subjectUid.HasValue)
+			{
+				sql += $@" left join IntersectTypeDetail T on T.SubjectUid = @subjectUid and T.ObjectAssetTypeID = I.AssetTypeID ";
+				if (objectUid.HasValue || predicateUid.HasValue)
+				{
+					if (objectUid.HasValue)
+					{
+						if (predicateUid.HasValue)
+						{
+							sql += $@" and T.ObjectUid = @objectUid and T.PredicateUid = @predicateUid";
+						}
+						else
+						{
+							sql += $@" and (T.ObjectUid = @objectUid or T.ID is null)";
+						}
+					}
+					else
+					{
+						if (predicateUid.HasValue)
+						{
+							sql += $@" and T.PredicateUid = @predicateUid where T.ID is null";
+						}
+					}
+				}
+			}
+
+			sql += " ORDER BY I.Name";
+
+			return Database.Connection.Query<IntersectTypeOption>(sql, new { subjectUid, predicateUid, objectUid }).ToList();
+		}
+
+		public ObjectDetail GetObjectDetail(string type, long id)
+		{
+			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
+
+			return model;
+		}
+		
+		public ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId)
+		{
+			ObjectDetail model = null;
+			if(assetId != null)
+			{
+				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
+					ObjectID as ID,
+					UID,
+					ID as AssetID,
+					AssetTypeID,
+					AssetTypeUid,
+					DisplayValue as Name,
+					DisplayValue as TextPath,
+					NULL as [Description],
+					NULL as ParentID,
+					NULL as ParentType,
+					case
+						when Object in ('Task') then NULL
+						else dbo.GenerateAssetUrl(ID)
+					end as Url,
+					TypeID,
+					Type,
+					TypeName,
+					AssetTypeClass as [Class]
+				FROM AssetDetail
+				WHERE ID = @assetId", new { assetId });
+			} else if (assetTypeId != null)
+			{
+				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
+					O.ObjectID as ID,
+					O.[Uid] as AssetTypeUid,
+					O.[Uid] as [Uid],
+					O.Name as Name,
+					O.Name as TextPath,
+					O.Description as [Description],
+					NULL as ParentID,
+					NULL as ParentType,
+					case
+						when Object in ('TaskType') then null
+						else turl.[url]
+					end as Url,
+					O.ObjectID as TypeID,
+					O.[Object] as [Type],
+					'Asset Type' as TypeName,
+					O.[Class] as [Class]
+				FROM	AssetType O
+				cross apply [dbo].GetAssetTypeUrlById(O.ID) turl
+				WHERE O.ID = @assetTypeId", new { assetTypeId });
+			}
+
+			return model;
+		}
+
+		public int GetObjectId(Guid objectUid, SystemObjects objectType)
+		{
+			int objectId = -1;
+			switch (objectType)
+			{
+				case SystemObjects.Tag:
+					objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
+					break;
+				case SystemObjects.IntersectType:
+					objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+					break;
+				case SystemObjects.Predicate:
+					objectId = Predicates.FirstOrDefault(x => x.UID == objectUid).ID;
+					break;
+				case SystemObjects.IssueType:
+					objectId = IssueTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+					break;
+				case SystemObjects.ArtifactType:
+				case SystemObjects.PolicyType:
+				case SystemObjects.ReferenceItemType:
+				case SystemObjects.RuleType:
+				case SystemObjects.TaxonomyType:
+					objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
+					break;
+				case SystemObjects.ResourceType:
+					objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
+					break;
+				case SystemObjects.TaskType:
+					objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
+					break;
+				case SystemObjects.ConnectorLabel:
+					objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
+					break;
+				case SystemObjects.SemanticType:
+					objectId = Convert.ToInt32(Semantics.FirstOrDefault(x => x.Uid == objectUid).ID);
+					break;
+				default:
+					objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
+					if (objectId <= 0)
+					{
+						throw new ArgumentNullException(string.Format(CompanyContextErrors.AssetUidNotFound, objectUid.ToString()));
+					}
+					break;
+			}
+
+			return objectId;
+		}
+
+		public string GetObjectTypePath(string type, long id)
+		{
+			string query = string.Format("SELECT utility.GetObjectTypePath('{0}', {1}) as path", type, id);
+
+			return Database.SqlQuery<string>(query).SingleOrDefault();
+		}
+
+		public JObject GetPageInformation(Guid assetUid)
+		{
+			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @assetUid, @rid", new { assetUid, rid = CurrentResourceID });
+			if (jsonRows.Count() == 0)
+			{
+				return null;
+			}
+
+			return JObject.Parse(string.Concat(jsonRows));
+		}
+		
+		public AssetDetail GetParentAsset(long assetId)
+		{
+			if (assetId <= 0)
+			{
+				return default(AssetDetail);
+			}
+
+			string sql = @"select D.* from AssetDetail D inner join [PredicateIntersect] I on I.SubjectAssetID = D.ID and I.ObjectAssetID = @assetId and I.[PredicateType] in (3,4)";
+
+			var detail = Query<AssetDetail>(sql, new { assetId }).FirstOrDefault();
+
+			if (detail == null)
+			{ 
+				detail = default;
+			}
+
+			return detail;
+		}
+		
+		public AssetType GetParentType(int id)
+		{
+			if (id <= 0)
+			{
+				return null;
+			}
+
+			string sql = @"
+select	A.*
+from	IntersectType I
+		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type and I.ObjectAssetTypeID = @id
+		inner join AssetType A on A.id = I.SubjectAssetTypeID";
+
+			return Query<AssetType>(sql, new { type = (int)PredicateType.InterTypeHierarchy, id }).FirstOrDefault();
+		}
+
+		public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
+		{
+			List<PredicateTypeInfo> allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p =>
+				p.AllowIntersectTypeAssignment
+				&& p.AllowEditFromRelationshipEditor
+				&& p.ID != PredicateType.InterTypeHierarchy
+				&& p.ID != PredicateType.IntraTypeHierarchy
+				).ToList();
+
+			bool isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
+
+			if (isSubjectIntersectType)
+			{
+				allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
+			}
+			else
+			{
+				AssetType subjectAssetType = Filter<AssetType>(i => i.uid == subjectUid).FirstOrDefault();
+				if (subjectAssetType == null)
+				{
+					throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
+				}
+				allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
+			}
+
+			PredicateType[] allowedTypes = allowedFunctionalTypes.Select(p => p.ID).ToArray();
+			IQueryable<Predicate> predicates = Predicates.Where(i => allowedTypes.Contains(i.Type));
+
+			return predicates.ToList();
+		}
+
+		public List<RelationshipDirectionFieldInfo> GetRelationFieldData(int assetTypeId, List<FieldType> fields)
+		{
+			List<RelationshipDirectionFieldInfo> relationFieldInfos = new List<RelationshipDirectionFieldInfo>();
+			List<FieldType> relationshipFields = fields.Where(i => i.Type == DataType.Relationship.ToString() || i.Type == DataType.FieldFromRelationship.ToString()).ToList();
+
+			if (relationshipFields != null)
+			{
+				if (relationshipFields.Count > 0)
+				{
+					List<int> intersectTypeIDs = relationshipFields.Select(i => i.LookupObjectID.Value).ToList();
+					List<IntersectType> intersectTypes = Filter<IntersectType>(i => intersectTypeIDs.Contains(i.ID)).ToList();
+					foreach (FieldType rF in relationshipFields)
+					{
+						RelationshipDirectionFieldInfo relationFieldInfo = new RelationshipDirectionFieldInfo { FieldTypeID = rF.ID, IntersectTypeID = rF.LookupObjectID.Value };
+						IntersectType intersectType = intersectTypes.SingleOrDefault(i => i.ID == relationFieldInfo.IntersectTypeID);
+
+						if (intersectType != null)
+						{
+							relationFieldInfo.IsSubject = intersectType.SubjectAssetTypeID == assetTypeId;
+							relationFieldInfo.AssetTypeID = relationFieldInfo.IsSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
+							relationFieldInfo.AssetClass = relationFieldInfo.IsSubject ? intersectType.ObjectClass : intersectType.SubjectClass;
+							relationFieldInfos.Add(relationFieldInfo);
+						}
+					}
+				}
+			}
+
+			return relationFieldInfos;
 		}
 
 		public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true, IntersectType intersectType = null, FieldType ft = null, bool onlyQueries = false)
@@ -711,193 +1849,120 @@ namespace d360.model
 			return dict;
 		}
 
-		public AssetDetail GetAssetDetail(long id)
+		public SettingInfo GetSetting(Setting setting)
 		{
-			AssetDetail model = Query<AssetDetail>(@"
-													select	ID,
-															DisplayValue,
-															AssetTypeID,
-															State,
-															Object,
-															ObjectID,
-															TypeName,
-															Type,
-															TypeID,
-															uid
-													from	AssetDetail
-													where   ID = @id", new { id }).SingleOrDefault();
-
-			return model;
+			return GetSettings().SingleOrDefault(s => s.ID == setting);
 		}
 
-		public AssetDetail GetAssetDetail(string objectType, long objectId)
+		public T GetSettingValue<T>(Setting setting)
 		{
-			AssetDetail model = Query<AssetDetail>(@"
-													select	ID,
-															DisplayValue,
-															AssetTypeID,
-															State,
-															Object,
-															ObjectID,
-															TypeName as AssetTypeName,
-															Type,
-															TypeID,
-															uid,
-															assetTypeUid
-													from	AssetDetail
-													where   [ObjectID] = @id and [Object] = @type", 
-													new { id = objectId, type = new DbString { Value = objectType, IsFixedLength = true, Length = 20, IsAnsi = true } }
-													).SingleOrDefault();
+			SettingInfo info = GetSetting(setting);
 
-			return model;
-		}
+			T checkType = default(T);
 
-		public ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId)
-		{
-			ObjectDetail model = null;
-			if(assetId != null)
+			if (checkType is Guid)
 			{
-				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
-					ObjectID as ID,
-					UID,
-					ID as AssetID,
-					AssetTypeID,
-					AssetTypeUid,
-					DisplayValue as Name,
-					DisplayValue as TextPath,
-					NULL as [Description],
-					NULL as ParentID,
-					NULL as ParentType,
-					case
-						when Object in ('Task') then NULL
-						else dbo.GenerateAssetUrl(ID)
-					end as Url,
-					TypeID,
-					Type,
-					TypeName,
-					AssetTypeClass as [Class]
-				FROM AssetDetail
-				WHERE ID = @assetId", new { assetId });
-			} else if (assetTypeId != null)
-			{
-				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
-					O.ObjectID as ID,
-					O.[Uid] as AssetTypeUid,
-					O.[Uid] as [Uid],
-					O.Name as Name,
-					O.Name as TextPath,
-					O.Description as [Description],
-					NULL as ParentID,
-					NULL as ParentType,
-					case
-						when Object in ('TaskType') then null
-						else turl.[url]
-					end as Url,
-					O.ObjectID as TypeID,
-					O.[Object] as [Type],
-					'Asset Type' as TypeName,
-					O.[Class] as [Class]
-				FROM	AssetType O
-				cross apply [dbo].GetAssetTypeUrlById(O.ID) turl
-				WHERE O.ID = @assetTypeId", new { assetTypeId });
+				Guid guid = Guid.Parse(info.Value);
+
+				return (T)Convert.ChangeType(guid, typeof(T));
 			}
 
-			return model;
+			return (T)Convert.ChangeType(info.Value, typeof(T));
 		}
 
-		public ObjectDetail GetObjectDetail(string type, long id)
+		public List<SettingInfo> GetSettings()
 		{
-			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
+			// Get the list of settings from the D3S_###.dbo.Setting table.
+			// Get the full list of settings from the Setting enum.
+			// Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
 
-			return model;
-		}
+			List<EnvironmentSetting> overrides = Caching.GetItem<List<EnvironmentSetting>>(SettingsCacheKey);
 
-		public string GetObjectTypePath(string type, long id)
-		{
-			string query = string.Format("SELECT utility.GetObjectTypePath('{0}', {1}) as path", type, id);
-
-			return Database.SqlQuery<string>(query).SingleOrDefault();
-		}
-
-		public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
-		{
-			return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
-		}
-
-		public AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid)
-		{
-			AssetType assetType = Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
-			if (assetType != null)
+			if (overrides == null)
 			{
-				return GetAssetTypeStyle(assetType.ID);
+				overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
+				Caching.SetItem(SettingsCacheKey, overrides, true, 1);
 			}
 
-			return null;
-		}
+			List<SettingInfo> settings = Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID).ToList();
 
-		public AssetTypeStyle GetAssetTypeStyle(string type, int id)
-		{
-			AssetType assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
-			if (assetType != null)
+			settings.ForEach(s =>
 			{
-				return GetAssetTypeStyle(assetType.ID);
-			}
+				string defaultValue = s.DefaultValue;
 
-			return null;
+				if (defaultValue.In("True", "False"))
+				{
+					defaultValue = defaultValue.ToLowerInvariant();
+				}
+
+				if (overrides.Any(o => o.ID == s.ID))
+				{
+					s.Value = overrides.First(o => o.ID == s.ID).Value;
+
+					if (s.Value.In("True", "False"))
+					{
+						s.Value = s.Value.ToLowerInvariant();
+					}
+					else if (s.ID == Setting.GovernanceRoleReferenceListUid)
+					{
+						AssetType IsUidExists = Filter<AssetType>(i => i.uid.ToString().ToLower() == s.Value.ToLower()).FirstOrDefault();
+						if (IsUidExists == null)
+						{
+							s.Value = Guid.Empty.ToString();
+						}
+					}
+				}
+				else
+				{
+					s.Value = defaultValue;
+				}
+			});
+
+			return settings;
 		}
 
-		public AssetType GetParentType(int id)
+		public Dictionary<string, string> GetSettingsAsDictionary()
 		{
-			if (id <= 0)
+			return GetSettings().ToDictionary(k => k.ID.ToString(), v => v.Value);
+		}
+
+		public string GetUserHomePage()
+		{
+			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
+
+			return homePage?.Route ?? "";
+		}
+
+		public async Task<TypeIdentifierInfoModel> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)
+		{
+			IEnumerable<TypeIdentifierInfoModel> result;
+			switch (type)
 			{
-				return null;
+				case TypeIdentifierInfoModelType.ActionType:
+					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
+					break;
+				case TypeIdentifierInfoModelType.AssetType:
+					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
+					break;
+				case TypeIdentifierInfoModelType.RelationshipType:
+					result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid }).ConfigureAwait(false);
+					break;
+				default:
+					throw new ArgumentNullException(CompanyContextErrors.InvalidTypeIdentifierInfoModel);
 			}
 
-			string sql = @"
-select	A.*
-from	IntersectType I
-		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type and I.ObjectAssetTypeID = @id
-		inner join AssetType A on A.id = I.SubjectAssetTypeID";
-
-			return Query<AssetType>(sql, new { type = (int)PredicateType.InterTypeHierarchy, id }).FirstOrDefault();
+			return result.FirstOrDefault();
 		}
 
-		public string GetIntersectTypeName(IntersectType intersectType)
+		public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
 		{
-			string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
-			string itName = Query<string>(sql, new { id = intersectType.ID }).FirstOrDefault();
-
-			return itName != null ? itName : "Name";
-		}
-
-		public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)
-		{
-
-			string sql = @"select	1 
-from	IntersectType I
-		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type
-		inner join AssetType O on O.ID = I.ObjectAssetTypeID and O.[Object] = @object and O.ObjectID = @objectId";
-
-			return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
-		}
-
-		public AssetDetail GetParentAsset(long assetId)
-		{
-			if (assetId <= 0)
-			{
-				return default(AssetDetail);
-			}
-
-			string sql = @"select D.* from AssetDetail D inner join [PredicateIntersect] I on I.SubjectAssetID = D.ID and I.ObjectAssetID = @assetId and I.[PredicateType] in (3,4)";
-
-			var detail = Query<AssetDetail>(sql, new { assetId }).FirstOrDefault();
-
-			if (detail == null)
-			{ 
-				detail = default;
-			}
-
-			return detail;
+			return Query<int>(@"
+select	count(*) 
+from	processexpandeddata ped
+		inner join IntersectTypeDetail it on it.uid = @intersectTypeUid 
+			and ped.DiagramAssetTypeUid = it.SubjectUid 
+			and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
+			new { intersectTypeUid }).FirstOrDefault() > 0;
 		}
 
 		public bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID)
@@ -918,671 +1983,32 @@ from	IntersectType I
 			}
 			return follow;
 		}
-
+		
 		public bool IsUserFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
 		{
 			return GetFollowingParent(AssetTypeID, AssetID, resourceID) != null;
 		}
 
-		public Follow GetFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
+		public bool LookupFieldHasColorItem(FieldType fieldType)
 		{
-			FollowDetail fd = null;
+			if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
+			{
+				string obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
 
-			if (!resourceID.HasValue)
-			{
-				resourceID = CurrentResourceID;
-			}
-
-			if (AssetID != 0)
-			{
-				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetID == AssetID).FirstOrDefault();
-			}
-			else if (AssetTypeID != 0)
-			{
-				fd = Filter<FollowDetail>(i => i.ResourceID == resourceID && i.AssetTypeID == AssetTypeID && i.AssetID == null).FirstOrDefault();
-			}
-
-			if (fd != null)
-			{
-				int followID = fd.FollowID;
-				return GetById<Follow>(followID);
-			}
-			else
-			{
-				return null;
-			}
-		}
-
-		public bool UpdateFollowStatus(int? assetTypeid, long? assetid, int? resourceID, bool includeChildren = false)
-		{
-			Follow f = null;
-
-			if (!resourceID.HasValue)
-			{
-				resourceID = CurrentResourceID;
-			}
-
-			bool value = false;
-
-			if (assetid != 0)
-			{
-				f = Filter<Follow>(i => i.AssetID == assetid && i.ResourceID == resourceID).FirstOrDefault();
-			}
-			else if (assetTypeid != 0)
-			{
-				f = Filter<Follow>(i => i.AssetTypeID == assetTypeid && i.ResourceID == resourceID).FirstOrDefault();
-			}
-
-			if (f != null)
-			{
-				Delete(f);
-				value = false;
-			}
-			else
-			{
-				if (IsUserFollowingParent(assetTypeid, assetid, resourceID.Value) && !IsUserFollowing(assetTypeid, assetid, resourceID.Value))
+				if (obj != "ReferenceItemType")
 				{
-					//the user is following a parent of this item
+					return false;
 				}
-				else
+
+				AssetType assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
+
+				if (assettype != null)
 				{
-					FollowType followType = FollowType.Single;
-
-					if (assetTypeid != 0 && assetid == 0)
-					{
-						followType = FollowType.Parent;
-					}
-					else if (assetid != 0)
-					{
-						followType = FollowType.Single;
-					}
-
-					if (includeChildren)
-					{
-						followType = FollowType.Parent;
-					}
-
-					SqlParameter pResourceID = new SqlParameter("resourceID", resourceID);
-					SqlParameter pFollowTypeID = new SqlParameter("followTypeID", followType);
-					SqlParameter pIncludeChildren = new SqlParameter("includeChildren", includeChildren);
-					SqlParameter pAssetid = new SqlParameter("Assetid", assetid);
-					SqlParameter pAssetTypeid = new SqlParameter("AssetTypeid", assetTypeid);
-
-					Database.ExecuteSqlCommand("FollowObject @resourceID, @followTypeID, @includeChildren, @Assetid, @AssetTypeid", pResourceID, pFollowTypeID, pIncludeChildren, pAssetid, pAssetTypeid);
-
-					value = true;
+					return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
 				}
 			}
 
-			return value;
-		}
-
-		#region Relationships
-
-		public IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID)
-		{
-			Intersect intersect = null;
-			IntersectDetail dtl = null;
-
-			ObjectDetail subjectDetail = GetObjectDetail(subject, subjectID);
-			ObjectDetail objectDetail = GetObjectDetail(@object, objectID);
-
-			if (subjectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Subject);
-			}
-
-			if (objectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Object);
-			}
-
-			if (subject == "ReferenceItemType")
-			{
-				subjectDetail.TypeID = 0;
-			}
-
-			if (@object == "ReferenceItemType")
-			{
-				objectDetail.TypeID = 0;
-			}
-
-			IntersectType intersectType = GetById<IntersectType>(intersectTypeID);
-
-			if (intersectType == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-
-			if (
-				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
-				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
-				)
-			{
-				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
-						(i.Subject == subject && i.SubjectID == subjectID && i.Object == @object && i.ObjectID == objectID) ||
-						(i.Object == subject && i.ObjectID == subjectID && i.Subject == @object && i.SubjectID == objectID)
-					)
-				).SingleOrDefault();
-
-				if (dtl == null)
-				{
-					intersect = new Intersect { IntersectTypeID = intersectType.ID };
-
-					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
-					{
-						intersect.SubjectAssetID = subjectDetail.AssetID;
-						intersect.ObjectAssetID = objectDetail.AssetID;
-					}
-					else
-					{
-						intersect.SubjectAssetID = objectDetail.AssetID;
-						intersect.ObjectAssetID = subjectDetail.AssetID;
-					}
-					Intersects.Add(intersect);
-					SaveChanges();
-
-					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
-				}
-
-				return dtl;
-			}
-			else
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-		}
-
-		public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
-		{
-			Intersect intersect = null;
-			IntersectDetail dtl = null;
-
-			string sSubject = subject.ToString();
-			string sObject = @object.ToString();
-
-			ObjectDetail subjectDetail = GetObjectDetail(subject.ToString(), subjectID);
-			ObjectDetail objectDetail = GetObjectDetail(@object.ToString(), objectID);
-
-			if (subjectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Subject);
-			}
-
-			if (objectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Object);
-			}
-
-			IntersectType intersectType = GetById<IntersectType>(intersectTypeID);
-
-			if (intersectType == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-
-			if (
-				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
-				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
-				)
-			{
-				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
-						(i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
-						(i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
-					)
-				).SingleOrDefault();
-
-				if (dtl == null)
-				{
-					intersect = new Intersect { IntersectTypeID = intersectType.ID };
-
-					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
-					{
-						intersect.SubjectAssetID = subjectDetail.AssetID;
-						intersect.ObjectAssetID = objectDetail.AssetID;
-					}
-					else
-					{
-						intersect.SubjectAssetID = objectDetail.AssetID;
-						intersect.ObjectAssetID = subjectDetail.AssetID;
-					}
-					Intersects.Add(intersect);
-					SaveChanges();
-
-					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
-				}
-
-				return dtl;
-			}
-			else
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-		}
-
-		public bool DeleteRelationship(int id)
-		{
-			Intersect item = GetById<Intersect>(id);
-
-			if (item == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Relationship);
-			}
-			
-			var intersectDetail = IntersectDetails.Single(i => i.ID == id);
-
-			Audits.AddRange(new List<Audit>
-			{
-				new Audit { 
-					Action = "Deleted", 
-					ActionDescription = "Relationship removed.", 
-					ActionObject = "Intersect", 
-					ActionObjectID = id, 
-					ActionObjectName = intersectDetail.ObjectName, 
-					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
-					Date = DateTime.UtcNow,
-					Object = intersectDetail.Subject,
-					ObjectID = intersectDetail.SubjectID,
-					ObjectName = intersectDetail.SubjectName,
-					ResourceID = CurrentResourceID
-				},
-				new Audit {
-					Action = "Deleted",
-					ActionDescription = "Relationship removed.",
-					ActionObject = "Intersect",
-					ActionObjectID = id,
-					ActionObjectName = intersectDetail.SubjectName,
-					ActionObjectTypeName = $"{intersectDetail.SubjectTypeName} [{intersectDetail.PredicateName}] {intersectDetail.ObjectTypeName}",
-					Date = DateTime.UtcNow,
-					Object = intersectDetail.Object,
-					ObjectID = intersectDetail.ObjectID,
-					ObjectName = intersectDetail.ObjectName,
-					ResourceID = CurrentResourceID
-				}
-			});
-			Delete<Field>(f => f.IntersectID == id);
-			Delete(item);
-
-			QueueSource.CreateTopicMessage(new EventInfo
-			{
-				CompanyID = CurrentCompanyID,
-				Action = ChangeType.Delete,
-				ResourceID = CurrentResourceID,
-				Object = new EventObjectInfo
-				{
-					Object = SystemObjects.Intersect,
-					ObjectID = id,
-					ObjectType = SystemObjects.IntersectType,
-					ObjectTypeID = item.IntersectTypeID
-				},
-				DomainPrefix = CurrentCompanyDomain
-			});
-
-			return true;
-		}
-
-
-		public List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null)
-		{
-			List<string> whereStatements = new List<string>();
-
-			if (limitToClasses != null && limitToClasses.Count > 0)
-			{
-				if (subjectUid.HasValue)
-				{
-					var IsReferenceClass = Filter<AssetType>(i => i.uid == subjectUid.Value && i.Class == AssetTypeClass.Reference).Count();
-					if (IsReferenceClass > 0)
-					{
-						whereStatements.Add($@"T.[uid] != '{subjectUid.Value}'");
-					}
-				}
-				whereStatements.Add("T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")");
-			}
-
-			Predicate predicate = Predicates.FirstOrDefault(x => x.UID == predicateUid);
-
-			if (predicate != null && predicate.Type == PredicateType.DiagramReference)
-			{
-				whereStatements.Add($@"exists(select top 1 it.id from intersecttype it
-				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
-				 where it.SubjectAssetTypeID = T.ID)");
-			}
-
-			string whereStatement = whereStatements.Count == 0 ? "" : "where " + string.Join(" and ", whereStatements);
-
-			var sql = $@"
-						SELECT		I.ID,
-									I.Uid,
-									I.Name,
-									I.Type
-						FROM		(
-									select	T.ID as AssetTypeID,
-											T.Object as Type,
-											T.ObjectID as ID,
-											T.Uid,
-											case 
-												when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
-												when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
-												when T.Object = 'GroupType' then 'Security : '
-												when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
-												when T.Object = 'ReferenceItemType' then 'Reference : '
-												when T.Object = 'ResourceType' then 'Security : '
-												when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
-												when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} : ' 
-												when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
-											end + coalesce(P.[Path], T.Name) as Name
-									from	AssetType T
-											cross apply dbo.GetAssetTypeTextPathById(T.ID, ' > ') P
-									{whereStatement}
-									) I";
-
-			if (subjectUid.HasValue)
-			{
-				sql += $@" left join IntersectTypeDetail T on T.SubjectUid = @subjectUid and T.ObjectAssetTypeID = I.AssetTypeID ";
-				if (objectUid.HasValue || predicateUid.HasValue)
-				{
-					if (objectUid.HasValue)
-					{
-						if (predicateUid.HasValue)
-						{
-							sql += $@" and T.ObjectUid = @objectUid and T.PredicateUid = @predicateUid";
-						}
-						else
-						{
-							sql += $@" and (T.ObjectUid = @objectUid or T.ID is null)";
-						}
-					}
-					else
-					{
-						if (predicateUid.HasValue)
-						{
-							sql += $@" and T.PredicateUid = @predicateUid where T.ID is null";
-						}
-					}
-				}
-			}
-
-			sql += " ORDER BY I.Name";
-
-			return Database.Connection.Query<IntersectTypeOption>(sql, new { subjectUid, predicateUid, objectUid }).ToList();
-		}
-
-		public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
-		{
-			List<PredicateTypeInfo> allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p =>
-				p.AllowIntersectTypeAssignment
-				&& p.AllowEditFromRelationshipEditor
-				&& p.ID != PredicateType.InterTypeHierarchy
-				&& p.ID != PredicateType.IntraTypeHierarchy
-				).ToList();
-
-			bool isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
-
-			if (isSubjectIntersectType)
-			{
-				allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
-			}
-			else
-			{
-				AssetType subjectAssetType = Filter<AssetType>(i => i.uid == subjectUid).FirstOrDefault();
-				if (subjectAssetType == null)
-				{
-					throw new ArgumentNullException(CompanyContextErrors.SubjectAssetTypeNotExists);
-				}
-				allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
-			}
-
-			PredicateType[] allowedTypes = allowedFunctionalTypes.Select(p => p.ID).ToArray();
-			IQueryable<Predicate> predicates = Predicates.Where(i => allowedTypes.Contains(i.Type));
-
-			return predicates.ToList();
-		}
-
-		public IntersectType UpsertIntersectType(IntersectType model)
-		{
-			Predicate predicateModel = GetById<Predicate>(model.PredicateID.Value);
-
-			if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.AddRelationshipValidation_Predicate);
-			}
-
-			if ((model.SubjectAssetTypeID != model.ObjectAssetTypeID) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectSameThisPredicate);
-			}
-
-			if ((model.SubjectAssetTypeID == model.ObjectAssetTypeID) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectNotSameThisPredicate);
-			}
-
-			AssetType subjectAssetType = null;
-			AssetType objectAssetType = null;
-			subjectAssetType = Filter<AssetType>(i => i.ID == model.SubjectAssetTypeID).FirstOrDefault();
-			objectAssetType = Filter<AssetType>(i => i.ID == model.ObjectAssetTypeID).FirstOrDefault();
-
-			PredicateTypeInfo predicateInfo = predicateModel.Type.AsInfoModel();
-
-			if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateSubjectOfClass, predicateInfo.SubjectAssetClassesSupported));
-			}
-
-			if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
-			{
-				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateObjectOfClass, predicateInfo.ObjectAssetClassesSupported));
-			}
-
-			if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
-			{
-				if (predicateModel.Type == PredicateType.Transformation)
-				{
-					if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
-					{
-						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationSubjOrObj);
-					}
-
-					if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
-					{
-						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationNotBoth);
-					}
-				}
-			}
-
-			if (model.ID > 0)
-			{
-				Update(model);
-			}
-			else
-			{
-				Add(model);
-			}
-
-			return model;
-		}
-
-		#endregion
-
-		#region Social
-
-		/// <summary>
-		/// Get a list of those following the current object.
-		/// </summary>
-		public IQueryable<FollowDetail> GetFollowersByObject(int? assetTypeid, long? assetid)
-		{
-			string sql;
-			long? id;
-
-			if (assetid != 0)
-			{
-				id = assetid;
-				sql = @"select f.* from FollowDetail f
-						inner join reporting.Global_Resource r on
-						r.ResourceID = f.ResourceID
-						where r.State = @userStatus  and f.assetid = @Id";
-			}
-			else
-			{
-				id = assetTypeid;
-				sql = @"select f.* from FollowDetail f
-						inner join reporting.Global_Resource r on
-						r.ResourceID = f.ResourceID
-						where r.State = @userStatus  and f.assettypeid = @Id";
-			}
-
-			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, ID = id}).AsQueryable();
-		}
-
-		#endregion
-
-		#region Token Processing Methods
-
-		private string renderTemplate(string templateType, string action, SystemObjects type, int id)
-		{
-			string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty, CurrentResourceID);
-			RenderTemplateModel model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
-			string html = "";
-			
-			if (model != null)
-			{
-				html = model.Body;
-			}
-
-			return html;
-		}
-
-		public string RenderTooltip(string action, SystemObjects type, int id)
-		{
-			return renderTemplate("Tooltip", action, type, id);
-		}
-
-		#endregion
-
-		#endregion
-
-		#region Generic Methods
-
-		public override bool Add<T>(T item)
-		{
-			Set<T>().Add(item);
-			bool returnValue = SaveChanges() > 0;
-
-			return returnValue;
-		}
-
-		/// <summary>
-		/// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
-		/// </summary>
-		[Obsolete("Please, use DeleteAsync. Delete is non-async & not transactional")]
-		public override bool Delete<T>(Expression<Func<T, bool>> predicate)
-		{
-			List<T> items = Filter(predicate).ToList();
-			bool allDeleted = true;
-
-			items.ForEach(i =>
-			{
-				if (!Delete(i))
-				{
-					allDeleted = false;
-				}
-			});
-
-			return allDeleted;
-		}
-
-		/// <summary>
-		/// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
-		/// </summary>
-		public override bool Delete<T>(T entity)
-		{
-			try
-			{
-				Set<T>().Remove(entity);
-
-				return SaveChanges() > 0;
-			}
-			catch (Exception ex)
-			{
-				throw resolveToRealException(ex);
-			}
-		}
-
-		/// <summary>
-		/// Removes the item(s) from the system, as well as any dynamic fields associated with the item(s), if any.
-		/// </summary>
-		public async Task DeleteAsync<T>(Expression<Func<T, bool>> predicate) where T : BaseObject
-		{
-			try
-			{
-				List<T> items = await Filter(predicate).ToListAsync();
-				items.ForEach(i => Set<T>().Remove(i));
-
-				await SaveChangesAsync();
-			}
-			catch (Exception ex)
-			{
-				throw resolveToRealException(ex);
-			}
-		}
-
-		/// <summary>
-		/// Removes the item from the system, as well as any dynamic fields associated with this item, if any.
-		/// </summary>
-		public bool Delete(SystemObjects type, int id)
-		{
-			try
-			{
-				//needs to be before delete before we say goodbye to our little friend.
-				ObjectDetail det = GetObjectDetail(type.ToString(), id);
-
-				Database.Connection.Execute("exec [DeleteObject] @Obj, @ObjectID, @ResourceID", new { Obj = type.ToString(), ObjectID = id, ResourceID = CurrentResourceID }, null, 120);
-
-				// add a removed message to the service bus
-				if (IsEventingEnabled)
-				{
-					if (det != null)
-					{
-						List<EventInfo> events = new List<EventInfo>();
-						AddQE(events, ChangeType.Delete, new EventObjectInfo
-						{
-							Object = type,
-							ObjectID = id,
-							ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), det.Type),
-							ObjectTypeID = det.TypeID
-						});
-						QueueSource.CreateTopicMessages(events);
-					}
-				}
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				throw resolveToRealException(ex);
-			}
-		}
-
-		public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90)
-		{
-			IEnumerable<string> jsonStrings = await QueryAsync<string>(query, dbArgs, timeout).ConfigureAwait(false);
-			string json = string.Join("", jsonStrings);
-
-			return JsonConvert.DeserializeObject<T>(json);
-		}
-
-		public async Task<T> ExecuteGetRelationshipQuery<T>(string query, CancellationToken cancellationToken, DynamicParameters dbArgs, int timeout = 90)
-		{
-
-			IEnumerable<string> jsonStrings = await Database.Connection.QueryAsync<string>(
-			  new CommandDefinition(query,
-			  cancellationToken: cancellationToken,
-			  parameters: dbArgs,
-			  commandTimeout: ApiTimeout
-			));
-			string json = string.Join("", jsonStrings);
-
-			return JsonConvert.DeserializeObject<T>(json);
+			return false;
 		}
 
 		protected override void OnModelCreating(DbModelBuilder modelBuilder)
@@ -1609,6 +2035,215 @@ from	IntersectType I
 			base.OnModelCreating(modelBuilder);
 		}
 
+		public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+		{
+			dbArgs = new DynamicParameters();
+			whereStatements = new List<string>();
+
+			if (queryParams.Any(x => x.Key.Equals("_filter", StringComparison.OrdinalIgnoreCase)))
+			{
+				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+				if (!string.IsNullOrEmpty(value))
+				{
+					FilterDataProvider filterDataProvider = new FilterDataProvider(this);
+					FilterExpressionParser filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
+					filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
+					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+					List<int> filteredFields = new List<int>();
+					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out filteredFields));
+
+					foreach (KeyValuePair<string, object> item in sqlParams)
+					{
+						dbArgs.Add(item.Key, item.Value);
+					}
+				}
+			}
+		}
+
+		public void ParseSimpleFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+		{
+			List<string> wheres = new List<string>();
+			DynamicParameters dbs = new DynamicParameters();
+
+			if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
+			{
+				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+
+				if (!string.IsNullOrEmpty(value))
+				{
+					fieldList.ForEach(f =>
+					{
+						switch (f.SqlFieldType)
+						{
+							case SqlFieldType.Text:
+								wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
+								dbs.Add($"@S_{f.ApiName}", value + "%");
+								break;
+							case SqlFieldType.Boolean:
+								bool filterBool;
+								if (bool.TryParse(value, out filterBool))
+								{
+									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+									dbs.Add($"@S_{f.ApiName}", filterBool);
+								}
+								break;
+							case SqlFieldType.Date:
+							case SqlFieldType.DateTime:
+								DateTime filterDate;
+
+								if (DateTime.TryParse(value, out filterDate))
+								{
+									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+									dbs.Add($"@S_{f.ApiName}", filterDate);
+								}
+
+								break;
+							case SqlFieldType.Decimal:
+							case SqlFieldType.Number:
+								decimal filterNumber;
+
+								if (decimal.TryParse(value, out filterNumber))
+								{
+									int places = filterNumber.GetNumberOfDecimalPlaces();
+									decimal ceil = decimal.Round(decimal.Parse(value + "9"), places);
+									wheres.Add($"{f.SqlExpression} between @S_{f.ApiName}_1 and @S_{f.ApiName}_2");
+									dbs.Add($"@S_{f.ApiName}_1", filterNumber);
+									dbs.Add($"@S_{f.ApiName}_2", ceil);
+								}
+
+								break;
+							case SqlFieldType.Guid:
+								Guid filterGuid;
+
+								if (Guid.TryParse(value, out filterGuid))
+								{
+									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+									dbs.Add($"@S_{f.ApiName}", filterGuid);
+								}
+
+								break;
+							default:
+								break;
+						}
+					});
+				}
+			}
+
+			whereStatements = wheres;
+			dbArgs = dbs;
+		}
+
+		public string ParseOrderColumn(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fields, string defaultColumn)
+		{
+			string column = defaultColumn;
+
+			if (queryParams.Any(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)))
+			{
+				string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
+
+				DefaultFilter field = fields.FirstOrDefault(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase));
+
+				if (field == null)
+				{
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidOrderPassed);
+				}
+
+				column = field.SqlExpression;
+			}
+
+			return column;
+		}
+
+		public string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc")
+		{
+			string direction = defaultDirection;
+
+			if (queryParams.Any(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)))
+			{
+				string[] allowedDirections = new string[] { "asc", "desc" };
+				string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)).Value;
+
+				if (allowedDirections.Contains(order.Trim().ToLower()))
+				{
+					direction = order;
+				}
+				else
+				{
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidDirection);
+				}
+			}
+
+			return direction;
+		}
+
+		public int ParsePageNumber(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultPage = 1)
+		{
+			int size = defaultPage;
+
+			if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
+			{
+				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out size))
+				{
+					if (size < 1)
+					{
+						size = defaultPage;
+					}
+				}
+			}
+
+			return size;
+		}
+
+		public int ParsePageSize(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultSize = 250)
+		{
+			int size = defaultSize;
+
+			if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
+			{
+				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out size))
+				{
+					if (size < 1)
+					{
+						size = defaultSize;
+					}
+				}
+			}
+
+			return size;
+		}
+
+		public string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000)
+		{
+			string offset = "";
+
+			if (pageSize > 0 || pageNumber > 0)
+			{
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				if (pageNumber < 1)
+				{
+					pageNumber = 1;
+				}
+
+				if (pageSize > pageSizeLimit)
+				{
+					pageSize = pageSizeLimit;
+				}
+
+				if (pageNumber > 10000)
+				{
+					pageNumber = 10000;
+				}
+
+				offset = $" offset {pageSize * (pageNumber - 1)} rows fetch next {pageSize} rows only ";
+			}
+
+			return offset;
+		}
+
 		public IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90)
 		{
 			return Database.Connection.Query<T>(sql, param, null, false, timeout);
@@ -1628,6 +2263,7 @@ from	IntersectType I
 		{
 			return await Database.Connection.QueryAsync<T>(sql, param, null, timeout).ConfigureAwait(false);
 		}
+		
 		public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
 		{
 			return await Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param, null, timeout);
@@ -1636,71 +2272,6 @@ from	IntersectType I
 		public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90)
 		{
 			return await Database.Connection.QueryMultipleAsync(sql, param, null, timeout);
-		}
-
-		public override bool Update<T>(T item)
-		{
-			ObjectContext.ObjectStateManager.ChangeObjectState(item, EntityState.Modified);
-			return SaveChanges() > 0;
-		}
-
-		public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject
-		{
-			bool isUpdate = forceUpdate || IsPersistent(entity);
-
-			string fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
-			FieldsObjectModel attr = entity.GetFieldsObjectInfo();
-			bool returnValue = true;
-
-			if (isUpdate)
-			{
-				ObjectContext.ObjectStateManager.ChangeObjectState(entity, EntityState.Modified);
-			}
-			else
-			{
-				returnValue = Add(entity);
-
-				//Disable eventing after adding so update event doesnt trigger and cause duplicates without changed field
-				IsEventingEnabled = false;
-			}
-
-			if (fields != null && fields.Count > 0)
-			{
-				AddOrUpdateFields(fields);
-			}
-			else
-			{
-				SaveChanges();
-			}
-
-			IsEventingEnabled = true;
-			CreateOrUpdateDisplayValue(0, attr.Type.ToString(), entity.ID);
-
-			return returnValue;
-		}
-
-		public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
-		{
-			Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type", ""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
-		}
-
-		public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
-		{
-			//check if assettype is part of custom folder, if so, update its value
-			SiteNav navSiteItem = SiteNav.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId && x.ParentID != null);
-			
-			if (navSiteItem != null)
-			{
-				string assetTypeName = AssetTypes.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId)?.Name;
-				if (!string.IsNullOrEmpty(assetTypeName))
-				{
-					navSiteItem.Title = navSiteItem.Name = assetTypeName;
-
-					SaveChanges();
-				}
-			}
-
-			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
 		}
 
 		public void RebuildDisplayValuesRequest()
@@ -1713,28 +2284,9 @@ from	IntersectType I
 			Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
 		}
 
-		private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
+		public string RenderTooltip(string action, SystemObjects type, int id)
 		{
-			// if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
-			if (item.AssetTypeID > 0 && item.ObjectTypeID <= 0)
-			{
-				AssetType assetType = AssetTypes.FirstOrDefault(x => x.ID == item.AssetTypeID);
-
-				if (assetType != null)
-				{
-					item.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), assetType.Object);
-					item.ObjectTypeID = assetType.ObjectID;
-				}
-			}
-
-			events.Add(new EventInfo
-			{
-				CompanyID = CurrentCompanyID,
-				DomainPrefix = CurrentCompanyDomain,
-				ResourceID = CurrentResourceID,
-				Action = action,
-				Object = item
-			});
+			return renderTemplate("Tooltip", action, type, id);
 		}
 
 		public override int SaveChanges()
@@ -1832,7 +2384,7 @@ from	IntersectType I
 					}
 
 					if (entry.State == EntityState.Modified)
-					{						
+					{
 						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name && i.ID != o.ID))
 						{
 							throw new ArgumentException(Messages.Error_NameTaken);
@@ -1963,7 +2515,7 @@ from	IntersectType I
 							throw new ArgumentException(Messages.Error_NameTaken);
 						}
 					}
-					
+
 					if (entry.State == EntityState.Modified)
 					{
 						if (Any<QuestionType>(i => i.SurveyTypeID == o.SurveyTypeID && i.Name == o.Name && i.ID != o.ID))
@@ -2108,7 +2660,7 @@ from	IntersectType I
 
 				foreach (Field item in fieldsToCheckForChanges)
 				{
-					if(item.FieldTypeID > 0)
+					if (item.FieldTypeID > 0)
 					{
 						if (fieldSql.Length != 0)
 						{
@@ -2126,10 +2678,10 @@ from	IntersectType I
 						}
 
 						if (item.IntersectID > 0)
-						{							
+						{
 							fieldSql.Append($"(f.IntersectID = {item.IntersectID} and f.FieldTypeID = {item.FieldTypeID})");
 						}
-					}					
+					}
 				}
 
 				if (fieldSql.Length != 0)
@@ -2175,856 +2727,199 @@ from	IntersectType I
 			// create events for the objects this needs to be done after save changes so we have new objects id's
 			if (IsEventingEnabled)
 			{
-				CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
+				createEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 			}
 
 			return returnValue;
 		}
 
-		private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
+		public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject
 		{
-			//get any objects that implement EventTrackedEntity so we can add messages for them
-			List<EventInfo> events = new List<EventInfo>();
-			List<EventObjectInfo> fieldEvents = new List<EventObjectInfo>();
+			bool isUpdate = forceUpdate || IsPersistent(entity);
 
-			//we need to create event objects for field changes. Add them here
-			if (changedFields != null)
+			string fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
+			FieldsObjectModel attr = entity.GetFieldsObjectInfo();
+			bool returnValue = true;
+
+			if (isUpdate)
 			{
-				foreach (Field field in changedFields)
-				{
-					FieldType fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
-					EventObjectInfo eventInfo = fieldEvents.FirstOrDefault(f => ((f.ObjectID == field.IssueID && f.ObjectType == SystemObjects.Issue) || (f.ObjectID == field.IntersectID && f.ObjectType == SystemObjects.Intersect) || (f.ObjectID == field.AssetID && f.ObjectType != SystemObjects.Issue && f.ObjectType != SystemObjects.Intersect)));
-					
-					if (eventInfo != null)
-					{
-						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-					}
-					else
-					{
-						eventInfo = new EventObjectInfo
-						{
-							Object = ((field.IssueID.HasValue && field?.IssueID.Value > 0) ? SystemObjects.Issue : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? SystemObjects.Intersect : SystemObjects.Artifact),
-							ObjectID = (int)((field.IssueID.HasValue && field?.IssueID.Value > 0) ? field.IssueID : (field.IntersectID.HasValue && field?.IntersectID.Value > 0) ? field.IntersectID : field.AssetID),
-							ObjectType = SystemObjects.FieldType,
-							ObjectTypeID = fieldType.ID							
-						};
-						eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-						fieldEvents.Add(eventInfo);
-					}
-				}
+				ObjectContext.ObjectStateManager.ChangeObjectState(entity, EntityState.Modified);
+			}
+			else
+			{
+				returnValue = Add(entity);
+
+				//Disable eventing after adding so update event doesnt trigger and cause duplicates without changed field
+				IsEventingEnabled = false;
 			}
 
-			foreach (EventObjectInfo fieldEvent in fieldEvents)
+			if (fields != null && fields.Count > 0)
 			{
-				AddQE(events, ChangeType.Update, fieldEvent);
+				AddOrUpdateFields(fields);
+			}
+			else
+			{
+				SaveChanges();
 			}
 
-			if (modifiedEntities != null)
-			{
-				foreach (IEventTrackedEntity modified in modifiedEntities)
-				{
-					AddQE(events, ChangeType.Update, modified.GetEventObjectInfo());
-				}
-			}
+			IsEventingEnabled = true;
+			CreateOrUpdateDisplayValue(0, attr.Type.ToString(), entity.ID);
 
-			if (addedEntities != null)
-			{
-				foreach (IEventTrackedEntity added in addedEntities)
-				{
-					AddQE(events, ChangeType.Add, added.GetEventObjectInfo());
-				}
-			}
-
-			if (deletedEntities != null)
-			{
-				foreach (IEventTrackedEntity deleted in deletedEntities)
-				{
-					AddQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
-				}
-			}
-
-			if (events.Any())
-			{
-				QueueSource.CreateTopicMessages(events);
-			}
+			return returnValue;
 		}
 
-		public string GetUserHomePage()
+		/// <summary>
+		/// Sets up TelemetryClient which will be used for logging. If not provided then new single instance will be created and used across all the places.
+		/// </summary>
+		/// <param name="client"></param>
+		public void SetTelemetryClient(TelemetryClient client)
 		{
-			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
-
-			return homePage?.Route ?? "";
+			_externalTelemetryClient = client;
 		}
 
-		#endregion
-
-		#region Dynamic Field Methods
-
-		public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
+		public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)
 		{
-			StringBuilder columnbuilder = new StringBuilder();
-			columns = "";
-			StringBuilder joinbuilder = new StringBuilder();
-			joins = "";
 
-			string fieldTypeRelationType = type;
+			string sql = @"select	1 
+from	IntersectType I
+		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type
+		inner join AssetType O on O.ID = I.ObjectAssetTypeID and O.[Object] = @object and O.ObjectID = @objectId";
 
-			if (fields == null)
+			return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
+		}
+
+		public override bool Update<T>(T item)
+		{
+			ObjectContext.ObjectStateManager.ChangeObjectState(item, EntityState.Modified);
+			return SaveChanges() > 0;
+		}
+
+		public bool UpdateFollowStatus(int? assetTypeid, long? assetid, int? resourceID, bool includeChildren = false)
+		{
+			Follow f = null;
+
+			if (!resourceID.HasValue)
 			{
-				if(type == "Rule" && ruleMeansEvent)
-				{
-					type = "Event";
-				}
-				else if(!fieldTypeRelationType.EndsWith("Type"))
-				{
-					fieldTypeRelationType += "Type";
-				}
-
-				var parsedType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldTypeRelationType);
-				var fieldQry = Filter<FieldType>(i => ((parsedType == SystemObjects.IssueType && i.IssueTypeID == typeID) || (parsedType == SystemObjects.IntersectType && i.IntersectTypeID == typeID) || (parsedType != SystemObjects.IssueType && parsedType != SystemObjects.IntersectType && i.AssetTypeID == typeID)));
-								
-				if (listableOnly)
-				{
-					fieldQry = fieldQry.Where(i => i.IsListable);
-				}
-				if (includeKeyColumnOnly)
-				{
-					fieldQry = fieldQry.Where(x => x.IsPartOfKey);
-				}
-				fields = fieldQry.OrderBy(i => i.ColumnOrder).ToList();
+				resourceID = CurrentResourceID;
 			}
 
-			var assetTypeID = (fields.Count > 0) ? fields[0].AssetTypeID.GetValueOrDefault() : Filter<AssetType>(a => a.Object == fieldTypeRelationType && a.ObjectID == typeID).FirstOrDefault().ID;
+			bool value = false;
 
-			List <RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(assetTypeID, fields);
-
-			foreach (FieldType f in fields)
+			if (assetid != 0)
 			{
-				string name = $"Field{f.ID}";
-				string friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
+				f = Filter<Follow>(i => i.AssetID == assetid && i.ResourceID == resourceID).FirstOrDefault();
+			}
+			else if (assetTypeid != 0)
+			{
+				f = Filter<Follow>(i => i.AssetTypeID == assetTypeid && i.ResourceID == resourceID).FirstOrDefault();
+			}
 
-				if (f.Type == DataType.Relationship.ToString())
+			if (f != null)
+			{
+				Delete(f);
+				value = false;
+			}
+			else
+			{
+				if (IsUserFollowingParent(assetTypeid, assetid, resourceID.Value) && !IsUserFollowing(assetTypeid, assetid, resourceID.Value))
 				{
-					if (enableRelationshipFields)
-					{
-						var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-						if (relationFieldInfo != null)
-						{
-							bool isReferenceItemType = relationFieldInfo.AssetClass == AssetTypeClass.Reference;
-
-							columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
-							columnbuilder.Append(isReferenceItemType ? $"{name}_AS.Name" : $"{name}_ASP.DisplayPath");
-							columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
-							joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-							joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
-
-							if (isReferenceItemType)
-							{
-								joinbuilder.Append($" left join AssetType {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetTypeID" : "SubjectAssetTypeID"));
-							}
-							else 
-							{
-								joinbuilder.Append($" left join Asset {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
-								joinbuilder.Append($" left join AssetPath {name}_ASP on {name}_AS.ID = {name}_ASP.ID");
-							}
-						}
-					}
-				}
-				else if (f.Type == DataType.FieldFromRelationship.ToString())
-				{
-					if (enableRelationshipFields)
-					{
-						RelationshipDirectionFieldInfo relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-
-						if (relationFieldInfo != null)
-						{
-							FieldType relationshipLookupFieldType = GetById<FieldType>(f.LookupObjectFieldTypeID ?? 0);
-							
-							if (relationshipLookupFieldType != null)
-							{
-								if (relationshipLookupFieldType.Type == DataType.JsonElement.ToString())
-								{
-									FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
-									string sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
-
-									columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
-									columnbuilder.Append($"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
-
-									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
-									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}");
-									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
-									joinbuilder.Append($" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
-								}
-								else
-								{
-									if (includeIdColumn)
-									{
-										columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
-									}
-									columnbuilder.Append($"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
-
-									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
-									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}");
-									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
-									joinbuilder.Append(" ");
-								}
-							}
-						}
-					}
-				}
-				else if (f.Type == DataType.Decimal.ToString())
-				{
-					if (includeIdColumn)
-					{
-						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
-					}
-					columnbuilder.Append($@"case     
-												when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
-												when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
-												else null 
-											end as [{(useFriendlyName ? friendlyName : name)}], ");
-
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-										   left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
-				}
-				else if (f.Type == DataType.Number.ToString())
-				{
-					if (includeIdColumn)
-					{
-						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
-					}
-					columnbuilder.Append($@"case     
-												when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
-												when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
-												else null 
-											end as [{(useFriendlyName ? friendlyName : name)}], ");
-
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
-				}
-				else if (f.Type == DataType.JsonElement.ToString())
-				{
-					FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
-
-					string sqlType = DetermineSqlDataTypeForFieldType(f);
-
-					columnbuilder.Append($@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
-
-					joinbuilder.Append($@" 
-										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
-										left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
-				}
-				else if (f.Type == DataType.Path.ToString())
-				{
-					columnbuilder.Append($@"{name}_GAN.DisplayPath as [{(useFriendlyName ? friendlyName : name)}], ");
-					joinbuilder.Append($@" inner join AssetPath {name}_GAN on {name}_GAN.ID = A.ID ");
-				}
-				else if (f.Type == DataType.Score.ToString())
-				{
-					columnbuilder.Append($@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
-					joinbuilder.Append($@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ");
-				}
-				else if (f.Type == DataType.Tag.ToString())
-				{
-					string assetIdPath = "A.Id";
-
-					if (includeIdColumn)
-					{
-						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
-					}
-
-					columnbuilder.Append($@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ");
-
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
-										left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
-				}
-				else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
-				{
-					string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
-					string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "try_cast(fi.Value as int) and datalength(fi.Value) < 1000";
-					string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.AssetID = A.ID" : "fi.AssetID = A.Id";
-					fieldJoin = $@"{fieldJoin} left join [intersect] I on fi.intersectID = I.ID";
-					columnbuilder.Append($"{name}_T.value as [{name}],");
-					joinbuilder.Append($@" outer apply(
-							select value = (
-								SELECT
-								COALESCE(ADV.DisplayValue, AC.Code) as name,
-								COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
-								FROM field fi
-								{fieldJoin}
-								inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
-								cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
-								inner join AssetDisplayValue ADV on ADV.AssetID = AC.ID
-								where FieldTypeID = {f.ID} and {whereClause}
-								for json path)
-							){name}_T(value)");
+					//the user is following a parent of this item
 				}
 				else
 				{
-					if (includeIdColumn)
+					FollowType followType = FollowType.Single;
+
+					if (assetTypeid != 0 && assetid == 0)
 					{
-						columnbuilder.Append($"{name}_T.Value as [{name}ID], ");
+						followType = FollowType.Parent;
+					}
+					else if (assetid != 0)
+					{
+						followType = FollowType.Single;
 					}
 
-					columnbuilder.Append($@"case 
-												when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-												when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
-												when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
-												else '' 
-											end as [{(useFriendlyName ? friendlyName : name)}], ");
-
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}' 
-											left join Field {name}_T on {name}_T.AssetID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
-				}
-			}
-
-			columns = columnbuilder.ToString();
-			joins = joinbuilder.ToString();
-			fields = null;
-		}
-
-		public bool LookupFieldHasColorItem(FieldType fieldType)
-		{
-			if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
-			{
-				string obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
-				
-				if (obj != "ReferenceItemType")
-				{
-					return false;
-				}
-
-				AssetType assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
-				
-				if (assettype != null)
-				{
-					return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
-				}
-			}
-
-			return false;
-		}
-
-		public List<RelationshipDirectionFieldInfo> getRelationFieldData(int assetTypeId, List<FieldType> fields)
-		{
-			List<RelationshipDirectionFieldInfo> relationFieldInfos = new List<RelationshipDirectionFieldInfo>();
-			List<FieldType> relationshipFields = fields.Where(i => i.Type == DataType.Relationship.ToString() || i.Type == DataType.FieldFromRelationship.ToString()).ToList();
-			
-			if (relationshipFields != null)
-			{
-				if (relationshipFields.Count > 0)
-				{
-					List<int> intersectTypeIDs = relationshipFields.Select(i => i.LookupObjectID.Value).ToList();
-					List<IntersectType> intersectTypes = Filter<IntersectType>(i => intersectTypeIDs.Contains(i.ID)).ToList();
-					foreach (FieldType rF in relationshipFields)
+					if (includeChildren)
 					{
-						RelationshipDirectionFieldInfo relationFieldInfo = new RelationshipDirectionFieldInfo { FieldTypeID = rF.ID, IntersectTypeID = rF.LookupObjectID.Value };
-						IntersectType intersectType = intersectTypes.SingleOrDefault(i => i.ID == relationFieldInfo.IntersectTypeID);
-						
-						if (intersectType != null)
-						{
-							relationFieldInfo.IsSubject = intersectType.SubjectAssetTypeID == assetTypeId;
-							relationFieldInfo.AssetTypeID = relationFieldInfo.IsSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
-							relationFieldInfo.AssetClass = relationFieldInfo.IsSubject ? intersectType.ObjectClass: intersectType.SubjectClass;
-							relationFieldInfos.Add(relationFieldInfo);
-						}
+						followType = FollowType.Parent;
 					}
+
+					SqlParameter pResourceID = new SqlParameter("resourceID", resourceID);
+					SqlParameter pFollowTypeID = new SqlParameter("followTypeID", followType);
+					SqlParameter pIncludeChildren = new SqlParameter("includeChildren", includeChildren);
+					SqlParameter pAssetid = new SqlParameter("Assetid", assetid);
+					SqlParameter pAssetTypeid = new SqlParameter("AssetTypeid", assetTypeid);
+
+					Database.ExecuteSqlCommand("FollowObject @resourceID, @followTypeID, @includeChildren, @Assetid, @AssetTypeid", pResourceID, pFollowTypeID, pIncludeChildren, pAssetid, pAssetTypeid);
+
+					value = true;
 				}
 			}
 
-			return relationFieldInfos;
+			return value;
 		}
 
-		#endregion
-
-		#region API Query Parameter Parsing
-
-		public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+		public IntersectType UpsertIntersectType(IntersectType model)
 		{
-			dbArgs = new DynamicParameters();
-			whereStatements = new List<string>();
+			Predicate predicateModel = GetById<Predicate>(model.PredicateID.Value);
 
-			if (queryParams.Any(x => x.Key.Equals("_filter", StringComparison.OrdinalIgnoreCase)))
+			if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
 			{
-				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-				if (!string.IsNullOrEmpty(value))
-				{
-					FilterDataProvider filterDataProvider = new FilterDataProvider(this);
-					FilterExpressionParser filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, false);
-					filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
-					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-					List<int> filteredFields = new List<int>();
-					whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams, out filteredFields));
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.AddRelationshipValidation_Predicate);
+			}
 
-					foreach (KeyValuePair<string, object> item in sqlParams)
+			if ((model.SubjectAssetTypeID != model.ObjectAssetTypeID) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+			{
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectSameThisPredicate);
+			}
+
+			if ((model.SubjectAssetTypeID == model.ObjectAssetTypeID) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+			{
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectNotSameThisPredicate);
+			}
+
+			AssetType subjectAssetType = null;
+			AssetType objectAssetType = null;
+			subjectAssetType = Filter<AssetType>(i => i.ID == model.SubjectAssetTypeID).FirstOrDefault();
+			objectAssetType = Filter<AssetType>(i => i.ID == model.ObjectAssetTypeID).FirstOrDefault();
+
+			PredicateTypeInfo predicateInfo = predicateModel.Type.AsInfoModel();
+
+			if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
+			{
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateSubjectOfClass, predicateInfo.SubjectAssetClassesSupported));
+			}
+
+			if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
+			{
+				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, string.Format(CompanyContextErrors.WhenPredicateObjectOfClass, predicateInfo.ObjectAssetClassesSupported));
+			}
+
+			if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
+			{
+				if (predicateModel.Type == PredicateType.Transformation)
+				{
+					if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
 					{
-						dbArgs.Add(item.Key, item.Value);
+						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationSubjOrObj);
 					}
-				}
-			}
-		}
 
-		public void ParseSimpleFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
-		{
-			List<string> wheres = new List<string>();
-			DynamicParameters dbs = new DynamicParameters();
-
-			if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
-			{
-				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
-
-				if (!string.IsNullOrEmpty(value))
-				{
-					fieldList.ForEach(f =>
+					if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
 					{
-						switch (f.SqlFieldType)
-						{
-							case SqlFieldType.Text:
-								wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
-								dbs.Add($"@S_{f.ApiName}", value + "%");
-								break;
-							case SqlFieldType.Boolean:
-								bool filterBool;
-								if (bool.TryParse(value, out filterBool))
-								{
-									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
-									dbs.Add($"@S_{f.ApiName}", filterBool);
-								}
-								break;
-							case SqlFieldType.Date:
-							case SqlFieldType.DateTime:
-								DateTime filterDate;
-
-								if (DateTime.TryParse(value, out filterDate))
-								{
-									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
-									dbs.Add($"@S_{f.ApiName}", filterDate);
-								}
-
-								break;
-							case SqlFieldType.Decimal:
-							case SqlFieldType.Number:
-								decimal filterNumber;
-
-								if (decimal.TryParse(value, out filterNumber))
-								{
-									int places = filterNumber.GetNumberOfDecimalPlaces();
-									decimal ceil = decimal.Round(decimal.Parse(value + "9"), places);
-									wheres.Add($"{f.SqlExpression} between @S_{f.ApiName}_1 and @S_{f.ApiName}_2");
-									dbs.Add($"@S_{f.ApiName}_1", filterNumber);
-									dbs.Add($"@S_{f.ApiName}_2", ceil);
-								}
-
-								break;
-							case SqlFieldType.Guid:
-								Guid filterGuid;
-
-								if (Guid.TryParse(value, out filterGuid))
-								{
-									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
-									dbs.Add($"@S_{f.ApiName}", filterGuid);
-								}
-
-								break;
-							default:
-								break;
-						}
-					});
-				}
-			}
-
-			whereStatements = wheres;
-			dbArgs = dbs;
-		}
-
-		public string ParseOrderColumn(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fields, string defaultColumn)
-		{
-			string column = defaultColumn;
-
-			if (queryParams.Any(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)))
-			{
-				string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
-
-				DefaultFilter field = fields.FirstOrDefault(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase));
-
-				if (field == null)
-				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidOrderPassed);
-				}
-
-				column = field.SqlExpression;
-			}
-
-			return column;
-		}
-
-		public string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc")
-		{
-			string direction = defaultDirection;
-			
-			if (queryParams.Any(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)))
-			{
-				string[] allowedDirections = new string[] { "asc", "desc" };
-				string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)).Value;
-
-				if (allowedDirections.Contains(order.Trim().ToLower()))
-				{
-					direction = order;
-				}
-				else
-				{
-					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.InvalidDirection);
-				}
-			}
-
-			return direction;
-		}
-
-		public int ParsePageNumber(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultPage = 1)
-		{
-			int size = defaultPage;
-
-			if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
-			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out size))
-				{
-					if (size < 1)
-					{
-						size = defaultPage;
+						throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.ThisPrediateUseTransormationNotBoth);
 					}
 				}
 			}
 
-			return size;
-		}
-
-		public int ParsePageSize(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultSize = 250)
-		{
-			int size = defaultSize;
-			
-			if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
+			if (model.ID > 0)
 			{
-				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out size))
-				{
-					if (size < 1)
-					{
-						size = defaultSize;
-					}
-				}
+				Update(model);
 			}
-
-			return size;
-		}
-
-		public string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000)
-		{
-			string offset = "";
-
-			if (pageSize > 0 || pageNumber > 0)
+			else
 			{
-				if (pageSize < 1)
-				{
-					pageSize = 1;
-				}
-
-				if (pageNumber < 1)
-				{
-					pageNumber = 1;
-				}
-
-				if (pageSize > pageSizeLimit)
-				{
-					pageSize = pageSizeLimit;
-				}
-
-				if (pageNumber > 10000)
-				{
-					pageNumber = 10000;
-				}
-
-				offset = $" offset {pageSize * (pageNumber - 1)} rows fetch next {pageSize} rows only ";
-			}
-
-			return offset;
-		}
-
-		#endregion
-
-		public int GetObjectId(Guid objectUid, SystemObjects objectType)
-		{
-			int objectId = -1;
-			switch (objectType)
-			{
-				case SystemObjects.Tag:
-					objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
-					break;
-				case SystemObjects.IntersectType:
-					objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
-					break;
-				case SystemObjects.Predicate:
-					objectId = Predicates.FirstOrDefault(x => x.UID == objectUid).ID;
-					break;
-				case SystemObjects.IssueType:
-					objectId = IssueTypes.FirstOrDefault(x => x.uid == objectUid).ID;
-					break;
-				case SystemObjects.ArtifactType:
-				case SystemObjects.PolicyType:
-				case SystemObjects.ReferenceItemType:
-				case SystemObjects.RuleType:
-				case SystemObjects.TaxonomyType:
-					objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
-					break;
-				case SystemObjects.ResourceType:
-					objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
-					break;
-				case SystemObjects.TaskType:
-					objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
-					break;
-				case SystemObjects.ConnectorLabel:
-					objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
-					break;
-				case SystemObjects.SemanticType:
-					objectId = Convert.ToInt32(Semantics.FirstOrDefault(x => x.Uid == objectUid).ID);
-					break;
-				default:
-					objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
-					if (objectId <= 0)
-					{
-						throw new ArgumentNullException(string.Format(CompanyContextErrors.AssetUidNotFound, objectUid.ToString()));
-					}
-					break;
-			}
-
-			return objectId;
-		}
-
-		public Guid GetAssetUid(int objectId, SystemObjects assetType)
-		{
-			try
-			{
-				return Assets.FirstOrDefault(x => x.Object == assetType.ToString() && x.ObjectID == objectId).uid;
-			}
-			catch
-			{
-				throw new ArgumentNullException(CompanyContextErrors.ObjectNotPartAssetTable);
-			}
-		}
-
-		public decimal? GetAssetScore(long assetId, ScoreType type)
-		{
-			string sql = $@"
-							select      top 1
-										cast(S.Value * 100 as decimal(18,1)) as 'Score'                            
-							from        Asset A                            
-										inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-										inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
-							where       A.ID = @assetId 
-							order by    S.EffectiveDate desc";
-			
-			return Query<decimal?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
-		}
-
-		public decimal? GetPreviousAssetScore(long assetId, ScoreType type)
-		{
-			string sql = $@"
-							select      top 1
-										cast(S.Value * 100 as decimal(18,1)) as 'Score'                            
-							from        Asset A                            
-										inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-										inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
-										cross apply (
-											select top 1 EffectiveDate from Asset AP
-											inner join metrics.Score SA on SA.AssetUid = AP.[uid] and SA.EffectiveDate <= getutcdate()
-											inner join metrics.Allocation ALP on ALP.Uid = SA.AllocationUid and ALP.ScoreType = @type and (ALP.OverrideName is null or ALP.OverrideName = '')
-											where AP.ID = @assetId
-										) P
-							where       A.ID = @assetId and S.EffectiveDate < P.EffectiveDate
-							order by    S.EffectiveDate desc";
-			
-			return Query<decimal?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
-		}
-
-		public Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
-		{
-			string sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
-							from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
-							where AT.class in({string.Join(",", assetClassIds.ToArray())})";
-
-			return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
-		}
-
-		public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
-		{
-			return Query<int>(@"select value
-								  from[dbo].[FieldLookupValue]
-								  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
-								  new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
-		}
-
-		public string GetDiagramUrlForDiagramAsset(Guid assetUid)
-		{
-			string diagramUrl = $@"select 
-							'/asset/'+lower(cast(a.uid as nvarchar(36)))+'/diagrams/Process/' + lower(cast(@assetUid as nvarchar(36)))
-							from AssetProcessDiagram APD
-							cross apply (SELECT *
-							FROM OPENJSON(APD.Diagram,'$.nodeDataArray')
-							WITH (   
-			
-										  uid uniqueidentifier '$.key'
-							 ) 
-							)Json
-							inner join asset a on a.id = apd.AssetID
-							where json.uid = @assetUid";
-			return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
-		}
-
-		public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
-		{
-			return Query<int>(@"
-select	count(*) 
-from	processexpandeddata ped
-		inner join IntersectTypeDetail it on it.uid = @intersectTypeUid 
-			and ped.DiagramAssetTypeUid = it.SubjectUid 
-			and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
-			new { intersectTypeUid }).FirstOrDefault() > 0;
-		}
-
-		public void CreateEventsForAddedActions(List<Issue> actions)
-		{
-			CreateEventsForObjectsRequiringTracking(null, actions, null, null);
-		}
-
-		public string GetCounterFieldValue(int fieldTypeId, long assetId)
-		{
-			return Query<string>(@"
-				select top 1 ISNULL(FT.CounterPrefix,'') + cast(fcv.value as nvarchar(20) )
-				from fieldcountervalue fcv
-				inner join FieldType FT on FT.ID = fcv.FieldTypeId
-				where fcv.AssetId=@assetId and fcv.FieldTypeId=@fieldTypeId",
-							  new { fieldTypeId, assetId }).FirstOrDefault();
-		}
-
-		public async Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData)
-		{
-			AssetsQueryResults model = new AssetsQueryResults();
-
-			SqlMapper.GridReader gridReader = await Database.Connection.QueryMultipleAsync(
-			  new CommandDefinition(getAllQuery,
-			  cancellationToken: cancellationToken,
-			  parameters: dbArgs,
-			  commandTimeout: ApiTimeout
-			));
-
-			if (includeTotal)
-			{
-				model.total = gridReader.Read<int>().FirstOrDefault();
-			}
-
-			model.items = gridReader.Read<dynamic>().ToList();
-
-			if (includeOwnershipData)
-			{
-				model.ownershipData = gridReader.Read<dynamic>().ToList();
+				Add(model);
 			}
 
 			return model;
-		}
-
-		#region Environment Settings
-
-		private class EnvironmentSetting
-		{
-			public Setting ID { get; set; }
-			
-			public string Value { get; set; }
-		}
-
-		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
-
-		public void DeleteSetting(Setting setting)
-		{
-			// In essence, this would set back to the default, if any.
-			Connection.Execute("delete Setting where ID = @id", new { id = (int)setting });
-			Caching.RemoveItem(SettingsCacheKey);
-		}
-
-		public SettingInfo GetSetting(Setting setting)
-		{
-			return GetSettings().SingleOrDefault(s => s.ID == setting);
-		}
-
-		public T GetSettingValue<T>(Setting setting)
-		{
-			SettingInfo info = GetSetting(setting);
-
-			T checkType = default(T);
-
-			if (checkType is Guid)
-			{
-				Guid guid = Guid.Parse(info.Value);
-
-				return (T)Convert.ChangeType(guid, typeof(T));
-			}
-
-			return (T)Convert.ChangeType(info.Value, typeof(T));
-		}
-
-		public List<SettingInfo> GetSettings()
-		{
-			// Get the list of settings from the D3S_###.dbo.Setting table.
-			// Get the full list of settings from the Setting enum.
-			// Return a list of SettingInfo, merging the values present from the environment into the SettingInfo.Value property.
-
-			List<EnvironmentSetting> overrides = Caching.GetItem<List<EnvironmentSetting>>(SettingsCacheKey);
-
-			if (overrides == null)
-			{
-				overrides = Query<EnvironmentSetting>("select * from Setting").ToList();
-				Caching.SetItem(SettingsCacheKey, overrides, true, 1);
-			}
-
-			List<SettingInfo> settings = Setting.ActionMessage.GetAsList().OrderBy(s => (int)s.ID).ToList();
-
-			settings.ForEach(s =>
-			{
-				string defaultValue = s.DefaultValue;
-				
-				if (defaultValue.In("True", "False"))
-				{
-					defaultValue = defaultValue.ToLowerInvariant();
-				}
-				
-				if (overrides.Any(o => o.ID == s.ID))
-				{
-					s.Value = overrides.First(o => o.ID == s.ID).Value;
-					
-					if (s.Value.In("True", "False"))
-					{
-						s.Value = s.Value.ToLowerInvariant();
-					}
-					else if (s.ID == Setting.GovernanceRoleReferenceListUid)
-					{
-						AssetType IsUidExists = Filter<AssetType>(i => i.uid.ToString().ToLower() == s.Value.ToLower()).FirstOrDefault();
-						if (IsUidExists == null)
-						{
-							s.Value = Guid.Empty.ToString();
-						}
-					}
-				}
-				else
-				{
-					s.Value = defaultValue;
-				}
-			});
-
-			return settings;
-		}
-
-		public Dictionary<string, string> GetSettingsAsDictionary()
-		{
-			return GetSettings().ToDictionary(k => k.ID.ToString(), v => v.Value);
 		}
 
 		public void UpsertSetting(Setting setting, string value)

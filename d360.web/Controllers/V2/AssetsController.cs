@@ -62,34 +62,37 @@ namespace d360.web.Controllers.V2
 		private readonly ICachingProvider Cache;
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
-		private readonly ITagRepository tagRepository;
-		private readonly IRelationshipRepository relationshipRepository;
-		private readonly IFieldsRepository fieldsRepository;
 
-		private IAssetRepository AssetRepository { get; }
+		private readonly IAssetRepository AssetRepository;
+		private readonly IAssetTypeRepository AssetTypeRepository;
+		private readonly IExecutionsRepository ExecutionsRepository;
+		private readonly IFieldsRepository FieldsRepository;
+		private readonly IRelationshipRepository RelationshipRepository;
+		private readonly ITagRepository TagRepository;
 
-		private IAssetTypeRepository AssetTypeRepository { get; }
 
 		public AssetsController(
 			ICachingProvider cache,
 			ICoreComponentSet set,
 			IStorageProvider storage,
 			IQueueSource queueSource,
-			IAssetRepository repository,
-			ITagRepository tagRepository,
-			IRelationshipRepository relationshipRepository,
+			IAssetRepository assetRepository,
+			IAssetTypeRepository assetTypeRepository,
+			IExecutionsRepository executionsRepository,
 			IFieldsRepository fieldsRepository,
-			IAssetTypeRepository assetTypeRepository
+			IRelationshipRepository relationshipRepository,
+			ITagRepository tagRepository
 		) : base(set)
 		{
 			Cache = cache;
 			QueueSource = queueSource;
 			Storage = storage;
+			AssetRepository = assetRepository;
 			AssetTypeRepository = assetTypeRepository;
-			AssetRepository = repository;
-			this.tagRepository = tagRepository;
-			this.relationshipRepository = relationshipRepository;
-			this.fieldsRepository = fieldsRepository;
+			ExecutionsRepository = executionsRepository;
+			FieldsRepository = fieldsRepository;
+			RelationshipRepository = relationshipRepository;
+			TagRepository = tagRepository;
 		}
 
 		#endregion
@@ -965,7 +968,7 @@ namespace d360.web.Controllers.V2
 
 				if (isUseAsTransformationChanged && (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset))
 				{
-					var IsTransformPredicateExists = await relationshipRepository.IsTransformPredicateExists(assetType.ID);
+					var IsTransformPredicateExists = await RelationshipRepository.IsTransformPredicateExists(assetType.ID);
 
 					if (IsTransformPredicateExists)
 					{
@@ -1589,7 +1592,7 @@ namespace d360.web.Controllers.V2
 				string orderBy = string.Empty;
 				string direction = string.Empty;
 
-				List<FieldType> fields = fieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
+				List<FieldType> fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid);
 				FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 
 				List<dynamic> Values = new List<dynamic>();
@@ -1732,20 +1735,20 @@ namespace d360.web.Controllers.V2
 				if (fieldType.Type == "ComplexRelationLookup")
 				{
 					(Columns, Fields, Values, count, scoringInfo) =
-					   await fieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
+					   await FieldsRepository.GetComplexRelationLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 
 				}
 
 				if (fieldType.Type == "RefListRelationship")
 				{
 					(Columns, Fields, Values, count) =
-					   await fieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
+					   await FieldsRepository.GetRefListFromRelationshipGrid(fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 				}
 
 				if (fieldType.Type == "OwnershipLookup")
 				{
 					(Columns, Fields, Values, count) =
-					   await fieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
+					   await FieldsRepository.GetOwnershipLookupGrid(ftl, fields, dbArgs, simpleFilter, advancedFilter, orderBy, direction);
 				}
 
 				foreach (IDictionary<string, object> value in Values)
@@ -2175,17 +2178,7 @@ namespace d360.web.Controllers.V2
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
 
 				ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
-
-				var result = Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							});
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{
@@ -2260,20 +2253,7 @@ namespace d360.web.Controllers.V2
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
 				var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{
@@ -2350,20 +2330,7 @@ namespace d360.web.Controllers.V2
 				var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
 
 				var executionInfo = await AssetRepository.BulkDeleteAssets(assetTypeUid, assets, execution, clearAllAssetsFromType, triggersWorkflow);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{
@@ -2567,7 +2534,7 @@ namespace d360.web.Controllers.V2
 		/// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
 		/// <returns></returns>
 		[
-			HttpGet,
+			HttpGet, ApiExplorerSettings(IgnoreApi = true), Obsolete,
 			Route("executions/{executionID:Guid}/status"),
 			SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
@@ -2588,20 +2555,19 @@ namespace d360.web.Controllers.V2
 					bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 				}
 
-				var res = await AssetRepository.GetExecutionStatusModel(executionID, !summaryOnly);
+				var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly);
 
 				if (res == null)
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound));
-				}
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							res as object
+					return await Task.FromResult(
+						errorMessageResponse(
+							HttpStatusCode.NotFound, 
+							ApiMessages.NotFound, 
+							ApiMessages.ExecutionUIDNotFound
 						)
-					)
-				);
+					);
+				}
+				return resolveEndpointPayloadResponse(res);
 			}
 			catch (ArgumentException)
 			{
@@ -2662,11 +2628,11 @@ namespace d360.web.Controllers.V2
 
 				if (assetTagApi.TagUID == Guid.Empty)
 				{
-					currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
+					currentTag = TagRepository.GetTagByName(assetTagApi.TagName);
 				}
 				else
 				{
-					currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+					currentTag = TagRepository.GetTagByUid(assetTagApi.TagUID);
 				}
 
 				if (currentTag == null)
@@ -2729,7 +2695,7 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				if (tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
+				if (TagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
 				{
 					result = new AssetTagSuccessApiModel()
 					{
@@ -2753,11 +2719,11 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				AssetTag assetTag = tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
+				AssetTag assetTag = TagRepository.CreateAssetTag(currentTag.ID, asset.ID);
 
 				if (assetTag != null)
 				{
-					var tag = tagRepository.GetTagById(assetTag.TagID);
+					var tag = TagRepository.GetTagById(assetTag.TagID);
 					result = new AssetTagSuccessApiModel()
 					{
 						Message = $"Asset / Tag Association  created",
@@ -2796,7 +2762,7 @@ namespace d360.web.Controllers.V2
 			{
 				AssetTagSuccessApiModel result;
 
-				var currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+				var currentTag = TagRepository.GetTagByUid(assetTagApi.TagUID);
 
 				if (currentTag == null)
 				{
@@ -2824,7 +2790,7 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				if (!tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
+				if (!TagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
 				{
 					result = new AssetTagSuccessApiModel
 					{
@@ -2836,7 +2802,7 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				if (!tagRepository.IsAuthorizedToDeleteAssetTag(currentTag.ID, asset.ID))
+				if (!TagRepository.IsAuthorizedToDeleteAssetTag(currentTag.ID, asset.ID))
 				{
 					result = new AssetTagSuccessApiModel()
 					{
@@ -2860,9 +2826,9 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				AssetTag assetTag = tagRepository.GetAssetTag(currentTag.ID, asset.ID);
+				AssetTag assetTag = TagRepository.GetAssetTag(currentTag.ID, asset.ID);
 
-				if (assetTag != null && tagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
+				if (assetTag != null && TagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
 				{
 					result = new AssetTagSuccessApiModel()
 					{

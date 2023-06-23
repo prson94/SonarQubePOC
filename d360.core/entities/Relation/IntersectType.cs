@@ -134,7 +134,10 @@ namespace d360.core.entities
         [DataMember]
         public bool IsSystem { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public string SourceID { get; set; }
+
+		[DataMember]
         public IntersectTypeApiPredicateViewModel Predicate { get; set; }
 
         [DataMember]

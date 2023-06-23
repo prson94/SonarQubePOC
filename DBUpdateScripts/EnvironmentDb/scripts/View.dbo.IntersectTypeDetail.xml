@@ -5,18 +5,16 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.dbo.IntersectTypeDetail-v7">
-	<comment>GOV-20912</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+  <changeSet author="Pappas" id="View.dbo.IntersectTypeDetail-v8">
+	<comment></comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 create or alter view [dbo].[IntersectTypeDetail] 
 as
 	SELECT		IT.uid, 
 				IT.ID,
-			    IT.[State],
+			    IT.SourceID,
+				IT.[State],
 				iif (IT.SubjectClass = 9 and IT.SubjectAssetTypeID = 0, 'Reference List', SATT.Name) + ' ' + P.Name + ' ' + iif (IT.ObjectClass = 9 and IT.ObjectAssetTypeID = 0, 'Reference List', OATT.Name)	as Name,
 				coalesce(IT.SubjectClass, 0) as SubjectClass,
 				IT.SubjectAssetTypeID,
@@ -59,55 +57,6 @@ as
 				outer apply dbo.GetAssetTypeTextPathById(OATT.ID, ' / ') OP
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[
-create or alter view [dbo].[IntersectTypeDetail] 
-as
-	SELECT		IT.uid, 
-				IT.ID,
-			    IT.[State],
-				iif (IT.SubjectClass = 9, 'Reference List', SATT.Name) + ' ' + P.Name + ' ' + iif (IT.ObjectClass = 9, 'Reference List', OATT.Name)	as Name,
-				coalesce(IT.SubjectClass, 0) as SubjectClass,
-				IT.SubjectAssetTypeID,
-				SATT.Uid as SubjectUid,
-				IT.SubjectCardinality, 
-				iif (IT.SubjectClass = 9, 'Reference List', SATT.Name) AS SubjectName, 
-				COALESCE (SIcon.IconBackColor, '#000') AS SubjectIconBackColor, 
-				COALESCE (SIcon.IconForeColor, '#fff') AS SubjectIconForeColor, 
-				COALESCE (SIcon.IconText, SUBSTRING(COALESCE (SATT.Name, 'Re'), 1, 2)) AS SubjectIconText,
-				case when IT.SubjectClass = 9 and SubjectAssetTypeID = 0
-				then 'Reference List' 
-				else SP.Path
-				end as SubjectAssetTypePath,
-				coalesce(IT.ObjectClass, 0) as ObjectClass,
-				IT.ObjectAssetTypeID,
-				OATT.Uid as ObjectUid,
-				IT.ObjectCardinality, 
-				iif (IT.ObjectClass = 9, 'Reference List', OATT.Name) AS ObjectName, 
-				COALESCE (OIcon.IconBackColor, '#000') AS ObjectIconBackColor, 
-				COALESCE (OIcon.IconForeColor, '#fff') AS ObjectIconForeColor, 
-				COALESCE (OIcon.IconText, SUBSTRING(COALESCE (OATT.Name, 'Re'), 1, 2)) AS ObjectIconText, 
-				case when IT.ObjectClass = 9 and ObjectAssetTypeID = 0
-				then 'Reference List' 
-				else OP.Path 
-				end as ObjectAssetTypePath,
-				IT.PredicateID, 
-				P.Uid as PredicateUid,
-				P.Name AS PredicateName, 
-				P.Inverse AS PredicateInverse, 
-				P.Type AS PredicateType, 
-				COALESCE (IT.IsSystem, CAST(0 AS bit)) AS IsSystem
-	FROM        IntersectType IT
-				inner join [Predicate] P on P.ID = IT.PredicateID 
-				left join AssetType SATT ON SATT.ID = IT.SubjectAssetTypeID
-				left join AssetTypeStyle SIcon on SIcon.ID = SATT.ID
-				outer apply dbo.GetAssetTypeTextPathById(SATT.ID, ' / ') SP
-
-				left join AssetType OATT ON OATT.ID = IT.ObjectAssetTypeID
-				left join AssetTypeStyle OIcon on OIcon.ID = OATT.ID
-				outer apply dbo.GetAssetTypeTextPathById(OATT.ID, ' / ') OP
-		]]>
-	</rollback>
   </changeSet>
 
 </databaseChangeLog>

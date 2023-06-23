@@ -52,17 +52,20 @@ namespace d360.web.Controllers.V2
 
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
-		private readonly IRelationshipRepository RelationshipRepository;
-		private readonly IFieldsRepository FieldsRepository;
 		private readonly IAssetRepository AssetRepository;
+		private readonly IExecutionsRepository ExecutionsRepository;
+		private readonly IFieldsRepository FieldsRepository;
+		private readonly IRelationshipRepository RelationshipRepository;
 
-		public RelationshipsController(ICoreComponentSet set, IQueueSource queueSource, IStorageProvider storage, IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository, IAssetRepository assetRepository) : base(set)
+		public RelationshipsController(ICoreComponentSet set, IQueueSource queueSource, IStorageProvider storage, 
+			IAssetRepository assetRepository, IExecutionsRepository executionsRepository, IFieldsRepository fieldsRepository, IRelationshipRepository relationshipRepository) : base(set)
 		{
 			QueueSource = queueSource;
 			Storage = storage;
-			RelationshipRepository = relationshipRepository;
-			FieldsRepository = fieldsRepository;
 			AssetRepository = assetRepository;
+			ExecutionsRepository = executionsRepository;
+			FieldsRepository = fieldsRepository;
+			RelationshipRepository = relationshipRepository;
 		}
 
 		#endregion
@@ -1397,20 +1400,7 @@ namespace d360.web.Controllers.V2
 					applicationId: applicationId);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{
@@ -1476,20 +1466,7 @@ namespace d360.web.Controllers.V2
 					applicationId: applicationId);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPutRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{
@@ -1506,7 +1483,7 @@ namespace d360.web.Controllers.V2
 		/// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
 		/// <returns></returns>
 		[
-			HttpGet,
+			HttpGet, ApiExplorerSettings(IgnoreApi = true), Obsolete,
 			Route("executions/{executionID:Guid}/status"),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -1528,7 +1505,7 @@ namespace d360.web.Controllers.V2
 					bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 				}
 
-				var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionID);
+				var dbExecutionItem = ExecutionsRepository.GetExecutionItemByUid(executionID);
 
 				if (dbExecutionItem == null)
 				{
@@ -1635,20 +1612,7 @@ namespace d360.web.Controllers.V2
 					applicationId: applicationId);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				);
+				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
 			{

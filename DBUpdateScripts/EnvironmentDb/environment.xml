@@ -172,6 +172,8 @@
 
 	<include file="scripts/Table.api.Execution.xml"/>
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionCatalogItem.xml"/>
+	<include file="scripts/Table.api.ExecutionCatalogItemProperty.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>	
@@ -311,6 +313,7 @@
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
+	<include file="scripts/Procedure.api.ParseAssetPaths.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>
@@ -334,6 +337,7 @@
 	<include file="scripts/Procedure.dbo.GetScoreHistoryByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetSiteNavigation.xml"/>
 	<include file="scripts/Procedure.dbo.GetSiteNavigationCounts.xml"/>  
+	<include file="scripts/Procedure.dbo.PatchCatalog.xml"/>
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
     <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
