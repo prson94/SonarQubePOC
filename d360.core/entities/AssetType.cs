@@ -34,16 +34,10 @@ namespace d360.core.entities
 		public FlowObjectType? FlowObjectType { get; set; }
 
 		[DataMember]
+		public string SourceID { get; set; }
+
+		[DataMember]
 		public State State { get; set; }
-
-		[DataMember]
-		public bool Hierarchical { get; set; }
-
-		[DataMember]
-		public int? HierarchyIntersectTypeID { get; set; }
-
-		[DataMember]
-		public int? HierarchyPredicateID { get; set; }
 
 		[DataMember]
 		public int HierarchyMaximumDepth { get; set; }
@@ -129,6 +123,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string Description { get; set; }
+
+		[DataMember]
+		public string SourceID { get; set; }
 
 		/// <summary>
 		/// Kept for backwards compatibility with Analyze.

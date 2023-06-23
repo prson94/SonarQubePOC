@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.IntersectType-v2">
-    <comment>GOV-18449</comment>
+  <changeSet author="Pappas" id="Table.dbo.IntersectType-v3">
+    <comment></comment>
 	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -30,6 +30,7 @@ BEGIN
 		UpdatedBy int NULL,
 		UpdatedOn datetime NULL,
 		[uid] [uniqueidentifier] CONSTRAINT [DF_IntersectType_uid] DEFAULT (newid()) NOT NULL,
+		SourceID nvarchar(500) null,
 		CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
@@ -52,6 +53,11 @@ end
 if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectAssetTypeID')
 begin
 	alter table IntersectType add ObjectAssetTypeID int null
+end
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SourceID')
+begin
+	alter table IntersectType add SourceID nvarchar(500) null
 end
 		]]>
     </sql>

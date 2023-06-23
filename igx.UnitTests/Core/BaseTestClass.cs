@@ -341,16 +341,6 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), true, true))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
-            mockRepo.Setup(x => x.GetExecutionItemByUid(It.IsAny<Guid>()))
-                .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID)
-                ? new ApiExecution()
-                {
-                    Fields = "{}"
-                }
-                : null);
-            mockRepo.Setup(x => x.GetExecutionItems(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK }));
-
             mockRepo.Setup(x => x.GetAssetTypeByModel(It.IsAny<AssetTypeUpsert>()))
                 .Returns(new AssetType());
 
@@ -367,27 +357,51 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.DoesAssetExists(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
-            mockRepo.Setup(x => x.GetExecutionStatusModel(It.IsAny<Guid>(), It.IsAny<bool>()))
-                .Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ?
-               Task.FromResult<dynamic>(new
-               {
-                   Total = 1,
-                   Processed = 1,
-                   Error = "",
-                   Fields = JObject.Parse("{}"),
-                   StartedOn = DateTime.Now,
-                   CompletedOn = DateTime.Now,
-                   Results = new List<DatabaseBulkAssetResult>()
-               })
-               : Task.FromResult<dynamic>(null));
-
             mockRepo.Setup(x => x.GetAssetDescendants(It.IsAny<Guid>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
                 .Returns(Task.FromResult(new AssetDescendantsResults()));            
 
             return mockRepo.Object;
         }
 
-        public IFieldsRepository GetFieldsRepository()
+		public IExecutionsRepository GetExecutionsRepository()
+		{
+			var mockRepo = new Mock<IExecutionsRepository>();
+			mockRepo.Setup(x => x.BulkPatchAssetAndRelations(It.IsAny<PatchBulkCatalogRequestModel>())).Returns(Task.FromResult(new ApiExecutionInfo()));
+
+			mockRepo.Setup(x => x.GetExecutionItemByUid(It.IsAny<Guid>()))
+				.Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID)
+				? new ApiExecution()
+				{
+					Fields = "{}"
+				} : null);
+
+			mockRepo.Setup(x => x.GetExecutions(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
+				.Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK }));
+
+			mockRepo.Setup(x => x.GetExecutionStatus(It.IsAny<Guid>(), It.IsAny<bool>()))
+				.Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ?
+			   Task.FromResult(new EndpointPayloadResponse<dynamic>
+			   {
+				   Code = HttpStatusCode.OK,
+				   Message = "",
+				   Payload = new {
+					   Total = 1,
+					   Processed = 1,
+					   Error = 0,
+					   Fields = new { },
+					   StartedOn = DateTime.Now,
+					   CompletedOn = DateTime.Now,
+					   Results = new List<DatabaseBulkAssetResult>()
+				   }
+			   })
+			   : Task.FromResult(new EndpointPayloadResponse<dynamic> { Code = HttpStatusCode.NotFound, Message = "Not found", Payload = null }));
+
+			mockRepo.Setup(x => x.PatchCatalog(It.IsAny<int>(), It.IsAny<PatchBulkCatalogRequestModel>())).Returns(Task.CompletedTask);
+
+			return mockRepo.Object;
+		}
+
+		public IFieldsRepository GetFieldsRepository()
         {
             var mockRepo = new Mock<IFieldsRepository>();
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
@@ -438,13 +452,11 @@ namespace igx.UnitTests
             mock.Setup(x => x.XrefExists(It.IsAny<AssetCrossReference>()))
                 .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
 
-            mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>(), It.IsAny<ApiExecution>()))
+            mock.Setup(x => x.PostBulkCrossReferenceAsync(It.IsAny<List<AssetCrossReference>>(), It.IsAny<ApiExecution>()))
                  .Returns((List<AssetCrossReference> xRefList, object o2) =>
                  {
-                     if (xRefList.Count == 0) return null;
-                     else return new List<AssetCrossReferenceResult>() { };
+					 return Task.FromResult(new List<AssetCrossReferenceResult>() { });
                  });
-
 
             mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetCrossReference>())).
                 Returns((Guid uid, string s1, string s2, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));

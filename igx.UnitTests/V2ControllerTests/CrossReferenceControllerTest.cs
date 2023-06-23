@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+﻿using d360.core.entities;
 using d360.web.Controllers.V2;
-using System.Web.Http;
-using System.Net.Http;
-using d360.core.enums;
-using d360.core.entities;
 using igx.UnitTests.Core;
-using System.Web.Http.Results;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-    [Trait("Unit tests", "CrossReferences controller")]
+	[Trait("Unit tests", "CrossReferences controller")]
     public class CrossReferenceControllerTest : BaseTest
     {
         internal CrossReferencesController crossReferencesController;
         public CrossReferenceControllerTest()
         {
-            this.crossReferencesController = new CrossReferencesController(GetCoreComponentSet(), GetCrossReferencesRepository(), GetAssetRepository())
+            crossReferencesController = new CrossReferencesController(GetCoreComponentSet(), GetAssetRepository(), GetCrossReferencesRepository(), GetExecutionsRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

@@ -5,11 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Table.api.Execution-v7">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+ <changeSet author="Pappas" id="Table.api.Execution-v8">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'Execution')
 BEGIN
@@ -25,145 +22,64 @@ BEGIN
 		[ErrorMessage] [nvarchar](max) NULL,
 		[Method] [varchar](7) NULL,
 		[Route] [varchar](250) NULL,
-		[ProcessingStartedOn] [datetime] NULL,
+		[ProcessingStartedOn] [datetime] NULL,		
 		CONSTRAINT [PK_ApiExecution] PRIMARY KEY NONCLUSTERED ( [ExecutionID] DESC )
 	)
 END
 
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'State'
-)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'State')
 BEGIN
-    ALTER TABLE [api].[Execution] ADD [State] int NOT NULL CONSTRAINT [DF_Execution_State]  DEFAULT ((1))
+    alter table api.Execution add [State] int NOT NULL CONSTRAINT [DF_Execution_State]  DEFAULT ((1))
 END
 
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'MarkedForProcessing'
-)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'MarkedForProcessing')
 BEGIN
-    ALTER TABLE [api].[Execution] ADD [MarkedForProcessing] bit NOT NULL CONSTRAINT [DF_Execution_MarkedForProcessing]  DEFAULT ((0))
+    alter table api.Execution add [MarkedForProcessing] bit NOT NULL CONSTRAINT [DF_Execution_MarkedForProcessing]  DEFAULT ((0))
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_ResourceID')
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'ErrorMessage')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Api_Execution_ResourceID] ON [api].[Execution] ( [ResourceID] )
+	update [api].[Execution] set [ErrorMessage] = left(ErrorMessage, 2000);
+	alter table api.Execution alter column [ErrorMessage] nvarchar(2500);
 END
 
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'ErrorMessage'
-)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'ApplicationID')
 BEGIN
-update [api].[Execution]
-set  [ErrorMessage] = left(ErrorMessage, 2000);
-   
-ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(2500);
+    alter table api.Execution add [ApplicationID] nvarchar(200)
 END
 
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'ApplicationID'
-)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Id')
 BEGIN
-    ALTER TABLE [api].[Execution] ADD [ApplicationID] nvarchar(200)
+    alter table api.Execution add Id int identity not null
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'ApplicationID'
-)
-BEGIN
-	ALTER TABLE [api].[Execution] DROP COLUMN [ApplicationID]
-END
+  </sql>
+ </changeSet>
 
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'State'
-)
-BEGIN
-	ALTER TABLE [api].[Execution] DROP CONSTRAINT [DF_Execution_State]
-	ALTER TABLE [api].[Execution] DROP COLUMN [State]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'MarkedForProcessing'
-)
-BEGIN
-	ALTER TABLE [api].[Execution] DROP CONSTRAINT [DF_Execution_MarkedForProcessing]
-	ALTER TABLE [api].[Execution] DROP COLUMN [MarkedForProcessing]
-END
-
-IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_ResourceID')
-BEGIN
-	DROP INDEX [IX_Api_Execution_ResourceID] ON [api].[Execution]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'ErrorMessage'
-)
-BEGIN
-    ALTER TABLE [api].[Execution] ALTER COLUMN [ErrorMessage] nvarchar(max);
-END
-		]]>
-	</rollback>
-  </changeSet>
-
-  
-   <changeSet author="Puneet Gupta" id="Index.api.Execution-v1">
-   <comment>GOV-16678</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+ <changeSet author="Pappas" id="Index.api.Execution-v2">
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_CompletedOn_StartedOn')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Api_Execution_CompletedOn_StartedOn] ON [api].[Execution] ([CompletedOn], [StartedOn])
+	create nonclustered index IX_Api_Execution_CompletedOn_StartedOn ON api.Execution (CompletedOn, StartedOn)
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_Route_Include')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Api_Execution_Route_Include] ON [api].[Execution] ([Route]) INCLUDE ([CompletedOn], [ExecutionID])
+	create nonclustered index IX_Api_Execution_Route_Include ON api.Execution ([Route]) INCLUDE (CompletedOn, ExecutionID)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_ResourceID')
+BEGIN
+	create nonclustered index IX_Api_Execution_ResourceID ON api.Execution ( ResourceID )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_ApiExecution')
+BEGIN
+	create clustered index CIX_ApiExecution ON api.Execution ( Id asc )
 END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_CompletedOn_StartedOn')
-BEGIN
-	DROP INDEX [IX_Api_Execution_CompletedOn_StartedOn] ON [api].[Execution]
-END
+ </changeSet> 
 
-IF EXISTS (select * from sys.indexes where name = 'IX_Api_Execution_Route_Include')
-BEGIN
-	DROP INDEX [IX_Api_Execution_Route_Include] ON [api].[Execution]
-END
-
-		]]>
-	</rollback>
-  </changeSet> 
-
- </databaseChangeLog>
+</databaseChangeLog>
