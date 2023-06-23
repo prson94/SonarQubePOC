@@ -365,7 +365,7 @@ namespace d360.web.Controllers.V2
 
 		[
 			HttpGet,
-			Route("reassignmentByUid/objects/{Uid:Guid}"),
+			Route("reassignmentByUid/objects/{workflowItemUid:Guid}"),
 			ApiExplorerSettings(IgnoreApi = true),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetApiModel>))
 		]
