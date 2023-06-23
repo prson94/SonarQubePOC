@@ -26,7 +26,6 @@ using d360.model.workflow;
 using d360.web.Models;
 
 using Dapper;
-
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -342,7 +341,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUid:int}/{resourceId:int}/{clearAssignments:bool}")]
-		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, int resourceId, bool clearAssignments)
+		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments)
 		{
 
 			var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.UID == itemStepUID);
@@ -350,9 +349,16 @@ namespace d360.web.Controllers.Services
 			if (itemStep == null)
 			{
 				throw new ArgumentNullException(nameof(itemStep), WorkflowApiMessages.InvalidWorkflowStepID);
-			}	
+			}
 
-			var response = await ReassignWorkflowResource(itemStep.ID, resourceId, clearAssignments);
+			var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid).FirstOrDefault();
+
+			if (resource == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+			}
+
+			var response = await ReassignWorkflowResource(itemStep.ID, resource.ResourceID, clearAssignments);
 
 			return response;
 		}
@@ -383,7 +389,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[HttpPost, Route("ReassignWorkflowObjectByUid/{itemUID:Guid}/{workflowTypeUID:Guid}/{objectId:int}/{objectType}/{itemStepUID:Guid}")]
-		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, int? resourceId)
+		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, Guid? resourceUID)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == workflowTypeUID).FirstOrDefault();
 
@@ -411,7 +417,21 @@ namespace d360.web.Controllers.Services
 			if (itemStep == null)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
-			}			
+			}
+
+			int? resourceId = null;
+
+			if (resourceUID.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
+			}
 
 			return ReassignWorkflowObject(item.ID, type.ID, objectId, objectType, itemStep.ID, resourceId);
 		}
@@ -2563,14 +2583,29 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("typeByUid/{typeUID:Guid}/myinstances")]
-		public HttpResponseMessage GetAssignedWorkflowInstancesByUid(Guid typeUID, int version, int versionStepId, int resourceId = 0)
+		public HttpResponseMessage GetAssignedWorkflowInstancesByUid(Guid typeUID, int version, int versionStepId, Guid? resourceUid)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
 
 			if (type == null)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
-			}			
+			}
+
+
+			var resourceId = 0;
+
+			if (resourceUid.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
+			}
 
 			return GetAssignedWorkflowInstances(type.ID, version, versionStepId, resourceId);
 		}
@@ -2658,13 +2693,27 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("typeByUid/{typeUID:Guid}/myinstances/summary")]
-		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(Guid typeUID, int version, int stepId, int resourceId = 0)
+		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(Guid typeUID, int version, int stepId, Guid? resourceUID)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
 
 			if (type == null)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+			}
+
+			var resourceId = 0;
+
+			if (resourceUID.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
 			}
 
 
