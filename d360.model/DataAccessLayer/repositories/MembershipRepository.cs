@@ -991,6 +991,7 @@ namespace d360.model.DataAccessLayer
 								}
 
 								user.uid = resource.Uid;
+								result.uid = user.uid;
 								resource.UpdatedOn = DateTime.UtcNow;
 								CommunityContext.Update(resource);
 							}
@@ -1294,7 +1295,8 @@ namespace d360.model.DataAccessLayer
 							select 'ObjectIndex', 'U', 'Resource', ResourceID, getdate(), AssetID
 							from api.ExecutionUser 
 							where ExecutionID = @executionid
-							and Success is null",
+							and Success is null
+							and AssetID is not null",
 							new { executionID, CompanyContext.CurrentResourceID },
 							transaction: trans);
 
