@@ -12,8 +12,10 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE), Table("Execution", Schema = "api")]
     public class ApiExecution : BaseObject
     {
+		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public int Id { get; set; }
 
-        [DataMember, Key]
+		[DataMember, Key]
         public Guid ExecutionID { get; set; }
 
         [DataMember]

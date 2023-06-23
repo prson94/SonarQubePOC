@@ -1368,6 +1368,15 @@ OPTION(RECOMPILE)";
 					}
 				}
 
+				if (queryParams.Any(q => q.Key.ToLower() == "sourceid"))
+				{
+					var sourceId = queryParams.FirstOrDefault(q => q.Key.ToLower() == "sourceid").Value;
+					int sourceIdMaxLength = sourceId.Length > 500 ? 500 : sourceId.Length;
+					sourceId = sourceId.Substring(0, sourceIdMaxLength);
+					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.SourceID = @sourceId";
+					dbArgs.Add("sourceId", sourceId);
+				}
+
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
 				{
 					State state;
@@ -1450,6 +1459,7 @@ OPTION(RECOMPILE)";
 select	I.Id,
 		I.Uid,
 		I.State as State,
+		I.SourceID,
 		coalesce(I.IsSystem, 0) as IsSystem,
 		P.UID as 'Predicate.Uid',
 		coalesce(P.[Type],0) as 'Predicate.Type',

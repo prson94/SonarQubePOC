@@ -29,7 +29,7 @@ namespace d360.model.DataAccessLayer
         
         Task<IEnumerable<AssetCrossReference>> GetCrossReferences(IEnumerable<KeyValuePair<string, string>> queryParams);
         
-        IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models, ApiExecution execution);
+        Task<List<AssetCrossReferenceResult>> PostBulkCrossReferenceAsync(List<AssetCrossReference> models, ApiExecution execution);
         
         Task<int> PutCrossReference(Guid uid, AssetCrossReference model);
         

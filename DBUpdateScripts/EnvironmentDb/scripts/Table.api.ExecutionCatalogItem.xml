@@ -1,0 +1,97 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItem-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionCatalogItem')
+BEGIN
+	create table api.ExecutionCatalogItem (
+		ExecutionId int not null,
+		[Type] char(1) not null,
+
+		TypeSourceId nvarchar(500),
+		TypeId int,
+		
+		-- Assets
+		SourceId nvarchar(500) sparse,
+		Id bigint, 
+		Uid uniqueidentifier,
+		
+		-- Relations
+		SubjectSourceId nvarchar(500) sparse,
+		SubjectId bigint sparse,
+		ObjectSourceId nvarchar(500) sparse,
+		ObjectId bigint sparse,
+
+		[Action] char(1),
+		[Success] bit, 
+		[Message] nvarchar(500)
+	)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItem.Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'cix_ApiExecutionCatalogItem')
+BEGIN
+	create clustered index cix_ApiExecutionCatalogItem on api.ExecutionCatalogItem (ExecutionId desc, [Type] asc)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_TypeSourceId')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_TypeSourceId on api.ExecutionCatalogItem (ExecutionId asc, [Type] asc, TypeSourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_Id_Success')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_Id_Success on api.ExecutionCatalogItem (ExecutionId, [Type], Id, Success) include (TypeId, SourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_SourceId_Id_Success')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_SourceId_Id_Success on api.ExecutionCatalogItem (ExecutionId, [Type], [SourceId], Id, Success)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_TypeId')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_TypeId on api.ExecutionCatalogItem (ExecutionId asc, [Type] asc, TypeId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_SourceId')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_SourceId on api.ExecutionCatalogItem (ExecutionId asc, [Type] asc, SourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_SubjectSourceId_ObjectSourceId_Success')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_SubjectSourceId_ObjectSourceId_Success on api.ExecutionCatalogItem (ExecutionId, [Type], Success, SubjectSourceId, ObjectSourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_Id')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_Id on api.ExecutionCatalogItem (ExecutionId asc, [Type] asc, Id)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItem_Execution')
+BEGIN
+	create index ix_ApiExecutionCatalogItem_Execution on api.ExecutionCatalogItem (ExecutionId)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

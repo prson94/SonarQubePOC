@@ -58,7 +58,15 @@ namespace d360.model
             }
         }
 
-        public static async Task OpenIfClosed(this SqlConnection cnn)
+		public static void CloseIfOpened(this SqlConnection cnn)
+		{
+			if (cnn.State == ConnectionState.Open)
+			{
+				cnn.Close();
+			}
+		}
+
+		public static async Task OpenIfClosed(this SqlConnection cnn)
         {
             if (cnn.State != ConnectionState.Open)
             {
