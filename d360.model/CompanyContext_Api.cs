@@ -57,8 +57,8 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
-    {
+	public partial class CompanyContext : BaseContext, ICompanyContext
+	{
 		#region Constants / Properties
 
 		internal const int API_V2_RETRY_LIMIT = 10;
@@ -1902,6 +1902,14 @@ where   ER.ExecutionID = @ExecutionID
 							}
 						}
 					}
+
+					results.AddRange(
+						Query<DatabaseBulkRelationshipResult>(
+							$"select * from api.ExecutionDeletedRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+							new { execution.ExecutionID, beginItemNumber, endItemNumber }
+						)
+					);
+
 					beginItemNumber += loopSize;
 					endItemNumber += loopSize;
 				}
@@ -3291,6 +3299,14 @@ where   ER.ExecutionID = @ExecutionID
 								}
 							}
 						}
+						
+						results.AddRange(
+							Query<DatabaseBulkRelationshipResult>(
+								$"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+								new { execution.ExecutionID, beginItemNumber, endItemNumber }
+							)
+						);
+
 						beginItemNumber += loopSize;
 						endItemNumber += loopSize;
 					}
