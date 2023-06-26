@@ -179,12 +179,12 @@
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
                   *ngIf="showEditor"
-                  [objectID]="selected ? selected?.ObjectID : assetTypeApiModel?.ID"
-                  [objectType]="assetTypeApiModel?.Object"
+                  [objectID]="editorObjectId"
+                  [objectType]="editorObjectType"
                   [title]="assetEditorTitle"
-                  [selection]="selected"
+                  [selection]="editorSelected"
                   [rowID]="rowID"
-                  [objectTypeUid]="assetTypeApiModel?.uid"
+                  [objectTypeUid]="editorObjectTypeUid"
                   [assetTypePath]="getAssetPath()"
                   (saveClick)="saveItem($event)"
                   [showAsModal]="true"
