@@ -15,6 +15,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 export class PageHeaderComponent {
     @Input() icon: string;
     @Input() header: string;
+	@Input() iconPath: string;
 
     constructor(
         private titleService: Title,

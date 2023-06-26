@@ -27,6 +27,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 })
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() isRequestsFlow: boolean = false
+	currentResourceUid: string = null
 	title: string = $localize`WorkFlow Items`;
 	items: WorkflowAssignmentItem[] = [];
 	totalRecords: number;
@@ -70,7 +71,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
-		this.setRowsPerPage();
+		this.settingsService.getUserVariables().subscribe((res) => {
+			this.currentResourceUid = res.CurrentResourceUid;
+			this.setRowsPerPage();
+		});
 		this.createFilterFields();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
@@ -96,7 +100,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	export() {
 		this.isExportInProgress = true;
-		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => {
+		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null
+		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, true, () => {
 			this.isExportInProgress = false;
 		});
 	}
@@ -109,8 +114,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
+		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null
 		let sources: Observable<any>[] = [
-			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null),
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
 		forkJoin(sources).subscribe((results: any[]) => {

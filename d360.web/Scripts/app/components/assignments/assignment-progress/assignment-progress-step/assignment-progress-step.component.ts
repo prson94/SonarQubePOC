@@ -49,9 +49,13 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get message(): string {
+		if (this.assigneeNames) {
 		return 'Assigned to ' + this.assigneeNames.slice(0, 2)?.join(', ') +
 			(this.assigneeNames.length > 2 ? ` + ${this.assigneeNames.length - 2} others` : '') +
 			'\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
+		} else {
+			return ''
+		}
 	}
 
 	get icon(): string {

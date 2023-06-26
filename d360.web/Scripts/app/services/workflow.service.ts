@@ -310,7 +310,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", initiatorUid: string= "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<WorkflowAssignments> {
 		let url = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		if (simpleFilter) {
@@ -319,6 +319,10 @@ export class WorkflowService extends BaseObservableService {
 
 		if (advancedFilter) {
 			url += `&_filter=${advancedFilter}`;
+		}
+
+		if (initiatorUid) {
+			url += `&_initiatorUid=${initiatorUid}`;
 		}
 
 		if (order) {

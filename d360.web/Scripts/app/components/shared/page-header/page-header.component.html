@@ -3,7 +3,8 @@
 	<ng-template #template>
 		<div class="title">
 			<span class="d3s-icon asset-icon">
-				<i class="fa {{icon}}"></i>
+				<i *ngIf="!iconPath" class="fa {{icon}}"></i>
+				<img *ngIf="iconPath" [src]="iconPath" alt="icon">
 			</span>
 			<h1 title="{{header}}">{{header}}</h1>
 		</div>
