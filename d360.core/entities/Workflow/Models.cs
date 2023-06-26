@@ -596,5 +596,54 @@ namespace d360.core.entities.Workflow
 		public string Name { get; set; }
 	}
 
+	public class WorkflowInstanceDetailsByVersionAPIModel : PagedApiBaseViewModel
+	{
+		[DataMember]
+		public List<WorkflowVersionDetails> items { get; set; }
+
+	}
+
+	public class WorkflowVersionDetails
+	{
+		[DataMember]
+		public string WorkflowName { get; set; }
+
+		[DataMember]
+		public Guid WorkflowTypeUid { get; set; }
+
+		[DataMember]
+		public int Version { get; set; }
+
+		[DataMember]
+		public int Awaiting { get; set; }
+
+		[DataMember]
+		public int Incomplete { get; set; }
+
+		[DataMember]
+		public string ChangeType { get; set; }
+
+		[DataMember]
+		public string InitiatingObjectType { get; set; }
+
+		[DataMember]
+		public DateTime CreatedOn { get; set; }
+
+		[DataMember]
+		public string CreatedBy { get; set; }
+
+		[DataMember]
+		public Guid CreatedByUid { get; set; }
+
+		[DataMember]
+		public DateTime UpdatedOn { get; set; }
+
+		[DataMember]
+		public string UpdatedBy { get; set; }
+
+		[DataMember]
+		public Guid UpdatedByUid { get; set; }
+	}
+
 	#endregion
 }
