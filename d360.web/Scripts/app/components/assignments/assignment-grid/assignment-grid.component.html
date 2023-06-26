@@ -69,9 +69,8 @@
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
 					<ng-container *ngFor="let field of actionFormFields">
-						<th [pSortableColumn]="field.FriendlyName">
+						<th>
 							<ng-container i18n>{{ field.FriendlyName }}</ng-container>
-							<d3s-sortIcon [field]="field.FriendlyName"></d3s-sortIcon>
 						</th>
 					</ng-container>
 					<ng-container *ngIf="!isRequestsFlow">
@@ -103,11 +102,6 @@
 					<th>
 						<d3s-column-filter [field]="'assetDisplayValue'" [datatype]="'text'"></d3s-column-filter>
 					</th>
-					<ng-container *ngFor="let field of actionFormFields">
-						<th>
-							<d3s-column-filter [field]="field.FriendlyName" [datatype]="'text'"></d3s-column-filter>
-						</th>
-					</ng-container>
 					<ng-container *ngIf="!isRequestsFlow">
 						<th>
 							<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>

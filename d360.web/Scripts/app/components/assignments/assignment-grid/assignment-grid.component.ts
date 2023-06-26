@@ -193,6 +193,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				count: values.length
 			});
 		}
+		if (lookupType === 'type') {
+			let typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
+			const values: string[] = typeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+			return of({
+				items: values,
+				count: values.length
+			});
+		}
 		if (lookupType === 'assignee') {
 			return this.workflowService.getPossibleAssignees().pipe(
 				map((assignees: { uid: string, Name: string }[]) => {
@@ -263,7 +271,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		if (lookupType === 'typeName') {
 			return this.workflowService.getRelevantAssetTypes().pipe(
-				map((assetType: {uid: string, name: string}[]) => {
+				map((assetType: { uid: string, name: string }[]) => {
 					let assetTypeList: { 'name': string, 'value': string }[] = assetType?.map((assetType): {
 						'name': string,
 						'value': string
@@ -307,7 +315,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	createFilterFields(): void {
 		let filterFieldList: AdvancedFilterFieldType[] = [];
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
-		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = true;
+		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
 		filterFieldList = [
 			{
 				Name: 'Status',
@@ -354,6 +362,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				Type: new FieldType('Lookup'),
 				Category: '',
 				ValueLoader: this.getFilterValues.bind(this, 'initiator')
+			},
+			{
+				Name: 'initiatingObjectType',
+				FriendlyName: $localize`Type`,
+				Type: new FieldType('Lookup'),
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'type')
 			},
 			{
 				Name: 'assetTypeUid',
