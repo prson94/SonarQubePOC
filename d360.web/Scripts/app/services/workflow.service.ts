@@ -386,6 +386,30 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
+	getPossibleAssignees(): Observable<{uid: string, Name: string}[]> {
+		return this.http.get('api/v2/workflow/possibleAssignees')
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getPossibleInitiators(): Observable<{uid: string, Name: string}[]> {
+		return this.http.get('api/v2/workflow/possibleInitiators')
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getRelevantAssetTypes(): Observable<{uid: string, name: string}[]> {
+		return this.http.get('api/v2/workflow/relevantAssetTypes')
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
     getObjectTypes(objectID: number, objectType: string): Observable<WorkflowListItem[]> {
         return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
             .pipe(

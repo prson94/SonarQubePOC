@@ -17,7 +17,6 @@ import {
 	LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
-import { AssetTypeService } from '../../../services/asset-type.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 @Component({
@@ -26,8 +25,8 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 	styleUrls: ['./assignment-grid.component.less']
 })
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
-    @Input() isRequestsFlow: boolean = false
-	currentResourceUid: string = null
+	@Input() isRequestsFlow: boolean = false;
+	currentResourceUid: string = null;
 	title: string = $localize`WorkFlow Items`;
 	items: WorkflowAssignmentItem[] = [];
 	totalRecords: number;
@@ -54,14 +53,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
-	statusValues: string[] = ['Pending', 'Complete'];
 	protected readonly JSON: JSON = JSON;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				private changeDetectorRef: ChangeDetectorRef,
-				private assetTypeService: AssetTypeService,
 				protected settingsService: CompanySettingsService,
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService) {
@@ -100,7 +97,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	export() {
 		this.isExportInProgress = true;
-		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null
+		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, true, () => {
 			this.isExportInProgress = false;
 		});
@@ -114,7 +111,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private loadData(): void {
 		this.isLoading = true;
-		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null
+		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		let sources: Observable<any>[] = [
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
@@ -189,11 +186,50 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
 		if (lookupType === 'status') {
-			const values: string[] = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+			let statusValues: string[] = ['Pending', 'Complete'];
+			const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 			return of({
 				items: values,
 				count: values.length
 			});
+		}
+		if (lookupType === 'assignee') {
+			return this.workflowService.getPossibleAssignees().pipe(
+				map((assignees: { uid: string, Name: string }[]) => {
+					let possibleAssigneeList: {
+						'name': string,
+						'value': string
+					}[] = assignees?.map((assignee: { uid: string, Name: string }): {
+						'name': string,
+						'value': string
+					} => {
+						return { 'name': assignee.Name, 'value': assignee.uid };
+					}) ?? [];
+					possibleAssigneeList = possibleAssigneeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: possibleAssigneeList,
+						count: possibleAssigneeList.length
+					};
+				}));
+		}
+		if (lookupType === 'initiator') {
+			return this.workflowService.getPossibleInitiators().pipe(
+				map((initiators: { uid: string, Name: string }[]) => {
+					let possibleInitiatorsList: {
+						'name': string,
+						'value': string
+					}[] = initiators?.map((assignee: { uid: string, Name: string }): {
+						'name': string,
+						'value': string
+					} => {
+						return { 'name': assignee.Name, 'value': assignee.uid };
+					}) ?? [];
+					possibleInitiatorsList = possibleInitiatorsList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: possibleInitiatorsList,
+						count: possibleInitiatorsList.length
+					};
+				}));
 		}
 		if (lookupType === 'workflowName') {
 			return this.workflowService.getTypes().pipe(
@@ -226,13 +262,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				}));
 		}
 		if (lookupType === 'typeName') {
-			return this.assetTypeService.getAssetTypesDetails().pipe(
-				map((AssetType: any[]) => {
-					let assetTypeList: { 'name': string, 'value': string }[] = AssetType?.map((assetType): {
+			return this.workflowService.getRelevantAssetTypes().pipe(
+				map((assetType: {uid: string, name: string}[]) => {
+					let assetTypeList: { 'name': string, 'value': string }[] = assetType?.map((assetType): {
 						'name': string,
 						'value': string
 					} => {
-						return { 'name': assetType.Name, 'value': assetType.uid };
+						return { 'name': assetType.name, 'value': assetType.uid };
 					}) ?? [];
 					assetTypeList = assetTypeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 					return {
@@ -281,6 +317,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				ValueLoader: this.getFilterValues.bind(this, 'status')
 			},
 			{
+				Name: 'assignee',
+				FriendlyName: $localize`Assignee`,
+				Type: lookupFieldTypePrimaryFilter,
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'assignee')
+			},
+			{
 				Name: 'actionTypeUid',
 				FriendlyName: $localize`Action`,
 				Type: lookupFieldTypePrimaryFilter,
@@ -304,6 +347,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				FriendlyName: $localize`Initiated`,
 				Type: new FieldType('DateTime'),
 				Category: ''
+			},
+			{
+				Name: 'initiatorUid',
+				FriendlyName: $localize`Initiator`,
+				Type: new FieldType('Lookup'),
+				Category: '',
+				ValueLoader: this.getFilterValues.bind(this, 'initiator')
 			},
 			{
 				Name: 'assetTypeUid',
