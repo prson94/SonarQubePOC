@@ -17,7 +17,7 @@
 	<PackageReference Include="Azure.Storage.Blobs" Version="12.7.0.0" />
     <PackageReference Include="Azure.Storage.Common" Version="12.7.0.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.6.0.0" />
-    <PackageReference Include="Dapper" Version="2.0.90" />
+    <PackageReference Include="Dapper" Version="2.0.143" />
 	<PackageReference Include="Elasticsearch.Net" Version="6.8.9" />
     <PackageReference Include="Mandrill.net" Version="7.2.0.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.13" />

@@ -108,7 +108,7 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
+	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
 		#region DbSets
 

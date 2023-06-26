@@ -42,8 +42,8 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
-    {
+	public partial class CompanyContext : BaseContext, ICompanyContext
+	{
 		#region DbSets
 
 		public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
@@ -428,11 +428,8 @@ namespace d360.model
 
 		public async Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId)
 		{
-			var qry = await Connection.QueryAsync<DataProfileUpsertResponse>(
-				"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc",
-				new { executionId }
-			);
-
+			var sql = "select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+			var qry = await Connection.QueryAsync<DataProfileUpsertResponse>(sql, new { executionId });
 			return qry.ToList();
 		}
 
@@ -1409,7 +1406,7 @@ namespace d360.model
 
 			completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetDataProfile");
 
-			var profileUidsQuery = await Connection.QueryAsync<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
+			var profileUidsQuery = Connection.Query<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
 			var profileUids = profileUidsQuery.ToList(); 
 			
 			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
