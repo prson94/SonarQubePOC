@@ -3932,7 +3932,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 								   new List<string>() { "Uid" })
 			});
 
-			return results.Where(r => r.JsonPath != "[ERROR: KEY_FIELDS_NULL]").ToDictionary(r => r.Uid, r =>
+			return results.Where(r => r.JsonPath != "[ERROR:KEY_FIELDS_NULL]").ToDictionary(r => r.Uid, r =>
 			{
 				var x = JsonConvert.DeserializeObject<List<PathComponent>>(r.JsonPath);
 

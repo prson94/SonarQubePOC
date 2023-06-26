@@ -26,7 +26,6 @@ using d360.model.workflow;
 using d360.web.Models;
 
 using Dapper;
-
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -341,8 +340,31 @@ namespace d360.web.Controllers.Services
 			};
 		}
 
+		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUid:int}/{resourceId:int}/{clearAssignments:bool}")]
+		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments)
+		{
+
+			var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.UID == itemStepUID);
+
+			if (itemStep == null)
+			{
+				throw new ArgumentNullException(nameof(itemStep), WorkflowApiMessages.InvalidWorkflowStepID);
+			}
+
+			var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid).FirstOrDefault();
+
+			if (resource == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+			}
+
+			var response = await ReassignWorkflowResource(itemStep.ID, resource.ResourceID, clearAssignments);
+
+			return response;
+		}
+
 		[HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
-		public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId, bool clearAssignments)
+		public async Task<HttpResponseMessage> ReassignWorkflowResource(long itemStepId, int resourceId, bool clearAssignments)
 		{
 			try
 			{
@@ -366,8 +388,56 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpPost, Route("ReassignWorkflowObjectByUid/{itemUID:Guid}/{workflowTypeUID:Guid}/{objectId:int}/{objectType}/{itemStepUID:Guid}")]
+		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, Guid? resourceUID)
+		{
+			var type = Company.WorkflowTypes.Where(wt => wt.UID == workflowTypeUID).FirstOrDefault();
+
+			if (type == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, workflowTypeUID, "workflowTypeUID"));
+			}			
+
+			var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == type.ID).FirstOrDefault();
+
+			if (reg == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowRegistration);
+			}
+
+			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();
+
+			if (item == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowID);
+			}
+
+			var itemStep = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).FirstOrDefault();
+
+			if (itemStep == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
+			}
+
+			int? resourceId = null;
+
+			if (resourceUID.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
+			}
+
+			return ReassignWorkflowObject(item.ID, type.ID, objectId, objectType, itemStep.ID, resourceId);
+		}
+
 		[HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}/{itemStepId:int}")]
-		public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType, int itemStepId, int? resourceId)
+		public HttpResponseMessage ReassignWorkflowObject(long itemId, int workflowId, int objectId, string objectType, long itemStepId, int? resourceId)
 		{
 			try
 			{
@@ -439,8 +509,30 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpPost, Route("SubmitWorkflowFormByUid/{itemUID:Guid}/{itemStepUID:Guid}")]
+		public async Task<HttpResponseMessage> SubmitWorkflowFormByUid(Guid itemUID, Guid itemStepUID, List<WorkflowFormModelField> model)
+		{			
+			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();			
+
+			if (item == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemNotFound);
+			}
+
+			var itemStepsModel = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).FirstOrDefault();
+
+			if (itemStepsModel == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
+			}
+
+			var response = await SubmitWorkflowForm(item.ID, itemStepsModel.ID, model);			
+
+			return response;
+		}
+
 		[HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
-		public async Task<HttpResponseMessage> SubmitWorkflowForm(int itemId, int itemStepId, List<WorkflowFormModelField> model)
+		public async Task<HttpResponseMessage> SubmitWorkflowForm(long itemId, long itemStepId, List<WorkflowFormModelField> model)
 		{
 			try
 			{
@@ -630,6 +722,22 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[HttpPost, Route("SubmitWorkflowFormByUid/bulk")]
+		public async Task<HttpResponseMessage> SubmitBulkWorkflowFormByUid(BulkWorkflowFormModel model)
+		{
+
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+			
+			var response = await SubmitBulkWorkflowForm(model);
+
+			return response;
+		}
+
 		[HttpPost, Route("SubmitWorkflowForm/bulk")]
 		public async Task<HttpResponseMessage> SubmitBulkWorkflowForm(BulkWorkflowFormModel model)
 		{
@@ -735,8 +843,25 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[Route("formByUid/{typeUID:Guid}/{itemStepUID:Guid}"), HttpGet]
+		public async Task<HttpResponseMessage> GetWorkflowFormByUid(Guid typeUID, Guid itemStepUID)
+		{
+			var itemStep = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
+
+			if (itemStep == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
+			}
+
+			var type = Company.WorkflowTypes.Where(x => x.UID == typeUID).FirstOrDefault();
+
+			var response = await GetWorkflowForm((type == null ? 0 : type.ID), itemStep.ID);
+
+			return response;
+		}
+
 		[Route("form/{typeID:int}/{itemStepID:int}"), HttpGet]
-		public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, int itemStepID)
+		public async Task<HttpResponseMessage> GetWorkflowForm(int typeID, long itemStepID)
 		{
 			var itemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
 
@@ -987,6 +1112,21 @@ namespace d360.web.Controllers.Services
 				AllowReassignResource = allowReassignResource,
 				IsClearAssignementsAllowed
 			});
+		}
+
+		[Route("formbyUid/bulk"), HttpPost]
+		public async Task<HttpResponseMessage> GetBulkWorkflowFormByUid(BulkWorkflowFormModel model)
+		{
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+
+			var response = await GetBulkWorkflowForm(model);
+
+			return response;
 		}
 
 		[Route("form/bulk"), HttpPost]
@@ -2453,8 +2593,36 @@ namespace d360.web.Controllers.Services
 			return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowVersions.Where(v => v.TypeID == id).ToList());
 		}
 
+		[Route("typeByUid/{typeUID:Guid}/myinstances")]
+		public HttpResponseMessage GetAssignedWorkflowInstancesByUid(Guid typeUID, int version, int versionStepId, Guid? resourceUid)
+		{
+			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
+
+			if (type == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+			}
+
+
+			var resourceId = 0;
+
+			if (resourceUid.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
+			}
+
+			return GetAssignedWorkflowInstances(type.ID, version, versionStepId, resourceId);
+		}
+
 		[Route("type/{typeId:int}/myinstances")]
-		public HttpResponseMessage GetAssignedWorkflowInstances(int typeId, int version, int stepId, int resourceId = 0)
+		public HttpResponseMessage GetAssignedWorkflowInstances(long typeId, int version, int stepId, int resourceId = 0)
 		{
 			try
 			{
@@ -2535,6 +2703,33 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
+		[Route("typeByUid/{typeUID:Guid}/myinstances/summary")]
+		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(Guid typeUID, int version, int stepId, Guid? resourceUID)
+		{
+			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
+
+			if (type == null)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+			}
+
+			var resourceId = 0;
+
+			if (resourceUID.HasValue)
+			{
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID.Value).FirstOrDefault();
+
+				if (resource == null)
+				{
+					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				}
+
+				resourceId = resource.ResourceID;
+			}
+
+
+			return GetAssignedWorkflowInstancesHeader(type.ID, version, stepId, resourceId);
+		}
 
 		[Route("type/{typeId:int}/myinstances/summary")]
 		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(int typeId, int version, int stepId, int resourceId = 0)
@@ -3951,6 +4146,21 @@ namespace d360.web.Controllers.Services
 				total,
 				results
 			});
+		}
+
+		[Route("ReassignWorkflowResource/bulk")]
+		public async Task<HttpResponseMessage> BulkReassignFormByUid(BulkWorkflowReassignModel model)
+		{
+			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			{
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+
+			var response = await BulkReassignForm(model);
+
+			return response;
 		}
 
 		[Route("ReassignWorkflowResource/bulk")]

@@ -57,9 +57,7 @@ namespace d360.model
         DbSet<FollowDetail> FollowDetails { get; set; }
         
         DbSet<Follow> Follows { get; set; }
-        
-        DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
-        
+                
         DbSet<GraphFilter> GraphFilters { get; set; }
         
         DbSet<HelpResource> HelpResources { get; set; }

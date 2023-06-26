@@ -913,7 +913,7 @@ namespace d360.model.DataAccessLayer
 			return model;
 		}
 
-		public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(int workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
+		public async Task<IEnumerable<WorkflowReassignmentAssetApiModel>> GetWorkflowReassignmentAssets(long workflowItemId, string query, int resultCount = 100, CancellationToken? cancellationToken = null)
 		{
 			if (!string.IsNullOrEmpty(query))
 			{
@@ -1517,6 +1517,136 @@ namespace d360.model.DataAccessLayer
 			var results = await CompanyContext.QueryAsync(sql);
 
 			return results;
-		}				
+		}		
+
+		public async Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();			
+
+			List<string> conditions = new List<string>();
+			string simpleFilter = "";
+			string whereConditions = "";
+
+			var queryFieldOptions = new List<DefaultFilter>
+			{
+				new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text),
+				new DefaultFilter("version", "WV.Version", SqlFieldType.Number),
+				new DefaultFilter("status", "(case when awaiting.count = 0 and incomplete.count = 0 then 'finished' when awaiting.count > 0 and incomplete.count > 0 then 'awaiting|incomplete' when awaiting.count > 0 then 'awaiting' when incomplete.count > 0 then 'incomplete' else 'unknown' end)", SqlFieldType.Text)
+			};
+
+			var orderbyFieldOptions = new List<DefaultFilter>{
+				new DefaultFilter("outstanding", "(isnull(incomplete.count,0) + isnull(awaiting.count, 0))", SqlFieldType.Number)
+			};
+
+			orderbyFieldOptions.AddRange(queryFieldOptions);
+
+			CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+			if (advFilterArgs != null && advFilterStatements != null)
+			{
+				dbArgs.AddDynamicParams(advFilterArgs);
+				conditions.AddRange(advFilterStatements);
+			}
+
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, orderbyFieldOptions, $"WT.Name asc, WV.Version desc, WV.UpdatedOn");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
+			var orderBySql = $" order by {orderColumn} {orderDirection} ";
+
+			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+			int pageSize = CompanyContext.ParsePageSize(queryParams);
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+			{
+				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+			}
+
+			if (!string.IsNullOrWhiteSpace(simpleFilter))
+			{
+				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, new List<DefaultFilter>	{new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text) }, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
+				if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
+				{
+					dbArgs.AddDynamicParams(simpleFilterArgs);
+
+					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");
+				}
+			}
+
+			WorkflowInstanceDetailsByVersionAPIModel assignments = new WorkflowInstanceDetailsByVersionAPIModel();
+
+			if (conditions.Any())
+			{
+				whereConditions = " where " + string.Join(" and ", conditions);
+				whereConditions = whereConditions.Trim();
+			}
+
+			var selectColumns = $@"WT.Name as WorkflowName,
+							WT.uid as WorkflowTypeUid,
+							wv.Version,				
+							awaiting.count as Awaiting,
+							incomplete.count as Incomplete,
+							WER.ChangeType,
+							CASE when IT.ID is not null then 'Action'
+							when AST.ID is not null then
+								TRY_CAST(+ast.Class as nvarchar)
+							else 'Unknown'
+							END as InitiatingObjectType,
+							WV.CreatedOn,
+							GR_Created.FirstName + ' ' + GR_Created.LastName as CreatedBy,
+							GR_Created.uid as CreatedByUid,
+							WV.UpdatedOn,
+							GR_Updated.FirstName + ' ' + GR_Updated.LastName as UpdatedBy,
+							GR_Updated.uid as UpdatedByUid";
+
+			var coreJoinSQL = $@"workflow.Type WT
+							inner join
+							workflow.Version WV on WV.TypeID = wt.ID and wt.State <> 3";					
+			
+			var itemJoinSQL = $@"{coreJoinSQL}
+								inner join 
+								workflow.EventRegistration WER on WER.TypeID = WT.ID
+								inner join
+								reporting.Global_resource GR_Created on GR_Created.ResourceID = WV.UpdatedBy
+								inner join 
+								reporting.Global_resource GR_Updated on GR_Updated.ResourceID = WV.CreatedBy
+								left join 
+								IssueType IT on IT.ID = WER.IssueTypeID
+								left join 
+								AssetType AST on AST.ID = WER.AssetTypeID";
+
+			var statusCountsSQL = $@"cross apply 
+									(select count(*) as [count] from workflow.item wi inner join workflow.ItemStep wis on wi.ID=wis.ItemID inner join workflow.VersionStep wvs on wvs.ID = wis.StepID and wvs.VersionID=wv.ID where wi.VersionID = wv.ID and wis.CompletedOn is null and wvs.ActivityType = 3 ) awaiting
+								cross apply 
+									(select count(*) as [count] from workflow.item wi inner join workflow.ItemStep wis on wi.ID=wis.ItemID inner join workflow.VersionStep wvs on wvs.ID = wis.StepID where wi.VersionID = wv.ID and wis.CompletedOn is null and wvs.ActivityType <> 3 ) incomplete";
+
+			var sql = $@"
+						select 				
+							{selectColumns}
+						from 
+							{itemJoinSQL}
+							{statusCountsSQL}
+							{whereConditions}													
+						{orderBySql}
+						{offset}";
+
+			var countSQL = $@"
+						select 				
+							count(*)
+						from 
+							{coreJoinSQL}
+							{statusCountsSQL}
+							{whereConditions}";
+
+			var multiSQL = $"{sql}; {countSQL}";
+
+			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, dbArgs, ApiTimeout))
+			{
+				assignments.items = multi.Read<WorkflowVersionDetails>().ToList();
+				assignments.total = multi.Read<int>().First();
+				assignments.pageNum = pageNum;
+				assignments.pageSize = pageSize;
+			}
+
+			return assignments;
+		}
 	}
 }

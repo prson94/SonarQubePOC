@@ -24,6 +24,8 @@ namespace d360.model
 	{
 		#region DbSets
 
+		DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
+
 		DbSet<Group> Groups { get; set; }
 
 		DbSet<ResourceGroup> ResourceGroups { get; set; }
@@ -117,9 +119,11 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
+	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
 		#region DbSets
+
+		public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
 
 		public DbSet<Group> Groups { get; set; }
 
@@ -136,8 +140,6 @@ namespace d360.model
 		public DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
 
 		public DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
-
-		public DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
 
 		#endregion
 

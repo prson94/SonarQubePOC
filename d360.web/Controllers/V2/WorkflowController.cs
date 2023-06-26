@@ -363,7 +363,25 @@ namespace d360.web.Controllers.V2
 			return Ok(result.ID);
         }
 
-        [
+		[
+			HttpGet,
+			Route("reassignmentByUid/objects/{workflowItemUid:Guid}"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(IEnumerable<WorkflowReassignmentAssetApiModel>))
+		]
+		public async Task<IHttpActionResult> GetWorkflowReassignmentAssetsByUid(Guid workflowItemUid, string query, CancellationToken cancellationToken)
+		{
+			var result = Company.WorkflowItems.FirstOrDefault(i => i.UID == workflowItemUid);
+
+			if (result == null)
+			{
+				throw new NotFoundBusinessLayerException(WorkflowApiMessages.WorkflowInstanceNotFound);
+			}
+
+			return Ok(await workflowRepository.GetWorkflowReassignmentAssets(result.ID, query, cancellationToken: cancellationToken));
+		}
+
+		[
             HttpGet,
             Route("reassignment/objects/{id:int}"),
             ApiExplorerSettings(IgnoreApi = true),
@@ -417,7 +435,7 @@ namespace d360.web.Controllers.V2
 				{
 					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidDirection));
 				}
-
+					
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
 				{
 					string initiatorUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_initiatoruid").Value;
@@ -496,6 +514,53 @@ namespace d360.web.Controllers.V2
 			return Ok(await workflowRepository.GetWorkflowItemDetails(workflowItemUid));
 		}
 
+		[
+			HttpGet,
+			Route("assignmentsByVersion"),
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are workflowName, version and outstanding. By default the results are ordered by UpdatedOn.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),						
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowInstanceDetailsByVersionAPIModel)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetWorkflowInstanceDetailsByVersion()
+		{
+			var prefix = "Workflow.GetWorkflowInstanceByVersion => ";
+			var queryParams = Request.GetQueryNameValuePairs();
+			try
+			{
+				var isValid = isPageSizeAndNumValid(queryParams);
+
+				if (!string.IsNullOrEmpty(isValid))
+				{
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
+				}
+
+				if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
+				{
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+				}
+
+				var response = await workflowRepository.GetWorkflowInstanceDetailsByVersion(queryParams).ConfigureAwait(false);				
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+			}			
+		}
+		
 		/// <summary>
 		/// Get the possible Assignees for which an open workflow instance exists.
 		/// </summary>

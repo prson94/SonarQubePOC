@@ -335,22 +335,13 @@ namespace igx.jobs.apiexecutionprocessor
 								break;
                             case ApiExecutionAction.DeleteAssetTypes:
                                 var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
-
                                 company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
-								dbExecutionItem.CompletedOn = DateTime.UtcNow;
-								company.Update(dbExecutionItem);
-
                                 company.CreateRollupPathChangedExecution();
-
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
-
 								break;
                             case ApiExecutionAction.PostCrossReferences:
                                 var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(Info.StorageFolder, Info.RequestFileName);
-
                                 await company.ImportCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
-								dbExecutionItem.CompletedOn = DateTime.UtcNow;
-								company.Update(dbExecutionItem);
 								resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostDataQualityResults:
@@ -358,10 +349,6 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
-                                dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
-                                dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
-								dbExecutionItem.CompletedOn = DateTime.UtcNow;
-								company.Update(dbExecutionItem);
 								
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
 
