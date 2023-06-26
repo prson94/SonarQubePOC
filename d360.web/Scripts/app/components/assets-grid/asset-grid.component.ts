@@ -757,7 +757,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	editorObjectId: string;
 	editorObjectType: string;
 	editorObjectTypeUid: string;
-	editorSelected: Record<string, any>;
+	editorSelected: Record<string, unknown>;
 	private onEdit(item) {
 		this.selectRow(item);
 		this.editorObjectId = this.selected ? this.selected?.ObjectID : this.assetTypeApiModel?.ID;
