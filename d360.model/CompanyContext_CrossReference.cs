@@ -20,8 +20,8 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
-    {
+	public partial class CompanyContext : BaseContext, ICompanyContext
+	{
 		#region Utility
 
 		private void ValidateAssetCrossReference(ApiExecution execution, int timeout = 3600)

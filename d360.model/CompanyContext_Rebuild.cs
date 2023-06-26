@@ -11,8 +11,8 @@ using d360.core.resources;
 
 namespace d360.model
 {
-    public partial class CompanyContext : BaseContext
-    {
+    public partial class CompanyContext : BaseContext, ICompanyContext
+	{
         public DbSet<CompanyRebuildJobStatus> RebuildJobStatuses { get; set; }
 
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses(int timeOutInHours)

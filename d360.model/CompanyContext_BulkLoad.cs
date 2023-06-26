@@ -68,7 +68,7 @@ namespace d360.model
 		#endregion
 	}
 
-	public partial class CompanyContext : BaseContext
+	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
 		private const int timeout = 3600;
 		private const int defaultBulkLoadLoopSize = 500;
