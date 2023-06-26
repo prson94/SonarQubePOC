@@ -1109,53 +1109,28 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
 			}
 
-			try
-			{
-				var execution = getApiExecution(users.Count);
+			var execution = getApiExecution(users.Count);
 
-				UserUpsertModel model = new UserUpsertModel
+			UserUpsertModel model = new UserUpsertModel
+			{
+				Users = users.Select(u => new UserApiUpdateModel
 				{
-					Users = users.Select(u => new UserApiUpdateModel
-					{
-						Username = u.Username,
-						FirstName = u.FirstName,
-						LastName = u.LastName,
-						Password = u.Password,
-						IsAdministrator = u.IsAdministrator,
-						Fields = u.Fields,
-						IsNew = true,
-						ItemNumber = u.ItemNumber,
-						ExecutionItemUid = u.ExecutionItemUid
-					}),
-					LookupFieldsPassedByValue = lookupFieldsPassedByValue,
-					IsInsert = true
-				};
+					Username = u.Username,
+					FirstName = u.FirstName,
+					LastName = u.LastName,
+					Password = u.Password,
+					IsAdministrator = u.IsAdministrator,
+					Fields = u.Fields,
+					IsNew = true,
+					ItemNumber = u.ItemNumber,
+					ExecutionItemUid = u.ExecutionItemUid
+				}),
+				LookupFieldsPassedByValue = lookupFieldsPassedByValue,
+				IsInsert = true
+			};
 
-				var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
+			return await sendExecutionProcessingResponse(executionInfo);
 		}
 
 		/// <summary>
@@ -1314,42 +1289,18 @@ namespace d360.web.Controllers.V2
 
 			users.ForEach(u => u.IsNew = false);
 
-			try
+			var execution = getApiExecution(users.Count);
+
+			UserUpsertModel model = new UserUpsertModel
 			{
-				var execution = getApiExecution(users.Count);
+				Users = users.ToList(),
+				LookupFieldsPassedByValue = lookupFieldsPassedByValue,
+				IsInsert = false
+			};
 
-				UserUpsertModel model = new UserUpsertModel
-				{
-					Users = users.ToList(),
-					LookupFieldsPassedByValue = lookupFieldsPassedByValue,
-					IsInsert = false
-				};
+			var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
+			return await sendExecutionProcessingResponse(executionInfo);
 
-				var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							new ApiExecutionRecievedResponse
-							{
-								ExecutionID = executionInfo.ExecutionID,
-								Message = ApiMessages.ExecutionIDStatus,
-								Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/assets/executions/{executionInfo.ExecutionID}/status"
-							}
-						)
-					)
-				).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
 		}
 
 		/// <summary>

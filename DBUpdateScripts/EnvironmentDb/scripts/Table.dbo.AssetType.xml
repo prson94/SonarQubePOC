@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-v9">
-    <comment>GOV-15702</comment>
+  <changeSet author="Pappas" id="Table.dbo.AssetType-v10">
+    <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -39,14 +39,10 @@ BEGIN
 		[FlowObjectType] int null,
 		CanEditParent bit constraint DF_AssetType_CanEditParent default(1) not null, 
 		DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null,
+		SourceID nvarchar(500) null,
 		CONSTRAINT [PK_AssetType] PRIMARY KEY CLUSTERED ( [ID] ASC ),
 		CONSTRAINT [AssetType_Object_ObjectId] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
 	)
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Object_ObjectID_Include')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include] ON [dbo].[AssetType] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID])
 END
 
 IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
@@ -96,19 +92,19 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 
 	  IF COL_LENGTH('dbo.AssetType', 'DefaultPermissions') IS NULL
 	  BEGIN
-		 alter table dbo.AssetType
-		 add
-			DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null
+		 alter table dbo.AssetType add DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null
 	  END
+
+		if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'AssetType' and COLUMN_NAME = 'SourceID')
+		begin
+			alter table AssetType add SourceID nvarchar(500) null
+		end
 	  ]]>
     </sql>
-	<rollback>
-		<![CDATA[]]>
-	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.AssetType-Indices-v1">
-    <comment>GOV-14285</comment>
+  <changeSet author="Pappas" id="Table.dbo.AssetType-Indices-v2">
+    <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -118,16 +114,13 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Uid_ObjectID
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_AssetType_Uid_ObjectID ON [dbo].[AssetType] ([uid], [objectid])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_AssetType_Uid_ObjectID')
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Object_ObjectID_Include')
 BEGIN
-	DROP INDEX IX_AssetType_Uid_ObjectID ON [dbo].[AssetType]
+	CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include] ON [dbo].[AssetType] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID])
 END
 		]]>
-	</rollback>
+    </sql>
   </changeSet>
   
   <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2">

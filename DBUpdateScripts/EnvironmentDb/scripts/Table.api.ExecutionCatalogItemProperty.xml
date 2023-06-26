@@ -1,0 +1,84 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItemProperty-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionCatalogItemProperty')
+BEGIN
+	create table api.ExecutionCatalogItemProperty (
+		ExecutionId int not null,
+		[Type] char(1) not null,
+
+		TypeSourceId nvarchar(500),
+		TypeId int,
+
+		SourceId nvarchar(500) sparse, 
+		SubjectSourceId nvarchar(500) sparse,
+		ObjectSourceId nvarchar(500) sparse,
+
+		Id bigint,				-- The object internal Id (AssetId, IntersectId)
+		Name nvarchar(250),		-- The API Name of the field type.
+		FieldTypeId int, 
+		[Value] nvarchar(max),	-- The raw incoming value.
+		ValueAssetTypeId int,	-- Used for lookups.
+		ValueId int,			-- Used for lookups.
+		CodeValue nvarchar(250) -- Used when the object is a reference list and the property name is Code. Will match based on this.
+	)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItemProperty.Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'cix_ApiExecutionCatalogItemProperty')
+BEGIN
+	create clustered index cix_ApiExecutionCatalogItemProperty on api.ExecutionCatalogItemProperty (ExecutionId desc, [Type] asc)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_TypeSourceId')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_TypeSourceId on api.ExecutionCatalogItemProperty (ExecutionId asc, [Type] asc, TypeSourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_SourceId')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_SourceId on api.ExecutionCatalogItemProperty (ExecutionId asc, [Type] asc, SourceId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_Id')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_Id on api.ExecutionCatalogItemProperty (Id)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_Name')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_Name on api.ExecutionCatalogItemProperty (Name)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_Id_FieldTypeId')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_Id_FieldTypeId on api.ExecutionCatalogItemProperty (Id, FieldTypeId)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'ix_ApiExecutionCatalogItemProperty_SubjectSourceId_ObjectSourceId')
+BEGIN
+	create index ix_ApiExecutionCatalogItemProperty_SubjectSourceId_ObjectSourceId on api.ExecutionCatalogItemProperty (ExecutionId, [Type], SubjectSourceId, ObjectSourceId)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

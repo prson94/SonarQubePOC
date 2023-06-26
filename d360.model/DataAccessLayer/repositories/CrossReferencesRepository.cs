@@ -102,17 +102,17 @@ namespace d360.model.DataAccessLayer
             return await CompanyContext.Database.Connection.ExecuteAsync("insert into assetcrossreference (uid,DataSource,Type,ExternalID,FieldHash) values(@u,@d,@t,@e,@f)", new { u = model.uid, d = model.DataSource, t = model.Type, f = model.FieldHash, e = model.ExternalID });
         }
 
-        public IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models, ApiExecution execution)
+        public async Task<List<AssetCrossReferenceResult>> PostBulkCrossReferenceAsync(List<AssetCrossReference> models, ApiExecution execution)
         {
             CompanyContext.Add(execution);
             List<AssetCrossReferenceResult> results = null;
             
             try
             {
-                results = CompanyContext.ImportCrossReferences(execution, models);
+                await CompanyContext.ImportCrossReferencesAsync(execution, models);
+				results = await CompanyContext.GetExecutionCrossReferenceResultsAsync(execution.ExecutionID);
 
-
-                execution.Processed = results.Count;
+				execution.Processed = results.Count;
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);

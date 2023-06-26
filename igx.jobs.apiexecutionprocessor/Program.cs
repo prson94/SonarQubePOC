@@ -25,6 +25,8 @@ using d360.core.entities.Membership;
 using d360.extensions;
 using System.Configuration;
 using d360.extensions.mail;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using System.Data.SqlClient;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -137,9 +139,6 @@ namespace igx.jobs.apiexecutionprocessor
                     IsAdministrator = false
                 });
 
-            company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
-            company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
-            company.DataProfilesPartiallyProcessed += Company_DataProfilesPartiallyProcessed;
             var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
             if (resource != null)
             {
@@ -197,9 +196,6 @@ namespace igx.jobs.apiexecutionprocessor
 
                 if (dbExecutionItem != null)
                 {
-
-                    AssetType assetType = null;
-                    IntersectType intersectType = null;
                     int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;
                     
                     int dbExecutionTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBExecuteQueryTimeout"));
@@ -239,278 +235,193 @@ namespace igx.jobs.apiexecutionprocessor
 
 					if (executeJob)
                     {
-                        switch (Info.Action)
+						string resultsSql = "";
+
+						Action<string> markExecutionAsErred = (err) => {
+							dbExecutionItem.ErrorMessage = err;
+							dbExecutionItem.CompletedOn = DateTime.UtcNow;
+							company.Update(dbExecutionItem);
+						};
+
+						Func<AssetType, Task> assetTypeActionLogic = null;
+
+						Func<Guid, Task> assetTypeWrapperAction = async (uid) => {
+							var type = company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
+							if (type != null)
+							{
+								await assetTypeActionLogic(type);
+							}
+							else
+							{
+								markExecutionAsErred($"Asset Type for uid [{uid}] not found.");
+							}
+						};
+
+						Func<IntersectType, Task> intersectTypeActionLogic = null;
+
+						Func<Guid, Task> intersectTypeWrapperAction = async (uid) => {
+							var type = company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
+							if (type != null)
+							{
+								await intersectTypeActionLogic(type);
+							}
+							else
+							{
+								markExecutionAsErred($"Intersect Type for uid [{uid}] not found.");
+							}
+						};
+
+						switch (Info.Action)
                         {
-                            case ApiExecutionAction.PostAssets:
-                                #region
+							case ApiExecutionAction.PostAssets:
                                 var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).SingleOrDefault();
-                                
-                                if (assetType != null)
-                                {
-                                    List<AssetInsert> postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                    var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
-                                    dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
-                                    log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(postAssetsResults, log, "Assets", HttpMethod.Post);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{postAssetsFields.AssetTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								assetTypeActionLogic = async (at) =>
+								{
+									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
+									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await assetTypeWrapperAction(postAssetsFields.AssetTypeUid);
+								break;
                             case ApiExecutionAction.PutAssets:
-                                #region
                                 var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).SingleOrDefault();
-
-                                if (assetType != null)
-                                {
-                                    var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                    var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false:true));
-                                    dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
-                                    log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(putAssetsResults, log, "Assets", HttpMethod.Put);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{putAssetsFields.AssetTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								assetTypeActionLogic = async (at) =>
+								{
+									var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
+									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await assetTypeWrapperAction(putAssetsFields.AssetTypeUid);
+								break;
                             case ApiExecutionAction.DeleteAssets:
-                                #region
                                 var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).SingleOrDefault();
-
-                                if (assetType != null)
-                                {
-                                    var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
-                                    var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
-                                    dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
-                                    log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{deleteAssetsFields.AssetTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								assetTypeActionLogic = async (at) =>
+								{
+									var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
+									company.RemoveAssets(dbExecutionItem, at, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAsset where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await assetTypeWrapperAction(deleteAssetsFields.AssetTypeUid);
+								break;
                             case ApiExecutionAction.PostRelationships:
-                                #region
                                 var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
-                                intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).SingleOrDefault();
-                                
-                                if (intersectType != null)
-                                {
-                                    var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
-                                    var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
-                                    dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
-                                    log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{postRelationshipsFields.IntersectTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								intersectTypeActionLogic = async (it) =>
+								{
+									var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
+									company.ImportRelationships(dbExecutionItem, it, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await intersectTypeWrapperAction(postRelationshipsFields.IntersectTypeUid);
+								break;
                             case ApiExecutionAction.PutRelationships:
-                                #region
                                 var putRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutRelationships>(dbExecutionItem.Fields);
-                                intersectType = company.Filter<IntersectType>(i => i.uid == putRelationshipsFields.IntersectTypeUid).SingleOrDefault();
-
-                                if (intersectType != null)
-                                {
-                                    var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"PUT Relationships (DB Start): Total raw assets: {putRelationships.Count}. Intersect Type Uid: {putRelationshipsFields.IntersectTypeUid}.");
-                                    var putRelationshipsResults = company.PutRelationships(dbExecutionItem, intersectType, putRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
-                                    dbExecutionItem.Processed = putRelationshipsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = putRelationshipsResults.Count(i => !i.Success);
-                                    log.WriteLine($"PUT Relationships (DB Complete): Total results: {putRelationshipsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(putRelationshipsResults, log, "Relationships", HttpMethod.Put).ConfigureAwait(false);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{putRelationshipsFields.IntersectTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								intersectTypeActionLogic = async (it) =>
+								{
+									var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(Info.StorageFolder, Info.RequestFileName);
+									company.PutRelationships(dbExecutionItem, it, putRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await intersectTypeWrapperAction(putRelationshipsFields.IntersectTypeUid);
+								break;
                             case ApiExecutionAction.DeleteRelationships:
-                                #region
                                 var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
-                                intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).SingleOrDefault();
-                                
-                                if (intersectType != null)
-                                {
-                                    var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
-
-                                    log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
-                                    var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
-                                    dbExecutionItem.Processed = deleteRelationshipsResults.Count(i => i.Success);
-                                    dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
-                                    log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
-
-                                    await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
-                                }
-                                else
-                                {
-                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{deleteRelationshipsFields.IntersectTypeUid}] not found.";
-                                }
-
-                                break;
-                            #endregion
+								intersectTypeActionLogic = async (it) =>
+								{
+									var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
+									company.DeleteRelationships(dbExecutionItem, it, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
+									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedRelationship where ExecutionID = @executionId order by ItemNumber asc";
+								};
+								await intersectTypeWrapperAction(deleteRelationshipsFields.IntersectTypeUid);
+								break;
                             case ApiExecutionAction.DeleteAssetTypes:
-                                #region
                                 var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
 
-								log.WriteLine($"DELETE Asset Types (DB Start): Total raw assets: {deleteAssetTypes.Count}.");
-                                var deleteAssetTypesResults = company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
-                                dbExecutionItem.Processed = deleteAssetTypesResults.Count(i => i.Success);
-                                dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
-                                log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
+                                company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
+								dbExecutionItem.CompletedOn = DateTime.UtcNow;
+								company.Update(dbExecutionItem);
 
                                 company.CreateRollupPathChangedExecution();
 
-                                await SaveResultsJsonToAzure(deleteAssetTypesResults, log, "Asset Types", HttpMethod.Delete);
+								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 
-                                break;
-                            #endregion
+								break;
                             case ApiExecutionAction.PostCrossReferences:
                                 var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
-                                var postCrossReferenceResult = company.ImportCrossReferences(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
-                                dbExecutionItem.Processed = postCrossReferenceResult.Count(i => i.Success);
-                                dbExecutionItem.Error = postCrossReferenceResult.Count(i => !i.Success);
-                                log.WriteLine($"POST Cross References (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"POST Cross References (DB Complete): Total Error: {dbExecutionItem.Error}.");
-
-                                await SaveResultsJsonToAzure(postCrossReferenceResult, log, "Cross References", HttpMethod.Post);
-                                                                
-                                break;
+                                await company.ImportCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
+								dbExecutionItem.CompletedOn = DateTime.UtcNow;
+								company.Update(dbExecutionItem);
+								resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
+								break;
                             case ApiExecutionAction.PostDataQualityResults:
-                                #region Process DataQualityResults
-
                                 var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
                                 var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
                                 dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
                                 dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
-                                log.WriteLine($"POST DataQualityResults (DB Complete): Total results: {postDataQualityResultsResponse.Count}.");
-                                
-                                await SaveResultsJsonToAzure(postDataQualityResultsResponse, log, "DataQualityResults", HttpMethod.Post);
+								dbExecutionItem.CompletedOn = DateTime.UtcNow;
+								company.Update(dbExecutionItem);
+								
+								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
 
-                                var ruleResultUids = postDataQualityResultsResponse.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
+								var ruleResultUids = postDataQualityResultsResponse.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
                                 if (ruleResultUids.Count > 0)
                                 {
                                     var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
                                     company.CreateMeasureChangedResultExecution(assetMeasures);
                                 }
 
-                                #endregion
                                 break;
                             case ApiExecutionAction.PostDataProfile:
                                 var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
-
-                                log.WriteLine($"POST Asset Data Profile (DB Start): Total raw Data Profile Records: {postDataProfile.Count}");
-                                var postDataProfileResult = company.UpsertDataProfiles(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
-                                dbExecutionItem.Processed = postDataProfileResult.Count(i => i.Success);
-                                dbExecutionItem.Error = postDataProfileResult.Count(i => !i.Success);
-                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"POST Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
-
-                                await SaveResultsJsonToAzure(postDataProfileResult, log, "Asset Data Profile", HttpMethod.Post).ConfigureAwait(false);
-                                break;
+								await company.UpsertDataProfilesAsync(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
+								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								break;
                             case ApiExecutionAction.PutDataProfile:
                                 var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
-
-                                log.WriteLine($"PUT Asset Data Profile (DB Start): Total raw Data Profile Records: {putDataProfile.Count}");
-                                var putDataProfileResult = company.UpsertDataProfiles(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
-                                dbExecutionItem.Processed = putDataProfileResult.Count(i => i.Success);
-                                dbExecutionItem.Error = putDataProfileResult.Count(i => !i.Success);
-                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"PUT Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
-
-                                await SaveResultsJsonToAzure(putDataProfileResult, log, "Asset Data Profile", HttpMethod.Put).ConfigureAwait(false);
-                                break;
+								await company.UpsertDataProfilesAsync(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
+								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								break;
                             case ApiExecutionAction.DeleteDataProfile:
                                 var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(Info.StorageFolder, Info.RequestFileName);
-
-                                log.WriteLine($"DELETE Asset Data Profile (DB Start): Total raw Data Profile Records: {deleteDataProfile.Count}");
-                                var deleteDataProfileResult = company.DeleteDataProfiles(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
-                                dbExecutionItem.Processed = deleteDataProfileResult.Count(i => i.Success);
-                                dbExecutionItem.Error = deleteDataProfileResult.Count(i => !i.Success);
-                                log.WriteLine($"DELETE Asset Data Profile (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"DELETE Asset Data Profile (DB Complete): Total Error: {dbExecutionItem.Error}.");
-
-                                await SaveResultsJsonToAzure(deleteDataProfileResult, log, "Asset Data Profile", HttpMethod.Delete).ConfigureAwait(false);
-                                break;
+								await company.DeleteDataProfilesAsync(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
+								resultsSql = @"select [ItemNumber], [ExecutionItemUid], AssetUid, StartDate, EndDate, [Cascade], [Message], [Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								break;
                             case ApiExecutionAction.PostResponsibilityOverride:
                                 var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
-
-                                log.WriteLine($"POST Responsibility Override (DB Start): Total raw Data Profile Records: {postResponsibilityOverride.Count}");
-                                var postResponsibilityOverrideResult = company.BulkInsertResponsibilityOverride(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
-                                dbExecutionItem.Processed = postResponsibilityOverrideResult.Count(i => i.Success);
-                                dbExecutionItem.Error = postResponsibilityOverrideResult.Count(i => !i.Success);
-                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"POST Responsibility Override (DB Complete): Total Error: {dbExecutionItem.Error}.");
-
-                                await SaveResultsJsonToAzure(postResponsibilityOverrideResult, log, "Responsibility Override", HttpMethod.Post).ConfigureAwait(false);
-                                break;
+                                await company.BulkInsertResponsibilityOverrideAsync(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
+								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @executionId order by ItemNumber asc";
+								break;
                             case ApiExecutionAction.DeleteFieldTypes:
                                 var deleteFieldtypes = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteFieldtypes>(dbExecutionItem.Fields);
 
                                 company.SetApiExecutionProcessingStartTime(dbExecutionItem.ExecutionID);
-                                log.WriteLine($"DELETE Field Type (DB Start): Total field types: {deleteFieldtypes.FieldNamesToDelete.Count}");
                                 List<FieldType> currentFieldTypes = fieldsRepository.GetFieldTypes(deleteFieldtypes.TypeIdentifierInfo);
                                 var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
                                 dbExecutionItem.Processed = result;
-                                log.WriteLine($"DELETE Field Type (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+								dbExecutionItem.CompletedOn = DateTime.UtcNow;
+								company.Update(dbExecutionItem);
                                 break;
                             case ApiExecutionAction.UpsertUsers:
                                 UserUpsertModel model = await storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(Info.StorageFolder, Info.RequestFileName);
-                                string operation = model.IsInsert ? "POST" : "PUT";
+                                await membershipRepository.ProcessUpsertUsers(dbExecutionItem, model.Users, model.LookupFieldsPassedByValue, model.IsInsert, false).ConfigureAwait(false);
+								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
+								break;
+							case ApiExecutionAction.PatchCatalog:
+								var execRepo = new ExecutionsRepository(company, queue, storage);
+								var patchCatalogPayload = await storage.DeserializeJsonObjectFromBlobAsync<PatchBulkCatalogRequestModel>(Info.StorageFolder, Info.RequestFileName);
+								await execRepo.PatchCatalog(dbExecutionItem.Id, patchCatalogPayload);
+								resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
+								break;
+						}
 
-                                log.WriteLine($"{operation} Users (DB Start): Total users: {model.Users.Count()}");
-
-                                var userResult = await membershipRepository.ProcessUpsertUsers(dbExecutionItem, model.Users, model.LookupFieldsPassedByValue, model.IsInsert, false).ConfigureAwait(false);
-                                dbExecutionItem.Processed = userResult.Count(i => i.Success);
-                                dbExecutionItem.Error = userResult.Count(i => !i.Success);
-                                log.WriteLine($"{operation} Users (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
-                                log.WriteLine($"{operation} Users (DB Complete): Total Error: {dbExecutionItem.Error}.");
-                                break;
-                        }
+						if (!string.IsNullOrEmpty(resultsSql))
+						{
+							var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
+							await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, results);
+						}
                     }
-                    dbExecutionItem.CompletedOn = DateTime.UtcNow;
-                    company.Update(dbExecutionItem);
 
                     CoreFunction.AITrackJobCompletedNoErrors(functionName);
                 }
@@ -546,19 +457,6 @@ namespace igx.jobs.apiexecutionprocessor
         }
 
         /// <summary>
-        /// Saves results to azure storage streams json object to storage as a stream.  Logs name to provided textwritter
-        /// </summary>        
-        private async Task SaveResultsJsonToAzure(object resultsJson, TextWriter log, string operationName, HttpMethod method)
-        {
-            log.WriteLine($"{method} {operationName} (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-
-            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, resultsJson);
-
-            log.WriteLine($"{method} {operationName} (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-        }
-
-
-        /// <summary>
         /// Checks if the current company should permit a new api job to start
         /// </summary>
         /// <param name="company"></param>
@@ -568,21 +466,6 @@ namespace igx.jobs.apiexecutionprocessor
         {
             // call function in db to see if the api job should run
             return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID }, commandTimeout:300);
-        }
-
-        private async void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
-        {
-            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
-        }
-
-        private async void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
-        {
-            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
-        }
-
-        private async void Company_DataProfilesPartiallyProcessed(object sender, DataProfilesPartiallyProcessedEventArgs e)
-        {
-            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
     }
 }
