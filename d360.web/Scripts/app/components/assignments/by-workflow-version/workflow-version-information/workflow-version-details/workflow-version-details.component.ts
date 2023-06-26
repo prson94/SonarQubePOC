@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { WorkflowService } from "../../../../../services/workflow.service";
-import { ObjectDetailService } from '../../../../../services/object-detail.service';
+import { AssignmentByVersion } from '../../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-version-details',
@@ -8,24 +7,6 @@ import { ObjectDetailService } from '../../../../../services/object-detail.servi
 	styleUrls: ['./workflow-version-details.component.less']
 })
 export class WorkflowVersionDetailsComponent {
-	isLoading: boolean;
-	versionDetails: any;
 
-	@Input() set workflowTypeVersionId(value: number) {
-		if (value) {
-			this.loadVersionDetails(value);
-		}
-	}
-
-	constructor(private workflowService: WorkflowService,
-				private objectDetailService: ObjectDetailService) {
-	}
-
-	private loadVersionDetails(versionId: number) {
-		this.isLoading = true;
-		this.objectDetailService.getObjectDetail(versionId, 'Monitor').subscribe(response => {
-			this.versionDetails = response;
-			this.isLoading = false;
-		});
-	}
+	@Input() assignmentByVersion: AssignmentByVersion;
 }

@@ -6,7 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { WorkflowByType } from '../../../models/workflow.model';
+import { AssignmentByVersion } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
 @Component({
@@ -18,7 +18,7 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;
-	selectedWorkflowByType: WorkflowByType[];
+	selectedAssignmentByVersion: AssignmentByVersion[];
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,

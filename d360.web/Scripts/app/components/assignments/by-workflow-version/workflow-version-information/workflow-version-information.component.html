@@ -1,6 +1,5 @@
 <div class="asset-detail">
-	<d3s-workflow-version-details [workflowTypeVersionId]="workflowTypeVersionId"></d3s-workflow-version-details>
-	<d3s-workflow-pending-assignments [workflowTypeId]="workflowTypeId"
-									  [workflowTypeUid]="workflowTypeUid"
-									  [workflowTypeVersion]="workflowTypeVersion"></d3s-workflow-pending-assignments>
+	<d3s-workflow-version-details [assignmentByVersion]="assignmentByVersion"></d3s-workflow-version-details>
+	<d3s-workflow-pending-assignments [workflowTypeUid]="assignmentByVersion?.WorkflowTypeUid"
+									  [workflowTypeVersion]="assignmentByVersion?.Version"></d3s-workflow-pending-assignments>
 </div>

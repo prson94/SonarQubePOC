@@ -10,7 +10,8 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<d3s-by-workflow-version-grid #assignmentGridComponent (selectionChange)="selectedWorkflowByType = $event"
+			<d3s-by-workflow-version-grid #assignmentGridComponent
+										  (selectionChange)="selectedAssignmentByVersion = $event"
 			></d3s-by-workflow-version-grid>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
@@ -20,15 +21,14 @@
 					   *ngIf="showSidePanel">
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
-						[selectedItem]="selectedWorkflowByType?.[0]"
-						[selectedItemsCount]="selectedWorkflowByType?.length"
+						[selectedItem]="selectedAssignmentByVersion?.[0]"
+						[selectedItemsCount]="selectedAssignmentByVersion?.length"
 						[extraButtons]="sidePanelButtons"
 						[setMinMaxWidth]="false"
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
-					<d3s-workflow-version-information [workflowTypeVersion]="selectedWorkflowByType?.[0]?.Version"
-													  [workflowTypeVersionId]="selectedWorkflowByType?.[0]?.VersionID"
-													  [workflowTypeId]="selectedWorkflowByType?.[0]?.TypeID"></d3s-workflow-version-information>
+					<d3s-workflow-version-information *ngIf="selectedAssignmentByVersion?.length === 1"
+						[assignmentByVersion]="selectedAssignmentByVersion?.[0]"></d3s-workflow-version-information>
 				</ng-container>
 			</side-panel>
 		</as-split-area>

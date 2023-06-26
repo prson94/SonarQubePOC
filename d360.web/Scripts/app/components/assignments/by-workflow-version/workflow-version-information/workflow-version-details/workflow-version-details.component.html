@@ -1,31 +1,32 @@
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="asset-detail-tabs" [hidden]="isLoading">
+<div class="asset-detail-tabs">
 	<ig-property-group title="Workflow Version Details" [shouldBePadded]="false" [showHeaderLine]="false"
 					   [expanded]="true">
 		<div readonly>
-			<div class="row">
-				<div class="col">
+			<div class="row top-margin">
+				<div class="col s4">
 					<label class="ig-label" i18n>Name</label>
-					<div class="ig-value"></div>
+					<div class="ig-value">{{ assignmentByVersion?.WorkflowName }}</div>
 				</div>
-				<div class="col">
+				<div class="col s4">
 					<label class="ig-label" i18n>Type</label>
-					<div class="ig-value"></div>
+					<div class="ig-value">{{ assignmentByVersion?.ChangeType }}
+						:{{ assignmentByVersion?.InitiatingObjectType }}</div>
 				</div>
-				<div class="col">
+				<div class="col s4">
 					<label class="ig-label" i18n>Version</label>
-					<div></div>
+					<div>{{ assignmentByVersion?.Version }}</div>
 				</div>
-				<div class="col">
+			</div>
+			<div class="row top-margin">
+				<div class="col s4">
 					<label class="ig-label" i18n>Update On</label>
-					<div class="ig-value"></div>
+					<div class="ig-value">{{ assignmentByVersion?.UpdatedOn | date: 'short' }}</div>
 				</div>
-				<div class="col">
+				<div class="col s4">
 					<label class="ig-label" i18n>Update By</label>
-					<div class="ig-value"></div>
+					<div class="ig-value">{{ assignmentByVersion?.UpdatedBy }}</div>
 				</div>
 			</div>
 		</div>
 	</ig-property-group>
 </div>
-<pre style="white-space: pre-wrap" *ngIf="versionDetails">{{ versionDetails | json }}</pre>

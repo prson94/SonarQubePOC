@@ -10,6 +10,10 @@ import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { AssignmentByVersion } from '../../../../models/workflow.model';
 
+class AssignmentWithStatusByVersion extends AssignmentByVersion {
+	statusCount: number;
+}
+
 @Component({
 	selector: 'd3s-by-workflow-version-grid',
 	templateUrl: './by-workflow-version-grid.component.html',
@@ -17,14 +21,14 @@ import { AssignmentByVersion } from '../../../../models/workflow.model';
 })
 export class ByWorkflowVersionGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	title: string = $localize`WorkFlow Items`;
-	assignmentsByVersion: AssignmentByVersion[] = [];
+	assignmentsByVersion: AssignmentWithStatusByVersion[] = [];
 	subscription: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	sortField: string = undefined;
 	sortOrder: SortOrder = SortOrder.Descending;
 	selectedCount: number = 0;
-	selectedWorkflowsByType: AssignmentByVersion[] = [];
+	selectedAssignmentByVersion: AssignmentByVersion[] = [];
 	simpleFilter: string = '';
 	showDeletionModal: boolean = false;
 	@Output() selectionChange = new EventEmitter();
@@ -71,8 +75,8 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		// } else {
 		// 	this.stateService.workflowItemFilters.itemId = 0;
 		// }
-		this.selectedWorkflowsByType = event;
-		this.selectedCount = this.selectedWorkflowsByType == null ? 0 : this.selectedWorkflowsByType.length;
+		this.selectedAssignmentByVersion = event;
+		this.selectedCount = this.selectedAssignmentByVersion == null ? 0 : this.selectedAssignmentByVersion.length;
 		this.selectionChange.emit(event);
 	}
 
@@ -81,13 +85,17 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.assignmentsByVersion = [];
 		this.subscription = this.workflowService.getAssignmentsByVersion()
 			.subscribe(response => {
-				this.assignmentsByVersion = response;
+				this.assignmentsByVersion = response.map(assignmentByVersion => {
+					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
+					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
+					return assignmentWithStatusByVersion;
+				});
 			});
 		if (this.assignmentsByVersion.length > 0) {
 			this.totalRecords = this.assignmentsByVersion.length;
-			this.selectedWorkflowsByType = [this.assignmentsByVersion[0]];
+			this.selectedAssignmentByVersion = [this.assignmentsByVersion[0]];
 			this.selectedCount = 1;
-			this.selectionChange.emit(this.selectedWorkflowsByType);
+			this.selectionChange.emit(this.selectedAssignmentByVersion);
 		} else {
 			this.selectedCount = 0;
 			this.selectionChange.emit(null);
@@ -106,8 +114,8 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	}
 
 	selectAll(): void {
-		if (this.selectedWorkflowsByType) {
-			if (this.selectedWorkflowsByType.length === this.assignmentsByVersion.length) {
+		if (this.selectedAssignmentByVersion) {
+			if (this.selectedAssignmentByVersion.length === this.assignmentsByVersion.length) {
 				this.gridSelectionChange([this.assignmentsByVersion[0]]);
 			} else {
 				this.gridSelectionChange(this.assignmentsByVersion);

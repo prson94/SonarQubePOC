@@ -29,28 +29,28 @@
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['Name','Version','Status']"
+				 [globalFilterFields]="['WorkflowName','Version','statusCount']"
 				 [pageLinks]="3"
 				 [paginator]="true"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
 				 (onLazyLoad)="loadWorkflowsByType($event)"
-				 [selection]="selectedWorkflowsByType"
+				 [selection]="selectedAssignmentByVersion"
 				 (selectionChange)="gridSelectionChange($event)"
 				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
 			<ng-template pTemplate="header">
 				<tr>
 					<th pSortableColumn="WorkflowName">
 						<ng-container i18n>Workflow Name</ng-container>
-						<d3s-sortIcon field="Name"></d3s-sortIcon>
+						<d3s-sortIcon field="WorkflowName"></d3s-sortIcon>
 					</th>
 					<th pSortableColumn="Version">
 						<ng-container i18n>Version</ng-container>
 						<d3s-sortIcon field="Version"></d3s-sortIcon>
 					</th>
-					<th pSortableColumn="Status">
+					<th pSortableColumn="statusCount">
 						<ng-container i18n>Outstanding Assignments</ng-container>
-						<d3s-sortIcon field="Status"></d3s-sortIcon>
+						<d3s-sortIcon field="statusCount"></d3s-sortIcon>
 					</th>
 				</tr>
 			</ng-template>
