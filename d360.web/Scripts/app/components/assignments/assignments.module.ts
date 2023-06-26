@@ -72,19 +72,19 @@ import {
 import {
 	AssignmentStepFormDetailsComponent
 } from './assignment-progress-step-details/assignment-step-form-details/assignment-step-form-details.component';
-import { WorkflowVersionListComponent } from './workflow-version-list/workflow-version-list.component';
+import { ByWorkflowVersionComponent } from './by-workflow-version/by-workflow-version.component';
 import {
-	WorkflowVersionGridComponent
-} from './workflow-version-list/workflow-version-grid/workflow-version-grid.component';
+	ByWorkflowVersionGridComponent
+} from './by-workflow-version/by-workflow-version-grid/by-workflow-version-grid.component';
 import {
 	WorkflowVersionInformationComponent
-} from './workflow-version-list/workflow-version-information/workflow-version-information.component';
+} from './by-workflow-version/workflow-version-information/workflow-version-information.component';
 import {
 	WorkflowVersionDetailsComponent
-} from './workflow-version-list/workflow-version-information/workflow-version-details/workflow-version-details.component';
+} from './by-workflow-version/workflow-version-information/workflow-version-details/workflow-version-details.component';
 import {
 	WorkflowPendingAssignmentsComponent
-} from './workflow-version-list/workflow-version-information/workflow-pending-assignments/workflow-pending-assignments.component';
+} from './by-workflow-version/workflow-version-information/workflow-pending-assignments/workflow-pending-assignments.component';
 import {
 	AssignmentFormResponseComponent
 } from './assignment-progress-step-details/assignment-form-response/assignment-form-response.component';
@@ -96,7 +96,9 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 
 @NgModule({
 	declarations: [
+		AssignmentFormResponseComponent,
 		AssignmentGridComponent,
+		AssignmentHeaderComponent,
 		AssignmentInformationComponent,
 		AssignmentInformationGeneralComponent,
 		AssignmentInformationRequestComponent,
@@ -113,17 +115,15 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
+		ByWorkflowVersionComponent,
+		ByWorkflowVersionGridComponent,
 		CompleteAssignmentComponent,
 		WorkflowInformationComponent,
 		WorkflowInformationDiagramComponent,
 		WorkflowInformationGeneralComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionGridComponent,
-		WorkflowVersionInformationComponent,
-		WorkflowVersionListComponent,
-		AssignmentFormResponseComponent,
-  AssignmentHeaderComponent
+		WorkflowVersionInformationComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -139,8 +139,10 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 		DirectivesModule,
 		FormsModule,
 		IgBadgeModule,
+		PageHeaderModule,
 		PipesModule,
 		PopupMenuModule,
+		PortalsModule,
 		PropertyGroupModule,
 		RouterModule,
 		SearchFieldModule,
@@ -150,11 +152,9 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 		SidePanelModule,
 		SiteModalModule,
 		TableModule,
-		TooltipModule,
-		WorkflowDiagramModule,
 		TabsModule,
-		PortalsModule,
-		PageHeaderModule
+		TooltipModule,
+		WorkflowDiagramModule
 	]
 })
 export class AssignmentsModule {

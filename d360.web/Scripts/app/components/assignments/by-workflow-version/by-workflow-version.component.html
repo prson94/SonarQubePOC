@@ -10,8 +10,8 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<d3s-workflow-version-grid #assignmentGridComponent (selectionChange)="selectedWorkflowByType = $event"
-			></d3s-workflow-version-grid>
+			<d3s-by-workflow-version-grid #assignmentGridComponent (selectionChange)="selectedWorkflowByType = $event"
+			></d3s-by-workflow-version-grid>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"

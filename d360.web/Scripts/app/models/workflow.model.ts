@@ -851,10 +851,20 @@ export class WorkflowByType {
 	StartedBy: string;
 }
 
-export class WorkflowWithStatus extends WorkflowByType {
-	awaiting: number;
-	complete: number;
-	incomplete: number;
+export class AssignmentByVersion {
+	WorkflowName: string;
+	WorkflowTypeUid: string;
+	Version: number;
+	Awaiting: number;
+	Incomplete: number;
+	ChangeType: string;
+	InitiatingObjectType: string;
+	CreatedOn: string;
+	CreatedBy: string;
+	CreatedByUid: string;
+	UpdatedOn: string;
+	UpdatedBy: string;
+	UpdatedByUid: string;
 }
 
 export class Actions {

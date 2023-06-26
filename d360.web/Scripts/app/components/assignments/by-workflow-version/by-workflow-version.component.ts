@@ -10,11 +10,11 @@ import { WorkflowByType } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
 @Component({
-	selector: 'd3s-workflow-version-list',
-	templateUrl: './workflow-version-list.component.html',
-	styleUrls: ['./workflow-version-list.component.less']
+	selector: 'd3s-by-workflow-version',
+	templateUrl: './by-workflow-version.component.html',
+	styleUrls: ['./by-workflow-version.component.less']
 })
-export class WorkflowVersionListComponent extends BaseComponent implements OnInit {
+export class ByWorkflowVersionComponent extends BaseComponent implements OnInit {
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;

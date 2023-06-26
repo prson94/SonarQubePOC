@@ -8,6 +8,7 @@ import {
 	AllocationRequestModel,
 	AssignmentItem,
 	AssignmentItemStep,
+	AssignmentByVersion,
 	BulkWorkflowFormModel,
 	BulkWorkflowReassignModel,
 	ChangeTypeInfo,
@@ -567,14 +568,19 @@ export class WorkflowService extends BaseObservableService {
 			uri += `&filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
 		}
 
-		// TODO: switch to actual web service when merging the main branch
-		return of(require('./workflows-by-type-list.mock.json'));
+		return this.http.get(uri)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-		// return this.http.get(uri)
-		// 	.pipe(
-		// 		map((response) => response),
-		// 		catchError((err) => this.handleError(err))
-		// 	);
+	getAssignmentsByVersion(): Observable<AssignmentByVersion[]> {
+		return this.http.get('/api/v2/workflow/assignmentsByVersion')
+			.pipe(
+				map((response: any) => <AssignmentByVersion[]>response.items),
+				catchError((err) => this.handleError(err))
+			);
 	}
 
     getWorkflowVersionStepHistory(id: number, filteredObject?: string, filteredObjectId?: number):Observable<any> {
