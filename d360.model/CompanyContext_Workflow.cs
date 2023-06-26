@@ -59,7 +59,7 @@ namespace d360.model
 
 		#region Methods
 
-		Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
+		Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, long itemId, int workflowId, int objectId, string @object);
 
 		/// <summary>
 		/// Reassign one or more form steps to a new user
@@ -1506,7 +1506,7 @@ namespace d360.model
 
 		#region Method
 
-		public Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object)
+		public Issue AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, long itemId, int workflowId, int objectId, string @object)
 		{
 			WorkflowItem item = WorkflowItems.Where(x => x.ID == itemId).FirstOrDefault();
 
