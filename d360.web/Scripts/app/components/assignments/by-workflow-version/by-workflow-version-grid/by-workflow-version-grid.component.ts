@@ -37,6 +37,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	menuItems: any[] = [
 		{ title: $localize`Delete` }
 	];
+	private currentPageNumber: number = 1;
 
 	constructor(public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				public stateService: StateService,
@@ -57,7 +58,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		).subscribe((rowsPerPage) => {
 			this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
 			this.isLoading = true;
-			this.loadWorkflowsByType({ rows: this.rowsPerPage, first: 0 });
+			this.loadAssignmentsByVersion({ rows: this.rowsPerPage, first: 0 });
 		});
 	}
 
@@ -83,33 +84,32 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	private loadData(): void {
 		this.isLoading = true;
 		this.assignmentsByVersion = [];
-		this.subscription = this.workflowService.getAssignmentsByVersion()
+		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage)
 			.subscribe(response => {
-				this.assignmentsByVersion = response.map(assignmentByVersion => {
+				this.assignmentsByVersion = response.items.map(assignmentByVersion => {
 					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
 					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
 					return assignmentWithStatusByVersion;
 				});
+				this.totalRecords = response.total;
+				if (this.assignmentsByVersion.length > 0) {
+					this.selectedAssignmentByVersion = [this.assignmentsByVersion[0]];
+					this.selectedCount = 1;
+					this.selectionChange.emit(this.selectedAssignmentByVersion);
+				} else {
+					this.selectedCount = 0;
+					this.selectionChange.emit(null);
+				}
+				this.isLoading = false;
+				this.changeDetectorRef.markForCheck();
 			});
-		if (this.assignmentsByVersion.length > 0) {
-			this.totalRecords = this.assignmentsByVersion.length;
-			this.selectedAssignmentByVersion = [this.assignmentsByVersion[0]];
-			this.selectedCount = 1;
-			this.selectionChange.emit(this.selectedAssignmentByVersion);
-		} else {
-			this.selectedCount = 0;
-			this.selectionChange.emit(null);
-		}
-		this.isLoading = false;
-		this.changeDetectorRef.markForCheck();
 	}
 
-	loadWorkflowsByType(event: LazyLoadEvent): void {
-		this.rowsPerPage = event.rows;
-		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
-		this.sortField = event.sortField == null ? '' : event.sortField;
-		this.rowsPerPage = event.rows;
-		this.stateService.workflowItemFilters.currentPageNumber = event.first / event.rows;
+	loadAssignmentsByVersion(lazyLoadEvent: LazyLoadEvent): void {
+		this.rowsPerPage = lazyLoadEvent.rows;
+		this.sortField = lazyLoadEvent.sortField ?? '';
+		this.sortOrder = lazyLoadEvent.sortField ? lazyLoadEvent.sortOrder : SortOrder.Descending;
+		this.currentPageNumber = (lazyLoadEvent.first / lazyLoadEvent.rows) + 1;
 		this.loadData();
 	}
 

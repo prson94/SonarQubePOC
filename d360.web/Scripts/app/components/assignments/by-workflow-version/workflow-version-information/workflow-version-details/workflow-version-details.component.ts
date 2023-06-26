@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AssignmentByVersion } from '../../../../../models/workflow.model';
 
 @Component({
@@ -9,4 +9,5 @@ import { AssignmentByVersion } from '../../../../../models/workflow.model';
 export class WorkflowVersionDetailsComponent {
 
 	@Input() assignmentByVersion: AssignmentByVersion;
+	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 }

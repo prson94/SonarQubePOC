@@ -599,10 +599,10 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentsByVersion(): Observable<AssignmentByVersion[]> {
-		return this.http.get('/api/v2/workflow/assignmentsByVersion')
+	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<any> {
+		return this.http.get(`/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`)
 			.pipe(
-				map((response: any) => <AssignmentByVersion[]>response.items),
+				map((response) => <any>response),
 				catchError((err) => this.handleError(err))
 			);
 	}
