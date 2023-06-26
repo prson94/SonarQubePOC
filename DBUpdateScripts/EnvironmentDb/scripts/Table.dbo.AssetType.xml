@@ -103,7 +103,7 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-Indices-v2">
+  <changeSet author="Pappas" id="Table.dbo.AssetType-Indices-v2.1">
     <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -118,6 +118,11 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Object_ObjectID_Include')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include] ON [dbo].[AssetType] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_AssetType_SourceID')
+BEGIN
+	CREATE UNIQUE INDEX UQ_AssetType_SourceID ON dbo.AssetType(SourceID) where SourceID is not null;
 END
 		]]>
     </sql>

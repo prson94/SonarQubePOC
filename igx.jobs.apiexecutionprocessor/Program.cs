@@ -420,26 +420,14 @@ namespace igx.jobs.apiexecutionprocessor
             }
             catch (Exception ex)
             {
-                log.WriteLine($"{ex.GetFullExceptionData()}");
                 CoreFunction.AITrackException(functionName, ex, Info.CompanyID, new Dictionary<string, string>() {
                     { "ExecutionID", Info.ExecutionID.ToString() },
                     { "StorageFolder", Info.StorageFolder },
                     { "RequestFileName", Info.RequestFileName },
                     { "ResponseFileName", Info.ResponseFileName }
                 });
-                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                dbExecutionItem.ErrorMessage = message;
-                dbExecutionItem.CompletedOn = DateTime.UtcNow;
-                dbExecutionItem.MarkedForProcessing = false;
-
-                try
-                {
-                    company.Update(dbExecutionItem);
-                }
-                catch (Exception cex)
-                {
-                    log.WriteLine($"{cex.GetFullExceptionData()}");
-                }
+				
+				company.UpdateExecutionWithErrorFromException(dbExecutionItem, ex);
             }
         }
 

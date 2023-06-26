@@ -1,4 +1,11 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.helpers;
+using d360.core.resources;
+using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -9,26 +16,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.exceptions;
-using d360.core.helpers;
-using d360.core.queue;
-using d360.core.resources;
-
-using Dapper;
-
-using Microsoft.ApplicationInsights;
-
-using Newtonsoft.Json;
-
 namespace d360.model
 {
-    internal class CurrentExecutionLocationModel
+	internal class CurrentExecutionLocationModel
     {
         public Guid ExecutionID { get; set; }
 
@@ -46,13 +36,49 @@ namespace d360.model
 		DbSet<ApiExecution> ApiExecutions { get; set; }
 
 		DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
-		
+
 		#endregion
-		
+
 
 		#region Methods
 
+		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField");
+
+		void CompleteApiExecutionAndGetCounts(Guid executionId, string apiTableName);
+
+		List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
+
+		List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
+
+		List<FieldTypeCore> GetAssetTypeFieldTypesCore(string obj, int objectID);
+
+		Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);
+
+		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+		
+		void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true);
+
+		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
+
+		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
+
+		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
+
+		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+
+		List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
+
+		void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
+
 		void SendBatchApiCompletedEvent(ApiExecution execution);
+
+		void SetApiExecutionProcessingStartTime(Guid ExecutionId);
+
+		void UpdateExecutionWithErrorFromException(ApiExecution execution, Exception ex);
+
+		List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
+
+		List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldTypeCore> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false, FieldValidationFieldProperties validationFieldProperties = null, bool jsonElementsEnabled = true, bool IslookupFieldsPassedByValue = false);
 
 		#endregion
 	}
@@ -89,30 +115,6 @@ namespace d360.model
 
 
 		#region Utility
-
-		private void completeApiExecutionAndGetCounts(Guid executionId, string apiTableName)
-		{
-			Connection.Execute($@"
-update	E 
-set		E.CompletedOn = @dt,
-		E.MarkedForProcessing = 0,
-		E.[Total] = Tc.Cnt,
-		E.Processed = Pc.Cnt,
-		E.[Error] = Ec.Cnt
-from	api.Execution E
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 0 
-		) Ec
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success is not null
-		) Pc
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID
-		) Tc
-where	E.ExecutionID = @executionId",
-new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
-);
-		}
 
 		public void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null)
         {
@@ -1604,6 +1606,30 @@ where   ER.ExecutionID = @ExecutionID
 			}
 		}
 
+		public void CompleteApiExecutionAndGetCounts(Guid executionId, string apiTableName)
+		{
+			Connection.Execute($@"
+update	E 
+set		E.CompletedOn = @dt,
+		E.MarkedForProcessing = 0,
+		E.[Total] = Tc.Cnt,
+		E.Processed = Pc.Cnt,
+		E.[Error] = Ec.Cnt
+from	api.Execution E
+		cross apply (
+			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 0 
+		) Ec
+		cross apply (
+			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success is not null
+		) Pc
+		cross apply (
+			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID
+		) Tc
+where	E.ExecutionID = @executionId",
+new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
+);
+		}
+
 		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true)
 		{
 			List<DatabaseBulkRelationshipResult> results = new List<DatabaseBulkRelationshipResult>();
@@ -1914,7 +1940,7 @@ where   ER.ExecutionID = @ExecutionID
 					endItemNumber += loopSize;
 				}
 
-				completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedRelationship");
+				CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedRelationship");
 				Connection.Close();
 
 				if (sendWorkflowEvents)
@@ -3311,7 +3337,7 @@ where   ER.ExecutionID = @ExecutionID
 						endItemNumber += loopSize;
 					}
 
-					completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
+					CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
 					Connection.Close();
 					sw.Restart();
 
@@ -4400,7 +4426,7 @@ where   ER.ExecutionID = @ExecutionID
 						endItemNumber += loopSize;
 					}
 
-					completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
+					CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
 					Connection.Close();
 					sw.Restart();
 
@@ -4778,7 +4804,15 @@ where   ER.ExecutionID = @ExecutionID
             }
         }
 
-        public void UpdateGroupCounterFields(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+		public void UpdateExecutionWithErrorFromException(ApiExecution execution, Exception ex)
+		{
+			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+			execution.ErrorMessage = message;
+			execution.CompletedOn = DateTime.UtcNow;
+			Update(execution);
+		}
+
+		public void UpdateGroupCounterFields(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
             Connection.Execute(
                       $@"insert into FieldCounterValue (AssetId, AssetTypeId, FieldTypeId, [Value])

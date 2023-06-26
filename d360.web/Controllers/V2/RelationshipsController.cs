@@ -1193,8 +1193,6 @@ namespace d360.web.Controllers.V2
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
-			var prefix = "Relationships.PostRelationshipsAsync => ";
-
 			if (applicationId != null && applicationId.Length > 200)
 			{
 				throw new ArgumentException(ApiMessages.ApplicationIdMaxLengthViolated);
@@ -1213,7 +1211,6 @@ namespace d360.web.Controllers.V2
 					throw new ForbiddenBusinessLayerException(string.Format(ActionApiMessages.RelationshipReftypeBothSideNotAllowed, intersectTypeUid.ToString()));
 				}
 			}
-
 
 			if (relationships == null)
 			{
@@ -1241,21 +1238,11 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
-
-				throw new RestApiException(HttpStatusCode.InternalServerError, message);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
+				throw new RestApiException(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT));
 			}
 
 			return Ok(results);
@@ -1336,12 +1323,8 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
-
-				throw new RestApiException(HttpStatusCode.InternalServerError, message);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
+				throw ex;
 			}
 
 			return Ok(results);
@@ -1704,10 +1687,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			results.ForEach(relationship =>

@@ -1873,7 +1873,7 @@ namespace d360.model
 
 					try
 					{
-						completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAsset");
+						CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAsset");
 						SendBatchApiCompletedEvent(execution);
 
 						addMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
@@ -2397,6 +2397,12 @@ where	T.ExecutionID = @ExecutionID
 
 												trans.Commit();
 												isChunkDeletionCompleted = true;
+												results.AddRange(
+														Query<DatabaseBulkAssetResult>(
+															$"select [ItemNumber],uid,[ExecutionItemUid],[Message],[Success], Object, ObjectID from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+															new { execution.ExecutionID, beginItemNumber, endItemNumber }
+														)
+													);
 											}
 											catch (Exception ex)
 											{
@@ -2467,7 +2473,7 @@ where	T.ExecutionID = @ExecutionID
 							endItemNumber += loopSize;
 						}
 
-						completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAsset");
+						CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAsset");
 						Connection.Close();
 
 						if (sendWorkflowEvents)
@@ -2624,7 +2630,7 @@ where	T.ExecutionID = @ExecutionID
 				}
 			}
 
-			completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAssetType");
+			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAssetType");
 
 			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
