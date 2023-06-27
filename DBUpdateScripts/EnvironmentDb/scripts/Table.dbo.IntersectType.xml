@@ -69,8 +69,8 @@ end
   </changeSet>
 
   
-    <changeSet author="Pappas" id="Indices.dbo.IntersectType-v2.3">
-    <comment>GOV-18449</comment>
+    <changeSet author="Pappas" id="Indices.dbo.IntersectType-v2.4">
+    <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -118,59 +118,14 @@ BEGIN
 	CREATE NONCLUSTERED INDEX [IX_IntersectType_SubjectAssetType] ON [dbo].[IntersectType] ( [SubjectAssetTypeID] ASC )
 END
 GO
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_IntersectType_SourceID')
+BEGIN
+	CREATE UNIQUE INDEX UQ_IntersectType_SourceID ON dbo.IntersectType(SourceID) where SourceID is not null;
+END
+GO
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[
-if exists (select name from sys.key_constraints where name = 'UQ_IntersectType')
-begin
-	ALTER TABLE [dbo].[IntersectType] ADD  CONSTRAINT [UQ_IntersectType] UNIQUE CLUSTERED 
-	(
-		[Subject] ASC,
-		[SubjectID] ASC,
-		[Object] ASC,
-		[ObjectID] ASC,
-		[PredicateID] ASC
-	)
-end
-GO
-
-IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid')
-BEGIN
-	drop index [IX_IntersectType_Uid] ON [dbo].[IntersectType]
-END
-GO
-
-IF EXISTS (select 1 from sys.indexes where name = 'IX_IntersectType_PredicateID')
-BEGIN
-	drop index [IX_IntersectType_PredicateID] ON [dbo].[IntersectType]
-END
-
-IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Object')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_IntersectType_Object] ON [dbo].[IntersectType] ( [Uid] ASC )
-END
-GO
-
-IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Subject')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_IntersectType_Subject] ON [dbo].[IntersectType] ( [Uid] ASC )
-END
-GO
-
-IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_ObjectAssetType')
-BEGIN
-	DROP INDEX [IX_IntersectType_ObjectAssetType] ON [dbo].[IntersectType]
-END
-GO
-
-IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_SubjectAssetType')
-BEGIN
-	DROP INDEX [IX_IntersectType_SubjectAssetType] ON [dbo].[IntersectType]
-END
-GO
-]]>
-	</rollback>
   </changeSet>
   
 

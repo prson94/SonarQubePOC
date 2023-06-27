@@ -111,18 +111,10 @@ namespace d360.model.DataAccessLayer
             {
                 await CompanyContext.ImportCrossReferencesAsync(execution, models);
 				results = await CompanyContext.GetExecutionCrossReferenceResultsAsync(execution.ExecutionID);
-
-				execution.Processed = results.Count;
-                execution.Error = results.Count(i => !i.Success);
-                execution.CompletedOn = DateTime.UtcNow;
-                CompanyContext.Update(execution);
             }
             catch (Exception ex)
             {
-                string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-                execution.ErrorMessage = message;
-                execution.CompletedOn = DateTime.UtcNow;
-                CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
             }
 
             return results;

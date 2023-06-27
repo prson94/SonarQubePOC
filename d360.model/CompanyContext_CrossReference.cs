@@ -179,7 +179,7 @@ namespace d360.model
 						Where ExecutionID=@executionID and Success is null; ",
 					new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
-				completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetCrossReference");
+				CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetCrossReference");
 			}
 			finally
 			{

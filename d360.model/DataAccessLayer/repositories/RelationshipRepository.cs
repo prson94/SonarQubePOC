@@ -1651,10 +1651,7 @@ from	IntersectType I
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1677,10 +1674,7 @@ from	IntersectType I
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1717,10 +1711,7 @@ where	Id = @Id
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1743,10 +1734,7 @@ where	Id = @Id
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1769,10 +1757,7 @@ where	Id = @Id
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;

@@ -41,7 +41,7 @@ END
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7">
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -100,6 +100,11 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_SourceID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset] ( AssetTypeID, SourceID )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Asset_SourceID')
+BEGIN
+	CREATE UNIQUE INDEX UQ_Asset_SourceID ON dbo.Asset(AssetTypeID, SourceID) where SourceID is not null;
 END
 		]]>
     </sql>

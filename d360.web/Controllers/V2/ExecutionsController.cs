@@ -168,7 +168,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotExist, executionID.ToString()))).ConfigureAwait(false);
 			}
 
-			if (execution.State == core.enums.State.Deleted)
+			if (execution.State == State.Deleted)
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDCancelled, executionID.ToString()))).ConfigureAwait(false);
 			}
@@ -188,7 +188,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ApiMessages.ExecutionUIDNotBatchJobCanNotCancel, executionID.ToString()))).ConfigureAwait(false);
 			}
 
-			execution.State = core.enums.State.Deleted;
+			execution.State = State.Deleted;
 			execution.CompletedOn = DateTime.UtcNow;
 			execution.ErrorMessage = ApiMessages.ExecutionCancelByUser;
 
