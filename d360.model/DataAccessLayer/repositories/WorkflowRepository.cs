@@ -1427,7 +1427,7 @@ namespace d360.model.DataAccessLayer
 						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
 						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
 						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object=A.object and WI.ObjectID= A.objectID)
+						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object = A.object and WI.ObjectID = A.objectID) or (WI.Object = 'Issue' and A.Id = I.AssetId)
 						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
 						left join workflow.EventRegistration WER on T.ID = WER.TypeID and (WER.AssetTypeID = AST.ID or WER.IssueTypeID = iT.ID)
 						LEFT JOIN AssetPath AP on A.ID=AP.ID
