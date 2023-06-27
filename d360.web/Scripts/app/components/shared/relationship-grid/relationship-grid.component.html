@@ -117,6 +117,7 @@
                                 <td *ngFor="let column of columns">
                                     <d3s-dynamic-field-value [column]="column"
                                                              [fields]="fields"
+                                                             [isDateUTC]="true"
                                                              [item]="item"
                                                              [useApiName]="true"></d3s-dynamic-field-value>
                                 </td>
