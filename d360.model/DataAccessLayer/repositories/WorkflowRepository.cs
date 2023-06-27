@@ -1043,9 +1043,9 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text)
 			};
 
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
 			{
-				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatorUid").Value;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatoruid").Value;
 				if (Guid.TryParse(value, out Guid initiatorUid))
 				{
 					conditions.Add("WA.initiatorUid = @initiatorUid");
