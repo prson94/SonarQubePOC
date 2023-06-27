@@ -16,7 +16,9 @@ export class AssignmentProgressComponent implements OnInit {
 
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
-		this.loadData();
+		if (this._workflowItemUid) {
+			this.loadAssignmentSteps();
+		}
 	}
 
 	get workflowItemUid(): string {
@@ -53,14 +55,8 @@ export class AssignmentProgressComponent implements OnInit {
 	ngOnInit(): void {
 	}
 
-	private loadData(): void {
-		this.assignmentItemSteps = [];
-		if (this._workflowItemUid) {
-			this.loadAssignmentSteps();
-		}
-	}
-
 	private loadAssignmentSteps() {
+		this.assignmentItemSteps = [];
 		this.isLoading = true;
 		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {

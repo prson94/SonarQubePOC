@@ -1,4 +1,10 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
+<button igButton type="button"
+		*ngIf="workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
+		class="ig-button-primary complete-assignment"
+		(click)="completeAssignmentClick()" i18n
+>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
+</button>
 <d3s-assignment-information-request [hidden]="isLoading"
 									[workflowActionUid]="assignmentItem.ActionUid"
 									*ngIf="assignmentItem?.initiatingObjectType === 'Action'"></d3s-assignment-information-request>

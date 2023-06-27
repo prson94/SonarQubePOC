@@ -76,6 +76,7 @@
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-assignment-information [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
 												*ngIf="selectedWorkflowItems?.length === 1"
+												(completeAssignment)="completeAssignmentComponent.openModal($event)"
 												(linkClick)="sidePanelLinkClicked($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
