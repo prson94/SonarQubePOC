@@ -47,10 +47,9 @@
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['workflowName','assetDisplayValue','initiator','StartedOn','assigneesJson','Status']"
 				 [pageLinks]="3"
 				 [paginator]="true"
-				 [rows]="rowsPerPage || defaultInitialItemsPerPage"fr
+				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
 				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
 				 [selection]="assignments"
@@ -83,39 +82,12 @@
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'assigneesJson'">
-						<ng-container i18n>Assignee</ng-container>
-						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
-					</th>
+					<th i18n>Assignee</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
 					</th>
 					<th *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools" style="flex: 0 0 30px"></th>
-				</tr>
-				<tr [hidden]="showSimpleFilter">
-					<ng-container *ngIf="actionFormFields.length === 0">
-						<th>
-							<d3s-column-filter [field]="'workflowName'" [datatype]="'text'"></d3s-column-filter>
-						</th>
-					</ng-container>
-					<th>
-						<d3s-column-filter [field]="'assetDisplayValue'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<ng-container *ngIf="!isRequestsFlow">
-						<th>
-							<d3s-column-filter [field]="'initiator'" [datatype]="'text'"></d3s-column-filter>
-						</th>
-					</ng-container>
-					<th>
-						<d3s-column-filter [field]="'StartedOn'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'assigneesJson'" [datatype]="'text'"></d3s-column-filter>
-					</th>
-					<th>
-						<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
-					</th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
