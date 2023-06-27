@@ -1,4 +1,4 @@
-import { first as _first, forEach } from "lodash-es";
+import { first as _first } from "lodash-es";
 import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
@@ -19,7 +19,6 @@ import { MessagesObservableService } from "../../../../services/messages-observa
 import { StateService } from "../../../../services/state.service";
 import { PopupMenu } from "../../../shared/controls/popup-menu/popup-menu.component";
 import { SiteUrlHelpers } from "../../../../static/site-url-helpers";
-import { Table } from "primeng/table";
 
 /*global $localize*/
 
@@ -68,8 +67,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	) {
 	}
 
+
 	@ViewChildren('treetableRows') tableRows: QueryList<ElementRef>;
 	@HostListener('document:keydown', ['$event'])
+    // ignore complexity codacy issue
+	// eslint-disable-next-line
 	onArrowKeysDownHandler($event: KeyboardEvent) {
 		const rowsAsArr = this.tableRows.toArray();
 		const selectedRowIndex = rowsAsArr.findIndex((elRef) => {
@@ -82,7 +84,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				nextIdx--;
 			}
 
-			const el = rowsAsArr[nextIdx];
+			const el = rowsAsArr[`${nextIdx}`];
 			if (el && nextIdx !== selectedRowIndex) {
 				el.nativeElement.click();
 				el.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
@@ -95,7 +97,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 				nextIdx = 0;
 			}
 
-			const el = rowsAsArr[nextIdx];
+			const el = rowsAsArr[`${nextIdx}`];
 			if (el && nextIdx !== selectedRowIndex) {
 				el.nativeElement.click();
 				el.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
