@@ -41,7 +41,7 @@ END
     </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7.1">
+  <changeSet author="Pappas" id="Table.dbo.Asset.Indices-v7.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -101,6 +101,20 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_Sour
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_SourceID] ON [dbo].[Asset] ( AssetTypeID, SourceID )
 END
+
+-- clean dupe SourceID before applying unique index below.
+update	T
+set		T.SourceID = null
+from	Asset T
+		inner join	(
+					select	AssetTypeID,
+							SourceID,
+							min(ID) as MinID
+					from	Asset
+					where SourceID is not null
+					group by	AssetTypeID, SourceID
+					having count(1) > 1
+					) S on S.AssetTypeID = T.AssetTypeID and S.SourceID = T.SourceID and t.ID > s.MinID;
 
 IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Asset_SourceID')
 BEGIN
