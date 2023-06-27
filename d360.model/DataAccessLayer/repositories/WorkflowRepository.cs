@@ -1029,7 +1029,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
 				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid)
+				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid),
+				new DefaultFilter("initiatingobjecttype", "IOT.initiatingObjectType", SqlFieldType.Text)
 			};
 
 			var orderFieldOptions = new List<DefaultFilter>
@@ -1040,7 +1041,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("completedOn", "AssignmentList.CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
 				new DefaultFilter("displayPath", "AssignmentList.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text)
+				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text),
+				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1139,7 +1141,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ {(hasActionFilter ? "WA" : "AssignmentList")}.[StartedOn] AS datetime)");
-			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "asc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
@@ -1175,6 +1177,23 @@ namespace d360.model.DataAccessLayer
 			var classSQL = $@"CASE {string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as initiatingObjectType";
+
+			var assigneesSql = $@"OUTER APPLY
+							(
+								SELECT 
+								(
+									SELECT 
+										GR1.FirstName + ' ' + GR1.LastName as [Name], 
+										uid  
+									FROM
+										workflow.ItemAssignment IA1 
+										INNER JOIN 
+										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
+									WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
+									ORDER BY (GR1.FirstName + ' ' + GR1.LastName) asc
+									FOR JSON PATH
+								) as value
+							) AssignedUsers";
 
 			var coreSelects = $@"select 
 										WI.uid as workflowItemUid, 
@@ -1214,7 +1233,7 @@ namespace d360.model.DataAccessLayer
 								AP.DisplayPath as assetPath,
 								AssignedUsers.value as assigneesJson,
 								I.uid as actionUid,
-								'Action' as initiatingObjectType,
+								IOT.initiatingObjectType,
 								IT.Name as initiatingObjectTypeName
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
@@ -1233,7 +1252,7 @@ namespace d360.model.DataAccessLayer
 							AP.DisplayPath as assetPath,
 							AssignedUsers.value as assigneesJson,
 							null as actionUid, 
-							{classSQL},
+							IOT.initiatingObjectType,
 							AST.Name as initiatingObjectTypeName
 							";
 
@@ -1251,21 +1270,8 @@ namespace d360.model.DataAccessLayer
 							AssetType AST on AST.ID = A.AssetTypeID						
 							LEFT JOIN 
 							AssetDisplayValue ADV on A.id = ADV.AssetID
-							OUTER APPLY
-							(
-								SELECT 
-								(
-									SELECT 
-										GR1.FirstName + ' ' + GR1.LastName as [Name], 
-										uid  
-									FROM
-										workflow.ItemAssignment IA1 
-										INNER JOIN 
-										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
-									WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
-									FOR JSON PATH
-								) as value
-							) AssignedUsers
+							OUTER APPLY (select 'Action' as initiatingObjectType)IOT
+							{assigneesSql}
 						{string.Join("\n", fieldJoins.GetStatements())}
 						{whereConditions}";
 
@@ -1279,21 +1285,8 @@ namespace d360.model.DataAccessLayer
 								AssetType AST on AST.ID = A.AssetTypeID
 								INNER JOIN 
 								AssetDisplayValue ADV on A.id = ADV.AssetID
-								OUTER APPLY
-								(
-									SELECT 
-									(
-										SELECT 
-											GR1.FirstName + ' ' + GR1.LastName as [Name], 
-											uid  
-										FROM
-											workflow.ItemAssignment IA1 
-											INNER JOIN 
-											reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
-										WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
-										FOR JSON PATH
-									) as value
-								) AssignedUsers
+								OUTER APPLY (select {classSQL})IOT
+								{assigneesSql}
 								outer apply (
 									select 
 										null as uid  										
@@ -1309,6 +1302,7 @@ namespace d360.model.DataAccessLayer
 							{assetSelects}
 							{assetJoins}";
 
+			string outerOrderBySql = orderBySql.Replace("AssignedUsers.value", "assigneesJson");
 			var sql = $@"
 						with assignments as (
 								{coreSelects}
@@ -1318,7 +1312,7 @@ namespace d360.model.DataAccessLayer
 							
 							{assigmentsSQL}
 						) AssignmentList
-						{orderBySql}
+						{outerOrderBySql}
 						{offset}";
 
 			var countSQL = $@"							
