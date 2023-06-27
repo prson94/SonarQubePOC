@@ -447,7 +447,7 @@ namespace d360.model.DataAccessLayer
 
 			var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
 			var assignments = CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
-			
+
 			return assignments;
 		}
 
@@ -667,7 +667,7 @@ namespace d360.model.DataAccessLayer
 								.FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
 							var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
 							var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
-							
+
 							switch (fieldtype)
 							{
 								case "date":
@@ -1052,15 +1052,15 @@ namespace d360.model.DataAccessLayer
 					dbArgs.Add("@initiatorUid", initiatorUid);
 				}
 			}
-			
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-			}			
+			}
 
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))			
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
 			{
-				var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;								
+				var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
 
 				if (!string.IsNullOrEmpty(filterValue))
 				{
@@ -1081,14 +1081,14 @@ namespace d360.model.DataAccessLayer
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count > 0)
 						{
 							hasActionFilter = true;
-							
+
 							if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1 && filterValue.Substring(filterValue.ToLower().IndexOf("actiontypeuid") + 13).TrimStart().StartsWith("eq"))
 							{
 								var actionFilter = advFilterStatements.Where(f => f.Contains("IT.uid")).FirstOrDefault();
 								var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
 								if (startIndex > 0)
 								{
-									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 || actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex) ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);                                    
+									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 || actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex) ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
 									var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
 									var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 
@@ -1144,7 +1144,7 @@ namespace d360.model.DataAccessLayer
 
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
 			int pageSize = CompanyContext.ParsePageSize(queryParams);
-			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);					
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
 			if (!string.IsNullOrWhiteSpace(simpleFilter))
 			{
@@ -1153,7 +1153,7 @@ namespace d360.model.DataAccessLayer
 				{
 					dbArgs.AddDynamicParams(simpleFilterArgs);
 
-					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");			
+					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");
 				}
 			}
 
@@ -1162,7 +1162,7 @@ namespace d360.model.DataAccessLayer
 			if (conditions.Any())
 			{
 				whereConditions = " where " + string.Join(" and ", conditions);
-				whereConditions = whereConditions.Trim();				
+				whereConditions = whereConditions.Trim();
 			}
 
 			var classCaseStatements = new List<string>();
@@ -1198,7 +1198,7 @@ namespace d360.model.DataAccessLayer
 															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
 															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
 															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
-			
+
 			var actionSelects = $@"WA.workflowItemUid, 
 								WA.workflowUid, 
 								WA.workflowName,
@@ -1355,7 +1355,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
-		
+
 			var multiSQL = $"{sql}; {countSQL}";
 			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, dbArgs, ApiTimeout))
 			{
@@ -1365,7 +1365,7 @@ namespace d360.model.DataAccessLayer
 				assignments.pageSize = pageSize;
 			}
 
-			return assignments;		
+			return assignments;
 		}
 
 		public async Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid)
@@ -1375,18 +1375,18 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@workflowItemUid", workflowItemUid);
 
 			var changeTypeStatements = new List<string>();
-			
+
 			foreach (ChangeTypeInfo changeType in ChangeType.Add.GetList())
 			{
 				changeTypeStatements.Add($"when WER.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
 			}
 
-			
+
 			var changeTypeSQL = $@"CASE 
 									{string.Join(Environment.NewLine, changeTypeStatements)}
 									else 'Unknown'
 									END as ChangeType,";
-			
+
 
 			var classCaseStatements = new List<string>();
 
@@ -1395,12 +1395,12 @@ namespace d360.model.DataAccessLayer
 				classCaseStatements.Add($"when class = {(int)assetClass.ID} then '{assetClass.Name}'");
 			}
 
-			
+
 			var classSQL = $@"CASE when I.ID is not null then 'Action'
 								{string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as InitiatingObjectType";
-						
+
 
 			string sql = $@"
 						 SELECT 
@@ -1433,9 +1433,9 @@ namespace d360.model.DataAccessLayer
 						LEFT JOIN AssetPath AP on A.ID=AP.ID
 						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
 						where WI.UID = @workflowItemUid";
-			
+
 			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);
-		}		
+		}
 
 		public async Task<IEnumerable<dynamic>> GetPossibleAssignees()
 		{
@@ -1517,11 +1517,11 @@ namespace d360.model.DataAccessLayer
 			var results = await CompanyContext.QueryAsync(sql);
 
 			return results;
-		}		
+		}
 
 		public async Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			var dbArgs = new DynamicParameters();			
+			var dbArgs = new DynamicParameters();
 
 			List<string> conditions = new List<string>();
 			string simpleFilter = "";
@@ -1562,7 +1562,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrWhiteSpace(simpleFilter))
 			{
-				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, new List<DefaultFilter>	{new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text) }, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
+				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, new List<DefaultFilter> { new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text) }, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
 				if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
 				{
 					dbArgs.AddDynamicParams(simpleFilterArgs);
@@ -1599,8 +1599,8 @@ namespace d360.model.DataAccessLayer
 
 			var coreJoinSQL = $@"workflow.Type WT
 							inner join
-							workflow.Version WV on WV.TypeID = wt.ID and wt.State <> 3";					
-			
+							workflow.Version WV on WV.TypeID = wt.ID and wt.State <> 3";
+
 			var itemJoinSQL = $@"{coreJoinSQL}
 								inner join 
 								workflow.EventRegistration WER on WER.TypeID = WT.ID
@@ -1644,6 +1644,27 @@ namespace d360.model.DataAccessLayer
 				assignments.total = multi.Read<int>().First();
 				assignments.pageNum = pageNum;
 				assignments.pageSize = pageSize;
+			}
+
+			if (assignments.items != null)
+			{
+				var classes = AssetTypeClass.BusinessAsset.GetAsList();
+				var changeTypes = ChangeType.Add.GetList();
+
+				foreach (var assignment in assignments.items)
+				{
+					if (!string.IsNullOrEmpty(assignment.InitiatingObjectType))
+					{
+						var cs = classes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.InitiatingObjectType);
+						assignment.InitiatingObjectType = cs?.Name;
+					}
+
+					if (!string.IsNullOrEmpty(assignment.ChangeType))
+					{
+						var ct = changeTypes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.ChangeType);
+						assignment.ChangeType = ct?.Name;
+					}
+				}
 			}
 
 			return assignments;
