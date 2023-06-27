@@ -1169,11 +1169,11 @@ namespace d360.model
 					message = $"You may not use the {p.Name} functional type as it is obsolete and no longer supported.";
 					predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
 				}
-				else if (!p.AllowEditFromRelationshipEditor)
-				{
-					message = $"Creating or updating of relationship types with a {p.Name} functional type is not allowed.";
-					predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
-				}
+				//else if (!p.AllowEditFromRelationshipEditor)
+				//{
+				//	message = $"Creating or updating of relationship types with a {p.Name} functional type is not allowed.";
+				//	predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
+				//}
 				else
 				{
 					if (!p.AllowDifferentSubjectObject)
