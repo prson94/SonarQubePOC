@@ -4969,34 +4969,6 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 					string allowedTypeNameList = string.Join(", ", allowedFunctionalTypes.Select(p => p.ID.ToString().Replace("'", "''")));
 
 					string checkSQL = $@"
-										update	api.ExecutionPredicate 
-										set		Success = 0,
-												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
-										from api.ExecutionPredicate EP
-										inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
-										where	ExecutionID = @ExecutionID and EP.uid is null
-
-										update	api.ExecutionPredicate 
-										set		Success = 0,
-												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
-										from api.ExecutionPredicate EP
-										inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type
-										where	ExecutionID = @ExecutionID and EP.uid is null
-
-										update	api.ExecutionPredicate 
-										set		Success = 0,
-												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
-										from api.ExecutionPredicate EP
-										inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type and P.uid != EP.uid
-										where	ExecutionID = @ExecutionID and EP.uid is not null
-
-										update	api.ExecutionPredicate
-										set		Success = 0,
-												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
-										from api.ExecutionPredicate EP
-										inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type and P.uid != EP.uid
-										where	ExecutionID = @ExecutionID and EP.uid is not null
-
 										update api.ExecutionPredicate 
 										set     Success = 0, 
 												[Message] = coalesce([Message] + '; ', '') + 'You may not change the type for this predicate as it is already in use.' 
@@ -5061,6 +5033,34 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 									string insertSQL = $@"
 										drop table if exists #mergeResultTable
 										create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+
+										update	api.ExecutionPredicate 
+										set		Success = 0,
+												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+										from api.ExecutionPredicate EP
+										inner join [Predicate] P WITH (NOLOCK) on P.Name = EP.Name and P.Type = EP.Type
+										where	ExecutionID = @ExecutionID and EP.uid is null
+
+										update	api.ExecutionPredicate 
+										set		Success = 0,
+												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+										from api.ExecutionPredicate EP
+										inner join [Predicate] P WITH (NOLOCK) on P.Inverse = EP.Inverse and P.Type = EP.Type
+										where	ExecutionID = @ExecutionID and EP.uid is null
+
+										update	api.ExecutionPredicate 
+										set		Success = 0,
+												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+										from api.ExecutionPredicate EP
+										inner join [Predicate] P WITH (NOLOCK) on P.Inverse = EP.Inverse and P.Type = EP.Type and P.uid != EP.uid
+										where	ExecutionID = @ExecutionID and EP.uid is not null
+
+										update	api.ExecutionPredicate
+										set		Success = 0,
+												[Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+										from api.ExecutionPredicate EP
+										inner join [Predicate] P WITH (NOLOCK) on P.Name = EP.Name and P.Type = EP.Type and P.uid != EP.uid
+										where	ExecutionID = @ExecutionID and EP.uid is not null
 											
 										update  api.ExecutionPredicate 
 										set     [Uid] = newid() 
@@ -5098,7 +5098,7 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 											new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
 
 									Connection.Execute(
-										$"update P set P.Success = 1 from api.ExecutionPredicate P where	{querySuffix} and P.PredicateID is not null;",
+										$"update P set P.Success = 1 from api.ExecutionPredicate P where {querySuffix} and P.PredicateID is not null;",
 										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 									trans.Commit();
