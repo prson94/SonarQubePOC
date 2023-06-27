@@ -32,7 +32,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 		assetId: number
 	}>();
 
-	@Output() stepClickChange: EventEmitter<boolean> = new EventEmitter<boolean>();
+	@Output() stepClickChange: EventEmitter<void> = new EventEmitter<void>();
 
 	workflowStepDetail: WorkflowStepDetail;
 
@@ -95,8 +95,8 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	toggleStepDetails(): void {
-		this.selected = !this.selected;
-		this.stepClickChange.emit(this.selected);
+		this.selected = true;
+		this.stepClickChange.emit();
 	}
 
 	completeAssignmentClick(): void {

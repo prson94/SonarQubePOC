@@ -147,9 +147,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	stepClicked(value: { assignmentItemStep: AssignmentItemStep; open: boolean }) {
-		this.secondarySidePanelOpen = value.open;
-		this.assignmentItemStep = value.assignmentItemStep;
+	stepClicked(assignmentItemStep: AssignmentItemStep) {
+		this.secondarySidePanelOpen = true;
+		this.assignmentItemStep = assignmentItemStep;
 		this.secondarySidePanelObjectType = 'step-details';
 	}
 

@@ -13,6 +13,7 @@ export class AssignmentProgressComponent implements OnInit {
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
 	@Input() workflowUid: string;
+
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
 		this.loadData();
@@ -34,13 +35,7 @@ export class AssignmentProgressComponent implements OnInit {
 		assetId: number
 	}>();
 
-	@Output() stepClickChange: EventEmitter<{
-		assignmentItemStep: AssignmentItemStep,
-		open: boolean
-	}> = new EventEmitter<{
-		assignmentItemStep: AssignmentItemStep,
-		open: boolean
-	}>();
+	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
 
 	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
 		objectType: string,
@@ -74,11 +69,9 @@ export class AssignmentProgressComponent implements OnInit {
 			});
 	}
 
-	stepSelectionChanged(assignmentItemStep: AssignmentItemStep, open: boolean): void {
-		if (open) {
-			this.deselectWorkflowSteps(assignmentItemStep);
-		}
-		this.stepClickChange.emit({ assignmentItemStep: assignmentItemStep, open: open });
+	stepSelectionChanged(assignmentItemStep: AssignmentItemStep): void {
+		this.deselectWorkflowSteps(assignmentItemStep);
+		this.stepClickChange.emit(assignmentItemStep);
 	}
 
 	deselectWorkflowSteps(workflowItemStepToSkip?: AssignmentItemStep) {

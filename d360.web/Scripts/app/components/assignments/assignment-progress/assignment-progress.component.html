@@ -4,7 +4,7 @@
 		<div readonly>
 			<d3s-assignment-progress-step *ngFor="let assignmentItemStep of assignmentItemSteps" [workflowItemUid]="workflowItemUid"
 										  [assignmentItemStep]="assignmentItemStep" [showCompleteAssignment]="showCompleteAssignment"
-										  (stepClickChange)="stepSelectionChanged(assignmentItemStep, $event)"
+										  (stepClickChange)="stepSelectionChanged(assignmentItemStep)"
 										  (completeAssignment)="completeAssignment.emit($event)"
 										  [isLastStep]="assignmentItemSteps.indexOf(assignmentItemStep) === (assignmentItemSteps.length - 1)"
 			></d3s-assignment-progress-step>

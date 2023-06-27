@@ -56,12 +56,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
-	stepClickChanged(value: { assignmentItemStep: AssignmentItemStep, open: boolean }): void {
-		if (value.open) {
-			this.sidePanel = 'step-details';
-			this.assignmentItemStep = value.assignmentItemStep;
-		} else {
-			this.sidePanel = 'asset-details';
-		}
+	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
+		this.sidePanel = 'step-details';
+		this.assignmentItemStep = assignmentItemStep;
 	}
 }
