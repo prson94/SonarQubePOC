@@ -244,6 +244,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 	selectRow(row: any, forceRefresh: boolean = false) {
 		this.selected = row;
+		this.editorSelected = row;
 		this.selectedChange.emit({ row, forceRefresh });
 	}
 
@@ -753,8 +754,16 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		}
 	}
 
+	editorObjectId: string;
+	editorObjectType: string;
+	editorObjectTypeUid: string;
+	editorSelected: Record<string, unknown>;
 	private onEdit(item) {
 		this.selectRow(item);
+		this.editorObjectId = this.selected ? this.selected?.ObjectID : this.assetTypeApiModel?.ID;
+		this.editorObjectType = this.assetTypeApiModel["Object"] ?? '';
+		this.editorObjectTypeUid = this.assetTypeApiModel?.uid;
+
 		this.showEditor = true;
 		this.showEditorChange.emit(true);
 		this.changeDetectorRef.markForCheck();
@@ -786,8 +795,18 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		}
 	}
 
-	public triggerEdit() {
-		this.onEdit(this.selected);
+	public triggerEdit($event) {
+		this.editorObjectId = $event.assetUid;
+		this.editorObjectType = $event.type;
+		this.editorObjectTypeUid = $event.assetTypeUid;
+
+		this.editorSelected = {
+			AssetUid: $event.assetUid
+		};
+
+		this.showEditor = true;
+		this.showEditorChange.emit(true);
+		this.changeDetectorRef.markForCheck();
 	}
 
 	getAssetPath() {

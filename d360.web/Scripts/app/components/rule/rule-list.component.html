@@ -99,7 +99,7 @@
                                          [hasModifyRelationshipsPermissions]="false"
                                          [hasDeleteRelationshipsPermissions]="false"
                                          [interceptLinkClick]="true"
-                                         (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
+                                         (onEditClick)="assetGrid.triggerEdit($event)"></ig-asset-detail>
 
                         <ng-container *ngIf="selectedReferenceItem">
                             <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
