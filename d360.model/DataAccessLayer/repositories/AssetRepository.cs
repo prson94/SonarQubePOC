@@ -3822,14 +3822,17 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
 				var transformationUids = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Select(i => i.uid).ToList();
-				int totalUseAsTransform = transformationUids.Count;
 				if (transformationUids.Contains(model.Uid))
 				{
-					totalUseAsTransform -= 1;
+					reached = false;
 				}
-				if (totalUseAsTransform > useAsTransformationLimit)
+				else 
 				{
-					reached = true;
+					int totalUseAsTransform = transformationUids.Count + 1;
+					if (totalUseAsTransform > useAsTransformationLimit)
+					{
+						reached = true;
+					}
 				}
 			}
 
