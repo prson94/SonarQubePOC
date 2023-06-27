@@ -99,6 +99,27 @@ namespace d360.model.helpers.filters
 			this.tempTableInfo.TempTableQuery = "";
 			string filteredTable = $"#filtered_hierarchy_{parameterIdx}";
 
+			string filterExpression = "";
+
+			switch (@operator)
+			{
+				case "ct":
+					filterExpression = $"like @filter_{parameterIdx}";
+					break;
+				case "nct":
+					filterExpression = $"not like @filter_{parameterIdx}";
+					break;
+				case "eq":
+					filterExpression = $"= @filter_{parameterIdx}";
+					break;
+				case "ne":
+					filterExpression = $"<> @filter_{parameterIdx}";
+					break;
+				default:
+					filterExpression = $"like @filter_{parameterIdx}";
+					break;
+			}
+
 			if (keyFields.Count() == 0 || keyFields.Count() > 1)
 			{
 				this.tempTableInfo.TempTableQuery = @$"
@@ -109,7 +130,7 @@ namespace d360.model.helpers.filters
 									select a.ID from AssetType at
 									inner join Asset a on a.AssetTypeID = at.ID
 									cross apply dbo.GetAssetDisplayValueById(a.id)Val
-									where at.uid = '{uid}' and val.DisplayValue like @filter_{parameterIdx}
+									where at.uid = '{uid}' and val.DisplayValue {filterExpression}
 									option(recompile)";
 			}
 			else
@@ -120,7 +141,7 @@ namespace d360.model.helpers.filters
 
 									insert into #filtered_hierarchy_{parameterIdx} (AssetId)
 									select AssetId from Field f
-									where f.FieldTypeID = {keyFields.FirstOrDefault().FieldTypeId} and f.FormattedValue like @filter_{parameterIdx}
+									where f.FieldTypeID = {keyFields.FirstOrDefault().FieldTypeId} and f.FormattedValue {filterExpression}
 									option(recompile)";
 			}
 
