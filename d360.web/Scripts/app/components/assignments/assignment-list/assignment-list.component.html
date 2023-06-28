@@ -34,7 +34,7 @@
 														  [isSidePanel]="true"
 														  [interceptLinkClick]="true"
 														  [workflowTypeUid]="secondarySidePanelObjectUid"
-														  (close)="secondarySidePanelOpen=false;"></d3s-workflow-information>
+														  (close)="closeSecondarySidePanel()"></d3s-workflow-information>
 							</ng-container>
 							<ng-container
 								*ngIf="secondarySidePanelObjectType=='user-information' || secondarySidePanelObjectType=='asset-information'">
@@ -47,10 +47,10 @@
 												 [tooltipAlign]="'left'"
 												 [isSidePanel]="true"
 												 [interceptLinkClick]="true"
-												 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+												 (close)="closeSecondarySidePanel()"></ig-asset-detail>
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
-								<d3s-assignment-progress-step-details
+								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"
 									[workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"
 									[itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
 							</ng-container>
@@ -67,7 +67,7 @@
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
 						[(selectedPanel)]="sidePanelTab"
-						[multipleItemsSelected] = "selectedWorkflowItems?.length > 1 && (isRequestsFlow || !isAdmin)"
+						[multipleItemsSelected]="selectedWorkflowItems?.length > 1 && (isRequestsFlow || !isAdmin)"
 						[selectedItem]="selectedWorkflowItems?.[0]"
 						[selectedItemsCount]="selectedWorkflowItems?.length"
 						[extraButtons]="selectedWorkflowItems?.length > 1 && isAdmin && !isRequestsFlow  ? sidePanelMultiSelectButtons : sidePanelButtons"
@@ -83,7 +83,7 @@
 											 [workflowUid]="selectedWorkflowItems?.[0]?.workflowUid"
 											 (linkClick)="sidePanelLinkClicked($event)"
 											 *ngIf="selectedWorkflowItems?.length === 1"
-											 [showCompleteAssignment] = !isRequestsFlow
+											 [showCompleteAssignment]="!isRequestsFlow"
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
 											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>

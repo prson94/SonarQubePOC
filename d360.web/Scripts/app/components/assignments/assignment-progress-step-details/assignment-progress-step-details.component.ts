@@ -28,14 +28,15 @@ import { AssignmentFormResponseComponent } from './assignment-form-response/assi
 @Component({
 	selector: 'd3s-assignment-progress-step-details',
 	templateUrl: './assignment-progress-step-details.component.html',
-	styleUrls: ['./assignment-progress-step-details.component.less']
+	styleUrls: ['./assignment-progress-step-details.component.less'],
+	host: {
+		"(document:click)": "clickedOutside($event)",
+	},
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepUid: string;
 	@Input() workflowItemUId: string;
-	@Input() visible: boolean = true;
-	@Output() visibleChange = new EventEmitter();
-	@Output() onCloseClick = new EventEmitter();
+	@Output() close = new EventEmitter();
 	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent;
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
@@ -96,6 +97,23 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
+	clickedOutside(event: any) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+			this.close.emit();
+		}
+	}
+
+	getActivityType(step: any): string {
+		if (step.ActivityType !== 0) {
+			return this.helper.activityTypeName(step.ActivityType);
+		} else {
+			return this.helper.stepTypeName(step.StepType);
+		}
+	}
+
+	openFormResponsesModal(): void {
+		this.assignmentFormResponseComponent.openModal(this.step)
+	}
 
 	private getBulkReassignments(reassignments: WorkflowStepReassignment[]): WorkflowStepReassignment[] {
 		return reassignments.filter((r: WorkflowStepReassignment) => r.IsBulkReassignment);
@@ -111,17 +129,5 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		} else {
 			return null;
 		}
-	}
-
-	getActivityType(step: any): string {
-		if (step.ActivityType !== 0) {
-			return this.helper.activityTypeName(step.ActivityType);
-		} else {
-			return this.helper.stepTypeName(step.StepType);
-		}
-	}
-
-	openFormResponsesModal(): void {
-		this.assignmentFormResponseComponent.openModal(this.step)
 	}
 }

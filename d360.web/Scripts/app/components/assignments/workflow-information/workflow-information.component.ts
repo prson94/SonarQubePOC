@@ -5,7 +5,10 @@ import { WorkflowService } from '../../../services/workflow.service';
 @Component({
 	selector: 'd3s-workflow-information',
 	templateUrl: './workflow-information.component.html',
-	styleUrls: ['./workflow-information.component.less']
+	styleUrls: ['./workflow-information.component.less'],
+	host: {
+		"(document:click)": "clickedOutside($event)",
+	},
 })
 export class WorkflowInformationComponent implements OnInit {
 
@@ -42,6 +45,12 @@ export class WorkflowInformationComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
+	}
+
+	clickedOutside(event: any) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+			this.close.emit();
+		}
 	}
 
 	private getWorkflowTypeDetails() {
