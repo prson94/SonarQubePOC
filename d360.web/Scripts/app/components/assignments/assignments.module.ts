@@ -92,6 +92,8 @@ import { TabsModule } from '../shared/tabs/tabs.module';
 import { AssignmentHeaderComponent } from './assignment-header/assignment-header.component';
 import { PortalsModule } from '../shared/portals/portals.module';
 import { PageHeaderModule } from '../shared/page-header/page-header.module';
+import { PendingAssignmentsStepComponent } from './by-workflow-version/pending-assignments-step/pending-assignments-step.component';
+import { TilesModule } from '../shared/tiles/tiles.module';
 
 
 @NgModule({
@@ -123,39 +125,41 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 		WorkflowInformationGeneralComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent
+		WorkflowVersionInformationComponent,
+  PendingAssignmentsStepComponent
 	],
-	imports: [
-		AdvancedFiltersModule,
-		AngularSplitModule,
-		AssetDetailModule,
-		AssignmentsRoutingModule,
-		ButtonModule,
-		CheckboxModule,
-		CommonModule,
-		CoreModule,
-		D3SColumnFilterModule,
-		D3SSortIconModule,
-		DirectivesModule,
-		FormsModule,
-		IgBadgeModule,
-		PageHeaderModule,
-		PipesModule,
-		PopupMenuModule,
-		PortalsModule,
-		PropertyGroupModule,
-		RouterModule,
-		SearchFieldModule,
-		SharedDeleteFormModule,
-		SharedGridPagingInfoModule,
-		SharedModule,
-		SidePanelModule,
-		SiteModalModule,
-		TableModule,
-		TabsModule,
-		TooltipModule,
-		WorkflowDiagramModule
-	]
+    imports: [
+        AdvancedFiltersModule,
+        AngularSplitModule,
+        AssetDetailModule,
+        AssignmentsRoutingModule,
+        ButtonModule,
+        CheckboxModule,
+        CommonModule,
+        CoreModule,
+        D3SColumnFilterModule,
+        D3SSortIconModule,
+        DirectivesModule,
+        FormsModule,
+        IgBadgeModule,
+        PageHeaderModule,
+        PipesModule,
+        PopupMenuModule,
+        PortalsModule,
+        PropertyGroupModule,
+        RouterModule,
+        SearchFieldModule,
+        SharedDeleteFormModule,
+        SharedGridPagingInfoModule,
+        SharedModule,
+        SidePanelModule,
+        SiteModalModule,
+        TableModule,
+        TabsModule,
+        TooltipModule,
+        WorkflowDiagramModule,
+        TilesModule
+    ]
 })
 export class AssignmentsModule {
 }
