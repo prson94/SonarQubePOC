@@ -282,6 +282,7 @@ namespace d360.model.DataAccessLayer
 				dbExecutionItem.Total,
 				dbExecutionItem.Processed,
 				dbExecutionItem.Error,
+				dbExecutionItem.ErrorMessage,
 				Fields = JsonConvert.DeserializeObject<dynamic>(f),
 				dbExecutionItem.StartedOn,
 				dbExecutionItem.CompletedOn,
@@ -294,7 +295,7 @@ namespace d360.model.DataAccessLayer
 		public async Task PatchCatalog(int executionId, PatchBulkCatalogRequestModel payload)
 		{
 			DataTable assetTable;
-			DataTable assetPropertyTable; 
+			DataTable assetPropertyTable;
 			DataTable relationTable;
 			DataTable relationPropertyTable;
 
@@ -329,59 +330,74 @@ namespace d360.model.DataAccessLayer
 			relationPropertyTable.Columns.Add("ObjectSourceId", typeof(string));
 			relationPropertyTable.Columns.Add("Name", typeof(string));
 			relationPropertyTable.Columns.Add("Value", typeof(string));
-			
 
-			payload.Assets.ForEach(ag =>
+			if (payload.Assets == null && payload.Relations == null)
 			{
-				ag.Items.ForEach(a =>
-				{
-					DataRow row = assetTable.NewRow();
-					row["ExecutionId"] = executionId;
-					row["Type"] = 'A';
-					row["TypeSourceId"] = ag.AssetTypeSourceId;
-					row["SourceId"] = a.SourceId;
-					assetTable.Rows.Add(row);
-
-					a.Properties.ForEach(p =>
-					{
-						DataRow propertyRow = assetPropertyTable.NewRow();
-						propertyRow["ExecutionId"] = executionId;
-						propertyRow["Type"] = 'A';
-						propertyRow["TypeSourceId"] = ag.AssetTypeSourceId;
-						propertyRow["SourceId"] = a.SourceId;
-						propertyRow["Name"] = p.Name;
-						propertyRow["Value"] = p.Value;
-						assetPropertyTable.Rows.Add(propertyRow);
-					});
-				});
-			});
-
-			payload.Relations.ForEach(rg =>
+				throw new ApplicationException("Neither asset collection nor relation collection was provided. At least one collection must be provided.");
+			}
+			else
 			{
-				rg.Items.ForEach(r =>
-				{
-					DataRow row = relationTable.NewRow();
-					row["ExecutionId"] = executionId;
-					row["Type"] = 'R';
-					row["TypeSourceId"] = rg.RelationTypeSourceId;
-					row["SubjectSourceId"] = r.SubjectSourceId;
-					row["ObjectSourceId"] = r.ObjectSourceId;
-					relationTable.Rows.Add(row);
-
-					r.Properties.ForEach(p =>
+				if (payload.Assets != null)
+				{ 
+					payload.Assets.ForEach(ag =>
 					{
-						DataRow propertyRow = relationPropertyTable.NewRow();
-						propertyRow["ExecutionId"] = executionId;
-						propertyRow["Type"] = 'R';
-						propertyRow["TypeSourceId"] = rg.RelationTypeSourceId;
-						propertyRow["SubjectSourceId"] = r.SubjectSourceId;
-						propertyRow["ObjectSourceId"] = r.ObjectSourceId;
-						propertyRow["Name"] = p.Name;
-						propertyRow["Value"] = p.Value;
-						relationPropertyTable.Rows.Add(propertyRow);
-					});
-				});
-			});
+						ag.Items.ForEach(a =>
+						{
+							DataRow row = assetTable.NewRow();
+							row["ExecutionId"] = executionId;
+							row["Type"] = 'A';
+							row["TypeSourceId"] = ag.AssetTypeSourceId;
+							row["SourceId"] = a.SourceId;
+							assetTable.Rows.Add(row);
+
+							a.Properties.ForEach(p =>
+							{
+								DataRow propertyRow = assetPropertyTable.NewRow();
+								propertyRow["ExecutionId"] = executionId;
+								propertyRow["Type"] = 'A';
+								propertyRow["TypeSourceId"] = ag.AssetTypeSourceId;
+								propertyRow["SourceId"] = a.SourceId;
+								propertyRow["Name"] = p.Name;
+								propertyRow["Value"] = p.Value;
+								assetPropertyTable.Rows.Add(propertyRow);
+							});
+						});
+					});				
+				}
+
+				if (payload.Relations != null)
+				{ 
+					payload.Relations.ForEach(rg =>
+					{
+						rg.Items.ForEach(r =>
+						{
+							DataRow row = relationTable.NewRow();
+							row["ExecutionId"] = executionId;
+							row["Type"] = 'R';
+							row["TypeSourceId"] = rg.RelationTypeSourceId;
+							row["SubjectSourceId"] = r.SubjectSourceId;
+							row["ObjectSourceId"] = r.ObjectSourceId;
+							relationTable.Rows.Add(row);
+
+							if (r.Properties != null)
+							{
+								r.Properties.ForEach(p =>
+								{
+									DataRow propertyRow = relationPropertyTable.NewRow();
+									propertyRow["ExecutionId"] = executionId;
+									propertyRow["Type"] = 'R';
+									propertyRow["TypeSourceId"] = rg.RelationTypeSourceId;
+									propertyRow["SubjectSourceId"] = r.SubjectSourceId;
+									propertyRow["ObjectSourceId"] = r.ObjectSourceId;
+									propertyRow["Name"] = p.Name;
+									propertyRow["Value"] = p.Value;
+									relationPropertyTable.Rows.Add(propertyRow);
+								});
+							}
+						});
+					});			
+				}
+			}
 
 			#endregion Data Table Generation
 
