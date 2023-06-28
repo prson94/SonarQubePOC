@@ -36,6 +36,8 @@ using System.Collections.Specialized;
 using d360.web.Utilities;
 using Newtonsoft.Json;
 using d360.web.Models.Usage;
+using System.IO.Compression;
+using System.IO.Packaging;
 
 namespace d360.web.Controllers.V2
 {
@@ -2442,6 +2444,21 @@ select	r.uid as ResourceUid,
 				{
 					try
 					{
+						try
+						{
+							var zip = Package.Open(file.InputStream);
+							var parts = zip.GetParts().Select(p => p.Uri.OriginalString);
+							var exists = parts.Any(p => p == "/DataModel");
+							if (!exists)
+							{
+								return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+							}
+						}
+						catch
+						{
+							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+						}
+
 						var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
 
 						if (importResult.ImportState == "Failed")
