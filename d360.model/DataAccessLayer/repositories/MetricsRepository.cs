@@ -2215,19 +2215,10 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -2493,10 +2484,7 @@ namespace d360.model.DataAccessLayer
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -2512,19 +2500,10 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				Company.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;

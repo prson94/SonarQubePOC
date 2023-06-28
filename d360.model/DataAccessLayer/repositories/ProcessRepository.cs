@@ -605,10 +605,7 @@ namespace d360.model.DataAccessLayer
 					{
 					}
 
-					string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = message;
-					execution.CompletedOn = DateTime.UtcNow;
-					Company.Update(execution);
+					Company.UpdateExecutionWithErrorFromException(execution, ex);
 					validationRes.Add(new ValidationError() { Error = ex.Message });
 				}
 			}

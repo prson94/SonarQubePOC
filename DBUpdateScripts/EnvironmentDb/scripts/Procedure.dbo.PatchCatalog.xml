@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.1">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.2">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -65,6 +65,42 @@ begin
 		set		T.ValueId = S.ObjectId
 		from	api.ExecutionCatalogItemProperty T
 				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.[Value] and T.[Value] is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Property validation.	
+		update	T
+		set		T.Success = 0,
+				T.Message = Val.Message
+		from	api.ExecutionCatalogItem T
+				cross apply (
+						select	string_agg(V.[Message], '; ') as [Message]
+						from	api.ExecutionCatalogItemProperty I
+								inner join FieldType S on S.ID = I.FieldTypeId 
+								cross apply (
+									select	case 
+												when S.IsRequired = 1 and I.[Value] is null then 0
+												when S.[Type] = 'System' and I.Name = 'Code' and (I.[Value] = '' or len(I.[Value]) > 250) and I.[Value] is not null then 0
+												when S.[Type] = 'Boolean' and lower(I.[Value]) not in ('true', 'false') and I.[Value] is not null then 0
+												when S.[Type] = 'Date' and TRY_PARSE(I.[Value] as datetime) is null and I.[Value] is not null then 0
+												when S.[Type] = 'DateTime' and TRY_PARSE(I.[Value] as datetime) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Decimal' and TRY_PARSE(I.[Value] as decimal) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Lookup' and I.[ValueId] is null and I.[Value] is not null then 0
+												when S.[Type] = 'Number' and TRY_PARSE(I.[Value] as bigint) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Text' and ((S.MaximumLength is not null and len(I.[Value]) > S.MaximumLength) or (S.MinimumLength is not null and len(I.[Value]) < S.MinimumLength)) and I.[Value] is not null then 0
+												when S.[Type] in ('Color', 'Path', 'ComplexRelationLookup', 'OwnershipLookup', 'Relation', 'FieldFromRelationship', 'RefListRelationship', 'JSON', 'JsonElement', 'Tag', 'Score', 'Counter') then 0
+												else null
+											end	as Success,
+											case 
+												when S.IsRequired = 1 and I.[Value] is null then S.Name + ' is required.' 
+												when S.[Type] = 'System' and I.Name = 'Code' and (I.[Value] = '' or len(I.[Value]) > 250) and I.[Value] is not null then 'Code must be 250 characters or less, and must not be empty'
+												when S.[Type] = 'Lookup' and I.ValueId is null then S.Name + ' does not contain a valid lookup value.'
+												when S.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text') then S.Name + ' [' + S.[Type] + '] field failed validation check.'
+												else S.[Name] + ' is not a supported field type ['+S.[Type]+'] for this API.'
+											end as [Message]
+								) V
+						where	I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and V.Success = 0
+						group by I.SourceId
+				) Val
+		where	T.ExecutionId = @executionId and T.[Type] = @type;
 
 		-- Capture new asset records.
 		declare @new_assets table(Id bigint, Uid uniqueidentifier, AssetTypeID int, SourceId nvarchar(500));
@@ -206,6 +242,41 @@ begin
 		set		T.ValueId = S.ObjectId
 		from	api.ExecutionCatalogItemProperty T
 				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.CodeValue and T.CodeValue is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+
+		-- Property validation.	
+		update	T
+		set		T.Success = 0,
+				T.Message = Val.Message
+		from	api.ExecutionCatalogItem T
+				cross apply (
+						select	string_agg(V.[Message], '; ') as [Message]
+						from	api.ExecutionCatalogItemProperty I
+								inner join FieldType S on S.ID = I.FieldTypeId 
+								cross apply (
+									select	case 
+												when S.IsRequired = 1 and I.[Value] is null then 0
+												when S.[Type] = 'Boolean' and lower(I.[Value]) not in ('true', 'false') and I.[Value] is not null then 0
+												when S.[Type] = 'Date' and TRY_PARSE(I.[Value] as datetime) is null and I.[Value] is not null then 0
+												when S.[Type] = 'DateTime' and TRY_PARSE(I.[Value] as datetime) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Decimal' and TRY_PARSE(I.[Value] as decimal) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Lookup' and I.[ValueId] is null and I.[Value] is not null then 0
+												when S.[Type] = 'Number' and TRY_PARSE(I.[Value] as bigint) is null and I.[Value] is not null then 0
+												when S.[Type] = 'Text' and ((S.MaximumLength is not null and len(I.[Value]) > S.MaximumLength) or (S.MinimumLength is not null and len(I.[Value]) < S.MinimumLength)) and I.[Value] is not null then 0
+												when S.[Type] in ('Color', 'Path', 'ComplexRelationLookup', 'OwnershipLookup', 'Relation', 'FieldFromRelationship', 'RefListRelationship', 'JSON', 'JsonElement', 'Tag', 'Score', 'Counter') then 0
+												else null
+											end	as Success,
+											case 
+												when S.IsRequired = 1 and I.[Value] is null then S.Name + ' is required.' 
+												when S.[Type] = 'Lookup' and I.ValueId is null then S.Name + ' does not contain a valid lookup value.'
+												when S.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Text') then S.Name + ' [' + S.[Type] + '] field failed validation check.'
+												else S.[Name] + ' is not a supported field type ['+S.[Type]+'] for this API.'
+											end as [Message]
+								) V
+						where	I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SubjectSourceId = T.SubjectSourceId and I.ObjectSourceId = T.ObjectSourceId and V.Success = 0
+						group by I.SubjectSourceId, I.ObjectSourceId
+				) Val
+		where	T.ExecutionId = @executionId and T.[Type] = @type;
+
 
 		-- Capture new relation records.
 		declare @new table(Id bigint, IntersectTypeId int, SourceId nvarchar(1000), Uid uniqueidentifier);

@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
+import { FormFeedbackStorage, getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
@@ -39,7 +39,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 	subjectLoadGrid = new Subject<void>();
 	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
 		this.subjectLoadGrid.pipe(
-			debounceTime(300))
+			debounceTime(150))
 			.subscribe(() => {
 				this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
 				this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
@@ -54,12 +54,14 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         }
 
 		if (this.igformGroup) {
+			FormFeedbackStorage.clear();
 			if (this.formFieldChangeSub) {
 				this.formFieldChangeSub.unsubscribe();
 			}
 			this.formFieldChangeSub = this.igformGroup.valueChanges.subscribe(() => {
 				this.subjectLoadGrid.next();
 			});
+			this.subjectLoadGrid.next();
         }
     }
 

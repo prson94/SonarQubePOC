@@ -3065,20 +3065,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			try
 			{
 				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -3326,20 +3316,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			try
 			{
 				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -3542,30 +3522,10 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			try
 			{
 				results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				if (execution.Error > 0)
-				{
-					var error = string.Join(",", results.Where(x => !string.IsNullOrEmpty(x.Message)).Select(x => x.Message).ToArray());
-					if (error.Length > constants.ERROR_MESSAGE_CHARACTER_LIMIT)
-					{
-						error = error.Substring(0, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					}
-					execution.ErrorMessage = error;
-				}
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
-				// TODO: Add event grid calls here.
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -3862,14 +3822,17 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				var useAsTransformationLimit = CompanyContext.GetSettingValue<int>(Setting.UseAsTransformationLimit);
 				var transformationUids = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Select(i => i.uid).ToList();
-				int totalUseAsTransform = transformationUids.Count;
 				if (transformationUids.Contains(model.Uid))
 				{
-					totalUseAsTransform -= 1;
+					reached = false;
 				}
-				if (totalUseAsTransform > useAsTransformationLimit)
+				else 
 				{
-					reached = true;
+					int totalUseAsTransform = transformationUids.Count + 1;
+					if (totalUseAsTransform > useAsTransformationLimit)
+					{
+						reached = true;
+					}
 				}
 			}
 

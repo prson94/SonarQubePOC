@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 using d360.core;
 using d360.core.entities;
@@ -1191,6 +1192,12 @@ namespace d360.model.DataAccessLayer.repositories
 							owners = string.Join(" | ", ownerships.OrderBy(o => o.ResourceName).Select(o => $"{o.ResourceName} ({o.ResponsibilityTypes})"));
 						}
 						document.SetCellValue(rowIndex, colIndex, owners.GetSafeXLSColumnValue());
+					}
+					break;
+				case "PATH":
+					if (value != null)
+					{
+						document.SetCellValue(rowIndex, colIndex, HttpUtility.HtmlDecode(valueString).GetSafeXLSColumnValue());
 					}
 					break;
 				default:

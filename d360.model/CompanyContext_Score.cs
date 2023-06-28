@@ -697,10 +697,7 @@ namespace d360.model
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				Update(execution);
+				UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			Connection.Close();
@@ -1038,12 +1035,7 @@ namespace d360.model
 					catch
 					{
 					}
-
-					string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = message;
-					execution.CompletedOn = DateTime.UtcNow;
-
-					Update(execution);
+					UpdateExecutionWithErrorFromException(execution, ex);
 				}
 				finally
 				{
@@ -3651,7 +3643,7 @@ namespace d360.model
 				}
 			}
 
-			completeApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetResult");
+			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetResult");
 
 			#region Scoring
 

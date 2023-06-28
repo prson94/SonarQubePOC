@@ -22,7 +22,7 @@
                     <a (click)="open(true);" i18n>Open in New Tab</a>
                     <ng-container *ngIf="isEditLinkVisible()">
                         |
-                        <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})" i18n>Edit</a>
+                        <a (click)="onEditClick.emit({assetUid:model.AssetUid, type:model.Object, assetTypeUid:assetTypeUID})" i18n>Edit</a>
                     </ng-container>
                 </div>
             </div>

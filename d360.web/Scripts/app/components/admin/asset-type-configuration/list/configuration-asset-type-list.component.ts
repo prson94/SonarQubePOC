@@ -1,5 +1,5 @@
 import { first as _first } from "lodash-es";
-import { ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, ViewChild } from "@angular/core";
+import { ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, QueryList, ViewChild, ViewChildren } from "@angular/core";
 import { SelectItem, TreeNode } from "primeng/api";
 import { forkJoin, Subject, Subscription } from "rxjs";
 import { AssetCount, AssetTypeClass, FlowObjectType } from "../../../../models/asset.model";
@@ -65,6 +65,59 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		private stateService: StateService,
 		private elRef: ElementRef
 	) {
+	}
+
+
+	@ViewChildren('treetableRows') tableRows: QueryList<ElementRef>;
+	@HostListener('document:keydown', ['$event'])
+    // ignore complexity codacy issue
+	// eslint-disable-next-line
+	onArrowKeysDownHandler($event: KeyboardEvent) {
+		const rowsAsArr = this.tableRows.toArray();
+		const selectedRowIndex = rowsAsArr.findIndex((elRef) => {
+			return elRef.nativeElement.classList.contains('p-highlight');
+		});
+
+		if ($event.key === 'ArrowDown') {
+			let nextIdx = selectedRowIndex + 1;
+			if (nextIdx > rowsAsArr.length - 1) {
+				nextIdx--;
+			}
+
+			const el = rowsAsArr[`${nextIdx}`];
+			if (el && nextIdx !== selectedRowIndex) {
+				el.nativeElement.click();
+				el.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+			}
+			$event.preventDefault();
+		}
+		else if ($event.key === 'ArrowUp') {
+			let nextIdx = selectedRowIndex - 1;
+			if (nextIdx < 0) {
+				nextIdx = 0;
+			}
+
+			const el = rowsAsArr[`${nextIdx}`];
+			if (el && nextIdx !== selectedRowIndex) {
+				el.nativeElement.click();
+				el.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+			}
+			$event.preventDefault();
+		}
+		else if ($event.key === 'ArrowRight') {
+			if (this.selectedRow.children.length > 0) {
+				this.selectedRow.expanded = true;
+				this.artifactTypes = [...this.artifactTypes];
+			}
+			$event.preventDefault();
+		}
+		else if ($event.key === 'ArrowLeft') {
+			if (this.selectedRow.children.length > 0) {
+				this.selectedRow.expanded = false;
+				this.artifactTypes = [...this.artifactTypes];
+			}
+			$event.preventDefault();
+		}
 	}
 
 	ngOnChanges() {
