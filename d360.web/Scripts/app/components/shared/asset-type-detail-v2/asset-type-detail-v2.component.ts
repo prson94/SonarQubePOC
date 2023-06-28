@@ -94,6 +94,9 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
 	public load(): void {
 		this.isLoading = true;
+		if (this.subscription) {
+			this.subscription.unsubscribe();
+		}
 		this.subscription =
 			forkJoin(
 				this.assetTypeService.GetAssetTypeByUid(this.uid),
