@@ -22,7 +22,8 @@
 								[setMinMaxWidth]="false"
 								[hasDetail]="false">
 						<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
-							<p>pending assignments</p>
+							<d3s-pending-assignments-step [versionStepId]=versionStepId>
+							</d3s-pending-assignments-step>
 						</ng-container>
 						<ng-container *ngIf="secondarySidePanelTab === 'information'">
 							<p>information</p>

@@ -21,6 +21,7 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	secondarySidePanelOpen: boolean = false;
 	secondarySidePanelTab: string = 'pendingAssignments'
 	selectedAssignmentByVersion: AssignmentByVersion[];
+	versionStepId: number
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,
@@ -36,7 +37,7 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	})];
 
 	secondarySidePanelButtons: SidePanelButton[] = [new SidePanelButton({
-		label: $localize`Pending Assignments on Step`,
+		label: $localize`Pending Assignments`,
 		tooltip: $localize`Pending Assignments on Step`,
 		disabledTooltip: null,
 		nothingSelectedMessage: $localize`Select a Step from the Workflow diagram to display its pending assignments`,
@@ -96,7 +97,7 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	}
 
 	nodeSelection(event: NodeModel): void {
-		console.log(event)
+		this.versionStepId = parseInt(event?.key) ?? null
 		this.secondarySidePanelOpen = true;
 	}
 }
