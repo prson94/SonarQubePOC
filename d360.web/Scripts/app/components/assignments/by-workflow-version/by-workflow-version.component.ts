@@ -6,7 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AssignmentByVersion } from '../../../models/workflow.model';
+import { AssignmentByVersion, LinkModel, NodeModel } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
 @Component({
@@ -18,6 +18,8 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;
+	secondarySidePanelOpen: boolean = false;
+	secondarySidePanelTab: string = 'pendingAssignments'
 	selectedAssignmentByVersion: AssignmentByVersion[];
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
@@ -32,6 +34,34 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 		visible: true,
 		needsSelection: true
 	})];
+
+	secondarySidePanelButtons: SidePanelButton[] = [new SidePanelButton({
+		label: $localize`Pending Assignments on Step`,
+		tooltip: $localize`Pending Assignments on Step`,
+		disabledTooltip: null,
+		nothingSelectedMessage: $localize`Select a Step from the Workflow diagram to display its pending assignments`,
+		notApplicableMessage: $localize`Pending Assignments is not available for the selected Step`,
+		multipleSelectedMessage: $localize`Select a single Step to display it’s pending assignments`,
+		key: 'pendingAssignments',
+		icon: 'fa-step-forward',
+		disabled: false,
+		visible: true,
+		needsSelection: true
+	}),
+		new SidePanelButton({
+			label: $localize`Workflow Step Information`,
+			tooltip: $localize`Workflow Step Information`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Select a Step from the Workflow diagram to display its information`,
+			notApplicableMessage: $localize`Information data is not available for the selected Step`,
+			multipleSelectedMessage: $localize`Select a single Step to display it’s information`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: true
+		})
+	];
 
 	constructor(
 		public sidePanelService: SidePanelService,
@@ -63,5 +93,10 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 
 	getSidePanelMinWidth(): number {
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
+	}
+
+	nodeSelection(event: NodeModel): void {
+		console.log(event)
+		this.secondarySidePanelOpen = true;
 	}
 }

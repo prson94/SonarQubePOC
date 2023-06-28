@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { WorkflowDiagramModel } from "../../../../../models/workflow.model";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { LinkModel, NodeModel, WorkflowDiagramModel } from '../../../../../models/workflow.model';
 import { WorkflowService } from '../../../../../services/workflow.service';
 
 @Component({
@@ -12,6 +12,7 @@ export class WorkflowPendingAssignmentsComponent {
 	version: number;
 	private id: number = 0;
 	private uid: string = '00000000-0000-0000-0000-000000000000';
+	@Output() nodeSelection: EventEmitter<NodeModel> = new EventEmitter<NodeModel>()
 
 	@Input() set workflowTypeId(value: number) {
 		if (value) {
@@ -46,4 +47,9 @@ export class WorkflowPendingAssignmentsComponent {
 			this.workflowDiagramModel = response;
 		});
 	}
+
+	onNodeClick(event: NodeModel) {
+		this.nodeSelection.emit(event)
+	}
+
 }

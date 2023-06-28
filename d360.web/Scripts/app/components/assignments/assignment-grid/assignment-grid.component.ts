@@ -5,7 +5,7 @@ import { WorkflowMonitorService } from '../../../services/workflowmonitor.servic
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AuthenticationService } from '../../../services/authentication.service';
-import { map, takeUntil } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -64,26 +64,16 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteAssignments.bind(this);
+		this.settingsService.getUserVariables().subscribe((res) => {
+			this.currentResourceUid = res.CurrentResourceUid;
+			this.loadData();
+		});
 	}
 
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
-		this.settingsService.getUserVariables().subscribe((res) => {
-			this.currentResourceUid = res.CurrentResourceUid;
-			this.setRowsPerPage();
-		});
 		this.createFilterFields();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
-	}
-
-	setRowsPerPage(): void {
-		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
-			takeUntil(this.destroy)
-		).subscribe((rowsPerPage) => {
-			this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
-			this.isLoading = true;
-			this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
-		});
 	}
 
 	ngOnDestroy(): void {
@@ -110,6 +100,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	private loadData(): void {
+		if (!this.currentResourceUid) {
+			return;
+		}
 		this.isLoading = true;
 		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		let sources: Observable<any>[] = [
@@ -158,6 +151,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	onSimpleSearch(event: any): void {
+		this.currentPageNumber = 1;
 		this.loadData();
 	}
 
@@ -288,6 +282,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	onFiltersLoaded(): void {
+		this.currentPageNumber = 1;
 		this.loadData();
 	}
 
@@ -300,6 +295,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.singleActionTypeUidFilter = advancedFilterData[i].value && advancedFilterData[i].value[0]?.value;
 			}
 		}
+		this.currentPageNumber = 1;
 		this.loadData();
 	}
 

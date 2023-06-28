@@ -79,6 +79,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
+	@Output() onNodeClick: EventEmitter<NodeModel> = new EventEmitter();
     @ViewChild('workflowDiagram', { static: true }) diagramRef;
     @ViewChild('workflowPalette', { static: true }) paletteRef;
 
@@ -239,6 +240,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.diagram.addDiagramListener('ChangedSelection', (e) => this.ChangedSelection(e));
+		this.diagram.addDiagramListener('ObjectSingleClicked',(e) => this.ObjectSingleClicked(e))
         this.diagram.addDiagramListener('LinkDrawn', (e) => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
         this.diagram.addDiagramListener('ExternalObjectsDropped', (e) => this.ExternalObjectsDropped(e));
@@ -1682,6 +1684,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.layout.invalidateLayout();
         this.diagram.requestUpdate();
     }
+
+	private ObjectSingleClicked(e: any) {
+		let part = e.subject.part;
+		if (part instanceof go.Node) {
+			this.onNodeClick.emit(part.data);
+		}
+	}
 
     private ChangedSelection(e: any) {
         let sel = e.diagram.selection;

@@ -3,7 +3,7 @@
 	<ig-property-group title="Pending Assignments" [shouldBePadded]="false" [showHeaderLine]="false" [expanded]="true">
 		<div readonly>
 			<d3s-workflow-diagram *ngIf="workflowDiagramModel" [hasHeader]="false" [readonly]="true"
-								  [isSidePanel]="true" [model]="workflowDiagramModel"
+								  [isSidePanel]="true" [model]="workflowDiagramModel" (onNodeClick)="onNodeClick($event)"
 								  [hasMenu]="false" [hasZoomButtons]="true"></d3s-workflow-diagram>
 		</div>
 	</ig-property-group>

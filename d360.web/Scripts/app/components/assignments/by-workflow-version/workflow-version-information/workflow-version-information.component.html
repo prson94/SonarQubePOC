@@ -1,5 +1,5 @@
 <div class="asset-detail">
 	<d3s-workflow-version-details [assignmentByVersion]="assignmentByVersion"></d3s-workflow-version-details>
-	<d3s-workflow-pending-assignments [workflowTypeUid]="assignmentByVersion?.WorkflowTypeUid"
+	<d3s-workflow-pending-assignments [workflowTypeUid]="assignmentByVersion?.WorkflowTypeUid" (nodeSelection)="stepSelection($event)"
 									  [workflowTypeVersion]="assignmentByVersion?.Version"></d3s-workflow-pending-assignments>
 </div>

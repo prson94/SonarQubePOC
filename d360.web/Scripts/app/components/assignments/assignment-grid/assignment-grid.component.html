@@ -45,6 +45,7 @@
 				 selectionMode="multiple"
 				 [metaKeySelection]="true"
 				 [lazy]="true"
+				 [first]="(currentPageNumber-1) * rowsPerPage"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
 				 [pageLinks]="3"
@@ -82,7 +83,10 @@
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
 					</th>
-					<th i18n>Assignee</th>
+					<th [pSortableColumn]="'assigneesJson'">
+						<ng-container i18n>Assignee</ng-container>
+						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
+					</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>

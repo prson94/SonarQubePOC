@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AssignmentByVersion } from '../../../../models/workflow.model';
+import { AssignmentByVersion, LinkModel, NodeModel } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-version-information',
@@ -11,4 +11,9 @@ export class WorkflowVersionInformationComponent {
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
 
 	@Input() assignmentByVersion: AssignmentByVersion;
+	@Output() nodeSelection: EventEmitter<NodeModel> = new EventEmitter<NodeModel>()
+
+	stepSelection(event: NodeModel) : void {
+		this.nodeSelection.emit(event)
+	}
 }
