@@ -316,7 +316,8 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				await CompanyContext.UpsertDataProfilesAsync(DataProfileUpsertModels, execution, isInsert);
-				results = await CompanyContext.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
+				var sql = "select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+				results = CompanyContext.Query<DataProfileUpsertResponse>(sql, new { execution.ExecutionID }).ToList();
 
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);

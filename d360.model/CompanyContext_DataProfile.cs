@@ -33,8 +33,6 @@ namespace d360.model
 
 		Task DeleteDataProfilesAsync(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
 		
-		Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId);
-		
 		Task<List<DataProfileDeleteResponse>> GetExecutionDeleteDataProfileResultsAsync(Guid executionId);
 		
 		Task UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
@@ -424,13 +422,6 @@ namespace d360.model
 
 			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeleteAssetDataProfile");
 			Connection.CloseIfOpened();
-		}
-
-		public async Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId)
-		{
-			var sql = "select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
-			var qry = await Connection.QueryAsync<DataProfileUpsertResponse>(sql, new { executionId });
-			return qry.ToList();
 		}
 
 		public async Task<List<DataProfileDeleteResponse>> GetExecutionDeleteDataProfileResultsAsync(Guid executionId)
