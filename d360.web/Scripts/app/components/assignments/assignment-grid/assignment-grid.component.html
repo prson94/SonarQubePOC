@@ -50,6 +50,7 @@
 				 [scrollable]="true"
 				 [pageLinks]="3"
 				 [paginator]="true"
+				 sortField="StartedOn" [sortOrder]="-1"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
 				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
