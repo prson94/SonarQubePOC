@@ -9,6 +9,14 @@
 		</div>
 	</div>
 	<div class="asset-detail-tabs">
+
+		<button igButton type="button"
+				*ngIf="showCompleteAssignment && step?.ItemSettings?.hasPendingForms && step?.IsAssignedLoginUser"
+				class="ig-button-primary complete-assignment"
+				(click)="completeAssignmentClick()" i18n
+		>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
+		</button>
+
 		<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<div class="row">

@@ -51,8 +51,9 @@
 							</ng-container>
 							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
 								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"
-									[workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"
-									[itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
+																	  [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"
+																	  (completeAssignment)="completeAssignmentComponent.openModal($event)"
+																	  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
 							</ng-container>
 						</div>
 					</div>

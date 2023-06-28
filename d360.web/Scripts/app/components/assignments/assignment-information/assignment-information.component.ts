@@ -9,6 +9,7 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 })
 export class AssignmentInformationComponent implements OnInit {
 	@Input() assignmentItem: AssignmentItem;
+	@Input() showCompleteAssignment: boolean = true;
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
 		stepUid: string,

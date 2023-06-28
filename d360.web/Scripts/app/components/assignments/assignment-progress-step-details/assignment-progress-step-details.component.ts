@@ -30,14 +30,26 @@ import { AssignmentFormResponseComponent } from './assignment-form-response/assi
 	templateUrl: './assignment-progress-step-details.component.html',
 	styleUrls: ['./assignment-progress-step-details.component.less'],
 	host: {
-		"(document:click)": "clickedOutside($event)",
-	},
+		'(document:click)': 'clickedOutside($event)'
+	}
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepUid: string;
 	@Input() workflowItemUId: string;
+	@Input() showCompleteAssignment: boolean = true;
 	@Output() close = new EventEmitter();
+	@Output() completeAssignment: EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}> = new EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}>();
+
 	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent;
+
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
 	viewFormResponses: string = '';
@@ -47,6 +59,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	WorkflowActivityType = WorkflowActivityType;
 	WorkflowChangeType = WorkflowChangeType;
 	helper = WorkflowHelpers;
+
 
 	constructor(
 		private responsibilityService: ResponsibilityTypeService,
@@ -98,7 +111,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	clickedOutside(event: any) {
-		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains('secondary-side-panel')).length > 0)) {
 			this.close.emit();
 		}
 	}
@@ -112,7 +125,15 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	openFormResponsesModal(): void {
-		this.assignmentFormResponseComponent.openModal(this.step)
+		this.assignmentFormResponseComponent.openModal(this.step);
+	}
+
+	completeAssignmentClick(): void {
+		this.completeAssignment.emit({
+			workflowItemUid: this.workflowItemUId,
+			stepUid: this.itemStepUid,
+			assetId: this.step.ObjectID
+		});
 	}
 
 	private getBulkReassignments(reassignments: WorkflowStepReassignment[]): WorkflowStepReassignment[] {
