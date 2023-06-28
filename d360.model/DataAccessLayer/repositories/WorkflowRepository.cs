@@ -447,7 +447,7 @@ namespace d360.model.DataAccessLayer
 
 			var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
 			var assignments = CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
-			
+
 			return assignments;
 		}
 
@@ -667,7 +667,7 @@ namespace d360.model.DataAccessLayer
 								.FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
 							var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
 							var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
-							
+
 							switch (fieldtype)
 							{
 								case "date":
@@ -1029,7 +1029,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
 				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid)
+				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid),
+				new DefaultFilter("initiatingobjecttype", "IOT.initiatingObjectType", SqlFieldType.Text)
 			};
 
 			var orderFieldOptions = new List<DefaultFilter>
@@ -1040,27 +1041,28 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("completedOn", "AssignmentList.CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
 				new DefaultFilter("displayPath", "AssignmentList.DisplayPath", SqlFieldType.Text),
-				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text)
+				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text),
+				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text)
 			};
 
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatorUid"))
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
 			{
-				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatorUid").Value;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_initiatoruid").Value;
 				if (Guid.TryParse(value, out Guid initiatorUid))
 				{
 					conditions.Add("WA.initiatorUid = @initiatorUid");
 					dbArgs.Add("@initiatorUid", initiatorUid);
 				}
 			}
-			
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
-			}			
+			}
 
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))			
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
 			{
-				var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;								
+				var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
 
 				if (!string.IsNullOrEmpty(filterValue))
 				{
@@ -1081,14 +1083,14 @@ namespace d360.model.DataAccessLayer
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count > 0)
 						{
 							hasActionFilter = true;
-							
+
 							if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count == 1 && filterValue.Substring(filterValue.ToLower().IndexOf("actiontypeuid") + 13).TrimStart().StartsWith("eq"))
 							{
 								var actionFilter = advFilterStatements.Where(f => f.Contains("IT.uid")).FirstOrDefault();
 								var startIndex = actionFilter.IndexOf("@", actionFilter.IndexOf("IT.uid"));
 								if (startIndex > 0)
 								{
-									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 || actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex) ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);                                    
+									var endIndex = actionFilter.IndexOf(" ", startIndex) == -1 || actionFilter.IndexOf(")", startIndex) < actionFilter.IndexOf(" ", startIndex) ? actionFilter.IndexOf(")", startIndex) - 1 : actionFilter.IndexOf(" ", startIndex);
 									var filterID = actionFilter.Substring(startIndex + 1, endIndex - startIndex);
 									var actionTypeUid = advFilterArgs.Get<string>(filterID.Trim());
 
@@ -1139,12 +1141,12 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ {(hasActionFilter ? "WA" : "AssignmentList")}.[StartedOn] AS datetime)");
-			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "asc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
 			int pageSize = CompanyContext.ParsePageSize(queryParams);
-			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);					
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
 			if (!string.IsNullOrWhiteSpace(simpleFilter))
 			{
@@ -1153,7 +1155,7 @@ namespace d360.model.DataAccessLayer
 				{
 					dbArgs.AddDynamicParams(simpleFilterArgs);
 
-					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");			
+					conditions.Add(" ( " + string.Join(" or ", simpleFilterStatements) + ") ");
 				}
 			}
 
@@ -1162,7 +1164,7 @@ namespace d360.model.DataAccessLayer
 			if (conditions.Any())
 			{
 				whereConditions = " where " + string.Join(" and ", conditions);
-				whereConditions = whereConditions.Trim();				
+				whereConditions = whereConditions.Trim();
 			}
 
 			var classCaseStatements = new List<string>();
@@ -1175,6 +1177,23 @@ namespace d360.model.DataAccessLayer
 			var classSQL = $@"CASE {string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as initiatingObjectType";
+
+			var assigneesSql = $@"OUTER APPLY
+							(
+								SELECT 
+								(
+									SELECT 
+										GR1.FirstName + ' ' + GR1.LastName as [Name], 
+										uid  
+									FROM
+										workflow.ItemAssignment IA1 
+										INNER JOIN 
+										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
+									WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
+									ORDER BY (GR1.FirstName + ' ' + GR1.LastName) asc
+									FOR JSON PATH
+								) as value
+							) AssignedUsers";
 
 			var coreSelects = $@"select 
 										WI.uid as workflowItemUid, 
@@ -1198,7 +1217,7 @@ namespace d360.model.DataAccessLayer
 															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
 															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
 															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
-			
+
 			var actionSelects = $@"WA.workflowItemUid, 
 								WA.workflowUid, 
 								WA.workflowName,
@@ -1214,7 +1233,7 @@ namespace d360.model.DataAccessLayer
 								AP.DisplayPath as assetPath,
 								AssignedUsers.value as assigneesJson,
 								I.uid as actionUid,
-								'Action' as initiatingObjectType,
+								IOT.initiatingObjectType,
 								IT.Name as initiatingObjectTypeName
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
@@ -1233,7 +1252,7 @@ namespace d360.model.DataAccessLayer
 							AP.DisplayPath as assetPath,
 							AssignedUsers.value as assigneesJson,
 							null as actionUid, 
-							{classSQL},
+							IOT.initiatingObjectType,
 							AST.Name as initiatingObjectTypeName
 							";
 
@@ -1251,21 +1270,8 @@ namespace d360.model.DataAccessLayer
 							AssetType AST on AST.ID = A.AssetTypeID						
 							LEFT JOIN 
 							AssetDisplayValue ADV on A.id = ADV.AssetID
-							OUTER APPLY
-							(
-								SELECT 
-								(
-									SELECT 
-										GR1.FirstName + ' ' + GR1.LastName as [Name], 
-										uid  
-									FROM
-										workflow.ItemAssignment IA1 
-										INNER JOIN 
-										reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
-									WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
-									FOR JSON PATH
-								) as value
-							) AssignedUsers
+							OUTER APPLY (select 'Action' as initiatingObjectType)IOT
+							{assigneesSql}
 						{string.Join("\n", fieldJoins.GetStatements())}
 						{whereConditions}";
 
@@ -1279,21 +1285,8 @@ namespace d360.model.DataAccessLayer
 								AssetType AST on AST.ID = A.AssetTypeID
 								INNER JOIN 
 								AssetDisplayValue ADV on A.id = ADV.AssetID
-								OUTER APPLY
-								(
-									SELECT 
-									(
-										SELECT 
-											GR1.FirstName + ' ' + GR1.LastName as [Name], 
-											uid  
-										FROM
-											workflow.ItemAssignment IA1 
-											INNER JOIN 
-											reporting.Global_Resource GR1 on resourceObject = 'Resource' and GR1.ResourceID=IA1.ResourceObjectID
-										WHERE IA1.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null
-										FOR JSON PATH
-									) as value
-								) AssignedUsers
+								OUTER APPLY (select {classSQL})IOT
+								{assigneesSql}
 								outer apply (
 									select 
 										null as uid  										
@@ -1309,6 +1302,7 @@ namespace d360.model.DataAccessLayer
 							{assetSelects}
 							{assetJoins}";
 
+			string outerOrderBySql = orderBySql.Replace("AssignedUsers.value", "assigneesJson");
 			var sql = $@"
 						with assignments as (
 								{coreSelects}
@@ -1318,7 +1312,7 @@ namespace d360.model.DataAccessLayer
 							
 							{assigmentsSQL}
 						) AssignmentList
-						{orderBySql}
+						{outerOrderBySql}
 						{offset}";
 
 			var countSQL = $@"							
@@ -1355,7 +1349,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
-		
+
 			var multiSQL = $"{sql}; {countSQL}";
 			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, dbArgs, ApiTimeout))
 			{
@@ -1365,7 +1359,7 @@ namespace d360.model.DataAccessLayer
 				assignments.pageSize = pageSize;
 			}
 
-			return assignments;		
+			return assignments;
 		}
 
 		public async Task<WorkflowItemDetails> GetWorkflowItemDetails(Guid workflowItemUid)
@@ -1375,18 +1369,18 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@workflowItemUid", workflowItemUid);
 
 			var changeTypeStatements = new List<string>();
-			
+
 			foreach (ChangeTypeInfo changeType in ChangeType.Add.GetList())
 			{
 				changeTypeStatements.Add($"when WER.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
 			}
 
-			
+
 			var changeTypeSQL = $@"CASE 
 									{string.Join(Environment.NewLine, changeTypeStatements)}
 									else 'Unknown'
 									END as ChangeType,";
-			
+
 
 			var classCaseStatements = new List<string>();
 
@@ -1395,12 +1389,12 @@ namespace d360.model.DataAccessLayer
 				classCaseStatements.Add($"when class = {(int)assetClass.ID} then '{assetClass.Name}'");
 			}
 
-			
+
 			var classSQL = $@"CASE when I.ID is not null then 'Action'
 								{string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as InitiatingObjectType";
-						
+
 
 			string sql = $@"
 						 SELECT 
@@ -1427,15 +1421,15 @@ namespace d360.model.DataAccessLayer
 						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
 						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
 						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object=A.object and WI.ObjectID= A.objectID)
+						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object = A.object and WI.ObjectID = A.objectID) or (WI.Object = 'Issue' and A.Id = I.AssetId)
 						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
 						left join workflow.EventRegistration WER on T.ID = WER.TypeID and (WER.AssetTypeID = AST.ID or WER.IssueTypeID = iT.ID)
 						LEFT JOIN AssetPath AP on A.ID=AP.ID
 						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
 						where WI.UID = @workflowItemUid";
-			
+
 			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);
-		}		
+		}
 
 		public async Task<IEnumerable<dynamic>> GetPossibleAssignees()
 		{
@@ -1517,11 +1511,11 @@ namespace d360.model.DataAccessLayer
 			var results = await CompanyContext.QueryAsync(sql);
 
 			return results;
-		}		
+		}
 
 		public async Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			var dbArgs = new DynamicParameters();			
+			var dbArgs = new DynamicParameters();
 
 			List<string> conditions = new List<string>();
 			string simpleFilter = "";
@@ -1562,7 +1556,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrWhiteSpace(simpleFilter))
 			{
-				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, new List<DefaultFilter>	{new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text) }, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
+				CompanyContext.ParseSimpleFilterQueryParameter(queryParams, new List<DefaultFilter> { new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text) }, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
 				if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
 				{
 					dbArgs.AddDynamicParams(simpleFilterArgs);
@@ -1599,8 +1593,8 @@ namespace d360.model.DataAccessLayer
 
 			var coreJoinSQL = $@"workflow.Type WT
 							inner join
-							workflow.Version WV on WV.TypeID = wt.ID and wt.State <> 3";					
-			
+							workflow.Version WV on WV.TypeID = wt.ID and wt.State <> 3";
+
 			var itemJoinSQL = $@"{coreJoinSQL}
 								inner join 
 								workflow.EventRegistration WER on WER.TypeID = WT.ID
@@ -1644,6 +1638,27 @@ namespace d360.model.DataAccessLayer
 				assignments.total = multi.Read<int>().First();
 				assignments.pageNum = pageNum;
 				assignments.pageSize = pageSize;
+			}
+
+			if (assignments.items != null)
+			{
+				var classes = AssetTypeClass.BusinessAsset.GetAsList();
+				var changeTypes = ChangeType.Add.GetList();
+
+				foreach (var assignment in assignments.items)
+				{
+					if (!string.IsNullOrEmpty(assignment.InitiatingObjectType))
+					{
+						var cs = classes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.InitiatingObjectType);
+						assignment.InitiatingObjectType = cs?.Name;
+					}
+
+					if (!string.IsNullOrEmpty(assignment.ChangeType))
+					{
+						var ct = changeTypes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.ChangeType);
+						assignment.ChangeType = ct?.Name;
+					}
+				}
 			}
 
 			return assignments;

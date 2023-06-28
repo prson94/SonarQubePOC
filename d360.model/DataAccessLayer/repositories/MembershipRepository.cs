@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.enums;
@@ -17,12 +7,16 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
-using d360.model.helpers;
 using d360.model.helpers.filters;
-
 using Dapper;
-
-using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
@@ -262,11 +256,7 @@ namespace d360.model.DataAccessLayer
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 				return new WorkHttpStatus(HttpStatusCode.InternalServerError, AssetTypeErrors.InternalServerError, MemberShipErrors.InternalServerErrorMsg);
 			}
 
@@ -281,21 +271,12 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = await ProcessUpsertUsers(execution, users, lookupFieldsPassedByValue, isInsert, IsChangePasswordReqeust).ConfigureAwait(false);
-
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-
-				throw;
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				throw ex;
 			}
-			execution.CompletedOn = DateTime.UtcNow;
-			execution.Error = results.Count(r => r.Success == false);
-			execution.Processed = results.Count(r => r.Success == true);
-			CompanyContext.Update(execution);
 
 			return results;
 		}
@@ -1303,7 +1284,7 @@ namespace d360.model.DataAccessLayer
 
 					trans.Commit();
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
 					try
 					{
@@ -1315,12 +1296,8 @@ namespace d360.model.DataAccessLayer
 					catch
 					{
 					}
-
-					execution.ErrorMessage += ";Audit Log creation failed";
-					execution.CompletedOn = DateTime.UtcNow;
-					CompanyContext.Update(execution);
-
-					throw;
+					CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+					throw ex;
 				}
 			}
 
@@ -1357,6 +1334,8 @@ namespace d360.model.DataAccessLayer
 								begin = 0,
 								end = itemNumber
 							});
+
+			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionUser");
 
 			return results;
 		}
@@ -1395,19 +1374,11 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.UpdateGroups(execution, groups);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionGroup");
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1420,19 +1391,11 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.UpdateGroups(execution, groups);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionGroup");
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1447,19 +1410,11 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.DeleteGroups(execution, groups);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedGroup");
 			}
 			catch (Exception ex)
 			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
