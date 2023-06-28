@@ -308,6 +308,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				string baseSql = "";
+				string TempTableSql = "";
 
 				if (isAssetType)
 				{
@@ -332,7 +333,15 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					baseSql = GetBaseAuditQueryForUid();
+					TempTableSql = GetBaseAuditQueryForUid();
+					baseSql = $@"
+								select uid, name, resourceUid, resourceName,
+									[date], action, actionAssetUid, actionAssetTypeUid,
+									ActionObject, actionObjectTypeName, actionObjectName,
+									actionDescription, Field, NewValue, Class,
+									[Version], PreviousValue, FieldType
+								from #finaldata
+								";
 				}
 
 				dbArgs.Add("uid", assetUid);
@@ -369,6 +378,7 @@ namespace d360.web.Controllers.V2
 							";
 
 				var getAllQuery = $@"
+				{TempTableSql}
 				drop table if exists #tempAuditData;
 
 				select *
@@ -829,81 +839,13 @@ namespace d360.web.Controllers.V2
 		private string GetBaseAuditQueryForUid()
 		{
 			//This query should generally match the one in GetBaseAuditQueryForId except UID columns are returned instead of Object/id same
-			string querySql = $@"select
-				ad.uid,
-				ad.DisplayValue as name,
-				r.uid as resourceUid,
-				CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
-					R.FirstName + ' ' + R.LastName + ' (deleted)'
-				ELSE
-					R.FirstName + ' ' + R.LastName
-				END as resourceName,
-				ga.Date as date,
-				ga.action,
-				ActionA.uid as actionAssetUid,
-				ActionAT.uid as actionAssetTypeUid,
-				case when ga.ActionObject = 'Intersect' then 'Relationship'
-					 when ga.ActionObject = 'IntersectType' then 'RelationshipType'
-					 else ga.ActionObject end ActionObject,
-				ActionData.actionObjectTypeName,
-				ActionData.actionObjectName,
-				ActionData.actionDescription,
-				fa.FieldName as Field,
-				CASE WHEN ga.Action = 'Tag Consolidate' THEN
-					ga.ObjectName
-				ELSE
-					fa.Value
-				END as NewValue,
-				coalesce(AT.Class, AD.AssetTypeClass) as Class,
-				fa.[Version] as 'Version',
-				CASE 
-				WHEN ga.Action  = 'Tag Consolidate' THEN
-					ga.ActionObjectName
-				WHEN ga.ActionObject='Semantic' AND ga.Action = 'Updated' THEN
-					fa.PreviousValue
-				ELSE
-					(select top 1 fa_sub.value as 'value'
-					from reporting.global_fieldaudit fa_sub
-					inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
-					where ga_sub.[object] = ga.[object] 
-					and ga_sub.[objectid] = ga.[objectid] 
-					and fa_sub.version = (fa.Version - 1) 
-					and fa_sub.fieldname = fa.FieldName 
-					and fa_sub.fieldtypeid = fa.FieldTypeId 
-					and ga_sub.actionObjectId=ga.actionObjectId)
-				END AS 'PreviousValue',
-				ft.[Type] as FieldType
-			from reporting.global_audit ga
-			left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
-			inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-			left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
-			left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
-			left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
-			left join FieldType FT on FT.ID = fa.FieldTypeID
-			outer apply (
-				select 
-				case 
-					when ga.ActionObjectTypeName = 'Intersect Type' 
-						then 'Relationship Type' 
-					else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName) 
-				end as actionObjectTypeName,
-				coalesce (ObjectName.Name, ga.actionObjectName) as actionObjectName,
-				case when O.ID > 0
-					then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, ga.ActionObjectTypeName)  + ' ' + R.Action
-					else ga.ActionDescription
-				end as actionDescription
-				from reporting.global_audit r
-					left join [Intersect] O on R.ActionObject = 'Intersect' and O.ID = r.ActionObjectID
-					left join IntersectTypeDetail T on T.ID = O.IntersectTypeID
-					outer apply (SELECT  COALESCE(S_A.DisplayValue, 'Map') + ' / ' + COALESCE(O_A.DisplayValue,O_AT.Name, 'Map') as Name
-								FROM  [Intersecttype] IT
-								left outer join AssetDisplayValue S_A On S_A.AssetID = O.SubjectAssetID
-								left outer join AssetDisplayValue O_A On O_A.AssetID = O.ObjectAssetID
-								left outer join AssetType O_AT On O_AT.ID = O.ObjectAssetTypeID  and IT.ObjectAssetTypeID = 0 and IT.ObjectClass = {(int)AssetTypeClass.ReferenceItemType}
-								WHERE  	IT.ID = O.IntersecttypeID ) ObjectName
-				where r.ID = ga.ID
-			)ActionData
-			inner join  (
+			string querySql = $@"
+
+				drop table if exists #ad_data;
+
+				select a.*
+				into #ad_data
+				from (
 				select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = @uid
 				union
 				select uid, value as DisplayName, 'Tag' as Object, id as ObjectID, 11 as AssetTypeClass from Tag where uid = @uid
@@ -923,7 +865,147 @@ namespace d360.web.Controllers.V2
 				select uid, name as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Semantic] where uid = @uid 
 				union 
 				select uid, name as DisplayName, 'Theme' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Theme] where uid = @uid 
-			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
+				) a;
+
+				drop table if exists #finaldata;
+
+				select
+				ga.objectid ga_objectid,
+				ga.object ga_object,
+				ga.ID ga_id,
+				ga.actionObjectId ga_actionObjectId,
+				ga.ActionObjectTypeName ga_ActionObjectTypeName,
+				ga.actionObjectName ga_actionObjectName,
+				ga.ActionDescription ga_ActionDescription,
+				ga.ActionObject ga_ActionObject,
+				ad.uid,
+				ad.DisplayValue as name,
+				r.uid as resourceUid,
+				CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
+					R.FirstName + ' ' + R.LastName + ' (deleted)'
+				ELSE
+					R.FirstName + ' ' + R.LastName
+				END as resourceName,
+				ga.Date as date,
+				ga.action,
+				ActionA.uid as actionAssetUid,
+				ActionAT.uid as actionAssetTypeUid,
+				case when ga.ActionObject = 'Intersect' then 'Relationship'
+					 when ga.ActionObject = 'IntersectType' then 'RelationshipType'
+					 else ga.ActionObject end ActionObject,
+				cast(null as nvarchar(250)) actionObjectTypeName,
+				cast(null as nvarchar(250)) actionObjectName,
+				cast(null as nvarchar(4000)) actionDescription,
+				fa.FieldName as Field,
+				fa.FieldTypeID as fa_FieldtypeID,
+				CASE WHEN ga.Action = 'Tag Consolidate' THEN
+					ga.ObjectName
+				ELSE
+					fa.Value
+				END as NewValue,
+				coalesce(AT.Class, AD.AssetTypeClass) as Class,
+				fa.[Version] as 'Version',
+				CASE 
+				WHEN ga.Action  = 'Tag Consolidate' THEN
+					ga.ActionObjectName
+				WHEN ga.ActionObject='Semantic' AND ga.Action = 'Updated' THEN
+					fa.PreviousValue
+				ELSE
+					cast('<Null>' as nvarchar(max))
+				END AS 'PreviousValue',
+				ft.[Type] as FieldType
+			into #finaldata
+			from #ad_data AD
+			inner join reporting.global_audit ga on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid
+			left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+			inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+			left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
+			left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
+			left join FieldType FT on FT.ID = fa.FieldTypeID;
+
+			if exists (select 1 from #finaldata r where R.ga_actionObject = 'Intersect' )
+				begin
+					drop table if exists #tempActionData;
+
+					select 
+					r.ga_id,
+					max(case 
+						when r.ga_ActionObjectTypeName = 'Intersect Type'
+							then 'Relationship Type' 
+						else coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, r.ga_ActionObjectTypeName) 
+					end) as actionObjectTypeName,
+					max(coalesce (ObjectName.Name, r.ga_actionObjectName)) as actionObjectName,
+					max(case when O.ID > 0
+						then coalesce(T.SubjectName + ' [' + T.PredicateName + '] ' + T.ObjectName, r.ga_ActionObjectTypeName)  + ' ' + R.Action
+						else r.ga_ActionDescription
+					end) as actionDescription
+					into #tempActionData
+					from #finaldata r
+						left join [Intersect] O on R.ga_actionObject = 'Intersect' and O.ID = r.ga_actionObjectId
+						left join IntersectTypeDetail T on T.ID = O.IntersectTypeID
+						outer apply (SELECT  COALESCE(S_A.DisplayValue, 'Map') + ' / ' + COALESCE(O_A.DisplayValue,O_AT.Name, 'Map') as Name
+									FROM  [Intersecttype] IT
+									left outer join AssetDisplayValue S_A On S_A.AssetID = O.SubjectAssetID
+									left outer join AssetDisplayValue O_A On O_A.AssetID = O.ObjectAssetID
+									left outer join AssetType O_AT On O_AT.ID = O.ObjectAssetTypeID  and IT.ObjectAssetTypeID = 0 and IT.ObjectClass = {(int)AssetTypeClass.ReferenceItemType}
+									WHERE  	IT.ID = O.IntersecttypeID ) ObjectName
+						group by r.ga_id;
+
+					update fa
+					set fa.actionObjectTypeName = cast(ActionData.actionObjectTypeName as nvarchar(250)),
+					fa.actionObjectName = cast(ActionData.actionObjectName as nvarchar(250)),
+					fa.actionDescription = cast(ActionData.actionDescription as nvarchar(4000))
+					from #finaldata fa
+					inner join #tempActionData  ActionData on fa.ga_id = ActionData.ga_id;
+				end
+			else
+				begin
+					update fa
+					set fa.actionObjectTypeName = cast(fa.ga_ActionObjectTypeName as nvarchar(250)),
+					fa.actionObjectName = cast(fa.ga_actionObjectName as nvarchar(250)),
+					fa.actionDescription = cast(fa.ga_ActionObjectTypeName + ' ' + fa.action as nvarchar(4000))
+					from #finaldata fa
+					where fa.actionObjectTypeName is null;
+				end
+
+			update fa
+			set PreviousValue = D.[value],
+			Field = D.fieldName,
+			actionDescription = D.actionDescription
+			from #finaldata fa
+			cross apply (select top 1 fa_sub.value as 'value',
+										case when fa.field = '<deleted field type>' then fa_sub.fieldname else fa.field end fieldName,
+										case when fa.field = '<deleted field type>' then replace(fa.actionDescription,'<deleted field type>', fa_sub.fieldname)  else fa.actionDescription end actionDescription
+					from reporting.global_fieldaudit fa_sub
+					inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
+					where ga_sub.[object] = fa.ga_object 
+					and ga_sub.[objectid] = fa.ga_objectid 
+					and fa_sub.version = (fa.[Version] - 1) 
+					and fa_sub.fieldtypeid = fa.fa_FieldtypeID 
+					and ga_sub.actionObjectId=fa.ga_actionObjectId) D
+			where fa.PreviousValue ='<Null>' and fa.fa_FieldtypeID > 0;
+
+
+
+			update fa
+			set PreviousValue = (select top 1 fa_sub.value as 'value'
+					from reporting.global_fieldaudit fa_sub
+					inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
+					where ga_sub.[object] = fa.ga_object 
+					and ga_sub.[objectid] = fa.ga_objectid 
+					and fa_sub.version = (fa.[Version] - 1) 
+					and fa_sub.fieldname = fa.Field 
+					and fa_sub.FieldtypeID = fa.fa_FieldtypeID 
+					and ga_sub.actionObjectId=fa.ga_actionObjectId)
+			from #finaldata fa
+			where fa.PreviousValue ='<Null>' and fa.fa_FieldtypeID = 0;
+
+			update fa
+			set PreviousValue = null
+			from #finaldata fa
+			where fa.PreviousValue ='<Null>';
+			";
 
 			return querySql;
 		}

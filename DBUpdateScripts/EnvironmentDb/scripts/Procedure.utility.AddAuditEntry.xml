@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Procedure.utility.AddAuditEntry-v24">
-  <comment>GOV-28254</comment>
+  <changeSet author="PuneetGupta" id="Procedure.utility.AddAuditEntry-v26">
+  <comment>GOV-28254,GOV-28307</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -413,7 +413,7 @@ begin
 					Value as FormattedValue, 
 					0, 
 					0 
-			from	@AuditFieldTable where [value] is not null
+			from	@AuditFieldTable where [value] is not null and [value] != ''
 		end
 	else
 		begin
@@ -529,8 +529,13 @@ begin
 			@fieldName nvarchar(250),
 			@version int,
 			@value nvarchar(max),
-			@updated bit
-	select	@max = max(ID) from @tbl
+			@updated bit,
+			@IsTabHasFieldTypeID int,
+			@IsTabUpdatedOne int
+	select	@max = max(ID),
+			@IsTabHasFieldTypeID = coalesce(max(case when FieldTypeID > 0 then 1 else 0 end),0),
+			@IsTabUpdatedOne = coalesce(max(case when Updated = 1 then 1 else 0 end),0)
+			from @tbl
 
 	-- this is the case where the last value of a field was removed and the asset remains its not the asset being deleted just an update.
 	if @Action = 'Removed' and exists(select 1 from asset where [object] = @DependentObject and [ObjectID] = @DependentObjectID)
@@ -639,7 +644,17 @@ begin
 				where t.rn = 1
 		end
 
+		Declare @IsUpdatedRecord int = 1;
+		
+		if(@Action = 'Updated' and @IsTabHasFieldTypeID = 1)
+		begin
+			set @IsUpdatedRecord = @IsTabUpdatedOne
+		end
+		
+		if (@IsUpdatedRecord = 1)
+		begin
 		insert into [reporting].[Global_Audit] values (@DependentObject, @DependentObjectID, @DependentObjectName, coalesce(@ResourceID, 0), @Date, @Action, @MainObject, @MainObjectID, @MainObjectTypeName, @MainObjectName, @MainDescription)
+		end
 		
 		select @auditID = SCOPE_IDENTITY()
 		declare @previousValue varchar(2000);
