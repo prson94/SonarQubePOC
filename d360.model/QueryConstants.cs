@@ -462,6 +462,7 @@ namespace d360.model
 		public static readonly string WorkflowVersionStepHistory = @"
 			  select 
 				IST.ID as ItemStepID, 
+				I.UID as WorkflowItemUid,
 				convert(nvarchar(max),IST.Fields) as Fields,
 				IST.StartedOn,
 				IST.CompletedOn,
