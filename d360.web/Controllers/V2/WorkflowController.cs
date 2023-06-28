@@ -465,7 +465,7 @@ namespace d360.web.Controllers.V2
 					sldoc.SaveAs(stream);
 					byte[] bytes = stream.ToArray();
 
-					return ResponseMessage(createFileResponseMessage(HttpStatusCode.OK, $"{string.Format(document.Name.GetSafeFilename(), DateTime.Now.ToString("ddd MMM dd yyyy"))}.xlsx", bytes));
+					return ResponseMessage(createFileResponseMessage(HttpStatusCode.OK, $"{string.Format(document.Name.GetSafeFilename(), DateTime.Now.ToString("ddd MMM dd yyyy"))}.xlsx".Replace(" ","_"), bytes));
 				}
 			
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
