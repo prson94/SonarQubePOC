@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-<changeSet author="MDonato" id="Table.api.ExecutionAssetDataProfile-v8">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+<changeSet author="Pappas/Gupta" id="Table.api.ExecutionAssetDataProfile-v12">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetDataProfile')
 BEGIN
 	CREATE TABLE [api].[ExecutionAssetDataProfile](
@@ -20,7 +17,7 @@ BEGIN
 		[Message] [nvarchar](2500) NULL,
 		[ExecutionItemUid] [uniqueidentifier] NULL,
 		[AssetUid] [uniqueidentifier] NOT NULL,
-		[ProfileSetDate] DATE NOT NULL,
+		[ProfileSetDate] DATETIME NOT NULL,
 		[ProfileIdentifier] NVARCHAR(200) NULL,
 		[SampleCount] BIGINT NULL,
 		[NullCount] BIGINT NULL,
@@ -53,253 +50,34 @@ BEGIN
 		[FtaVersion] NVARCHAR(32) NULL,
 		[DecimalSeparator] NCHAR(1) NULL,
 		[UniqueCount] BIGINT NULL,
-	 CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED 
-	(
-		[ExecutionID] ASC,
-		[ItemNumber] ASC
-	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
-	) ON [PRIMARY]
-END
-
-IF EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'PossibleKey'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] DROP COLUMN [PossibleKey]
+		[PopularityCount] BIGINT NULL,
+		[IsAuthorizedForPopularity] BIT NULL,
+		[SourceLastModified] DATETIME NULL,
+		[FilterCount] BIGINT NULL,
+		[Freshness] INT NULL,
+		CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED ( [ExecutionID] ASC, [ItemNumber] ASC )
+	)
 END
 
 IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'TotalCount'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [TotalCount] BIGINT NULL
-END
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'FilterCount'
+	)
+	BEGIN
+		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [FilterCount] BIGINT NULL
+	END
 
 IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'OutlierCount'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [OutlierCount] BIGINT NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'KeyConfidence'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [KeyConfidence] DECIMAL(5,4) NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'DetectionLocale'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [DetectionLocale] NVARCHAR(64) NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'FtaVersion'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [FtaVersion] NVARCHAR(32) NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'DecimalSeparator'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'ProfileIdentifier'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileIdentifier] NVARCHAR(200) NULL
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-         AND name = 'UniqueCount'
-)
-BEGIN
-    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [UniqueCount] BIGINT NULL
-END
-
-
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [RegExp] NVARCHAR(MAX);
-
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [MeanValue] FLOAT;
-
-ALTER table api.ExecutionAssetDataProfile
-ALTER COLUMN [StandardDeviation] FLOAT;
-
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'Freshness'
+	)
+	BEGIN
+		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [Freshness] INT NULL
+	END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-
-		]]>
-	</rollback>
   </changeSet>
-  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v9">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-					 AND name = 'ProfileSetDate'
-			)
-			BEGIN
 
-			ALTER TABLE [api].[ExecutionAssetDataProfile] Alter Column [ProfileSetDate] DATETIME NOT NULL
-			
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [api].[ExecutionAssetDataProfile] Alter Column [ProfileSetDate] DATE NOT NULL
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.ExecutionAssetDataProfile-v10">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-					 AND name = 'PopularityCount'
-			)
-			BEGIN
-
-				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [PopularityCount] BIGINT NULL		
-
-			END
-			
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-					 AND name = 'IsAuthorizedForPopularity'
-			)
-			BEGIN
-
-				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [IsAuthorizedForPopularity] BIT NULL
-
-			END
-			
-				
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [api].[ExecutionAssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [PopularityCount], 
-			COLUMN IF EXISTS [IsAuthorizedForPopularity]
-
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.ExecutionAssetDataProfile-v11">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-					 AND name = 'SourceLastModified'
-			)
-			BEGIN
-
-				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [SourceLastModified] DATETIME NULL
-
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [api].[ExecutionAssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [SourceLastModified], 
-
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="PuneetGupta" id="Column.dbo.ExecutionAssetDataProfile-FilterCount-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
-					 AND name = 'FilterCount'
-			)
-			BEGIN
-
-				ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [FilterCount] BIGINT NULL
-
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [api].[ExecutionAssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [FilterCount], 
-
-		]]>
-	</rollback>
-  </changeSet>  
 </databaseChangeLog>

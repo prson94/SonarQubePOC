@@ -126,6 +126,9 @@ namespace d360.core.entities
 		[DataMember]
 		public long? FilterCount { get; set; }
 
+		[DataMember]
+		public int? Freshness { get; set; }
+
 		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
 	}
@@ -146,7 +149,8 @@ namespace d360.core.entities
         public string Value { get; set; }
 
     }
-    [DataContract]
+    
+	[DataContract]
     public class DataProfileModel
     {
         [Required]
@@ -341,6 +345,9 @@ namespace d360.core.entities
 		[DataMember(Name = "filterCount")]
 		public long? FilterCount { get; set; }
 
+		[DataMember(Name = "freshness")]
+		public int? Freshness { get; set; }
+
 		public DataProfileModel() { }
 
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
@@ -383,6 +390,7 @@ namespace d360.core.entities
 			IsAuthorizedForPopularity = profile.IsAuthorizedForPopularity;
 			SourceLastModified = profile.SourceLastModified;
 			FilterCount = profile.FilterCount;
+			Freshness = profile.Freshness;
 
 			//populate sample details
 			Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>

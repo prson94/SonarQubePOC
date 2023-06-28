@@ -5,327 +5,116 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.dbo.AssetDataProfile-v13">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-	IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
-	BEGIN
-		CREATE TABLE [dbo].[AssetDataProfile](
-			[ID] BIGINT IDENTITY(1,1) NOT NULL,
-			[AssetID] BIGINT NOT NULL,
-			[ProfileSetDate] DATE NOT NULL,
-			[ProfileIdentifier] NVARCHAR(200) NULL,
-			[SampleCount] BIGINT NULL,
-			[NullCount] BIGINT NULL,
-			[BlankCount] BIGINT NULL,
-			[MeanValue] FLOAT NULL,		
-			[MinimumValue] NVARCHAR(500) NULL,
-			[MaximumValue] NVARCHAR(500) NULL,
-			[MinimumLength] INT NULL,
-			[MaximumLength] INT NULL,
-			[StandardDeviation] FLOAT NULL,		
-			[Multiline] BIT NULL,
-			[RegExp] NVARCHAR(MAX) NULL,
-			[Confidence] DECIMAL(28,4) NULL,
-			[Type] NVARCHAR(200) NULL,
-			[TypeQualifier] NVARCHAR(200) NULL,		
-			[LogicalType] BIT NULL,
-			[LeadingWhiteSpace] BIT NULL,
-			[LeadingZeroCount] INT NULL,
-			[TrailingWhiteSpace] BIT NULL,
-			[MatchCount] BIGINT NULL,
-			[OutlierCardinality] INT NULL,
-			[DataSignature] NVARCHAR(200) NULL,
-			[StructureSignature] NVARCHAR(200) NULL,
-			[Cardinality] INT NULL,
-			[ShapeCardinality] INT NULL,
-			[TotalCount] BIGINT NULL,
-			[OutlierCount] BIGINT NULL,
-			[KeyConfidence] DECIMAL(5,4) NULL,
-			[DetectionLocale] NVARCHAR(64) NULL,
-			[FtaVersion] NVARCHAR(32) NULL,
-			[DecimalSeparator] NCHAR(1) NULL,
-			[UniqueCount] BIGINT NULL,
-			[CreatedBy] INT NOT NULL,
-			[CreatedOn] DATETIME NOT NULL,
-			[UpdatedBy] INT NOT NULL,
-			[UpdatedOn] DATETIME NOT NULL,
-			CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
-			CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
-		)
-		
-		CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID], [ProfileSetDate]);
-		
-		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID]);
-		
-		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence]);
-		
-		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier]);
+  <changeSet author="Pappas/Gupta" id="Table.dbo.AssetDataProfile-v17">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
+BEGIN
+	CREATE TABLE [dbo].[AssetDataProfile](
+		[ID] BIGINT IDENTITY(1,1) NOT NULL,
+		[AssetID] BIGINT NOT NULL,
+		[ProfileSetDate] DATETIME NOT NULL,
+		[ProfileIdentifier] NVARCHAR(200) NULL,
+		[SampleCount] BIGINT NULL,
+		[NullCount] BIGINT NULL,
+		[BlankCount] BIGINT NULL,
+		[MeanValue] FLOAT NULL,		
+		[MinimumValue] NVARCHAR(500) NULL,
+		[MaximumValue] NVARCHAR(500) NULL,
+		[MinimumLength] INT NULL,
+		[MaximumLength] INT NULL,
+		[StandardDeviation] FLOAT NULL,		
+		[Multiline] BIT NULL,
+		[RegExp] NVARCHAR(MAX) NULL,
+		[Confidence] DECIMAL(28,4) NULL,
+		[Type] NVARCHAR(200) NULL,
+		[TypeQualifier] NVARCHAR(200) NULL,		
+		[LogicalType] BIT NULL,
+		[LeadingWhiteSpace] BIT NULL,
+		[LeadingZeroCount] INT NULL,
+		[TrailingWhiteSpace] BIT NULL,
+		[MatchCount] BIGINT NULL,
+		[OutlierCardinality] INT NULL,
+		[DataSignature] NVARCHAR(200) NULL,
+		[StructureSignature] NVARCHAR(200) NULL,
+		[Cardinality] INT NULL,
+		[ShapeCardinality] INT NULL,
+		[TotalCount] BIGINT NULL,
+		[OutlierCount] BIGINT NULL,
+		[KeyConfidence] DECIMAL(5,4) NULL,
+		[DetectionLocale] NVARCHAR(64) NULL,
+		[FtaVersion] NVARCHAR(32) NULL,
+		[DecimalSeparator] NCHAR(1) NULL,
+		[UniqueCount] BIGINT NULL,
+		[PopularityCount] BIGINT NULL,
+		[IsAuthorizedForPopularity] BIT NULL,
+		[SourceLastModified] DATETIME NULL,
+		[FilterCount] BIGINT NULL,
+		[Freshness] INT NULL,
+		[CreatedBy] INT NOT NULL,
+		[CreatedOn] DATETIME NOT NULL,
+		[UpdatedBy] INT NOT NULL,
+		[UpdatedOn] DATETIME NOT NULL,
+		CONSTRAINT [PK_AssetDataProfile_ID] PRIMARY KEY NONCLUSTERED ([ID]),
+		CONSTRAINT [FK_AssetDataProfile_Asset] FOREIGN KEY (AssetID) REFERENCES Asset(ID) ON DELETE CASCADE
+	)
+END
 
-		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature]);
-		
-		CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature]);
+IF NOT EXISTS (
+	SELECT 	* 
+	FROM   	sys.columns 
+	WHERE  	object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			AND name = 'FilterCount')
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [FilterCount] BIGINT NULL		
 	END
 	
-	IF EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'PossibleKey'
-	)
+IF NOT EXISTS (
+	SELECT 	* 
+	FROM   	sys.columns 
+	WHERE  	object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			AND name = 'Freshness')
 	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] DROP COLUMN [PossibleKey]
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [Freshness] INT NULL
 	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'TotalCount'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [TotalCount] BIGINT NULL
-	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'OutlierCount'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [OutlierCount] BIGINT NULL
-	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'KeyConfidence'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [KeyConfidence] DECIMAL(5,4) NULL
-	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'DetectionLocale'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [DetectionLocale] NVARCHAR(64) NULL
-	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'FtaVersion'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [FtaVersion] NVARCHAR(32) NULL
-	END
-
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'DecimalSeparator'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
-	END
-	
-	
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'ProfileIdentifier'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileIdentifier] NVARCHAR(200) NULL
-	END
-	
-	IF NOT EXISTS (
-	  SELECT * 
-	  FROM   sys.columns 
-	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-			 AND name = 'UniqueCount'
-	)
-	BEGIN
-		ALTER TABLE [dbo].[AssetDataProfile] ADD [UniqueCount] BIGINT NULL
-	END
-	
-	ALTER table dbo.AssetDataProfile
-	ALTER COLUMN [RegExp] NVARCHAR(MAX); 
-	
-	ALTER table dbo.AssetDataProfile
-	ALTER COLUMN [StandardDeviation] FLOAT; 
-	
-	ALTER table dbo.AssetDataProfile
-	ALTER COLUMN [MeanValue] FLOAT; 
-		]]>
+]]>
     </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-
-		]]>
-	</rollback>
   </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v14">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-					 AND name = 'ProfileSetDate'
-			)
-			BEGIN
 
-			DROP INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile] WITH ( ONLINE = OFF )
-
-			ALTER TABLE [dbo].[AssetDataProfile] Alter Column [ProfileSetDate] DATETIME NOT NULL
-
-			CREATE CLUSTERED INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile]
-			(
-				[AssetID] ASC,
-				[ProfileSetDate] ASC
-			)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-				
-			END
-		]]>
-    </sql>
-	<rollback>
+  <changeSet author="Pappas" id="Table.dbo.AssetDataProfile.Indices-v17">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_ProfileSetDate')
+BEGIN
+	CREATE CLUSTERED INDEX IX_AssetDataProfile_AssetID_ProfileSetDate ON dbo.AssetDataProfile ([AssetID] ASC, [ProfileSetDate] ASC)
+END
 	
-		<![CDATA[			
-		
-		DROP INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile] WITH ( ONLINE = OFF )
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID ON dbo.AssetDataProfile ([AssetID])
+END
+	
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_Confidence')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_Confidence ON dbo.AssetDataProfile ([AssetID], [Confidence])
+END
 
-		ALTER TABLE [dbo].[AssetDataProfile] Alter Column [ProfileSetDate] DATE NOT NULL
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_TypeQualifier')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_TypeQualifier ON dbo.AssetDataProfile ([AssetID], [TypeQualifier])
+END
 
-		CREATE CLUSTERED INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile]
-		(
-			[AssetID] ASC,
-			[ProfileSetDate] ASC
-		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_DataSignature')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_DataSignature ON dbo.AssetDataProfile ([AssetID], [DataSignature])
+END
 
-		]]>
-	</rollback>
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_StructureSignature')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature])
+END
+]]>
+    </sql>
   </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v15">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-					 AND name = 'PopularityCount'
-			)
-			BEGIN
 
-				ALTER TABLE [dbo].[AssetDataProfile] ADD [PopularityCount] BIGINT NULL		
-
-			END
-			
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-					 AND name = 'IsAuthorizedForPopularity'
-			)
-			BEGIN
-			
-				ALTER TABLE [dbo].[AssetDataProfile] ADD [IsAuthorizedForPopularity] BIT NULL
-
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [dbo].[AssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [PopularityCount], 
-			COLUMN IF EXISTS [IsAuthorizedForPopularity]
-
-		]]>
-	</rollback>
-  </changeSet>
-  
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v16">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-					 AND name = 'SourceLastModified'
-			)
-			BEGIN
-
-				ALTER TABLE [dbo].[AssetDataProfile] ADD [SourceLastModified] DATETIME NULL		
-
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [dbo].[AssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [SourceLastModified]
-
-		]]>
-	</rollback>
-  </changeSet>
-  
- <changeSet author="PuneetGupta" id="Column.dbo.AssetDataProfile-FilterCount-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF NOT EXISTS (
-			  SELECT * 
-			  FROM   sys.columns 
-			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
-					 AND name = 'FilterCount'
-			)
-			BEGIN
-
-				ALTER TABLE [dbo].[AssetDataProfile] ADD [FilterCount] BIGINT NULL		
-
-			END
-		]]>
-    </sql>
-	<rollback>
-	
-		<![CDATA[			
-		
-		ALTER TABLE [dbo].[AssetDataProfile] 
-		DROP 
-			COLUMN IF EXISTS [FilterCount]
-
-		]]>
-	</rollback>
-  </changeSet> 
 </databaseChangeLog>
