@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.2">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.3">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -494,7 +494,7 @@ begin
 							ADV.DisplayValue,
 							CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
 							SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
-					from    #incoming A
+					from    (select distinct Id from #incoming) A
 							cross apply GetAssetDisplayValueById(A.Id)ADV
 					where   ADV.DisplayValue is not null
 					) as S
