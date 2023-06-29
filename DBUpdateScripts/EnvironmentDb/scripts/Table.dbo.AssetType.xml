@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-v10">
+  <changeSet author="Pappas" id="Table.dbo.AssetType-v10.1">
     <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -21,9 +21,6 @@ BEGIN
 		[Class] int constraint [DF_AssetType_Class] default(1) NOT NULL,
 		[DisplayFormat] nvarchar(250) constraint [DF_AssetType_DisplayFormat] default('{ID}') NOT NULL,
 		[State] int constraint [DF_AssetType_State] default(1) NOT NULL,
-		[Hierarchical] bit constraint [DF_AssetType_Hierarchical] default(0) NOT NULL,
-		[HierarchyPredicateID] int NULL,
-		[HierarchyIntersectTypeID] int NULL,
 		[HierarchyMaximumDepth] int constraint [DF_AssetType_HierarchyMaximumDepth] default(0) NOT NULL,
 		[Object] varchar(50) NOT NULL,
 		[ObjectID] int constraint [DF_AssetType_ObjectId] default(NEXT VALUE FOR [dbo].[AssetType_ObjectID_Seq]) NOT NULL,
@@ -98,6 +95,26 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'AssetType' and COLUMN_NAME = 'SourceID')
 		begin
 			alter table AssetType add SourceID nvarchar(500) null
+		end
+
+		if exists(select 1 from sys.default_constraints where NAME = 'DF_AssetType_Hierarchical')
+		begin
+			ALTER TABLE [dbo].[AssetType] DROP CONSTRAINT [DF_AssetType_Hierarchical]
+		end
+
+		if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'AssetType' and COLUMN_NAME = 'Hierarchical')
+		begin
+			alter table AssetType drop column Hierarchical
+		end
+
+		if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'AssetType' and COLUMN_NAME = 'HierarchyPredicateID')
+		begin
+			alter table AssetType drop column HierarchyPredicateID
+		end
+
+		if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'AssetType' and COLUMN_NAME = 'HierarchyIntersectTypeID')
+		begin
+			alter table AssetType drop column HierarchyIntersectTypeID
 		end
 	  ]]>
     </sql>

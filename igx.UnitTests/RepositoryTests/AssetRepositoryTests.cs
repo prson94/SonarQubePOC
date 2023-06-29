@@ -30,7 +30,6 @@ namespace igx.UnitTests.RepositoryTests
 
 			List<string> mustContain = new List<string>();
 			mustContain.Add("A.UseAsTransformation=@useAsTransformation");
-			mustContain.Add("A.Hierarchical=@hierarchical");
 			mustContain.Add("A.AutoDisplayParent=@autoDisplayParent");
 			mustContain.Add("A.Object=@obj");
 			mustContain.Add("A.ObjectID=@objId");
