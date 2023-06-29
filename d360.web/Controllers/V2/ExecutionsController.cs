@@ -107,7 +107,7 @@ namespace d360.web.Controllers.V2
 			HttpPatch,
 			Route(""),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.Accepted, "A response that provides the Location header to check on the status of your request."),
+			SwaggerResponse(HttpStatusCode.Accepted, "A response that provides the Location header to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> PatchExecutionsAsync(PatchBulkCatalogRequestModel payload)

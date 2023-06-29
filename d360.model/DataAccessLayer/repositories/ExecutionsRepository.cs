@@ -285,6 +285,7 @@ namespace d360.model.DataAccessLayer
 				dbExecutionItem.ErrorMessage,
 				Fields = JsonConvert.DeserializeObject<dynamic>(f),
 				dbExecutionItem.StartedOn,
+				dbExecutionItem.ProcessingStartedOn,
 				dbExecutionItem.CompletedOn,
 				Results = results
 			};
