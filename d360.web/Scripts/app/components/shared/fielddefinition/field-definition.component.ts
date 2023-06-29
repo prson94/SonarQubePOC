@@ -815,7 +815,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		return true;
 	}
 	hasShowIfEmpty(field: FieldDisplayModel) {
-		const excludeTypes: string[] = ['Path', 'Json', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}
