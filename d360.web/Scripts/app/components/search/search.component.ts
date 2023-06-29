@@ -1,5 +1,5 @@
 ﻿import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { forkJoin, Observable, ReplaySubject } from "rxjs";
+import { forkJoin, Observable, ReplaySubject, Subscription } from "rxjs";
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -34,6 +34,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { SemanticType } from '../../models/semantic-type.model';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
+import { LinkClickInterceptor } from '../../services/href-click-service';
 
 @Component({
     selector: 'd3s-search',
@@ -65,13 +66,19 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public exportLimit: number = 0;
     public searchExportTooltip: string = "Export to Excel";
     public isExportInProgress: boolean = false;
-    public canExport: boolean = false;
+	public canExport: boolean = false;
+
 
     showEditor: boolean = false;
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
     secondarySidePanel: string = "detail";
-    resourceUid: string;
+	resourceUid: string;
+
+	hrefSub: Subscription;
+	selectedAsset: Record<string, unknown>;
+	selectedReferenceItem: Record<string, unknown>;
+	selectedTag: Record<string, unknown>;
 
     get assetEditorTitle(): string {
         return this.selection ? $localize`Edit Asset` : $localize`Create New Asset`;
@@ -116,10 +123,15 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         public sidePanelService: SidePanelService,
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,
-        private datePipe: DatePipe) {
+		private datePipe: DatePipe,
+		private linkClickInterceptor: LinkClickInterceptor) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
-        this.filterFields$ = this.filterFieldsSubject.asObservable();
+		this.filterFields$ = this.filterFieldsSubject.asObservable();
+
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+		});
     }
 
     ngOnInit() {
@@ -165,11 +177,18 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         }
         if (this.PageNumberSub) {
             this.PageNumberSub.unsubscribe();
-        }
+		}
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
+		}
     }
 
-    resultSelected($event) {
-        this.selection = $event;
+	resultSelected($event) {
+		this.selection = $event;
+		this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+		if (!$event || !$event.IsNew) {
+			return;
+		}
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;
             this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
