@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItemProperty-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItemProperty-v1.1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionCatalogItemProperty')
 BEGIN
 	create table api.ExecutionCatalogItemProperty (
@@ -29,11 +26,22 @@ BEGIN
 		FieldTypeId int, 
 		[Value] nvarchar(max),	-- The raw incoming value.
 		ValueAssetTypeId int,	-- Used for lookups.
-		ValueId int,			-- Used for lookups.
+		ValueId bigint,			-- Used for lookups.
 		CodeValue nvarchar(250) -- Used when the object is a reference list and the property name is Code. Will match based on this.
 	)
 END
-		]]>
+
+	IF EXISTS (
+	  select 	* 
+	  from 		INFORMATION_SCHEMA.COLUMNS 
+	  where 	TABLE_SCHEMA = 'api' 
+				and TABLE_NAME = 'ExecutionCatalogItemProperty' 
+				and COLUMN_NAME = 'ValueId'
+	)
+	BEGIN
+		alter table api.ExecutionCatalogItemProperty alter column [ValueId] bigint null;
+	END
+]]>
     </sql>
   </changeSet>
 
