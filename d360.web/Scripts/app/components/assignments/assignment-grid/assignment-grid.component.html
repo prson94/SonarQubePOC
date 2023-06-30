@@ -126,7 +126,7 @@
 									type="button"
 									icon="fa-ellipsis-v"
 									(click)="clickMenuIcon(item); menu.toggle($event)"></button>
-							<ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+							<ig-popup-menu (onSelect)="clickMenuItem($event)"
 										   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
 						</div>
 					</td>
@@ -139,7 +139,7 @@
 		</p-table>
 	</div>
 </div>
-<d3s-delete-form [callback]="theDeleteCallback"
+<d3s-delete-form [callback]="deleteAssignments"
 				 [items]="assignments"
 				 [showAsModal]="true"
 				 i18n-modalTitle

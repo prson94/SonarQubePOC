@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { WorkflowStepRelationshipChangeDetail } from '../../../../models/workflow.model';
+import { RelationshipUpdateSettings, WorkflowStepRelationshipChangeDetail } from '../../../../models/workflow.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowService } from '../../../../services/workflow.service';
 
@@ -10,7 +10,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 })
 export class AssignmentStepRelationshipChangeDetailsComponent extends BaseComponent implements OnInit {
 	@Input() relationshipChange: WorkflowStepRelationshipChangeDetail;
-	@Input() relationshipUpdate: any;
+	@Input() relationshipUpdate: RelationshipUpdateSettings;
 	@Input() workflowItemUId: string;
 	public relationshipFormField: string;
 	public isLoading: boolean = false;

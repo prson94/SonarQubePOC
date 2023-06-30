@@ -18,6 +18,7 @@ import {
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 
 @Component({
 	selector: 'd3s-assignment-grid',
@@ -46,10 +47,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	@Output() hideDetails: EventEmitter<any> = new EventEmitter();
 	private destroy: Subject<void> = new Subject<void>();
-	theDeleteCallback: Function;
-	menuItems: any[] = [
-		{ title: $localize`Delete` }
-	];
+	menuItems: PopupMenuItem[] = [new PopupMenuItem({
+		title: $localize`Delete`
+	})];
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -63,7 +63,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
-		this.theDeleteCallback = this.deleteAssignments.bind(this);
 		this.settingsService.getUserVariables().subscribe((res) => {
 			this.currentResourceUid = res.CurrentResourceUid;
 			this.loadData();
@@ -155,14 +154,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	clickMenuItem(event: any, item: any): void {
+	clickMenuItem(event: any): void {
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
 			this.showDeletionModal = true;
 		}
 	}
 
-	public deleteAssignments(): void {
+	deleteAssignments = (): void => {
 		this.isLoading = true;
 		let itemIds: string[] = [];
 		if (Array.isArray(this.assignments)) {
@@ -171,12 +170,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			itemIds.push((this.assignments as WorkflowAssignmentItem).workflowItemUid);
 		}
 		this.wfMonitorService.deleteItemsByUid(itemIds).subscribe(
-			(res) => {
+			() => {
 				this.showDeletionModal = false;
 				this.loadWorkflowAssignmentItems({ rows: this.rowsPerPage, first: 0 });
 			}
 		);
-	}
+	};
 
 	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
 		if (lookupType === 'status') {

@@ -26,11 +26,11 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 		this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
 	}
 
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
-
 	get assignmentItem(): AssignmentItem {
 		return this._assignmentItem;
 	}
+
+	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
 
 	get assetPathLinkPart(): string {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;

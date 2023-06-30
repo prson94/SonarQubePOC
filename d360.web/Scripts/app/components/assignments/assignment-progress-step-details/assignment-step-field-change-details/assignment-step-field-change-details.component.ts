@@ -31,7 +31,7 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 
 	getName(val: string): string {
 		if (typeof val !== 'undefined') {
-			let name: string[] = val.split('|');
+			const name: string[] = val.split('|');
 			return name[0];
 		}
 		return '';

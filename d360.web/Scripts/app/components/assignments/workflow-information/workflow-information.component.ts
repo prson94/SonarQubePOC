@@ -50,7 +50,7 @@ export class WorkflowInformationComponent {
 
 	private getWorkflowTypeDetails() {
 		this.isLoading = true;
-		this.workflowService.getWorkflowDiagram(this.id, this.uid, this.version).subscribe(response => {
+		this.workflowService.getWorkflowDiagram(this.id, this.uid, this.version).subscribe((response: WorkflowDiagramModel): void => {
 			this.isLoading = false;
 			this.workflowDiagramModel = response;
 		});
