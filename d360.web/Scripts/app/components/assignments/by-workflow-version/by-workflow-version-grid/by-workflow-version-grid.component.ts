@@ -111,6 +111,6 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	}
 
 	onSimpleSearch(searchTerm: string): void {
-		console.log(searchTerm);
+
 	}
 }

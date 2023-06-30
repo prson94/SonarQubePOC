@@ -43,7 +43,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	submit(): void {
-		console.log('submit');
+
 	}
 
 	showAssignment(): void {

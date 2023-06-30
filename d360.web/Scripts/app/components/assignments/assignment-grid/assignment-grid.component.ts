@@ -49,7 +49,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	advancedFilter: string = '';
 	singleActionTypeUidSelected: boolean = false;
 	singleActionTypeUidFilter: string = '';
-	actionFormFields: any[] = [];
+	actionFormFields: FieldTypeAPIModelField[] = [];
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	private destroy: Subject<void> = new Subject<void>();
@@ -114,7 +114,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
-		forkJoin(sources).subscribe((results: any[]) => {
+		forkJoin(sources).subscribe((results: [WorkflowAssignments,FieldTypeAPIModelField[]]) => {
 			this.items = results[0].items;
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
@@ -298,7 +298,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	getAssignees(assigneeList: any[], count?: number): string {
+	getAssignees(assigneeList: {Name: string, uid: string}[], count?: number): string {
 		let assigneeNames: string = '';
 		if (assigneeList && assigneeList.length > 0) {
 			const assigneeNameList: string[] = assigneeList.map((assignee) => assignee.Name)?.sort();
