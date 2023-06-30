@@ -11,7 +11,7 @@ export class WorkflowInformationGeneralComponent implements OnInit {
 	@Input() set workflowDiagramModel(value: WorkflowDiagramModel) {
 		this._workflowDiagramModel = value;
 		this.changeType = this.changeTypeInfos?.find((changeTypeInfo: ChangeTypeInfo): boolean => changeTypeInfo.ID === this.workflowDiagramModel?.Event?.ChangeType)?.Description;
-	};
+	}
 
 	get workflowDiagramModel(): WorkflowDiagramModel {
 		return this._workflowDiagramModel;

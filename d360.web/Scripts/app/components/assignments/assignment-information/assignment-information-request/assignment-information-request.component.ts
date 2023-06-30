@@ -28,7 +28,7 @@ export class AssignmentInformationRequestComponent {
 	loadData() {
 		this.isLoading = true;
 		this.workflowService.getActions(this._workflowActionUid)
-			.subscribe(response => {
+			.subscribe((response: Actions) => {
 				this.actions = response;
 				if (this.actions.items?.length > 0) {
 					this.fieldsObservableService.getFieldsV2(null, this.actions.items[0].ActionTypeUid, null)

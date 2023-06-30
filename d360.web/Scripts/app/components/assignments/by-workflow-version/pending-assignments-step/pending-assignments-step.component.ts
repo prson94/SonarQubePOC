@@ -14,10 +14,8 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	@Input() versionStepId: number;
 
 	selection: any;
-
 	history: any[];
 	WorkflowActivityType = WorkflowActivityType;
-
 
 	constructor(
 		protected settingsService: CompanySettingsService,

@@ -30,7 +30,6 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	selectedCount: number = 0;
 	selectedAssignmentByVersion: AssignmentByVersion[] = [];
 	simpleFilter: string = '';
-	showDeletionModal: boolean = false;
 	@Output() selectionChange = new EventEmitter();
 	@Output() hideDetails = new EventEmitter();
 	private destroy = new Subject<void>();
@@ -85,7 +84,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.isLoading = true;
 		this.assignmentsByVersion = [];
 		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage)
-			.subscribe(response => {
+			.subscribe((response) => {
 				this.assignmentsByVersion = response.items.map(assignmentByVersion => {
 					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
 					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
@@ -113,24 +112,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.loadData();
 	}
 
-	selectAll(): void {
-		if (this.selectedAssignmentByVersion) {
-			if (this.selectedAssignmentByVersion.length === this.assignmentsByVersion.length) {
-				this.gridSelectionChange([this.assignmentsByVersion[0]]);
-			} else {
-				this.gridSelectionChange(this.assignmentsByVersion);
-			}
-		}
-	}
-
 	onSimpleSearch(searchTerm: string): void {
 		console.log(searchTerm);
-	}
-
-	clickMenuItem(event: any, item: any): void {
-		const key = event.value.toLowerCase();
-		if (key === $localize`Delete`.toLowerCase()) {
-			this.showDeletionModal = true;
-		}
 	}
 }

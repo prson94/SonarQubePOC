@@ -43,7 +43,7 @@ export class AssignmentInformationComponent implements OnInit {
 
 	loadAssignmentItem(workflowItemUid: string): void {
 		this.isLoading = true;
-		this.workflowService.getAssignmentItem(workflowItemUid).subscribe(response => {
+		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.isLoading = false;
 			this.assignmentItem = response;
 		});

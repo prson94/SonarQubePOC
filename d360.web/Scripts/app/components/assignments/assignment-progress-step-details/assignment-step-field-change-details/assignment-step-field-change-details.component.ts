@@ -14,7 +14,7 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 		super(settingsService);
 	}
 
-	getHtmlFieldValue(item: any) {
+	getHtmlFieldValue(item: WorkflowStepFieldChangeDetail) {
 		if (typeof item.Value === 'undefined') {
 			return '';
 		}

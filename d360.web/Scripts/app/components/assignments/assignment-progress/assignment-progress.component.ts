@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChildren } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChildren } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
@@ -8,7 +8,7 @@ import { AssignmentProgressStepComponent } from './assignment-progress-step/assi
 	templateUrl: './assignment-progress.component.html',
 	styleUrls: ['./assignment-progress.component.less']
 })
-export class AssignmentProgressComponent implements OnInit {
+export class AssignmentProgressComponent {
 
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
@@ -52,16 +52,13 @@ export class AssignmentProgressComponent implements OnInit {
 	constructor(private workflowService: WorkflowService) {
 	}
 
-	ngOnInit(): void {
-	}
-
 	private loadAssignmentSteps() {
 		this.assignmentItemSteps = [];
 		this.isLoading = true;
 		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {
 				this.isLoading = false;
-				this.assignmentItemSteps = response.sort(function(a: AssignmentItemStep, b: AssignmentItemStep) {
+				this.assignmentItemSteps = response.sort(function (a: AssignmentItemStep, b: AssignmentItemStep) {
 					return (a.StartedOn < b.StartedOn) ? -1 : ((a.StartedOn > b.StartedOn) ? 1 : 0);
 				});
 			});

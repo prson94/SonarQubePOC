@@ -115,7 +115,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
-	getActivityType(step: any): string {
+	getActivityType(step: WorkflowStepDetail): string {
 		if (step.ActivityType !== 0) {
 			return this.helper.activityTypeName(step.ActivityType);
 		} else {

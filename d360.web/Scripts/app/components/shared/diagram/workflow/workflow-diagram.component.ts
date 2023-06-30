@@ -240,7 +240,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.diagram.addDiagramListener('ChangedSelection', (e) => this.ChangedSelection(e));
-		this.diagram.addDiagramListener('ObjectSingleClicked',(e) => this.ObjectSingleClicked(e))
+		this.diagram.addDiagramListener('ObjectSingleClicked', (e) => this.ObjectSingleClicked(e));
         this.diagram.addDiagramListener('LinkDrawn', (e) => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
         this.diagram.addDiagramListener('ExternalObjectsDropped', (e) => this.ExternalObjectsDropped(e));
