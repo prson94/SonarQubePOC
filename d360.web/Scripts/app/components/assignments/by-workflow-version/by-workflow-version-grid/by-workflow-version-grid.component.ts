@@ -81,7 +81,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	private loadData(): void {
 		this.isLoading = true;
 		this.assignmentsByVersion = [];
-		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage)
+		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage, this.simpleFilter)
 			.subscribe((response) => {
 				this.assignmentsByVersion = response.items.map((assignmentByVersion: AssignmentByVersion) => {
 					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
@@ -111,6 +111,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	}
 
 	onSimpleSearch(searchTerm: string): void {
-
+		this.simpleFilter = searchTerm
+		this.loadData()
 	}
 }
