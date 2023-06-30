@@ -1,12 +1,12 @@
 ﻿import {
-    ChangeDetectionStrategy,
-    Component,
-    ElementRef,
-    EventEmitter,
-    Input,
-    OnInit,
-    Output,
-    ViewChild
+	ChangeDetectionStrategy,
+	Component,
+	ElementRef,
+	EventEmitter,
+	Input,
+	OnInit,
+	Output,
+	ViewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
@@ -20,185 +20,179 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 
 @Component({
-    selector: 'd3s-search-result-item',
-    templateUrl: './search-result-item.component.html',
-    styleUrls: ["search-result-item.component.less"],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ShoppingCartService, DatePipe]
+	selector: 'd3s-search-result-item',
+	templateUrl: './search-result-item.component.html',
+	styleUrls: ["search-result-item.component.less"],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	providers: [ShoppingCartService, DatePipe]
 })
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
-    @Input() result: SearchFullResult;
-    @Input() selection: SearchSelection;
+	@Input() result: SearchFullResult;
+	@Input() selection: SearchSelection;
 
-    @Output() onSelect = new EventEmitter();
+	@Output() onSelect = new EventEmitter();
 
-    showStatus: boolean = false;
-    showPath: boolean = false;
+	showStatus: boolean = false;
+	showPath: boolean = false;
 
-    menuitems: any[] = [{ title: $localize`Open` }, { title: $localize`Open in New Tab` }];
+	menuitems: any[] = [{ title: $localize`Open` }, { title: $localize`Open in New Tab` }];
 
-    @ViewChild('cardmenu', { static: false }) cardmenu: PopupMenu;
+	@ViewChild('cardmenu', { static: false }) cardmenu: PopupMenu;
 
-    constructor(private router: Router,
-        private shoppingCartService: ShoppingCartService,
-        private messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService,
-        private elementRef: ElementRef,
-        private datePipe: DatePipe) {
-        super(settingsService);
-    }
+	constructor(private router: Router,
+		private shoppingCartService: ShoppingCartService,
+		private messagesService: MessagesObservableService,
+		protected settingsService: CompanySettingsService,
+		private elementRef: ElementRef,
+		private datePipe: DatePipe) {
+		super(settingsService);
+	}
 
-    ngOnInit() {
-        const showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
-        if (showCart) {
-            this.menuitems.push({ title: $localize`Add to Cart` });
-        }
+	ngOnInit() {
+		const showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
+		if (showCart) {
+			this.menuitems.push({ title: $localize`Add to Cart` });
+		}
 
-        this.loadDetails();
-    }
+		this.loadDetails();
+	}
 
-    private loadDetails() {
-        if (this.result.Status) {
-            this.showStatus = true;
-        }
-    }
+	private loadDetails() {
+		if (this.result.Status) {
+			this.showStatus = true;
+		}
+	}
 
-    parseTagResult(tags: any[]) {
-        return tags.map((tag) => { return { uid: tag.Uid, Value: tag.Value }; });
-    }
+	parseTagResult(tags: any[]) {
+		return tags.map((tag) => { return { uid: tag.Uid, Value: tag.Value }; });
+	}
 
-    get type() {
-        if (this.result) {
-            switch (this.result.Group) {
-                case 'Reference':
-                    return 'ReferenceItemType';
-                default:
-                    return this.result.Group;
-            }
-        }
-    }
+	get type() {
+		if (this.result) {
+			switch (this.result.Group) {
+				case 'Reference':
+					return 'ReferenceItemType';
+				default:
+					return this.result.Group;
+			}
+		}
+	}
 
-    showBadges(): boolean {
-        return this.showStatus || this.result.Scores.length > 0;
-    }
+	showBadges(): boolean {
+		return this.showStatus || this.result.Scores.length > 0;
+	}
 
-    clickMenuItem(event: any) {
-        const key = event.value.toLowerCase();
+	clickMenuItem(event: any) {
+		const key = event.value.toLowerCase();
 
-        if (key === $localize`Open`.toLowerCase()) {
-            this.navigateLink();
-        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.navigateLink(true);
-        } else if (key === $localize`Add to Cart`.toLowerCase()) {
-            this.add();
-        }
-    }
+		if (key === $localize`Open`.toLowerCase()) {
+			this.navigateLink();
+		} else if (key === $localize`Open in New Tab`.toLowerCase()) {
+			this.navigateLink(true);
+		} else if (key === $localize`Add to Cart`.toLowerCase()) {
+			this.add();
+		}
+	}
 
-    navigateLink(newTab: boolean = false) {
-        const url = SiteUrlHelpers.convertClassicUrl(this.result.Url);
-        if (newTab) {
-            // eslint-disable-next-line
-            window.open(url, "_blank");
+	navigateLink(newTab: boolean = false) {
+		const url = SiteUrlHelpers.convertClassicUrl(this.result.Url);
+		if (newTab) {
+			// eslint-disable-next-line
+			window.open(url, "_blank");
 		} else {
 			this.router.navigateByUrl(this.federateUrl(url));
-        }
-    }
+		}
+	}
 
-    private add() {
-        var type = this.result.ID.toString().split('|')[0];
-        var id = this.result.ID.toString().split('|')[1];
-        this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
-            .subscribe((r) => this.showMessageForResult(this.messagesService, r));
-    }
+	private add() {
+		var type = this.result.ID.toString().split('|')[0];
+		var id = this.result.ID.toString().split('|')[1];
+		this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
+			.subscribe((r) => this.showMessageForResult(this.messagesService, r));
+	}
 
-    formatPathAsString(): string {
-        if (this.result.Group && this.result.AssetPath) {
-            return this.result.Group + ' > ' + this.result.AssetPath.map((p) => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
-        }
-        return '';
-    }
+	formatPathAsString(): string {
+		if (this.result.Group && this.result.AssetPath) {
+			return this.result.Group + ' > ' + this.result.AssetPath.map((p) => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
+		}
+		return '';
+	}
 
-    get isSelected(): boolean {
-        return this.selection?.ID === this.result.ID;
-    }
+	get isSelected(): boolean {
+		return this.selection?.ID === this.result.ID;
+	}
 
-    /**
-     * Formats display of field value.
-     * Links are returned from API in format <url>|<displayvalue>, Booleans are displayed as an icon etc.
-     * If Prefix/Suffic is set, they are added to the display value
-     * @param field
-     * @param forTitle Return is used in title, so booleans are shown as value and links shown as displayvalue
-     */
-    getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false): string {
-        let val: string = (field.Empty) ? '---' : field.Value;
-        if (val === null || val === undefined)
-            {return '';}
+	/**
+	 * Formats display of field value.
+	 * Links are returned from API in format <url>|<displayvalue>, Booleans are displayed as an icon etc.
+	 * If Prefix/Suffic is set, they are added to the display value
+	 * @param field
+	 * @param forTitle Return is used in title, so booleans are shown as value and links shown as displayvalue
+	 */
+	getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false): string {
+		let val: string = (field.Empty) ? '---' : field.Value;
+		if (val === null || val === undefined) { return ''; }
 
-        if (!field.Empty) {
-            switch (field.Type.toLowerCase()) {
-                case 'link':
-                    if (field.Value.length > 2 && field.Value.indexOf('|') > 0) {
-                        const link: string[] = field.Value.split('|', 2);
-                        val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
-                    }
-                    break;
-                case 'boolean':
-                    if (!forTitle) {
-                        if (field.Value === 'True')
-                            {val = '<i class="fa fa-check enabled"></i>';}
-                        else
-                            {val = '<i class="fa fa-times disabled"></i>';}
-                    }
-                    break;
-                case 'decimal':
-                case 'number':
-                    val = Number(val).toLocaleString();
-                    break;
-                case 'date':
-                    val = val.substr(0, val.indexOf(' '));
-                    break;
-                case 'datetime':
-                    //Date is UTC
-                    const utc = Date.parse(val + ' UTC');
-                    val = this.datePipe.transform(utc, 'medium');
-                    break;
-            }
-        }
-        if (field.Suffix)
-            {val += ' ' + field.Suffix;}
-        if (field.Prefix)
-            {val = field.Prefix + ' ' + val;}
-        return val;
-    }
+		if (!field.Empty) {
+			switch (field.Type.toLowerCase()) {
+				case 'link':
+					if (field.Value.length > 2 && field.Value.indexOf('|') > 0) {
+						const link: string[] = field.Value.split('|', 2);
+						val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
+					}
+					break;
+				case 'boolean':
+					if (!forTitle) {
+						if (field.Value === 'True') { val = '<i class="fa fa-check enabled"></i>'; }
+						else { val = '<i class="fa fa-times disabled"></i>'; }
+					}
+					break;
+				case 'decimal':
+				case 'number':
+					val = Number(val).toLocaleString();
+					break;
+				case 'date':
+					val = val.substr(0, val.indexOf(' '));
+					break;
+				case 'datetime':
+					//Date is UTC
+					const utc = Date.parse(val + ' UTC');
+					val = this.datePipe.transform(utc, 'medium');
+					break;
+			}
+		}
+		if (field.Suffix) { val += ' ' + field.Suffix; }
+		if (field.Prefix) { val = field.Prefix + ' ' + val; }
+		return val;
+	}
 
-    /* events */
-    onClick() {
-        this.elementRef.nativeElement.children[0].focus();
-    }
+	/* events */
+	onClick() {
+		this.elementRef.nativeElement.children[0].focus();
+	}
 
-    onTouchEnd() {
-        this.elementRef.nativeElement.children[0].focus();
-    }
+	onTouchEnd() {
+		this.elementRef.nativeElement.children[0].focus();
+	}
 
-    onFocus() {
-        if (!this.isSelected) {
-            this.onSelect.emit({
-                ID: this.result.ID,
-                AssetUid: this.result.Uid,
-                ObjectType: this.result.Object,
-                HasProfiling: this.result.HasProfiling,
-                Data: this.result
-            });
-        }
-    }
+	onFocus() {
+		this.onSelect.emit({
+			ID: this.result.ID,
+			AssetUid: this.result.Uid,
+			ObjectType: this.result.Object,
+			HasProfiling: this.result.HasProfiling,
+			Data: this.result,
+			IsNew: !this.isSelected
+		});
+	}
 
-    onKeyDown(event: KeyboardEvent) {
-        if (!this.cardmenu.isVisible && ["ArrowDown", "ArrowUp"].indexOf(event.key) !== -1) {
-            event.preventDefault();
-            const resultElement = this.elementRef.nativeElement.parentElement;
-            const neighbor: HTMLDivElement = (event.key === "ArrowDown") ? resultElement.nextElementSibling : resultElement.previousElementSibling;
-            neighbor?.querySelector<HTMLDivElement>(".card-res")?.focus();
-        }
-    }
+	onKeyDown(event: KeyboardEvent) {
+		if (!this.cardmenu.isVisible && ["ArrowDown", "ArrowUp"].indexOf(event.key) !== -1) {
+			event.preventDefault();
+			const resultElement = this.elementRef.nativeElement.parentElement;
+			const neighbor: HTMLDivElement = (event.key === "ArrowDown") ? resultElement.nextElementSibling : resultElement.previousElementSibling;
+			neighbor?.querySelector<HTMLDivElement>(".card-res")?.focus();
+		}
+	}
 }
