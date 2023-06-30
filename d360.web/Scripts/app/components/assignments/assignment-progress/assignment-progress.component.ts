@@ -61,7 +61,9 @@ export class AssignmentProgressComponent implements OnInit {
 		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {
 				this.isLoading = false;
-				this.assignmentItemSteps = response;
+				this.assignmentItemSteps = response.sort(function(a: AssignmentItemStep, b: AssignmentItemStep) {
+					return (a.StartedOn < b.StartedOn) ? -1 : ((a.StartedOn > b.StartedOn) ? 1 : 0);
+				});
 			});
 	}
 

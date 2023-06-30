@@ -22,7 +22,7 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 
 	@Input() set assignmentItem(value: AssignmentItem) {
 		this._assignmentItem = value;
-		this.workflowChangeType = this.changeTypeInfos.find(changeTypeInfo => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
+		this.workflowChangeType = this.changeTypeInfos.find((changeTypeInfo: ChangeTypeInfo) => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
 		this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
 	}
 
