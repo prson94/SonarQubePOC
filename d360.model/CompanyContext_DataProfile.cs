@@ -541,6 +541,7 @@ namespace d360.model
 					DataProfileTable.Columns.Add("IsAuthorizedForPopularity", typeof(bool));
 					DataProfileTable.Columns.Add("SourceLastModified", typeof(DateTime));
 					DataProfileTable.Columns.Add("FilterCount", typeof(long));
+					DataProfileTable.Columns.Add("Freshness", typeof(int));
 
 					DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
 					DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
@@ -613,7 +614,7 @@ namespace d360.model
 						row["IsAuthorizedForPopularity"] = item.IsAuthorizedForPopularity ?? (object)DBNull.Value;
 						row["SourceLastModified"] = item.SourceLastModified ?? (object)DBNull.Value;
 						row["FilterCount"] = item.FilterCount ?? (object)DBNull.Value;
-
+						row["Freshness"] = item.Freshness ?? (object)DBNull.Value;
 
 						DataProfileTable.Rows.Add(row);
 						if (item.outlierDetail != null)
@@ -953,6 +954,7 @@ namespace d360.model
 								bulkCopy.ColumnMappings.Add("IsAuthorizedForPopularity", "IsAuthorizedForPopularity");
 								bulkCopy.ColumnMappings.Add("SourceLastModified", "SourceLastModified");
 								bulkCopy.ColumnMappings.Add("FilterCount", "FilterCount");
+								bulkCopy.ColumnMappings.Add("Freshness", "Freshness");
 
 								bulkCopy.WriteToServer(DataProfileTable);
 							}
@@ -1180,6 +1182,7 @@ namespace d360.model
 													,[IsAuthorizedForPopularity]
 													,[SourceLastModified]
 													,[FilterCount]
+													,[Freshness]
 													,[CreatedBy]
 													,[CreatedOn]
 													,[UpdatedBy]
@@ -1223,6 +1226,7 @@ namespace d360.model
 													,EDP.IsAuthorizedForPopularity
 													,EDP.SourceLastModified
 													,EDP.FilterCount
+													,EDP.Freshness
 													,@CurrentResourceID
 													,getutcdate()
 													,@CurrentResourceID
@@ -1281,6 +1285,7 @@ namespace d360.model
 											,ADP.[IsAuthorizedForPopularity] = EDP.[IsAuthorizedForPopularity]
 											,ADP.[SourceLastModified] = EDP.[SourceLastModified]
 											,ADP.[FilterCount] = EDP.[FilterCount]
+											,ADP.[Freshness] = EDP.[Freshness]
 											,ADP.[UpdatedBy] = @CurrentResourceID
 											,ADP.[UpdatedOn] = getutcdate()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
