@@ -623,7 +623,7 @@ namespace d360.web.Controllers.V2
 			Guid actionTypeUid = new Guid();
 			var actionTypeName = "";
 			List<core.entities.FieldType> fieldTypes = new List<core.entities.FieldType>();
-			var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+			var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value ?? "";
 			var initiatorUid = "";
 
 			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_initiatoruid"))
