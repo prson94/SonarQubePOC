@@ -28,7 +28,7 @@ import {
 	WorkflowReassignmentAsset,
 	WorkflowTaskProcedure,
 	WorkflowTypeItem,
-	WorkflowTypeModel, WorkflowVersion
+	WorkflowTypeModel, WorkflowVersion, WorkflowStepDetail
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -311,7 +311,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", initiatorUid: string= "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null): Observable<WorkflowAssignments> {
 		let url = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		if (simpleFilter) {
@@ -599,10 +599,10 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<any> {
+	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false): Observable<any> {
 		return this.http.get(`/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`)
 			.pipe(
-				map((response) => <any>response),
+				map((response) => response),
 				catchError((err) => this.handleError(err))
 			);
 	}
@@ -769,10 +769,10 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getAssignmentStepDetail(itemStepUid: string):Observable<any> {
+    getAssignmentStepDetail(itemStepUid: string):Observable<WorkflowStepDetail> {
         return this.http.get(`services/workflow/step/detailByUid/${itemStepUid}`)
             .pipe(
-                map((response) => response),
+                map((response) => <WorkflowStepDetail>response),
                 catchError((err) => this.handleError(err))
             );
     }

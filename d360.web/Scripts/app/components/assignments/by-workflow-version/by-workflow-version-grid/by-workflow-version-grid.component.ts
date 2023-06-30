@@ -25,7 +25,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	subscription: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
-	sortField: string = undefined;
+	sortField: string;
 	sortOrder: SortOrder = SortOrder.Descending;
 	selectedCount: number = 0;
 	selectedAssignmentByVersion: AssignmentByVersion[] = [];
@@ -123,14 +123,8 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		}
 	}
 
-	clickMenuIcon(item: any): void {
-		if (item) {
-			this.gridSelectionChange([item]);
-		}
-	}
-
-	onSimpleSearch(event: any): void {
-		console.log(event);
+	onSimpleSearch(searchTerm: string): void {
+		console.log(searchTerm);
 	}
 
 	clickMenuItem(event: any, item: any): void {

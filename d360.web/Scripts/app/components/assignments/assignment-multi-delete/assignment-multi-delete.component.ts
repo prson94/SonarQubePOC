@@ -10,9 +10,9 @@ export class AssignmentMultiDeleteComponent {
 	constructor() {
 	}
 
-	@Output() confirmDelete:EventEmitter<boolean> = new EventEmitter();
+	@Output() confirmDelete: EventEmitter<boolean> = new EventEmitter();
 
 	deleteAssignments(): void {
-		this.confirmDelete.emit(true)
+		this.confirmDelete.emit(true);
 	}
 }

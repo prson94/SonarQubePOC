@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
@@ -16,7 +16,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
 	templateUrl: './assignment-list.component.html',
 	styleUrls: ['./assignment-list.component.less']
 })
-export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
+export class AssignmentListComponent extends BaseComponent implements OnInit {
 
 	@ViewChild(AssignmentProgressComponent) assignmentProgressComponent: AssignmentProgressComponent;
 	isRequestsFlow: boolean = false; // flag checks if url is requests
@@ -108,10 +108,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';
 		}
-	}
-
-	ngOnDestroy(): void {
-
 	}
 
 	getSidePanelWidth(): number {

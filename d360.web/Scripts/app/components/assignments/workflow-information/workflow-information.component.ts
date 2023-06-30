@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 
@@ -7,7 +7,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 	templateUrl: './workflow-information.component.html',
 	styleUrls: ['./workflow-information.component.less']
 })
-export class WorkflowInformationComponent implements OnInit {
+export class WorkflowInformationComponent {
 
 	@Input() shouldBePadded: boolean = true;
 	@Input() showHeaderLine: boolean = true;
@@ -33,7 +33,7 @@ export class WorkflowInformationComponent implements OnInit {
 		this.getWorkflowTypeDetails();
 	}
 
-	@Input() set workflowTypeVersion(value: number){
+	@Input() set workflowTypeVersion(value: number) {
 		this.version = value;
 		this.getWorkflowTypeDetails();
 	}
@@ -41,12 +41,9 @@ export class WorkflowInformationComponent implements OnInit {
 	constructor(private workflowService: WorkflowService) {
 	}
 
-	ngOnInit(): void {
-	}
-
 	@HostListener('document:click', ['$event'])
 	clickedOutside(event: any) {
-		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains('secondary-side-panel')).length > 0)) {
 			this.close.emit();
 		}
 	}

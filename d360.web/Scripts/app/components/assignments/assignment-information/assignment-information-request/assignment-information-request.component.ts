@@ -1,15 +1,15 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {Actions} from '../../../../models/workflow.model';
-import {WorkflowService} from '../../../../services/workflow.service';
-import {FieldsObservableService} from '../../../../services/fieldsObservable.service';
-import {FieldTypeAPIModelField} from '../../../../models/fieldtype-api.model';
+import { Component, Input } from '@angular/core';
+import { Actions } from '../../../../models/workflow.model';
+import { WorkflowService } from '../../../../services/workflow.service';
+import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
+import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
 
 @Component({
 	selector: 'd3s-assignment-information-request',
 	templateUrl: './assignment-information-request.component.html',
 	styleUrls: ['./assignment-information-request.component.less']
 })
-export class AssignmentInformationRequestComponent implements OnInit {
+export class AssignmentInformationRequestComponent {
 	private _workflowActionUid: string;
 	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
@@ -23,9 +23,6 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	constructor(private workflowService: WorkflowService,
 				private fieldsObservableService: FieldsObservableService) {
-	}
-
-	ngOnInit(): void {
 	}
 
 	loadData() {

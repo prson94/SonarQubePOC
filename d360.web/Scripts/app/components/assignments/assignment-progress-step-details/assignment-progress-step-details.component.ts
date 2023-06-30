@@ -1,7 +1,8 @@
 import {
 	ChangeDetectorRef,
 	Component,
-	EventEmitter, HostListener,
+	EventEmitter,
+	HostListener,
 	Input,
 	OnChanges,
 	OnInit,
@@ -91,7 +92,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						} else {
 							this.viewFormResponses = '';
 						}
-						let reassignments: WorkflowStepReassignment[] = [];
+						const reassignments: WorkflowStepReassignment[] = [];
 						if (this.step.ItemFields?.Reassigned != null) {
 							for (const element of this.step.ItemFields.Reassigned) {
 								reassignments.push(new WorkflowStepReassignment(element));

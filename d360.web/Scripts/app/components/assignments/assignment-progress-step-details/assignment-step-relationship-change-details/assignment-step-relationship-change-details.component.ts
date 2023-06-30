@@ -22,8 +22,8 @@ export class AssignmentStepRelationshipChangeDetailsComponent extends BaseCompon
 	}
 
 	ngOnInit(): void {
-		let formStepId: number = parseInt(this.relationshipUpdate?.Relationship['@FormStepId']) ?? null;
-		let formFieldId: string = this.relationshipUpdate?.Relationship['@FormFieldId'] ?? null;
+		const formStepId: number = parseInt(this.relationshipUpdate?.Relationship['@FormStepId']) ?? null;
+		const formFieldId: string = this.relationshipUpdate?.Relationship['@FormFieldId'] ?? null;
 		this.isLoading = true;
 		if (formStepId && formFieldId) {
 			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: any) => {
