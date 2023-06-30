@@ -1,0 +1,150 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Function.api.ValidateCatalogItemProperty-v1">
+   <comment></comment>
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function api.ValidateCatalogItemProperty
+(
+	@name nvarchar(250),
+	@value nvarchar(max),
+	@valueId bigint,
+	@required bit,
+	@type varchar(25),
+	@length int,
+	@minLength int,
+	@maxLength int
+)
+returns @v table (Success bit, [Message] nvarchar(max))
+begin
+	declare @success bit = null,
+			@message nvarchar(max) = '';
+
+	if @type in ('Color', 'Path', 'ComplexRelationLookup', 'OwnershipLookup', 'Relation', 'FieldFromRelationship', 'RefListRelationship', 'JSON', 'JsonElement', 'Tag', 'Score', 'Counter')
+	begin
+		set @success = 0;
+		set @message = @message + @name + ' is not a supported field type ['+@type+'] for this API. ';
+	end
+	else
+	begin
+		if @required = 1 and @value is null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' is required. ';
+		end
+
+		if @type = 'System' and @name = 'Code' and (@value = '' or len(@value) > 250) and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + '  must be 250 characters or less, and must not be empty. ';
+		end
+
+		if @type = 'Boolean' and lower(@value) not in ('true', 'false') and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' must be either true or false. ';
+		end
+
+		if @type = 'Date' and TRY_PARSE(@value as datetime) is null and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' is not valid. ';
+		end
+
+		if @type = 'DateTime' and TRY_PARSE(@value as datetime) is null and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' is not valid. ';
+		end
+
+		if @type = 'Decimal' and @value is not null
+		begin
+			declare @decimal decimal = TRY_PARSE(@value as decimal);
+			if @decimal is null
+			begin
+				set @success = 0;
+				set @message = @message + @name + ' is not valid. ';
+			end
+			if @minLength is not null
+			begin
+				if @decimal < @minLength
+				begin
+					set @success = 0;
+					set @message = @message + @name + ' is less than minimum value. ';
+				end
+			end
+			if @maxLength is not null
+			begin
+				if @decimal > @maxLength
+				begin
+					set @success = 0;
+					set @message = @message + @name + ' is greater than maximum value. ';
+				end
+			end
+		end
+
+		if @type = 'Lookup' and @valueId is null and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' does not contain a valid lookup value. ';
+		end
+
+		if @type = 'Number' and @value is not null
+		begin
+			declare @number bigint = TRY_PARSE(@value as bigint);
+			if @number is null
+			begin
+				set @success = 0;
+				set @message = @message + @name + ' is not valid. ';
+			end
+			if @minLength is not null
+			begin
+				if @number < @minLength
+				begin
+					set @success = 0;
+					set @message = @message + @name + ' is less than minimum value. ';
+				end
+			end
+			if @maxLength is not null
+			begin
+				if @number > @maxLength
+				begin
+					set @success = 0;
+					set @message = @message + @name + ' is greater than maximum value. ';
+				end
+			end
+		end
+
+		if @type = 'Text' and @value is not null
+		begin
+			if @length is not null and len(@value) <> @length
+			begin
+				set @success = 0;
+				set @message = @message + @name + ' does not match the required length. ';
+			end
+			if @minLength is not null and len(@value) < @minLength
+			begin
+				set @success = 0;
+				set @message = @message + @name + ' is less than minimum length. ';
+			end
+			if @maxLength is not null and len(@value) > @maxLength
+			begin
+				set @success = 0;
+				set @message = @message + @name + ' is greater than maximum length. ';
+			end
+		end
+	end
+	
+	insert into @v values (@success, @message)
+	return;
+end
+]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

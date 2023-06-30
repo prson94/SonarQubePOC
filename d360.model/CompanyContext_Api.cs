@@ -1620,7 +1620,7 @@ from	api.Execution E
 			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 0 
 		) Ec
 		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success is not null
+			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 1
 		) Pc
 		cross apply (
 			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID
