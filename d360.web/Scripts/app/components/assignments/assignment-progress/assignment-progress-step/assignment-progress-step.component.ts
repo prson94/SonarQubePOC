@@ -50,11 +50,11 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	get message(): string {
 		if (this.assigneeNames) {
-		return 'Assigned to ' + this.assigneeNames.slice(0, 2)?.join(', ') +
-			(this.assigneeNames.length > 2 ? ` + ${this.assigneeNames.length - 2} others` : '') +
-			'\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
+			return 'Assigned to ' + this.assigneeNames.slice(0, 2)?.join(', ') +
+				(this.assigneeNames.length > 2 ? ` + ${this.assigneeNames.length - 2} others` : '') +
+				'\nOpen for ' + this.getTimeSpan(Date.parse(this.assignmentItemStep.StartedOn));
 		} else {
-			return ''
+			return '';
 		}
 	}
 
@@ -63,20 +63,33 @@ export class AssignmentProgressStepComponent implements OnInit {
 			return 'fa-play-circle';
 		} else if (StepType[this.assignmentItemStep.StepType] === StepType.Finish) {
 			return 'fa-stop-circle';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.EmailNotification) {
-			return 'fa-envelope';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Form) {
-			return 'fa-sliders';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.FieldChange) {
-			return 'fa-sliders';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPRequest) {
-			return 'fa-globe';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPResponse) {
-			return 'fa-cogs';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.RelationshipUpdate) {
-			return 'fa-users';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Delete) {
-			return 'fa-trash';
+		} else {
+			switch (WorkflowActivityType[this.assignmentItemStep.ActivityType]) {
+				case WorkflowActivityType.EmailNotification: {
+					return 'fa-envelope';
+				}
+				case WorkflowActivityType.Form: {
+					return 'fa-sliders';
+				}
+				case WorkflowActivityType.FieldChange: {
+					return 'fa-sliders';
+				}
+				case WorkflowActivityType.HTTPRequest: {
+					return 'fa-globe';
+				}
+				case WorkflowActivityType.HTTPResponse: {
+					return 'fa-cogs';
+				}
+				case WorkflowActivityType.RelationshipUpdate: {
+					return 'fa-users';
+				}
+				case WorkflowActivityType.Delete: {
+					return 'fa-trash';
+				}
+				default: {
+					return '';
+				}
+			}
 		}
 	}
 

@@ -10,7 +10,7 @@ import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model
 	templateUrl: './assignment-step-field-change-details.component.html'
 })
 export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit {
-	@Input() fieldChanges: any;
+	@Input() fieldChanges: WorkflowStepFieldChangeDetail[];
 
 	constructor(protected settingsService: CompanySettingsService) {
 		super(settingsService);

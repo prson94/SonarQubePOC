@@ -1,6 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { RelationshipUpdateSettings, WorkflowStepRelationshipChangeDetail } from '../../../../models/workflow.model';
+import {
+	RelationshipUpdateSettings,
+	WorkflowStepDetail,
+	WorkflowStepRelationshipChangeDetail
+} from '../../../../models/workflow.model';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowService } from '../../../../services/workflow.service';
 
@@ -26,10 +30,10 @@ export class AssignmentStepRelationshipChangeDetailsComponent extends BaseCompon
 		const formFieldId: string = this.relationshipUpdate?.Relationship['@FormFieldId'] ?? null;
 		this.isLoading = true;
 		if (formStepId && formFieldId) {
-			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: any) => {
+			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails) => {
 				for (const step of workflowDetails.ItemSteps) {
 					if (step.StepID === formStepId) {
-						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: any) => {
+						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: WorkflowStepDetail) => {
 							if (stepDetails?.Fields?.form?.field) {
 								for (const formField of stepDetails.Fields.form.field) {
 									if (formField['@id'] === formFieldId) {

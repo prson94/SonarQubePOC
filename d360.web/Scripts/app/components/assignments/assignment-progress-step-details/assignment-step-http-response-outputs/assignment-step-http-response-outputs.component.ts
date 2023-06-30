@@ -30,18 +30,15 @@ export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent im
 					stepSettingOutputs = [stepSettingOutputs];
 				}
 
-				stepSettingOutputs.forEach((o) => {
-					let field = stepFieldOutputs.find((f) => f.Id === o.Id);
-					if (field == null) {
-						field = {};
-					}
+				for (const stepSettingOutput of stepSettingOutputs) {
+					const field = stepFieldOutputs?.find((f) => f.Id === stepSettingOutput.Id);
 					this.outputs.push({
-						Id: o.Id,
-						Name: o.Name,
-						Path: o.Path,
-						Value: field.Value
+						Id: stepSettingOutput.Id,
+						Name: stepSettingOutput.Name,
+						Path: stepSettingOutput.Path,
+						Value: field?.Value
 					});
-				});
+				}
 			}
 		}
 	}

@@ -89,7 +89,7 @@ export class WorkflowMonitorService extends BaseObservableService {
         );
     }
 
-	deleteItemsByUid(itemUids: string[]):Observable<any> {
+	deleteItemsByUid(itemUids: string[]): Observable<void> {
 		const httpOptions = {
 			headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
 			body: itemUids

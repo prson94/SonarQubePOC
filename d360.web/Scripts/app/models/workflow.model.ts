@@ -738,6 +738,7 @@ export class WorkflowStepFieldChangeDetail {
 	AppendValue: string;
 	ClearValue: string;
 	ObjectType: string;
+	ChangeType: string;
 }
 
 
@@ -804,13 +805,6 @@ export interface WorkflowTypeModel {
 	ID?: number;
 }
 
-export class WorkflowAssignments {
-	items: WorkflowAssignmentItem[] = [];
-	pageSize: number;
-	pageNum: number;
-	total: number;
-}
-
 export class WorkflowAssignmentItem {
 	workflowItemUid: string;
 	workflowUid: string;
@@ -825,6 +819,13 @@ export class WorkflowAssignmentItem {
 	actionTypeUid: string;
 	assetUid: string;
 	assetPath: string;
+}
+
+export class WorkflowAssignments {
+	items: WorkflowAssignmentItem[] = [];
+	pageSize: number;
+	pageNum: number;
+	total: number;
 }
 
 export class WorkflowByType {

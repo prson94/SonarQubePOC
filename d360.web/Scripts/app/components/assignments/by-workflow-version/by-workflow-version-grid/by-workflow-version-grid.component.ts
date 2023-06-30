@@ -33,11 +33,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	selectedAssignmentByVersion: AssignmentByVersion[] = [];
 	simpleFilter: string = '';
 	@Output() selectionChange = new EventEmitter();
-	@Output() hideDetails = new EventEmitter();
 	private destroy = new Subject<void>();
-	menuItems: any[] = [
-		{ title: $localize`Delete` }
-	];
 	private currentPageNumber: number = 1;
 
 	constructor(public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
@@ -87,7 +83,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.assignmentsByVersion = [];
 		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage)
 			.subscribe((response) => {
-				this.assignmentsByVersion = response.items.map(assignmentByVersion => {
+				this.assignmentsByVersion = response.items.map((assignmentByVersion: AssignmentByVersion) => {
 					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
 					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
 					return assignmentWithStatusByVersion;

@@ -3,6 +3,7 @@ import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { GroupService } from '../../../../services/group.service';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
+import { WorkflowStepDetail } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-step-form-details',
@@ -11,7 +12,7 @@ import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 })
 export class AssignmentStepFormDetailsComponent extends BaseComponent implements OnInit {
 
-	@Input() step: any;
+	@Input() step: WorkflowStepDetail;
 	isLoading: boolean = false;
 	groupName: string;
 	showAll: boolean = false;

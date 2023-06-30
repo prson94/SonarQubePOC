@@ -25,6 +25,6 @@ export class WorkflowInformationGeneralComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
+		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 }

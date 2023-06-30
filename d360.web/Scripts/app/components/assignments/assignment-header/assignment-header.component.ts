@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Tab } from '../../shared/tabs/tabs.models';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-assignment-header',
 	templateUrl: './assignment-header.component.html'

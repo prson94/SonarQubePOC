@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
 
@@ -7,7 +7,7 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 	templateUrl: './assignment-information.component.html',
 	styleUrls: ['./assignment-information.component.less']
 })
-export class AssignmentInformationComponent implements OnInit {
+export class AssignmentInformationComponent {
 	@Input() assignmentItem: AssignmentItem;
 	@Input() showCompleteAssignment: boolean = true;
 	@Output() completeAssignment: EventEmitter<{
@@ -38,10 +38,6 @@ export class AssignmentInformationComponent implements OnInit {
 	}>();
 
 	constructor(private workflowService: WorkflowService) {
-	}
-
-	ngOnInit(): void {
-
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {

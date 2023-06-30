@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -6,22 +6,24 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AssignmentByVersion, LinkModel, NodeModel } from '../../../models/workflow.model';
+import { AssignmentByVersion, NodeModel } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-by-workflow-version',
 	templateUrl: './by-workflow-version.component.html',
 	styleUrls: ['./by-workflow-version.component.less']
 })
-export class ByWorkflowVersionComponent extends BaseComponent implements OnInit {
+export class ByWorkflowVersionComponent extends BaseComponent {
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;
 	secondarySidePanelOpen: boolean = false;
-	secondarySidePanelTab: string = 'pendingAssignments'
+	secondarySidePanelTab: string = 'pendingAssignments';
 	selectedAssignmentByVersion: AssignmentByVersion[];
-	versionStepId: number
+	versionStepId: number;
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,
@@ -76,10 +78,6 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 		this.breadcrumbsService = headerBreadcrumbService;
 	}
 
-	ngOnInit(): void {
-
-	}
-
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 	}
@@ -97,7 +95,7 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit 
 	}
 
 	nodeSelection(event: NodeModel): void {
-		this.versionStepId = parseInt(event?.key) ?? null
+		this.versionStepId = parseInt(event?.key) ?? null;
 		this.secondarySidePanelOpen = true;
 	}
 }

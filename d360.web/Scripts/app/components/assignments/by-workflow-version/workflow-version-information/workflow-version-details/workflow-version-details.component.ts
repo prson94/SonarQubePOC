@@ -9,5 +9,8 @@ import { AssignmentByVersion } from '../../../../../models/workflow.model';
 export class WorkflowVersionDetailsComponent {
 
 	@Input() assignmentByVersion: AssignmentByVersion;
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
+	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
+		objectType: string,
+		objectUid: string
+	}>();
 }
