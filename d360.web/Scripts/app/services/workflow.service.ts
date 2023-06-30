@@ -8,7 +8,6 @@ import {
 	AllocationRequestModel,
 	AssignmentItem,
 	AssignmentItemStep,
-	AssignmentByVersion,
 	BulkWorkflowFormModel,
 	BulkWorkflowReassignModel,
 	ChangeTypeInfo,

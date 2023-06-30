@@ -32,7 +32,7 @@ export class AssignmentInformationRequestComponent {
 				this.actions = response;
 				if (this.actions.items?.length > 0) {
 					this.fieldsObservableService.getFieldsV2(null, this.actions.items[0].ActionTypeUid, null)
-						.subscribe(response => {
+						.subscribe((response: FieldTypeAPIModelField[]): void => {
 							this.fieldTypeModelFields = response;
 							this.isLoading = false;
 						});
