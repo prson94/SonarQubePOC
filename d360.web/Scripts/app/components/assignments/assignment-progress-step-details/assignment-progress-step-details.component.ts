@@ -1,7 +1,7 @@
 import {
 	ChangeDetectorRef,
 	Component,
-	EventEmitter,
+	EventEmitter, HostListener,
 	Input,
 	OnChanges,
 	OnInit,
@@ -28,10 +28,7 @@ import { AssignmentFormResponseComponent } from './assignment-form-response/assi
 @Component({
 	selector: 'd3s-assignment-progress-step-details',
 	templateUrl: './assignment-progress-step-details.component.html',
-	styleUrls: ['./assignment-progress-step-details.component.less'],
-	host: {
-		'(document:click)': 'clickedOutside($event)'
-	}
+	styleUrls: ['./assignment-progress-step-details.component.less']
 })
 export class AssignmentProgressStepDetailsComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() itemStepUid: string;
@@ -110,6 +107,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
+	@HostListener('document:click', ['$event'])
 	clickedOutside(event: any) {
 		if (!(event.composedPath().filter((f) => f?.classList?.contains('secondary-side-panel')).length > 0)) {
 			this.close.emit();

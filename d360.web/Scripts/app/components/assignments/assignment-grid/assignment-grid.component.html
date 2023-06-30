@@ -110,7 +110,7 @@
 					</td>
 					<td>
 						<span [innerText]="getAssignees(JSON.parse(item.assigneesJson),2)"></span>
-						<span class="more-assignee-count" [pTooltip]="getAssignees(JSON.parse(item.assigneesJson))"
+						<span class="more-assignee-count" [pTooltip]="getAssignees(JSON.parse(item.assigneesJson))" tooltipStyleClass="ig-tooltip"
 							  *ngIf="JSON.parse(item.assigneesJson)?.length > 2"> + {{ (JSON.parse(item.assigneesJson).length - 2) }}
 							others </span>
 					</td>

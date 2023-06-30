@@ -312,75 +312,74 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		let filterFieldList: AdvancedFilterFieldType[] = [];
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
-		filterFieldList = [
-			{
-				Name: 'Status',
-				FriendlyName: $localize`Status`,
-				Type: lookupFieldTypePrimaryFilter,
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'status')
-			},
-			{
-				Name: 'assignee',
-				FriendlyName: $localize`Assignee`,
-				Type: lookupFieldTypePrimaryFilter,
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'assignee')
-			},
-			{
-				Name: 'actionTypeUid',
-				FriendlyName: $localize`Action`,
-				Type: lookupFieldTypePrimaryFilter,
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'action')
-			},
-			{
-				Name: 'assetDisplayValue',
-				FriendlyName: $localize`Associated with`,
-				Type: new FieldType('Text'),
-				Category: ''
-			},
-			{
-				Name: 'CompletedOn',
-				FriendlyName: $localize`Completed`,
-				Type: new FieldType('DateTime'),
-				Category: ''
-			},
-			{
-				Name: 'StartedOn',
-				FriendlyName: $localize`Initiated`,
-				Type: new FieldType('DateTime'),
-				Category: ''
-			},
-			{
-				Name: 'initiatorUid',
-				FriendlyName: $localize`Initiator`,
-				Type: new FieldType('Lookup'),
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'initiator')
-			},
-			{
-				Name: 'initiatingObjectType',
-				FriendlyName: $localize`Type`,
-				Type: new FieldType('Lookup'),
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'type')
-			},
-			{
-				Name: 'assetTypeUid',
-				FriendlyName: $localize`Type Name`,
-				Type: new FieldType('Lookup'),
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'typeName')
-			},
-			{
-				Name: 'workflowName',
-				FriendlyName: $localize`Workflow Name`,
-				Type: new FieldType('Lookup'),
-				Category: '',
-				ValueLoader: this.getFilterValues.bind(this, 'workflowName')
-			}
-		];
+		filterFieldList = [{
+			Name: 'workflowName',
+			FriendlyName: $localize`Workflow Name`,
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
+		}, {
+			Name: 'assetDisplayValue',
+			FriendlyName: $localize`Associated with`,
+			Type: new FieldType('Text'),
+			Category: ''
+		}, {
+			Name: 'StartedOn',
+			FriendlyName: $localize`Initiated`,
+			Type: new FieldType('DateTime'),
+			Category: ''
+		}, {
+			Name: 'Status',
+			FriendlyName: $localize`Status`,
+			Type: lookupFieldTypePrimaryFilter,
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'status')
+		}];
+		if (!this.isRequestsFlow) {
+			filterFieldList.push(
+				{
+					Name: 'assignee',
+					FriendlyName: $localize`Assignee`,
+					Type: lookupFieldTypePrimaryFilter,
+					Category: '',
+					ValueLoader: this.getFilterValues.bind(this, 'assignee')
+				},
+				{
+					Name: 'actionTypeUid',
+					FriendlyName: $localize`Action`,
+					Type: lookupFieldTypePrimaryFilter,
+					Category: '',
+					ValueLoader: this.getFilterValues.bind(this, 'action')
+				},
+				{
+					Name: 'CompletedOn',
+					FriendlyName: $localize`Completed`,
+					Type: new FieldType('DateTime'),
+					Category: ''
+				},
+				{
+					Name: 'initiatorUid',
+					FriendlyName: $localize`Initiator`,
+					Type: new FieldType('Lookup'),
+					Category: '',
+					ValueLoader: this.getFilterValues.bind(this, 'initiator')
+				},
+				{
+					Name: 'initiatingObjectType',
+					FriendlyName: $localize`Type`,
+					Type: new FieldType('Lookup'),
+					Category: '',
+					ValueLoader: this.getFilterValues.bind(this, 'type')
+				},
+				{
+					Name: 'assetTypeUid',
+					FriendlyName: $localize`Type Name`,
+					Type: new FieldType('Lookup'),
+					Category: '',
+					ValueLoader: this.getFilterValues.bind(this, 'typeName')
+				}
+			);
+		}
 		this.filterFields$ = this.filterFieldsSubject.asObservable();
 		this.filterFieldsSubject.next(filterFieldList);
 		this.filterFieldsSubject.complete();
