@@ -111,7 +111,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	}
 
 	onSimpleSearch(searchTerm: string): void {
-		this.simpleFilter = searchTerm
-		this.loadData()
+		this.currentPageNumber = 1;
+		this.loadData();
 	}
 }
