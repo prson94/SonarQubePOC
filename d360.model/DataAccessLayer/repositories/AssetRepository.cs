@@ -102,8 +102,15 @@ namespace d360.model.DataAccessLayer
 					var hierarchicalString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
 					if (bool.TryParse(hierarchicalString, out bool hierarchical))
 					{
-						condition += " and HA.Hierarchical=@hierarchical ";
-						dbArgs.Add("hierarchical", hierarchical);
+						if (hierarchical)
+						{
+							condition += " and (A.HierarchyMaximumDepth>1 OR A.[Class] in (2,6)) ";
+
+						}
+						else
+						{
+							condition += "  and (A.HierarchyMaximumDepth<=1 AND A.[Class] not in (2,6)) ";
+						}
 					}
 					else
 					{
@@ -306,13 +313,15 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			//in case of Reference List items, check if there is parent to calculate if it is Hierarchical
 			//otherwise take a value from Hierarchical column in AssetType table
 			extraJoins += $@" outer apply(
-										select 
-										case when exists(select top 1 * from  
+										select case 
+										 when A.[Class] in ({(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}) then 1
+										 when A.HierarchyMaximumDepth > 1 then 1
+										 when exists(select top 1 * from  
 												[IntersectType] IT
 												inner join [Predicate] P on P.ID = IT.PredicateID
 												where A.Class = {(int)AssetTypeClass.Reference} and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
 												then 1 
-										else A.Hierarchical
+										else 0
 										end as Hierarchical) HA ";
 
 			var sql = $@"

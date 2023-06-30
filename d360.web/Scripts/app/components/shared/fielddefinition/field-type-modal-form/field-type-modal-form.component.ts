@@ -944,7 +944,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!this.fieldTypeForm) {
 			return;
 		}
-		const fieldName = this.fieldTypeForm.get("Name").value;
+		const fieldName = this.fieldTypeForm.get("Name").value ?? "";
 
 		if (this.isTaskType) {
 			if (fieldName === 'Name') { return true; }
@@ -1023,7 +1023,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get isReferenceItemType(): boolean {
-		return this.assetTypeClass === AssetTypeClass.ReferenceItemType;
+		return this.assetTypeClass === AssetTypeClass.ReferenceItemType || this.assetTypeClass === AssetTypeClass.Reference;
 	}
 
 	get isListableRelationship(): boolean {
@@ -1174,8 +1174,16 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
+		this.fieldTypeForm.get('IsListable').enable();
+
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
+		}
+
+		//in case of Code field for reference types show IsListable selection
+		if (this.selectedFieldType === 'System' && this.isReferenceItemType) {
+			this.fieldTypeForm.get('IsListable').disable();
+			return true;
 		}
 
 		const allowedTypes = ['Counter', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'ComputedOwnershipLookup', 'Score', 'Text', 'Tag', 'Boolean', 'Path', 'ComputedRelationshipField', 'Relationship', 'JsonElement'];

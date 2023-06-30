@@ -619,6 +619,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 	add() {
 		this.selectRow(null);
 		this.showEditor = true;
+
+		this.editorObjectId = this.selected ? this.selected?.ObjectID : this.assetTypeApiModel?.ID;
+		this.editorObjectType = this.assetTypeApiModel["Object"] ?? '';
+		this.editorObjectTypeUid = this.assetTypeApiModel?.uid;
 		//reload dynamic editor if it already exists to trigger change detection
 		if (this.dynamicEditor) {
 			this.dynamicEditor.load();

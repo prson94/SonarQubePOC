@@ -127,7 +127,6 @@ export class AssetTypeApiModel {
     ParentUid: string;
     Notes: string;
     UseAsTransformation: boolean;
-    Hierarchical: boolean;
     HierarchyMaximumDepth: number;
     FlowObjectType: FlowObjectType;
     AssetTypeID: number;
