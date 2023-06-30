@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AssignmentItem, ChangeTypeInfo } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 
@@ -7,7 +7,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 	templateUrl: './assignment-information-general.component.html',
 	styleUrls: ['./assignment-information-general.component.less']
 })
-export class AssignmentInformationGeneralComponent implements OnInit {
+export class AssignmentInformationGeneralComponent {
 	isLoading: boolean = false;
 	changeTypeInfos: ChangeTypeInfo[] = [];
 	private workflowChangeType: string;
@@ -30,7 +30,10 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 		return this._assignmentItem;
 	}
 
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
+	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
+		objectType: string,
+		objectUid: string
+	}>();
 
 	get assetPathLinkPart(): string {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
@@ -41,10 +44,7 @@ export class AssignmentInformationGeneralComponent implements OnInit {
 	}
 
 	constructor(private workflowService: WorkflowService) {
-		this.workflowService.getChangeTypes().subscribe(response => this.changeTypeInfos = response);
-	}
-
-	ngOnInit(): void {
+		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 
 	load(workflowItemUid: string): void {

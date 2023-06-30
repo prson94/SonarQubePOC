@@ -7,9 +7,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
 })
 export class AssignmentMultiDeleteComponent {
 
-	constructor() {
-	}
-
 	@Output() confirmDelete: EventEmitter<boolean> = new EventEmitter();
 
 	deleteAssignments(): void {

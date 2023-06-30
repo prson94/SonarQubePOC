@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { WorkflowDiagramModel } from '../../../../models/workflow.model';
 
 @Component({
@@ -6,13 +6,6 @@ import { WorkflowDiagramModel } from '../../../../models/workflow.model';
 	templateUrl: './workflow-information-diagram.component.html',
 	styleUrls: ['./workflow-information-diagram.component.less']
 })
-export class WorkflowInformationDiagramComponent implements OnInit {
-	@Input() workflowDiagramModel: WorkflowDiagramModel
-
-	constructor() {
-	}
-
-	ngOnInit(): void {
-	}
-
+export class WorkflowInformationDiagramComponent {
+	@Input() workflowDiagramModel: WorkflowDiagramModel;
 }

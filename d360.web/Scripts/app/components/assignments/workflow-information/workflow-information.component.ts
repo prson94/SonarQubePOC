@@ -42,8 +42,8 @@ export class WorkflowInformationComponent {
 	}
 
 	@HostListener('document:click', ['$event'])
-	clickedOutside(event: any) {
-		if (!(event.composedPath().filter((f) => f?.classList?.contains('secondary-side-panel')).length > 0)) {
+	clickedOutside(event: PointerEvent): void {
+		if (!(event.composedPath().filter((eventTarget) => (<Element>eventTarget)?.classList?.contains('secondary-side-panel')).length > 0)) {
 			this.close.emit();
 		}
 	}

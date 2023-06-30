@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
 	selector: 'd3s-assignments-container',
@@ -8,12 +8,6 @@ import { Component, OnInit } from '@angular/core';
 		</div>
 	`
 })
-export class AssignmentsContainerComponent implements OnInit {
-
-	constructor() {
-	}
-
-	ngOnInit(): void {
-	}
+export class AssignmentsContainerComponent {
 
 }

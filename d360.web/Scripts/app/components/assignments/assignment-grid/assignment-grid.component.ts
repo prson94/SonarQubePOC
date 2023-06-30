@@ -9,14 +9,19 @@ import { map } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowAssignmentItem, WorkflowIssueType, WorkflowTypeModel } from '../../../models/workflow.model';
+import {
+	WorkflowAssignmentItem,
+	WorkflowAssignments,
+	WorkflowIssueType,
+	WorkflowTypeModel
+} from '../../../models/workflow.model';
 import {
 	AdvancedFilterFieldType,
 	Filters,
 	LookupValuesAPIModel,
 	LookupValuesAPIParameters
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
-import { FieldType } from '../../../models/fieldtype-api.model';
+import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 
@@ -47,7 +52,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	actionFormFields: any[] = [];
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
-	@Output() hideDetails: EventEmitter<any> = new EventEmitter();
 	private destroy: Subject<void> = new Subject<void>();
 	menuItems: PopupMenuItem[] = [new PopupMenuItem({
 		title: $localize`Delete`
@@ -88,7 +92,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	export() {
 		this.isExportInProgress = true;
-		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
+		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, true, () => {
 			this.isExportInProgress = false;
 		});
@@ -105,8 +109,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			return;
 		}
 		this.isLoading = true;
-		let initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
-		let sources: Observable<any>[] = [
+		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
+		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
@@ -145,18 +149,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	clickMenuIcon(item: any): void {
+	clickMenuIcon(item: WorkflowAssignmentItem): void {
 		if (item) {
 			this.gridSelectionChange([item]);
 		}
 	}
 
-	onSimpleSearch(event: any): void {
+	onSimpleSearch(): void {
 		this.currentPageNumber = 1;
 		this.loadData();
 	}
 
-	clickMenuItem(event: any): void {
+	clickMenuItem(event: { value: string, action: string, event, data: PopupMenuItem }): void {
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
 			this.showDeletionModal = true;
@@ -181,22 +185,20 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
 		if (lookupType === 'status') {
-			let statusValues: string[] = ['Pending', 'Complete'];
+			const statusValues: string[] = ['Pending', 'Complete'];
 			const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 			return of({
 				items: values,
 				count: values.length
 			});
-		}
-		if (lookupType === 'type') {
-			let typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
+		} else if (lookupType === 'type') {
+			const typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
 			const values: string[] = typeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 			return of({
 				items: values,
 				count: values.length
 			});
-		}
-		if (lookupType === 'assignee') {
+		} else if (lookupType === 'assignee') {
 			return this.workflowService.getPossibleAssignees().pipe(
 				map((assignees: { uid: string, Name: string }[]) => {
 					let possibleAssigneeList: {
@@ -214,8 +216,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						count: possibleAssigneeList.length
 					};
 				}));
-		}
-		if (lookupType === 'initiator') {
+		} else if (lookupType === 'initiator') {
 			return this.workflowService.getPossibleInitiators().pipe(
 				map((initiators: { uid: string, Name: string }[]) => {
 					let possibleInitiatorsList: {
@@ -233,8 +234,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						count: possibleInitiatorsList.length
 					};
 				}));
-		}
-		if (lookupType === 'workflowName') {
+		} else if (lookupType === 'workflowName') {
 			return this.workflowService.getTypes().pipe(
 				map((workflowTypeList: WorkflowTypeModel[]) => {
 					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
@@ -244,8 +244,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						count: workflowNameList.length
 					};
 				}));
-		}
-		if (lookupType === 'action') {
+		} else if (lookupType === 'action') {
 			return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
 				map((workflowIssueTypeList: WorkflowIssueType[]) => {
 					let workflowActionList: {
@@ -263,8 +262,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						count: workflowActionList.length
 					};
 				}));
-		}
-		if (lookupType === 'typeName') {
+		} else if (lookupType === 'typeName') {
 			return this.workflowService.getRelevantAssetTypes().pipe(
 				map((assetType: { uid: string, name: string }[]) => {
 					let assetTypeList: { 'name': string, 'value': string }[] = assetType?.map((assetType): {
@@ -289,11 +287,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
-		let advancedFilterData: any[] = $event.data;
-		for (let i: number = 0; i < advancedFilterData?.length; i++) {
-			if (advancedFilterData[i].field === 'actionTypeUid') {
-				this.singleActionTypeUidSelected = advancedFilterData[i].value?.length === 1;
-				this.singleActionTypeUidFilter = advancedFilterData[i].value && advancedFilterData[i].value[0]?.value;
+		const advancedFilterData: any[] = $event.data;
+		for (const item of advancedFilterData) {
+			if (item.field === 'actionTypeUid') {
+				this.singleActionTypeUidSelected = item.value?.length === 1;
+				this.singleActionTypeUidFilter = item.value && item.value[0]?.value;
 			}
 		}
 		this.currentPageNumber = 1;
@@ -303,7 +301,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	getAssignees(assigneeList: any[], count?: number): string {
 		let assigneeNames: string = '';
 		if (assigneeList && assigneeList.length > 0) {
-			const assigneeNameList: any[] = assigneeList.map((assignee) => assignee.Name)?.sort();
+			const assigneeNameList: string[] = assigneeList.map((assignee) => assignee.Name)?.sort();
 			assigneeNames = count ? assigneeNameList?.slice(0, count)?.join(', ') : assigneeNameList?.join(', ');
 		}
 		return assigneeNames;

@@ -30,9 +30,12 @@ export class AssignmentInformationComponent implements OnInit {
 			this.loadAssignmentItem(value);
 			this.loadAssignmentSteps(value);
 		}
-	};
+	}
 
-	@Output() linkClick: EventEmitter<any> = new EventEmitter<any>();
+	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
+		objectType: string,
+		objectUid: string
+	}>();
 
 	constructor(private workflowService: WorkflowService) {
 	}

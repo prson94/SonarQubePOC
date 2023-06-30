@@ -29,7 +29,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit {
 	sidePanelTab: string = 'information';
 	showAssignmentHeader: boolean = true;
 	isAdmin: boolean = false;
-	resourceUid: any;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
 	assignmentItemStep: AssignmentItemStep;

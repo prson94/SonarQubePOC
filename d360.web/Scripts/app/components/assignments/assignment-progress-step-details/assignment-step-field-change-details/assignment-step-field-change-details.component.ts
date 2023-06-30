@@ -25,7 +25,7 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 
 	getUrl(val: string): string {
 		if (typeof val !== 'undefined') {
-			let url: string[] = val.split('|');
+			const url: string[] = val.split('|');
 			return url[1];
 		}
 		return '';
@@ -48,13 +48,13 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 
 	ngOnInit(): void {
 		if (this.fieldChanges) {
-			for (let i = 0; i < this.fieldChanges.length; i++) {
-				if (this.fieldChanges[i].AppendValue === 'true') {
-					this.fieldChanges[i].ChangeType = 'Append';
-				} else if (this.fieldChanges[i].ClearValue === 'true') {
-					this.fieldChanges[i].ChangeType = 'Clear';
+			for (const fieldChange of this.fieldChanges) {
+				if (fieldChange.AppendValue === 'true') {
+					fieldChange.ChangeType = 'Append';
+				} else if (fieldChange.ClearValue === 'true') {
+					fieldChange.ChangeType = 'Clear';
 				} else {
-					this.fieldChanges[i].ChangeType = 'Replace';
+					fieldChange.ChangeType = 'Replace';
 				}
 			}
 		}

@@ -77,7 +77,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		}
 	}
 
-	load(): Observable<any> {
+	load(): Observable<void> {
 		this.step = null;
 		if (this.itemStepUid != null) {
 			this.isLoading = true;
@@ -109,8 +109,8 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	@HostListener('document:click', ['$event'])
-	clickedOutside(event: any) {
-		if (!(event.composedPath().filter((f) => f?.classList?.contains('secondary-side-panel')).length > 0)) {
+	clickedOutside(event: PointerEvent): void {
+		if (!(event.composedPath().filter((eventTarget) => (<Element>eventTarget)?.classList?.contains('secondary-side-panel')).length > 0)) {
 			this.close.emit();
 		}
 	}
