@@ -10,6 +10,8 @@ import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { AssignmentByVersion } from '../../../../models/workflow.model';
 
+/*global $localize*/
+
 class AssignmentWithStatusByVersion extends AssignmentByVersion {
 	statusCount: number;
 }

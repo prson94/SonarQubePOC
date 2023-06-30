@@ -3,6 +3,8 @@ import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-assignment-step-field-change-details',
 	templateUrl: './assignment-step-field-change-details.component.html'

@@ -11,6 +11,8 @@ import { AssignmentProgressComponent } from '../assignment-progress/assignment-p
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../services/authentication.service';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-assignment-list',
 	templateUrl: './assignment-list.component.html',

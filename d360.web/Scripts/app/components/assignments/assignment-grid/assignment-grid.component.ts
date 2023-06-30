@@ -20,6 +20,8 @@ import { FieldType } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-assignment-grid',
 	templateUrl: './assignment-grid.component.html',
@@ -33,7 +35,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
-	sortField: string = undefined;
+	sortField: string;
 	sortOrder: SortOrder = SortOrder.Descending;
 	isAdmin: boolean = false;
 	selectedCount: number = 0;
