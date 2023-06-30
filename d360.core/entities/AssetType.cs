@@ -132,9 +132,9 @@ namespace d360.core.entities
 		/// </summary>
 		[DataMember]
 		public bool AutoDisplayDescription { get; set; } = true;
-
-		[DataMember]
-		public bool Hierarchical { get; set; }
+		
+		[DataMember] // Left for backward compatibility so as to not introduce a breaking api change.
+		public bool Hierarchical { get { return (HierarchyMaximumDepth > 1 || ClassID == AssetTypeClass.Model || ClassID == AssetTypeClass.Policy); } } 
 
 		[DataMember]
 		public int HierarchyMaximumDepth { get; set; }
@@ -148,8 +148,8 @@ namespace d360.core.entities
 		[DataMember]
 		public bool UseAsTransformation { get; set; }
 
-		[DataMember]
-		public bool CanOwnFusion { get; set; }   // left for backward compatibility so as to not introduce a breaking api change.
+		[DataMember] // Left for backward compatibility so as to not introduce a breaking api change.
+		public bool CanOwnFusion { get; set; }
 
 		[DataMember]
 		public string Path { get; set; }
