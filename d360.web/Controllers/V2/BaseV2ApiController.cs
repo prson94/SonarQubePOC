@@ -19,6 +19,7 @@ using d360.core;
 using System.Web.Http.Results;
 using d360.web.Models;
 using d360.core.queue;
+using System.Text;
 
 namespace d360.web.Controllers.V2
 {
@@ -396,6 +397,16 @@ namespace d360.web.Controllers.V2
 			else
 			{
 				var message = new ResponseMessageResult(Request.CreateResponse(res.Code));
+				message.Response.Content = new StringContent(
+					JsonConvert.SerializeObject(
+						new ErrorResponse { 
+							message = res.Message, 
+							title = res.Code.ToString(), 
+							type = "error" }
+						), 
+					Encoding.UTF8, 
+					"application/json"
+				);
 				message.Response.ReasonPhrase = res.Message;
 				return message;
 			}

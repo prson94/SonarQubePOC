@@ -30,6 +30,7 @@
 	<include file="scripts/Udt.utility.FieldValue.xml"/>
   
 	<!-- Functions (object-based naming) -->
+	<include file="scripts/Function.api.ValidateCatalogItemProperty.xml"/>
 	<include file="scripts/Function.dbo.XMLRemoveInValidChar.xml"/>
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>

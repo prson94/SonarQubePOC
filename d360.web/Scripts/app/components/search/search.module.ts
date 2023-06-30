@@ -44,6 +44,8 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 import { SemanticsModule } from "../semantic/semantics.module";
 import { AngularSplitModule } from 'angular-split';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 
 
 @NgModule({
@@ -88,7 +90,9 @@ import { AngularSplitModule } from 'angular-split';
         SiteModalModule,
         AssetEditorModule,
         SemanticsModule,
-        AngularSplitModule,
+		AngularSplitModule,
+		AssetTypeDetailModule,
+		TaggedAssetDetailModule
     ],
     declarations: [
         HomeSearchComponent,

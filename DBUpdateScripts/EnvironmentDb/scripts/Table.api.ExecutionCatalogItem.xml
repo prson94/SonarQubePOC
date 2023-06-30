@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItem-v1">
+  <changeSet author="Pappas" id="Table.api.ExecutionCatalogItem-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -33,9 +33,20 @@ BEGIN
 
 		[Action] char(1),
 		[Success] bit, 
-		[Message] nvarchar(500)
+		[Message] nvarchar(max)
 	)
 END
+
+	IF EXISTS (
+	  select 	* 
+	  from 		INFORMATION_SCHEMA.COLUMNS 
+	  where 	TABLE_SCHEMA = 'api' 
+				and TABLE_NAME = 'ExecutionCatalogItem' 
+				and COLUMN_NAME = 'Message'
+	)
+	BEGIN
+		alter table api.ExecutionCatalogItem alter column [Message] nvarchar(max) null;
+	END
 		]]>
     </sql>
   </changeSet>
