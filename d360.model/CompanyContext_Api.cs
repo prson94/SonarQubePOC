@@ -4422,6 +4422,14 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 								}
 							}
 						}
+
+						results.AddRange(
+							Query<DatabaseBulkRelationshipUpdateResult>(
+								$"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+								new { execution.ExecutionID, beginItemNumber, endItemNumber }
+							)
+						);
+
 						beginItemNumber += loopSize;
 						endItemNumber += loopSize;
 					}
