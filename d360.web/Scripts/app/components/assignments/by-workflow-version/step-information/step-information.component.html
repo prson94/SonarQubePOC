@@ -1,0 +1,13 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading && selectedNode" class="asset-detail">
+	<div class="asset-detail-header">
+		<div i18n class="asset-name">
+			{{ selectedNode.name }}
+		</div>
+		<div i18n class="class-name">
+			Step
+		</div>
+	</div>
+	<div class="asset-detail-tabs">
+	</div>
+</div>

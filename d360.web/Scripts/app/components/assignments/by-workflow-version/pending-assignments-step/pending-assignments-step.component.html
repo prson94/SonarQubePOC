@@ -2,7 +2,7 @@
 <ng-container *ngIf="!isLoading">
 	<header>
 		&nbsp;
-		<d3s-tile-actions *ngIf="!isLoading" [hasExport]="true" (exportClick)="export()" [hasFilterMode]="true"
+		<d3s-tile-actions *ngIf="!isLoading" [hasExport]="true" (exportClick)="export()"
 						  [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
 	</header>
 	<input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
@@ -10,7 +10,7 @@
 		   class="grid-simple-filter">
 	<p-table #dt [value]="history" [scrollable]="true" selectionMode="single" [metaKeySelection]="true"
 			 [tableStyle]="{'min-width': 'max-content'}"
-			 [globalFilterFields]="['Name','Status']" [pageLinks]="3"
+			 [globalFilterFields]="['Name','Assignments','Status']" [pageLinks]="3"
 			 [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
 		<ng-template pTemplate="header">
 			<tr>

@@ -95,6 +95,7 @@ import { PageHeaderModule } from '../shared/page-header/page-header.module';
 import { PendingAssignmentsStepComponent } from './by-workflow-version/pending-assignments-step/pending-assignments-step.component';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { InputTextModule } from 'primeng/inputtext';
+import { StepInformationComponent } from './by-workflow-version/step-information/step-information.component';
 
 
 @NgModule({
@@ -127,7 +128,8 @@ import { InputTextModule } from 'primeng/inputtext';
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
-  PendingAssignmentsStepComponent
+  PendingAssignmentsStepComponent,
+  StepInformationComponent
 	],
     imports: [
         AdvancedFiltersModule,

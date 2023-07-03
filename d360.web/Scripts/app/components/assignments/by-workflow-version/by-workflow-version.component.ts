@@ -24,6 +24,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 	secondarySidePanelTab: string = 'pendingAssignments';
 	selectedAssignmentByVersion: AssignmentByVersion[];
 	versionStepId: number;
+	selectedNode: NodeModel;
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,
@@ -52,8 +53,8 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 		needsSelection: true
 	}),
 		new SidePanelButton({
-			label: $localize`Workflow Step Information`,
-			tooltip: $localize`Workflow Step Information`,
+			label: $localize`Activity Information`,
+			tooltip: $localize`Activity Information`,
 			disabledTooltip: null,
 			nothingSelectedMessage: $localize`Select a Step from the Workflow diagram to display its information`,
 			notApplicableMessage: $localize`Information data is not available for the selected Step`,
@@ -96,6 +97,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 
 	nodeSelection(event: NodeModel): void {
 		this.versionStepId = parseInt(event?.key) ?? null;
+		this.selectedNode = event;
 		this.secondarySidePanelOpen = true;
 	}
 }
