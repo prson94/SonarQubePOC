@@ -64,32 +64,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 		} else if (StepType[this.assignmentItemStep.StepType] === StepType.Finish) {
 			return 'fa-stop-circle';
 		} else {
-			switch (WorkflowActivityType[this.assignmentItemStep.ActivityType]) {
-				case WorkflowActivityType.EmailNotification: {
-					return 'fa-envelope';
-				}
-				case WorkflowActivityType.Form: {
-					return 'fa-sliders';
-				}
-				case WorkflowActivityType.FieldChange: {
-					return 'fa-sliders';
-				}
-				case WorkflowActivityType.HTTPRequest: {
-					return 'fa-globe';
-				}
-				case WorkflowActivityType.HTTPResponse: {
-					return 'fa-cogs';
-				}
-				case WorkflowActivityType.RelationshipUpdate: {
-					return 'fa-users';
-				}
-				case WorkflowActivityType.Delete: {
-					return 'fa-trash';
-				}
-				default: {
-					return '';
-				}
-			}
+			return this.getActivityTypeIcon();
 		}
 	}
 
@@ -118,6 +93,35 @@ export class AssignmentProgressStepComponent implements OnInit {
 			stepUid: this.assignmentItemStep.Uid,
 			assetId: this.workflowStepDetail.ObjectID
 		});
+	}
+
+	private getActivityTypeIcon(): string {
+		switch (WorkflowActivityType[this.assignmentItemStep.ActivityType]) {
+			case WorkflowActivityType.EmailNotification: {
+				return 'fa-envelope';
+			}
+			case WorkflowActivityType.Form: {
+				return 'fa-sliders';
+			}
+			case WorkflowActivityType.FieldChange: {
+				return 'fa-sliders';
+			}
+			case WorkflowActivityType.HTTPRequest: {
+				return 'fa-globe';
+			}
+			case WorkflowActivityType.HTTPResponse: {
+				return 'fa-cogs';
+			}
+			case WorkflowActivityType.RelationshipUpdate: {
+				return 'fa-users';
+			}
+			case WorkflowActivityType.Delete: {
+				return 'fa-trash';
+			}
+			default: {
+				return '';
+			}
+		}
 	}
 
 	private getTimeSpan(startDateMilliseconds: number, endDateMilliseconds: number = Date.now()): string {
