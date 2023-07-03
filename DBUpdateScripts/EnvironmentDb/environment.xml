@@ -235,7 +235,6 @@
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
-    <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
