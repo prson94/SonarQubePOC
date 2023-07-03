@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { WorkflowStepDetail } from '../../../../models/workflow.model';
+import { EmailRecipients, EmailSettings, WorkflowStepDetail } from '../../../../models/workflow.model';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { GroupService } from '../../../../services/group.service';
@@ -14,9 +14,9 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 	@Input() step: WorkflowStepDetail = null;
 	@Input() isAggregate: boolean = false;
 	@Input() formEmailDetails: boolean = false;
-	recipients: any[] = [];
+	recipients: EmailRecipients[] = [];
 	showAll: boolean = false;
-	emailSettings: any;
+	emailSettings: EmailSettings;
 	groupName: string;
 	isLoading: boolean = false;
 	helper = WorkflowHelpers;
@@ -42,7 +42,7 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 	sortNames(): void {
 		if (this.step) {
 			if (!this.isAggregate && this.step.ItemSettings.emails.email != null) {
-				const sorted: any[] = this.step.ItemSettings.emails.email.slice();
+				const sorted: EmailRecipients[] = this.step.ItemSettings.emails.email.slice();
 
 				sorted.sort((a, b) => {
 					if (a['name']?.toLowerCase() < b['name']?.toLowerCase()) {

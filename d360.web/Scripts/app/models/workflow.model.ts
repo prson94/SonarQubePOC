@@ -888,3 +888,20 @@ export class Actions {
 		}
 	];
 }
+
+export class EmailSettings {
+	IncludePreviousFormResponses: string;
+	MessageBodyTemplate: string;
+	MessageRecipientType: string;
+	MessageSubjectTemplate: string;
+	MessageToGroup: string;
+	ResponsibilityTypeID: string[];
+	SendToDefaultUsers: string;
+}
+
+export class EmailRecipients {
+	'@address': string;
+	id: number;
+	name: string;
+	responsibility: string;
+}

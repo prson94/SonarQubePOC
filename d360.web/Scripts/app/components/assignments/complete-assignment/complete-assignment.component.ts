@@ -42,10 +42,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isModalVisible = true;
 	}
 
-	submit(): void {
-
-	}
-
 	showAssignment(): void {
 		this.isAssignmentProgressSelected = false;
 		this.modalTitle = 'Assignment';

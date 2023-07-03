@@ -16,6 +16,7 @@ import {
 	WorkflowTypeModel
 } from '../../../models/workflow.model';
 import {
+	AdvancedFilterFieldCondition,
 	AdvancedFilterFieldType,
 	Filters,
 	LookupValuesAPIModel,
@@ -114,7 +115,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
-		forkJoin(sources).subscribe((results: [WorkflowAssignments,FieldTypeAPIModelField[]]) => {
+		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
 			this.items = results[0].items;
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
@@ -287,7 +288,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
-		const advancedFilterData: any[] = $event.data;
+		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
 		for (const item of advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
@@ -298,7 +299,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	getAssignees(assigneeList: {Name: string, uid: string}[], count?: number): string {
+	getAssignees(assigneeList: { Name: string, uid: string }[], count?: number): string {
 		let assigneeNames: string = '';
 		if (assigneeList && assigneeList.length > 0) {
 			const assigneeNameList: string[] = assigneeList.map((assignee) => assignee.Name)?.sort();
@@ -308,10 +309,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	createFilterFields(): void {
-		let filterFieldList: AdvancedFilterFieldType[] = [];
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
-		filterFieldList = [{
+		let filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'workflowName',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
