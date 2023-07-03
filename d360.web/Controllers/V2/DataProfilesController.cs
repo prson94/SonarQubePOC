@@ -311,7 +311,7 @@ namespace d360.web.Controllers.V2
             }
 
             var execution = getApiExecution(models.Count);
-            var results = DataProfiles.UpsertAsync(models, execution, false);
+            var results = await DataProfiles.UpsertAsync(models, execution, false);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }

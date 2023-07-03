@@ -318,7 +318,7 @@ namespace d360.model.DataAccessLayer
 				await CompanyContext.UpsertDataProfilesAsync(DataProfileUpsertModels, execution, isInsert);
 				results = await CompanyContext.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
 
-				execution.Processed = results.Count;
+				execution.Processed = results.Count; 
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
