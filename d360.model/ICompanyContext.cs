@@ -190,12 +190,13 @@ namespace d360.model
         AssetType GetParentType(int id);
         
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
-
-		public bool GetPermissionsRead(long assetId, int assetTypeId);
-
-		Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true, IntersectType intersectType = null, FieldType ft = null, bool onlyQueries = false);
         
-
+        string GetCheckPermissionResult(int PermissionMask, int perm);
+        
+        public bool GetPermissionsRead(long assetId, int assetTypeId);
+        
+        Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true, IntersectType intersectType = null, FieldType ft = null, bool onlyQueries = false);
+        
         string GetUserHomePage();
         
 		bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID);

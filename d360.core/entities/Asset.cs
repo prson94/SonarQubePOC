@@ -244,6 +244,20 @@ namespace d360.core.entities
 		public List<AssetClassCountModel> countsByAssetClass { get; set; }
 	}
 
+	public class AssetsTypeRelatedQueryResults
+	{
+
+		public IEnumerable<dynamic> AssetTypeData { get; set; }
+
+		public IEnumerable<dynamic> FieldTypeData { get; set; }
+
+		public IEnumerable<dynamic> RelationLookupDetails { get; set; }
+
+		public IEnumerable<dynamic> ResponsibilityTypeAssignmentData { get; set; }
+
+		public IEnumerable<dynamic> RelationshipData { get; set; }
+	}
+
 	public class AssetTypeCountModel
 	{
 		public Guid uid { get; set; }
