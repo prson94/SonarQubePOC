@@ -12,8 +12,8 @@
              tooltipStyleClass="{{(expanded ? 'ig-tooltip-site-menu' : 'ig-tooltip-site-menu-collapsed')}}"
              style="display:inline-flex"
              [escape]="false">
-            <div>
-                <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
+            <div class="menu-icon-container">
+                <img *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
                 <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
                 <img *ngIf="imageUrl" [src]="imageUrl" />
             </div>

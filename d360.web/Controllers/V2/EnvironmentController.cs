@@ -2444,23 +2444,15 @@ select	r.uid as ResourceUid,
 				{
 					try
 					{
-						try
-						{
-							var zip = Package.Open(file.InputStream);
-							var parts = zip.GetParts().Select(p => p.Uri.OriginalString);
-							var exists = parts.Any(p => p == "/DataModel");
-							if (!exists)
-							{
-								return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
-							}
-						}
-						catch
+						MemoryStream memoryStream = new MemoryStream();
+						file.InputStream.CopyTo(memoryStream);
+						if (!isPowerBiFileValid(memoryStream))
 						{
 							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 						}
+						memoryStream.Position = 0; // Reset position to read again.
 
-						var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
-
+						var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
 						if (importResult.ImportState == "Failed")
 						{
 							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
@@ -2575,7 +2567,17 @@ select	r.uid as ResourceUid,
 
 				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
 				{
-					var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
+					MemoryStream memoryStream = new MemoryStream();
+					file.InputStream.CopyTo(memoryStream);
+
+					if (!isPowerBiFileValid(memoryStream))
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+					}
+
+					memoryStream.Position = 0; // Reset position to read again.
+
+					var importResult = await uploadPowerBIReport(memoryStream, requestModel.Name, definition.powerBiDatasetId);
 
 					if (importResult.ImportState == "Failed")
 					{
@@ -2593,7 +2595,7 @@ select	r.uid as ResourceUid,
 
 					definition.fileName = file.FileName;
 
-					requestModel.Definition = definition;
+					requestModel.Definition = definition;					
 				}
 
 				var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
@@ -2899,7 +2901,27 @@ select	r.uid as ResourceUid,
 			return groupId;
 		}
 
-		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFile file, string name, string datasetId = "")
+		private bool isPowerBiFileValid(Stream fileStream)
+		{
+			try
+			{
+				var zip = Package.Open(fileStream);
+				var parts = zip.GetParts().Select(p => p.Uri.OriginalString);
+				var exists = parts.Any(p => p == "/DataModel");
+				if (!exists)
+				{
+					return false;
+				}
+			}
+			catch
+			{
+				return false;
+			}
+			
+			return true;
+		}
+
+		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(Stream fileStream, string name, string datasetId = "")
 		{
 			var companySettings = SettingsRepository.GetSettings();
 			var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
@@ -2919,7 +2941,7 @@ select	r.uid as ResourceUid,
 				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
 			}
 
-			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
+			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, fileStream);
 		}
 
 		#region User Settings endpoints
