@@ -9,5 +9,21 @@
 		</div>
 	</div>
 	<div class="asset-detail-tabs">
+		<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<div class="row">
+					<div class="category-column">
+						<label class="ig-label" i18n>Name</label>
+						<div class="ig-value" i18n>{{ selectedNode.name }}</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="category-column">
+						<label class="ig-label" i18n>Activity Type</label>
+						<div class="ig-value" i18n>{{helper.activityTypeName(selectedNode.activityType)}}</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
 	</div>
 </div>

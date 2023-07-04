@@ -13,7 +13,7 @@
 </div>
 <div *ngIf="expanded === true" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
     <div>
-        <div class="side-panel-container" style="margin: 0;">
+        <div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
             <div class="panel-header">
                 <span class="header-label">{{panelLabel}}</span>
                 <div class="side-panel-button-container">

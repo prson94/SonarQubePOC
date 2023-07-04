@@ -3,7 +3,7 @@ import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { GroupService } from '../../../../services/group.service';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
-import { WorkflowStepDetail } from '../../../../models/workflow.model';
+import { EmailRecipients, WorkflowStepDetail } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-step-form-details',
@@ -17,7 +17,7 @@ export class AssignmentStepFormDetailsComponent extends BaseComponent implements
 	groupName: string;
 	showAll: boolean = false;
 	helper = WorkflowHelpers;
-	recipients: any[] = [];
+	recipients: EmailRecipients[] = [];
 
 	constructor(
 		private groupService: GroupService,
@@ -38,7 +38,7 @@ export class AssignmentStepFormDetailsComponent extends BaseComponent implements
 
 	sortNames(): void {
 		if (this.step?.ItemSettings?.emails?.email) {
-			const sorted: any[] = this.step.ItemSettings.emails.email.slice();
+			const sorted: EmailRecipients[] = this.step.ItemSettings.emails.email.slice();
 
 			sorted.sort((a, b) => {
 				if (a['name']?.toLowerCase() < b['name']?.toLowerCase()) {

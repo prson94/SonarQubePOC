@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NodeModel } from '../../../../models/workflow.model';
+import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 
 @Component({
   selector: 'd3s-step-information',
@@ -9,4 +10,5 @@ import { NodeModel } from '../../../../models/workflow.model';
 export class StepInformationComponent{
 	@Input() selectedNode: NodeModel
 	isLoading: boolean = false
+	helper = WorkflowHelpers
 }

@@ -17,7 +17,7 @@ import { SidePanelService } from '../../../services/side-panel.service';
 
 export class SidePanelComponent extends BaseComponent {
     @Input() height = 'calc(100vh - 270px)';
-
+    @Input() isSecondarySidePanel: boolean = false
     @Input() hasDetail: boolean = false;
     @Input() hasProfiling: boolean = false;
     @Input() hasFilter: boolean = false;

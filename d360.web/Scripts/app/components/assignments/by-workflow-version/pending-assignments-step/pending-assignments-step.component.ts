@@ -12,8 +12,6 @@ import { Router } from '@angular/router';
 })
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;
-
-	selection: any;
 	history: any[];
 	WorkflowActivityType = WorkflowActivityType;
 
