@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 
 using AngleSharp.Text;
@@ -1920,9 +1921,10 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			bool needFieldDataConversion = fieldColumns.NeedExplicitCast();
+			List<string> pathSegmentsForParsing = allFieldTypes.Where(x => x.IsListable && x.Type == "Path" && !string.IsNullOrEmpty(x.Definition) && x.Definition.Contains("AssetTypeUid")).Select(x=> x.Name).ToList();
 
 			//Loop results once for if any applicable conversions
-			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
+			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()) || pathSegmentsForParsing.Count > 0)
 			{
 				foreach (var result in results)
 				{
@@ -2029,6 +2031,20 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								data[ft.Name] = JsonConvert.DeserializeObject(val);
 							}
 						});
+					}
+
+					if (pathSegmentsForParsing.Count > 0)
+					{
+						foreach (var field in pathSegmentsForParsing)
+						{
+							var data = (IDictionary<string, object>)result;
+
+							if (data.ContainsKey(field) && data[field] != null)
+							{
+								data[field] = HttpUtility.HtmlDecode(data[field].ToString());
+							}
+
+						}
 					}
 				}
 			}
