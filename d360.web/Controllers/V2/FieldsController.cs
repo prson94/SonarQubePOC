@@ -26,6 +26,7 @@ using d360.web.Services;
 using Dapper;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Office2016.Excel;
+using DocumentFormat.OpenXml.Vml;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -289,6 +290,38 @@ namespace d360.web.Controllers.V2
 					}
 
 				});
+			}
+
+			foreach (var field in model.Fields)
+			{
+				//check filters in complex relation lookup definition
+				if (field.Type.ComputedRelationshipLookup != null)
+				{
+					List<long> fieldIds = new List<long>();
+
+					var definition = field.Type.ComputedRelationshipLookup.Definition;
+					string[] words = definition.Filters.Split(' ');
+
+					foreach (var word in words.ToList().Where(x => x.Contains('H')))
+					{
+						int idx = word.IndexOf('_') + 1;
+						string fieldName = word.Substring(idx);
+						long parsedValue;
+						if (long.TryParse(fieldName, out parsedValue))
+						{
+							fieldIds.Add(parsedValue);
+						}
+					}
+
+					var fieldTypes = Company.FieldTypes.AsNoTracking().Where(x => fieldIds.Contains(x.ID)).Select(x => x.Name).ToList();
+					foreach (var ft in fieldTypes)
+					{
+						if (!definition.Fields.Any(x => x.FieldTypeName.ToLowerInvariant() == ft.ToLowerInvariant()))
+						{
+							throw new RestApiException(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipLookupMissingFieldFromFilter);
+						}
+					}
+				}
 			}
 
 			if (assetTypeIdentifierInfoModel != null && model.Fields.Any(x => x.Type.Counter != null))

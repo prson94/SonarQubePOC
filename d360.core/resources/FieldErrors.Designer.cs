@@ -1069,6 +1069,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fields definition must include all fields used in Filters property..
+        /// </summary>
+        public static string RelationshipLookupMissingFieldFromFilter {
+            get {
+                return ResourceManager.GetString("RelationshipLookupMissingFieldFromFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [Type.Score] is not supported on relationships.
         /// </summary>
         public static string RelationshipNotAllowedScoreFieldType {
