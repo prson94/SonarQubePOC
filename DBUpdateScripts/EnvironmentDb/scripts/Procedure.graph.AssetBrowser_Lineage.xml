@@ -4,7 +4,7 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v16">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v17">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -624,6 +624,18 @@ begin
 						R.ResponsibilityTypeName,
 						R.ResourceID
 	
+		drop table if exists #temp_distinctAssetTypes
+		select distinct A.AssetTypeID
+		into #temp_distinctAssetTypes
+		from #nodes IH
+		inner join Asset A on A.ID = IH.assetId
+
+		drop table if exists #temp_eligibleResponsibilities
+		select R.ApplyToType, R.AssetTypeID, R.IsVisible, R.ResponsibilityTypeID, R.ResponsibilityTypeName, R.ResourceID  
+		into #temp_eligibleResponsibilities
+		from ResponsibilityDetail R
+		inner join #temp_distinctAssetTypes DAT ON DAT.AssetTypeID = R.AssetTypeID AND R.ApplyToType = 1 and R.IsVisible = 1
+	
 		insert into #GroupedOwners
 			select		IH.hierarchyKey,
 						R.ResponsibilityTypeID as id,
@@ -631,7 +643,7 @@ begin
 						R.ResourceID
 			from		#nodes IH
 						inner join Asset A on A.ID = IH.assetId
-						inner join ResponsibilityDetail R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID and R.IsVisible = 1)
+						inner join #temp_eligibleResponsibilities R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID and R.IsVisible = 1)
 						left join #GroupedOwners G on G.hierarchyKey = IH.hierarchyKey and G.id = R.ResponsibilityTypeID and G.ResourceID = R.ResourceID
 			where		G.id is null
 			group by	IH.hierarchyKey,
@@ -850,6 +862,13 @@ begin
 	
 	if @descendancy <> 1
 	begin
+		declare @maxLevel int = 10;
+		
+		if @descendancy = 2
+		begin
+			set @maxLevel = 2
+		end;
+	
 		with d as (
 			select	ID,
 					cast(null as bigint) as ParentID,
@@ -870,6 +889,7 @@ begin
 					inner join Asset P on P.ID = d.ID
 					inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType in (3, 4)
 					inner join Asset C on C.ID = I.ObjectAssetID
+			where d.[Level] < @maxLevel
 		)
 
 		insert into #hopAsset (Hop, ID, ParentID, IncludeInResult)
@@ -940,23 +960,35 @@ begin
 	-- Loop forward in lineage.
 	if @direction = 'A' or @direction = 'F'
 	begin
-		drop table if exists #PopulateForwardLineageReturn;
-		create table #PopulateForwardLineageReturn (
-			IntersectID int not null,
-			PredicateId int not null,
-			PredicateUid uniqueidentifier null,
-			PredicateName nvarchar(max) null,
-			PredicateType int null,
-			SubjectHop int not null,
-			SubjectId bigint not null,
-			ObjectHop int not null,
-			ObjectID bigint not null
+		with f as (
+			select	I.IntersectID,
+					I.PredicateID,
+					I.PredicateUid,
+					I.PredicateName,
+					I.PredicateType,
+					@currentHop as SubjectHop,
+					H.ID as SubjectID,
+					@currentHop+1 as ObjectHop,
+					I.ObjectAssetID as ObjectID
+			from	@hopAssetIds H
+					inner join PredicateIntersect I on I.SubjectAssetID = H.Id and I.PredicateType in (1, 12, 13)
+			union all
+			select	I.IntersectID,
+					I.PredicateID,
+					I.PredicateUid,
+					I.PredicateName,
+					I.PredicateType,
+					f.ObjectHop as SubjectHop,
+					f.ObjectID as SubjectID,
+					f.ObjectHop+1 as ObjectHop,
+					I.ObjectAssetID as ObjectID
+			from	f
+					inner join PredicateIntersect I on I.SubjectAssetID = f.ObjectID and I.PredicateType in (1, 12, 13) and I.IntersectID <> f.IntersectID and I.IntersectID not in (select Id from @hopIntersectIds)
+			where f.ObjectHop <= @endForwardHop
 		)
-		exec graph.PopulateForwardLineage @currentHop = @currentHop, @endHop = @endForwardHop, @assetIds = @hopAssetIds, @intersectIds = @hopIntersectIds;
-
 		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectAssetID, ObjectHop, ObjectAssetID)
 		select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID as ObjectAssetID
-		from		#PopulateForwardLineageReturn
+		from		f
 		order by	SubjectHop;
 	end
 
@@ -1248,9 +1280,10 @@ begin
 			inner join Asset A on A.ID = T.assetId
 			cross apply (
 			select	count(1) as [Count] 
-			from	Issue 
-			where	AssetID = A.ID 
+			from	Issue I
+			where	I.AssetID = A.ID 
 					and CompletedOn is null
+					and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 			) C;
 
 	-- Update asset read permissions
