@@ -599,7 +599,7 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending): Observable<any> {
+	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', order: string = '', direction: number = SortOrder.Ascending): Observable<any> {
 		let url = `/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 		if (simpleFilter) {
 			url += `&_simpleFilter=${simpleFilter}`;
