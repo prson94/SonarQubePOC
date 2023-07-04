@@ -34,6 +34,7 @@ using d360.web.Models;
 using d360.web.Services;
 
 using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -191,6 +192,559 @@ namespace d360.web.Controllers.V2
 			return $"{Company.CurrentCompanyID}_{assetTypeId}_{queryStringToHash}";
 		}
 
+		/// <summary>
+		/// GET all related data of an asset type.
+		/// </summary>
+		/// <param name="assetTypeUid">Filter by an AssetType's unique identifier.</param>
+		/// <returns>A excel file containing relationships.</returns>
+		[
+			HttpGet,
+			MapToApiVersion("2.0"),
+			Route("export/{assetTypeUid}"),
+			SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/octet-stream"),
+			SwaggerResponse(HttpStatusCode.OK, "Exported related data of asset type to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> AssetTypeDataExportToExcel(string assetTypeUid, CancellationToken cancellationToken)
+		{
+			Guid guid = Guid.Parse(assetTypeUid);
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
+			}
+
+			var assetType = AssetRepository.GetAssetTypeByUID(guid);
+
+			if (assetType == null)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
+			}
+
+			if (assetType.Class != AssetTypeClass.BusinessAsset && assetType.Class != AssetTypeClass.TechnicalAsset
+				&& assetType.Class != AssetTypeClass.Policy && assetType.Class != AssetTypeClass.Model
+				&& assetType.Class != AssetTypeClass.Diagram && assetType.Class != AssetTypeClass.Rule)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.ExportValidAssetType, assetType.Class.ToString())));
+			}
+
+			var customColumns = new List<dynamic>();
+
+			if (assetType.Class != AssetTypeClass.Diagram && assetType.Class != AssetTypeClass.Rule)
+			{
+				customColumns = FieldsRepository.GetGrammaticAllocations();
+			}
+
+			var results = await AssetRepository.GetAssettypeRelatedData(assetType, customColumns, cancellationToken);
+
+			var document = GetDocumentFromModelsForAssetType(assetType, results, customColumns);
+
+			var stream = new MemoryStream();
+			document.SaveAs(stream);
+
+			var result = new HttpResponseMessage(HttpStatusCode.OK)
+			{
+				Content = new ByteArrayContent(stream.GetBuffer())
+			};
+			result.Content.Headers.ContentLength = stream.Length;
+
+			var className = assetType.Class.ToString();
+			result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+			{
+				FileName = $"{className} {assetType.Name} {DateTime.Now.ToString("ddd MMM dd yyyy")}.xlsx"
+			};
+
+			result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+			return ResponseMessage(result);
+		}
+
+		private SLDocument GetDocumentFromModelsForAssetType(AssetType assettype, AssetsTypeRelatedQueryResults models, List<dynamic> customfields)
+		{
+			var document = new SLDocument();
+
+			#region AssetTypeData
+			var assettypeNameSheet = assettype.Name;
+			if (assettypeNameSheet.Length > 31)
+			{
+				assettypeNameSheet = assettypeNameSheet.Substring(0, 31);
+			}
+			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, assettypeNameSheet);
+
+
+			int index = 1;
+
+			document.SetCellValue(1, index++, "Class");
+			document.SetCellValue(1, index++, "Asset Type Name");
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "displayformat"))
+			{
+				document.SetCellValue(1, index++, "Display Format");
+			}
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "flowobjecttype"))
+			{
+				document.SetCellValue(1, index++, "Flow Object Type");
+			}
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "predicatetoparent"))
+			{
+				document.SetCellValue(1, index++, "Predicate to Parent");
+			}
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "hierarchymaximumdepth"))
+			{
+				document.SetCellValue(1, index++, "Maximum Depth");
+			}
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "autodisplayparent"))
+			{
+				document.SetCellValue(1, index++, "Auto Display Owner/Parent");
+			}
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "caneditparent"))
+			{
+				document.SetCellValue(1, index++, "Edit Parent");
+			}
+
+			document.SetCellValue(1, index++, "Description");
+
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "useastransformation"))
+			{
+				document.SetCellValue(1, index++, "Use as Transformaion");
+			}
+
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "isdescriptionenabled"))
+			{
+				document.SetCellValue(1, index++, "Show Description on List Page");
+				document.SetCellValue(1, index++, "Description Button Name");
+				document.SetCellValue(1, index++, "Collapsed by Default");
+			}
+
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "defaultpermissions"))
+			{
+				document.SetCellValue(1, index++, "Default Read Access");
+			}
+
+			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "iconbackcolor"))
+			{
+				document.SetCellValue(1, index++, "Background Color");
+			}
+			document.SetCellValue(1, index++, "Icon");
+			foreach (var col in customfields)
+			{
+				document.SetCellValue(1, index++, col.Name);
+			}
+			document.SetCellValue(1, index++, "Asset Type UID");
+
+			int rowNumber = 1;
+			foreach (var row in models.AssetTypeData)
+			{
+				index = 1;
+				rowNumber++;
+
+				document.SetCellValue(rowNumber, index++, assettype.Class.ToString());
+				document.SetCellValue(rowNumber, index++, (string)row.AssetTypeName);
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "displayformat"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.displayformat);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "flowobjecttype"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)assettype.FlowObjectType.ToString());
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "predicatetoparent"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.PredicatetoParent);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "hierarchymaximumdepth"))
+				{
+					document.SetCellValue(rowNumber, index++, (int)row.HierarchyMaximumDepth);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "autodisplayparent"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.AutoDisplayParent);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "caneditparent"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.CanEditParent);
+				}
+
+				document.SetCellValue(rowNumber, index++, (string)row.Description);
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "useastransformation"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.UseAsTransformation);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "isdescriptionenabled"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.isDescriptionEnabled);
+					document.SetCellValue(rowNumber, index++, (string)row.DescriptionButtonName);
+					document.SetCellValue(rowNumber, index++, (string)row.IsDescriptionVisibleByDefault);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "defaultpermissions"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.ReadPermissions);
+				}
+
+				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "iconbackcolor"))
+				{
+					document.SetCellValue(rowNumber, index++, (string)row.IconBackColor);
+				}
+
+				document.SetCellValue(rowNumber, index++, (string)row.Icon);
+
+				foreach (var col in customfields)
+				{
+					var data = (IDictionary<string, object>)row;
+					document.SetCellValue(rowNumber, index++, (string)data["syn" + col.id.ToString()]);
+				}
+
+
+				document.SetCellValue(rowNumber, index++, (row.uid ?? "").ToString());
+
+			}
+			#endregion
+
+			#region "Fields"
+			document.AddWorksheet("Fields");
+			document.SelectWorksheet("Fields");
+
+			SLStyle styleGray = document.CreateStyle();
+			styleGray.SetPatternFill(PatternValues.Solid, System.Drawing.Color.FromArgb(242, 242, 242), System.Drawing.Color.FromArgb(242, 242, 242));
+
+			index = 1;
+
+			document.SetCellValue(1, index++, "Class");
+			document.SetCellValue(1, index++, "Asset Type Name");
+			document.SetCellValue(1, index++, "Type");
+			document.SetCellValue(1, index++, "Field Name");
+			document.SetCellValue(1, index++, "API Name");
+			document.SetCellValue(1, index++, "Category");
+			document.SetCellValue(1, index++, "Seq");
+			document.SetCellValue(1, index++, "Display Description");
+			document.SetCellValue(1, index++, "Form Description");
+			document.SetCellValue(1, index++, "Listable");
+			document.SetCellValue(1, index++, "Column Width");
+			document.SetCellValue(1, index++, "Sort Order");
+			document.SetCellValue(1, index++, "Sort By");
+			document.SetCellValue(1, index++, "Add to Search Results");
+			document.SetCellValue(1, index++, "Prefix");
+			document.SetCellValue(1, index++, "Suffix");
+			document.SetCellValue(1, index++, "Display Order");
+			document.SetCellValue(1, index++, "Allow Multiple Items");
+			document.SetCellValue(1, index++, "Editable on UI");
+			document.SetCellValue(1, index++, "Key Field");
+			document.SetCellValue(1, index++, "Persist in Filters");
+			document.SetCellValue(1, index++, "Required");
+			document.SetCellValue(1, index++, "Show in Details Tab");
+			document.SetCellValue(1, index++, "Display in Column");
+			document.SetCellValue(1, index++, "Show if Empty");
+			document.SetCellValue(1, index++, "Regular Expression");
+			document.SetCellValue(1, index++, "Maximum Length");
+			document.SetCellValue(1, index++, "List Single Segment");
+			document.SetCellValue(1, index++, "Counter Prefix");
+			document.SetCellValue(1, index++, "Counter Initial Value");
+			document.SetCellValue(1, index++, "Link Name");
+			document.SetCellValue(1, index++, "URL");
+			document.SetCellValue(1, index++, "Select List");
+			document.SetCellValue(1, index++, "Item Display Format");
+			document.SetCellValue(1, index++, "Allow All Value Selection");
+			document.SetCellValue(1, index++, "Label for Value Selection");
+			document.SetCellValue(1, index++, "Score");
+			document.SetCellValue(1, index++, "Default Value");
+			document.SetCellValue(1, index++, "Increment");
+			document.SetCellValue(1, index++, "Minimum Value");
+			document.SetCellValue(1, index++, "Maximum Value");
+			document.SetCellValue(1, index++, "Decimal Places");
+			document.SetCellValue(1, index++, "One-to-Many Relationship");
+			document.SetCellValue(1, index++, "Show Reference List Description");
+			document.SetCellValue(1, index++, "Many-to-One Relationship");
+			document.SetCellValue(1, index++, "Field");
+			document.SetCellValue(1, index++, "Relationship");
+			document.SetCellValue(1, index++, "List Single Ownership Type");
+			document.SetCellValue(1, index++, "Expand Group Membership");
+			document.SetCellValue(1, index++, "Display As");
+			document.SetCellValue(1, index++, "Display Assignment Source");
+			document.SetCellValue(1, index++, "Hide Table Filter");
+			document.SetCellValue(1, index++, "Hide Table Column Headers");
+			document.SetCellValue(1, index++, "Hide Table Footer");
+			document.SetCellValue(1, index++, "JSON Field");
+			document.SetCellValue(1, index++, "JSON Attribute Path");
+			document.SetCellValue(1, index++, "JSON Attribute Data Type");
+
+
+			rowNumber = 1;
+			var dataTypeInfos = DataType.Boolean.GetDataTypeInfoList();
+			foreach (var row in models.FieldTypeData)
+			{
+				index = 1;
+				rowNumber++;
+
+				document.SetCellValue(rowNumber, index++, assettype.Class.ToString());
+				document.SetCellValue(rowNumber, index++, assettype.Name);
+				var enumValue = (DataType)Enum.Parse(typeof(DataType), row.Type);
+				string datatypedesc = "";
+
+				var r = dataTypeInfos.Where(i => i.ID == enumValue).FirstOrDefault();
+				if (r != null)
+				{
+					datatypedesc = r.Description;
+				}
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, datatypedesc);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Field_Name);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.API_Name);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Category);
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Seq);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Description);
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Listable, enumValue.ToString(), styleGray, "listable");
+
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Column_Width, enumValue.ToString(), styleGray, "column_width");
+
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Sort_Order, enumValue.ToString(), styleGray, "sort_order");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Sort_By, enumValue.ToString(), styleGray, "sort_by");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Add_to_Search_Results, enumValue.ToString(), styleGray, "add_to_search_results");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Prefix, enumValue.ToString(), styleGray, "prefix");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Suffix, enumValue.ToString(), styleGray, "suffix");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Display_Order, enumValue.ToString(), styleGray, "display_order");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Allow_Multiple_Items, enumValue.ToString(), styleGray, "allow_multiple_items");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Editable_on_UI, enumValue.ToString(), styleGray, "editable_on_ui");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Key_Field, enumValue.ToString(), styleGray, "key_field");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Persist_in_Filters, enumValue.ToString(), styleGray, "persist_in_filters");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.IsRequired, enumValue.ToString(), styleGray, "isrequired");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Show_in_Details_Tab);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_in_Column, enumValue.ToString(), styleGray, "display_in_column");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Show_if_Empty);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Regular_Expression, enumValue.ToString(), styleGray, "regular_expression");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Maximum_Length, enumValue.ToString(), styleGray, "maximum_length");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.List_Single_Segment, enumValue.ToString(), styleGray, "list_single_segment");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Counter_Prefix, enumValue.ToString(), styleGray, "counter_prefix");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Counter_Initial_Value, enumValue.ToString(), styleGray, "counter_initial_value");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Link_Name, enumValue.ToString(), styleGray, "link_name");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Link_URL, enumValue.ToString(), styleGray, "link_url");
+
+				string strSelect_List = "";
+				if (!string.IsNullOrEmpty(row.Select_List_Class))
+				{
+					var enumAssetTypeClass = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), row.Select_List_Class);
+					strSelect_List = enumAssetTypeClass.ToString() + ":" + row.Select_List;
+				}
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, strSelect_List, enumValue.ToString(), styleGray, "select_list");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Item_Display_Format, enumValue.ToString(), styleGray, "item_display_format");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Allow_All_Value_Selection, enumValue.ToString(), styleGray, "allow_all_value_selection");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Label_for_Value_Selection, enumValue.ToString(), styleGray, "label_for_value_selection");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Score, enumValue.ToString(), styleGray, "score");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Default_Value, enumValue.ToString(), styleGray, "default_value");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Increment, enumValue.ToString(), styleGray, "increment");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Minimum_Value, enumValue.ToString(), styleGray, "minimum_value");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Maximum_Value, enumValue.ToString(), styleGray, "maximum_value");
+				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Decimal_Places, enumValue.ToString(), styleGray, "decimal_places");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.One_to_Many_Relationship, enumValue.ToString(), styleGray, "one_to_many_relationship");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Show_Reference_List_Description, enumValue.ToString(), styleGray, "show_reference_list_description");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Many_to_One_Relationship, enumValue.ToString(), styleGray, "many_to_one_relationship");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Field, enumValue.ToString(), styleGray, "field");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Relationship, enumValue.ToString(), styleGray, "relationship");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.List_Single_Ownership_Type, enumValue.ToString(), styleGray, "list_single_ownership_type");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Expand_Group_Membership, enumValue.ToString(), styleGray, "expand_group_membership");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_As, enumValue.ToString(), styleGray, "display_as");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Assignment_Source, enumValue.ToString(), styleGray, "display_assignment_source");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Hide_Table_Filter, enumValue.ToString(), styleGray, "hide_table_filter");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Hide_Table_Column_Headers, enumValue.ToString(), styleGray, "hide_table_column_headers");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Hide_Table_Footer, enumValue.ToString(), styleGray, "hide_table_footer");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.JSON_Field, enumValue.ToString(), styleGray, "json_field");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.JSON_Attribute_Path, enumValue.ToString(), styleGray, "json_attribute_path");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.JSON_Attribute_Data_Type, enumValue.ToString(), styleGray, "json_attribute_data_type");
+			}
+			#endregion
+
+			#region "Relation Lookup Details"
+			document.AddWorksheet("Relation Lookup Details");
+			document.SelectWorksheet("Relation Lookup Details");
+
+			index = 1;
+
+			document.SetCellValue(1, index++, "Class");
+			document.SetCellValue(1, index++, "Asset Type Name");
+			document.SetCellValue(1, index++, "Name");
+			document.SetCellValue(1, index++, "Relation");
+			document.SetCellValue(1, index++, "Field");
+			document.SetCellValue(1, index++, "Display Name Override");
+			document.SetCellValue(1, index++, "Column Width");
+			document.SetCellValue(1, index++, "Column Order");
+			document.SetCellValue(1, index++, "Sort Order");
+			document.SetCellValue(1, index++, "Sort Order By Direction");
+			document.SetCellValue(1, index++, "Filter");
+			document.SetCellValue(1, index++, "Relationship Type UID");
+			document.SetCellValue(1, index++, "Relationship Type Id");
+
+			rowNumber = 1;
+			foreach (var row in models.RelationLookupDetails)
+			{
+				index = 1;
+				rowNumber++;
+
+				document.SetCellValue(rowNumber, index++, assettype.Class.ToString());
+				document.SetCellValue(rowNumber, index++, assettype.Name);
+
+				document.SetCellValue(rowNumber, index++, (string)row.FriendlyName);
+
+
+				document.SetCellValue(rowNumber, index++, (string)row.Relationship);
+				document.SetCellValue(rowNumber, index++, (string)row.field);
+				document.SetCellValue(rowNumber, index++, (string)row.OverrideDisplayName);
+				document.SetCellValue(rowNumber, index++, (string)row.ColumnWidth);
+				document.SetCellValue(rowNumber, index++, (int)row.DisplayOrder);
+				document.SetCellValue(rowNumber, index++, (int)row.SortOrder);
+				document.SetCellValue(rowNumber, index++, (string)row.SortByAscending);
+				document.SetCellValue(rowNumber, index++, (string)row.Filter);
+				document.SetCellValue(rowNumber, index++, (row.RelationshipTypeUID ?? "").ToString());
+				document.SetCellValue(rowNumber, index++, (int)row.RelationshipTypeId);
+
+			}
+			#endregion
+
+			#region "Responsibility Type Assignment"
+			document.AddWorksheet("Responsibility Type Assignment");
+			document.SelectWorksheet("Responsibility Type Assignment");
+
+			index = 1;
+
+			document.SetCellValue(1, index++, "Class");
+			document.SetCellValue(1, index++, "Asset Type Name");
+			document.SetCellValue(1, index++, "Responsibility Type");
+			document.SetCellValue(1, index++, "Read asset");
+			document.SetCellValue(1, index++, "Read responsibilities");
+			document.SetCellValue(1, index++, "Read relationships");
+			document.SetCellValue(1, index++, "Create asset");
+			document.SetCellValue(1, index++, "Create responsibilities");
+			document.SetCellValue(1, index++, "Create relationships");
+			document.SetCellValue(1, index++, "Modify asset");
+			document.SetCellValue(1, index++, "Modify responsibilities");
+			document.SetCellValue(1, index++, "Modify relationships");
+			document.SetCellValue(1, index++, "Remove asset");
+			document.SetCellValue(1, index++, "Remove responsibilities");
+			document.SetCellValue(1, index++, "Remove relationships");
+			document.SetCellValue(1, index++, "Responsibility Type UID");
+
+			rowNumber = 1;
+			foreach (var row in models.ResponsibilityTypeAssignmentData)
+			{
+				index = 1;
+				rowNumber++;
+
+				var perms = (int)row.PermissionsMask;
+
+				document.SetCellValue(rowNumber, index++, assettype.Class.ToString());
+				document.SetCellValue(rowNumber, index++, assettype.Name);
+
+				document.SetCellValue(rowNumber, index++, (string)row.ResponsibilityTypeName);
+
+
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.ReadAsset));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.ReadResponsibilities));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.ReadRelationships));
+
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.AddAsset));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.AddResponsibilities));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.AddRelationships));
+
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.EditAsset));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.EditResponsibilities));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.EditRelationships));
+
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.DeleteAsset));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.DeleteResponsibilities));
+				document.SetCellValue(rowNumber, index++, Company.GetCheckPermissionResult(perms, (int)Permission.DeleteRelationships));
+
+				document.SetCellValue(rowNumber, index++, (row.ResponsibilityTypeUid ?? "").ToString());
+
+			}
+			#endregion
+
+			#region RelationshipData
+			document.AddWorksheet("Relationships");
+			document.SelectWorksheet("Relationships");
+
+			index = 1;
+
+			document.SetCellValue(1, index++, "Class");
+			document.SetCellValue(1, index++, "Asset Type Name");
+			document.SetCellValue(1, index++, "Subject");
+			document.SetCellValue(1, index++, "Subject Class");
+			document.SetCellValue(1, index++, "Subject Cardinality");
+			document.SetCellValue(1, index++, "Predicate Name");
+			document.SetCellValue(1, index++, "Object");
+			document.SetCellValue(1, index++, "Object Class");
+			document.SetCellValue(1, index++, "Object Cardinality");
+			document.SetCellValue(1, index++, "Relationship Type UID");
+			document.SetCellValue(1, index++, "Relationship Type ID");
+
+			rowNumber = 1;
+			foreach (var row in models.RelationshipData)
+			{
+				index = 1;
+				rowNumber++;
+
+				var SubClass = assettype.Class;
+				var ObjClass = assettype.Class;
+
+				var SubCardinility = Cardinality.One;
+				var ObjCardinility = Cardinality.One;
+
+				if ((int)row.SubjectClass != (int)assettype.Class)
+				{
+					SubClass = (AssetTypeClass)row.SubjectClass;
+				}
+				if ((int)row.ObjectClass != (int)assettype.Class)
+				{
+					ObjClass = (AssetTypeClass)row.ObjectClass;
+				}
+
+				if ((int)SubCardinility != (int)row.SubjectCardinality)
+				{
+					SubCardinility = (Cardinality)row.SubjectCardinality;
+				}
+				if ((int)ObjCardinility != (int)row.ObjectCardinality)
+				{
+					ObjCardinility = (Cardinality)row.ObjectCardinality;
+				}
+
+				document.SetCellValue(rowNumber, index++, assettype.Class.ToString());
+				document.SetCellValue(rowNumber, index++, assettype.Name);
+
+
+				document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
+				document.SetCellValue(rowNumber, index++, SubClass.ToString());
+				document.SetCellValue(rowNumber, index++, SubCardinility.ToString());
+
+				document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
+
+				document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
+				document.SetCellValue(rowNumber, index++, ObjClass.ToString());
+				document.SetCellValue(rowNumber, index++, ObjCardinility.ToString());
+
+				document.SetCellValue(rowNumber, index++, (row.uid ?? "").ToString());
+
+				document.SetCellValue(rowNumber, index++, (int)row.ID);
+
+
+			}
+			#endregion
+
+			document.SelectWorksheet(assettypeNameSheet);
+			return document;
+		}
 		/// <summary>
 		/// Retrieves assets for the given asset type unique identifier.
 		/// </summary>

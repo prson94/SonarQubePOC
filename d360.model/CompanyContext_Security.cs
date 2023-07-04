@@ -1171,6 +1171,11 @@ namespace d360.model
 			return permissions;
 		}
 
+		public string GetCheckPermissionResult(int PermissionMask, int perm)
+		{
+			return ((uint)PermissionMask & (uint)perm) == (uint)perm ? "True" : "False";
+		}
+
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
 			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0

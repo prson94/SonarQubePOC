@@ -360,4 +360,7 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} cannot exceed {1} characters.</value>
   </data>
+  <data name="ExportValidAssetType" xml:space="preserve">
+    <value>{0} type not allowed. Only Business Asset, Technical Asset, Diagram, Rule, Model, Policy are allowed.</value>
+  </data>
 </root>
