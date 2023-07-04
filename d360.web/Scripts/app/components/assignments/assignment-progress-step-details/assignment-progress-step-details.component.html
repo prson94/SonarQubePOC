@@ -17,7 +17,7 @@
 		>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
 		</button>
 
-		<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+		<ig-property-group i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<div class="row">
 					<label class="ig-label" i18n>Activity Type</label>
@@ -112,7 +112,7 @@
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group *ngIf="step.ActivityType !== 0 && step.ActivityType !== WorkflowActivityType.Form"
+		<ig-property-group i18n-title *ngIf="step.ActivityType !== 0 && step.ActivityType !== WorkflowActivityType.Form"
 						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="step.ActivityType">
@@ -139,7 +139,7 @@
 				</ng-container>
 			</div>
 		</ig-property-group>
-		<ig-property-group *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
+		<ig-property-group i18n-title *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
 						   [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container>
@@ -149,7 +149,7 @@
 			</div>
 		</ig-property-group>
 		<ng-container *ngIf="step.ActivityType === WorkflowActivityType.Form">
-			<ig-property-group title="Form Details"
+			<ig-property-group i18n-title title="Form Details"
 							   [showDetailsLink]="!!step.ItemFields['@NumberOfResponses']"
 							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal()
 							   [shouldBePadded]="false" [showHeaderLine]="false">
@@ -159,7 +159,7 @@
 					</ng-container>
 				</div>
 			</ig-property-group>
-			<ig-property-group *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true"
+			<ig-property-group i18n-title *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true"
 							   title="E-mail Details" [shouldBePadded]="false" [showHeaderLine]="false">
 				<div readonly>
 					<ng-container>
