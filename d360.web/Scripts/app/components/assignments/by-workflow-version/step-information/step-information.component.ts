@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NodeModel } from '../../../../models/workflow.model';
+import { NodeModel, StepType, WorkflowActivityType } from '../../../../models/workflow.model';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 
 @Component({
@@ -10,5 +10,10 @@ import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 export class StepInformationComponent{
 	@Input() selectedNode: NodeModel
 	isLoading: boolean = false
-	helper = WorkflowHelpers
+	helpers = WorkflowHelpers
+
+	get icon(): string {
+		return this.helpers.getActivityTypeIcon(this.selectedNode.activityType,this.selectedNode.stepType);
+	}
+
 }

@@ -6,6 +6,7 @@ import {
 	WorkflowStepDetail
 } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 
 @Component({
 	selector: 'd3s-assignment-progress-step',
@@ -36,6 +37,8 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	workflowStepDetail: WorkflowStepDetail;
 
+	helpers = WorkflowHelpers;
+
 	isLoading: boolean = false;
 	selected: boolean = false;
 	private assigneeNames: string[];
@@ -59,13 +62,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 	}
 
 	get icon(): string {
-		if (StepType[this.assignmentItemStep.StepType] === StepType.Start) {
-			return 'fa-play-circle';
-		} else if (StepType[this.assignmentItemStep.StepType] === StepType.Finish) {
-			return 'fa-stop-circle';
-		} else {
-			return this.getActivityTypeIcon();
-		}
+		return this.helpers.getActivityTypeIcon(WorkflowActivityType[this.assignmentItemStep.ActivityType], StepType[this.assignmentItemStep.StepType]);
 	}
 
 	constructor(private workflowService: WorkflowService) {
@@ -93,24 +90,6 @@ export class AssignmentProgressStepComponent implements OnInit {
 			stepUid: this.assignmentItemStep.Uid,
 			assetId: this.workflowStepDetail.ObjectID
 		});
-	}
-
-	private getActivityTypeIcon(): string {
-		if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.EmailNotification) {
-			return 'fa-envelope';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Form) {
-			return 'fa-sliders';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.FieldChange) {
-			return 'fa-sliders';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPRequest) {
-			return 'fa-globe';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.HTTPResponse) {
-			return 'fa-cogs';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.RelationshipUpdate) {
-			return 'fa-users';
-		} else if (WorkflowActivityType[this.assignmentItemStep.ActivityType] === WorkflowActivityType.Delete) {
-			return 'fa-trash';
-		}
 	}
 
 	private getTimeSpan(startDateMilliseconds: number, endDateMilliseconds: number = Date.now()): string {

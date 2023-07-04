@@ -9,7 +9,7 @@
 		</div>
 	</div>
 	<div class="asset-detail-tabs">
-		<ig-property-group title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+		<ig-property-group i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<div class="row">
 					<div class="category-column">
@@ -20,10 +20,16 @@
 				<div class="row">
 					<div class="category-column">
 						<label class="ig-label" i18n>Activity Type</label>
-						<div class="ig-value" i18n>{{helper.activityTypeName(selectedNode.activityType)}}</div>
+						<div class="ig-value">
+							<span class="step-information-activity-icon fa" [ngClass]="icon"></span>
+							<span *ngIf="selectedNode.activityType !== 0" i18n>{{helpers.activityTypeName(selectedNode.activityType)}}</span>
+							<span *ngIf="selectedNode.activityType === 0" i18n>{{helpers.stepTypeName(selectedNode.stepType)}}</span>
+						</div>
 					</div>
 				</div>
 			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
 		</ig-property-group>
 	</div>
 </div>
