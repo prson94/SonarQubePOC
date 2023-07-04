@@ -300,7 +300,7 @@ namespace d360.web.Controllers.V2
 					List<long> fieldIds = new List<long>();
 
 					var definition = field.Type.ComputedRelationshipLookup.Definition;
-					string[] words = definition.Filters.Split(' ');
+					string[] words = (definition.Filters ?? "").Split(' ');
 
 					foreach (var word in words.ToList().Where(x => x.Contains('H')))
 					{
