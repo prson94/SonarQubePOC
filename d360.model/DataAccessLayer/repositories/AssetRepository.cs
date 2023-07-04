@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 
 using AngleSharp.Text;
@@ -1920,9 +1921,10 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			bool needFieldDataConversion = fieldColumns.NeedExplicitCast();
+			List<string> pathSegmentsForParsing = allFieldTypes.Where(x => x.IsListable && x.Type == "Path" && !string.IsNullOrEmpty(x.Definition) && x.Definition.Contains("AssetTypeUid")).Select(x=> x.Name).ToList();
 
 			//Loop results once for if any applicable conversions
-			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()))
+			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()) || pathSegmentsForParsing.Count > 0)
 			{
 				foreach (var result in results)
 				{
@@ -2029,6 +2031,20 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								data[ft.Name] = JsonConvert.DeserializeObject(val);
 							}
 						});
+					}
+
+					if (pathSegmentsForParsing.Count > 0)
+					{
+						foreach (var field in pathSegmentsForParsing)
+						{
+							var data = (IDictionary<string, object>)result;
+
+							if (data.ContainsKey(field) && data[field] != null)
+							{
+								data[field] = HttpUtility.HtmlDecode(data[field].ToString());
+							}
+
+						}
 					}
 				}
 			}
@@ -5013,5 +5029,629 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			union
 			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
+		public async Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetType, List<dynamic> customfields, CancellationToken? cancellationToken = null)
+		{
+			string customfieldSelect = "";
+			string customouterSelect = "";
+			string customouter = "";
+			List<string> customfieldupdate = new List<string>();
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("@typeid", assetType.ID);
+			dbArgs.Add("@typeuid", assetType.uid);
+
+			foreach (var col in customfields)
+			{
+				customfieldSelect = customfieldSelect + $@",case when syn.syn{col.id.ToString()} = 1 then 'True' else 'False' end syn{col.id.ToString()}";
+				customouterSelect = customouterSelect + $@",max(case when nym.PredicateID = {col.id.ToString()} then 1 else 0 end) as syn{col.id.ToString()}";
+			}
+
+			if (!string.IsNullOrEmpty(customouterSelect))
+			{
+				customouter = $@"outer apply (select Att.ID {customouterSelect} 
+								from  [Predicate] P
+								left join NymRelation nym on nym.Object = att.object and nym.ObjectID = att.objectid and p.ID = nym.PredicateID
+								WHERE P.Type = 6      
+								) syn";
+			}
+
+			string assetTypeSql = $@"
+				-- Asset Type Detail
+				select att.Class Class
+				,att.name AssetTypeName
+				{(isAllowDisplayAssettypeField(assetType.Class, "displayformat") ? ",att.displayformat" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "flowobjecttype") ? ",att.FlowObjectType" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "predicatetoparent") ? ",case when Parent.PredicateInverse is null then 'n/a' else Parent.PredicateInverse end PredicatetoParent" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "hierarchymaximumdepth") ? ",att.HierarchyMaximumDepth" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "autodisplayparent") ? ",case when Parent.PredicateInverse is null then 'n/a' else case when att.AutoDisplayParent = 1 then 'True' else 'False' end end AutoDisplayParent" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "caneditparent") ? ",case when Parent.PredicateInverse is null then 'n/a' else case when att.CanEditParent = 1 then 'True' else 'False' end end CanEditParent" : "")}
+				,att.Description
+				{(isAllowDisplayAssettypeField(assetType.Class, "useastransformation") ? ",case when att.UseAsTransformation = 1 then 'True' else 'False' end UseAsTransformation" : "")}
+
+				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then 'True' else 'False' end isDescriptionEnabled" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then att.DescriptionButtonName else 'n/a' end DescriptionButtonName" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then case when att.IsDescriptionVisibleByDefault = 1 then 'True' else 'False' end else 'n/a' end IsDescriptionVisibleByDefault" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "iconbackcolor") ? ",ats.IconBackColor" : "")}
+				,ats.Icon
+				{customfieldSelect}
+				{(isAllowDisplayAssettypeField(assetType.Class, "defaultpermissions") ? ",case when att.DefaultPermissions = 1 then 'True' else 'False' end ReadPermissions" : "")}
+				,att.uid
+				from assettype att
+				inner join AssetTypeStyle ats on att.ID = ats.ID
+				outer apply (
+							select top 1 itd.PredicateInverse from IntersectTypeDetail itd 
+							inner join AssetType at on at.ID = itd.SubjectAssetTypeID
+							where itd.objectassettypeid = att.id and itd.predicatetype in (3,4)
+							order by itd.ID asc
+							)Parent 
+				{customouter}
+				where att.id = @AssetTypeID;
+									";
+
+
+			string fieldSql = $@"
+				-- Field Information
+				drop table if exists #tempfieldtype;
+				select  FT.Type Type,
+						FT.FriendlyName Field_Name,
+						FT.Name API_Name,
+						case when FT.Category is null then 'General' else FT.Category end Category,
+						FT.ColumnOrder ColumnOrder,
+						FT.DisplayDescription Display_Description,
+						FT.FormDescription Form_Description,
+						case when FT.IsListable = 1 then 'True' else 'False' end Listable,
+						FT.ColumnWidth Column_Width,
+						case when FT.SortOrder = 0 then null else FT.SortOrder end Sort_Order,
+						case when FT.SortOrder = 0 then null else case when FT.SortByAscending = 1 then 'Ascending' else 'Descending' end end Sort_By,
+						case when FT.SearchAddToResult = 1 then 'True' else 'False' end Add_to_Search_Results,
+						FT.SearchPrefix Prefix,
+						FT.SearchSuffix Suffix,
+						FT.SearchDisplayOrder Display_Order,
+						case when FT.AllowMultipleValues = 1 then 'True' else 'False' end Allow_Multiple_Items,
+						case when FT.IsEditable = 1 then 'True' else 'False' end Editable_on_UI,
+						case when FT.IsPartOfKey = 1 then 'True' else 'False' end Key_Field,
+						case when FT.IsPrimaryFilter = 1 then 'True' else 'False' end Persist_in_Filters,
+						case when FT.IsRequired = 1 then 'True' else 'False' end IsRequired,
+						case when FT.IsDisplayable = 1 then 'True' else 'False' end Show_in_Details_Tab,
+						case when FT.DisplayInColumn = 1 then 'True' else 'False' end Display_in_Column,
+						case when FT.ShowIfEmpty = 1 then 'True' else 'False' end Show_if_Empty,
+						case when FT.Type = 'Text' then FT.Pattern else null end Regular_Expression,
+						case when FT.Type = 'Text' then Ft.MaximumLength else 0 end Maximum_Length,
+						cast(null as nvarchar(250)) List_Single_Segment,
+						FT.CounterPrefix Counter_Prefix,
+						FT.CounterInitialIndex Counter_Initial_Value,
+						cast(null as nvarchar(250)) Link_Name,
+						cast(null as nvarchar(250)) Link_URL,
+						cast(null as nvarchar(10)) Select_List_Class,
+						cast(null as nvarchar(250)) Select_List,
+						cast(null as nvarchar(250)) Item_Display_Format,
+						case when FT.AllowAllValue = 1 then 'True' Else 'False' end Allow_All_Value_Selection,
+						FT.AllowAllLabel Label_for_Value_Selection,
+						case when FT.ScoreType = 1 then 'Governance Score' when FT.ScoreType =  2 then 'Data Quality Score' else '' end Score,
+						FT.DefaultValue Default_Value,
+						case when FT.Type in ('Number','Decimal') then FT.Increment else null end Increment,
+						case when FT.Type in ('Number','Decimal') then FT.MinimumLength else null end Minimum_Value,
+						case when FT.Type in ('Number','Decimal') then FT.MaximumLength else null end Maximum_Value,
+						case when FT.Type in ('Decimal') then FT.Precision else null end Decimal_Places,
+						cast(null as nvarchar(250)) One_to_Many_Relationship,
+						cast(null as nvarchar(10)) Show_Reference_List_Description,
+						cast(null as nvarchar(250)) Many_to_One_Relationship,
+						cast(null as nvarchar(250)) Field,
+						cast(null as nvarchar(250)) Relationship,
+						cast(null as nvarchar(250)) List_Single_Ownership_Type,
+						cast(null as nvarchar(10)) Expand_Group_Membership,
+						cast(null as nvarchar(250)) Display_As,
+						cast(null as nvarchar(10)) Display_Assignment_Source,
+						cast(null as nvarchar(10)) Hide_Table_Filter,
+						cast(null as nvarchar(10)) Hide_Table_Column_Headers,
+						cast(null as nvarchar(10)) Hide_Table_Footer,
+						cast(null as nvarchar(250)) JSON_Field,
+						cast(null as nvarchar(10)) JSON_Attribute_Path,
+						cast(null as nvarchar(50)) JSON_Attribute_Data_Type_Org,
+						cast(null as nvarchar(50)) JSON_Attribute_Data_Type,
+						FT.Definition FT_Definition,
+						FT.DefaultValue FT_DefaultValue,
+						FT.LookupObjectType FT_LookupObjectType,
+						FT.LookupObjectID FT_LookupObjectID,
+						FT.ID FieldTypeID,
+						FT.LookupObjectFieldTypeID FT_LookupObjectFieldTypeID
+				into #tempfieldtype
+				from 
+					FieldType FT
+					inner join [dbo].assettype att on (FT.assettypeid = att.id)
+				where att.id = @AssetTypeID 
+				order by ft.ColumnOrder;
+
+				update tft
+				set tft.List_Single_Segment = att.name
+				from #tempfieldtype  tft
+				inner join assettype att on ISJSON(tft.FT_Definition) = 1 and att.uid = JSON_VALUE(tft.FT_Definition,'$.AssetTypeUid')
+				where tft.Type = 'Path' 
+
+				update tft
+				set tft.Link_Name = f.Link_Name,
+				tft.Link_URL  = f.Link_Url
+				from #tempfieldtype  tft
+				cross apply (select max(case when [index] = 1 then [value] else null end) Link_Name,
+							max(case when [index] = 2 then [value] else null end) Link_Url	
+							from [utility].[OrderedSplit](tft.FT_DefaultValue,'|')) f
+				where tft.Type = 'Link' ;
+
+
+				update tft
+				set tft.Select_List_Class = case 
+				when LookupOT.Uid is not null and tft.FT_LookupObjectType not in ('ReferenceItemType', 'TaxonomyType') then cast(LookupOT.Class as nvarchar(10))
+				when tft.Type = 'Lookup' and tft.FT_LookupObjectType = 'TaxonomyType' and tft.FT_LookupObjectID = 0 then '2'
+				when tft.Type = 'Lookup' and tft.FT_LookupObjectType = 'ReferenceItemType' and tft.ft_LookupObjectID = 0 then '9'
+				when tft.Type = 'Lookup' and LookupOT.Uid is null and tft.FT_LookupObjectID <> 0 then '0' 
+				else null end ,
+				tft.Select_List = LookupOT.[Name]
+				from #tempfieldtype  tft
+				left join [AssetType] LookupOT on LookupOT.[Object] = case tft.ft_LookupObjectType 
+				when 'ReferenceItemType' then tft.FT_LookupObjectType else tft.ft_LookupObjectType+'Type' end 
+				and LookupOT.ObjectID = tft.ft_LookupObjectID 
+				where tft.[Type] = 'Lookup';
+
+
+				update tft
+				set tft.One_to_Many_Relationship = ITName.Name,
+				Show_Reference_List_Description = coalesce(JSON_VALUE(tft.ft_Definition,'$.DisplayRefListDescription'),'true')
+				from #tempfieldtype  tft
+				outer apply (
+				select	top 1 
+				Name from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
+				) ITName
+				where tft.[Type] = 'RefListRelationship';
+
+				update tft
+				set tft.Many_to_One_Relationship = ITName.Name,
+				Field = Ft.FriendlyName
+				from #tempfieldtype  tft
+				left outer join Fieldtype FT on tft.FT_LookupObjectFieldTypeID = Ft.ID
+				outer apply (
+				select	top 1 
+				case when ObjectCardinality = 2 then objectname + ' ' + PredicateInverse + ' ' + SubjectName else name end Name
+				from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
+				) ITName
+				where tft.[Type] = 'FieldFromRelationship';
+
+				update tft
+				set tft.Relationship = ITName.Name
+				from #tempfieldtype  tft
+				left outer join Fieldtype FT on tft.FT_LookupObjectFieldTypeID = Ft.ID
+				outer apply (
+				select	top 1 case when SubjectAssetTypeID = @AssetTypeID then SubjectAssetTypePath + ' ' + PredicateName + ' ' + ObjectAssetTypePath else ObjectAssetTypePath + ' ' + PredicateInverse + ' ' + SubjectAssetTypePath end Name 
+				from IntersectTypeDetail IT where tft.FT_LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = tft.FT_LookupObjectID
+				) ITName
+				where tft.[Type] = 'Relationship';
+
+				update tft
+				set Hide_Table_Column_Headers = case when FTL.HideHeader = 1 then 'True' else 'False' end, 
+				Hide_Table_Footer =  case when FTL.HideFooter= 1 then 'True' else 'False' end, 
+				Hide_Table_Filter =  case when FTL.HideFilter= 1 then 'True' else 'False' end, 
+				Display_As = case when try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAsList') as bit) = 1 then 'True' else 'False' end,
+				Display_Assignment_Source =  case when  try_cast(JSON_VALUE(FTL.Definition, '$.DisplayAssignmentSource') as bit) = 1 then 'True' else 'False' end,
+				Expand_Group_Membership = case when try_cast(JSON_VALUE(FTL.Definition, '$.ExpandGroupMembership') as bit) = 1 then 'True' else 'False' end,
+				List_Single_Ownership_Type = rt.name
+				from  #tempfieldtype  tft
+				inner join FieldTypeLookup FTL on FTL.FieldTypeID = tft.FieldTypeID
+				left join responsibilitytype rt on rt.id = try_cast(JSON_VALUE(FTL.Definition, '$.ResponsibilityType') as int)
+				where tft.[Type] = 'OwnershipLookup';
+
+				update tft
+				set Hide_Table_Column_Headers = case when FTL.HideHeader = 1 then 'True' else 'False' end, 
+				Hide_Table_Footer =  case when FTL.HideFooter= 1 then 'True' else 'False' end, 
+				Hide_Table_Filter =  case when FTL.HideFilter= 1 then 'True' else 'False' end
+				from  #tempfieldtype  tft
+				inner join FieldTypeLookup FTL on FTL.FieldTypeID = tft.FieldTypeID
+				where tft.[Type] = 'ComplexRelationLookup';
+
+				update tft
+				set tft.JSON_Field = ft.FriendlyName,
+					tft.JSON_Attribute_Path = JSON_VALUE(tft.FT_Definition,'$.Path'),
+					tft.JSON_Attribute_Data_Type_Org = JSON_VALUE(tft.FT_Definition,'$.DataType')
+				from #tempfieldtype  tft
+				left join fieldtype ft on ft.id = JSON_VALUE(tft.FT_Definition,'$.FieldTypeID')
+				where tft.[Type] = 'JsonElement' and ISJSON(tft.FT_Definition) = 1 ;
+
+				update tft
+				set tft.JSON_Attribute_Data_Type = case when JSON_Attribute_Data_Type_Org = 'bit' then 'Boolean'
+													when JSON_Attribute_Data_Type_Org = 'date' then 'Date'
+													when JSON_Attribute_Data_Type_Org = 'datetime' then 'Date With Time'
+													when JSON_Attribute_Data_Type_Org = 'float' then 'Decimal'
+													when JSON_Attribute_Data_Type_Org = 'nvarchar' then 'Text'
+													when JSON_Attribute_Data_Type_Org = 'int' then 'Whole Number'
+													when JSON_Attribute_Data_Type_Org = 'bigint' then 'Whole Number (Large)'
+													else JSON_Attribute_Data_Type_Org end
+				from #tempfieldtype  tft
+				where tft.[Type] = 'JsonElement';
+
+				select r.*,ROW_NUMBER() OVER(ORDER BY r.ColumnOrder ASC,r.FieldTypeID) Seq from #tempfieldtype r
+				order by Seq;
+				";
+
+			string relationLookupDetailsql = $@"
+				--Relation Lookup Details
+				drop table if exists #FTLRelationIndex;
+
+				select FT.id FieldTypeID, R.AssetTypeUid, R.IntersectTypeUid, R.Row# - 1 as RelationIndex,cast (null as int) IntersectTypeid, R.Direction,cast(null as nvarchar(1000)) relationship
+				into #FTLRelationIndex
+				from FieldType FT
+				inner join FieldTypeLookup FTL on FTL.FieldTypeID = FT.ID
+				cross apply (
+						select a.*,ROW_NUMBER() OVER(ORDER BY (select 0) ASC) AS Row# from (select * from OPENJSON(FTL.[Definition], N'lax $.Relations')
+						with (
+								IntersectTypeUid uniqueidentifier, 
+								AssetTypeUid uniqueidentifier,
+								RelationType int, 
+								Direction int
+						))a
+				)  R
+				where FT.AssetTypeID = @AssetTypeID;
+
+				drop table if exists #FTLRelationField;
+
+				select ft.id FieldTypeID,D.FieldTypeName,D.OverrideDisplayName,D.Width ColumnWidth,D.DisplayOrder,
+				D.SortOrder,D.SortByAscending,D.[Filter],D.RelationIndex,D.Show,D.FieldTypeId DF_FieldTypeId
+				into #FTLRelationField
+				from FieldType ft
+				inner join FieldTypeLookup ftl on ft.ID = ftl.FieldTypeID
+				cross apply (
+				select	case when DF.FieldTypeId > 1 
+						then cast(DF.FieldTypeId as nvarchar(255)) 
+						else DF.FieldTypeName end as FieldTypeId,
+						case when DF.FieldTypeName like 'Related Item.%'
+						then 1
+						else 0 end as IsRelationship,
+						DF.FieldTypeName,
+						DF.[Filter],
+						DF.OverrideDisplayName,
+						DF.DisplayOrder,
+						DF.SortOrder,
+						DF.SortByAscending,
+						DF.Show,
+						DF.Width,
+						DF.RelationIndex
+				from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json)D
+				cross apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), 
+														DisplayOrder int, SortOrder int, SortByAscending bit, Show bit, Width int, RelationIndex int) DF
+				)D
+				where ft.AssetTypeID = @AssetTypeID
+
+				update FRI
+				set FRI.IntersectTypeid = it.ID
+				from #FTLRelationIndex FRI
+				inner join IntersectType IT on FRI.IntersectTypeUid = IT.uid
+
+				update fri
+				set fri.relationship = t.title
+				from #FTLRelationIndex FRI
+				outer apply (select coalesce(UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))),'relates to') + ' ' + ObjectAssetTypePath + ' (->)' as title
+							 from IntersectTypeDetail id
+							 where id.uid = fri.IntersectTypeUid and id.ObjectUid = fri.assettypeuid and PredicateType not in (15,16,17)) t
+				where fri.direction = 2 and fri.relationship is null
+ 
+
+				update fri
+				set fri.relationship = t.title
+				from #FTLRelationIndex FRI
+				outer apply (select coalesce(UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))), 'is related to') + ' ' + SubjectAssetTypePath + ' (<-)' as title  
+							 from IntersectTypeDetail id
+							 where id.uid = fri.IntersectTypeUid and id.SubjectUid = fri.assettypeuid and PredicateType not in (15,16,17)) t
+				where fri.direction = 1 and fri.relationship is null
+
+				update FRF
+				set FieldTypeName = case when FieldTypeName = 'DisplayValue' then 'Display Value'
+										 when FieldTypeName = '_assetPath' then 'Asset Path'
+										 else FieldTypeName end
+				from #FTLRelationField FRF
+				where FieldTypeName in ('DisplayValue','_assetPath') and coalesce(try_cast(DF_FieldTypeId as int),0) = 0 ;
+
+				update fri
+				set fri.relationship = t.title
+				from #FTLRelationIndex FRI
+				outer apply (select coalesce(UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))) + ' or ' + UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))),   
+										'relates to or is related to' ) + ' ' + ObjectAssetTypePath + ' (<->)' as title 
+							 from IntersectTypeDetail id
+							 where id.uid = fri.IntersectTypeUid and id.ObjectUid = fri.assettypeuid and id.SubjectUid = id.ObjectUid and PredicateType in (6,7,9,14)) t
+				where fri.direction = 3 and fri.relationship is null
+
+				select ft.FriendlyName , fr.Relationship,FRF.FieldTypeName field,FRF.OverrideDisplayName,
+				case when FRF.ColumnWidth is null then '' else cast(FRF.ColumnWidth as nvarchar(100)) end ColumnWidth,
+				case when FRF.DisplayOrder is null then 0 else FRF.DisplayOrder end DisplayOrder,
+				case when FRF.SortOrder is null then 0 else FRF.SortOrder  end SortOrder,
+				case when FRF.SortOrder > 0 and FRF.SortByAscending = 1 then 'Ascending' when FRF.SortOrder > 0 and FRF.SortByAscending = 0 then 'Descending' else '' end SortByAscending,
+				FRF.[Filter],
+				FR.IntersectTypeUid RelationshipTypeUID, 
+				FR.IntersectTypeid RelationshipTypeId,fr.RelationIndex,FR.AssetTypeUid,fr.direction
+				from FieldType ft
+				inner join #FTLRelationIndex FR on FR.FieldTypeID = ft.ID 
+				left join #FTLRelationField FRF on frf.FieldTypeID = ft.ID and frf.RelationIndex = fr.RelationIndex
+				where ft.AssetTypeID = @AssetTypeID and FRF.Show = 1
+				order by fr.FieldTypeID ,fr.RelationIndex,FRF.DisplayOrder";
+
+			string relationsql = $@"
+				select top 1  @referencelistname = cast(name as nvarchar(250))
+				from assettype
+				where class = 9 and objectid = 0;
+
+				select  case when it.SubjectAssetTypeID = 0 and it.subjectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ats.Name end SubjectName,
+						it.SubjectClass,
+						it.SubjectCardinality,
+						p.Name [PredicateName],
+						case when it.ObjectAssetTypeID = 0 and it.objectclass = {(int)AssetTypeClass.Reference} then @referencelistname else ato.Name end ObjectName,
+						it.ObjectClass,
+						it.ObjectCardinality,
+						it.uid,
+						it.ID
+						from IntersectType it
+						left join assettype ats on it.SubjectAssetTypeID = ats.ID
+						left join [Predicate] p on p.id = it.PredicateID
+						left join assettype ato on it.objectAssetTypeID = ato.ID
+						where it.ObjectAssetTypeID = @AssetTypeID or it.SubjectAssetTypeID = @AssetTypeID";
+
+			string resposibilityTypSql = $@"
+				-- Responsibility Type Assignment
+				select rt.[Name] as ResponsibilityTypeName, 
+					rt.[uid] as ResponsibilityTypeUid,
+					rtr.PermissionsBitMask as PermissionsMask
+				from 
+					[dbo].responsibilitytype rt
+					inner join [dbo].responsibilitytyperelation rtr on (rt.id = rtr.ResponsibilityTypeID)
+					inner join [dbo].assettype att on(att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
+				where att.id = @AssetTypeID 
+				order by 1;";
+
+
+			var sql = $@"
+				declare @AssetTypeID int = cast(@typeid as int);
+				declare @AssetTypeUid uniqueidentifier = cast(@typeuid as uniqueidentifier);
+				declare @referencelistname nvarchar(250);
+				
+				{assetTypeSql}
+
+				{fieldSql}
+
+				{relationLookupDetailsql}
+
+				{resposibilityTypSql}
+
+				{relationsql}
+			";
+			var multiQuery = await CompanyContext.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
+			var model = new AssetsTypeRelatedQueryResults();
+			model.AssetTypeData = multiQuery.Read<dynamic>().ToList();
+			model.FieldTypeData = multiQuery.Read<dynamic>().ToList();
+			model.RelationLookupDetails = multiQuery.Read<dynamic>().ToList();
+			model.ResponsibilityTypeAssignmentData = multiQuery.Read<dynamic>().ToList();
+			model.RelationshipData = multiQuery.Read<dynamic>().ToList();
+			return model;
+		}
+
+		public bool isAllowDisplayAssettypeField(AssetTypeClass assettypeclass, string fieldname)
+		{
+			bool retval = false;
+
+			if (fieldname.ToLowerInvariant().In("displayformat", "isdescriptionenabled", "iconbackcolor", "defaultpermissions"))
+			{
+				retval = assettypeclass == AssetTypeClass.Diagram ? false : true;
+			}
+			else if (fieldname.ToLowerInvariant().In("flowobjecttype"))
+			{
+				retval = assettypeclass == AssetTypeClass.Diagram ? true : false;
+			}
+			else if (fieldname.ToLowerInvariant().In("predicatetoparent"))
+			{
+				if (assettypeclass == AssetTypeClass.BusinessAsset ||
+				   assettypeclass == AssetTypeClass.TechnicalAsset ||
+				   assettypeclass == AssetTypeClass.Model ||
+				   assettypeclass == AssetTypeClass.Policy)
+				{
+					retval = true;
+				}
+			}
+			else if (fieldname.ToLowerInvariant().In("useastransformation", "caneditparent", "autodisplayparent"))
+			{
+				if (assettypeclass == AssetTypeClass.BusinessAsset ||
+				   assettypeclass == AssetTypeClass.TechnicalAsset)
+				{
+					retval = true;
+				}
+			}
+			else if (fieldname.ToLowerInvariant().In("hierarchymaximumdepth"))
+			{
+				if (assettypeclass == AssetTypeClass.Model ||
+				   assettypeclass == AssetTypeClass.Policy)
+				{
+					retval = true;
+				}
+			}
+
+
+			return retval;
+		}
+
+		public bool isAllowDisplayFieldType(string strdatatype, string fieldname)
+		{
+			bool retval = false;
+
+			var dtype = (DataType)Enum.Parse(typeof(DataType), strdatatype);
+
+
+			if (dtype == DataType.Boolean)
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Date, DataType.DateTime))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "default_value"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Html))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "default_value"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Decimal))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "default_value", "increment", "minimum_value", "maximum_value", "decimal_places"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Number))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "default_value", "increment", "minimum_value", "maximum_value"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Lookup))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "allow_multiple_items", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "select_list", "item_display_format", "allow_all_value_selection", "label_for_value_selection", "default_value"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Text))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "regular_expression", "maximum_length"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Link))
+			{
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "persist_in_filters", "isrequired", "display_in_column", "link_name", "link_url"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Path))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "display_in_column", "list_single_segment"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.ComplexRelationLookup))
+			{
+				if (fieldname.In("relationship", "hide_table_filter", "hide_table_column_headers", "hide_table_footer"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.OwnershipLookup))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "list_single_ownership_type", "expand_group_membership", "display_as", "display_assignment_source", "hide_table_filter", "hide_table_column_headers", "hide_table_footer"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Relationship))
+			{
+				if (fieldname.In("form_description", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "persist_in_filters", "isrequired", "display_in_column", "relationship"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.FieldFromRelationship))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "display_in_column", "many_to_one_relationship", "field"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.RefListRelationship))
+			{
+				if (fieldname.In("one_to_many_relationship", "show_reference_list_description"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Tag))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "persist_in_filters"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Score))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "persist_in_filters", "display_in_column", "score"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.Counter))
+			{
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "key_field", "persist_in_filters", "display_in_column", "counter_prefix", "counter_initial_value"))
+				{
+					retval = true;
+				}
+			}
+			else if (dtype.In(DataType.JsonElement))
+			{
+				if (fieldname.In("json_field", "json_attribute_path", "json_attribute_data_type"))
+				{
+					retval = true;
+				}
+			}
+			return retval;
+		}
+
+		public void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "")
+		{
+			if (string.IsNullOrEmpty(fieldname))
+			{
+				document.SetCellValue(rowNumber, index, value);
+			}
+			else
+			{
+				if (isAllowDisplayFieldType(datatype, fieldname))
+				{
+					document.SetCellValue(rowNumber, index, value);
+				}
+				else
+				{
+					document.SetCellStyle(rowNumber, index, styleGray);
+				}
+			}
+		}
+		public void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "")
+		{
+			bool isShowValue = true;
+
+			if (!string.IsNullOrEmpty(fieldname))
+			{
+				if (!isAllowDisplayFieldType(datatype, fieldname))
+				{
+					isShowValue = false;
+				}
+			}
+
+			if (isShowValue)
+			{
+				if (value != null)
+				{
+					document.SetCellValueNumeric(rowNumber, index, value.ToString());
+				}
+				else
+				{
+					document.SetCellValue(rowNumber, index, "");
+				}
+			}
+			else
+			{
+				document.SetCellStyle(rowNumber, index, styleGray);
+			}
+		}
+
 	}
 }

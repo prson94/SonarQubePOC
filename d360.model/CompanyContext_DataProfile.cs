@@ -25,18 +25,18 @@ namespace d360.model
 		DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
 		
 		DbSet<AssetDataProfileSampleJson> AssetDataProfileSampleJson { get; set; }
-		
+
 		#endregion
 
 
 		#region Methods
 
 		Task DeleteDataProfilesAsync(List<AssetDataProfileDeleteModel> models, ApiExecution execution, int timeout = 3600);
-		
+
 		Task<List<DataProfileUpsertResponse>> GetExecutionDataProfileResultsAsync(Guid executionId);
-		
+
 		Task<List<DataProfileDeleteResponse>> GetExecutionDeleteDataProfileResultsAsync(Guid executionId);
-		
+
 		Task UpsertDataProfilesAsync(List<DataProfileUpsertModel> request, ApiExecution execution, bool isInsert, int timeout = 3600);
 		
 		#endregion
@@ -1411,7 +1411,7 @@ namespace d360.model
 
 			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetDataProfile");
 
-			var profileUidsQuery = Connection.Query<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
+			var profileUidsQuery = await Connection.QueryAsync<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
 			var profileUids = profileUidsQuery.ToList(); 
 			
 			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel

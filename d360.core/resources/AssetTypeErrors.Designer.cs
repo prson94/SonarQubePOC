@@ -187,6 +187,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} type not allowed. Only Business Asset, Technical Asset, Diagram, Rule, Model, Policy are allowed..
+        /// </summary>
+        public static string ExportValidAssetType {
+            get {
+                return ResourceManager.GetString("ExportValidAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} should not be empty..
         /// </summary>
         public static string FieldIsEmpty {

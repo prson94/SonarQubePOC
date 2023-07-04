@@ -2351,6 +2351,16 @@ namespace d360.model.DataAccessLayer
 			return RetValueList;
 		}
 
+		public List<dynamic> GetGrammaticAllocations()
+		{
+
+			return Company.Query<dynamic>($@"select P.Name, p.id
+											from[Predicate] P
+											WHERE P.Type = 6
+											order by p.Name;").ToList();
+
+		}
+
 		public List<FieldType> GetFieldDefinitionForComplexLookupFieldType(FieldType fieldType, Guid assetUid, bool forUiFiltering = false)
 		{
 			if (fieldType.Type == "OwnershipLookup")

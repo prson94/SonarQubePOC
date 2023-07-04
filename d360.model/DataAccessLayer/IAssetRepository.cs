@@ -114,7 +114,16 @@ namespace d360.model.DataAccessLayer
 
         IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType);
 
-		Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes();
+        Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes();
 
-	}
+        Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetTypeID, List<dynamic> customfields, CancellationToken? cancellationToken = null);
+
+        bool isAllowDisplayAssettypeField(AssetTypeClass assettypeclass, string fieldname);
+
+        bool isAllowDisplayFieldType(string strdatatype, string fieldname);
+
+        void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
+
+        void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
+    }
 }

@@ -271,7 +271,14 @@ namespace d360.model.DataAccessLayer
 
 			if (includeResults && dbExecutionItem.CompletedOn.HasValue)
 			{
-				results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
+				try
+				{
+					results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
+				}
+				catch
+				{
+					results = new List<dynamic> { new { Message = "Results file no longer exists." } };
+				}
 			}
 
 			var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
