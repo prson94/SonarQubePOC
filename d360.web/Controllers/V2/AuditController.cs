@@ -964,7 +964,7 @@ namespace d360.web.Controllers.V2
 					update fa
 					set fa.actionObjectTypeName = cast(fa.ga_ActionObjectTypeName as nvarchar(250)),
 					fa.actionObjectName = cast(fa.ga_actionObjectName as nvarchar(250)),
-					fa.actionDescription = cast(fa.ga_ActionObjectTypeName + ' ' + fa.action as nvarchar(4000))
+					fa.actionDescription = cast(fa.ga_actionDescription as nvarchar(4000))
 					from #finaldata fa
 					where fa.actionObjectTypeName is null;
 				end
