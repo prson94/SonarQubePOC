@@ -2397,12 +2397,6 @@ where	T.ExecutionID = @ExecutionID
 
 												trans.Commit();
 												isChunkDeletionCompleted = true;
-												results.AddRange(
-														Query<DatabaseBulkAssetResult>(
-															$"select [ItemNumber],uid,[ExecutionItemUid],[Message],[Success], Object, ObjectID from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
-															new { execution.ExecutionID, beginItemNumber, endItemNumber }
-														)
-													);
 											}
 											catch (Exception ex)
 											{
@@ -2468,6 +2462,13 @@ where	T.ExecutionID = @ExecutionID
 
 								                          ;", new { execution.ExecutionID }, commandTimeout: timeout);
 							}
+
+							results.AddRange(
+								Query<DatabaseBulkAssetResult>(
+									"select uid, ExecutionItemUid, Message, Success, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber", 
+									new { execution.ExecutionID, beginItemNumber, endItemNumber }
+								)
+							);
 
 							beginItemNumber += loopSize;
 							endItemNumber += loopSize;
