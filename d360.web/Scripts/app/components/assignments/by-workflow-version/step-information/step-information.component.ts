@@ -16,4 +16,5 @@ export class StepInformationComponent{
 		return this.helpers.getActivityTypeIcon(this.selectedNode.activityType,this.selectedNode.stepType);
 	}
 
+	protected readonly WorkflowActivityType = WorkflowActivityType;
 }

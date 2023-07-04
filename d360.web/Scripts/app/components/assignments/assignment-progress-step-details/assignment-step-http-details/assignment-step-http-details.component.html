@@ -1,16 +1,16 @@
 <div class="row">
 	<label class="ig-label" i18n>Method</label>
-	<div i18n class="ig-value">{{step?.Settings?.HTTPRequest?.Method}}</div>
+	<div i18n class="ig-value">{{settings?.HTTPRequest?.Method}}</div>
 </div>
 <div class="row">
 	<label class="ig-label" i18n>URL</label>
-	<div i18n class="ig-value">{{step?.Settings?.HTTPRequest?.Url}}</div>
+	<div i18n class="ig-value">{{settings?.HTTPRequest?.Url}}</div>
 </div>
 <div class="row">
 	<label class="ig-label" i18n>Request Timeout</label>
-	<div i18n class="ig-value">{{step?.Settings?.HTTPRequest?.Timeout}}</div>
+	<div i18n class="ig-value">{{settings?.HTTPRequest?.Timeout}}</div>
 </div>
-<div class="row">
+<div class="row" *ngIf="itemFields">
 	<label class="ig-label" i18n>Response Status Code</label>
-	<div i18n class="ig-value">{{step?.ItemFields?.HTTPResponse?.StatusCode}}</div>
+	<div i18n class="ig-value">{{itemFields?.HTTPResponse?.StatusCode}}</div>
 </div>

@@ -653,6 +653,7 @@ export class WorkflowStepDetail {
 export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
+	HTTPResponse: any;
 }
 
 export class WorkflowStepItemSettings {

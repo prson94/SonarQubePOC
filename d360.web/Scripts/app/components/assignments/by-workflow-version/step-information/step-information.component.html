@@ -22,14 +22,27 @@
 						<label class="ig-label" i18n>Activity Type</label>
 						<div class="ig-value">
 							<span class="step-information-activity-icon fa" [ngClass]="icon"></span>
-							<span *ngIf="selectedNode.activityType !== 0" i18n>{{helpers.activityTypeName(selectedNode.activityType)}}</span>
-							<span *ngIf="selectedNode.activityType === 0" i18n>{{helpers.stepTypeName(selectedNode.stepType)}}</span>
+							<span *ngIf="selectedNode.activityType !== 0"
+								  i18n>{{helpers.activityTypeName(selectedNode.activityType)}}</span>
+							<span *ngIf="selectedNode.activityType === 0"
+								  i18n>{{helpers.stepTypeName(selectedNode.stepType)}}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group i18n-title title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+		<ig-property-group *ngIf="selectedNode.activityType !== 0 || selectedNode.activityType !== 8" i18n-title
+						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container [ngSwitch]="selectedNode.activityType">
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
+						<d3s-assignment-step-http-details [settings]="selectedNode.settings"></d3s-assignment-step-http-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
+						{{ selectedNode | json }}
+					</ng-container>
+				</ng-container>
+			</div>
 		</ig-property-group>
 	</div>
 </div>
