@@ -3,10 +3,16 @@
 		<div class="simple-search">
 			<ig-search-field mode="Keypress"
 							 [debounce]="600"
-							 (onSearch)="onSimpleSearch($event)"
+							 (onSearch)="onSimpleSearch()"
 							 [(ngModel)]="simpleFilter">
 			</ig-search-field>
 		</div>
+	</div>
+	<div class="grid-actions-header-row">
+		<advanced-filtering loadIdentifier="AssignmentsByWorkflowVersion"
+							[fieldsObserver]="filterFields$"
+							(onLoad)="onFiltersLoaded()"
+							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
 	</div>
 </div>
 <div class="row asset-grid-wrapper">

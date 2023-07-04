@@ -1,14 +1,21 @@
 import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../../models/enums.model';
 import { NumberOfRowsByCategoryService } from '../../../../services/number-of-rows-by-category.service';
 import { StateService } from '../../../../services/state.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { AssignmentByVersion } from '../../../../models/workflow.model';
+import { AssignmentByVersion, WorkflowTypeModel } from '../../../../models/workflow.model';
+import {
+	AdvancedFilterFieldType,
+	Filters,
+	LookupValuesAPIModel,
+	LookupValuesAPIParameters
+} from '../../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { FieldType } from '../../../../models/fieldtype-api.model';
 
 /*global $localize*/
 
@@ -33,8 +40,11 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	selectedAssignmentByVersion: AssignmentByVersion[] = [];
 	simpleFilter: string = '';
 	@Output() selectionChange = new EventEmitter();
+	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private destroy = new Subject<void>();
 	private currentPageNumber: number = 1;
+	private advancedFilter: string = '';
+	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 
 	constructor(public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				public stateService: StateService,
@@ -46,6 +56,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 
 	ngOnInit(): void {
 		this.setRowsPerPage();
+		this.createFilterFields();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
 
@@ -68,11 +79,6 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	}
 
 	gridSelectionChange(event: AssignmentByVersion[]): void {
-		// if (Array.isArray(event) && event.length === 1) {
-		// 	this.stateService.workflowItemFilters.itemId = event[0].TypeID;
-		// } else {
-		// 	this.stateService.workflowItemFilters.itemId = 0;
-		// }
 		this.selectedAssignmentByVersion = event;
 		this.selectedCount = this.selectedAssignmentByVersion == null ? 0 : this.selectedAssignmentByVersion.length;
 		this.selectionChange.emit(event);
@@ -81,7 +87,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	private loadData(): void {
 		this.isLoading = true;
 		this.assignmentsByVersion = [];
-		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage, this.simpleFilter)
+		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder)
 			.subscribe((response) => {
 				this.assignmentsByVersion = response.items.map((assignmentByVersion: AssignmentByVersion) => {
 					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
@@ -110,8 +116,65 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.loadData();
 	}
 
-	onSimpleSearch(searchTerm: string): void {
+	onSimpleSearch(): void {
 		this.currentPageNumber = 1;
 		this.loadData();
+	}
+
+	onFiltersLoaded(): void {
+		this.currentPageNumber = 1;
+		this.loadData();
+	}
+
+	advancedFiltersChanged($event: Filters): void {
+		this.advancedFilter = $event.filter;
+		this.onSimpleSearch();
+	}
+
+	private createFilterFields(): void {
+		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
+		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = true;
+		let filterFieldList: AdvancedFilterFieldType[] = [{
+			Name: 'WorkflowName',
+			FriendlyName: $localize`Workflow Name`,
+			Type: new FieldType('Lookup'),
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
+		}, {
+			Name: 'Status',
+			FriendlyName: $localize`Status`,
+			Type: lookupFieldTypePrimaryFilter,
+			Category: '',
+			ValueLoader: this.getFilterValues.bind(this, 'status')
+		}, {
+			Name: 'Version',
+			FriendlyName: $localize`Version`,
+			Type: new FieldType('Number'),
+			Category: ''
+		}];
+		this.filterFields$ = this.filterFieldsSubject.asObservable();
+		this.filterFieldsSubject.next(filterFieldList);
+		this.filterFieldsSubject.complete();
+	}
+
+	private getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+		if (lookupType === 'status') {
+			const statusValues: string[] = ['Incomplete', 'Awaiting'];
+			const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+			return of({
+				items: values,
+				count: values.length
+			});
+		} else if (lookupType === 'workflowName') {
+			return this.workflowService.getTypes().pipe(
+				map((workflowTypeList: WorkflowTypeModel[]) => {
+					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
+					workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+					return {
+						items: workflowNameList,
+						count: workflowNameList.length
+					};
+				}));
+		}
 	}
 }

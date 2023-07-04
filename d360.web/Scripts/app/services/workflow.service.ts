@@ -8,6 +8,7 @@ import {
 	AllocationRequestModel,
 	AssignmentItem,
 	AssignmentItemStep,
+	AssignmentByVersion,
 	BulkWorkflowFormModel,
 	BulkWorkflowReassignModel,
 	ChangeTypeInfo,
@@ -598,14 +599,25 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = ''): Observable<any> {
-		let url: string = `/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
+	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', order: string = '', direction: number = SortOrder.Ascending): Observable<any> {
+		let url = `/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 		if (simpleFilter) {
 			url += `&_simpleFilter=${simpleFilter}`;
 		}
+
+		if (advancedFilter) {
+			url += `&_filter=${advancedFilter}`;
+		}
+
+		if (order) {
+			url += `&_order=${order}`;
+			if (direction && direction !== SortOrder.None) {
+				url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
+			}
+		}
 		return this.http.get(url)
 			.pipe(
-				map((response) => response),
+				map((response) => <any>response),
 				catchError((err) => this.handleError(err))
 			);
 	}
