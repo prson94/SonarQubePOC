@@ -90,6 +90,7 @@ export class FieldTypeDetailsComponent implements OnChanges {
 		return true;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	clickedOutside(event: any) {
 		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
 			this.close.emit();
