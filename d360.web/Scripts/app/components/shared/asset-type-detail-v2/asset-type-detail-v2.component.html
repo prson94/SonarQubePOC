@@ -29,18 +29,33 @@
 				</ng-container>
 			</div>
 		</div>
-		<div class="asset-detail-tabs" *ngIf="categories">
-			<div *ngFor="let category of categories;">
-				<ig-property-group [expanded]="category.active"
-								   (expandedChange)="category.active = $event; onStateSave()"
-								   [title]="category.name"
-								   [shouldBePadded]="isDetailsPage ? true : false"
-								   [showHeaderLine]="false">
-					<div readonly>
-						<ig-asset-type-detail-category [category]="category"></ig-asset-type-detail-category>
+		<div class="windowtabs" *ngIf="!isDetailsPage">
+			<button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')" i18n>Details</button>
+			<button [class]="(tab == 'fields') ? 'tab-selected' : 'tab'" (click)="clickTab('fields')" i18n>Fields</button>
+		</div>
+		<div class="asset-detail-tabs">
+			<ng-container [ngSwitch]="tab">
+				<ng-container *ngSwitchCase="'detail'">
+					<div *ngFor="let category of categories;">
+						<ig-property-group [expanded]="category.active"
+										   (expandedChange)="category.active = $event; onStateSave()"
+										   [title]="category.name"
+										   [shouldBePadded]="isDetailsPage ? true : false"
+										   [showHeaderLine]="false">
+							<div readonly>
+								<ig-asset-type-detail-category [category]="category"></ig-asset-type-detail-category>
+							</div>
+						</ig-property-group>
 					</div>
-				</ig-property-group>
-			</div>
+				</ng-container>
+				<ng-container *ngSwitchCase="'fields'">
+					<d3s-field-definition-tile [assetTypeUid]="assetTypeModel.uid"
+											   [typeName]="assetTypeModel.Name"
+											   [allowSingleSegmentPath]="false"
+											   [isSidePanel]="true"
+											   [title]="objectName"></d3s-field-definition-tile>
+				</ng-container>
+			</ng-container>
 		</div>
 	</div>
 </div>
