@@ -49,12 +49,25 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 	ngOnInit(): void {
 		if (this.fieldChanges) {
 			for (const fieldChange of this.fieldChanges) {
+				// populate ChangeType
 				if (fieldChange.AppendValue === 'true') {
 					fieldChange.ChangeType = 'Append';
 				} else if (fieldChange.ClearValue === 'true') {
 					fieldChange.ChangeType = 'Clear';
 				} else {
 					fieldChange.ChangeType = 'Replace';
+				}
+				// populate ValueSource
+				if (fieldChange.FormValue === true) {
+					if (fieldChange.ObjectType === 'Action') {
+						fieldChange.ValueSource = 'Action Form Input';
+					} else {
+						fieldChange.ValueSource = 'Form Input';
+					}
+				} else if (fieldChange.ClearValue === 'true') {
+					fieldChange.ValueSource = '--';
+				} else {
+					fieldChange.ValueSource = 'Specific Value';
 				}
 			}
 		}

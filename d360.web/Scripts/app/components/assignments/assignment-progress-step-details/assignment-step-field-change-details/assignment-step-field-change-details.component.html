@@ -12,6 +12,10 @@
 						<ng-container i18n>Change Type</ng-container>
 						<d3s-sortIcon [field]="'ChangeType'"></d3s-sortIcon>
 					</th>
+					<th [pSortableColumn]="'ValueSource'">
+						<ng-container i18n>Value Source</ng-container>
+						<d3s-sortIcon [field]="'ValueSource'"></d3s-sortIcon>
+					</th>
 					<th [pSortableColumn]="'Value'">
 						<ng-container i18n>Value</ng-container>
 						<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
@@ -22,6 +26,7 @@
 				<tr [pSelectableRow]="item">
 					<td>{{getFieldName(item)}}</td>
 					<td>{{item.ChangeType}}</td>
+					<td>{{item.ValueSource}}</td>
 					<td>
 						<div *ngIf="item.Value" [ngSwitch]="item.Type" style="overflow-x: auto">
                             <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important"

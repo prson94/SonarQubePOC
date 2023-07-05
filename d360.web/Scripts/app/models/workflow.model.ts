@@ -736,11 +736,12 @@ export class WorkflowStepFieldChangeDetail {
 	Type: string;
 	Value: string;
 	UseCurrentDate: boolean;
-	FormValue: string;
+	FormValue: boolean;
 	AppendValue: string;
 	ClearValue: string;
 	ObjectType: string;
 	ChangeType: string;
+	ValueSource: string;
 }
 
 
