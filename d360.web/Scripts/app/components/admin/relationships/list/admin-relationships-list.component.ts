@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PredicateFriendlyType } from '../../../../models/predicate.model';
 import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
@@ -255,6 +255,33 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			// we want warning here instead of all ui breaking 
 			// eslint-disable-next-line
 			console.warn("failed to focus element");
+		}
+	}
+
+	selectRow($event) {
+		this.selected = $event;
+		this.selectedChange.emit($event);
+	}
+
+	@ViewChildren('tableRow') tableRows: QueryList<ElementRef>;
+
+	@HostListener('document:keydown.arrowup', ['$event'])
+	@HostListener('document:keydown.arrowdown', ['$event'])
+	onArrowKeysDownHandler($event: KeyboardEvent) {
+		$event.preventDefault();
+		const selectedRow = this.tableRows.toArray().find((elRef) => {
+			return elRef.nativeElement.classList.contains('p-highlight');
+		});
+
+		if (selectedRow && document.activeElement !== selectedRow.nativeElement) {
+			selectedRow.nativeElement.dispatchEvent(
+				new KeyboardEvent($event.type, { key: $event.key })
+			);
+
+			setTimeout(() => {
+				//select newly focused element
+				document.activeElement.dispatchEvent(new KeyboardEvent($event.type, { key: 'Enter' }));
+			},0);
 		}
 	}
 }
