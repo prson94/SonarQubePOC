@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { RelationshipType } from '../../../../models/relationship.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { SidePanelService } from '../../../../services/side-panel.service';
@@ -13,7 +14,7 @@ import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 	styleUrls: ['./relationship-type-detail.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
-export class RelationshipTypeDetailComponent implements OnChanges {
+export class RelationshipTypeDetailComponent implements OnChanges, OnDestroy {
 	@Input() relationshipTypeUid: string;
 	@Input() isDetailsPage: boolean = false;
 	@Output() onLinkClicked = new EventEmitter();
@@ -24,6 +25,8 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 	showEditor: boolean = false;
 
 	formattedRelationshipTypeName: string = "";
+	loadSub: Subscription;
+
 	constructor(
 		private relationshipTypeService: RelationshipsService,
 		private sidePanelService: SidePanelService,
@@ -39,9 +42,18 @@ export class RelationshipTypeDetailComponent implements OnChanges {
 		}
 	}
 
+	ngOnDestroy() {
+		if (this.loadSub) {
+			this.loadSub.unsubscribe();
+		}
+	}
+
 	loadData() {
 		this.isLoading = true;
-		this.relationshipTypeService.getRelationshipType(this.relationshipTypeUid)
+		if (this.loadSub) {
+			this.loadSub.unsubscribe();
+		}
+		this.loadSub = this.relationshipTypeService.getRelationshipType(this.relationshipTypeUid)
 			.subscribe((res) => {
 				this.relationshipType = res[0];
 				const uiModel = RelationshipType.ConvertToUIModeldata(this.relationshipType);
