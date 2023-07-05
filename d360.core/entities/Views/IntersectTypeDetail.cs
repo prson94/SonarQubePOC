@@ -21,6 +21,8 @@ namespace d360.core.entities
 
 		[DataMember]
 		public string Name { get; set; }
+		[DataMember]
+		public string Inverse { get; set; }
 
 		public AssetTypeClass SubjectClass { get; set; }
 
