@@ -13,7 +13,8 @@
 			<d3s-by-workflow-version-grid #assignmentGridComponent
 										  (selectionChange)="selectedAssignmentVersionItems = $event"
 			></d3s-by-workflow-version-grid>
-			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
+			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen"
+						  (clickOutside)="secondarySidePanelOpen = false">
 				<div class="secondary-side-panel">
 					<side-panel [(expanded)]="secondarySidePanelOpen"
 								[(selectedPanel)]="secondarySidePanelTab"
@@ -47,7 +48,8 @@
 						[setMinMaxWidth]="false"
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
-					<d3s-workflow-version-information *ngIf="selectedAssignmentVersionItems?.length === 1" (nodeSelection)="nodeSelection($event)"
+					<d3s-workflow-version-information *ngIf="selectedAssignmentVersionItems?.length === 1"
+													  (nodeSelection)="nodeSelection($event)"
 													  [assignmentVersionItem]="selectedAssignmentVersionItems?.[0]"></d3s-workflow-version-information>
 				</ng-container>
 			</side-panel>
