@@ -1,9 +1,11 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { WorkflowActivityType } from '../../../../models/workflow.model';
+import { WorkflowActivityType, WorkflowTypeNew } from '../../../../models/workflow.model';
 import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { Router } from '@angular/router';
+import { PopupMenuItem } from '../../../shared/controls/popup-menu/popup-menu.component';
+import { WorkflowMonitorService } from '../../../../services/workflowmonitor.service';
 
 @Component({
 	selector: 'd3s-pending-assignments-step',
@@ -12,26 +14,45 @@ import { Router } from '@angular/router';
 })
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;
+	@Input() workflowTypeNew: WorkflowTypeNew;
 	history: any[];
+	selectedHistoryItem: any;
 	WorkflowActivityType = WorkflowActivityType;
+	menuItems: PopupMenuItem[] = [new PopupMenuItem({
+		title: $localize`Delete`
+	})];
+	showDeletionModal: boolean = false;
 
 	constructor(
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
+		private workflowMonitorService: WorkflowMonitorService,
 		private router: Router) {
 		super(settingsService);
-
 	}
 
+
 	ngOnInit() {
-		this.load();
+		this.loadWorkflowVersionStepHistory();
 	}
 
 	ngOnChanges() {
-		this.load();
+		this.loadWorkflowVersionStepHistory();
 	}
 
-	load() {
+	deleteAssignment = (): void => {
+		if (this.selectedHistoryItem != null) {
+			this.isLoading = true;
+			this.workflowMonitorService.deleteItemsByUid([this.selectedHistoryItem.WorkflowItemUid]).subscribe(
+				() => {
+					this.showDeletionModal = false;
+					this.loadWorkflowVersionStepHistory();
+				}
+			);
+		}
+	};
+
+	loadWorkflowVersionStepHistory() {
 		this.history = [];
 		if (this.versionStepId != null) {
 			this.isLoading = true;
@@ -49,5 +70,18 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 
 	navigate(url: string) {
 		this.router.navigateByUrl(this.federateUrl(url));
+	}
+
+	clickMenuItem(event: { value: string, action: string, event, data: PopupMenuItem }): void {
+		const key = event.value.toLowerCase();
+		if (key === $localize`Delete`.toLowerCase()) {
+			this.showDeletionModal = true;
+		}
+	}
+
+	clickMenuIcon(item: any): void {
+		if (item) {
+			this.selectedHistoryItem = item;
+		}
 	}
 }

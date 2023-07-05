@@ -13,23 +13,26 @@
 			<d3s-by-workflow-version-grid #assignmentGridComponent
 										  (selectionChange)="selectedAssignmentVersionItems = $event"
 			></d3s-by-workflow-version-grid>
-			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen"
-						  (clickOutside)="secondarySidePanelOpen = false">
-				<div class="secondary-side-panel">
+			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
+				<div class="secondary-side-panel"
+					 (clickOutside)="secondarySidePanelOpen = false">
 					<side-panel [(expanded)]="secondarySidePanelOpen"
 								[(selectedPanel)]="secondarySidePanelTab"
 								[extraButtons]="secondarySidePanelButtons"
 								closeIcon="fa-times"
 								[selectedItemsCount]="selectedAssignmentVersionItems?.length"
+								[selectedItem]="selectedAssignmentVersionItems"
+								[multipleItemsSelected]="selectedAssignmentVersionItems?.length > 1"
 								[isSecondarySidePanel]="true"
 								[setMinMaxWidth]="false"
 								[hasDetail]="false">
 						<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
-							<d3s-pending-assignments-step [versionStepId]=versionStepId>
+							<d3s-pending-assignments-step [versionStepId]=versionStepId [workflowTypeNew]="workflowTypeNew">
 							</d3s-pending-assignments-step>
 						</ng-container>
 						<ng-container *ngIf="secondarySidePanelTab === 'information'">
-							<d3s-step-information [selectedNode]="selectedNode" [nodeList]="nodeList" ></d3s-step-information>
+							<d3s-step-information [selectedNode]="selectedNode"
+												  [nodeList]="nodeList"></d3s-step-information>
 						</ng-container>
 					</side-panel>
 				</div>
