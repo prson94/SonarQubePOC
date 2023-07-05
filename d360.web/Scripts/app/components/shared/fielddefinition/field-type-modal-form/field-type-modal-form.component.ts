@@ -610,6 +610,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["UseDisplayFormat"].setValue(false);
 				break;
 			case 'JSON':
+			case 'Json':
 			case 'JsonElement':
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
@@ -1235,7 +1236,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.isGroupType || this.isUserType || this.actionTypeUid) {
 			return false;
 		}
-		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
+		return this.fieldTypeForm.get('IsDisplayable').value && this.selectedFieldType !== 'ComputedRelationshipReferenceList' && this.selectedFieldType !== 'Json' && this.selectedFieldType !== 'JSON' && this.selectedFieldType !== 'Tag' && this.selectedFieldType !== 'ComputedRelationshipLookup';
 	}
 
 	get isGroupType(): boolean {
