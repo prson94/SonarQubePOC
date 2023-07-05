@@ -84,6 +84,29 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.selectionChange.emit(event);
 	}
 
+	loadAssignmentsByVersion(lazyLoadEvent: LazyLoadEvent): void {
+		this.rowsPerPage = lazyLoadEvent.rows;
+		this.sortField = lazyLoadEvent.sortField ?? '';
+		this.sortOrder = lazyLoadEvent.sortField ? lazyLoadEvent.sortOrder : SortOrder.Descending;
+		this.currentPageNumber = (lazyLoadEvent.first / lazyLoadEvent.rows) + 1;
+		this.loadData();
+	}
+
+	onSimpleSearch(): void {
+		this.currentPageNumber = 1;
+		this.loadData();
+	}
+
+	onFiltersLoaded(): void {
+		this.currentPageNumber = 1;
+		this.loadData();
+	}
+
+	advancedFiltersChanged($event: Filters): void {
+		this.advancedFilter = $event.filter;
+		this.onSimpleSearch();
+	}
+
 	private loadData(): void {
 		this.isLoading = true;
 		this.assignmentsWithStatus = [];
@@ -108,44 +131,21 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 			});
 	}
 
-	loadAssignmentsByVersion(lazyLoadEvent: LazyLoadEvent): void {
-		this.rowsPerPage = lazyLoadEvent.rows;
-		this.sortField = lazyLoadEvent.sortField ?? '';
-		this.sortOrder = lazyLoadEvent.sortField ? lazyLoadEvent.sortOrder : SortOrder.Descending;
-		this.currentPageNumber = (lazyLoadEvent.first / lazyLoadEvent.rows) + 1;
-		this.loadData();
-	}
-
-	onSimpleSearch(): void {
-		this.currentPageNumber = 1;
-		this.loadData();
-	}
-
-	onFiltersLoaded(): void {
-		this.currentPageNumber = 1;
-		this.loadData();
-	}
-
-	advancedFiltersChanged($event: Filters): void {
-		this.advancedFilter = $event.filter;
-		this.onSimpleSearch();
-	}
-
 	private createFilterFields(): void {
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = true;
-		let filterFieldList: AdvancedFilterFieldType[] = [{
+		const filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'WorkflowName',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
+			ValueLoader: this.getFilteredWorkflowNames
 		}, {
 			Name: 'Status',
 			FriendlyName: $localize`Status`,
 			Type: lookupFieldTypePrimaryFilter,
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'status')
+			ValueLoader: this.getFilteredStatuses
 		}, {
 			Name: 'Version',
 			FriendlyName: $localize`Version`,
@@ -157,24 +157,23 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.filterFieldsSubject.complete();
 	}
 
-	private getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-		if (lookupType === 'status') {
-			const statusValues: string[] = ['Incomplete', 'Awaiting'];
-			const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-			return of({
-				items: values,
-				count: values.length
-			});
-		} else if (lookupType === 'workflowName') {
-			return this.workflowService.getTypes().pipe(
-				map((workflowTypeList: WorkflowTypeModel[]) => {
-					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
-					workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: workflowNameList,
-						count: workflowNameList.length
-					};
-				}));
-		}
-	}
+	private getFilteredStatuses = (lookupValuesAPIParameters: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		const values: string[] = ['Incomplete', 'Awaiting'].filter((s) => s.toLowerCase().indexOf(lookupValuesAPIParameters.filter?.toLowerCase() ?? '') !== -1);
+		return of({
+			items: values,
+			count: values.length
+		});
+	};
+
+	private getFilteredWorkflowNames = (lookupValuesAPIParameters: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getTypes().pipe(
+			map((workflowTypeList: WorkflowTypeModel[]) => {
+				let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
+				workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(lookupValuesAPIParameters.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: workflowNameList,
+					count: workflowNameList.length
+				};
+			}));
+	};
 }

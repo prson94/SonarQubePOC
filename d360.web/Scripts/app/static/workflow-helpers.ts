@@ -1,5 +1,7 @@
 ﻿import { StepType, WorkflowActivityType, WorkflowChangeType } from '../models/workflow.model';
 
+/*global $localize*/
+
 export class WorkflowHelpers {
 	static activityTypeName(workflowActivityType: WorkflowActivityType): string {
 		switch (workflowActivityType) {

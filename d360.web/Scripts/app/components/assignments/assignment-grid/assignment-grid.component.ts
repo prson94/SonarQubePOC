@@ -311,7 +311,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	createFilterFields(): void {
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
-		let filterFieldList: AdvancedFilterFieldType[] = [{
+		const filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'workflowName',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
