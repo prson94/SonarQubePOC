@@ -229,7 +229,8 @@ namespace d360.model.DataAccessLayer
 				resolveUIDetails = true;
 				additionalApply.AppendLine(@$"outer apply (
 													select	top 1 
-															Name from IntersectTypeDetail IT where FT.LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = FT.LookupObjectID
+															IIF(IT.SubjectAssetTypeID = @ASSETTYPEID, Name, Inverse) as Name 
+															from IntersectTypeDetail IT where FT.LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = FT.LookupObjectID
 													) ITName ");
 				additionalApply.AppendLine(@"outer apply (
 											select top 1 Name from AssetType where uid = JSON_VALUE(FT.Definition,'$.AssetTypeUid') and FT.Type = 'Path'
