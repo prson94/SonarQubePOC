@@ -28,7 +28,9 @@ import {
 	WorkflowReassignmentAsset,
 	WorkflowTaskProcedure,
 	WorkflowTypeItem,
-	WorkflowTypeModel, WorkflowVersion, WorkflowStepDetail
+	WorkflowTypeModel,
+	WorkflowVersion,
+	WorkflowStepDetail
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -599,7 +601,7 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', order: string = '', direction: number = SortOrder.Ascending): Observable<any> {
+	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', order: string = '', direction: number = SortOrder.Ascending): Observable<AssignmentByVersion> {
 		let url = `/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 		if (simpleFilter) {
 			url += `&_simpleFilter=${simpleFilter}`;
@@ -617,7 +619,7 @@ export class WorkflowService extends BaseObservableService {
 		}
 		return this.http.get(url)
 			.pipe(
-				map((response) => <any>response),
+				map((response) => <AssignmentByVersion>response),
 				catchError((err) => this.handleError(err))
 			);
 	}

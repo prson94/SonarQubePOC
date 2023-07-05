@@ -20,7 +20,7 @@
 		<p-table #dt
 				 [loading]="isLoading"
 				 loadingIcon="fa fa-spinner"
-				 [value]="assignmentsByVersion"
+				 [value]="assignmentsWithStatus"
 				 selectionMode="multiple"
 				 [metaKeySelection]="true"
 				 [lazy]="true"
@@ -32,7 +32,7 @@
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
 				 (onLazyLoad)="loadAssignmentsByVersion($event)"
-				 [selection]="selectedAssignmentByVersion"
+				 [selection]="selectedAssignmentVersionItems"
 				 (selectionChange)="gridSelectionChange($event)"
 				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
 			<ng-template pTemplate="header">

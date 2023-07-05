@@ -6,7 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AssignmentByVersion, NodeModel } from '../../../models/workflow.model';
+import { AssignmentByVersion, AssignmentVersionItem, NodeModel } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
 /*global $localize*/
@@ -22,7 +22,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 	showSidePanel: boolean = true;
 	secondarySidePanelOpen: boolean = false;
 	secondarySidePanelTab: string = 'pendingAssignments';
-	selectedAssignmentByVersion: AssignmentByVersion[];
+	selectedAssignmentVersionItems: AssignmentVersionItem[];
 	versionStepId: number;
 	selectedNode: NodeModel;
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({

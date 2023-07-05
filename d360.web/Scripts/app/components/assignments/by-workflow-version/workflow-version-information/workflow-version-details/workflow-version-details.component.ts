@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AssignmentByVersion } from '../../../../../models/workflow.model';
+import { AssignmentByVersion, AssignmentVersionItem } from '../../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-version-details',
@@ -8,7 +8,7 @@ import { AssignmentByVersion } from '../../../../../models/workflow.model';
 })
 export class WorkflowVersionDetailsComponent {
 
-	@Input() assignmentByVersion: AssignmentByVersion;
+	@Input() assignmentVersionItem: AssignmentVersionItem;
 	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
 		objectType: string,
 		objectUid: string

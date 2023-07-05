@@ -853,7 +853,7 @@ export class WorkflowByType {
 	StartedBy: string;
 }
 
-export class AssignmentByVersion {
+export class AssignmentVersionItem {
 	WorkflowName: string;
 	WorkflowTypeUid: string;
 	Version: number;
@@ -867,6 +867,13 @@ export class AssignmentByVersion {
 	UpdatedOn: string;
 	UpdatedBy: string;
 	UpdatedByUid: string;
+}
+
+export class AssignmentByVersion {
+	items: AssignmentVersionItem[];
+	total: number;
+	pageSize:number;
+	pageNum: number;
 }
 
 export class Actions {

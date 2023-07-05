@@ -8,7 +8,7 @@ import { map, takeUntil } from 'rxjs/operators';
 import { LazyLoadEvent } from 'primeng/api';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { AssignmentByVersion, WorkflowTypeModel } from '../../../../models/workflow.model';
+import { AssignmentByVersion, AssignmentVersionItem, WorkflowTypeModel } from '../../../../models/workflow.model';
 import {
 	AdvancedFilterFieldType,
 	Filters,
@@ -19,7 +19,7 @@ import { FieldType } from '../../../../models/fieldtype-api.model';
 
 /*global $localize*/
 
-class AssignmentWithStatusByVersion extends AssignmentByVersion {
+class AssignmentWithStatus extends AssignmentVersionItem {
 	statusCount: number;
 }
 
@@ -30,14 +30,14 @@ class AssignmentWithStatusByVersion extends AssignmentByVersion {
 })
 export class ByWorkflowVersionGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	title: string = $localize`WorkFlow Items`;
-	assignmentsByVersion: AssignmentWithStatusByVersion[] = [];
+	assignmentsWithStatus: AssignmentWithStatus[] = [];
 	subscription: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	sortField: string;
 	sortOrder: SortOrder = SortOrder.Descending;
 	selectedCount: number = 0;
-	selectedAssignmentByVersion: AssignmentByVersion[] = [];
+	selectedAssignmentVersionItems: AssignmentVersionItem[] = [];
 	simpleFilter: string = '';
 	@Output() selectionChange = new EventEmitter();
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
@@ -78,27 +78,27 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		this.destroy.complete();
 	}
 
-	gridSelectionChange(event: AssignmentByVersion[]): void {
-		this.selectedAssignmentByVersion = event;
-		this.selectedCount = this.selectedAssignmentByVersion == null ? 0 : this.selectedAssignmentByVersion.length;
+	gridSelectionChange(event: AssignmentVersionItem[]): void {
+		this.selectedAssignmentVersionItems = event;
+		this.selectedCount = this.selectedAssignmentVersionItems == null ? 0 : this.selectedAssignmentVersionItems.length;
 		this.selectionChange.emit(event);
 	}
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.assignmentsByVersion = [];
+		this.assignmentsWithStatus = [];
 		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder)
-			.subscribe((response) => {
-				this.assignmentsByVersion = response.items.map((assignmentByVersion: AssignmentByVersion) => {
-					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatusByVersion;
+			.subscribe((response: AssignmentByVersion): void => {
+				this.assignmentsWithStatus = response.items.map((assignmentByVersion: AssignmentVersionItem) => {
+					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatus;
 					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
 					return assignmentWithStatusByVersion;
 				});
 				this.totalRecords = response.total;
-				if (this.assignmentsByVersion.length > 0) {
-					this.selectedAssignmentByVersion = [this.assignmentsByVersion[0]];
+				if (this.assignmentsWithStatus.length > 0) {
+					this.selectedAssignmentVersionItems = [this.assignmentsWithStatus[0]];
 					this.selectedCount = 1;
-					this.selectionChange.emit(this.selectedAssignmentByVersion);
+					this.selectionChange.emit(this.selectedAssignmentVersionItems);
 				} else {
 					this.selectedCount = 0;
 					this.selectionChange.emit(null);
