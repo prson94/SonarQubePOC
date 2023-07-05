@@ -39,8 +39,18 @@
 						<d3s-assignment-step-http-details [settings]="selectedNode.settings"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						{{ selectedNode | json }}
+						<d3s-assignment-step-http-response-details [settings]="selectedNode.settings" [nodeList]="nodeList">
+						</d3s-assignment-step-http-response-details>
 					</ng-container>
+				</ng-container>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title *ngIf="selectedNode.activityType === WorkflowActivityType.HTTPResponse" title="Outputs"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container>
+					<d3s-assignment-step-http-response-outputs
+						[settings]="selectedNode.settings"></d3s-assignment-step-http-response-outputs>
 				</ng-container>
 			</div>
 		</ig-property-group>

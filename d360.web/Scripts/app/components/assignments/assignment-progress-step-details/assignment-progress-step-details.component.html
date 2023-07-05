@@ -127,7 +127,7 @@
 						<d3s-assignment-step-http-details [settings]="step.Settings" [itemFields]="step.ItemFields"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						<d3s-assignment-step-http-response-details [step]="step" [workflowItemUId]="workflowItemUId">
+						<d3s-assignment-step-http-response-details [settings]="step.Settings" [workflowItemUId]="workflowItemUId">
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
@@ -144,7 +144,7 @@
 			<div readonly>
 				<ng-container>
 					<d3s-assignment-step-http-response-outputs
-						[step]="step"></d3s-assignment-step-http-response-outputs>
+						[settings]="step.Settings" [itemFields]="step.ItemFields"></d3s-assignment-step-http-response-outputs>
 				</ng-container>
 			</div>
 		</ig-property-group>

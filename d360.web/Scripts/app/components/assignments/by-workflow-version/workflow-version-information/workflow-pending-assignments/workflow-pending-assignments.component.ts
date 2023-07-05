@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NodeModel } from '../../../../../models/workflow.model';
+import { NodeModel, WorkflowDiagramModel } from '../../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-pending-assignments',
@@ -11,9 +11,12 @@ export class WorkflowPendingAssignmentsComponent {
 
 	@Input() workflowTypeVersion: number;
 
-	@Output() nodeSelection: EventEmitter<NodeModel> = new EventEmitter<NodeModel>();
+	@Output() nodeSelection: EventEmitter<{
+		NodeModel: NodeModel,
+		WorkflowDiagramModel: WorkflowDiagramModel
+	}> = new EventEmitter<{ NodeModel: NodeModel, WorkflowDiagramModel: WorkflowDiagramModel }>();
 
-	onNodeClick(event: NodeModel) {
+	onNodeClick(event: { NodeModel: NodeModel, WorkflowDiagramModel: WorkflowDiagramModel }) {
 		this.nodeSelection.emit(event);
 	}
 

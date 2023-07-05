@@ -12,7 +12,7 @@
 						<ng-container i18n>Path</ng-container>
 						<d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Value'">
+					<th *ngIf="this.itemFields" [pSortableColumn]="'Value'">
 						<ng-container i18n>Value</ng-container>
 						<d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
 					</th>
@@ -22,7 +22,7 @@
 				<tr [pSelectableRow]="item">
 					<td>{{item.Name}}</td>
 					<td>{{item.Path}}</td>
-					<td>{{item.Value}}</td>
+					<td *ngIf="this.itemFields">{{item.Value}}</td>
 				</tr>
 			</ng-template>
 			<ng-template *ngIf="dt.totalRecords" pTemplate="summary">

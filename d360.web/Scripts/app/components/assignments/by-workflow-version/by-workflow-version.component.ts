@@ -6,7 +6,12 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { AssignmentByVersion, AssignmentVersionItem, NodeModel } from '../../../models/workflow.model';
+import {
+	AssignmentVersionItem,
+	NodeModel,
+	WorkflowDiagramModel,
+	WorkflowDiagramNode
+} from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
 /*global $localize*/
@@ -25,6 +30,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 	selectedAssignmentVersionItems: AssignmentVersionItem[];
 	versionStepId: number;
 	selectedNode: NodeModel;
+	nodeList: WorkflowDiagramNode[];
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,
@@ -95,9 +101,10 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
-	nodeSelection(event: NodeModel): void {
-		this.versionStepId = parseInt(event?.key) ?? null;
-		this.selectedNode = event;
+	nodeSelection(event: { NodeModel: NodeModel, WorkflowDiagramModel: WorkflowDiagramModel }): void {
+		this.versionStepId = parseInt(event?.NodeModel?.key) ?? null;
+		this.selectedNode = event.NodeModel;
+		this.nodeList = event.WorkflowDiagramModel.Nodes
 		this.secondarySidePanelOpen = true;
 	}
 }

@@ -185,7 +185,7 @@ export class HTTPResponseOutput {
 export class HTTPResponseSettings {
 	InputStepId: string;
 	InputStepName: string;
-	Outputs: HTTPResponseOutput[] = [];
+	Outputs: any;
 }
 
 export class NodeSettings {
@@ -654,6 +654,7 @@ export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
 	HTTPResponse: any;
+	Outputs: any;
 }
 
 export class WorkflowStepItemSettings {
