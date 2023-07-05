@@ -5,269 +5,137 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FieldType-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+  <changeSet author="Pappas" id="Table.dbo.FieldType-v11">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldType')
 BEGIN
 	CREATE TABLE [dbo].[FieldType](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[FriendlyName] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](4000) NULL,
-		[DisplayDescription] [nvarchar](4000) NULL,
-		[FormDescription] [nvarchar](4000) NULL,
-		[Type] [varchar](25) NOT NULL,
-		[LookupObjectType] [varchar](25) NULL,
-		[LookupObjectID] [int] NULL,
-		[LookupDisplayFormat] [nvarchar](250) NULL,
-		[MinimumLength] [decimal](38, 18) NULL,
-		[MaximumLength] [decimal](38, 18) NULL,
-		[Length] [int] NULL,
-		[Pattern] [varchar](1000) NULL,
-		[Object] [varchar](50) CONSTRAINT [CK_FieldType_Object] DEFAULT ('') NOT NULL,
-		[ObjectID] [int] CONSTRAINT [CK_FieldType_ObjectID] DEFAULT (0) NOT NULL,
-		[SortOrder] [int] CONSTRAINT [CK_FieldType_SortOrder] DEFAULT (0) NOT NULL,
-		[IsRequired] [bit] CONSTRAINT [CK_FieldType_IsRequired] DEFAULT (0) NOT NULL,
-		[IsListable] [bit] CONSTRAINT [CK_FieldType_IsListable] DEFAULT (0) NOT NULL,
-		[ValidationDescription] [nvarchar](500) NULL,
-		[Category] [nvarchar](250) NULL,
-		[IsDisplayable] [bit] CONSTRAINT [DF_FieldType_IsDisplayable] DEFAULT (1) NOT NULL,
-		[IsEditable] [bit] CONSTRAINT [DF_FieldType_IsEditable] DEFAULT (1) NOT NULL,
-		[DefaultValue] [nvarchar](max) NULL,
-		[DefaultFormattedValue] [nvarchar](max) NULL,
-		[AllowAllValue] [bit] CONSTRAINT [DF_FieldType_AllowAllValue] DEFAULT (0) NOT NULL,
-		[AllowAllLabel] [nvarchar](250) NULL,
-		[IsPrimaryFilter] [bit] CONSTRAINT [CK_FieldType_IsPrimaryFilter] DEFAULT (0) NOT NULL,
-		[LookupEditFormat] [nvarchar](250) NULL,
-		[IsPartOfKey] [bit] CONSTRAINT [DF_FieldType_IsPartOfKey] DEFAULT (0) NOT NULL,
-		[ColumnOrder] [int] CONSTRAINT [DF_FieldType_ColumnOrder] DEFAULT (1) NOT NULL,
-		[ColumnWidth] [int] NULL,
-		[LookupObjectFieldTypeID] [int] NULL,
-		[AllowMultipleValues] [bit] CONSTRAINT [DF_FieldType_AllowMultipleValues] DEFAULT (0) NOT NULL,
-		[AssetTypeID] [int] NULL,
-		[ParentFieldTypeID] [int] CONSTRAINT [DF_FieldType_ParentFieldTypeID] DEFAULT (0) NOT NULL,
-		[UpdatedBy] [int] CONSTRAINT [DF_FieldType_UpdatedBy] DEFAULT (0) NOT NULL,
-		[Increment] [decimal](38, 18) NULL,
-		[Precision] [int] NULL,
-		[FilterPredicateID] [int] NULL,
-		[FilterPredicateDirection] [bit] NULL,
-		[FilterFieldTypeID] [int] NULL,
-		[ShowIfEmpty] [bit] CONSTRAINT [DF_FieldType_ShowIfEmpty] DEFAULT (0) NOT NULL,
-		[Definition] [nvarchar](2500) CONSTRAINT [DF_FieldType_Definition] DEFAULT ('{}') NOT NULL,
-		CONSTRAINT [PK_FieldType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+		[ID] int IDENTITY(1,1) not null,
+		[Name] nvarchar(128) not null,
+		FriendlyName nvarchar(250) not null,
+		Description nvarchar(4000) null,
+		DisplayDescription nvarchar(4000) null,
+		FormDescription nvarchar(4000) null,
+		[Type] varchar(25) not null,
+		LookupObjectType varchar(25) null,
+		LookupObjectID int null,
+		LookupDisplayFormat nvarchar(250) null,
+		MinimumLength decimal(38, 18) null,
+		MaximumLength decimal(38, 18) null,
+		[Length] int null,
+		[Pattern] varchar(1000) null,
+		[Object] varchar(50) constraint CK_FieldType_Object default('') not null,
+		ObjectID int constraint CK_FieldType_ObjectID default(0) not null,
+		SortOrder int constraint CK_FieldType_SortOrder default(0) not null,
+		IsRequired bit constraint CK_FieldType_IsRequired default(0) not null,
+		IsListable bit constraint CK_FieldType_IsListable default(0) not null,
+		ValidationDescription nvarchar(500) null,
+		[Category] nvarchar(250) null,
+		IsDisplayable bit constraint DF_FieldType_IsDisplayable default(1) not null,
+		IsEditable bit constraint DF_FieldType_IsEditable default(1) not null,
+		[DefaultValue] nvarchar(max) null,
+		DefaultFormattedValue nvarchar(max) null,
+		AllowAllValue bit constraint DF_FieldType_AllowAllValue default(0) not null,
+		AllowAllLabel nvarchar(250) null,
+		IsPrimaryFilter bit constraint CK_FieldType_IsPrimaryFilter default(0) not null,
+		LookupEditFormat nvarchar(250) null,
+		IsPartOfKey bit constraint DF_FieldType_IsPartOfKey default(0) not null,
+		ColumnOrder int constraint DF_FieldType_ColumnOrder default(1) not null,
+		ColumnWidth int null,
+		LookupObjectFieldTypeID int null,
+		AllowMultipleValues bit constraint DF_FieldType_AllowMultipleValues default(0) not null,
+		AssetTypeID int sparse,
+		ParentFieldTypeID int constraint DF_FieldType_ParentFieldTypeID default(0) not null,
+		UpdatedBy int constraint DF_FieldType_UpdatedBy default(0) not null,
+		[Increment] decimal(38, 18) null,
+		[Precision] int null,
+		FilterPredicateID int null,
+		FilterPredicateDirection bit null,
+		FilterFieldTypeID int null,
+		ShowIfEmpty bit constraint DF_FieldType_ShowIfEmpty default(0) not null,
+		[Definition] nvarchar(2500) constraint DF_FieldType_Definition default('{}') not null,
+		ScoreType int null,
+		SearchAddToResult bit constraint DF_FieldType_SearchAddToResult default(0) not null,
+		SearchPrefix nvarchar(250) null,
+		SearchSuffix nvarchar(250) null,
+		SearchDisplayOrder int null,
+		CounterPrefix nvarchar(10) null,
+		CounterInitialIndex int null,
+		DisplayInColumn bit null,
+		SortByAscending bit constraint DF_FieldType_SortByAscending default(1) not null,
+		IntersectTypeID int sparse,
+		IssueTypeID int sparse,
+		UseDisplayFormat bit constraint DF_FieldType_UseDisplayFormat default(0) not null,
+		IsSubject bit constraint DF_FieldType_IsSubject default(1) not null
+		constraint [PK_FieldType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
+]]>
+    </sql>
+  </changeSet>
+   
+ <changeSet author="Pappas" id="Index.dbo.FieldType-v11">
+  <comment>GOV-28372</comment>
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_ObjectID_Type')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )
+ CREATE NONCLUSTERED INDEX [IX_FieldType_ObjectID_Type] ON [dbo].[FieldType] ([ObjectID], [Type])
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_LookupObjectType_LookupObjectID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldType_LookupObjectType_LookupObjectID] ON [dbo].[FieldType] ( [LookupObjectType] ASC, [LookupObjectID] ASC )
+ CREATE NONCLUSTERED INDEX [IX_FieldType_LookupObjectType_LookupObjectID] ON [dbo].[FieldType] ( [LookupObjectType] ASC, [LookupObjectID] ASC )
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_Object-ObjectID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldType_Object-ObjectID] ON [dbo].[FieldType] ( [Object] ASC, [ObjectID] ASC )
+ CREATE NONCLUSTERED INDEX [IX_FieldType_Object-ObjectID] ON [dbo].[FieldType] ( [Object] ASC, [ObjectID] ASC )
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_Type')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldType_Type] ON [dbo].[FieldType] ( [Type] ASC ) INCLUDE([LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[AllowMultipleValues])
+ CREATE NONCLUSTERED INDEX [IX_FieldType_Type] ON [dbo].[FieldType] ( [Type] ASC ) INCLUDE([LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[AllowMultipleValues])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="MDonato" id="Table.dbo.FieldType-v2">
-    <comment>GOV-7576</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[dbo].[FieldType]', 'ScoreType') IS NULL
-		BEGIN
-			ALTER TABLE dbo.FieldType
-			ADD ScoreType int NULL
-		END
-		]]>
-    </sql>
-    
-    <rollback>
-      <![CDATA[	
-		IF COL_LENGTH('[dbo].[FieldType]', 'ScoreType') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.FieldType
-			DROP COLUMN ScoreType
-		END
-	  ]]>
-    </rollback>
-  </changeSet>
-  <changeSet author="TKlok" id="Table.dbo.FieldType-v3">
-    <comment>GOV-11606</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[dbo].[FieldType]', 'SearchAddToResult') IS NULL
-		BEGIN
-			ALTER TABLE dbo.FieldType ADD
-				SearchAddToResult bit CONSTRAINT [DF_FieldType_SearchAddToResult] DEFAULT (0) NOT NULL,
-				SearchPrefix nvarchar(250) NULL,
-				SearchSuffix nvarchar(250) NULL,
-				SearchDisplayOrder int NULL
-		END
-		]]>
-    </sql>
-    
-    <rollback>
-      <![CDATA[	
-		IF COL_LENGTH('[dbo].[FieldType]', 'SearchAddToResult') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.FieldType
-			DROP CONSTRAINT DF_FieldType_SearchAddToResult
-
-			ALTER TABLE dbo.FieldType
-			DROP COLUMN IF EXISTS
-				SearchAddToResult,
-				SearchPrefix,
-				SearchSuffix,
-				SearchDisplayOrder
-		END
-	  ]]>
-    </rollback>
-  </changeSet>
-  
-  <changeSet author="Puneet Gupta" id="Table.dbo.FieldType-v4">
-    <comment>GOV-14287</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
-		   where TABLE_SCHEMA = 'dbo' 
-		   and TABLE_NAME = 'FieldType' 
-		   and COLUMN_NAME = 'name'
-		   and character_maximum_length > 128)
-begin
-	update dbo.FieldType
-	set name = substring(name,1,128)
-	where len(name)>128;
-
-	alter table dbo.FieldType alter column name [nvarchar](128) NOT NULL
-end
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] 
-		   where TABLE_SCHEMA = 'dbo' 
-		   and TABLE_NAME = 'FieldType' 
-		   and COLUMN_NAME = 'name'
-		   and character_maximum_length = 128)
-begin
-	alter table dbo.FieldType alter column name [nvarchar](250) NOT NULL
-end
-	  ]]>
-    </rollback>
-  </changeSet>
-  
-    <changeSet author="TDuric" id="Table.dbo.FieldType-v5">
-    <comment>GOV-13562</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[dbo].[FieldType]', 'CounterPrefix') IS NULL
-		BEGIN
-			alter table dbo.FieldType
-			add [CounterPrefix] nvarchar(10)
-
-			alter table dbo.FieldType
-			add [CounterInitialIndex] int
-		END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-		IF COL_LENGTH('[dbo].[FieldType]', 'CounterPrefix') IS NOT NULL
-		BEGIN
-			DROP COLUMN IF EXISTS
-				CounterPrefix,
-				CounterInitialIndex
-		END
-	  ]]>
-    </rollback>
-  </changeSet>
-    <changeSet author="TDuric" id="Table.dbo.FieldType-v6">
-    <comment>GOV-15239</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[dbo].[FieldType]', 'DisplayInColumn') IS NULL
-		BEGIN
-			alter table dbo.FieldType
-			add [DisplayInColumn] bit
-		END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-		IF COL_LENGTH('[dbo].[FieldType]', 'DisplayInColumn') IS NOT NULL
-		BEGIN
-			DROP COLUMN IF EXISTS
-				DisplayInColumn
-		END
-	  ]]>
-    </rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Index.dbo.FieldType-v1">
-   <comment>GOV-16678</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_ObjectID_Type')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IntersectTypeID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldType_ObjectID_Type] ON [dbo].[FieldType] ([ObjectID], [Type])
+ CREATE NONCLUSTERED INDEX [IX_FieldType_IntersectTypeID] ON [dbo].[FieldType] ( [IntersectTypeID] ASC )
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_ObjectID_Type')
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IssueTypeID')
 BEGIN
-	DROP INDEX [IX_FieldType_ObjectID_Type] ON [dbo].[FieldType]
+ CREATE NONCLUSTERED INDEX [IX_FieldType_IssueTypeID] ON [dbo].[FieldType] ( [IssueTypeID] ASC )
 END
-		]]>
-	</rollback>
-  </changeSet> 
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_FieldType_AssetType_Name')
+BEGIN
+ CREATE UNIQUE NONCLUSTERED INDEX [UQ_FieldType_AssetType_Name] ON [dbo].[FieldType] ( [AssetTypeID] ASC, [Name] ASC ) WHERE ([AssetTypeID] IS NOT NULL)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_FieldType_IntersectType_Name')
+BEGIN
+ CREATE UNIQUE NONCLUSTERED INDEX [UQ_FieldType_IntersectType_Name] ON [dbo].[FieldType] ( [IntersectTypeID] ASC, [Name] ASC ) WHERE ([IntersectTypeID] IS NOT NULL)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_FieldType_IssueType_Name')
+BEGIN
+ CREATE UNIQUE NONCLUSTERED INDEX [UQ_FieldType_IssueType_Name] ON [dbo].[FieldType] ( [IssueTypeID] ASC, [Name] ASC ) WHERE ([IssueTypeID] IS NOT NULL)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_FieldType_Object_Name')
+BEGIN
+ CREATE UNIQUE NONCLUSTERED INDEX [UQ_FieldType_Object_Name] ON [dbo].[FieldType] ( [Object] ASC, [ObjectID] ASC, [Name] ASC ) WHERE ([Object] is not null and [ObjectID] IS NOT NULL and ObjectID <> 0)
+END
+]]>
+  </sql>
+ </changeSet> 
 
   
-  <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterInsert]
 	ON [dbo].[FieldType]
 	FOR INSERT
@@ -279,103 +147,13 @@ AS
 	FROM	FieldType T 
 			inner join inserted F on F.ID = T.ID and T.AssetTypeID is null
 			inner join AssetType A on A.Object = F.Object and A.ObjectID = F.ObjectID;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+]]>
+  </sql>
+ </changeSet>
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="vlova" id="Table.dbo.FieldType-v7">
-    <comment>GOV-14922</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF COL_LENGTH('[dbo].[FieldType]', 'SortByAscending') IS NULL
-		BEGIN
-			alter table dbo.FieldType
-			add [SortByAscending] bit not null
-			default 1
-		END
-	  ]]>
-    </sql>
-    <rollback>
-      <![CDATA[
-		-- dynamic drop of constraints is required, because "default 1" creates randomly-named constraint
-		-- which prevents deleting of column SortByAscending
-		declare @sql nvarchar(max)
-		
-		select 
-			@sql = 'alter table dbo.FieldType drop constraint ' + df.NAME 
-		from sys.default_constraints df
-			INNER JOIN sys.tables t ON df.parent_object_id = t.object_id
-			INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
-		where t.name = 'FieldType' and c.name = 'SortByAscending'
-		
-		exec sp_executeSql @sql
-		
-		-- drop column
-		alter table dbo.FieldType 
-		drop column if exists SortByAscending
-	  ]]>
-    </rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v8.1">
-    <comment>GOV-18452</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
-		BEGIN
-			DROP INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType]
-		END
-		
-		DROP VIEW IF EXISTS [utility].[FieldValue]
-		
-		IF EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID-Name')
-		BEGIN
-			DROP INDEX [IX_FieldType_AssetTypeID-Name] ON [dbo].[FieldType]
-		END
-
-		alter table FieldType alter column AssetTypeID INT SPARSE
-		alter table FieldType add IntersectTypeID int SPARSE
-		alter table FieldType add IssueTypeID int SPARSE
-		
-		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
-		BEGIN
-			CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )
-		END
-		
-		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IntersectTypeID')
-		BEGIN
-			CREATE NONCLUSTERED INDEX [IX_FieldType_IntersectTypeID] ON [dbo].[FieldType] ( [IntersectTypeID] ASC )
-		END
-		
-		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_IssueTypeID')
-		BEGIN
-			CREATE NONCLUSTERED INDEX [IX_FieldType_IssueTypeID] ON [dbo].[FieldType] ( [IssueTypeID] ASC )
-		END
-	  ]]>
-    </sql>
-    <rollback>
-      <![CDATA[
-		
-	  ]]>
-    </rollback>
-  </changeSet>
-
-<changeSet author="bquinlivan" id="Table.dbo.Field-FieldType_AfterUpsert-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="bquinlivan" id="Table.dbo.Field-FieldType_AfterUpsert-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
    ON  [dbo].[FieldType] 
    AFTER INSERT,UPDATE
@@ -449,97 +227,8 @@ BEGIN
 				AssetType A on A.ID = i.AssetTypeID		
 		END
 END;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
-   ON  [dbo].[FieldType] 
-   AFTER INSERT,UPDATE
-AS 
-BEGIN
-		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
-		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
-		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
-		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
-		(substring( columns_updated() , 5 , 1 ) & power( 2, 1 ) > 0))
-		BEGIN
+]]>
+  </sql>
+ </changeSet>
 
-				UPDATE	F
-				set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field F
-						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
-		END
-		
-		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
-		(substring( columns_updated() , 4 , 1 ) & power( 2, 0 ) > 0))
-		BEGIN
-				update	FT	
-				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
-				from	FieldType FT
-						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
-
-				update	FT	
-				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
-				from	FieldType FT
-						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is null and FT.Type='Link'
-		END
-		
-		IF (EXISTS (SELECT * FROM DELETED))
-		BEGIN
-			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-				select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
-		END
-		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
-		BEGIN
-			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
-		END
-END;
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v9">
-    <comment>GOV-14922</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		
-		IF COL_LENGTH('[dbo].[FieldType]', 'UseDisplayFormat') IS NULL
-		BEGIN
-			alter table dbo.FieldType
-			add [UseDisplayFormat] [bit] CONSTRAINT [DF_FieldType_UseDisplayFormat] DEFAULT (0) NOT NULL			
-		END
-	  ]]>
-    </sql>
-    <rollback>
-      <![CDATA[		
-		alter table dbo.FieldType 
-		drop column if exists UseDisplayFormat
-	  ]]>
-    </rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.FieldType-v10">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-		
-		IF COL_LENGTH('[dbo].[FieldType]', 'IsSubject') IS NULL
-		BEGIN
-			alter table dbo.FieldType
-			add [IsSubject] [bit] CONSTRAINT [DF_FieldType_IsSubject] DEFAULT (1) NOT NULL			
-		END
-	  ]]>
-    </sql>
-    <rollback>
-      <![CDATA[		
-		alter table dbo.FieldType 
-		drop column if exists IsSubject
-	  ]]>
-    </rollback>
-  </changeSet>
 </databaseChangeLog>
