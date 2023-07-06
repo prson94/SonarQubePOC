@@ -45,6 +45,7 @@
 			 [rows]="rowsPerPage"
 			 [rowsPerPageOptions]="defaultPagingOptions"
 			 [selection]="selected"
+			 (selectionChange)="selectRow($event)"
 			 [stateStorage]="gridStateStorage"
 			 stateKey="{{gridStorageKey}}"
 			 [loading]="isLoading"
@@ -71,7 +72,7 @@
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="body" let-item>
-			<tr (click)="selected=item;selectedChange.emit(selected);"
+			<tr #tableRow (click)="selected=item;selectedChange.emit(selected);"
 				(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selected=item;"
 				(dblclick)="open(item.Uid)"
 				[pSelectableRow]="item"

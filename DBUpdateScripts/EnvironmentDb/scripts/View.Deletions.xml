@@ -5,22 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.Deletions.v5">
-  <comment>GOV-19415</comment>
-  <comment></comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-drop view if exists [utility].[ArtifactAssetParent]
-		]]>
-    </sql>
-	<rollback></rollback>
-  </changeSet>
-  
-  <changeSet author="Punet Gupta" id="View.Deletions.v6">
-  <comment>GOV-12938</comment>
+  <changeSet author="Pappas" id="View.Deletions.v7">
   <comment></comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -28,9 +13,10 @@ drop view if exists [utility].[ArtifactAssetParent]
             stripComments="false">
 		<![CDATA[
 drop view if exists [reporting].[RuleImplementations_Results];
+drop view if exists [utility].[ArtifactAssetParent];
+drop view if exists [utility].[FieldValue];
 		]]>
     </sql>
-	<rollback></rollback>
   </changeSet>
   
 </databaseChangeLog>

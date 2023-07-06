@@ -117,7 +117,7 @@ namespace d360.model.DataAccessLayer
 			List<string> queryFilters = new List<string>();
 
 			dbArgs.Add("@state", State.Active);
-			queryFilters.Add($"t.[state] = @state");
+			queryFilters.Add($"t.[state] = @state and t.Value != ''");
 
 			#region QueryParams
 

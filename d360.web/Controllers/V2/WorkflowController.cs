@@ -522,6 +522,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are workflowName, version and outstanding. By default the results are ordered by UpdatedOn.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_workflowItemUid", "Returns assignments filtered by workflow item UID", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
