@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.4">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.5">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -162,13 +162,18 @@ begin
 		where	T.ExecutionId = @executionId
 				and T.[Type] = @type;
 
-		-- Locate subject asset exist based on the incoming SourceId,
+		-- Locate subject asset exists based on the incoming SourceId
 		update	T
-		set		T.SubjectId = S.Id,
-				T.ObjectId = O.Id
+		set		T.SubjectId = S.Id
 		from	api.ExecutionCatalogItem T
 				inner join IntersectType IT on IT.ID = T.TypeId and T.ExecutionId = @executionId and T.[Type] = @type and T.Success is null
-				inner join Asset S on S.AssetTypeID = IT.SubjectAssetTypeID and S.SourceId = T.SubjectSourceId
+				inner join Asset S on S.AssetTypeID = IT.SubjectAssetTypeID and S.SourceId = T.SubjectSourceId;
+
+		-- Locate object asset exists based on the incoming SourceId
+		update	T
+		set		T.ObjectId = O.Id
+		from	api.ExecutionCatalogItem T
+				inner join IntersectType IT on IT.ID = T.TypeId and T.ExecutionId = @executionId and T.[Type] = @type and T.Success is null
 				inner join Asset O on O.AssetTypeID = IT.ObjectAssetTypeID and O.SourceId = T.ObjectSourceId;
 
 		-- Mark errors, if any.
@@ -188,7 +193,7 @@ begin
 				and [Type] = @type
 				and ObjectId is null;
 
-		-- Determine if this is an update to relation.
+		-- Determine if this is an update to relation (where Cardinalities are both multiple).
 		update	T
 		set		T.ID = I.ID,
 				T.Uid = I.Uid,
@@ -199,7 +204,36 @@ begin
 					and T.[Type] = @type 
 					and T.Success is null 
 					and I.SubjectAssetID = T.SubjectID 
-					and I.ObjectAssetID = T.ObjectID;
+					and I.ObjectAssetID = T.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.SubjectCardinality = 2 and IT.ObjectCardinality = 2;
+
+		-- Determine if this is an update to relation (where Subject Cardinality is 1).
+		update	T
+		set		T.ID = I.ID,
+				T.Uid = I.Uid,
+				T.[Action] = 'U'
+		from	api.ExecutionCatalogItem T
+				inner join [Intersect] I on I.IntersectTypeID = T.TypeID 
+					and T.ExecutionId = @executionId 
+					and T.[Type] = @type 
+					and T.Success is null 
+					--and I.SubjectAssetID = T.SubjectID 
+					and I.ObjectAssetID = T.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.SubjectCardinality = 1;
+
+		-- Determine if this is an update to relation (where Object Cardinality is 1).
+		update	T
+		set		T.ID = I.ID,
+				T.Uid = I.Uid,
+				T.[Action] = 'U'
+		from	api.ExecutionCatalogItem T
+				inner join [Intersect] I on I.IntersectTypeID = T.TypeID 
+					and T.ExecutionId = @executionId 
+					and T.[Type] = @type 
+					and T.Success is null 
+					and I.SubjectAssetID = T.SubjectID 
+					--and I.ObjectAssetID = T.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.ObjectCardinality = 1;
 
 		-- Updated field types based on property names
 		update	T
@@ -237,22 +271,37 @@ begin
 				) Val
 		where	T.ExecutionId = @executionId and T.[Type] = @type;
 
+		-- Update the Intersect table for existing relationships.
+		update	T
+		set		T.SubjectAssetID = S.SubjectId,
+				T.ObjectAssetID = S.ObjectId,
+				T.UpdatedBy = @resourceId, 
+				T.UpdatedOn = @date
+		from	[Intersect] T
+				inner join api.ExecutionCatalogItem S on S.ExecutionId = @executionId and S.[Type] = @type and S.Success is null and S.Id = T.ID;
 
 		-- Capture new relation records.
 		declare @new table(Id bigint, IntersectTypeId int, SourceId nvarchar(1000), Uid uniqueidentifier);
 
 		-- Insert new relations.
-		insert into [Intersect] (IntersectTypeId, SourceId, SubjectAssetId, ObjectAssetId, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+		insert into [Intersect] (
+					IntersectTypeId, SourceId, 
+					SubjectAssetId, SubjectAssetTypeID, ObjectAssetId, ObjectAssetTypeID, 
+					CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 		output inserted.Id, inserted.IntersectTypeID, inserted.SourceId, inserted.Uid into @new
-			select	TypeId, '['+SubjectSourceId+'].['+ObjectSourceId+']', SubjectId, ObjectId, @resourceId, @date, @resourceId, @date
-			from	api.ExecutionCatalogItem
-			where	ExecutionId = @executionId
-					and [Type] = @type
-					and TypeId is not null
-					and Id is null 
-					and Success is null;
+			select	I.TypeId, '['+I.SubjectSourceId+'].['+I.ObjectSourceId+']', 
+					I.SubjectId, S.AssetTypeID, I.ObjectId, O.AssetTypeID, 
+					@resourceId, @date, @resourceId, @date
+			from	api.ExecutionCatalogItem I
+					inner join Asset S on S.ID = I.SubjectId
+					inner join Asset O on O.ID = I.ObjectId
+			where	I.ExecutionId = @executionId
+					and I.[Type] = @type
+					and I.TypeId is not null
+					and I.Id is null 
+					and I.Success is null;
 
-		-- Update the Items table with the newly generated asset Ids.
+		-- Update the Items table with the newly generated relation Ids.
 		update	T
 		set		T.Id = S.Id,
 				T.Uid = S.Uid,
