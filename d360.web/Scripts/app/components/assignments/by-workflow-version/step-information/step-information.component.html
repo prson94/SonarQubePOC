@@ -35,17 +35,23 @@
 						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="selectedNode.activityType">
+					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+						<d3s-step-information-email [settings]="selectedNode.settings"></d3s-step-information-email>
+					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
-						<d3s-assignment-step-http-details [settings]="selectedNode.settings"></d3s-assignment-step-http-details>
+						<d3s-assignment-step-http-details
+							[settings]="selectedNode.settings"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						<d3s-assignment-step-http-response-details [settings]="selectedNode.settings" [nodeList]="nodeList">
+						<d3s-assignment-step-http-response-details [settings]="selectedNode.settings"
+																   [nodeList]="nodeList">
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
 				</ng-container>
 			</div>
 		</ig-property-group>
-		<ig-property-group i18n-title *ngIf="selectedNode.activityType === WorkflowActivityType.HTTPResponse" title="Outputs"
+		<ig-property-group i18n-title *ngIf="selectedNode.activityType === WorkflowActivityType.HTTPResponse"
+						   title="Outputs"
 						   [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container>

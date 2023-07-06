@@ -96,6 +96,7 @@ import { PendingAssignmentsStepComponent } from './by-workflow-version/pending-a
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { InputTextModule } from 'primeng/inputtext';
 import { StepInformationComponent } from './by-workflow-version/step-information/step-information.component';
+import { StepInformationEmailComponent } from './by-workflow-version/step-information/step-information-email/step-information-email.component';
 
 
 @NgModule({
@@ -129,7 +130,8 @@ import { StepInformationComponent } from './by-workflow-version/step-information
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
   PendingAssignmentsStepComponent,
-  StepInformationComponent
+  StepInformationComponent,
+  StepInformationEmailComponent
 	],
     imports: [
         AdvancedFiltersModule,

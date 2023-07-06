@@ -1,20 +1,21 @@
 import { Component, Input } from '@angular/core';
-import { NodeModel, StepType, WorkflowActivityType, WorkflowDiagramNode } from '../../../../models/workflow.model';
+import { NodeModel, WorkflowActivityType, WorkflowDiagramNode } from '../../../../models/workflow.model';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 
 @Component({
-  selector: 'd3s-step-information',
-  templateUrl: './step-information.component.html',
-  styleUrls: ['./step-information.component.less']
+	selector: 'd3s-step-information',
+	templateUrl: './step-information.component.html',
+	styleUrls: ['./step-information.component.less']
 })
-export class StepInformationComponent{
-	@Input() selectedNode: NodeModel
-	@Input() nodeList: WorkflowDiagramNode[]
-	isLoading: boolean = false
-	helpers = WorkflowHelpers
+export class StepInformationComponent {
+
+	@Input() selectedNode: NodeModel;
+	@Input() nodeList: WorkflowDiagramNode[];
+	isLoading: boolean = false;
+	helpers = WorkflowHelpers;
 
 	get icon(): string {
-		return this.helpers.getActivityTypeIcon(this.selectedNode.activityType,this.selectedNode.stepType);
+		return this.helpers.getActivityTypeIcon(this.selectedNode.activityType, this.selectedNode.stepType);
 	}
 
 	protected readonly WorkflowActivityType = WorkflowActivityType;
