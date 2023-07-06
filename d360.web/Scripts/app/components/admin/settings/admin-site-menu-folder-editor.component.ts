@@ -520,24 +520,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	setRequiredFromNameInput($event) {
-		this.requiredCount = 2;
-		if ($event.data?.length > 0) {
-			this.requiredCount--;
-		}
-		if (this.foldersFromTarget?.length > 0 || !this.hasFolderItems) {
-			this.requiredCount--;
-		}
-		this.cdRef.markForCheck();
-	}
-
 	focusRequired(event) {
 		event.stopPropagation();
 		if (this.requiredCount === 0) {
 			return;
 		}
 		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
-			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
+			this.elRef.nativeElement.querySelectorAll("[name = name]")[0].focus();
 			this.folderNameIsFocused = true;
 		} else if (!this.foldersFromTarget || this.foldersFromTarget?.length === 0) {
 			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
