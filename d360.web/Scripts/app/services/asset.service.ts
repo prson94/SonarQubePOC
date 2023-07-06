@@ -319,7 +319,7 @@ export class AssetService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
 	}
 
-	public downloadAssetTypeExcel(uid: string): Observable<any> {
+	public downloadAssetTypeExcel(uid: string): Observable<Blob> {
 		return this.
 			http
 			.get(`/api/v2/assets/export/${uid}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });

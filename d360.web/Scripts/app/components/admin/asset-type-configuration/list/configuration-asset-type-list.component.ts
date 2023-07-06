@@ -237,7 +237,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 			.subscribe((data) => {
 				this.isLoading = false;
 				this.assetsService.downloadFile(data, filename);
-			});;
+			});
 	}
 
 	open(uid: string, newTab: boolean = false) {
