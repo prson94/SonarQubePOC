@@ -62,6 +62,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	formParentName: string = '';
 	isModalVisible: boolean = false;
 
+	tab: string = 'detail';
+
 	onEditFormClose() {
 		this.isModalVisible = false;
 
@@ -391,5 +393,9 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			case `User`: return AssetTypeClass.User; 
 		}
 		return this.assetTypeModel.Class.Value as AssetTypeClass;
+	}
+
+	clickTab(key: string) {
+		this.tab = key;
 	}
 }

@@ -5,8 +5,27 @@
 	direction="horizontal"
 	class="col s12 split"
 	style="display: flex">
-	<as-split-area class="tile tile-detail main-panel"> 
+	<as-split-area class="tile tile-detail main-panel">
 		<ng-content></ng-content>
+
+		<ng-container *ngIf="secondarySidePanelOpen">
+			<div #fieldDetailTile class="secondary-side-panel fixed-side-panel">
+				<div class="panel-header">
+					<span class="header-label" i18n>Information</span>
+					<div class="button-container">
+						<button igButton [attr.data-cy]="'Field_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+					</div>
+				</div>
+				<div class="details-container">
+					<div>
+						<ng-container *ngIf="selectedForSecondaryPanel?.Name">
+							<d3s-field-type-details [fieldType]="selectedForSecondaryPanel" (close)="secondarySidePanelOpen=false;" (onEdit)="editField(selectedForSecondaryPanel)"></d3s-field-type-details>
+						</ng-container>
+					</div>
+				</div>
+			</div>
+		</ng-container>
+
 	</as-split-area>
 	<as-split-area [size]="getSidePanelWidth()"
 		[minSize]="getSidePanelMinWidth()"

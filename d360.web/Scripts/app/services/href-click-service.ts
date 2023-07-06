@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
+import { FieldDisplayModel } from '../models/fieldtype-api.model';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 export enum AssetDetailClickType {
@@ -9,7 +10,8 @@ export enum AssetDetailClickType {
     ReferenceItem = 'ReferenceItem',
     User = 'User',
     Tag = 'Tag',
-    Group = 'Group'
+	Group = 'Group',
+	Field = 'Field'
 }
 
 export class AssetDetailClickEvent {
@@ -52,7 +54,11 @@ export class LinkClickInterceptor {
             if (event === "new-tab") {
                 window.open(url, '_blank');
                 return;
-            }
+			}
+
+			if (data instanceof FieldDisplayModel) {
+				adcEv.type = AssetDetailClickType.Field;
+			}
 
             if (data.column && data.column.uidfield === "SecurityAssetUid") {
                 //clicked on ownership lookup
@@ -183,7 +189,7 @@ export class LinkClickInterceptor {
     }
 
 
-    handleEvent(baseComponent: any, event: AssetDetailClickEvent) {
+	handleEvent(baseComponent: any, event: AssetDetailClickEvent) {
         baseComponent.selectedAsset = null;
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;

@@ -1,4 +1,5 @@
-﻿<as-split [gutterSize]="sidePanelService.draggableAreaWidth"
+﻿<as-split *ngIf="!isSidePanel; else sidePanelTemplate"
+		  [gutterSize]="sidePanelService.draggableAreaWidth"
 		  [class.side-panel-close]="!sidePanelOpen"
 		  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
 		  unit="pixel"
@@ -217,6 +218,90 @@
 			</ng-template>
 		</p-table>
 	</div>
+</ng-template>
+
+
+<ng-template #sidePanelTemplate>
+	<div class="fields-tab">
+		<div class="grid-actions-header">
+			<div class="grid-actions-header-row" style="width:100%">
+				<ig-search-field mode="Keypress"
+									[debounce]="600"
+									[IsFlexApply]="true"
+									(onSearch)="dt1.filterGlobal($event, 'contains')"
+									[infoTooltip]="simpleSearchTooltipHTML">
+				</ig-search-field>
+				<button igButton
+						[attr.data-cy]="'FieldType_Add'"
+						pTooltip="Add Field"
+						i18n-pTooltip
+						tooltipPosition="top"
+						tooltipStyleClass="ig-tooltip"
+						[disabled]="isLoading"
+						class="ig-button-primary"
+						(click)="editedFieldName = null;isModalVisible = true"
+						icon="fa-plus"
+						[igDataCy]="'FieldType_Add'">
+				</button>
+			</div>
+		</div>
+		<p-table #dt1
+					[value]="fieldDisplayModel"
+					[pageLinks]="3"
+					[paginator]="true"
+					[scrollable]="true"
+					paginatorDropdownAppendTo="body"
+					[loading]="isLoading"
+					loadingIcon="fa fa-spinner"
+					[tableStyleClass]="'side-panel-max-width'"
+					[rows]="10"
+					[globalFilterFields]="['Name']">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'FriendlyName'">
+						<ng-container i18n>Field Name</ng-container>
+						<d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'FieldType'">
+						<ng-container i18n>Type</ng-container>
+						<d3s-sortIcon [field]="'FieldType'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Category'">
+						<ng-container i18n>Category</ng-container>
+						<d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
+					</th>
+					<th pFrozenColumn alignFrozen="right" style="width:44px">&nbsp;</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr>
+					<td><a context-link (click)="sidePanelFieldClicked($event, item);">{{item.FriendlyName}}</a></td>
+					<td>{{item.FieldType}}</td>
+					<td>{{item.Category}}</td>
+					<td pFrozenColumn alignFrozen="right" style="width:44px">
+						<div class="token-popup-menu" *ngIf="item.MenuItems">
+							<button igButton class="ig-button-fill-span" type="button" icon="fa-ellipsis-v" (click)="beforeMenuOpen();$event.stopPropagation();tokenMenu.toggle($event);"></button>
+							<ig-popup-menu [items]="item.MenuItems"
+											(onSelect)="onMenuItemSelect(item,$event)"
+											#tokenMenu
+											[tabIndex]="1"></ig-popup-menu>
+						</div>
+					</td>
+
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="emptymessage" let-columns>
+				<tr>
+					<td [attr.colspan]="1" i18n>
+						No results match your search criteria
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt1.first" [rows]="dt1.rows" [totalRecords]="dt1.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+		</div>
 </ng-template>
 
 
