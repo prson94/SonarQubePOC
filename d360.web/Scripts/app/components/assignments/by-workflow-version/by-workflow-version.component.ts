@@ -10,7 +10,7 @@ import {
 	AssignmentVersionItem,
 	NodeModel,
 	WorkflowDiagramModel,
-	WorkflowDiagramNode
+	WorkflowDiagramNode, WorkflowTypeNew
 } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
@@ -72,6 +72,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 			needsSelection: true
 		})
 	];
+	workflowTypeNew: WorkflowTypeNew;
 
 	constructor(
 		public sidePanelService: SidePanelService,
@@ -106,5 +107,6 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 		this.selectedNode = event.NodeModel;
 		this.nodeList = event.WorkflowDiagramModel.Nodes
 		this.secondarySidePanelOpen = true;
+		this.workflowTypeNew = event.WorkflowDiagramModel.Type;
 	}
 }

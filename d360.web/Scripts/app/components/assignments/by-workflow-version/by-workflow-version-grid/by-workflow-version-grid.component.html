@@ -67,5 +67,6 @@
 									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 			</ng-template>
 		</p-table>
+		<pre style="white-space: pre-wrap" *ngIf="assignmentsWithStatus">{{ assignmentsWithStatus | json }}</pre>
 	</div>
 </div>
