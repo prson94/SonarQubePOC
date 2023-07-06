@@ -273,6 +273,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			return elRef.nativeElement.classList.contains('p-highlight');
 		});
 
+		if (typeof selectedRow === 'undefined') {
+			this.tableRows.toArray()[0].nativeElement.click();
+		}
+
 		if (selectedRow && document.activeElement !== selectedRow.nativeElement) {
 			selectedRow.nativeElement.dispatchEvent(
 				new KeyboardEvent($event.type, { key: $event.key })
