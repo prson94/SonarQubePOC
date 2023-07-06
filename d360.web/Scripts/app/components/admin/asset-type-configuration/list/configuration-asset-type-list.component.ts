@@ -49,8 +49,6 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	defaultColors: SelectItem[] = [];
 	icons: IconProperties[] = [];
 
-	isExportInProgress: boolean = false;
-
 	flatNodes = [];
 
 	@ViewChild('dt', { static: true }) treeTable: TreeTable;
