@@ -208,11 +208,16 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> AssetTypeDataExportToExcel(string assetTypeUid, CancellationToken cancellationToken)
 		{
-			Guid guid = Guid.Parse(assetTypeUid);
+			Guid guid;
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
+			}
+
+			if (!Guid.TryParse(assetTypeUid, out guid))
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, string.Format(ApiMessages.InvalidAssetUid, assetTypeUid)));
 			}
 
 			var assetType = AssetRepository.GetAssetTypeByUID(guid);
