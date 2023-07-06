@@ -45,13 +45,13 @@
 			<label class="ig-label" i18n>Include Previous Form Responses</label>
 			<div class="ig-value" i18n>{{ emailSettings.IncludePreviousFormResponses === 'true' ? 'Yes' : 'No' }}</div>
 		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Email Subject</label>
+			<div class="ig-value" [innerHtml]="emailSettings.MessageSubjectTemplate | safeHtml"></div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Email Body</label>
+			<div class="email-body" [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml"></div>
+		</div>
 	</ng-container>
-	<div class="row">
-		<label class="ig-label" i18n>Email Subject</label>
-		<div class="ig-value" [innerHtml]="emailSettings.MessageSubjectTemplate | safeHtml"></div>
-	</div>
-	<div class="row">
-		<label class="ig-label" i18n>Email Body</label>
-		<div class="email-body" [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml"></div>
-	</div>
 </ng-container>

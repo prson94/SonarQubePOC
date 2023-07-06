@@ -12,7 +12,6 @@ import { GroupService } from '../../../../services/group.service';
 })
 export class AssignmentStepEmailDetailsComponent extends BaseComponent implements OnInit {
 	@Input() step: WorkflowStepDetail = null;
-	@Input() isAggregate: boolean = false;
 	@Input() formEmailDetails: boolean = false;
 	recipients: EmailRecipients[] = [];
 	showAll: boolean = false;
@@ -29,19 +28,22 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 	}
 
 	ngOnInit() {
-		this.sortNames();
-		if (this.step?.Settings?.MessageRecipientType === 'Group') {
-			this.isLoading = true;
-			this.groupService.getGroupByUid(this.step.Settings.MessageToGroup).subscribe((data) => {
-				this.groupName = data.items[0]?.Name ?? '';
-				this.isLoading = false;
-			});
+		this.emailSettings = this.step.Settings;
+		if(!this.formEmailDetails) {
+			this.sortNames();
+			if (this.step?.Settings?.MessageRecipientType === 'Group') {
+				this.isLoading = true;
+				this.groupService.getGroupByUid(this.step.Settings.MessageToGroup).subscribe((data) => {
+					this.groupName = data.items[0]?.Name ?? '';
+					this.isLoading = false;
+				});
+			}
 		}
 	}
 
 	sortNames(): void {
 		if (this.step) {
-			if (!this.isAggregate && this.step.ItemSettings.emails.email != null) {
+			if (this.step.ItemSettings.emails.email != null) {
 				const sorted: EmailRecipients[] = this.step.ItemSettings.emails.email.slice();
 
 				sorted.sort((a, b) => {
@@ -56,13 +58,6 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 
 				this.recipients = sorted;
 			}
-
-			if (this.isAggregate) {
-				this.emailSettings = this.step.EventSettings;
-			} else {
-				this.emailSettings = this.step.Settings;
-			}
-
 		}
 	}
 

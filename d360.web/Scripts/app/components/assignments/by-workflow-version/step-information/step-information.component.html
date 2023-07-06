@@ -31,8 +31,9 @@
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group *ngIf="selectedNode.activityType !== 0 || selectedNode.activityType !== 8" i18n-title
-						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+		<ig-property-group i18n-title title="Details"
+						   *ngIf="(selectedNode.activityType !== WorkflowActivityType.None) && (selectedNode.activityType !== WorkflowActivityType.Delete)"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="selectedNode.activityType">
 					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
@@ -60,5 +61,34 @@
 				</ng-container>
 			</div>
 		</ig-property-group>
+		<ng-container *ngIf="selectedNode.activityType === WorkflowActivityType.Form">
+			<ig-property-group i18n-title title="Form Details"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-form [selectedNode]="selectedNode"></d3s-step-information-form>
+					</ng-container>
+				</div>
+			</ig-property-group>
+			<ig-property-group i18n-title title="Form Fields"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-form-fields
+							[selectedNode]="selectedNode"></d3s-step-information-form-fields>
+					</ng-container>
+				</div>
+			</ig-property-group>
+			<ig-property-group *ngIf="selectedNode.settings.SendFormEmail?.toString() === 'true'" i18n-title
+							   title="E-mail Details"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-email [settings]="selectedNode.settings"
+													[sendFormEmail]="true"></d3s-step-information-email>
+					</ng-container>
+				</div>
+			</ig-property-group>
+		</ng-container>
 	</div>
 </div>

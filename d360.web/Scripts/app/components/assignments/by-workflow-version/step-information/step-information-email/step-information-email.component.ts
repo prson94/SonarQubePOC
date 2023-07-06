@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NodeSettings, WorkflowActivityType } from '../../../../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../../../../services/responsibility-type.service';
 import { GroupService } from '../../../../../services/group.service';
-import { SelectItem } from 'primeng/api';
 import { isArray } from 'lodash-es';
 import { ResponsibilityType } from '../../../../../models/responsibility-type.model';
 
@@ -13,8 +12,9 @@ import { ResponsibilityType } from '../../../../../models/responsibility-type.mo
 })
 export class StepInformationEmailComponent implements OnInit {
 	@Input() settings: NodeSettings;
+	@Input() sendFormEmail: boolean = false
 	private responsibilities: ResponsibilityType[] = [];
-	private groups = [];
+	private groups: {label:string,value:string}[] = [];
 	public isLoading: boolean = false;
 
 	protected readonly WorkflowActivityType = WorkflowActivityType;
@@ -25,7 +25,9 @@ export class StepInformationEmailComponent implements OnInit {
 
 
 	ngOnInit(): void {
-		this.load()
+		if(!this.sendFormEmail) {
+			this.load()
+		}
 	}
 
 	load(): void {
@@ -52,7 +54,7 @@ export class StepInformationEmailComponent implements OnInit {
 					});
 					if (this.settings.MessageToGroup != null) {
 						if (!this.groups.find((g) => g.value === this.settings.MessageToGroup)) {
-							this.groups.push(<SelectItem>{
+							this.groups.push({
 								value: this.settings.MessageToGroup,
 								label: '<invalid group>'
 							});
