@@ -1565,6 +1565,17 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_workflowitemuid"))
+			{
+				Guid workflowItemUid;
+				string workflowItemUidString = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_workflowitemuid").Value.Trim();
+				if (Guid.TryParse(workflowItemUidString, out workflowItemUid))
+				{
+					dbArgs.Add("workflowItemUid", workflowItemUid);
+					conditions.Add(@"exists (select WI.VersionID from workflow.Item WI where WI.ID = WV.Version AND WI.UID = @workflowItemUid)");
+				}
+			}
+
 			WorkflowInstanceDetailsByVersionAPIModel assignments = new WorkflowInstanceDetailsByVersionAPIModel();
 
 			if (conditions.Any())
