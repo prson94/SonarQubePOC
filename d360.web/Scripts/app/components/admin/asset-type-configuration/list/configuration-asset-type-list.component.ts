@@ -233,7 +233,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 	AssetTypeExcel(uid: string, name: string) {
 		const filename = AssetTypeClass[this.assetTypeClass] + ' ' + name;
 		this.isLoading = true;
-		this.assetsService.downloadAssetTypeExcel(uid, filename, () => { this.isLoading = false; });
+		this.assetsService.downloadAssetTypeExcel(uid)
+			.subscribe((data) => {
+				this.isLoading = false;
+				this.assetsService.downloadFile(data, filename);
+			});;
 	}
 
 	open(uid: string, newTab: boolean = false) {

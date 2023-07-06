@@ -319,16 +319,14 @@ export class AssetService extends BaseObservableService {
                 catchError((err) => this.handleError(err, true)));
 	}
 
-	public downloadAssetTypeExcel(uid: string, fileName, callback: Function = null) {
-		this.
+	public downloadAssetTypeExcel(uid: string): Observable<any> {
+		return this.
 			http
-			.get(`/api/v2/assets/export/${uid}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-			.subscribe((data) => {
-				this.downloadFile(data, fileName);
-				if (callback) {
-					callback();
-				}
-			});
+			.get(`/api/v2/assets/export/${uid}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
+	}
+
+	public downloadFile(data: Blob, name: string) {
+		super.downloadFile(data, name);
 	}
 
 	getAssetHierarchy(
