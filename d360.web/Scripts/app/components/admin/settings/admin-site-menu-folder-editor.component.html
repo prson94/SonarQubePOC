@@ -30,8 +30,8 @@
 									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0px; margin-bottom: 4px" i18n>Name</label>
 									<input igInput maxlength="250"
 										   [ngClass]="{'invalid': folderForm?.get('title')?.errors?.empty}"
-										   (input)="setRequiredFromNameInput($event)"
-										   name="folderNameInput"
+										   (input)="setRequiredCount()"
+										   name="name"
 										   required tabindex="1" type="text" 
 										   [(ngModel)]="folderModel.Title" />
 								</div>
