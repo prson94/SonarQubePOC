@@ -228,14 +228,13 @@
 				<ig-search-field mode="Keypress"
 									[debounce]="600"
 									[IsFlexApply]="true"
-									(onSearch)="dt1.filterGlobal($event, 'contains')"
-									[infoTooltip]="simpleSearchTooltipHTML">
+									(onSearch)="dt1.filterGlobal($event, 'contains')">
 				</ig-search-field>
 				<button igButton
 						[attr.data-cy]="'FieldType_Add'"
 						pTooltip="Add Field"
 						i18n-pTooltip
-						tooltipPosition="top"
+						tooltipPosition="left"
 						tooltipStyleClass="ig-tooltip"
 						[disabled]="isLoading"
 						class="ig-button-primary"
@@ -275,7 +274,7 @@
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
 				<tr>
-					<td><a context-link (click)="sidePanelFieldClicked($event, item);">{{item.FriendlyName}}</a></td>
+					<td><a (click)="sidePanelFieldClicked($event, item);">{{item.FriendlyName}}</a></td>
 					<td>{{item.FieldType}}</td>
 					<td>{{item.Category}}</td>
 					<td pFrozenColumn alignFrozen="right" style="width:44px">
