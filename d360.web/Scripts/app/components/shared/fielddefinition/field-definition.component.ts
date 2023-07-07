@@ -10,12 +10,13 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { PopupMenu } from '../controls/popup-menu/popup-menu.component';
 import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { ApiResult } from '../../../models/apiresult.model';
+import { AssetDetailClickType, LinkClickInterceptor } from '../../../services/href-click-service';
 
 /*global $localize*/
 
@@ -65,6 +66,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	@Input() supportsPrimaryFilterOption: boolean = false;
 	@Input() allowSingleSegmentPath: boolean = true;
 
+	@Input() isSidePanel: boolean = false;
+
 	editedFieldName: string;
 
 	public dataCyPrefix: string = 'FieldType_';
@@ -98,6 +101,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	isReorderingLocked: boolean = false;
 	reorderingLockedText: string = $localize`Items can be rearranged only in the default view. Use the reset button to clear any search, filter, or sorting applied.`;
 
+	hrefSub: Subscription;
+
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('advancedFilter', { static: false }) advFilter: AdvancedFilteringComponent;
 	@ViewChildren('tokenMenu') menus: PopupMenu[] = [];
@@ -110,10 +115,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		protected settingsService: CompanySettingsService,
 		public sidePanelService: SidePanelService,
 		private uiAdvancedFiltering: UiAdvancedFiltering,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
 		this.theDeleteCallback = this.deleteFieldType.bind(this);
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			if (ev.type === AssetDetailClickType.Field) {
+				if (ev.url === "fieldedit") {
+					this.edit(ev.data);
+				}
+			}
+		});
+
 	}
 
 
@@ -145,6 +159,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		else {
 			this.assetTypeClass = null;
 			this.load();
+		}
+	}
+
+	ngOnDestroy() {
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
 		}
 	}
 
@@ -268,8 +288,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 	onMenuItemSelect(item: FieldDisplayModel, $event) {
 		switch ($event.action) {
 			case 'info':
-				this.selectedRow = item;
-				this.sidePanelService.setSidePanelState({ expanded: true });
+				if (this.isSidePanel) {
+					this.sidePanelFieldClicked($event.event, item);
+				} else { 
+					this.selectedRow = item;
+					this.sidePanelService.setSidePanelState({ expanded: true });
+				}
 				break;
 			case 'edit':
 				this.edit(item);
@@ -338,11 +362,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 					positionTooltip = this.reorderingLockedText;
 				}
 
-				if (position !== 1) {
+				if (!this.isSidePanel && position !== 1) {
 					menuItems.push({ title: $localize`Move To Top`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movetop' });
 					menuItems.push({ title: $localize`Move Up`, disabled: positionDisabled, tooltip: positionTooltip, action: 'moveup' });
 				}
-				if (position !== this.fieldDisplayModel.length) {
+				if (!this.isSidePanel && position !== this.fieldDisplayModel.length) {
 					menuItems.push({ title: $localize`Move Down`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movedown' });
 					menuItems.push({ title: $localize`Move To Bottom`, disabled: positionDisabled, tooltip: positionTooltip, action: 'movebottom' });
 				}
@@ -842,5 +866,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		result.Message = $event.isEdit ? $localize`Field successfully updated` : $localize`Field successfully added`;
 		this.showMessageForApiResult(this.messagesService, result);
 		this.load($event.name);
+	}
+
+	sidePanelFieldClicked($event, item: FieldDisplayModel) {
+		if (this.isSidePanel) {
+			this.linkClickInterceptor.sendEvent($event, item, "fieldinformation" );
+			return;
+		}
 	}
 }

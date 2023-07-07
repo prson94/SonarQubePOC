@@ -2,7 +2,8 @@ import { Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleCha
 import { IOutputData } from "angular-split";
 import { TreeNode } from "primeng/api";
 import { Subscription } from "rxjs";
-import { LinkClickInterceptor } from "../../../../services/href-click-service";
+import { FieldDisplayModel } from "../../../../models/fieldtype-api.model";
+import { AssetDetailClickType, LinkClickInterceptor } from "../../../../services/href-click-service";
 import { SidePanelService } from "../../../../services/side-panel.service";
 
 @Component({
@@ -17,16 +18,25 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
 	@Output() onEditClick: EventEmitter<string> = new EventEmitter<string>();
 
 	sidePanelOpen = false;
+	secondarySidePanelOpen = false;
 
 	hrefSub: Subscription;
 	selectedForInfoPanel: unknown;
+	selectedForSecondaryPanel: unknown;
 
 	constructor(public sidePanelService: SidePanelService,
 		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.selectedItem = null;
-			this.selectedForInfoPanel = { AssetUid: ev.data.uid, Object: ev.data.type };
+			if (ev.type === AssetDetailClickType.Field) {
+				if (ev.url === "fieldinformation") {
+					this.selectedForSecondaryPanel = ev.data;
+					this.secondarySidePanelOpen = true;
+				}
+			} else {
+				this.selectedItem = null;
+				this.selectedForInfoPanel = { AssetUid: ev.data.uid, Object: ev.data.type };
+			}
 		});
 	}
 
@@ -69,5 +79,12 @@ export class AssetTypeListSidePanelWrapperComponent implements OnDestroy, OnChan
 		else {
 			return this.selectedForInfoPanel;
 		}
+	}
+
+	editField(item: FieldDisplayModel) {
+		const ev = new Event("fieldedit");
+		this.linkClickInterceptor.sendEvent(ev, item, "fieldedit");
+		this.secondarySidePanelOpen = false;
+		return;
 	}
 }

@@ -20,6 +20,7 @@ import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuratio
 import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
+import { FieldTypeDetailModule } from '../../shared/fielddefinition/field-type-details/field-type-details.module';
 import { ConfigurationAssetTypeHeaderComponent } from './tabs/shared/configuration-asset-type-header/asset-type-header.component';
 import { PageHeaderModule } from '../../shared/page-header/page-header.module';
 import { TabsModule } from '../../shared/tabs/tabs.module';
@@ -78,7 +79,8 @@ import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/confi
         D3SSortIconModule,
         SharedAssetTypeEditorModule,
         AssetTypeDeleteModule,
-        SharedFieldDefinitionModule,
+		SharedFieldDefinitionModule,
+		FieldTypeDetailModule,
         PageHeaderModule,
         TabsModule,
         SharedResponsibilitiesModule,
