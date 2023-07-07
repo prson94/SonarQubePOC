@@ -1267,7 +1267,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">330</context>
+          <context context-type="linenumber">329</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
@@ -1481,7 +1481,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">179</context>
+          <context context-type="linenumber">178</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.ts</context>
@@ -1576,7 +1576,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">180</context>
+          <context context-type="linenumber">179</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.ts</context>
@@ -1611,7 +1611,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">184</context>
+          <context context-type="linenumber">183</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/admin-branding.component.ts</context>
@@ -1758,7 +1758,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">185</context>
+          <context context-type="linenumber">184</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-delete/asset-type-delete.component.ts</context>
@@ -1914,7 +1914,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">303</context>
+          <context context-type="linenumber">308</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/dashboards/admin-dashboards.component.ts</context>
@@ -2165,7 +2165,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">332</context>
+          <context context-type="linenumber">331</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/group/group-members.component.html</context>
@@ -2554,7 +2554,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">312</context>
+          <context context-type="linenumber">311</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-details/field-type-details.component.html</context>
@@ -2689,7 +2689,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">316</context>
+          <context context-type="linenumber">315</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-details/field-type-details.component.html</context>
@@ -3349,7 +3349,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">182</context>
+          <context context-type="linenumber">181</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4319441956121197474" datatype="html">
@@ -3800,7 +3800,7 @@
         <source>Export</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">178</context>
+          <context context-type="linenumber">185</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/relationships/list/admin-relationships-list.component.ts</context>
@@ -3811,14 +3811,14 @@
         <source>Export the details of an asset type to Excel. The export includes all fields defined on the asset type, as well as relation lookup details, responsibility types and relationships.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">178</context>
+          <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2531763423764604973" datatype="html">
         <source>Cannot add new Diagram Asset Type before Governance Role is set.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-configuration/list/configuration-asset-type-list.component.ts</context>
-          <context context-type="linenumber">280</context>
+          <context context-type="linenumber">285</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5028777105388019087" datatype="html">
@@ -4750,7 +4750,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">266</context>
+          <context context-type="linenumber">265</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-details/field-type-details.component.html</context>
@@ -15855,7 +15855,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">262</context>
+          <context context-type="linenumber">261</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-details/field-type-details.component.html</context>
@@ -17371,7 +17371,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">236</context>
+          <context context-type="linenumber">235</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d26075f41d6d79b481a4243ce065aa287edbdecf" datatype="html">
@@ -17389,7 +17389,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">270</context>
+          <context context-type="linenumber">269</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-details/field-type-details.component.html</context>
@@ -17501,21 +17501,21 @@ Please refine your search.</source>
         <source> No results match your search criteria </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">295,297</context>
+          <context context-type="linenumber">294,296</context>
         </context-group>
       </trans-unit>
       <trans-unit id="b8950c4f56a25bf2deff97d1e90c47efe3a81b70" datatype="html">
         <source>Delete Field Type</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">322</context>
+          <context context-type="linenumber">321</context>
         </context-group>
       </trans-unit>
       <trans-unit id="f1bcf7e0742d4065f57faa40119bab5edcda7472" datatype="html">
         <source>Are you sure you want to delete the field type [<x id="INTERPOLATION" equiv-text="{{selectedRow?.Name}}"/>]?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-definition.component.html</context>
-          <context context-type="linenumber">327</context>
+          <context context-type="linenumber">326</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6093210751404423786" datatype="html">
