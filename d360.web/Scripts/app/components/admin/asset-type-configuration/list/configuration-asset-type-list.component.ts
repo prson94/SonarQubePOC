@@ -175,7 +175,6 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		//set menu items
 		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
-		menuItems.push({ "title": $localize`Export`, callback: () => { this.AssetTypeExcel(type.data.uid, type.data.name); }, tooltip: $localize`Export the details of an asset type to Excel. The export includes all fields defined on the asset type, as well as relation lookup details, responsibility types and relationships.` });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
@@ -183,6 +182,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		}
 		menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.data.uid, type.data.parentUid, type.data.name) });
 		menuItems.push({ "title": $localize`Delete`, callback: () => { this.assetTypeToDelete = type; } });
+		menuItems.push({ "title": $localize`Export`, callback: () => { this.AssetTypeExcel(type.data.uid, type.data.name); }, tooltip: $localize`Export the details of an asset type to Excel. The export includes all fields defined on the asset type, as well as relation lookup details, responsibility types and relationships.` });
 		type.data["MenuItems"] = menuItems;
 
 		//resolve color names
