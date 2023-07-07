@@ -172,6 +172,7 @@ export class FieldDisplayModel {
 	LookupTypeName: string;
 	LookupDisplayFormat: string;
 	LookupEditFormat: string;
+	ParentFieldTypeName: string;
 
 	MenuItems: PopupMenuItem[] = [];
 	FieldTypeREF: FieldTypeAPIModelField;
