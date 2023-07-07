@@ -6,7 +6,7 @@ import { AssetCount, AssetTypeClass, FlowObjectType } from "../../../../models/a
 import { AssetService } from "../../../../services/asset.service";
 import { NumberOfRowsByCategoryService } from "../../../../services/number-of-rows-by-category.service";
 import { AppConstants } from "../../../../static/constants";
-import { takeUntil } from "rxjs/operators";
+import { finalize, takeUntil } from "rxjs/operators";
 import { Router } from "@angular/router";
 import { featuresToTypeClasses } from "../shared/featuresToTypeClasses";
 import { CompanySettingsService } from "../../../../services/settings.service";
@@ -175,7 +175,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		//set menu items
 		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
-		menuItems.push({ "title": $localize`Exprt To Excel`, callback: () => this.AssetTypeExcel(type.data.uid, type.data.name) });
+		menuItems.push({ "title": $localize`Export`, callback: () => { this.AssetTypeExcel(type.data.uid, type.data.name); }, tooltip: $localize`Export the details of an asset type to Excel. The export includes all fields defined on the asset type, as well as relation lookup details, responsibility types and relationships.` });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
@@ -234,6 +234,11 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		const filename = AssetTypeClass[this.assetTypeClass] + ' ' + name;
 		this.isLoading = true;
 		this.assetsService.downloadAssetTypeExcel(uid)
+			.pipe(
+				finalize(() => {
+					this.isLoading = false;
+				})
+			)
 			.subscribe((data) => {
 				this.isLoading = false;
 				this.assetsService.downloadFile(data, filename);
