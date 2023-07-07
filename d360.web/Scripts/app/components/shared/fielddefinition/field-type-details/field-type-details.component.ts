@@ -7,11 +7,15 @@ import { FieldDisplayModel } from '../../../../models/fieldtype-api.model';
 	selector: 'd3s-field-type-details',
 	templateUrl: './field-type-details.component.html',
 	styleUrls: ['./field-type-details.component.less'],
-	encapsulation: ViewEncapsulation.None
+	encapsulation: ViewEncapsulation.None,
+	host: {
+		"(document:click)": "clickedOutside($event)",
+	}
 })
 export class FieldTypeDetailsComponent implements OnChanges {
 	@Input() fieldType: FieldDisplayModel;
 	@Output() onEdit = new EventEmitter();
+	@Output() close = new EventEmitter();
 
 	ascendingLabel: string = $localize`Ascending`;
 	descendingLabel: string = $localize`Descending`;
@@ -85,4 +89,12 @@ export class FieldTypeDetailsComponent implements OnChanges {
 		}
 		return true;
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	clickedOutside(event: any) {
+		if (!(event.composedPath().filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+			this.close.emit();
+		}
+	}
+
 }

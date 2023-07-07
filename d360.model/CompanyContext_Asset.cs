@@ -2465,7 +2465,7 @@ where	T.ExecutionID = @ExecutionID
 
 							results.AddRange(
 								Query<DatabaseBulkAssetResult>(
-									"select uid, ExecutionItemUid, Message, Success, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber", 
+									"select ItemNumber, uid, ExecutionItemUid, Message, Success, Object, ObjectID, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber", 
 									new { execution.ExecutionID, beginItemNumber, endItemNumber }
 								)
 							);

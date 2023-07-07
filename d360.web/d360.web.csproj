@@ -1972,6 +1972,7 @@
     <Content Include="Content\primeicons\fonts\primeicons.eot" />
     <Content Include="Content\primeicons\fonts\primeicons.ttf" />
     <Content Include="Content\primeicons\fonts\primeicons.woff" />
+    <Content Include="Content\primeicons\fonts\primeicons.woff2" />
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
     <Content Include="Content\styles\AssetBrowser.less" />

@@ -1,4 +1,18 @@
-﻿.field-type-grid {
+﻿.fields-tab {
+  .grid-actions-header {
+    display: inline-flex;
+    padding: 8px 0;
+    width: 100%;
+
+    .grid-actions-header-row {
+      button {
+        margin-left: 8px;
+      }
+    }
+  }
+}
+
+.field-type-grid {
   padding: 12px;
 
   .table-wrapper {
@@ -45,4 +59,8 @@
 .p-datatable-dragpoint-bottom {
   border-top: none;
   border-bottom: 2px solid red;
+}
+
+.p-datatable-scrollable th.p-frozen-column {
+  background-color: var(--tableHeaderBackColor);
 }

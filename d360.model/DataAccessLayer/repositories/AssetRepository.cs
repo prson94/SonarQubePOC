@@ -3355,6 +3355,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
 			bool shouldRemoveOldRelationshipType = model.Class == AssetTypeClass.Reference || model.ParentUid == Guid.Empty;
+			bool defaultPermissionChanged = false;
 
 			if (!string.IsNullOrEmpty(model?.Name ?? null))
 			{
@@ -3393,9 +3394,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					assetType.IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault;
 					if (model.Class != AssetTypeClass.Diagram && model.Class != AssetTypeClass.Reference && model.Class != AssetTypeClass.User && model.Class != AssetTypeClass.Group)
 					{
-						assetType.DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ?
+						var newPermission = model.IsDefaultReadAccessEnabled.HasValue ?
 							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) :
 							(int)Permission.ReadAsset;
+						defaultPermissionChanged = assetType.DefaultPermissions != newPermission;
+						assetType.DefaultPermissions = newPermission;
 					}
 					assetType.DescriptionButtonName = model.DescriptionButtonName;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
@@ -3530,6 +3533,15 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				CompanyContext.Update(assetType);
 				UpdateAssetTypeSynonymAllocations(model, assetType);
+				if(defaultPermissionChanged)
+				{
+					QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+					{
+						CompanyID = CompanyContext.CurrentCompanyID,
+						AssetTypeUid = assetType.uid,
+						Origin = "AssetType change permissions: " + assetType.Name
+					});
+				}
 			}
 			catch (Exception ex)
 			{

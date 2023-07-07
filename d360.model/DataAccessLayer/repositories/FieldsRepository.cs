@@ -62,6 +62,7 @@ namespace d360.model.DataAccessLayer
 			int? intersectTypeID = null;
 
 			bool includeId = false;
+			string objectTypeIdProperty = "@assetTypeID";
 
 			WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK, "", "");
 
@@ -168,12 +169,14 @@ namespace d360.model.DataAccessLayer
 			if (issueTypeID.HasValue)
 			{
 				dbArgs.Add("@issueTypeID", issueTypeID.Value);
+				objectTypeIdProperty = "@issueTypeID";
 				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IssueTypeID] = @issueTypeID";
 			}
 
 			if (intersectTypeID.HasValue)
 			{
 				dbArgs.Add("@intersectTypeID", intersectTypeID.Value);
+				objectTypeIdProperty = "@intersectTypeID";
 				whereClause += (string.IsNullOrEmpty(whereClause) ? " where " : " and ") + $"FT.[IntersectTypeID] = @intersectTypeID";
 			}
 
@@ -229,7 +232,7 @@ namespace d360.model.DataAccessLayer
 				resolveUIDetails = true;
 				additionalApply.AppendLine(@$"outer apply (
 													select	top 1 
-															IIF(IT.SubjectAssetTypeID = @ASSETTYPEID, Name, Inverse) as Name 
+															IIF(IT.SubjectAssetTypeID = {objectTypeIdProperty}, Name, Inverse) as Name 
 															from IntersectTypeDetail IT where FT.LookupObjectType = '{SystemObjects.IntersectType.ToString()}' and IT.Id = FT.LookupObjectID
 													) ITName ");
 				additionalApply.AppendLine(@"outer apply (

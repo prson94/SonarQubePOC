@@ -175,6 +175,7 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		//set menu items
 		const menuItems = [];
 		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedRow = type; this.sidepanelWrapper.expandPanel(); } });
+		menuItems.push({ "title": $localize`Exprt To Excel`, callback: () => this.AssetTypeExcel(type.data.uid, type.data.name) });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.data.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.data.uid, true) });
 		if (this.hasAssetTypeChildsFeature) {
@@ -227,6 +228,16 @@ export class ConfigurationAssetTypeListComponent implements OnDestroy {
 		).subscribe((rowsPerPage) => {
 			this.rowsPerPage = rowsPerPage['Main'];
 		});
+	}
+
+	AssetTypeExcel(uid: string, name: string) {
+		const filename = AssetTypeClass[this.assetTypeClass] + ' ' + name;
+		this.isLoading = true;
+		this.assetsService.downloadAssetTypeExcel(uid)
+			.subscribe((data) => {
+				this.isLoading = false;
+				this.assetsService.downloadFile(data, filename);
+			});
 	}
 
 	open(uid: string, newTab: boolean = false) {
