@@ -32,7 +32,8 @@
 			</div>
 		</ig-property-group>
 		<ig-property-group i18n-title title="Details"
-						   *ngIf="(selectedNode.activityType !== WorkflowActivityType.None) && (selectedNode.activityType !== WorkflowActivityType.Delete)"
+						   *ngIf="(selectedNode.activityType !== WorkflowActivityType.None) && (selectedNode.activityType !== WorkflowActivityType.Form)
+						    && (selectedNode.activityType !== WorkflowActivityType.Delete)"
 						   [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="selectedNode.activityType">
@@ -47,6 +48,10 @@
 						<d3s-assignment-step-http-response-details [settings]="selectedNode.settings"
 																   [nodeList]="nodeList">
 						</d3s-assignment-step-http-response-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+						<d3s-step-information-relationship-change [settings]="selectedNode.settings"
+																  [nodeList]="nodeList"></d3s-step-information-relationship-change>
 					</ng-container>
 				</ng-container>
 			</div>

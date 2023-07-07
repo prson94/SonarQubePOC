@@ -403,6 +403,7 @@ export enum WorkflowActivityType {
 	Procedure = 4,
 	FieldChange = 5,
 	RelationshipUpdate = 6,
+	RelationshipChange = 6,
 	StateChange = 7,
 	Delete = 8,
 	HTTPRequest = 9,
