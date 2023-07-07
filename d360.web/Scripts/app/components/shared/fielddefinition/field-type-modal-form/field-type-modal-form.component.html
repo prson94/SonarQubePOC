@@ -367,6 +367,25 @@
 									</div>
 									<d3s-loading [isLoading]="loadingDefaultValues" [inline]="true"></d3s-loading>
 
+									<div class="row" *ngIf="listParentFields.length > 0">
+										<div class="field-col">
+											<label for="ParentFieldTypeName" class="ig-label" i18n>
+												Parent List
+											</label>
+
+											<p-dropdown formControlName="ParentFieldTypeName"
+														[autoDisplayFirst]="false"
+														name="ParentFieldTypeName"
+														[igDataCy]="'FieldType_Modal_Field_ParentFieldTypeName'"
+														igDropdown
+														[options]="listParentFields"
+														appendTo="body"
+														tabindex="100"
+														optionLabel="label"
+														optionValue="value"></p-dropdown>
+										</div>
+									</div>
+
 									<div class="row" *ngIf="fieldTypeForm.get('LookupUid').value && !loadingDefaultValues">
 										<div class="field-col">
 											<label for="DisplayFormat" class="ig-label" i18n>Display Format</label>
