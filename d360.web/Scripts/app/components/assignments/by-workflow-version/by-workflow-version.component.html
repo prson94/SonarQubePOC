@@ -31,7 +31,7 @@
 							</d3s-pending-assignments-step>
 						</ng-container>
 						<ng-container *ngIf="secondarySidePanelTab === 'information'">
-							<d3s-step-information [selectedNode]="selectedNode"
+							<d3s-step-information [selectedNode]="selectedNode" [workflowEvent]="workflowEvent"
 												  [nodeList]="nodeList"></d3s-step-information>
 						</ng-container>
 					</side-panel>

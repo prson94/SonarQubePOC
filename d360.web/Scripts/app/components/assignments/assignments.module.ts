@@ -100,6 +100,7 @@ import { StepInformationEmailComponent } from './by-workflow-version/step-inform
 import { StepInformationFormComponent } from './by-workflow-version/step-information/step-information-form/step-information-form.component';
 import { StepInformationFormFieldsComponent } from './by-workflow-version/step-information/step-information-form-fields/step-information-form-fields.component';
 import { StepInformationRelationshipChangeComponent } from './by-workflow-version/step-information/step-information-relationship-change/step-information-relationship-change.component';
+import { StepInformationFieldChangeComponent } from './by-workflow-version/step-information/step-information-field-change/step-information-field-change.component';
 
 
 @NgModule({
@@ -137,7 +138,8 @@ import { StepInformationRelationshipChangeComponent } from './by-workflow-versio
   StepInformationEmailComponent,
   StepInformationFormComponent,
   StepInformationFormFieldsComponent,
-  StepInformationRelationshipChangeComponent
+  StepInformationRelationshipChangeComponent,
+  StepInformationFieldChangeComponent
 	],
     imports: [
         AdvancedFiltersModule,

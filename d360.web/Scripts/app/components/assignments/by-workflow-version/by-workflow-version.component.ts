@@ -10,7 +10,9 @@ import {
 	AssignmentVersionItem,
 	NodeModel,
 	WorkflowDiagramModel,
-	WorkflowDiagramNode, WorkflowTypeNew
+	WorkflowDiagramNode,
+	WorkflowEventRegistration,
+	WorkflowTypeNew
 } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
@@ -30,6 +32,7 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 	selectedAssignmentVersionItems: AssignmentVersionItem[];
 	versionStepId: number;
 	selectedNode: NodeModel;
+	workflowEvent: WorkflowEventRegistration;
 	nodeList: WorkflowDiagramNode[];
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
@@ -105,7 +108,8 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 	nodeSelection(event: { NodeModel: NodeModel, WorkflowDiagramModel: WorkflowDiagramModel }): void {
 		this.versionStepId = parseInt(event?.NodeModel?.key) ?? null;
 		this.selectedNode = event.NodeModel;
-		this.nodeList = event.WorkflowDiagramModel.Nodes
+		this.nodeList = event.WorkflowDiagramModel.Nodes;
+		this.workflowEvent = event.WorkflowDiagramModel.Event;
 		this.secondarySidePanelOpen = true;
 		this.workflowTypeNew = event.WorkflowDiagramModel.Type;
 	}

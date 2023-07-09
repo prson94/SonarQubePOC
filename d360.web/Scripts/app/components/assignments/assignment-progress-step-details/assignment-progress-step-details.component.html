@@ -112,7 +112,8 @@
 				</div>
 			</div>
 		</ig-property-group>
-		<ig-property-group i18n-title *ngIf="step.ActivityType !== 0 && step.ActivityType !== WorkflowActivityType.Form"
+		<ig-property-group i18n-title *ngIf="step.ActivityType !== WorkflowActivityType.None && step.ActivityType !== WorkflowActivityType.Delete
+						    && step.ActivityType !== WorkflowActivityType.Form"
 						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
 			<div readonly>
 				<ng-container [ngSwitch]="step.ActivityType">
@@ -124,10 +125,12 @@
 						<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
-						<d3s-assignment-step-http-details [settings]="step.Settings" [itemFields]="step.ItemFields"></d3s-assignment-step-http-details>
+						<d3s-assignment-step-http-details [settings]="step.Settings"
+														  [itemFields]="step.ItemFields"></d3s-assignment-step-http-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
-						<d3s-assignment-step-http-response-details [settings]="step.Settings" [workflowItemUId]="workflowItemUId">
+						<d3s-assignment-step-http-response-details [settings]="step.Settings"
+																   [workflowItemUId]="workflowItemUId">
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
 					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
@@ -144,7 +147,8 @@
 			<div readonly>
 				<ng-container>
 					<d3s-assignment-step-http-response-outputs
-						[settings]="step.Settings" [itemFields]="step.ItemFields"></d3s-assignment-step-http-response-outputs>
+						[settings]="step.Settings"
+						[itemFields]="step.ItemFields"></d3s-assignment-step-http-response-outputs>
 				</ng-container>
 			</div>
 		</ig-property-group>
@@ -159,7 +163,8 @@
 					</ng-container>
 				</div>
 			</ig-property-group>
-			<ig-property-group i18n-title *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true"
+			<ig-property-group i18n-title
+							   *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true"
 							   title="E-mail Details" [shouldBePadded]="false" [showHeaderLine]="false">
 				<div readonly>
 					<ng-container>

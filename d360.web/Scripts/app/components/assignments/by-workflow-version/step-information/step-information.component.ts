@@ -1,5 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { NodeModel, WorkflowActivityType, WorkflowDiagramNode } from '../../../../models/workflow.model';
+import {
+	NodeModel,
+	WorkflowActivityType,
+	WorkflowDiagramNode,
+	WorkflowEventRegistration
+} from '../../../../models/workflow.model';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 
 @Component({
@@ -10,6 +15,7 @@ import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 export class StepInformationComponent {
 
 	@Input() selectedNode: NodeModel;
+	@Input() workflowEvent: WorkflowEventRegistration;
 	@Input() nodeList: WorkflowDiagramNode[];
 	isLoading: boolean = false;
 	helpers = WorkflowHelpers;

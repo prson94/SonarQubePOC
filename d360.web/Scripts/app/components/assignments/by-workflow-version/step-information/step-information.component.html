@@ -53,6 +53,10 @@
 						<d3s-step-information-relationship-change [settings]="selectedNode.settings"
 																  [nodeList]="nodeList"></d3s-step-information-relationship-change>
 					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+						<d3s-step-information-field-change [workflowEvent]="workflowEvent"
+														   [settings]="selectedNode.settings"></d3s-step-information-field-change>
+					</ng-container>
 				</ng-container>
 			</div>
 		</ig-property-group>
