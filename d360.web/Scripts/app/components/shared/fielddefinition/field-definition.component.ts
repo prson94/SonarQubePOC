@@ -230,6 +230,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 							displayField.LookupTypeName = field.Type[`${type}`].List.Class + ": " + field.Type[`${type}`].List.TypeName;
 							displayField.LookupDisplayFormat = field.Type[`${type}`].Format.Display;
 							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
+							displayField.ParentFieldTypeName = field.Type[`${type}`].ParentFieldTypeName;
 						}
 						displayField.FieldTypeREF = field;
 

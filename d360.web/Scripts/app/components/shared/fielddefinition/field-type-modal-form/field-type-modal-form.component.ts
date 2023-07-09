@@ -101,6 +101,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	numberOfAssetsForType: number = 0;
 
 	displayFormatLabel = $localize`Display Format`;
+	public listParentFields: SelectItem[] = [];
 
 	private fieldTypeNameToApiNameMap = {
 		'FieldFromRelationship': 'ComputedRelationshipField',
@@ -368,6 +369,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			fieldTypeApiObject.AllowAllLabel = this.fieldTypeForm.get("AllowAllLabel").value ?? null;
 			fieldTypeApiObject.Format.Display = this.fieldTypeForm.get("DisplayFormat").value ?? null;
 			fieldTypeApiObject.Format.Edit = this.fieldTypeForm.get("EditFormat").value ?? null;
+			fieldTypeApiObject.ParentFieldTypeName = this.fieldTypeForm.get("ParentFieldTypeName").value ?? null;
 		}
 
 
@@ -512,7 +514,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			RegexTestString: [null],
 			JsonAttributeName: [null],
 			JsonAttributePath: [null],
-			JsonAttributeType: [null]
+			JsonAttributeType: [null],
+			ParentFieldTypeName: [null]
 		});
 
 		this.fieldTypeForm.controls["IntersectTypeUid"].valueChanges.subscribe((value) => {
@@ -533,6 +536,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		this.fieldTypeForm.controls["LookupUid"].valueChanges.subscribe((value) => {
 			this.loadLookupDefaultValue(value);
+
 		});
 
 		this.fieldTypeForm.controls["ValidationPattern"].valueChanges.subscribe(() => {
@@ -726,6 +730,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
 					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
 					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
+					this.fieldTypeForm.controls["ParentFieldTypeName"].setValue(type?.ParentFieldTypeName ?? null);
 
 					//handle special case when we are picking Model class and not asset type
 					if ((type?.List?.Uid === null || typeof type?.List?.Uid === 'undefined') && type?.List?.Class === 'Model') {
@@ -1287,10 +1292,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!uid) {
 			return;
 		}
-		this.loadingDefaultValues = true;
+
 		forkJoin(
 			this.fieldsService.getLookupDefaultValueOptions(uid),
-			this.fieldsService.getLookupTokens(uid)
+			this.fieldsService.getLookupTokens(uid),
+			this.fieldsService.getReferenceTypeHierarchyFields(uid, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
 			// ignore complexity
 			// eslint-disable-next-line
 		).subscribe((data) => {
@@ -1313,6 +1319,15 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 				if (!this.isEditing && !this.fieldTypeForm.get('EditFormat').value) {
 					this.fieldTypeForm.controls['EditFormat'].setValue(`${this.lookupFieldTokens[0].value}`);
+				}
+			}
+
+
+			if (data[2]) {
+				this.listParentFields = data[2].map((x) => { return { label: x.label, value: x.value }; });
+
+				if (this.listParentFields == null || this.listParentFields.length === 0) {
+					this.fieldTypeForm.get("ParentFieldTypeName").setValue(null);
 				}
 			}
 

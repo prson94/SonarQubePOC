@@ -1344,11 +1344,6 @@ namespace d360.web.Controllers.V2
 					{
 						//get possible parent reference list types defined for this object / object id they cant already be parents
 						list = Company.FieldTypes.Where(x => ((type == SystemObjects.IssueType && x.IssueTypeID == id) || (type == SystemObjects.IntersectType && x.IntersectTypeID == id) || (type != SystemObjects.IssueType && type != SystemObjects.IntersectType && x.AssetTypeID == id)) && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.Name }).ToList();
-
-						if (list.Count > 0)
-						{
-							list.Insert(0, new PrimeSelectItem { label = "", value = "" });
-						}
 					}
 				}
 
