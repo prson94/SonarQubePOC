@@ -19,8 +19,8 @@
 					 let-item>
 			<tr [pSelectableRow]="item">
 				<td>{{getFieldName(item)}}</td>
-				<td>{{item.ChangeType}}</td>
-				<td>{{item.ValueSource}}</td>
+				<td>{{getChangeType(item)}}</td>
+				<td>{{getValueSource(item)}}</td>
 			</tr>
 		</ng-template>
 		<ng-template pTemplate="summary">

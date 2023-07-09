@@ -59,6 +59,8 @@ export class StepInformationFormComponent implements OnInit {
 					}
 				}
 			});
+		} else {
+			this.isLoading = false
 		}
 	}
 

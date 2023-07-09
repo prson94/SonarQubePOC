@@ -23,16 +23,41 @@ export class StepInformationFieldChangeComponent implements OnInit {
 	}
 
 	getFieldName(item: WorkflowStepFieldChangeDetail): string {
-		if (item['@ObjectType'] === '') {
-			return item['@FieldName'];
-		} else if (item['@ObjectType'] === 'Issue') {
-			return 'Action Field::' + item['@FieldName'];
+		const field: FieldType = this.fields.find((f) => f.ID === +item['@FieldId']);
+		if (field == null) {
+			return '';
+		}
+		if (this.workflowEvent?.IssueObject === '') {
+			return field.FriendlyName;
+		}
+		if (item['@ObjectType'] === 'Issue') {
+			return $localize`Action Field::` + field.FriendlyName;
 		} else {
-			const field = this.fields.find((f) => f.ID === +item['@FieldId']);
-			if (field == null) {
-				return '';
+			return $localize`Asset Field::` + field.FriendlyName;
+		}
+	}
+
+	getChangeType(item: WorkflowStepFieldChangeDetail): string {
+		if (item['@AppendValue'] === 'true') {
+			return 'Append';
+		} else if (item['@ClearValue'] === 'true') {
+			return 'Clear';
+		} else {
+			return 'Replace';
+		}
+	}
+
+	getValueSource(item: WorkflowStepFieldChangeDetail): string {
+	if (item['@UseFormValue'] === true) {
+			if (item['@ObjectType'] === 'Issue') {
+				return  'Action Form Input';
+			} else {
+				return  'Form Input';
 			}
-			return $localize`Asset Field` + '::' + field.FriendlyName;
+		} else if (item['@ClearValue'] === 'true') {
+			return '--';
+		} else {
+			return 'Specific Value';
 		}
 	}
 
