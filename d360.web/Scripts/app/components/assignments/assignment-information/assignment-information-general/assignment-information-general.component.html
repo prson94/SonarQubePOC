@@ -25,6 +25,8 @@
 				</div>
 				<div class="category-column">
 					<label class="ig-label" i18n>Initiator</label>
+					<ig-asset-detail-field [assetUid]="assignmentItem?.InitiatorUid" [field]="field"
+										   [interceptLinkClick]="true"></ig-asset-detail-field>
 					<div class="ig-value"><a
 						(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentItem?.InitiatorUid })">{{ assignmentItem?.Initiator }}</a>
 					</div>

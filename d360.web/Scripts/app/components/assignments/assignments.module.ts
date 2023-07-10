@@ -92,16 +92,31 @@ import { TabsModule } from '../shared/tabs/tabs.module';
 import { AssignmentHeaderComponent } from './assignment-header/assignment-header.component';
 import { PortalsModule } from '../shared/portals/portals.module';
 import { PageHeaderModule } from '../shared/page-header/page-header.module';
-import { PendingAssignmentsStepComponent } from './by-workflow-version/pending-assignments-step/pending-assignments-step.component';
+import {
+	PendingAssignmentsStepComponent
+} from './by-workflow-version/pending-assignments-step/pending-assignments-step.component';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { InputTextModule } from 'primeng/inputtext';
 import { StepInformationComponent } from './by-workflow-version/step-information/step-information.component';
-import { StepInformationEmailComponent } from './by-workflow-version/step-information/step-information-email/step-information-email.component';
-import { StepInformationFormComponent } from './by-workflow-version/step-information/step-information-form/step-information-form.component';
-import { StepInformationFormFieldsComponent } from './by-workflow-version/step-information/step-information-form-fields/step-information-form-fields.component';
-import { StepInformationRelationshipChangeComponent } from './by-workflow-version/step-information/step-information-relationship-change/step-information-relationship-change.component';
-import { StepInformationFieldChangeComponent } from './by-workflow-version/step-information/step-information-field-change/step-information-field-change.component';
-
+import {
+	StepInformationEmailComponent
+} from './by-workflow-version/step-information/step-information-email/step-information-email.component';
+import {
+	StepInformationFormComponent
+} from './by-workflow-version/step-information/step-information-form/step-information-form.component';
+import {
+	StepInformationFormFieldsComponent
+} from './by-workflow-version/step-information/step-information-form-fields/step-information-form-fields.component';
+import {
+	StepInformationRelationshipChangeComponent
+} from './by-workflow-version/step-information/step-information-relationship-change/step-information-relationship-change.component';
+import {
+	StepInformationFieldChangeComponent
+} from './by-workflow-version/step-information/step-information-field-change/step-information-field-change.component';
+import { SidePanelSwitcherComponent } from './side-panel-switcher/side-panel-switcher.component';
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 
 @NgModule({
 	declarations: [
@@ -127,53 +142,57 @@ import { StepInformationFieldChangeComponent } from './by-workflow-version/step-
 		ByWorkflowVersionComponent,
 		ByWorkflowVersionGridComponent,
 		CompleteAssignmentComponent,
+		PendingAssignmentsStepComponent,
+		SidePanelSwitcherComponent,
+		StepInformationComponent,
+		StepInformationEmailComponent,
+		StepInformationFieldChangeComponent,
+		StepInformationFormComponent,
+		StepInformationFormFieldsComponent,
+		StepInformationRelationshipChangeComponent,
 		WorkflowInformationComponent,
 		WorkflowInformationDiagramComponent,
 		WorkflowInformationGeneralComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent,
-  PendingAssignmentsStepComponent,
-  StepInformationComponent,
-  StepInformationEmailComponent,
-  StepInformationFormComponent,
-  StepInformationFormFieldsComponent,
-  StepInformationRelationshipChangeComponent,
-  StepInformationFieldChangeComponent
+		WorkflowVersionInformationComponent
 	],
-    imports: [
-        AdvancedFiltersModule,
-        AngularSplitModule,
-        AssetDetailModule,
-        AssignmentsRoutingModule,
-        ButtonModule,
-        CheckboxModule,
-        CommonModule,
-        CoreModule,
-        D3SColumnFilterModule,
-        D3SSortIconModule,
-        DirectivesModule,
-        FormsModule,
-        IgBadgeModule,
-        PageHeaderModule,
-        PipesModule,
-        PopupMenuModule,
-        PortalsModule,
-        PropertyGroupModule,
-        RouterModule,
-        SearchFieldModule,
-        SharedDeleteFormModule,
-        SharedGridPagingInfoModule,
-        SharedModule,
-        SidePanelModule,
-        SiteModalModule,
-        TableModule,
-        TabsModule,
-        TooltipModule,
-        WorkflowDiagramModule,
-        TilesModule,
-        InputTextModule
-    ]
+	imports: [
+		AdvancedFiltersModule,
+		AngularSplitModule,
+		AssetDetailModule,
+		AssetTypeDetailModule,
+		AssignmentsRoutingModule,
+		ButtonModule,
+		CheckboxModule,
+		CommonModule,
+		CoreModule,
+		D3SColumnFilterModule,
+		D3SSortIconModule,
+		DataProfileModule,
+		DirectivesModule,
+		FormsModule,
+		IgBadgeModule,
+		InputTextModule,
+		PageHeaderModule,
+		PipesModule,
+		PopupMenuModule,
+		PortalsModule,
+		PropertyGroupModule,
+		RouterModule,
+		SearchFieldModule,
+		SharedDeleteFormModule,
+		SharedGridPagingInfoModule,
+		SharedModule,
+		SidePanelModule,
+		SiteModalModule,
+		TableModule,
+		TabsModule,
+		TaggedAssetDetailModule,
+		TilesModule,
+		TooltipModule,
+		WorkflowDiagramModule
+	]
 })
 export class AssignmentsModule {
 }

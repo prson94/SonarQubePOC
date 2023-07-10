@@ -12,8 +12,7 @@
 		<as-split-area class="tile tile-detail main-panel">
 			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow"
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
-			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
-				<div class="secondary-side-panel">
+				<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen">
 					<div class="panel-header">
                         <span class="header-label"
 							  i18n>Information</span>
@@ -28,6 +27,7 @@
 					</div>
 					<div class="details-container">
 						<div>
+							<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 							<ng-container *ngIf="secondarySidePanelObjectType=='workflow-information'">
 								<d3s-workflow-information [shouldBePadded]="true"
 														  [showHeaderLine]="false"
@@ -58,7 +58,6 @@
 						</div>
 					</div>
 				</div>
-			</ng-container>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"

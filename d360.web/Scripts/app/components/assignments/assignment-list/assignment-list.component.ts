@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
@@ -10,6 +10,9 @@ import { AssignmentItemStep, WorkflowAssignmentItem } from '../../../models/work
 import { AssignmentProgressComponent } from '../assignment-progress/assignment-progress.component';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { Subscription } from 'rxjs';
+import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 
 /*global $localize*/
 
@@ -18,9 +21,10 @@ import { AuthenticationService } from '../../../services/authentication.service'
 	templateUrl: './assignment-list.component.html',
 	styleUrls: ['./assignment-list.component.less']
 })
-export class AssignmentListComponent extends BaseComponent implements OnInit {
+export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
 
 	@ViewChild(AssignmentProgressComponent) assignmentProgressComponent: AssignmentProgressComponent;
+	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	isRequestsFlow: boolean = false; // flag checks if url is requests
 	flowContext: string = 'Assignment'; // to store flow context
 	sidePanelStorageKey: string;
@@ -53,12 +57,14 @@ export class AssignmentListComponent extends BaseComponent implements OnInit {
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	secondarySidePanelObjectUid: string;
 	secondarySidePanelObjectType: string;
+	private linkInterceptorSubscription: Subscription;
 
 	constructor(
 		public sidePanelService: SidePanelService,
 		private router: Router,
 		private authenticationService: AuthenticationService,
-		protected settingsService: CompanySettingsService) {
+		protected settingsService: CompanySettingsService,
+		private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
 	}
 
@@ -69,6 +75,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit {
 			this.isRequestsFlow = true;
 		}
 		this.setFlowSpecificDetails();
+		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
+		});
 	}
 
 	setFlowSpecificDetails(): void {
@@ -152,6 +161,12 @@ export class AssignmentListComponent extends BaseComponent implements OnInit {
 
 	closeSecondarySidePanel() {
 		this.secondarySidePanelOpen = false;
+		this.secondarySidePanelObjectType = undefined;
 		this.assignmentProgressComponent.deselectWorkflowSteps();
+		this.sidePanelSwitcherComponent.clear();
+	}
+
+	ngOnDestroy(): void {
+		this.linkInterceptorSubscription?.unsubscribe();
 	}
 }

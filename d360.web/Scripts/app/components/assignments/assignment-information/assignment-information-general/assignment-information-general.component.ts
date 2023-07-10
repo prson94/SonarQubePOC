@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AssignmentItem, ChangeTypeInfo } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { DetailField } from '../../../../models/object-detail.model';
 
 @Component({
 	selector: 'd3s-assignment-information-general',
@@ -24,6 +25,9 @@ export class AssignmentInformationGeneralComponent {
 		this._assignmentItem = value;
 		this.workflowChangeType = this.changeTypeInfos.find((changeTypeInfo: ChangeTypeInfo) => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
 		this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
+		this.field.Value = this.assignmentItem?.Initiator;
+		this.field.Name = 'Initiator';
+		this.field.FieldName = 'FieldName';
 	}
 
 	get assignmentItem(): AssignmentItem {
@@ -34,6 +38,7 @@ export class AssignmentInformationGeneralComponent {
 		objectType: string,
 		objectUid: string
 	}>();
+	field: DetailField = new DetailField();
 
 	get assetPathLinkPart(): string {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
