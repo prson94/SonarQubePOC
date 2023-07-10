@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AssignmentItem, ChangeTypeInfo } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { DetailField } from '../../../../models/object-detail.model';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-information-general',
@@ -48,7 +49,7 @@ export class AssignmentInformationGeneralComponent {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
 	}
 
-	constructor(private workflowService: WorkflowService) {
+	constructor(private workflowService: WorkflowService, private linkClickInterceptor: LinkClickInterceptor) {
 		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 
@@ -58,6 +59,14 @@ export class AssignmentInformationGeneralComponent {
 			this.isLoading = false;
 			this.assignmentItem = response;
 		});
+	}
+
+	onClick(event) {
+		this.linkClickInterceptor.sendEvent(event, {
+			ResourceName: this.assignmentItem?.Initiator,
+			ResourceUid: this.assignmentItem?.InitiatorUid,
+			ResourceItemUrl: 'users/' + this.assignmentItem?.InitiatorUid
+		}, 'users/' + this.assignmentItem?.InitiatorUid);
 	}
 
 	get workflowType(): string {

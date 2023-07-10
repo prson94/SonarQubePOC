@@ -30,6 +30,9 @@
 					<div class="ig-value"><a
 						(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentItem?.InitiatorUid })">{{ assignmentItem?.Initiator }}</a>
 					</div>
+					<p> below link works on link interceptor </p>
+					<a context-link (click)="onClick($event);linkClick.emit({objectType: null, objectUid: null })"
+					   data-link-type="resource">{{ assignmentItem?.Initiator }}</a>
 				</div>
 				<div class="category-column">
 					<label class="ig-label" i18n>Status</label>
