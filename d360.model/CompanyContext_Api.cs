@@ -1150,9 +1150,12 @@ namespace d360.model
 											Message = 'Cannot change SubjectUid or ObjectUid for a relationship type that already has relationships.' 
 									from    [api].[ExecutionRelationshipType] ER 
 											inner join IntersectType T on T.Uid = ER.Uid
+											inner join AssetType S on S.ID = T.SubjectAssetTypeID 
+											inner join AssetType O on O.ID = T.ObjectAssetTypeID 
 									where   ER.ExecutionID = @ExecutionID 
 											and ER.Success is null 
-											and (ER.SubjectUid is not null or ER.ObjectUid is not null)
+											and (S.Uid <> ER.SubjectUid or O.Uid <> ER.ObjectUid) 
+											and (ER.SubjectUid is not null or ER.ObjectUid is not null) 
 											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
 				new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 			}
