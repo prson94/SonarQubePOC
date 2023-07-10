@@ -5618,17 +5618,22 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return retval;
 		}
 
-		public void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "")
+		public void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "",bool SupportHtml = false)
 		{
+			string? valuestring = value;
+			if (SupportHtml && value != null)
+			{
+				valuestring = valuestring.RemoveHtml().Replace("&nbsp"," ");
+			}
 			if (string.IsNullOrEmpty(fieldname))
 			{
-				document.SetCellValue(rowNumber, index, value);
+				document.SetCellValue(rowNumber, index, valuestring);
 			}
 			else
 			{
 				if (isAllowDisplayFieldType(datatype, fieldname))
 				{
-					document.SetCellValue(rowNumber, index, value);
+					document.SetCellValue(rowNumber, index, valuestring);
 				}
 				else
 				{
