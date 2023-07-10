@@ -1209,6 +1209,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		}
 
 		if (this.condition.fieldType === "Tag" && this.condition.value) {
+			if (this.currentInputType === "lookup") {
+				this.removeSelectionDuplicates();
+			}
 			if (this.currentOperator.toString() === "NotContains") {
 				this.condition.connectingOperator = "and";
 				this.uiIsAllDisabled = true;
