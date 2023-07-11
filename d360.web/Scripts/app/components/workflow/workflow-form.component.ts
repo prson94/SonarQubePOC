@@ -185,13 +185,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
 
     }
 
-    private close() {
-        if (window.history.length > 1) {
-            this.location.back();
-        }
-        else {
-            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-        }
+	private close() {
+		this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
     }
 
     private reassign() {

@@ -45,8 +45,10 @@ namespace d360.web.Models
         public JObject Fields { get; set; }
 
         public DateTime StartedOn { get; set; }
+		
+		public DateTime? ProcessingStartedOn { get; set; }
 
-        public DateTime? CompletedOn { get; set; }
+		public DateTime? CompletedOn { get; set; }
 
         public List<DatabaseBulkAssetResult> Results { get; set; }
     }
