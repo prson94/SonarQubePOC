@@ -26,6 +26,8 @@ export class AssetDetailClickEvent {
     url: string;
 
     originalEvent: any;
+	workflowItemUid: string;
+	itemStepUid: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -200,8 +202,13 @@ export class LinkClickInterceptor {
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
 
-        //if some other tab is opened in side panel, force opening detail panel
-        baseComponent.sidePanelTab = 'detail';
+		if(event.data?.workflowItemUid && event.data?.itemStepUid) {
+			baseComponent.sidePanelTab = 'step-detail';
+			baseComponent.selectedAsset = { workflowItemUid: event.data.workflowItemUid, itemStepUid: event.data.itemStepUid };
+		} else {
+			//if some other tab is opened in side panel, force opening detail panel
+			baseComponent.sidePanelTab = 'detail';
+		}
 
         if (event.type === AssetDetailClickType.Asset) {
             baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };

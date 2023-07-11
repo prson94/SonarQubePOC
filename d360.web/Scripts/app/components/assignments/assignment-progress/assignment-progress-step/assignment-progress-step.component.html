@@ -1,6 +1,6 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="assignment-progress-step" [class.selected]="selected" [hidden]="isLoading" role="button"
-	 tabindex="0" (click)="toggleStepDetails()">
+	 tabindex="0" (click)="toggleStepDetails($event)">
 	<div class="row">
 		<div class="col s1">
 			<i class="fa spacing-top" [ngClass]="icon"></i>

@@ -7,6 +7,7 @@ import {
 } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-progress-step',
@@ -65,7 +66,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 		return this.helpers.getActivityTypeIcon(WorkflowActivityType[this.assignmentItemStep.ActivityType], StepType[this.assignmentItemStep.StepType]);
 	}
 
-	constructor(private workflowService: WorkflowService) {
+	constructor(private workflowService: WorkflowService, private linkClickInterceptor: LinkClickInterceptor) {
 	}
 
 	ngOnInit(): void {
@@ -79,9 +80,12 @@ export class AssignmentProgressStepComponent implements OnInit {
 		}
 	}
 
-	toggleStepDetails(): void {
+	toggleStepDetails(event): void {
 		this.selected = true;
-		this.stepClickChange.emit();
+		this.linkClickInterceptor.sendEvent(event, {
+			workflowItemUid: this.workflowItemUid,
+			itemStepUid: this.assignmentItemStep?.Uid,
+		}, null);
 	}
 
 	completeAssignmentClick(): void {
