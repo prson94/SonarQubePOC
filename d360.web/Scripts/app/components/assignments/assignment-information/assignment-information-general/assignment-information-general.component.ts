@@ -61,12 +61,16 @@ export class AssignmentInformationGeneralComponent {
 		});
 	}
 
-	onClick(event) {
+	onClickResource(event): void {
 		this.linkClickInterceptor.sendEvent(event, {
-			ResourceName: this.assignmentItem?.Initiator,
-			ResourceUid: this.assignmentItem?.InitiatorUid,
-			ResourceItemUrl: 'users/' + this.assignmentItem?.InitiatorUid
+			ResourceUid: this.assignmentItem?.InitiatorUid
 		}, 'users/' + this.assignmentItem?.InitiatorUid);
+	}
+
+	onClickAsset(event): void {
+		this.linkClickInterceptor.sendEvent(event, {
+			AssetUid: this.assignmentItem?.AssetUid
+		}, 'assets/' + this.assignmentItem?.AssetUid);
 	}
 
 	get workflowType(): string {

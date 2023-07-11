@@ -112,6 +112,12 @@ export class LinkClickInterceptor {
                 adcEv.uid = data.ResourceUid;
             }
 
+			if (data.AssetUid) {
+				adcEv.type = AssetDetailClickType.Asset;
+				adcEv.objectType = "Artifact";
+				adcEv.uid = data.AssetUid;
+			}
+
             //this is a group object
             if (data.hasOwnProperty('PrimaryOwnerUid')) {
                 adcEv.type = AssetDetailClickType.Group;

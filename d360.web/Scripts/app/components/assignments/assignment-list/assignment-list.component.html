@@ -36,19 +36,6 @@
 														  [workflowTypeUid]="secondarySidePanelObjectUid"
 														  (close)="closeSecondarySidePanel()"></d3s-workflow-information>
 							</ng-container>
-							<ng-container
-								*ngIf="secondarySidePanelObjectType=='user-information' || secondarySidePanelObjectType=='asset-information'">
-								<ig-asset-detail [objectUID]="secondarySidePanelObjectUid"
-												 [useAccordion]="true"
-												 [shouldBePadded]="true"
-												 [showHeader]="true"
-												 [showHeaderLine]="false"
-												 [spacerHeight]="'16px'"
-												 [tooltipAlign]="'left'"
-												 [isSidePanel]="true"
-												 [interceptLinkClick]="true"
-												 (close)="closeSecondarySidePanel()"></ig-asset-detail>
-							</ng-container>
 							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
 								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"
 																	  [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"

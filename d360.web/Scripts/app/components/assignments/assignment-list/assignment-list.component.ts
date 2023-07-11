@@ -77,6 +77,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.setFlowSpecificDetails();
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
+			this.secondarySidePanelOpen = true
 		});
 	}
 
