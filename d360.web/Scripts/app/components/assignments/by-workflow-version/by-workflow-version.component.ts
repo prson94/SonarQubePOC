@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -15,6 +15,9 @@ import {
 	WorkflowTypeNew
 } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
+import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
+import { AssetDetailClickEvent, LinkClickInterceptor } from '../../../services/href-click-service';
+import { Subscription } from 'rxjs';
 
 /*global $localize*/
 
@@ -23,7 +26,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 	templateUrl: './by-workflow-version.component.html',
 	styleUrls: ['./by-workflow-version.component.less']
 })
-export class ByWorkflowVersionComponent extends BaseComponent {
+export class ByWorkflowVersionComponent extends BaseComponent implements OnInit, OnDestroy {
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;
@@ -76,17 +79,32 @@ export class ByWorkflowVersionComponent extends BaseComponent {
 		})
 	];
 	workflowTypeNew: WorkflowTypeNew;
+	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	private linkInterceptorSubscription: Subscription;
 
 	constructor(
 		public sidePanelService: SidePanelService,
 		private companySettingsService: CompanySettingsService,
 		private titleService: Title,
+		private linkClickInterceptor: LinkClickInterceptor,
 		secondaryNavService: SecondaryNavService,
 		headerBreadcrumbService: HeaderBreadcrumbService
 	) {
 		super(companySettingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
+	}
+
+	ngOnInit(): void {
+		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((event: AssetDetailClickEvent) => {
+			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, event);
+			this.secondarySidePanelOpen = true;
+			this.secondarySidePanelTab = ''
+		});
+	}
+
+	ngOnDestroy(): void {
+		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {

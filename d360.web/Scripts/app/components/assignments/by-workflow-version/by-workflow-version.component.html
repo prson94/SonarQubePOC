@@ -16,6 +16,9 @@
 			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
 				<div class="secondary-side-panel"
 					 (clickOutside)="secondarySidePanelOpen = false">
+					<ng-container>
+						<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+					</ng-container>
 					<side-panel [(expanded)]="secondarySidePanelOpen"
 								[(selectedPanel)]="secondarySidePanelTab"
 								[extraButtons]="secondarySidePanelButtons"

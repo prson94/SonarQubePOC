@@ -77,7 +77,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.setFlowSpecificDetails();
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
-			this.secondarySidePanelOpen = true
+			this.secondarySidePanelOpen = true;
 		});
 	}
 
@@ -154,13 +154,13 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	stepClicked(assignmentItemStep: AssignmentItemStep) {
+	stepClicked(assignmentItemStep: AssignmentItemStep): void {
 		this.secondarySidePanelOpen = true;
 		this.assignmentItemStep = assignmentItemStep;
 		this.secondarySidePanelObjectType = 'step-details';
 	}
 
-	closeSecondarySidePanel() {
+	closeSecondarySidePanel(): void {
 		this.secondarySidePanelOpen = false;
 		this.secondarySidePanelObjectType = undefined;
 		this.assignmentProgressComponent.deselectWorkflowSteps();

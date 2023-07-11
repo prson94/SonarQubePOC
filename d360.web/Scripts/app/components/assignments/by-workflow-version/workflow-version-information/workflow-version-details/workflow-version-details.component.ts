@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AssignmentVersionItem } from '../../../../../models/workflow.model';
+import { LinkClickInterceptor } from '../../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-workflow-version-details',
@@ -9,8 +10,15 @@ import { AssignmentVersionItem } from '../../../../../models/workflow.model';
 export class WorkflowVersionDetailsComponent {
 
 	@Input() assignmentVersionItem: AssignmentVersionItem;
-	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
-		objectType: string,
-		objectUid: string
-	}>();
+
+	constructor(private linkClickInterceptor: LinkClickInterceptor) {
+	}
+
+	onClickResource(event: MouseEvent): void {
+		if(this.assignmentVersionItem) {
+			this.linkClickInterceptor.sendEvent(event, {
+				ResourceUid: this.assignmentVersionItem.UpdatedByUid
+			}, 'users/' + this.assignmentVersionItem.UpdatedByUid);
+		}
+	}
 }

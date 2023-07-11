@@ -5,8 +5,8 @@
 			<div class="row top-margin">
 				<div class="col s4">
 					<label class="ig-label" i18n>Name</label>
-					<div class="ig-value"><a
-						(click)="linkClick.emit({ objectType: 'workflow-information', objectUid: assignmentVersionItem?.WorkflowTypeUid })">{{ assignmentVersionItem?.WorkflowName }}</a>
+					<div class="ig-value">
+						<a context-link>{{ assignmentVersionItem?.WorkflowName }}</a>
 					</div>
 				</div>
 				<div class="col s4">
@@ -26,12 +26,11 @@
 				</div>
 				<div class="col s4">
 					<label class="ig-label" i18n>Update By</label>
-					<div class="ig-value"><a
-						(click)="linkClick.emit({objectType: 'user-information', objectUid: assignmentVersionItem?.UpdatedByUid })">{{ assignmentVersionItem?.UpdatedBy }}</a>
+					<div class="ig-value">
+						<a context-link (click)="onClickResource($event)">{{ assignmentVersionItem?.UpdatedBy }}</a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</ig-property-group>
 </div>
-<!--<pre style="white-space: pre-wrap">{{ assignmentVersionItem | json }}</pre>-->
