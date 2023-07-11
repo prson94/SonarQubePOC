@@ -12,39 +12,26 @@
 		<as-split-area class="tile tile-detail main-panel">
 			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow"
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
-				<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen">
-					<div class="panel-header">
+			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen">
+				<div class="panel-header">
                         <span class="header-label"
 							  i18n>Information</span>
-						<div class="button-container">
-							<button igButton
-									[attr.data-cy]="'Assignments_Secondary_Close'"
-									icon="fa-times"
-									(click)="closeSecondarySidePanel()"
-									tooltip="Close"
-									class="close-button"></button>
-						</div>
-					</div>
-					<div class="details-container">
-						<div>
-							<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
-							<ng-container *ngIf="secondarySidePanelObjectType=='workflow-information'">
-								<d3s-workflow-information [shouldBePadded]="true"
-														  [showHeaderLine]="false"
-														  [isSidePanel]="true"
-														  [interceptLinkClick]="true"
-														  [workflowTypeUid]="secondarySidePanelObjectUid"
-														  (close)="closeSecondarySidePanel()"></d3s-workflow-information>
-							</ng-container>
-<!--							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">-->
-<!--								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"-->
-<!--																	  [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"-->
-<!--																	  (completeAssignment)="completeAssignmentComponent.openModal($event)"-->
-<!--																	  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>-->
-<!--							</ng-container>-->
-						</div>
+					<div class="button-container">
+						<button igButton
+								[attr.data-cy]="'Assignments_Secondary_Close'"
+								icon="fa-times"
+								(click)="closeSecondarySidePanel()"
+								tooltip="Close"
+								class="close-button"></button>
 					</div>
 				</div>
+				<div class="details-container">
+					<div>
+						<d3s-side-panel-switcher #sidePanelSwitcherComponent
+												 (clickOutside)="closeSecondarySidePanel()"></d3s-side-panel-switcher>
+					</div>
+				</div>
+			</div>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"

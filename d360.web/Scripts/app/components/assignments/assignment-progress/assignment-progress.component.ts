@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, ViewChildren } from '@angular/c
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-progress',
@@ -49,7 +50,8 @@ export class AssignmentProgressComponent {
 
 	private _workflowItemUid: string;
 
-	constructor(private workflowService: WorkflowService) {
+	constructor(private workflowService: WorkflowService,
+				public linkClickInterceptor: LinkClickInterceptor) {
 	}
 
 	private loadAssignmentSteps() {
