@@ -208,6 +208,9 @@ namespace d360.core.entities
 		[JsonProperty("id")]
 		public string SourceId { get; set; }
 
+		[JsonProperty("isDelete")]
+		public bool IsDelete { get; set; } = false;
+
 		[JsonProperty("properties")]
 		public List<PatchBulkCatalogPropertyRequestModel> Properties { get; set; }
 	}

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.5">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.6">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -40,7 +40,8 @@ begin
 		from	api.ExecutionCatalogItem T
 				left join AssetType S on S.SourceId = T.TypeSourceId
 		where	T.ExecutionId = @executionId
-				and T.[Type] = @type;
+				and T.[Type] = @type
+				and T.ISDelete = 0;
 
 		-- Does asset exist based on the incoming SourceId.
 		update	T
@@ -48,7 +49,7 @@ begin
 				T.Uid = S.Uid,
 				T.[Action] = 'U'
 		from	api.ExecutionCatalogItem  T
-				inner join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+				inner join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type and T.ISDelete = 0;
 
 		-- Updated field types based on property names
 		update	T
@@ -56,7 +57,8 @@ begin
 				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
 				T.ValueAssetTypeId = L.ID
 		from	api.ExecutionCatalogItemProperty  T
-				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type
+				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type 
+				and I.ISDelete = 0 
 				inner join FieldType S on S.AssetTypeID = I.TypeId and S.Name = T.Name
 				left join AssetType L on L.Object = S.LookupObjectType+'Type' and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
 
@@ -79,7 +81,7 @@ begin
 						where	I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and V.Success = 0
 						group by I.SourceId
 				) Val
-		where	T.ExecutionId = @executionId and T.[Type] = @type;
+		where	T.ExecutionId = @executionId and T.[Type] = @type and T.ISDelete = 0;
 
 		-- Capture new asset records.
 		declare @new_assets table(Id bigint, Uid uniqueidentifier, AssetTypeID int, SourceId nvarchar(500));
@@ -93,7 +95,8 @@ begin
 			where	I.ExecutionId = @executionId
 					and I.[Type] = @type
 					and I.Id is null 
-					and I.Success is null;
+					and I.Success is null 
+					and I.ISDelete = 0;
 
 		-- Update the Items table with the newly generated asset Ids.
 		update	T
@@ -101,13 +104,13 @@ begin
 				T.Uid = S.Uid,
 				T.[Action] = 'A'
 		from	api.ExecutionCatalogItem T
-				inner join @new_assets S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeId and T.Success is null and T.ExecutionId = @executionId and T.[Type] = @type;
+				inner join @new_assets S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeId and T.Success is null and T.ExecutionId = @executionId and T.[Type] = @type and T.ISDelete = 0;
 
 		-- Update Code field if any reference item assets.
 		update	T
 		set		T.Code = P.CodeValue
 		from	Asset T
-				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type
+				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type and S.ISDelete = 0
 				inner join api.ExecutionCatalogItemProperty P on P.SourceId = S.SourceId and P.Name = 'Code' and T.Code <> P.CodeValue and P.CodeValue is not null;
 
 		-- Add/update field data.
@@ -128,6 +131,7 @@ begin
 							and I.ExecutionId = @executionId 
 							and I.[Type] = @type 
 							and I.Success is null 
+							and I.ISDelete = 0
 							and P.FieldTypeID is not null
 						inner join Asset A on A.ID = I.Id
 				) as S
@@ -147,7 +151,104 @@ begin
 		where	ExecutionId = @executionId 
 				and [Type] = @type
 				and [Action] is not null
-				and Success is null;
+				and Success is null 
+				and IsDelete = 0;
+	end
+
+	if @type = 'D'
+	begin
+		set @type = 'A' -- these are assets, after all.
+		
+		-- Locate asset type based on the incoming SourceId,
+		update	T
+		set		T.TypeId = S.Id,
+				T.Success = iif(S.Id is null, 0, null),
+				T.[Message] = iif(S.Id is null, 'Asset Type not found based on SourceId; ', T.[Message])
+		from	api.ExecutionCatalogItem T
+				left join AssetType S on S.SourceId = T.TypeSourceId
+		where	T.ExecutionId = @executionId
+				and T.[Type] = @type
+				and T.IsDelete = 1;
+
+		-- Does asset exist based on the incoming SourceId.
+		update	T
+		set		T.Id = S.Id,
+				T.Uid = S.Uid,
+				T.[Action] = 'U',
+				T.Success = iif(S.Id is null, 0, null),
+				T.[Message] = iif(S.Id is null, 'Asset not found based on SourceId; ', T.[Message])
+		from	api.ExecutionCatalogItem  T
+				left join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null
+		where	T.ExecutionId = @executionId 
+				and T.[Type] = @type
+				and T.IsDelete = 1;
+
+		drop table if exists #d_ids;
+		create table #d_ids (Id bigint);
+		insert into #d_ids 
+			select 	Id
+			from  	api.ExecutionCatalogItem 
+			where	ExecutionId = @executionId 
+					and [Type] = @type 
+					and Success is null 
+					and IsDelete = 1;
+	
+		create clustered index cix_TempDIds on #d_ids (Id);
+		
+		with h as (
+			select 	Id,
+					cast(null as bigint) as ParentId
+			from	#d_ids 
+			union all
+			select	ObjectAssetId as Id,
+					SubjectAssetId as ParentId
+			from	PredicateIntersect c
+					inner join h on h.Id = c.SubjectAssetId and c.PredicateType in (3,4)			
+		)
+
+		insert into #d_ids
+			select Id from h where ParentId is not null;
+
+		-- Delete content
+		delete	t
+		from	AssetDataProfileSampleJson t 
+				inner join AssetDataProfile p on p.Id = t.AssetDataProfileId
+				inner join #d_ids i on i.Id = p.AssetID;
+
+		delete	t
+		from	AssetDataProfileSample t 
+				inner join AssetDataProfile p on p.Id = t.AssetDataProfileId
+				inner join #d_ids i on i.Id = p.AssetID;
+
+		delete	t from AssetDisplayValue t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from AssetDataProfile t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from AssetPath t inner join #d_ids i on i.Id = t.ID;
+		delete	t from AssetProcessDiagram t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from AssetResult t inner join Asset a on a.Uid = t.OwningAssetUid inner join #d_ids i on i.Id = a.ID;
+		delete	t from AssetResult t inner join Asset a on a.Uid = t.EvaluatedAssetUid inner join #d_ids i on i.Id = a.ID;
+		delete	t from AssetTag t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from CommentRelation t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from CommentRelation t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.Id = c.AssetID;
+		delete	t from CommentVote t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.Id = c.AssetID;
+		delete	t from Comment t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from Favorite t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from Field t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from FieldCounterValue t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from Follow t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from [Intersect] t inner join #d_ids i on i.Id = t.SubjectAssetID;
+		delete	t from [Intersect] t inner join #d_ids i on i.Id = t.ObjectAssetID;
+		delete	t from Issue t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from ResponsibilityRuleResultAsset t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from ResponsibilityTypeRelationOverrideItem t inner join #d_ids i on i.Id = t.AssetID;
+		delete	t from Asset t inner join #d_ids i on i.Id = t.ID;
+
+		update	api.ExecutionCatalogItem 
+		set		Success = 1
+		where	ExecutionId = @executionId 
+				and [Type] = @type
+				and [Action] is not null
+				and Success is null
+				and IsDelete = 1;
 	end
 
 	if @type = 'R'
