@@ -100,6 +100,10 @@ namespace d360.web.Controllers.V2
 		/// <remarks>
 		/// All `id` properties are intended to be your own identifiers from your source system. As long as they are unique across all assets within a type then the system will match based on that custom identifier.
 		/// You do not have to include all properties of an asset, including required properties.
+		/// 
+		/// The property `isFullRefresh` on an asset item is meant to be a full synchronization of all descendant assets. 
+		/// If set to `true` all descendant items **not** included in this payload will be removed from your environment. 
+		/// If you want to skip a certain section of a hierarchy, simply include the direct child asset of the asset you marked to refresh, and all descendants under that child will remain intact.
 		/// </remarks>
 		/// <param name="payload">The payload of your request.</param>
 		/// <returns>An HTTP status code and message.</returns>

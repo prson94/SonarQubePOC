@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.6">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.7">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -183,64 +183,76 @@ begin
 				and T.[Type] = @type
 				and T.IsDelete = 1;
 
+		drop table if exists #d_ignore_ids;
+		create table #d_ignore_ids (Id bigint);
+
+		insert into #d_ignore_ids
+			select	Id 
+			from	api.ExecutionCatalogItem
+			where	ExecutionId = @executionId
+					and [Type] = @type
+					and Id is not null;
+		
+		create clustered index cix_TempDIgnoreIds on #d_ignore_ids (Id);
+
 		drop table if exists #d_ids;
-		create table #d_ids (Id bigint);
-		insert into #d_ids 
-			select 	Id
+		create table #d_ids (RootId bigint, TargetId bigint);
+		
+		with h as (
+			select 	Id as RootId,
+					Id,
+					cast(null as bigint) as ParentId
 			from  	api.ExecutionCatalogItem 
 			where	ExecutionId = @executionId 
 					and [Type] = @type 
 					and Success is null 
-					and IsDelete = 1;
-	
-		create clustered index cix_TempDIds on #d_ids (Id);
-		
-		with h as (
-			select 	Id,
-					cast(null as bigint) as ParentId
-			from	#d_ids 
+					and IsDelete = 1
 			union all
-			select	ObjectAssetId as Id,
+			select	h.RootId,
+					ObjectAssetId as Id,
 					SubjectAssetId as ParentId
 			from	PredicateIntersect c
-					inner join h on h.Id = c.SubjectAssetId and c.PredicateType in (3,4)			
+					inner join h on h.Id = c.SubjectAssetId and c.PredicateType in (3,4)
+					where ObjectAssetId not in (select Id from #d_ignore_ids)
 		)
 
 		insert into #d_ids
-			select Id from h where ParentId is not null;
+			select RootId, Id from h where ParentId is not null;
+
+		create clustered index cix_TempDIds on #d_ids (TargetId);
 
 		-- Delete content
 		delete	t
 		from	AssetDataProfileSampleJson t 
 				inner join AssetDataProfile p on p.Id = t.AssetDataProfileId
-				inner join #d_ids i on i.Id = p.AssetID;
+				inner join #d_ids i on i.TargetId = p.AssetID;
 
 		delete	t
 		from	AssetDataProfileSample t 
 				inner join AssetDataProfile p on p.Id = t.AssetDataProfileId
-				inner join #d_ids i on i.Id = p.AssetID;
+				inner join #d_ids i on i.TargetId = p.AssetID;
 
-		delete	t from AssetDisplayValue t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from AssetDataProfile t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from AssetPath t inner join #d_ids i on i.Id = t.ID;
-		delete	t from AssetProcessDiagram t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from AssetResult t inner join Asset a on a.Uid = t.OwningAssetUid inner join #d_ids i on i.Id = a.ID;
-		delete	t from AssetResult t inner join Asset a on a.Uid = t.EvaluatedAssetUid inner join #d_ids i on i.Id = a.ID;
-		delete	t from AssetTag t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from CommentRelation t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from CommentRelation t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.Id = c.AssetID;
-		delete	t from CommentVote t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.Id = c.AssetID;
-		delete	t from Comment t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from Favorite t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from Field t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from FieldCounterValue t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from Follow t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from [Intersect] t inner join #d_ids i on i.Id = t.SubjectAssetID;
-		delete	t from [Intersect] t inner join #d_ids i on i.Id = t.ObjectAssetID;
-		delete	t from Issue t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from ResponsibilityRuleResultAsset t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from ResponsibilityTypeRelationOverrideItem t inner join #d_ids i on i.Id = t.AssetID;
-		delete	t from Asset t inner join #d_ids i on i.Id = t.ID;
+		delete	t from AssetDisplayValue t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from AssetDataProfile t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from AssetPath t inner join #d_ids i on i.TargetId = t.ID;
+		delete	t from AssetProcessDiagram t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from AssetResult t inner join Asset a on a.Uid = t.OwningAssetUid inner join #d_ids i on i.TargetId = a.ID;
+		delete	t from AssetResult t inner join Asset a on a.Uid = t.EvaluatedAssetUid inner join #d_ids i on i.TargetId = a.ID;
+		delete	t from AssetTag t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from CommentRelation t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from CommentRelation t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.TargetId = c.AssetID;
+		delete	t from CommentVote t inner join  Comment c on c.Id = t.CommentID inner join #d_ids i on i.TargetId = c.AssetID;
+		delete	t from Comment t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from Favorite t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from Field t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from FieldCounterValue t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from Follow t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from [Intersect] t inner join #d_ids i on i.TargetId = t.SubjectAssetID;
+		delete	t from [Intersect] t inner join #d_ids i on i.TargetId = t.ObjectAssetID;
+		delete	t from Issue t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from ResponsibilityRuleResultAsset t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from ResponsibilityTypeRelationOverrideItem t inner join #d_ids i on i.TargetId = t.AssetID;
+		delete	t from Asset t inner join #d_ids i on i.TargetId = t.ID;
 
 		update	api.ExecutionCatalogItem 
 		set		Success = 1
@@ -427,7 +439,8 @@ begin
 						P.Value,
 						P.ValueId
 				from	api.ExecutionCatalogItem I
-						inner join api.ExecutionCatalogItemProperty P on P.SourceId = I.SourceId 
+						inner join api.ExecutionCatalogItemProperty P on P.SubjectSourceId = I.SubjectSourceId
+							and P.ObjectSourceId = I.ObjectSourceId
 							and I.ExecutionId = @executionId 
 							and I.[Type] = @type 
 							and I.ExecutionId = P.ExecutionId 

@@ -357,10 +357,10 @@ namespace d360.model.DataAccessLayer
 							row["Type"] = 'A';
 							row["TypeSourceId"] = ag.AssetTypeSourceId;
 							row["SourceId"] = a.SourceId;
-							row["IsDelete"] = a.IsDelete;
+							row["IsDelete"] = a.IsFullRefresh;
 							assetTable.Rows.Add(row);
 
-							if (a.Properties != null && !a.IsDelete)
+							if (a.Properties != null)
 							{
 								a.Properties.ForEach(p =>
 								{
@@ -432,8 +432,11 @@ namespace d360.model.DataAccessLayer
 						bulkCopy.ColumnMappings.Add("IsDelete", "IsDelete");
 						bulkCopy.WriteToServer(assetTable);
 
-						bulkCopy.ColumnMappings.RemoveAt(3);
-						bulkCopy.ColumnMappings.RemoveAt(3);
+						bulkCopy.ColumnMappings.Clear();
+
+						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+						bulkCopy.ColumnMappings.Add("Type", "Type");
+						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");
 						bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");
 						bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");
 						bulkCopy.WriteToServer(relationTable);
@@ -446,11 +449,16 @@ namespace d360.model.DataAccessLayer
 						bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
 						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
 						bulkCopy.ColumnMappings.Add("Type", "Type");
-
 						bulkCopy.ColumnMappings.Add("SourceId", "SourceId");				//3
 						bulkCopy.WriteToServer(assetPropertyTable);
 
-						bulkCopy.ColumnMappings.RemoveAt(5);
+						bulkCopy.ColumnMappings.Clear();
+
+						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");        //0
+						bulkCopy.ColumnMappings.Add("Name", "Name");                        //1
+						bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
+						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+						bulkCopy.ColumnMappings.Add("Type", "Type");
 						bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");	//3
 						bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");	//4
 						bulkCopy.WriteToServer(relationPropertyTable);
@@ -460,10 +468,10 @@ namespace d360.model.DataAccessLayer
 					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'B', resourceId, date }, transaction, commandTimeout: 7200);
 					// Non-delete of assets.
 					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'A', resourceId, date }, transaction, commandTimeout: 7200);
-					// Delete, if any, of assets
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, transaction, commandTimeout: 7200);
 					// Relations.
 					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'R', resourceId, date }, transaction, commandTimeout: 7200);
+					// Delete, if any, of assets
+					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, transaction, commandTimeout: 7200);
 					// Path/display value processing.
 					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'P', resourceId, date }, transaction, commandTimeout: 7200);
 					// Cleanup and wrap-up of run.
