@@ -70,7 +70,7 @@ export class AssignmentInformationGeneralComponent {
 	onClickAsset(event): void {
 		this.linkClickInterceptor.sendEvent(event, {
 			AssetUid: this.assignmentItem?.AssetUid
-		}, 'assets/' + this.assignmentItem?.AssetUid);
+		}, 'asset/' + this.assignmentItem?.AssetUid);
 	}
 
 	get workflowType(): string {
