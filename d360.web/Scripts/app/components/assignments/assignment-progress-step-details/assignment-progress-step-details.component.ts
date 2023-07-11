@@ -25,6 +25,7 @@ import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentFormResponseComponent } from './assignment-form-response/assignment-form-response.component';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-progress-step-details',
@@ -63,6 +64,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		private responsibilityService: ResponsibilityTypeService,
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
+		private linkClickInterceptor: LinkClickInterceptor,
 		private ref: ChangeDetectorRef) {
 		super(settingsService);
 	}
@@ -148,6 +150,22 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 			return reassignments.find((r: WorkflowStepReassignment) => !r.IsBulkReassignment);
 		} else {
 			return null;
+		}
+	}
+
+	onClickResource(event: MouseEvent, resourceID: number): void {
+		if(resourceID) {
+			this.linkClickInterceptor.sendEvent(event, {
+				ResourceID: resourceID
+			}, 'users/' + resourceID);
+		}
+	}
+
+	onClickAsset(event: MouseEvent, resourceID: number): void {
+		if(resourceID) {
+			this.linkClickInterceptor.sendEvent(event, {
+				AssetId: resourceID
+			}, 'asset/' + resourceID);
 		}
 	}
 }

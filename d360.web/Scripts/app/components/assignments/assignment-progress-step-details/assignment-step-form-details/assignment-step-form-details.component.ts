@@ -4,6 +4,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { GroupService } from '../../../../services/group.service';
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 import { EmailRecipients, WorkflowStepDetail } from '../../../../models/workflow.model';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-step-form-details',
@@ -21,6 +22,7 @@ export class AssignmentStepFormDetailsComponent extends BaseComponent implements
 
 	constructor(
 		private groupService: GroupService,
+		private linkClickInterceptor: LinkClickInterceptor,
 		protected settingsService: CompanySettingsService) {
 		super(settingsService);
 	}
@@ -56,5 +58,11 @@ export class AssignmentStepFormDetailsComponent extends BaseComponent implements
 
 	toggleShowAll(): void {
 		this.showAll = !this.showAll;
+	}
+
+	onClickResource(event: MouseEvent, resourceID: number): void {
+		this.linkClickInterceptor.sendEvent(event, {
+			ResourceID: resourceID
+		}, 'users/' + resourceID);
 	}
 }
