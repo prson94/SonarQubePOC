@@ -106,6 +106,7 @@ export class LinkClickInterceptor {
                 adcEv.type = AssetDetailClickType.User;
                 adcEv.objectType = "Resource";
                 adcEv.uid = data.uid;
+				adcEv.objectId = data.ResourceID
             }
 
             if (data.ResourceUid) {
@@ -211,7 +212,7 @@ export class LinkClickInterceptor {
 		}
 
         if (event.type === AssetDetailClickType.Asset) {
-            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType, id: event.objectId };
         }
 
         if (event.type === AssetDetailClickType.ReferenceItem) {
@@ -219,7 +220,7 @@ export class LinkClickInterceptor {
         }
 
         if (event.type === AssetDetailClickType.User || event.type === AssetDetailClickType.Group) {
-            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType, id: event.objectId };
         }
 
         if (event.type === AssetDetailClickType.Tag) {

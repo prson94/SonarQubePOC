@@ -22,8 +22,7 @@
 				<div *ngFor="let e of recipients; let i = index">
 					<ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
 						<span *ngIf="e.name != null">
-						<d3s-preview-tooltip [objectType]="'Resource'"
-											 [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>
+							<a context-link (click)="onClickResource($event,e.id)">{{e.name}}</a>
 						</span>
 						({{e['@address']}})
 					</ng-container>

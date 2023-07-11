@@ -61,13 +61,13 @@ export class AssignmentInformationGeneralComponent {
 		});
 	}
 
-	onClickResource(event): void {
+	onClickResource(event: MouseEvent): void {
 		this.linkClickInterceptor.sendEvent(event, {
 			ResourceUid: this.assignmentItem?.InitiatorUid
 		}, 'users/' + this.assignmentItem?.InitiatorUid);
 	}
 
-	onClickAsset(event): void {
+	onClickAsset(event: MouseEvent): void {
 		this.linkClickInterceptor.sendEvent(event, {
 			AssetUid: this.assignmentItem?.AssetUid
 		}, 'asset/' + this.assignmentItem?.AssetUid);

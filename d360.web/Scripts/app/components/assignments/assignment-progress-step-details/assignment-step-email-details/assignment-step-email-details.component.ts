@@ -4,6 +4,7 @@ import { EmailRecipients, EmailSettings, WorkflowStepDetail } from '../../../../
 import { WorkflowHelpers } from '../../../../static/workflow-helpers';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { GroupService } from '../../../../services/group.service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-step-email-details',
@@ -23,13 +24,14 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 
 	constructor(
 		private groupService: GroupService,
+		private linkClickInterceptor: LinkClickInterceptor,
 		protected settingsService: CompanySettingsService) {
 		super(settingsService);
 	}
 
 	ngOnInit() {
 		this.emailSettings = this.step.Settings;
-		if(!this.formEmailDetails) {
+		if (!this.formEmailDetails) {
 			this.sortNames();
 			if (this.step?.Settings?.MessageRecipientType === 'Group') {
 				this.isLoading = true;
@@ -63,5 +65,11 @@ export class AssignmentStepEmailDetailsComponent extends BaseComponent implement
 
 	toggleShowAll(): void {
 		this.showAll = !this.showAll;
+	}
+
+	onClickResource(event: MouseEvent, resourceID: number): void {
+		this.linkClickInterceptor.sendEvent(event, {
+			ResourceID: resourceID
+		}, 'users/' + resourceID);
 	}
 }

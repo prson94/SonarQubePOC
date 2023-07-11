@@ -36,12 +36,12 @@
 														  [workflowTypeUid]="secondarySidePanelObjectUid"
 														  (close)="closeSecondarySidePanel()"></d3s-workflow-information>
 							</ng-container>
-							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">
-								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"
-																	  [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"
-																	  (completeAssignment)="completeAssignmentComponent.openModal($event)"
-																	  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
-							</ng-container>
+<!--							<ng-container *ngIf="secondarySidePanelObjectType=='step-details'">-->
+<!--								<d3s-assignment-progress-step-details (close)="closeSecondarySidePanel()"-->
+<!--																	  [workflowItemUId]="selectedWorkflowItems?.[0]?.workflowItemUid"-->
+<!--																	  (completeAssignment)="completeAssignmentComponent.openModal($event)"-->
+<!--																	  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>-->
+<!--							</ng-container>-->
 						</div>
 					</div>
 				</div>

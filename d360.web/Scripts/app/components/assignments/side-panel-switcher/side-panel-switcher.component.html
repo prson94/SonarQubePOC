@@ -6,6 +6,7 @@
 	<ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
 					 #assetDetail
 					 [objectUID]="selectedAsset ? selectedAsset.uid : selection?.AssetUid"
+					 [objectID]="selectedAsset && selectedAsset.id ? selectedAsset.id : null"
 					 [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
 					 [useAccordion]="true"
 					 [shouldBePadded]="false"
