@@ -19,10 +19,6 @@ import { FieldType } from '../../../../models/fieldtype-api.model';
 
 /*global $localize*/
 
-class AssignmentWithStatus extends AssignmentVersionItem {
-	statusCount: number;
-}
-
 @Component({
 	selector: 'd3s-by-workflow-version-grid',
 	templateUrl: './by-workflow-version-grid.component.html',
@@ -30,7 +26,7 @@ class AssignmentWithStatus extends AssignmentVersionItem {
 })
 export class ByWorkflowVersionGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	title: string = $localize`WorkFlow Items`;
-	assignmentsWithStatus: AssignmentWithStatus[] = [];
+	assignmentVersionItems: AssignmentVersionItem[] = [];
 	subscription: Subscription;
 	totalRecords: number;
 	rowsPerPage: number = 10;
@@ -39,9 +35,9 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	selectedCount: number = 0;
 	selectedAssignmentVersionItems: AssignmentVersionItem[] = [];
 	simpleFilter: string = '';
-	@Output() selectionChange = new EventEmitter();
+	@Output() selectionChange: EventEmitter<AssignmentVersionItem[]> = new EventEmitter<AssignmentVersionItem[]>();
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
-	private destroy = new Subject<void>();
+	private destroy: Subject<void> = new Subject<void>();
 	private currentPageNumber: number = 1;
 	private advancedFilter: string = '';
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -109,17 +105,13 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 
 	private loadData(): void {
 		this.isLoading = true;
-		this.assignmentsWithStatus = [];
+		this.assignmentVersionItems = [];
 		this.subscription = this.workflowService.getAssignmentsByVersion(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder)
 			.subscribe((response: AssignmentByVersion): void => {
-				this.assignmentsWithStatus = response.items.map((assignmentByVersion: AssignmentVersionItem) => {
-					const assignmentWithStatusByVersion = assignmentByVersion as AssignmentWithStatus;
-					assignmentWithStatusByVersion.statusCount = assignmentByVersion.Awaiting + assignmentByVersion.Incomplete;
-					return assignmentWithStatusByVersion;
-				});
+				this.assignmentVersionItems = response.items;
 				this.totalRecords = response.total;
-				if (this.assignmentsWithStatus.length > 0) {
-					this.selectedAssignmentVersionItems = [this.assignmentsWithStatus[0]];
+				if (this.assignmentVersionItems.length > 0) {
+					this.selectedAssignmentVersionItems = [this.assignmentVersionItems[0]];
 					this.selectedCount = 1;
 					this.selectionChange.emit(this.selectedAssignmentVersionItems);
 				} else {

@@ -20,13 +20,13 @@
 		<p-table #dt
 				 [loading]="isLoading"
 				 loadingIcon="fa fa-spinner"
-				 [value]="assignmentsWithStatus"
+				 [value]="assignmentVersionItems"
 				 selectionMode="multiple"
 				 [metaKeySelection]="true"
 				 [lazy]="true"
 				 [totalRecords]="totalRecords"
 				 [scrollable]="true"
-				 [globalFilterFields]="['WorkflowName','Version','statusCount']"
+				 [globalFilterFields]="['WorkflowName','Version','outstanding']"
 				 [pageLinks]="3"
 				 [paginator]="true"
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
@@ -45,9 +45,9 @@
 						<ng-container i18n>Version</ng-container>
 						<d3s-sortIcon field="Version"></d3s-sortIcon>
 					</th>
-					<th pSortableColumn="statusCount">
+					<th pSortableColumn="outstanding">
 						<ng-container i18n>Outstanding Assignments</ng-container>
-						<d3s-sortIcon field="statusCount"></d3s-sortIcon>
+						<d3s-sortIcon field="outstanding"></d3s-sortIcon>
 					</th>
 				</tr>
 			</ng-template>
@@ -67,6 +67,6 @@
 									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 			</ng-template>
 		</p-table>
-		<pre style="white-space: pre-wrap" *ngIf="assignmentsWithStatus">{{ assignmentsWithStatus | json }}</pre>
+		<pre style="white-space: pre-wrap" *ngIf="assignmentVersionItems">{{ assignmentVersionItems | json }}</pre>
 	</div>
 </div>
