@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Hosting;
 using d360.core.enums;
+using Microsoft.Azure;
+using System.Threading;
+using Microsoft.Azure.Storage.Blob;
 
 namespace igx.jobs.databasecleaner
 {
@@ -50,14 +53,19 @@ namespace igx.jobs.databasecleaner
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 1).ToList();
+				//                companies = companies.Where(x => x.CompanyID == 1).ToList();
 #endif
 
-                foreach(var c in companies)
+				foreach (var c in companies)
                 {
-                    try
+					// Clear old blob files.
+					await RemoveOldBlobs("api-execution", c.CompanyID);
+					await RemoveOldBlobs("bulk-loads", c.CompanyID, 60);
+					await RemoveOldBlobs("scoring", c.CompanyID);
+
+					try
                     {
-                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+						using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.Open();
                             string overrideValue = company.Query<string>("select Value from Setting where ID = @ID", new { ID = (int)Setting.AssetDataProfileLifespan }).SingleOrDefault();
@@ -95,5 +103,31 @@ namespace igx.jobs.databasecleaner
 
             CoreFunction.AIFlush();
         }
+
+		static async Task RemoveOldBlobs(string container, int companyId, int days = 30)
+		{
+			try
+			{
+				var acct = StorageAccount.NewFromConnectionString(CloudConfigurationManager.GetSetting("MainStorageAccount"));
+				var blobClient = acct.CreateCloudBlobClient();
+				var token = new BlobContinuationToken();
+				var path = $"{container}/{companyId}/";
+
+				var blobsResult = await blobClient.ListBlobsSegmentedAsync(path, token);
+				foreach (var blob in blobsResult.Results)
+				{
+					CloudBlockBlob bl = (CloudBlockBlob)blob;
+					TimeSpan? diff = DateTime.Today - bl.Properties.LastModified;
+					if (diff?.Days > days)
+					{
+						await bl.DeleteAsync();
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				CoreFunction.AITrackException(functionName, ex);
+			}
+		}
     }
 }
