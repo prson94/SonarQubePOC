@@ -98,8 +98,8 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit,
 	ngOnInit(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((event: AssetDetailClickEvent) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, event);
+			this.secondarySidePanelTab = '';
 			this.secondarySidePanelOpen = true;
-			this.secondarySidePanelTab = ''
 		});
 	}
 
@@ -128,7 +128,8 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit,
 		this.selectedNode = event.NodeModel;
 		this.nodeList = event.WorkflowDiagramModel.Nodes;
 		this.workflowEvent = event.WorkflowDiagramModel.Event;
-		this.secondarySidePanelOpen = true;
 		this.workflowTypeNew = event.WorkflowDiagramModel.Type;
+		this.secondarySidePanelTab = 'pendingAssignments';
+		this.secondarySidePanelOpen = true;
 	}
 }

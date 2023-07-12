@@ -13,12 +13,28 @@
 			<d3s-by-workflow-version-grid #assignmentGridComponent
 										  (selectionChange)="selectedAssignmentVersionItems = $event"
 			></d3s-by-workflow-version-grid>
-			<ng-container *ngIf="sidePanelOpen && secondarySidePanelOpen">
-				<div class="secondary-side-panel"
-					 (clickOutside)="secondarySidePanelOpen = false">
-					<ng-container>
-						<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
-					</ng-container>
+			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
+				 (clickOutside)="secondarySidePanelOpen = false">
+				<div [hidden]="secondarySidePanelTab !== ''">
+					<div class="panel-header">
+							<span class="header-label"
+								  i18n>Information</span>
+						<div class="button-container">
+							<button igButton
+									[attr.data-cy]="'Assignments_Secondary_Close'"
+									icon="fa-times"
+									(click)="secondarySidePanelOpen = false"
+									tooltip="Close"
+									class="close-button"></button>
+						</div>
+					</div>
+					<div class="details-container">
+						<ng-container>
+							<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+						</ng-container>
+					</div>
+				</div>
+				<div *ngIf="secondarySidePanelTab === ''">
 					<side-panel [(expanded)]="secondarySidePanelOpen"
 								[(selectedPanel)]="secondarySidePanelTab"
 								[extraButtons]="secondarySidePanelButtons"
@@ -39,7 +55,7 @@
 						</ng-container>
 					</side-panel>
 				</div>
-			</ng-container>
+			</div>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"
