@@ -530,6 +530,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowInstanceDetailsByVersionAPIModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetWorkflowInstanceDetailsByVersion()
 		{
