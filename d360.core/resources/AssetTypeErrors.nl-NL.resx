@@ -358,4 +358,7 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} mag niet langer zijn dan {1} tekens.</value>
   </data>
+  <data name="ExportValidAssetType" xml:space="preserve">
+    <value>{0}-type niet toegestaan. Alleen Bedrijfsasset, Technisch middel, Diagram, Regel, Model en Beleid zijn toegestaan.</value>
+  </data>
 </root>

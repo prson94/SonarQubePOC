@@ -465,6 +465,9 @@
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
     <value>De volgende relatie-ID's worden meerdere keren gebruikt: {0}. [Type.Relationship] moet uniek zijn in hetzelfde assettype</value>
   </data>
+  <data name="RelationshipLookupMissingFieldFromFilter" xml:space="preserve">
+    <value>Veldendefinitie moet alle velden bevatten gebruikt in de eigenschap Filters.</value>
+  </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
     <value>[Type.Score] wordt niet ondersteund in relaties</value>
   </data>

@@ -133,4 +133,7 @@
   <data name="SizeTooBig" xml:space="preserve">
     <value>De maximumwaarde voor de grootte is {0}</value>
   </data>
+  <data name="TagsNotAvailable" xml:space="preserve">
+    <value>De waarden '{0}' zijn niet geldig voor [Tags].</value>
+  </data>
 </root>

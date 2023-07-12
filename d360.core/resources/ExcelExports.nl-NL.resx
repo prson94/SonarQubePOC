@@ -121,6 +121,9 @@
   <data name="Common_ExcelDateFormat" xml:space="preserve">
     <value>mm/dd/jjjj</value>
   </data>
+  <data name="Common_ExportName" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
   <data name="Common_ItemsSheetName" xml:space="preserve">
     <value>Items</value>
   </data>
@@ -216,6 +219,36 @@
   </data>
   <data name="Relationships_Subject_UID" xml:space="preserve">
     <value>Onderwerp-UID</value>
+  </data>
+  <data name="WorkflowAssignments_ActionTypeName" xml:space="preserve">
+    <value>Naam actietype</value>
+  </data>
+  <data name="WorkflowAssignments_ActionTypeUID" xml:space="preserve">
+    <value>UID actietype</value>
+  </data>
+  <data name="WorkflowAssignments_Assignees" xml:space="preserve">
+    <value>Toegewezen personen</value>
+  </data>
+  <data name="WorkflowAssignments_Assignments" xml:space="preserve">
+    <value>Toewijzingen</value>
+  </data>
+  <data name="WorkflowAssignments_AssociatedWith" xml:space="preserve">
+    <value>Gekoppeld aan</value>
+  </data>
+  <data name="WorkflowAssignments_ExportDate" xml:space="preserve">
+    <value>Exportdatum</value>
+  </data>
+  <data name="WorkflowAssignments_ExportInfoTab" xml:space="preserve">
+    <value>Exportgegevens</value>
+  </data>
+  <data name="WorkflowAssignments_Initiated" xml:space="preserve">
+    <value>Gestart</value>
+  </data>
+  <data name="WorkflowAssignments_InitiatorUid" xml:space="preserve">
+    <value>Initiator-UID</value>
+  </data>
+  <data name="WorkflowAssignments_Requests" xml:space="preserve">
+    <value>Aanvragen</value>
   </data>
   <data name="WorkflowMonitor_Asset" xml:space="preserve">
     <value>Asset</value>
