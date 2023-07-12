@@ -49,7 +49,7 @@ export class AssignmentInformationGeneralComponent {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
 	}
 
-	constructor(private workflowService: WorkflowService, private linkClickInterceptor: LinkClickInterceptor) {
+	constructor(private workflowService: WorkflowService, public linkClickInterceptor: LinkClickInterceptor) {
 		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 
