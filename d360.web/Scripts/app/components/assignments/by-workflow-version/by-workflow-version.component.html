@@ -34,7 +34,7 @@
 						</ng-container>
 					</div>
 				</div>
-				<div *ngIf="secondarySidePanelTab === ''">
+				<div [hidden]="secondarySidePanelTab === ''">
 					<side-panel [(expanded)]="secondarySidePanelOpen"
 								[(selectedPanel)]="secondarySidePanelTab"
 								[extraButtons]="secondarySidePanelButtons"
