@@ -311,7 +311,7 @@ namespace d360.web.Controllers.V2
 
 			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "useastransformation"))
 			{
-				document.SetCellValue(1, index++, "Use as Transformaion");
+				document.SetCellValue(1, index++, "Use as Transformation");
 			}
 
 			if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "isdescriptionenabled"))
@@ -379,7 +379,7 @@ namespace d360.web.Controllers.V2
 				if ((string)row.Description != null)
 				{
 					descriptionstring = (string)row.Description;
-					descriptionstring = descriptionstring.RemoveHtml().Replace("&nbsp", " "); 
+					descriptionstring = descriptionstring.RemoveHtml().Replace("&nbsp;", " "); 
 				}
 				document.SetCellValue(rowNumber, index++, descriptionstring);
 
@@ -475,6 +475,7 @@ namespace d360.web.Controllers.V2
 			document.SetCellValue(1, index++, "Many-to-One Relationship");
 			document.SetCellValue(1, index++, "Field");
 			document.SetCellValue(1, index++, "Relationship");
+			document.SetCellValue(1, index++, "Use Asset Display Format");
 			document.SetCellValue(1, index++, "List Single Ownership Type");
 			document.SetCellValue(1, index++, "Expand Group Membership");
 			document.SetCellValue(1, index++, "Display As");
@@ -514,14 +515,20 @@ namespace d360.web.Controllers.V2
 
 
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description",true);
+
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Listable, enumValue.ToString(), styleGray, "listable");
-
-				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Column_Width, enumValue.ToString(), styleGray, "column_width");
-
-				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Sort_Order, enumValue.ToString(), styleGray, "sort_order");
-
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Sort_By, enumValue.ToString(), styleGray, "sort_by");
-
+				if (row.Listable != null && (string)row.Listable == "True")
+				{
+					AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Column_Width, enumValue.ToString(), styleGray, "column_width");
+					AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Sort_Order, enumValue.ToString(), styleGray, "sort_order");
+					AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Sort_By, enumValue.ToString(), styleGray, "sort_by");
+				}
+				else
+				{
+					AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Column_Width, enumValue.ToString(), styleGray, "stylegray");
+					AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Sort_Order, enumValue.ToString(), styleGray, "stylegray");
+					AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Sort_By, enumValue.ToString(), styleGray, "stylegray");
+				}
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Add_to_Search_Results, enumValue.ToString(), styleGray, "add_to_search_results");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Prefix, enumValue.ToString(), styleGray, "prefix");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Suffix, enumValue.ToString(), styleGray, "suffix");
@@ -566,6 +573,7 @@ namespace d360.web.Controllers.V2
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Many_to_One_Relationship, enumValue.ToString(), styleGray, "many_to_one_relationship");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Field, enumValue.ToString(), styleGray, "field");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Relationship, enumValue.ToString(), styleGray, "relationship");
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Use_Asset_Display_Format, enumValue.ToString(), styleGray, "use_asset_display_format");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.List_Single_Ownership_Type, enumValue.ToString(), styleGray, "list_single_ownership_type");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Expand_Group_Membership, enumValue.ToString(), styleGray, "expand_group_membership");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_As, enumValue.ToString(), styleGray, "display_as");
