@@ -358,4 +358,7 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} ne peut pas dépasser {1} caractères.</value>
   </data>
+  <data name="ExportValidAssetType" xml:space="preserve">
+    <value>Type {0} non autorisé. Seuls les types Asset métier, Asset technique, Schéma, Règle, Modèle et Politique sont autorisés.</value>
+  </data>
 </root>

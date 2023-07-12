@@ -465,6 +465,9 @@
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
     <value>Los siguientes ID de relación se utilizan más de una vez: {0}. [Type.Relationship] debe ser único en el mismo tipo de activo</value>
   </data>
+  <data name="RelationshipLookupMissingFieldFromFilter" xml:space="preserve">
+    <value>La definición de campos debe incluir todos los campos usados en la propiedad Filtros.</value>
+  </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
     <value>[Type.Score] no es compatible en relaciones</value>
   </data>

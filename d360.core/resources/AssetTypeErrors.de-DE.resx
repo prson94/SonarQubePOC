@@ -358,4 +358,7 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} darf nicht mehr als {1} Zeichen lang sein.</value>
   </data>
+  <data name="ExportValidAssetType" xml:space="preserve">
+    <value>Typ {0} nicht zulässig. Nur Business-Asset, Technisches Asset, Diagramm, Regel, Modell und Richtlinie sind zulässig.</value>
+  </data>
 </root>

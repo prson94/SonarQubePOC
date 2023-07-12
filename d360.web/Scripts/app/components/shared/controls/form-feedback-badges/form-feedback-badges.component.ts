@@ -12,9 +12,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import { FormFeedbackStorage, getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
+import { FormFeedbackStorage, getFormControlDomElement, getInvalidCount, getRequiredCount, getElementsCount } from './form-feedback-utils';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { throttleTime } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -39,16 +39,22 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 	subjectLoadGrid = new Subject<void>();
 	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
 		this.subjectLoadGrid.pipe(
-			debounceTime(150))
+			throttleTime(150))
 			.subscribe(() => {
 				this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
 				this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+
+				const elementsCount = getElementsCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+				if (elementsCount === 0) {
+					//if UI has not been rendered yet, retry in 500ms
+					setTimeout(() => this.subjectLoadGrid.next(), 500);
+				}
 				this.ref.markForCheck();
 			});
     }
 
 	ngOnChanges(changes: SimpleChanges) {
-        const needReinit = 'igformGroup' in changes || 'inputContainer' in changes;
+		const needReinit = 'igformGroup' in changes || 'inputContainer' in changes;
         if (!needReinit) {
             return;
         }
