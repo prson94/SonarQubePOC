@@ -221,7 +221,7 @@
     <value>Kan het veld dat u hebt opgegeven voor sorteren ({0}) niet vinden.</value>
   </data>
   <data name="RelationshipReftypeBothSideNotAllowed" xml:space="preserve">
-    <value>Voor relatietype met UID {0} zijn onderwerp en object niet beide aan de zijde met de referentielijst toegestaan.</value>
+    <value>Relatietype met UID {0} is niet toegestaan omdat onderwerp en object hetzelfde zijn en zijn gekoppeld aan de referentielijst.</value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
     <value>Kan relatietype met UID {0} niet vinden.</value>
@@ -246,6 +246,9 @@
   </data>
   <data name="UniqueUid" xml:space="preserve">
     <value>De opgegeven UID wordt al gebruikt.</value>
+  </data>
+  <data name="UnrelatedActionAndActionType" xml:space="preserve">
+    <value>Actie {0} is geen instantie van Actietype {1}</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
     <value>Geen gebruiker met UID {0} gevonden</value>

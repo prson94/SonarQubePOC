@@ -118,6 +118,12 @@
   <data name="InvalidFormSetting" xml:space="preserve">
     <value>Impostazioni del modulo mancanti o non valide</value>
   </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>GUID non valido {0} trasmesso per il parametro {1}</value>
+  </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>UID iniziatore non valido fornito.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>MODELLO NON VALIDO: NESSUN CAMPO TRASMESSO</value>
   </data>
@@ -207,6 +213,9 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>L'elemento del workflow è stato eliminato.</value>
+  </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare l'elemento del workflow con UID {0}.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Moduli del workflow riassegnati correttamente</value>

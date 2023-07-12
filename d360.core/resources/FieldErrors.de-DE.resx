@@ -465,6 +465,9 @@
   <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
     <value>Die folgende Beziehungs-ID wird mehrfach verwendet: {0}. [Type.Relationship] muss für denselben Asset-Typ eindeutig sein.</value>
   </data>
+  <data name="RelationshipLookupMissingFieldFromFilter" xml:space="preserve">
+    <value>Die Felddefinition muss alle in der Filter-Eigenschaft verwendeten Felder enthalten.</value>
+  </data>
   <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
     <value>[Type.Score] wird in Beziehungen nicht unterstützt</value>
   </data>

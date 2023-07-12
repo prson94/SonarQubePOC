@@ -118,6 +118,12 @@
   <data name="InvalidFormSetting" xml:space="preserve">
     <value>Formulierinstellingen ontbreken of zijn ongeldig</value>
   </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>Ongeldige Guid {0} doorgegeven voor parameter {1}</value>
+  </data>
+  <data name="InvalidInitiatorUid" xml:space="preserve">
+    <value>Ongeldige initiator-UID opgegeven.</value>
+  </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>ONGELDIG MODEL GEEN VELDEN DOORGEVOERD</value>
   </data>
@@ -207,6 +213,9 @@
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
     <value>Workflowitem is verwijderd.</value>
+  </data>
+  <data name="WorkflowItemUidNotFound" xml:space="preserve">
+    <value>Kan workflowitem met UID {0} niet vinden.</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
     <value>Workflowformulieren zijn opnieuw toegewezen</value>
