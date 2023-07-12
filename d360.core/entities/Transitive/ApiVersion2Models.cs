@@ -208,6 +208,9 @@ namespace d360.core.entities
 		[JsonProperty("id")]
 		public string SourceId { get; set; }
 
+		[JsonProperty("isFullRefresh")]
+		public bool IsFullRefresh { get; set; }
+
 		[JsonProperty("properties")]
 		public List<PatchBulkCatalogPropertyRequestModel> Properties { get; set; }
 	}
