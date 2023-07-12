@@ -32,13 +32,13 @@
 		<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
 	</ng-container>
 </ng-container>
-<ng-container *ngIf="sidePanelTab === 'step-detail' && selectedAsset">
+<ng-container *ngIf="sidePanelTab === 'step-detail' && selectedAsset?.workflowItemUid && selectedAsset?.itemStepUid">
 	<!-- to handle close and open modal events here for step details -->
 	<d3s-assignment-progress-step-details
 		[workflowItemUId]="selectedAsset.workflowItemUid"
 		[itemStepUid]="selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
 </ng-container>
-<ng-container *ngIf="sidePanelTab=='workflow-information'">
+<ng-container *ngIf="sidePanelTab=='workflow-information' && selectedAsset?.workflowTypeUid">
 	<d3s-workflow-information [shouldBePadded]="true"
 							  [showHeaderLine]="false"
 							  [isSidePanel]="true"

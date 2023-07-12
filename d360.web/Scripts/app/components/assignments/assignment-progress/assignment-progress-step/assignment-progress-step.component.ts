@@ -82,6 +82,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	toggleStepDetails(event): void {
 		this.selected = true;
+		this.stepClickChange.emit();
 		this.linkClickInterceptor.sendEvent(event, {
 			workflowItemUid: this.workflowItemUid,
 			itemStepUid: this.assignmentItemStep?.Uid,
