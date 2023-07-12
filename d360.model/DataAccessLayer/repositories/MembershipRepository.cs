@@ -1195,11 +1195,17 @@ namespace d360.model.DataAccessLayer
 						{
 							CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
 						}
+
+						await CompanyContext.Connection.ExecuteAsync(@"
+								update	U
+								set U.Success = 1
+								from api.ExecutionUser U
+								inner join #UserResults R 
+								on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null", 
+								new { executionID }, transaction: trans);
 					}
 
 					trans.Commit();
-
-					// TODO: Add event grid calls here.
 				}
 				catch (Exception)
 				{

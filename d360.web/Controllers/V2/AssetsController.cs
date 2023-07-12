@@ -375,8 +375,13 @@ namespace d360.web.Controllers.V2
 				{
 					document.SetCellValue(rowNumber, index++, (string)row.CanEditParent);
 				}
-
-				document.SetCellValue(rowNumber, index++, (string)row.Description);
+				string descriptionstring= "";
+				if ((string)row.Description != null)
+				{
+					descriptionstring = (string)row.Description;
+					descriptionstring = descriptionstring.RemoveHtml().Replace("&nbsp", " "); 
+				}
+				document.SetCellValue(rowNumber, index++, descriptionstring);
 
 				if (AssetRepository.isAllowDisplayAssettypeField(assettype.Class, "useastransformation"))
 				{
@@ -505,9 +510,10 @@ namespace d360.web.Controllers.V2
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.API_Name);
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Category);
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Seq);
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Description);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Description,SupportHtml: true);
 
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description",true);
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Listable, enumValue.ToString(), styleGray, "listable");
 
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Column_Width, enumValue.ToString(), styleGray, "column_width");
@@ -549,7 +555,8 @@ namespace d360.web.Controllers.V2
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Allow_All_Value_Selection, enumValue.ToString(), styleGray, "allow_all_value_selection");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Label_for_Value_Selection, enumValue.ToString(), styleGray, "label_for_value_selection");
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Score, enumValue.ToString(), styleGray, "score");
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Default_Value, enumValue.ToString(), styleGray, "default_value");
+
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Default_Value, enumValue.ToString(), styleGray, "default_value", enumValue == DataType.Html ? true : false);
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Increment, enumValue.ToString(), styleGray, "increment");
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Minimum_Value, enumValue.ToString(), styleGray, "minimum_value");
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Maximum_Value, enumValue.ToString(), styleGray, "maximum_value");
