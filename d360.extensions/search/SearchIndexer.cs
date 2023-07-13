@@ -1322,7 +1322,16 @@ namespace d360.extensions.search
                         INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (rtrr.ID = rasset.RuleID)
                         INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (rtrr.ID = rresource.RuleID)
                         WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
-                         AND rasset.AssetTypeID = 0";
+                         AND rasset.AssetTypeID = 0
+						UNION ALL
+						SELECT  oride.AssetID,
+								oride.SecurityAsset,
+								oride.SecurityAssetID
+						FROM [ResponsibilityTypeRelationOverrideItem] oride
+						INNER JOIN [dbo].asset a on (a.id = oride.assetID)
+						INNER JOIN [dbo].assettype att on (att.id = a.assettypeid)
+						INNER JOIN [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+						WHERE RR.PermissionsBitMask & {(int)Permission.ReadAsset} = 0";
             if (parameters.ParameterNames.Contains("assetuid"))
             {
                 joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
@@ -1390,7 +1399,18 @@ namespace d360.extensions.search
 						INNER JOIN AssetType att on att.id = aa.AssetTypeID
                         WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 1
                          AND rasset.AssetTypeID = 0
-						 AND att.DefaultPermissions = 0";
+						 AND att.DefaultPermissions = 0
+						UNION ALL
+						SELECT oride.AssetID,
+							oride.SecurityAsset,
+							oride.SecurityAssetID
+						FROM ResponsibilityTypeRelationOverrideItem oride
+							inner join [dbo].asset a on (a.id = oride.assetID)
+							inner join [dbo].assettype att on (att.id = a.assettypeid)
+							inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+						WHERE RR.PermissionsBitMask & {(int)Permission.ReadAsset} = 1
+						and att.DefaultPermissions = 0
+						";
 			if (parameters.ParameterNames.Contains("assetuid"))
 			{
 				joins.Add("INNER JOIN [dbo].Asset a ON q.AssetID = a.ID");
