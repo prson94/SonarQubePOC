@@ -8,6 +8,8 @@
 			Workflow
 		</div>
 	</div>
-	<d3s-workflow-information-general [workflowDiagramModel]="workflowDiagramModel"></d3s-workflow-information-general>
-	<d3s-workflow-information-diagram [workflowDiagramModel]="workflowDiagramModel"></d3s-workflow-information-diagram>
+	<d3s-workflow-version-details [workflowTypeUid]="uid" title="General"
+								  [workflowTypeVersion]="version"></d3s-workflow-version-details>
+	<d3s-workflow-pending-assignments [workflowTypeUid]="uid" title="Diagram" [showCountPanel]="false"
+									  [workflowTypeVersion]="version"></d3s-workflow-pending-assignments>
 </div>

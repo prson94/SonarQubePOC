@@ -11,12 +11,14 @@ import { AssignmentVersionItem } from '../../../../../models/workflow.model';
 export class WorkflowVersionDetailsComponent {
 	@Input() set workflowTypeUid(value: string) {
 		this.loadAssignmentsByVersion(value);
-	};
+	}
 
 	@Input() set workflowTypeVersion(value: number) {
 		this._workflowTypeVersion = value;
 		this.setSelectedAssignmentVersion();
 	}
+
+	@Input() title: string = 'Workflow Version Details';
 
 	isLoading: boolean;
 	assignmentVersionItems: AssignmentVersionItem[] = [];

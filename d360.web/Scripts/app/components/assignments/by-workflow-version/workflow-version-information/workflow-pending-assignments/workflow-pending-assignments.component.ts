@@ -8,8 +8,9 @@ import { NodeModel, WorkflowDiagramModel } from '../../../../../models/workflow.
 })
 export class WorkflowPendingAssignmentsComponent {
 	@Input() workflowTypeUid: string = '00000000-0000-0000-0000-000000000000';
-
 	@Input() workflowTypeVersion: number;
+	@Input() title: string = 'Pending Assignments';
+	@Input() showCountPanel: boolean = true;
 
 	@Output() nodeSelection: EventEmitter<{
 		NodeModel: NodeModel,

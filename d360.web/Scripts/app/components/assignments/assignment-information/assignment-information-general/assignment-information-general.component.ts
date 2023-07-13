@@ -18,7 +18,7 @@ export class AssignmentInformationGeneralComponent {
 
 	@Input() set workflowItemUid(value: string) {
 		if (value) {
-			this.load(value);
+			this.loadAssignmentItem(value);
 		}
 	}
 
@@ -26,9 +26,6 @@ export class AssignmentInformationGeneralComponent {
 		this._assignmentItem = value;
 		this.workflowChangeType = this.changeTypeInfos.find((changeTypeInfo: ChangeTypeInfo) => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
 		this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
-		this.field.Value = this.assignmentItem?.Initiator;
-		this.field.Name = 'Initiator';
-		this.field.FieldName = 'FieldName';
 	}
 
 	get assignmentItem(): AssignmentItem {
@@ -39,7 +36,6 @@ export class AssignmentInformationGeneralComponent {
 		objectType: string,
 		objectUid: string
 	}>();
-	field: DetailField = new DetailField();
 
 	get assetPathLinkPart(): string {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
@@ -53,7 +49,7 @@ export class AssignmentInformationGeneralComponent {
 		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 
-	load(workflowItemUid: string): void {
+	loadAssignmentItem(workflowItemUid: string): void {
 		this.isLoading = true;
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.isLoading = false;

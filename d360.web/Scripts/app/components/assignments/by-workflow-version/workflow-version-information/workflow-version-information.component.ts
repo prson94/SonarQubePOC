@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AssignmentVersionItem, NodeModel, WorkflowDiagramModel } from '../../../../models/workflow.model';
+import { NodeModel, WorkflowDiagramModel } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-version-information',
