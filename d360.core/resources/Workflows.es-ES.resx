@@ -115,6 +115,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="InvalidActionTypeUid" xml:space="preserve">
+    <value>El UID del tipo de acción proporcionado no es válido.</value>
+  </data>
   <data name="State_Closed" xml:space="preserve">
     <value>Cerrado</value>
   </data>

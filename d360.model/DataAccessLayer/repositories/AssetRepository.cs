@@ -5080,7 +5080,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{(isAllowDisplayAssettypeField(assetType.Class, "useastransformation") ? ",case when att.UseAsTransformation = 1 then 'True' else 'False' end UseAsTransformation" : "")}
 
 				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then 'True' else 'False' end isDescriptionEnabled" : "")}
-				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then att.DescriptionButtonName else 'n/a' end DescriptionButtonName" : "")}
+				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then coalesce(att.DescriptionButtonName,'Information') else 'n/a' end DescriptionButtonName" : "")}
 				{(isAllowDisplayAssettypeField(assetType.Class, "isdescriptionenabled") ? ",case when att.isDescriptionEnabled = 1 then case when att.IsDescriptionVisibleByDefault = 1 then 'True' else 'False' end else 'n/a' end IsDescriptionVisibleByDefault" : "")}
 				{(isAllowDisplayAssettypeField(assetType.Class, "iconbackcolor") ? ",ats.IconBackColor" : "")}
 				,ats.Icon
@@ -5135,11 +5135,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						cast(null as nvarchar(250)) Link_URL,
 						cast(null as nvarchar(10)) Select_List_Class,
 						cast(null as nvarchar(250)) Select_List,
-						cast(null as nvarchar(250)) Item_Display_Format,
+						cast(FT.LookupDisplayFormat as nvarchar(250)) Item_Display_Format,
 						case when FT.AllowAllValue = 1 then 'True' Else 'False' end Allow_All_Value_Selection,
 						FT.AllowAllLabel Label_for_Value_Selection,
+						FT.LookupEditFormat Edit_Format,
 						case when FT.ScoreType = 1 then 'Governance Score' when FT.ScoreType =  2 then 'Data Quality Score' else '' end Score,
-						FT.DefaultValue Default_Value,
+						case when FT.Type = 'Lookup' then coalesce(FT.DefaultFormattedValue,FT.DefaultValue) else  FT.DefaultValue end Default_Value,
 						case when FT.Type in ('Number','Decimal') then FT.Increment else null end Increment,
 						case when FT.Type in ('Number','Decimal') then FT.MinimumLength else null end Minimum_Value,
 						case when FT.Type in ('Number','Decimal') then FT.MaximumLength else null end Maximum_Value,
@@ -5160,6 +5161,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						cast(null as nvarchar(10)) JSON_Attribute_Path,
 						cast(null as nvarchar(50)) JSON_Attribute_Data_Type_Org,
 						cast(null as nvarchar(50)) JSON_Attribute_Data_Type,
+						case when FT.UseDisplayFormat = 1 then 'True' Else 'False' end Use_Asset_Display_Format,
 						FT.Definition FT_Definition,
 						FT.DefaultValue FT_DefaultValue,
 						FT.LookupObjectType FT_LookupObjectType,
@@ -5491,7 +5493,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 			if (dtype == DataType.Boolean)
 			{
-				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column"))
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "default_value"))
 				{
 					retval = true;
 				}
@@ -5533,7 +5535,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			else if (dtype.In(DataType.Text))
 			{
-				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "regular_expression", "maximum_length"))
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "key_field", "persist_in_filters", "isrequired", "display_in_column", "regular_expression", "maximum_length", "default_value"))
 				{
 					retval = true;
 				}
@@ -5568,7 +5570,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			else if (dtype.In(DataType.Relationship))
 			{
-				if (fieldname.In("form_description", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "persist_in_filters", "isrequired", "display_in_column", "relationship"))
+				if (fieldname.In("form_description", "listable", "column_width", "sort_order", "sort_by", "add_to_search_results", "prefix", "suffix", "display_order", "editable_on_ui", "persist_in_filters", "isrequired", "display_in_column", "relationship", "use_asset_display_format"))
 				{
 					retval = true;
 				}
@@ -5623,7 +5625,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			string? valuestring = value;
 			if (SupportHtml && value != null)
 			{
-				valuestring = valuestring.RemoveHtml().Replace("&nbsp"," ");
+				valuestring = valuestring.RemoveHtml().Replace("&nbsp;"," ");
 			}
 			if (string.IsNullOrEmpty(fieldname))
 			{
