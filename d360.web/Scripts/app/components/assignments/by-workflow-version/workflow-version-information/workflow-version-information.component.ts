@@ -7,10 +7,11 @@ import { AssignmentVersionItem, NodeModel, WorkflowDiagramModel } from '../../..
 	styleUrls: ['./workflow-version-information.component.less']
 })
 export class WorkflowVersionInformationComponent {
+	@Input() workflowTypeUid: string;
+	@Input() workflowTypeVersion: number;
+
 	@Output() linkClick = new EventEmitter();
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
-
-	@Input() assignmentVersionItem: AssignmentVersionItem;
 	@Output() nodeSelection: EventEmitter<{
 		NodeModel: NodeModel,
 		WorkflowDiagramModel: WorkflowDiagramModel

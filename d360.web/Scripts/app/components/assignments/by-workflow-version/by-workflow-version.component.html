@@ -46,7 +46,8 @@
 								[setMinMaxWidth]="false"
 								[hasDetail]="false">
 						<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
-							<d3s-pending-assignments-step [versionStepId]=versionStepId [workflowTypeNew]="workflowTypeNew">
+							<d3s-pending-assignments-step [versionStepId]=versionStepId
+														  [workflowTypeNew]="workflowTypeNew">
 							</d3s-pending-assignments-step>
 						</ng-container>
 						<ng-container *ngIf="secondarySidePanelTab === 'information'">
@@ -72,7 +73,8 @@
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-workflow-version-information *ngIf="selectedAssignmentVersionItems?.length === 1"
 													  (nodeSelection)="nodeSelection($event)"
-													  [assignmentVersionItem]="selectedAssignmentVersionItems?.[0]"></d3s-workflow-version-information>
+													  [workflowTypeUid]="selectedAssignmentVersionItems?.[0].WorkflowTypeUid"
+													  [workflowTypeVersion]="selectedAssignmentVersionItems?.[0].Version"></d3s-workflow-version-information>
 				</ng-container>
 			</side-panel>
 		</as-split-area>
