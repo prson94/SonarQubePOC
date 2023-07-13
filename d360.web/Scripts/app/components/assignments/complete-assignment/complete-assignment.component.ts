@@ -11,6 +11,7 @@ import { AssignmentItemStep } from '../../../models/workflow.model';
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit {
 
 	isModalVisible: boolean = false;
+	loading: boolean = false;
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
@@ -38,6 +39,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
+			this.getFormDetails()
 		}
 		this.isModalVisible = true;
 	}
@@ -45,6 +47,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	showAssignment(): void {
 		this.isAssignmentProgressSelected = false;
 		this.modalTitle = 'Assignment';
+	}
+
+	getFormDetails(): void {
+
 	}
 
 	showAssignmentProgress(): void {

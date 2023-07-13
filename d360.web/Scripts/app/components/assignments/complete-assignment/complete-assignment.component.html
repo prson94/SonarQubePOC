@@ -27,6 +27,8 @@
 						</span>
 					</div>
 				</div>
+				<d3s-loading [isLoading]="isLoading"></d3s-loading>
+				<ng-container *ngIf="!isLoading">
 				<div>subtitle</div>
 				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
 					<div class="asset-detail">
@@ -79,6 +81,7 @@
 					<d3s-assignment-information [showCompleteAssignment]="false"
 												[workflowItemUid]="workflowItemUid"></d3s-assignment-information>
 				</div>
+				</ng-container>
 			</div>
 		</div>
 		<div class="side-panel">

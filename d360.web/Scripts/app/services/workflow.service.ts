@@ -241,6 +241,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
+	getWorkflowFormByUid(id: string, itemStepId: string): Observable<WorkflowForm> {
+		return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
+			.pipe(
+				map((response) => <WorkflowForm>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
     reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
         return this.http
             .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
