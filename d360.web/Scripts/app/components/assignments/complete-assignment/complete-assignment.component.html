@@ -28,20 +28,50 @@
 					</div>
 				</div>
 				<div>subtitle</div>
-				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content">
-					Assignment Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus.
-					Culpa
-					debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
-					nesciunt omnis, porro repellendus.
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
-					debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
-					nesciunt omnis, porro repellendus.
-					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum, temporibus. Culpa
-					debitis
-					error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt iusto mollitia
-					nesciunt omnis, porro repellendus.
+				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
+					<div class="asset-detail">
+						<div class="asset-detail-tabs">
+							<ig-property-group i18n-title title="Information" [showHeaderLine]="false">
+								<div readonly>
+									<ng-container>
+										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
+										temporibus.
+										Culpa
+										debitis
+										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
+										iusto mollitia
+										nesciunt omnis, porro repellendus.
+									</ng-container>
+								</div>
+							</ig-property-group>
+							<ig-property-group i18n-title title="Request" [showHeaderLine]="false">
+								<div readonly>
+									<ng-container>
+										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
+										temporibus.
+										Culpa
+										debitis
+										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
+										iusto mollitia
+										nesciunt omnis, porro repellendus.
+									</ng-container>
+								</div>
+							</ig-property-group>
+							<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
+								<div readonly>
+									<ng-container>
+										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
+										temporibus.
+										Culpa
+										debitis
+										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
+										iusto mollitia
+										nesciunt omnis, porro repellendus.
+									</ng-container>
+								</div>
+							</ig-property-group>
+						</div>
+					</div>
 				</div>
 				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
 					<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [showCompleteAssignment]="false"
