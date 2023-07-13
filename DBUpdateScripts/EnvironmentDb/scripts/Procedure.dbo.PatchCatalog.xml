@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.7">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.8">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -43,13 +43,22 @@ begin
 				and T.[Type] = @type
 				and T.ISDelete = 0;
 
+		-- Check if the SourceId is null or empty
+		update	api.ExecutionCatalogItem
+		set		Success = 0,
+				[Message] = coalesce([Message], '') + 'SourceId cannot be null or empty; '
+		where	ExecutionId = @executionId 
+				and [Type] = @type 
+				and IsDelete = 0
+				and (SourceId is null or trim(coalesce(SourceId, '')) = '');
+
 		-- Does asset exist based on the incoming SourceId.
 		update	T
 		set		T.Id = S.Id,
 				T.Uid = S.Uid,
 				T.[Action] = 'U'
 		from	api.ExecutionCatalogItem  T
-				inner join Asset S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type and T.ISDelete = 0;
+				inner join Asset S on S.SourceId = T.SourceId and T.Success is null and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type and T.ISDelete = 0;
 
 		-- Updated field types based on property names
 		update	T
@@ -57,7 +66,7 @@ begin
 				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
 				T.ValueAssetTypeId = L.ID
 		from	api.ExecutionCatalogItemProperty  T
-				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type 
+				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type and I.Success is null
 				and I.ISDelete = 0 
 				inner join FieldType S on S.AssetTypeID = I.TypeId and S.Name = T.Name
 				left join AssetType L on L.Object = S.LookupObjectType+'Type' and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
@@ -275,6 +284,22 @@ begin
 		where	T.ExecutionId = @executionId
 				and T.[Type] = @type;
 
+		-- Check if the SubjectSourceId is null or empty
+		update	api.ExecutionCatalogItem
+		set		Success = 0,
+				[Message] = coalesce([Message], '') + 'SubjectSourceId cannot be null or empty; '
+		where	ExecutionId = @executionId 
+				and [Type] = @type 
+				and (SubjectSourceId is null or trim(coalesce(SubjectSourceId, '')) = '');
+
+		-- Check if the ObjectSourceId is null or empty
+		update	api.ExecutionCatalogItem
+		set		Success = 0,
+				[Message] = coalesce([Message], '') + 'ObjectSourceId cannot be null or empty; '
+		where	ExecutionId = @executionId 
+				and [Type] = @type 
+				and (ObjectSourceId is null or trim(coalesce(ObjectSourceId, '')) = '');
+
 		-- Locate subject asset exists based on the incoming SourceId
 		update	T
 		set		T.SubjectId = S.Id
@@ -448,7 +473,7 @@ begin
 							and I.Success is null
 							and P.FieldTypeID is not null
 				) as S
-		on		(S.Id = T.AssetId and S.FieldTypeId = T.FieldTypeID)
+		on		(S.Id = T.IntersectId and S.FieldTypeId = T.FieldTypeID)
 		when	matched then
 		update	set
 				T.[Value] = iif(S.ValueId is null, null, S.ValueId),

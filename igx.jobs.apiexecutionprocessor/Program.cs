@@ -363,17 +363,17 @@ namespace igx.jobs.apiexecutionprocessor
                             case ApiExecutionAction.PostDataProfile:
                                 var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
 								await company.UpsertDataProfilesAsync(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
-								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PutDataProfile:
                                 var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
 								await company.UpsertDataProfilesAsync(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
-								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.DeleteDataProfile:
                                 var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(Info.StorageFolder, Info.RequestFileName);
 								await company.DeleteDataProfilesAsync(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
-								resultsSql = @"select [ItemNumber], [ExecutionItemUid], AssetUid, StartDate, EndDate, [Cascade], [Message], [Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
+								resultsSql = @"select [ItemNumber], [ExecutionItemUid], AssetUid as [uid], StartDate, EndDate, [Cascade], [Message], [Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostResponsibilityOverride:
                                 var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
