@@ -2779,7 +2779,9 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var items = new List<DDLSelectItem>();
-					if (fieldType.AllowAllValue)
+
+					//append All label only on first page request
+					if (fieldType.AllowAllValue && skip == 0)
 					{
 						items.Add(new DDLSelectItem { text = fieldType.AllowAllLabel, value = "0" });
 					}
@@ -2790,6 +2792,12 @@ namespace d360.web.Controllers.V2
 					if (items.Any(x => x.value == "0"))
 					{
 						count++;
+					}
+
+					//if there are more items than UI expects it will cause lazy load to retrigger again and again causing browser crash
+					if (items.Count > take)
+					{
+						items = items.Take(take ?? 20).ToList();
 					}
 
 					var data = new
