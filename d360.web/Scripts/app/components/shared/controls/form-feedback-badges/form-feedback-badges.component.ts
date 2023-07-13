@@ -36,7 +36,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 	formBadgeIntervalCheck: any;
 	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
 		this.formBadgeIntervalCheck = setInterval(() => {
-			console.log("checking form");
 			this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
 			this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
 			this.ref.markForCheck();
