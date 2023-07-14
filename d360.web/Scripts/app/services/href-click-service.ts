@@ -208,6 +208,7 @@ export class LinkClickInterceptor {
         baseComponent.selectedAsset = null;
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
+		baseComponent.isInitialized = false;
 
 		if (event.data?.workflowItemUid) {
 			if(event.data?.itemStepUid) {
@@ -244,5 +245,7 @@ export class LinkClickInterceptor {
         if (event.type !== AssetDetailClickType.Undefined) {
             baseComponent.sidePanelOpen = true;
         }
+
+		baseComponent.isInitialized = true;
     }
 }
