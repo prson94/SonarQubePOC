@@ -132,4 +132,11 @@ export class ByWorkflowVersionComponent extends BaseComponent implements OnInit,
 		this.secondarySidePanelTab = 'pendingAssignments';
 		this.secondarySidePanelOpen = true;
 	}
+
+	closeSecondarySidePanel() {
+		if(this.sidePanelSwitcherComponent?.isInitialized) {
+			this.secondarySidePanelOpen = false;
+			this.sidePanelSwitcherComponent.isInitialized = false;
+		}
+	}
 }

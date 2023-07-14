@@ -16,6 +16,7 @@ export class SidePanelSwitcherComponent implements OnInit {
 	selection: any;
 	assetGrid: any;
 	private linkInterceptorSubscription: Subscription;
+	isInitialized: boolean = false;
 
 	constructor(private linkClickInterceptor: LinkClickInterceptor) {
 	}
