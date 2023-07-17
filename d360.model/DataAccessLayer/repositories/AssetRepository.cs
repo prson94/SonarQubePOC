@@ -1971,7 +1971,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						res.Remove("_rowid");
 					}
 
-					if (includeRelationships)
+					if (includeRelationships && !string.IsNullOrEmpty(result.Relationships))
 					{
 						result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
 					}
