@@ -1,7 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AssignmentItem, ChangeTypeInfo } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { DetailField } from '../../../../models/object-detail.model';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
@@ -31,11 +30,6 @@ export class AssignmentInformationGeneralComponent {
 	get assignmentItem(): AssignmentItem {
 		return this._assignmentItem;
 	}
-
-	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
-		objectType: string,
-		objectUid: string
-	}>();
 
 	get assetPathLinkPart(): string {
 		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;

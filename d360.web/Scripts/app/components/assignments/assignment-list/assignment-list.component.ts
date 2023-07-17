@@ -55,8 +55,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	@ViewChild('assignmentGridComponent') assignmentGridComponent: AssignmentGridComponent;
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
-	secondarySidePanelObjectUid: string;
-	secondarySidePanelObjectType: string;
 	private linkInterceptorSubscription: Subscription;
 
 	constructor(
@@ -142,12 +140,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.selectRow(workflowMonitorItems);
 	}
 
-	sidePanelLinkClicked(value: { objectType: string, objectUid: string }): void {
-		this.secondarySidePanelOpen = true;
-		this.secondarySidePanelObjectUid = value.objectUid;
-		this.secondarySidePanelObjectType = value.objectType;
-	}
-
 	deleteAssignments(event: boolean): void {
 		if (event) {
 			this.assignmentGridComponent.showDeletionModal = true;
@@ -157,12 +149,10 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	stepClicked(assignmentItemStep: AssignmentItemStep): void {
 		this.secondarySidePanelOpen = true;
 		this.assignmentItemStep = assignmentItemStep;
-		this.secondarySidePanelObjectType = 'step-details';
 	}
 
 	closeSecondarySidePanel(): void {
 		this.secondarySidePanelOpen = false;
-		this.secondarySidePanelObjectType = undefined;
 		this.assignmentProgressComponent.deselectWorkflowSteps();
 		this.sidePanelSwitcherComponent.clear();
 	}

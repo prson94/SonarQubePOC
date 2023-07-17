@@ -32,11 +32,6 @@ export class AssignmentInformationComponent {
 		}
 	}
 
-	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
-		objectType: string,
-		objectUid: string
-	}>();
-
 	constructor(private workflowService: WorkflowService) {
 	}
 

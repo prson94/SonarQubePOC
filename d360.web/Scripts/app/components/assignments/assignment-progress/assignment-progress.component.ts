@@ -40,11 +40,6 @@ export class AssignmentProgressComponent {
 
 	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
 
-	@Output() linkClick: EventEmitter<{ objectType: string, objectUid: string }> = new EventEmitter<{
-		objectType: string,
-		objectUid: string
-	}>();
-
 	isLoading: boolean = false;
 	assignmentItemSteps: AssignmentItemStep[];
 
