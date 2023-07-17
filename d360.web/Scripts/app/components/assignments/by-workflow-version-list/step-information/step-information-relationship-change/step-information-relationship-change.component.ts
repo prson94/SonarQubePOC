@@ -15,11 +15,11 @@ export class StepInformationRelationshipChangeComponent implements OnInit {
 		if (this.settings?.RelationshipUpdate?.Relationship) {
 			const formStepId: string = this.settings.RelationshipUpdate.Relationship['@FormStepId'];
 			const formFieldId: string = this.settings.RelationshipUpdate.Relationship['@FormFieldId'];
-			if (this.nodeList && this.nodeList.length > 0) {
+			if (this.nodeList?.length > 0) {
 				for (const workflowDiagramNode of this.nodeList) {
-					if (workflowDiagramNode.Key === formStepId) {
-						for (const fieldElement of workflowDiagramNode.FieldsObject?.form?.field) {
-							if (fieldElement['@id'] === formFieldId) {
+					if (workflowDiagramNode?.Key === formStepId) {
+						for (const fieldElement of workflowDiagramNode?.FieldsObject?.form?.field) {
+							if (fieldElement?.['@id'] === formFieldId) {
 								this.relationshipFormField = fieldElement['@label'];
 							}
 						}

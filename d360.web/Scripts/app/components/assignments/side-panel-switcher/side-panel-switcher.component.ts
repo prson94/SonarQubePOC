@@ -1,21 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { AssetDetailClickEvent, LinkClickInterceptor } from '../../../services/href-click-service';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
 	templateUrl: './side-panel-switcher.component.html',
 	styleUrls: ['./side-panel-switcher.component.less']
 })
-export class SidePanelSwitcherComponent implements OnInit {
-	selectedTag: any;
-	selectedReferenceItem: any;
-	selectedAsset: any;
+export class SidePanelSwitcherComponent {
+	selectedTag: { selectedTag: string, uid: string };
+	selectedReferenceItem: { url: string, assetUid: string, uid: string };
+	selectedAsset: { workflowItemUid: string, itemStepUid: string, id: number, uid: string, type: string };
 	sidePanelTab: string;
-	dataProfile: any;
-	selection: any;
-	assetGrid: any;
-	private linkInterceptorSubscription: Subscription;
+	dataProfile: object;
+	selection: { HasProfiling: boolean, AssetUid: string };
+	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
 	isInitialized: boolean = false;
 
 	constructor(private linkClickInterceptor: LinkClickInterceptor) {
@@ -23,12 +21,6 @@ export class SidePanelSwitcherComponent implements OnInit {
 
 	secondaryPanelOpen($event: any) {
 
-	}
-
-	ngOnInit(): void {
-		// this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((assetDetailClickEvent: AssetDetailClickEvent) => {
-		// 	this.linkClickInterceptor.handleEvent(this, assetDetailClickEvent);
-		// });
 	}
 
 	clear() {
