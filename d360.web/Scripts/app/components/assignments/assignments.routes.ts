@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AssignmentsContainerComponent } from './assignments-container.component';
 import { AssignmentListComponent } from './assignment-list/assignment-list.component';
-import { ByWorkflowVersionComponent } from './by-workflow-version/by-workflow-version.component';
+import { ByWorkflowVersionListComponent } from './by-workflow-version/by-workflow-version-list.component';
 
 const routes: Routes = [
 	{
@@ -10,7 +10,7 @@ const routes: Routes = [
 		component: AssignmentsContainerComponent,
 		children: [
 			{ path: '', component: AssignmentListComponent },
-			{ path: 'by-workflow-version', component: ByWorkflowVersionComponent }
+			{ path: 'by-workflow-version', component: ByWorkflowVersionListComponent }
 		]
 	}
 ];

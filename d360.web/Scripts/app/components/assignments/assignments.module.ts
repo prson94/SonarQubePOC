@@ -66,7 +66,7 @@ import {
 import {
 	AssignmentStepFormDetailsComponent
 } from './assignment-progress-step-details/assignment-step-form-details/assignment-step-form-details.component';
-import { ByWorkflowVersionComponent } from './by-workflow-version/by-workflow-version.component';
+import { ByWorkflowVersionListComponent } from './by-workflow-version/by-workflow-version-list.component';
 import {
 	ByWorkflowVersionGridComponent
 } from './by-workflow-version/by-workflow-version-grid/by-workflow-version-grid.component';
@@ -136,7 +136,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
-		ByWorkflowVersionComponent,
+		ByWorkflowVersionListComponent,
 		ByWorkflowVersionGridComponent,
 		CompleteAssignmentComponent,
 		PendingAssignmentsStepComponent,

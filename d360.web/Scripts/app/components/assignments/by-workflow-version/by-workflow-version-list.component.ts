@@ -23,10 +23,10 @@ import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'd3s-by-workflow-version',
-	templateUrl: './by-workflow-version.component.html',
-	styleUrls: ['./by-workflow-version.component.less']
+	templateUrl: './by-workflow-version-list.component.html',
+	styleUrls: ['./by-workflow-version-list.component.less']
 })
-export class ByWorkflowVersionComponent extends BaseComponent implements OnInit, OnDestroy {
+export class ByWorkflowVersionListComponent extends BaseComponent implements OnInit, OnDestroy {
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = 'WorkflowVersionList_' + this.companySettingsService.CurrentResourceID;
 	showSidePanel: boolean = true;
