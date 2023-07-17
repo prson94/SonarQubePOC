@@ -106,7 +106,7 @@ export class LinkClickInterceptor {
                 adcEv.type = AssetDetailClickType.User;
                 adcEv.objectType = "Resource";
                 adcEv.uid = data.uid;
-				adcEv.objectId = data.ResourceID
+				adcEv.objectId = data.ResourceID;
             }
 
             if (data.ResourceUid) {
@@ -124,7 +124,7 @@ export class LinkClickInterceptor {
 			if (data.AssetId) {
 				adcEv.type = AssetDetailClickType.Asset;
 				adcEv.objectType = "Artifact";
-				adcEv.objectId = data.AssetId
+				adcEv.objectId = data.AssetId;
 			}
 
             //this is a group object

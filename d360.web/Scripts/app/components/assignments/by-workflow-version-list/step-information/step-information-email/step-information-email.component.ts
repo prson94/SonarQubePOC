@@ -12,9 +12,9 @@ import { ResponsibilityType } from '../../../../../models/responsibility-type.mo
 })
 export class StepInformationEmailComponent implements OnInit {
 	@Input() settings: NodeSettings;
-	@Input() sendFormEmail: boolean = false
+	@Input() sendFormEmail: boolean = false;
 	private responsibilities: ResponsibilityType[] = [];
-	private groups: {label:string,value:string}[] = [];
+	private groups: { label: string, value: string }[] = [];
 	public isLoading: boolean = false;
 
 	protected readonly WorkflowActivityType = WorkflowActivityType;
@@ -25,47 +25,47 @@ export class StepInformationEmailComponent implements OnInit {
 
 
 	ngOnInit(): void {
-		if(!this.sendFormEmail) {
-			this.load()
+		if (!this.sendFormEmail) {
+			this.load();
 		}
 	}
 
 	load(): void {
 		this.isLoading = true;
-			if (this.settings['MessageRecipientType'] === 'Responsibility') {
-				this.responsibilityService.getResponsibilityTypes()
-					.subscribe((r: ResponsibilityType[]) => {
-						this.responsibilities = r;
-						this.isLoading = false
-					});
-				if (this.settings.ResponsibilityTypeID != null) {
-					if (!isArray(this.settings.ResponsibilityTypeID)) {
-						const id = this.settings.ResponsibilityTypeID;
-						delete this.settings.ResponsibilityTypeID;
-						this.settings.ResponsibilityTypeID = [];
-						this.settings.ResponsibilityTypeID.push(id);
+		if (this.settings['MessageRecipientType'] === 'Responsibility') {
+			this.responsibilityService.getResponsibilityTypes()
+				.subscribe((r: ResponsibilityType[]) => {
+					this.responsibilities = r;
+					this.isLoading = false;
+				});
+			if (this.settings.ResponsibilityTypeID != null) {
+				if (!isArray(this.settings.ResponsibilityTypeID)) {
+					const id = this.settings.ResponsibilityTypeID;
+					delete this.settings.ResponsibilityTypeID;
+					this.settings.ResponsibilityTypeID = [];
+					this.settings.ResponsibilityTypeID.push(id);
+				}
+			}
+		} else if (this.settings['MessageRecipientType'] === 'Group') {
+			this.groupService.getGroups().subscribe((GroupList) => {
+				this.isLoading = false;
+				this.groups = GroupList.items.map((g) => {
+					return { value: g.Uid, label: g.Name };
+				});
+				if (this.settings.MessageToGroup != null) {
+					if (!this.groups.find((g) => g.value === this.settings.MessageToGroup)) {
+						this.groups.push({
+							value: this.settings.MessageToGroup,
+							label: '<invalid group>'
+						});
 					}
 				}
-			} else if (this.settings['MessageRecipientType'] === 'Group') {
-				this.groupService.getGroups().subscribe((GroupList) => {
-					this.isLoading = false
-					this.groups = GroupList.items.map((g) => {
-						return { value: g.Uid, label: g.Name };
-					});
-					if (this.settings.MessageToGroup != null) {
-						if (!this.groups.find((g) => g.value === this.settings.MessageToGroup)) {
-							this.groups.push({
-								value: this.settings.MessageToGroup,
-								label: '<invalid group>'
-							});
-						}
-					}
-				});
+			});
 		}
 	}
 
 	getResponsibilityName(i: number): string {
-		const id = this.settings.ResponsibilityTypeID[i];
+		const id = this.settings.ResponsibilityTypeID[+i];
 		if (id == null || +id < 0) {
 			return '';
 		}

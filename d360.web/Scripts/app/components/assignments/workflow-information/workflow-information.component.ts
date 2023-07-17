@@ -62,7 +62,7 @@ export class WorkflowInformationComponent {
 	}
 
 	private loadWorkflowVersion(workflowItemUid: string) {
-		this.workflowService.getAssignmentsByVersion(1, 10, undefined, undefined, undefined, undefined, workflowItemUid).subscribe((response) => {
+		this.workflowService.getAssignmentsByVersion(1, 10, '', '', '', null, workflowItemUid).subscribe((response) => {
 			console.log(response);
 		});
 	}

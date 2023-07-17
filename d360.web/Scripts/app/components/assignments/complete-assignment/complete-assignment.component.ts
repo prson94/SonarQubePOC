@@ -24,7 +24,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	sidePanel: string = 'asset-details';
 	formTitle: string = '';
 	formDescription: string = '';
-	formFields: WorkflowFormField[] = []
+	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
@@ -63,9 +63,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formTitle = res.Title;
 				this.formDescription = res.Description;
 				this.formFields = res.Fields;
-				this.isLoading = false
+				this.isLoading = false;
 				this.fieldsComponent.setValidators();
-			})
+			});
 	}
 
 	showAssignmentProgress(): void {

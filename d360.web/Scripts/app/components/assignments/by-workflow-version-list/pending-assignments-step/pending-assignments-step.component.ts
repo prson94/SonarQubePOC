@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 import { PopupMenuItem } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { WorkflowMonitorService } from '../../../../services/workflowmonitor.service';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-pending-assignments-step',
 	templateUrl: './pending-assignments-step.component.html',

@@ -40,7 +40,7 @@ export class WorkflowVersionDetailsComponent {
 	private loadAssignmentsByVersion(workflowTypeUid: string) {
 		this.isLoading = true;
 		this.assignmentVersionItems = [];
-		this.workflowService.getAssignmentsByVersion(1, 10, undefined, undefined, undefined, undefined, undefined, workflowTypeUid).subscribe((response) => {
+		this.workflowService.getAssignmentsByVersion(1, 10, '', '', '', null, '', workflowTypeUid).subscribe((response) => {
 			this.assignmentVersionItems = response.items;
 			this.isLoading = false;
 			this.setSelectedAssignmentVersion();
@@ -48,9 +48,10 @@ export class WorkflowVersionDetailsComponent {
 	}
 
 	private setSelectedAssignmentVersion() {
-		this.selectedAssignmentVersion = undefined;
 		if (this.assignmentVersionItems.length > 0 && this._workflowTypeVersion) {
 			this.selectedAssignmentVersion = this.assignmentVersionItems.filter((assignmentVersionItem: AssignmentVersionItem): boolean => assignmentVersionItem.Version === this._workflowTypeVersion)?.[0];
+		} else {
+			this.selectedAssignmentVersion = undefined;
 		}
 	}
 }

@@ -8,6 +8,8 @@ import {
 import { WorkflowService } from '../../../../../services/workflow.service';
 import { FieldType } from '../../../../../models/fields.model';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-step-information-field-change',
 	templateUrl: './step-information-field-change.component.html',
@@ -48,11 +50,11 @@ export class StepInformationFieldChangeComponent implements OnInit {
 	}
 
 	getValueSource(item: WorkflowStepFieldChangeDetail): string {
-	if (item['@UseFormValue'] === true) {
+		if (item['@UseFormValue'] === true) {
 			if (item['@ObjectType'] === 'Issue') {
-				return  'Action Form Input';
+				return 'Action Form Input';
 			} else {
-				return  'Form Input';
+				return 'Form Input';
 			}
 		} else if (item['@ClearValue'] === 'true') {
 			return '--';

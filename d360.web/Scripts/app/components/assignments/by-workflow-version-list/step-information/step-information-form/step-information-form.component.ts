@@ -19,10 +19,8 @@ export class StepInformationFormComponent implements OnInit {
 
 	protected readonly WorkflowActivityType = WorkflowActivityType;
 
-
 	constructor(private responsibilityService: ResponsibilityTypeService, private groupService: GroupService) {
 	}
-
 
 	ngOnInit(): void {
 		this.load();
@@ -60,12 +58,12 @@ export class StepInformationFormComponent implements OnInit {
 				}
 			});
 		} else {
-			this.isLoading = false
+			this.isLoading = false;
 		}
 	}
 
 	getResponsibilityName(i: number): string {
-		const id = this.selectedNode.settings.ResponsibilityTypeID[i];
+		const id = this.selectedNode.settings.ResponsibilityTypeID[+i];
 		if (id == null || +id < 0) {
 			return '';
 		}
@@ -82,4 +80,3 @@ export class StepInformationFormComponent implements OnInit {
 		return (this.selectedNode.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g): boolean => g.value === this.selectedNode.settings.MessageToGroup).label;
 	}
 }
-
