@@ -835,6 +835,25 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-28446">
+	<comment>GOV-28446 - Queue update to SearchIndex of assets with Responsibility Override</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID], [Date])
+		SELECT DISTINCT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				oride.AssetID,
+				DATEADD(minute, 10, getdate())
+		FROM ResponsibilityTypeRelationOverrideItem oride
+		INNER JOIN [dbo].[Asset] A ON oride.AssetID = A.ID
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
 
 

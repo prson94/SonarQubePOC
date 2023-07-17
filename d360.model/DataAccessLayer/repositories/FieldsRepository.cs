@@ -1411,7 +1411,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						newFieldType.DefaultValue = f.Type.Html.DefaultValue;
+						newFieldType.DefaultValue = f.Type.Html.DefaultValue.SanitizeHtml();
 						newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
 					}
 
