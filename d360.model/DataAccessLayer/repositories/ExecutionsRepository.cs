@@ -14,6 +14,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -415,83 +416,131 @@ namespace d360.model.DataAccessLayer
 
 			#endregion Data Table Generation
 
-			await CompanyContext.Connection.OpenIfClosed();
-			using (SqlTransaction transaction = CompanyContext.Connection.BeginTransaction())
-			{
-				var resourceId = CompanyContext.CurrentResourceID;
-				var date = DateTime.UtcNow;
+			var resourceId = CompanyContext.CurrentResourceID;
+			var date = DateTime.UtcNow;
 
+			var executionProcessingInfoFields = CompanyContext.ApiExecutions.Single(x => x.Id == executionId).Fields ?? "{}";
+			var executionProcessingInfo = JsonConvert.DeserializeObject<ApiExecutionFields_PatchExecution>(executionProcessingInfoFields);
+
+			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 8)
+			{ 
 				try
 				{
-					using (SqlBulkCopy bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionCatalogItem", 5000, 3600, transaction))
+					await CompanyContext.Connection.OpenIfClosed();
+					
+					if (executionProcessingInfo.LastCompletedStepNumber <= 0)
 					{
-						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-						bulkCopy.ColumnMappings.Add("Type", "Type");
-						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");
-						bulkCopy.ColumnMappings.Add("SourceId", "SourceId");
-						bulkCopy.ColumnMappings.Add("IsDelete", "IsDelete");
-						bulkCopy.WriteToServer(assetTable);
+						using (SqlBulkCopy bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionCatalogItem", 5000, 3600))//, transaction))
+						{
+							bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+							bulkCopy.ColumnMappings.Add("Type", "Type");
+							bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");
+							bulkCopy.ColumnMappings.Add("SourceId", "SourceId");
+							bulkCopy.ColumnMappings.Add("IsDelete", "IsDelete");
+							bulkCopy.WriteToServer(assetTable);
 
-						bulkCopy.ColumnMappings.Clear();
+							bulkCopy.ColumnMappings.Clear();
 
-						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-						bulkCopy.ColumnMappings.Add("Type", "Type");
-						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");
-						bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");
-						bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");
-						bulkCopy.WriteToServer(relationTable);
+							bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+							bulkCopy.ColumnMappings.Add("Type", "Type");
+							bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");
+							bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");
+							bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");
+							bulkCopy.WriteToServer(relationTable);
+						}
+						executionProcessingInfo.LastCompletedStepNumber = 1;
 					}
 
-					using (SqlBulkCopy bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionCatalogItemProperty", 5000, 7200, transaction))
+					if (executionProcessingInfo.LastCompletedStepNumber < 2)
 					{
-						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");		//0
-						bulkCopy.ColumnMappings.Add("Name", "Name");						//1
-						bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
-						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-						bulkCopy.ColumnMappings.Add("Type", "Type");
-						bulkCopy.ColumnMappings.Add("SourceId", "SourceId");				//3
-						bulkCopy.WriteToServer(assetPropertyTable);
+						using (SqlBulkCopy bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionCatalogItemProperty", 5000, 7200))
+						{
+							bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");        //0
+							bulkCopy.ColumnMappings.Add("Name", "Name");                        //1
+							bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
+							bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+							bulkCopy.ColumnMappings.Add("Type", "Type");
+							bulkCopy.ColumnMappings.Add("SourceId", "SourceId");                //3
+							bulkCopy.WriteToServer(assetPropertyTable);
 
-						bulkCopy.ColumnMappings.Clear();
+							bulkCopy.ColumnMappings.Clear();
 
-						bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");        //0
-						bulkCopy.ColumnMappings.Add("Name", "Name");                        //1
-						bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
-						bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
-						bulkCopy.ColumnMappings.Add("Type", "Type");
-						bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");	//3
-						bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");	//4
-						bulkCopy.WriteToServer(relationPropertyTable);
+							bulkCopy.ColumnMappings.Add("TypeSourceId", "TypeSourceId");        //0
+							bulkCopy.ColumnMappings.Add("Name", "Name");                        //1
+							bulkCopy.ColumnMappings.Add("Value", "Value");                      //2
+							bulkCopy.ColumnMappings.Add("ExecutionId", "ExecutionId");
+							bulkCopy.ColumnMappings.Add("Type", "Type");
+							bulkCopy.ColumnMappings.Add("SubjectSourceId", "SubjectSourceId");  //3
+							bulkCopy.ColumnMappings.Add("ObjectSourceId", "ObjectSourceId");    //4
+							bulkCopy.WriteToServer(relationPropertyTable);
+						}
+						executionProcessingInfo.LastCompletedStepNumber = 2;
 					}
 
 					// Start run.
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'B', resourceId, date }, transaction, commandTimeout: 7200);
-					// Non-delete of assets.
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'A', resourceId, date }, transaction, commandTimeout: 7200);
-					// Relations.
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'R', resourceId, date }, transaction, commandTimeout: 7200);
-					// Delete, if any, of assets
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, transaction, commandTimeout: 7200);
-					// Path/display value processing.
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'P', resourceId, date }, transaction, commandTimeout: 7200);
-					// Cleanup and wrap-up of run.
-					await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'E', resourceId, date }, transaction, commandTimeout: 7200);
+					if (executionProcessingInfo.LastCompletedStepNumber < 3)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'B', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 3;
+					}
 
-					transaction.Commit();
+					// Non-delete of assets.
+					if (executionProcessingInfo.LastCompletedStepNumber < 4)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'A', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 4;
+					}
+
+					// Relations.
+					if (executionProcessingInfo.LastCompletedStepNumber < 5)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'R', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 5;
+					}
+
+					// Delete, if any, of assets
+					if (executionProcessingInfo.LastCompletedStepNumber < 6)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 6;
+					}
+
+					// Path/display value processing.
+					if (executionProcessingInfo.LastCompletedStepNumber < 7)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'P', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 7;
+					}
+
+					// Cleanup and wrap-up of run.
+					if (executionProcessingInfo.LastCompletedStepNumber < 8)
+					{
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'E', resourceId, date }, commandTimeout: 7200);
+						executionProcessingInfo.LastCompletedStepNumber = 8;
+					}
 				}
 				catch (Exception ex)
 				{
-					transaction.Rollback();
-					await CompanyContext.Connection.ExecuteAsync(
-						"update api.Execution set [State] = 4, ErrorMessage = @m, CompletedOn = @dt, MarkedForProcessing = 0 where Id = @executionId", 
-						new { 
-							executionId, 
-							dt = DateTime.UtcNow,
-							m = ex.GetFullExceptionData(false, 2450) 
-						}
-					);
-				}
-			}
+					executionProcessingInfo.RetryCount++;
+					Thread.Sleep(10000); // 10 second pause.
+
+					if (executionProcessingInfo.RetryCount >= 10)
+					{
+						executionProcessingInfoFields = JsonConvert.SerializeObject(executionProcessingInfo);
+
+						await CompanyContext.Connection.ExecuteAsync(
+							"update api.Execution set [State] = 4, ErrorMessage = @m, CompletedOn = @dt, MarkedForProcessing = 0, Fields = @fields where Id = @executionId",
+							new
+							{
+								executionId,
+								dt = DateTime.UtcNow,
+								fields = executionProcessingInfoFields,
+								m = ex.GetFullExceptionData(false, 2450)
+							}
+						);
+					}
+				}				
+			} // while
 		}
 	}
 }
