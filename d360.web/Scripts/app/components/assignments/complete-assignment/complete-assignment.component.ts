@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
+import { WorkflowService } from '../../../services/workflow.service';
+import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -20,9 +22,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assetId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 	sidePanel: string = 'asset-details';
+	formTitle: string = '';
+	formDescription: string = '';
+	formFields: WorkflowFormField[] = []
 	assignmentItemStep: AssignmentItemStep;
+	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
-	constructor(protected settingsService: CompanySettingsService) {
+	constructor(protected settingsService: CompanySettingsService,
+				private workflowService: WorkflowService) {
 		super(settingsService);
 	}
 
@@ -39,7 +46,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			this.getFormDetails()
+			this.getFormDetails();
 		}
 		this.isModalVisible = true;
 	}
@@ -50,12 +57,30 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	getFormDetails(): void {
-
+		this.isLoading = true;
+		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
+			.subscribe((res: WorkflowForm) => {
+				this.formTitle = res.Title;
+				this.formDescription = res.Description;
+				this.formFields = res.Fields;
+				this.isLoading = false
+				this.fieldsComponent.setValidators();
+			})
 	}
 
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
 		this.modalTitle = 'Assignment Progress and Information';
+	}
+
+	onFormSubmit() {
+		if (this.fieldsComponent.setValidators()) {
+			return false;
+		}
+		this.fieldsComponent.prepareValuesForSubmit();
+
+		//save form values with stepid and itemid
+		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
 	}
 
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {

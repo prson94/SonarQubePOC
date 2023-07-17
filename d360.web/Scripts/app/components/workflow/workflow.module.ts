@@ -89,10 +89,11 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         WorkflowBulkReassignComponent,
         WorkflowFormFieldsComponent,
     ],
-    exports: [                        
-        WorkflowComponent,        
+    exports: [
+        WorkflowComponent,
         WorkflowIssueDetailsComponent,
         WorkflowNewDetailComponent,
+        WorkflowFormFieldsComponent
     ],
     providers: [
 

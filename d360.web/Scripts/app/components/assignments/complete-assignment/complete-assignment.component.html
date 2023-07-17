@@ -36,13 +36,12 @@
 							<ig-property-group i18n-title title="Information" [showHeaderLine]="false">
 								<div readonly>
 									<ng-container>
-										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
-										temporibus.
-										Culpa
-										debitis
-										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
-										iusto mollitia
-										nesciunt omnis, porro repellendus.
+										<div class="row">
+											<div class="category-column">
+												<label class="ig-label" i18n>{{ formTitle }}</label>
+												<div class="ig-value">{{ formDescription }}</div>
+											</div>
+										</div>
 									</ng-container>
 								</div>
 							</ig-property-group>
@@ -62,13 +61,14 @@
 							<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
 								<div readonly>
 									<ng-container>
-										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
-										temporibus.
-										Culpa
-										debitis
-										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
-										iusto mollitia
-										nesciunt omnis, porro repellendus.
+										<form (ngSubmit)="onFormSubmit()"
+											  #workflowForm="ngForm">
+											<div class="row">
+												<div class="l6 s12">
+													<d3s-workflow-form-fields [fields]="formFields" [form]="workflowForm" #fieldsComponent></d3s-workflow-form-fields>
+												</div>
+											</div>
+										</form>
 									</ng-container>
 								</div>
 							</ig-property-group>

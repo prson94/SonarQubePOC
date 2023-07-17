@@ -30,7 +30,7 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail
+	WorkflowStepDetail, WorkflowFormField
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -242,7 +242,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
 	getWorkflowFormByUid(id: string, itemStepId: string): Observable<WorkflowForm> {
-		return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
+		return this.http.get(`/services/workflow/formByUid/${id}/${itemStepId}`)
 			.pipe(
 				map((response) => <WorkflowForm>response),
 				catchError((err) => this.handleError(err))
@@ -280,6 +280,15 @@ export class WorkflowService extends BaseObservableService {
                 catchError((err) => this.handleError(err))
             );
     }
+
+	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<any> {
+		return this.http
+			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     getActivityTypes(): Observable<ActivityTypeInfo[]> {
         return this.http.get('services/workflow/activitytypes')

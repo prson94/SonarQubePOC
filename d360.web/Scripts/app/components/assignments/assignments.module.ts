@@ -111,6 +111,9 @@ import { SidePanelSwitcherComponent } from './side-panel-switcher/side-panel-swi
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { DropdownModule } from 'primeng/dropdown';
+import { WorkflowModule } from '../workflow/workflow.module';
 
 @NgModule({
 	declarations: [
@@ -183,7 +186,10 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 		TaggedAssetDetailModule,
 		TilesModule,
 		TooltipModule,
-		WorkflowDiagramModule
+		WorkflowDiagramModule,
+		AutoCompleteModule,
+		DropdownModule,
+		WorkflowModule
 	]
 })
 export class AssignmentsModule {
