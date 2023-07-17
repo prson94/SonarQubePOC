@@ -14,6 +14,7 @@ import { FormHelpers } from "../../../../static/form-helpers";
 import { PropertyGroupComponent } from "../../../shared/controls/property-group/property-group.component";
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
+import * as DOMPurify from "dompurify";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -691,7 +692,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null);
 				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
-				this.fieldTypeForm.controls["DefaultValue"].setValue(type?.DefaultValue ?? null);
+				let defaultValue = type?.DefaultValue ?? null;
+				if (this.selectedFieldType === "Html") {
+					defaultValue = DOMPurify.sanitize(defaultValue);
+				}
+				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue);
 				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
 				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
 				this.fieldTypeForm.controls["Precision"].setValue(type?.Validation?.Precision ?? null);
