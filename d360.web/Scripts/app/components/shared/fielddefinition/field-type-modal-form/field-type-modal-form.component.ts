@@ -1230,7 +1230,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 	get enableAllowMultipleValues(): boolean {
 		const allowedTypes = ['Lookup'];
-		return (this.assetTypeUid || this.relationshipTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
+		return (this.assetTypeUid || this.relationshipTypeUid || this.actionTypeUid) && allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
 
 	get hasFormDescription(): boolean {
