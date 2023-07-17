@@ -8,8 +8,7 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 	styleUrls: ['./assignment-information.component.less']
 })
 export class AssignmentInformationComponent {
-	@Input() assignmentItem: AssignmentItem;
-	@Input() showCompleteAssignment: boolean = true;
+	@Input() showCompleteAssignment: boolean = false;
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
 		stepUid: string,
@@ -20,7 +19,9 @@ export class AssignmentInformationComponent {
 		assetId: number
 	}>();
 
-	isLoading: boolean = false;
+	assignmentItem: AssignmentItem;
+	isAssignmentItemLoading: boolean = false;
+	isWorkflowStepDetailLoading: boolean = false;
 	workflowStepDetail: WorkflowStepDetail;
 
 	private assignmentItemStep: AssignmentItemStep;
@@ -36,23 +37,29 @@ export class AssignmentInformationComponent {
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {
-		this.isLoading = true;
+		this.isAssignmentItemLoading = true;
+		this.assignmentItem = null;
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
-			this.isLoading = false;
+			this.isAssignmentItemLoading = false;
 			this.assignmentItem = response;
 		});
 	}
 
 	private loadAssignmentSteps(workflowItemUid: string) {
 		let assignmentItemSteps: AssignmentItemStep[];
+		this.workflowStepDetail = null;
+		this.isWorkflowStepDetailLoading = true;
 		this.workflowService.getAssignmentItemSteps(workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {
 				assignmentItemSteps = response;
+				this.isWorkflowStepDetailLoading = false;
 				for (const assignmentItemStep of assignmentItemSteps) {
 					if (!assignmentItemStep.CompletedOn) {
 						this.assignmentItemStep = assignmentItemStep;
+						this.isWorkflowStepDetailLoading = true;
 						this.workflowService.getAssignmentStepDetail(assignmentItemStep.Uid).subscribe((response) => {
 							this.workflowStepDetail = response;
+							this.isWorkflowStepDetailLoading = false;
 						});
 						break;
 					}

@@ -11,7 +11,7 @@
 	<div class="asset-detail-tabs">
 
 		<button igButton type="button"
-				*ngIf="showCompleteAssignment && step?.ItemSettings?.hasPendingForms && step?.IsAssignedLoginUser"
+				*ngIf="showCompleteAssignment && step?.ItemSettings?.hasPendingForms && step?.IsAssignedLoginUser && !step?.CompletedOn"
 				class="ig-button-primary complete-assignment"
 				(click)="completeAssignmentClick()" i18n
 		>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
@@ -29,11 +29,14 @@
 						<i class="fa fa-info-circle"></i> Form was reassigned
 					</label>
 					<div i18n class="ig-value" *ngFor="let bulkReassignment of bulkReassignments; let last = last">
-						<a context-link (click)="onClickResource($event, bulkReassignment.ByResourceID)">{{bulkReassignment.ByResourceName}}</a>
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.ByResourceID)">{{bulkReassignment.ByResourceName}}</a>
 						reassigned it from
-						<a context-link (click)="onClickResource($event, bulkReassignment.FromResourceID)">{{bulkReassignment.FromResourceName}}</a>
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.FromResourceID)">{{bulkReassignment.FromResourceName}}</a>
 						to
-						<a context-link (click)="onClickResource($event, bulkReassignment.ToResourceID)">{{bulkReassignment.ToResourceName}}</a>
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.ToResourceID)">{{bulkReassignment.ToResourceName}}</a>
 						on {{(bulkReassignment.ReassignOn | date: 'short')}} <br *ngIf="!last"/>
 					</div>
 				</div>
@@ -44,11 +47,14 @@
 							<i class="fa fa-info-circle"></i> Form was reassigned
 						</label>
 						<div i18n class="ig-value">
-							<a context-link (click)="onClickResource($event, reassignment.ByResourceID)">{{reassignment.ByResourceName}}</a>
+							<a context-link
+							   (click)="onClickResource($event, reassignment.ByResourceID)">{{reassignment.ByResourceName}}</a>
 							reassigned this action from
-							<a context-link (click)="onClickAsset($event, step?.IssueDetails?.ObjectID)">{{step?.IssueDetails?.ObjectName}}</a>
+							<a context-link
+							   (click)="onClickAsset($event, step?.IssueDetails?.ObjectID)">{{step?.IssueDetails?.ObjectName}}</a>
 							to
-							<a context-link (click)="onClickAsset($event, reassignment.ObjectID)">{{reassignment.ObjectName}}</a>
+							<a context-link
+							   (click)="onClickAsset($event, reassignment.ObjectID)">{{reassignment.ObjectName}}</a>
 							on {{reassignment.ReassignOn | date: 'short'}}.<br/>
 							<ng-container *ngIf="reassignment.NewItemId != null">
 								A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow
@@ -72,7 +78,8 @@
 							<ng-container i18n>Completed by</ng-container>
 							:
 							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
-								<a context-link (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
+								<a context-link
+								   (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
 								<span *ngIf="!last">,</span>
 							</ng-container>
 						</div>
@@ -80,7 +87,8 @@
 							<ng-container i18n>Awaiting forms from</ng-container>
 							:
 							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
-								<a context-link (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
+								<a context-link
+								   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
 								<span *ngIf="!last">,</span>
 							</ng-container>
 						</div>
