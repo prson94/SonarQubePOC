@@ -66,19 +66,19 @@ import {
 import {
 	AssignmentStepFormDetailsComponent
 } from './assignment-progress-step-details/assignment-step-form-details/assignment-step-form-details.component';
-import { ByWorkflowVersionListComponent } from './by-workflow-version/by-workflow-version-list.component';
+import { ByWorkflowVersionListComponent } from './by-workflow-version-list/by-workflow-version-list.component';
 import {
 	ByWorkflowVersionGridComponent
-} from './by-workflow-version/by-workflow-version-grid/by-workflow-version-grid.component';
+} from './by-workflow-version-list/by-workflow-version-grid/by-workflow-version-grid.component';
 import {
 	WorkflowVersionInformationComponent
-} from './by-workflow-version/workflow-version-information/workflow-version-information.component';
+} from './by-workflow-version-list/workflow-version-information/workflow-version-information.component';
 import {
 	WorkflowVersionDetailsComponent
-} from './by-workflow-version/workflow-version-information/workflow-version-details/workflow-version-details.component';
+} from './by-workflow-version-list/workflow-version-information/workflow-version-details/workflow-version-details.component';
 import {
 	WorkflowPendingAssignmentsComponent
-} from './by-workflow-version/workflow-version-information/workflow-pending-assignments/workflow-pending-assignments.component';
+} from './by-workflow-version-list/workflow-version-information/workflow-pending-assignments/workflow-pending-assignments.component';
 import {
 	AssignmentFormResponseComponent
 } from './assignment-progress-step-details/assignment-form-response/assignment-form-response.component';
@@ -88,25 +88,25 @@ import { PortalsModule } from '../shared/portals/portals.module';
 import { PageHeaderModule } from '../shared/page-header/page-header.module';
 import {
 	PendingAssignmentsStepComponent
-} from './by-workflow-version/pending-assignments-step/pending-assignments-step.component';
+} from './by-workflow-version-list/pending-assignments-step/pending-assignments-step.component';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { InputTextModule } from 'primeng/inputtext';
-import { StepInformationComponent } from './by-workflow-version/step-information/step-information.component';
+import { StepInformationComponent } from './by-workflow-version-list/step-information/step-information.component';
 import {
 	StepInformationEmailComponent
-} from './by-workflow-version/step-information/step-information-email/step-information-email.component';
+} from './by-workflow-version-list/step-information/step-information-email/step-information-email.component';
 import {
 	StepInformationFormComponent
-} from './by-workflow-version/step-information/step-information-form/step-information-form.component';
+} from './by-workflow-version-list/step-information/step-information-form/step-information-form.component';
 import {
 	StepInformationFormFieldsComponent
-} from './by-workflow-version/step-information/step-information-form-fields/step-information-form-fields.component';
+} from './by-workflow-version-list/step-information/step-information-form-fields/step-information-form-fields.component';
 import {
 	StepInformationRelationshipChangeComponent
-} from './by-workflow-version/step-information/step-information-relationship-change/step-information-relationship-change.component';
+} from './by-workflow-version-list/step-information/step-information-relationship-change/step-information-relationship-change.component';
 import {
 	StepInformationFieldChangeComponent
-} from './by-workflow-version/step-information/step-information-field-change/step-information-field-change.component';
+} from './by-workflow-version-list/step-information/step-information-field-change/step-information-field-change.component';
 import { SidePanelSwitcherComponent } from './side-panel-switcher/side-panel-switcher.component';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';

@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs';
 /*global $localize*/
 
 @Component({
-	selector: 'd3s-by-workflow-version',
+	selector: 'd3s-by-workflow-version-list',
 	templateUrl: './by-workflow-version-list.component.html',
 	styleUrls: ['./by-workflow-version-list.component.less']
 })
