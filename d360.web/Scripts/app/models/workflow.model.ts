@@ -182,6 +182,16 @@ export class HTTPResponseOutput {
 	Path: string;
 }
 
+export class HTTPResponseSettingsOutputs {
+	Format: string;
+	Id: string;
+	Name: string;
+	Path: string;
+	StepId: string;
+	StepName: string;
+	Type: string;
+}
+
 export class HTTPResponseSettings {
 	InputStepId: string;
 	InputStepName: string;
@@ -946,14 +956,4 @@ export class WorkflowFormResponse {
 	CompletedBy: number;
 	CompletedOn: string;
 	UID: string;
-}
-
-export class HTTPResponseSettingsOutputs {
-	Format: string;
-	Id: string;
-	Name: string;
-	Path: string;
-	StepId: string;
-	StepName: string;
-	Type: string;
 }
