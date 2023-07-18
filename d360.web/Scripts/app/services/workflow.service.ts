@@ -30,7 +30,7 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail, WorkflowFormField
+	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -281,7 +281,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<any> {
+	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<WorkflowFormResponse> {
 		return this.http
 			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
 			.pipe(
