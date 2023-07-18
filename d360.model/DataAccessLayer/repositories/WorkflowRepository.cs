@@ -1211,6 +1211,9 @@ namespace d360.model.DataAccessLayer
 										,WI.Object
 										,WI.ObjectID
 										,WIS.ID as workflowItemStepID
+										,V.ID AS VersionId
+										,V.uid AS VersionUid
+										,V.Version as Version
 									FROM workflow.Type T
 															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
@@ -1234,7 +1237,10 @@ namespace d360.model.DataAccessLayer
 								AssignedUsers.value as assigneesJson,
 								I.uid as actionUid,
 								IOT.initiatingObjectType,
-								IT.Name as initiatingObjectTypeName
+								IT.Name as initiatingObjectTypeName,
+								WA.VersionId,
+								WA.VersionUid,
+								WA.Version
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
 			var assetSelects = $@"WA.workflowItemUid, 
@@ -1253,7 +1259,10 @@ namespace d360.model.DataAccessLayer
 							AssignedUsers.value as assigneesJson,
 							null as actionUid, 
 							IOT.initiatingObjectType,
-							AST.Name as initiatingObjectTypeName
+							AST.Name as initiatingObjectTypeName,
+							WA.VersionId,
+							WA.VersionUid,
+							WA.Version
 							";
 
 			var actionJoins = $@"FROM 
