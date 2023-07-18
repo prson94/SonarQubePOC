@@ -12,15 +12,13 @@ export class StepInformationRelationshipChangeComponent implements OnInit {
 	relationshipFormField: string = '';
 
 	ngOnInit(): void {
-		if (this.settings?.RelationshipUpdate?.Relationship && this.nodeList) {
-			for (const workflowDiagramNode of this.nodeList) {
-				if (workflowDiagramNode?.Key === this.settings.RelationshipUpdate.Relationship['@FormStepId'] &&
-					Array.isArray(workflowDiagramNode?.FieldsObject?.form?.field)) {
-					for (const fieldElement of workflowDiagramNode.FieldsObject.form.field) {
-						if (fieldElement?.['@id'] === this.settings.RelationshipUpdate.Relationship['@FormFieldId']) {
-							this.relationshipFormField = fieldElement['@label'];
-							return;
-						}
+		for (const workflowDiagramNode of this.nodeList) {
+			if (workflowDiagramNode?.Key === this.settings?.RelationshipUpdate?.Relationship?.['@FormStepId'] &&
+				Array.isArray(workflowDiagramNode?.FieldsObject?.form?.field)) {
+				for (const fieldElement of workflowDiagramNode.FieldsObject.form.field) {
+					if (fieldElement?.['@id'] === this.settings?.RelationshipUpdate?.Relationship?.['@FormFieldId']) {
+						this.relationshipFormField = fieldElement['@label'];
+						return;
 					}
 				}
 			}

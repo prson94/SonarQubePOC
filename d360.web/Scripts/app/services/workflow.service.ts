@@ -192,6 +192,8 @@ export class WorkflowService extends BaseObservableService {
 
     //#region diagram
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	public getWorkflowDiagram(id: number, uid: string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
 		if ((id == null || id < 1) && (uid == null || uid === '00000000-0000-0000-0000-000000000000')) {
 			return of(null);
