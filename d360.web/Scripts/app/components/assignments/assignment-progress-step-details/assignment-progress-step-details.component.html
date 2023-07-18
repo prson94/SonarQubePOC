@@ -125,7 +125,7 @@
 																   [workflowItemUId]="workflowItemUId">
 						</d3s-assignment-step-http-response-details>
 					</ng-container>
-					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipChange">
 						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange"
 																		 [relationshipUpdate]="step.Settings?.RelationshipUpdate"
 																		 [workflowItemUId]="workflowItemUId">

@@ -950,7 +950,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             }
 
-            if (n.activityType === WorkflowActivityType.RelationshipUpdate) {
+            if (n.activityType === WorkflowActivityType.RelationshipChange) {
                 if (n.settings.RelationshipUpdate == null)
                     {n.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
                 if (n.settings.RelationshipUpdate.Relationship == null)
@@ -1223,7 +1223,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 });
                 if (hasInvalidField) {return false;}
                 break;
-            case WorkflowActivityType.RelationshipUpdate:
+            case WorkflowActivityType.RelationshipChange:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || isEmpty(n.settings.RelationshipUpdate.Relationship))
                     {return false;}
                 if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] == null || n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() === "false") {
@@ -1585,7 +1585,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.FieldChange:
                 n.settings.FieldUpdate = e.settings.FieldUpdate;
                 break;
-            case WorkflowActivityType.RelationshipUpdate:
+            case WorkflowActivityType.RelationshipChange:
                 n.settings.RelationshipUpdate = e.settings.RelationshipUpdate;
                 break;
             case WorkflowActivityType.StateChange: //status change

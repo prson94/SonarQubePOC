@@ -9,7 +9,7 @@ export class WorkflowHelpers {
 				return $localize`Email Notification`;
 			case WorkflowActivityType.FieldChange:
 				return $localize`Field Change`;
-			case WorkflowActivityType.RelationshipUpdate:
+			case WorkflowActivityType.RelationshipChange:
 				return $localize`Relationship Update`;
 			case WorkflowActivityType.StateChange:
 				return $localize`State Change`;
@@ -48,7 +48,7 @@ export class WorkflowHelpers {
 				return 'fa-envelope';
 			case WorkflowActivityType.FieldChange:
 				return 'fa-id-card';
-			case WorkflowActivityType.RelationshipUpdate:
+			case WorkflowActivityType.RelationshipChange:
 				return 'fa-users';
 			case WorkflowActivityType.HTTPRequest:
 				return 'fa-globe';

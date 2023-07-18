@@ -24,9 +24,9 @@ export class SidePanelSwitcherComponent {
 	}
 
 	clear() {
-		this.selectedTag = undefined;
-		this.selectedReferenceItem = undefined;
-		this.selectedAsset = undefined;
-		this.selection = undefined;
+		this.selectedTag = null;
+		this.selectedReferenceItem = null;
+		this.selectedAsset = null;
+		this.selection = null;
 	}
 }

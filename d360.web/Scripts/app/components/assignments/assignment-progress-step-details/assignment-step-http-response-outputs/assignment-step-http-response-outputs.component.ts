@@ -17,15 +17,15 @@ export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent im
 		super(settingsService);
 	}
 
-	ngOnInit() {
-		let stepFieldOutputs = this.itemFields?.Outputs.Output ?? null;
-		let stepSettingOutputs = this.settings?.HTTPResponse.Outputs ?? null;
+	ngOnInit(): void {
+		let stepFieldOutputs = this.itemFields?.Outputs?.Output;
+		let stepSettingOutputs = this.settings?.HTTPResponse?.Outputs;
 
-		if (stepFieldOutputs != null && !Array.isArray(stepFieldOutputs)) {
+		if (stepFieldOutputs && !Array.isArray(stepFieldOutputs)) {
 			stepFieldOutputs = [stepFieldOutputs];
 		}
 
-		if (stepSettingOutputs != null) {
+		if (stepSettingOutputs) {
 			if (!Array.isArray(stepSettingOutputs)) {
 				stepSettingOutputs = [stepSettingOutputs];
 			}

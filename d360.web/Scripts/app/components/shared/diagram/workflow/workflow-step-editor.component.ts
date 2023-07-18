@@ -235,7 +235,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             }
             this.filterOutputFields();
         }
-        else if (this.step.activityType === WorkflowActivityType.RelationshipUpdate) {
+        else if (this.step.activityType === WorkflowActivityType.RelationshipChange) {
             if (this.step.settings.RelationshipUpdate == null)
                 {this.step.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
             if (this.step.settings.RelationshipUpdate.Relationship == null)
