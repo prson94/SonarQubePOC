@@ -171,13 +171,15 @@ namespace igx.functions.databasetaskprocessor
                                                 case "Add":
                                                     #region
                                                     addAuditEntry(companyConnection, "Created", q);
-                                                    resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
+													resolveObjectObjectID(q, out var @object, out var objectId);
+													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "A", q.AssetID);
                                                     break;
                                                 #endregion
                                                 case "Delete":
                                                     #region                                     
                                                     addAuditEntry(companyConnection, "Removed", q);
-                                                    resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
+													resolveObjectObjectID(q, out @object, out objectId);
+													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "D", q.AssetID);
                                                     break;
                                                 #endregion
                                                 case "EventTopicNotification":
@@ -339,9 +341,8 @@ namespace igx.functions.databasetaskprocessor
                                                 case "Update":
                                                     #region
                                                     addAuditEntry(companyConnection, "Updated", q);
-
-                                                    if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
-                                                        resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
+													resolveObjectObjectID(q, out @object, out objectId);
+													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "U", q.AssetID);
                                                     break;
                                                 #endregion
                                                 case "TagConsolidated":
@@ -498,7 +499,21 @@ namespace igx.functions.databasetaskprocessor
             }
         }
 
-        private static string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
+		private static void resolveObjectObjectID(QueueTask queueRecord, out string @object, out int objectId)
+		{
+			if(queueRecord.Object == "ResponsibilityTypeRelationOverrideItem" && !string.IsNullOrEmpty(queueRecord.Custom) && queueRecord.Custom.Contains("<ActionObjectID>"))
+			{
+				var customXml = XElement.Parse(queueRecord.Custom);
+				@object = customXml.Element("ActionObject").Value;
+				objectId = int.Parse(customXml.Element("ActionObjectID").Value);
+			} else {
+				@object = queueRecord.Object;
+				objectId = queueRecord.ObjectID;
+			} 
+		}
+
+
+		private static string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
         {
             if (!SearchIndexer.IsIndexable(@object)) 
             { 

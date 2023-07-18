@@ -396,7 +396,8 @@ namespace d360.extensions.search
 	            att.Name as TypeName,
 	            a.uid as Uid,
                 att.uid as AssetTypeUid,
-	            ap.Segments
+	            ap.Segments,
+				att.DefaultPermissions
             from [dbo].[Asset] a
             inner join [dbo].[AssetType] att on a.AssetTypeID = att.id
             inner join [dbo].[AssetPath] ap on a.ID = ap.id
@@ -421,7 +422,8 @@ namespace d360.extensions.search
                     AssetType = o.TypeName,
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
-                    AssetPath = GetPathArrayFromSegments(o.Segments),
+					DefaultPermissions = o.DefaultPermissions == 1,
+					AssetPath = GetPathArrayFromSegments(o.Segments),
                 };
             };
 
