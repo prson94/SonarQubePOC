@@ -8,7 +8,15 @@ import { Component } from '@angular/core';
 export class SidePanelSwitcherComponent {
 	selectedTag: { selectedTag: string, uid: string };
 	selectedReferenceItem: { url: string, assetUid: string, uid: string };
-	selectedAsset: { workflowItemUid: string, itemStepUid: string, id: number, uid: string, type: string };
+	selectedAsset: {
+		workflowTypeVersion: number;
+		workflowTypeUid: string,
+		workflowItemUid: string,
+		itemStepUid: string,
+		id: number,
+		uid: string,
+		type: string
+	};
 	sidePanelTab: string;
 	dataProfile: object;
 	selection: { HasProfiling: boolean, AssetUid: string };

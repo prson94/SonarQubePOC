@@ -38,10 +38,12 @@
 		[workflowItemUId]="selectedAsset.workflowItemUid"
 		[itemStepUid]="selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
 </ng-container>
-<ng-container *ngIf="sidePanelTab=='workflow-information' && selectedAsset?.workflowItemUid">
+<ng-container
+	*ngIf="sidePanelTab=='workflow-information' && selectedAsset?.workflowTypeUid && selectedAsset?.workflowTypeVersion">
 	<d3s-workflow-information [shouldBePadded]="true"
 							  [showHeaderLine]="false"
 							  [isSidePanel]="true"
 							  [interceptLinkClick]="true"
-							  [workflowItemUid]="selectedAsset.workflowItemUid"></d3s-workflow-information>
+							  [workflowTypeUid]="selectedAsset.workflowTypeUid"
+							  [workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-workflow-information>
 </ng-container>

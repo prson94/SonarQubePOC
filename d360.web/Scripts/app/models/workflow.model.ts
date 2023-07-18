@@ -819,19 +819,26 @@ export interface WorkflowTypeModel {
 }
 
 export class WorkflowAssignmentItem {
-	workflowItemUid: string;
-	workflowUid: string;
-	workflowName: string;
+	CompletedOn: string;
+	StartedOn: string;
+	Status: string;
+	Version: number;
+	VersionId: number;
+	VersionUid: string;
+	actionUid: string;
+	actionTypeUid: string;
+	assetDisplayValue: string;
+	assetPath: string;
+	assetTypeUid: string;
+	assetUid: string;
+	assigneesJson: string;
+	initiatingObjectType: string;
+	initiatingObjectTypeName: string;
 	initiator: string;
 	initiatorUid: string;
-	assetDisplayValue: string;
-	StartedOn: string;
-	CompletedOn: string;
-	Status: string;
-	assetTypeUid: string;
-	actionTypeUid: string;
-	assetUid: string;
-	assetPath: string;
+	workflowItemUid: string;
+	workflowName: string;
+	workflowUid: string;
 }
 
 export class WorkflowAssignments {

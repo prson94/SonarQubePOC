@@ -210,17 +210,18 @@ export class LinkClickInterceptor {
         baseComponent.selectedTag = null;
 		baseComponent.isInitialized = false;
 
-		if (event.data?.workflowItemUid) {
-			if(event.data?.itemStepUid) {
-				baseComponent.sidePanelTab = 'step-detail';
-				baseComponent.selectedAsset = {
-					workflowItemUid: event.data.workflowItemUid,
-					itemStepUid: event.data.itemStepUid
-				};
-			} else {
-				baseComponent.sidePanelTab = 'workflow-information';
-				baseComponent.selectedAsset = { workflowItemUid: event.data.workflowItemUid };
-			}
+		if (event.data?.workflowTypeUid && event.data?.workflowTypeVersion) {
+			baseComponent.sidePanelTab = 'workflow-information';
+			baseComponent.selectedAsset = {
+				workflowTypeUid: event.data.workflowTypeUid,
+				workflowTypeVersion: event.data.workflowTypeVersion
+			};
+		} else if (event.data?.workflowItemUid && event.data?.itemStepUid) {
+			baseComponent.sidePanelTab = 'step-detail';
+			baseComponent.selectedAsset = {
+				workflowItemUid: event.data.workflowItemUid,
+				itemStepUid: event.data.itemStepUid
+			};
 		} else {
 			//if some other tab is opened in side panel, force opening detail panel
 			baseComponent.sidePanelTab = 'detail';

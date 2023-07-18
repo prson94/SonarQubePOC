@@ -15,6 +15,8 @@ export class AssignmentProgressComponent {
 
 	@Input() workflowUid: string;
 
+	@Input() workflowTypeVersion: number;
+
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
 		if (this._workflowItemUid) {
@@ -39,10 +41,9 @@ export class AssignmentProgressComponent {
 	}>();
 
 	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
-
 	isLoading: boolean = false;
-	assignmentItemSteps: AssignmentItemStep[];
 
+	assignmentItemSteps: AssignmentItemStep[];
 	private _workflowItemUid: string;
 
 	constructor(private workflowService: WorkflowService,

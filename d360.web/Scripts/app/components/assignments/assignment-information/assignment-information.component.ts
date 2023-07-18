@@ -9,6 +9,8 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 })
 export class AssignmentInformationComponent {
 	@Input() showCompleteAssignment: boolean = false;
+	@Input() workflowItemVersion: number;
+
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
 		stepUid: string,
@@ -18,12 +20,11 @@ export class AssignmentInformationComponent {
 		stepUid: string,
 		assetId: number
 	}>();
-
 	assignmentItem: AssignmentItem;
 	isAssignmentItemLoading: boolean = false;
 	isWorkflowStepDetailLoading: boolean = false;
-	workflowStepDetail: WorkflowStepDetail;
 
+	workflowStepDetail: WorkflowStepDetail;
 	private assignmentItemStep: AssignmentItemStep;
 
 	@Input() set workflowItemUid(value: string) {

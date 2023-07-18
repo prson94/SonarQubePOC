@@ -12,11 +12,6 @@ export class WorkflowInformationComponent {
 	@Input() shouldBePadded: boolean = true;
 	@Input() showHeaderLine: boolean = true;
 	@Input() isSidePanel: boolean = false;
-
-	@Input() set workflowItemUid(value: string) {
-		this.loadWorkflowVersion(value);
-	}
-
 	@Input() interceptLinkClick: boolean = false;
 	@Output() linkClick = new EventEmitter();
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
@@ -58,12 +53,6 @@ export class WorkflowInformationComponent {
 		this.workflowService.getWorkflowDiagram(this.id, this.uid, this.version).subscribe((response: WorkflowDiagramModel): void => {
 			this.isLoading = false;
 			this.workflowDiagramModel = response;
-		});
-	}
-
-	private loadWorkflowVersion(workflowItemUid: string) {
-		this.workflowService.getAssignmentsByVersion(1, 10, '', '', '', null, workflowItemUid).subscribe((response) => {
-			console.log(response);
 		});
 	}
 }
