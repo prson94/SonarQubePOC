@@ -916,3 +916,24 @@ export class EmailRecipients {
 	name: string;
 	responsibility: string;
 }
+
+export class VersionStepHistory {
+	"ItemStepID": number;
+	"WorkflowItemUid": string;
+	"StartedOn": string;
+	"CompletedOn": string;
+	"StartedBy": string;
+	"CompletedBy": string;
+	"Object": string;
+	"ObjectID": number;
+	"Name": string;
+	"ObjectTypeName": string;
+	"NgUrl": string;
+	"TextPath": string;
+	"StepName": string;
+	"Assignments": string;
+	"StepType": number;
+	"ActivityType": number;
+	"Comment": string;
+	"Status": string;
+}

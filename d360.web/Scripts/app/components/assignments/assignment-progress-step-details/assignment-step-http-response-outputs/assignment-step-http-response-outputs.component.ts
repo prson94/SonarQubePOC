@@ -10,7 +10,7 @@ import { NodeSettings, WorkflowStepItemFields } from '../../../../models/workflo
 export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent implements OnInit {
 	@Input() settings: NodeSettings;
 	@Input() itemFields: WorkflowStepItemFields;
-	outputs: any[] = [];
+	outputs: { Name: string, Path: string, Value: string }[] = [];
 
 	constructor(
 		protected settingsService: CompanySettingsService) {
@@ -18,26 +18,26 @@ export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent im
 	}
 
 	ngOnInit() {
-			let stepFieldOutputs = this.itemFields?.Outputs.Output ?? null;
-			let stepSettingOutputs = this.settings?.HTTPResponse.Outputs ?? null;
+		let stepFieldOutputs = this.itemFields?.Outputs.Output ?? null;
+		let stepSettingOutputs = this.settings?.HTTPResponse.Outputs ?? null;
 
-			if (stepFieldOutputs != null && !Array.isArray(stepFieldOutputs)) {
-				stepFieldOutputs = [stepFieldOutputs];
+		if (stepFieldOutputs != null && !Array.isArray(stepFieldOutputs)) {
+			stepFieldOutputs = [stepFieldOutputs];
+		}
+
+		if (stepSettingOutputs != null) {
+			if (!Array.isArray(stepSettingOutputs)) {
+				stepSettingOutputs = [stepSettingOutputs];
 			}
 
-			if (stepSettingOutputs != null) {
-				if (!Array.isArray(stepSettingOutputs)) {
-					stepSettingOutputs = [stepSettingOutputs];
-				}
-
-				for (const stepSettingOutput of stepSettingOutputs) {
-					const field = stepFieldOutputs?.find((f) => f.Id === stepSettingOutput.Id);
-					this.outputs.push({
-						Name: stepSettingOutput.Name,
-						Path: stepSettingOutput.Path,
-						Value: field?.Value
-					});
-				}
+			for (const stepSettingOutput of stepSettingOutputs) {
+				const field = stepFieldOutputs?.find((f) => f.Id === stepSettingOutput.Id);
+				this.outputs.push({
+					Name: stepSettingOutput.Name,
+					Path: stepSettingOutput.Path,
+					Value: field?.Value
+				});
 			}
+		}
 	}
 }

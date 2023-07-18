@@ -17,8 +17,8 @@ export class StepInformationRelationshipChangeComponent implements OnInit {
 			const formFieldId: string = this.settings.RelationshipUpdate.Relationship['@FormFieldId'];
 			if (this.nodeList?.length > 0) {
 				for (const workflowDiagramNode of this.nodeList) {
-					if (workflowDiagramNode?.Key === formStepId) {
-						for (const fieldElement of workflowDiagramNode?.FieldsObject?.form?.field) {
+					if (workflowDiagramNode?.Key === formStepId && workflowDiagramNode?.FieldsObject?.form?.field) {
+						for (const fieldElement of workflowDiagramNode.FieldsObject.form.field) {
 							if (fieldElement?.['@id'] === formFieldId) {
 								this.relationshipFormField = fieldElement['@label'];
 							}

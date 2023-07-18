@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { WorkflowActivityType, WorkflowTypeNew } from '../../../../models/workflow.model';
+import { VersionStepHistory, WorkflowActivityType, WorkflowTypeNew } from '../../../../models/workflow.model';
 import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { Router } from '@angular/router';
@@ -17,8 +17,8 @@ import { WorkflowMonitorService } from '../../../../services/workflowmonitor.ser
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;
 	@Input() workflowTypeNew: WorkflowTypeNew;
-	history: any[];
-	selectedHistoryItem: any;
+	history: VersionStepHistory[];
+	selectedHistoryItem: VersionStepHistory;
 	WorkflowActivityType = WorkflowActivityType;
 	menuItems: PopupMenuItem[] = [new PopupMenuItem({
 		title: $localize`Delete`
@@ -81,7 +81,7 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		}
 	}
 
-	clickMenuIcon(item: any): void {
+	clickMenuIcon(item: VersionStepHistory): void {
 		if (item) {
 			this.selectedHistoryItem = item;
 		}
