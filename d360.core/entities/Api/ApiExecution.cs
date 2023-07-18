@@ -107,8 +107,15 @@ namespace d360.core.entities
         public List<string> FieldNamesToDelete { get; set; }
     }
 
+	public class ApiExecutionFields_PatchExecution
+	{
+		public int LastCompletedStepNumber { get; set; }
 
-    public class APIExecutionAPIModelResult : PagedApiBaseViewModel
+		public int RetryCount { get; set; }
+	}
+
+
+	public class APIExecutionAPIModelResult : PagedApiBaseViewModel
     {
         [DataMember]
         public IEnumerable<APIExecutionAPIModel> items { get; set; }
