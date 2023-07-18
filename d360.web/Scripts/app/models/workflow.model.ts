@@ -524,7 +524,6 @@ export class WorkflowItemStep {
 	ObjectID: number;
 	TypeID: number;
 	IsAssignedLoginUser: string;
-	FieldsObject: Record<string, any>;
 }
 
 export class AssignmentItemStep {
