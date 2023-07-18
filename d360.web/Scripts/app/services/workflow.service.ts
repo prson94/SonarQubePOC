@@ -331,26 +331,15 @@ export class WorkflowService extends BaseObservableService {
     }
 
 	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null): Observable<WorkflowAssignments> {
-		let url = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
+		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
-		if (simpleFilter) {
-			url += `&_simpleFilter=${simpleFilter}`;
-		}
+		url += this.getSimpleFilterParam(simpleFilter);
 
-		if (advancedFilter) {
-			url += `&_filter=${advancedFilter}`;
-		}
+		url += this.getAdvancedFilterParam(advancedFilter);
 
-		if (initiatorUid) {
-			url += `&_initiatorUid=${initiatorUid}`;
-		}
+		url += this.getInitiatorUidParam(initiatorUid);
 
-		if (order) {
-			url += `&_order=${order}`;
-			if (direction && direction !== SortOrder.None) {
-				url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
-			}
-		}
+		url += this.getSortParam(order, direction);
 
 		if (isExport) {
 			this.
@@ -869,6 +858,14 @@ export class WorkflowService extends BaseObservableService {
 				url += `&_direction=${direction === SortOrder.Ascending ? 'asc' : 'desc'}`;
 			}
 			return url;
+		} else {
+			return '';
+		}
+	}
+
+	private getInitiatorUidParam(initiatorUid: string): string {
+		if (initiatorUid) {
+			return `&_initiatorUid=${initiatorUid}`;
 		} else {
 			return '';
 		}
