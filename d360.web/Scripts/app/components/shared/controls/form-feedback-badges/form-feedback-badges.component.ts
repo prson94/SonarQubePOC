@@ -12,9 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { UntypedFormControl, UntypedFormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import { FormFeedbackStorage, getFormControlDomElement, getInvalidCount, getRequiredCount, getElementsCount } from './form-feedback-utils';
-import { Subject, Subscription } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { FormFeedbackStorage, getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -32,26 +30,23 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     requiredCount: number = 0;
 
     private requiredPos: number = 0;
-    private invalidPos: number = 0;
+	private invalidPos: number = 0;
 
-	formFieldChangeSub: Subscription;
-
-	subjectLoadGrid = new Subject<void>();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	formBadgeIntervalCheck: any;
 	constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
-		this.subjectLoadGrid.pipe(
-			throttleTime(150))
-			.subscribe(() => {
-				this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
-				this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+		this.formBadgeIntervalCheck = setInterval(() => {
+			this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+			this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
+			this.ref.markForCheck();
+		}, 500);
+	}
 
-				const elementsCount = getElementsCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
-				if (elementsCount === 0) {
-					//if UI has not been rendered yet, retry in 500ms
-					setTimeout(() => this.subjectLoadGrid.next(), 500);
-				}
-				this.ref.markForCheck();
-			});
-    }
+	ngOnDestroy() {
+		if (this.formBadgeIntervalCheck) {
+			clearInterval(this.formBadgeIntervalCheck);
+		}
+	}
 
 	ngOnChanges(changes: SimpleChanges) {
 		const needReinit = 'igformGroup' in changes || 'inputContainer' in changes;
@@ -61,13 +56,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 
 		if (this.igformGroup) {
 			FormFeedbackStorage.clear();
-			if (this.formFieldChangeSub) {
-				this.formFieldChangeSub.unsubscribe();
-			}
-			this.formFieldChangeSub = this.igformGroup.valueChanges.subscribe(() => {
-				this.subjectLoadGrid.next();
-			});
-			this.subjectLoadGrid.next();
         }
     }
 
@@ -234,12 +222,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                 event.target.click();
                 return false;
         }
-    }
-
-    ngOnDestroy(): void {
-		if (this.formFieldChangeSub) {
-			this.formFieldChangeSub.unsubscribe();
-		}
     }
 }
 

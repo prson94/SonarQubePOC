@@ -83,22 +83,6 @@ export function getInvalidCount({ formGroup, formContainer }: { formGroup: Untyp
 	return invCount;
 }
 
-export function getElementsCount({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): number {
-	if (formGroup == null) {
-		return 0;
-	}
-
-	let elCount = 0;
-	Object.keys(formGroup.controls).forEach((x) => {
-		const elem = getFormControlDomElement({ formContainer, controlName: x });
-		if (elem) {
-			elCount++;
-		}
-	});
-
-	return elCount;
-}
-
 export function isFormContainerValid({ formGroup, formContainer }: { formGroup: UntypedFormGroup; formContainer: ElementRef; }): boolean {
 	return getRequiredCount({ formGroup, formContainer }) === 0
 		&& getInvalidCount({ formGroup, formContainer }) === 0;
