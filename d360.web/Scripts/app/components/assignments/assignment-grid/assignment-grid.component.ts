@@ -184,103 +184,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		);
 	};
 
-	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
-		if (lookupType === 'status') {
-			const statusValues: string[] = ['Pending', 'Complete'];
-			const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-			return of({
-				items: values,
-				count: values.length
-			});
-		} else if (lookupType === 'type') {
-			const typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
-			const values: string[] = typeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-			return of({
-				items: values,
-				count: values.length
-			});
-		} else if (lookupType === 'assignee') {
-			return this.workflowService.getPossibleAssignees().pipe(
-				map((assignees: { uid: string, Name: string }[]) => {
-					let possibleAssigneeList: {
-						'name': string,
-						'value': string
-					}[] = assignees?.map((assignee: { uid: string, Name: string }): {
-						'name': string,
-						'value': string
-					} => {
-						return { 'name': assignee.Name, 'value': assignee.uid };
-					}) ?? [];
-					possibleAssigneeList = possibleAssigneeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: possibleAssigneeList,
-						count: possibleAssigneeList.length
-					};
-				}));
-		} else if (lookupType === 'initiator') {
-			return this.workflowService.getPossibleInitiators().pipe(
-				map((initiators: { uid: string, Name: string }[]) => {
-					let possibleInitiatorsList: {
-						'name': string,
-						'value': string
-					}[] = initiators?.map((assignee: { uid: string, Name: string }): {
-						'name': string,
-						'value': string
-					} => {
-						return { 'name': assignee.Name, 'value': assignee.uid };
-					}) ?? [];
-					possibleInitiatorsList = possibleInitiatorsList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: possibleInitiatorsList,
-						count: possibleInitiatorsList.length
-					};
-				}));
-		} else if (lookupType === 'workflowName') {
-			return this.workflowService.getTypes().pipe(
-				map((workflowTypeList: WorkflowTypeModel[]) => {
-					let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
-					workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: workflowNameList,
-						count: workflowNameList.length
-					};
-				}));
-		} else if (lookupType === 'action') {
-			return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
-				map((workflowIssueTypeList: WorkflowIssueType[]) => {
-					let workflowActionList: {
-						'name': string,
-						'value': string
-					}[] = workflowIssueTypeList?.map((workflowIssueTypeList: WorkflowIssueType): {
-						'name': string,
-						'value': string
-					} => {
-						return { 'name': workflowIssueTypeList.Name, 'value': workflowIssueTypeList.Uid };
-					}) ?? [];
-					workflowActionList = workflowActionList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: workflowActionList,
-						count: workflowActionList.length
-					};
-				}));
-		} else if (lookupType === 'typeName') {
-			return this.workflowService.getRelevantAssetTypes().pipe(
-				map((assetType: { uid: string, name: string }[]) => {
-					let assetTypeList: { 'name': string, 'value': string }[] = assetType?.map((assetType): {
-						'name': string,
-						'value': string
-					} => {
-						return { 'name': assetType.name, 'value': assetType.uid };
-					}) ?? [];
-					assetTypeList = assetTypeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
-					return {
-						items: assetTypeList,
-						count: assetTypeList.length
-					};
-				}));
-		}
-	}
-
 	onFiltersLoaded(): void {
 		this.currentPageNumber = 1;
 		this.loadData();
@@ -316,7 +219,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'workflowName')
+			ValueLoader: this.getFilteredWorkflowNames
 		}, {
 			Name: 'assetDisplayValue',
 			FriendlyName: $localize`Associated with`,
@@ -332,7 +235,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			FriendlyName: $localize`Status`,
 			Type: lookupFieldTypePrimaryFilter,
 			Category: '',
-			ValueLoader: this.getFilterValues.bind(this, 'status')
+			ValueLoader: this.getFilteredStatuses
 		}];
 		if (!this.isRequestsFlow) {
 			filterFieldList.push(
@@ -341,14 +244,14 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					FriendlyName: $localize`Assignee`,
 					Type: lookupFieldTypePrimaryFilter,
 					Category: '',
-					ValueLoader: this.getFilterValues.bind(this, 'assignee')
+					ValueLoader: this.getFilteredAssignees
 				},
 				{
 					Name: 'actionTypeUid',
 					FriendlyName: $localize`Action`,
 					Type: lookupFieldTypePrimaryFilter,
 					Category: '',
-					ValueLoader: this.getFilterValues.bind(this, 'action')
+					ValueLoader: this.getFilteredActions
 				},
 				{
 					Name: 'CompletedOn',
@@ -361,21 +264,21 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					FriendlyName: $localize`Initiator`,
 					Type: new FieldType('Lookup'),
 					Category: '',
-					ValueLoader: this.getFilterValues.bind(this, 'initiator')
+					ValueLoader: this.getFilteredInitiator
 				},
 				{
 					Name: 'initiatingObjectType',
 					FriendlyName: $localize`Type`,
 					Type: new FieldType('Lookup'),
 					Category: '',
-					ValueLoader: this.getFilterValues.bind(this, 'type')
+					ValueLoader: this.getFilteredTypes
 				},
 				{
 					Name: 'assetTypeUid',
 					FriendlyName: $localize`Type Name`,
 					Type: new FieldType('Lookup'),
 					Category: '',
-					ValueLoader: this.getFilterValues.bind(this, 'typeName')
+					ValueLoader: this.getFilteredTypeNames
 				}
 			);
 		}
@@ -383,4 +286,105 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.filterFieldsSubject.next(filterFieldList);
 		this.filterFieldsSubject.complete();
 	}
+
+	private getFilteredWorkflowNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getTypes().pipe(
+			map((workflowTypeList: WorkflowTypeModel[]) => {
+				let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
+				workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: workflowNameList,
+					count: workflowNameList.length
+				};
+			}));
+	};
+	private getFilteredStatuses = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		const statusValues: string[] = ['Pending', 'Complete'];
+		const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+		return of({
+			items: values,
+			count: values.length
+		});
+	};
+	private getFilteredAssignees = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getPossibleAssignees().pipe(
+			map((assignees: { uid: string, Name: string }[]) => {
+				let possibleAssigneeList: {
+					'name': string,
+					'value': string
+				}[] = assignees?.map((assignee: { uid: string, Name: string }): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': assignee.Name, 'value': assignee.uid };
+				}) ?? [];
+				possibleAssigneeList = possibleAssigneeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: possibleAssigneeList,
+					count: possibleAssigneeList.length
+				};
+			}));
+	};
+	private getFilteredActions = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
+			map((workflowIssueTypeList: WorkflowIssueType[]) => {
+				let workflowActionList: {
+					'name': string,
+					'value': string
+				}[] = workflowIssueTypeList?.map((workflowIssueTypeList: WorkflowIssueType): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': workflowIssueTypeList.Name, 'value': workflowIssueTypeList.Uid };
+				}) ?? [];
+				workflowActionList = workflowActionList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: workflowActionList,
+					count: workflowActionList.length
+				};
+			}));
+	};
+	private getFilteredInitiator = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getPossibleInitiators().pipe(
+			map((initiators: { uid: string, Name: string }[]) => {
+				let possibleInitiatorsList: {
+					'name': string,
+					'value': string
+				}[] = initiators?.map((assignee: { uid: string, Name: string }): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': assignee.Name, 'value': assignee.uid };
+				}) ?? [];
+				possibleInitiatorsList = possibleInitiatorsList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: possibleInitiatorsList,
+					count: possibleInitiatorsList.length
+				};
+			}));
+	};
+	private getFilteredTypes = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		const typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
+		const values: string[] = typeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+		return of({
+			items: values,
+			count: values.length
+		});
+	};
+	private getFilteredTypeNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
+		return this.workflowService.getRelevantAssetTypes().pipe(
+			map((assetType: { uid: string, name: string }[]) => {
+				let assetTypeList: { 'name': string, 'value': string }[] = assetType?.map((assetType): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': assetType.name, 'value': assetType.uid };
+				}) ?? [];
+				assetTypeList = assetTypeList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+				return {
+					items: assetTypeList,
+					count: assetTypeList.length
+				};
+			}));
+	};
 }
