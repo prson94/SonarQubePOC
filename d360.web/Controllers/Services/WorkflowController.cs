@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.model;
 using d360.model.workflow;
+using d360.web.Controllers.V2;
 using d360.web.Models;
 
 using Dapper;
@@ -38,7 +40,7 @@ using SpreadsheetLight;
 namespace d360.web.Controllers.Services
 {
 	[ApiVersionNeutral, RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
-	public class WorkflowController : BaseApiController
+	public class WorkflowController : BaseV2ApiController
 	{
 		#region DI
 
@@ -396,7 +398,7 @@ namespace d360.web.Controllers.Services
 			if (type == null)
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, workflowTypeUID, "workflowTypeUID"));
-			}			
+			}
 
 			var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == type.ID).FirstOrDefault();
 
@@ -511,8 +513,8 @@ namespace d360.web.Controllers.Services
 
 		[HttpPost, Route("SubmitWorkflowFormByUid/{itemUID:Guid}/{itemStepUID:Guid}")]
 		public async Task<HttpResponseMessage> SubmitWorkflowFormByUid(Guid itemUID, Guid itemStepUID, List<WorkflowFormModelField> model)
-		{			
-			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();			
+		{
+			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();
 
 			if (item == null)
 			{
@@ -526,7 +528,7 @@ namespace d360.web.Controllers.Services
 				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.ItemStepNotFound);
 			}
 
-			var response = await SubmitWorkflowForm(item.ID, itemStepsModel.ID, model);			
+			var response = await SubmitWorkflowForm(item.ID, itemStepsModel.ID, model);
 
 			return response;
 		}
@@ -732,7 +734,7 @@ namespace d360.web.Controllers.Services
 			}
 
 			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
-			
+
 			var response = await SubmitBulkWorkflowForm(model);
 
 			return response;
@@ -1020,6 +1022,9 @@ namespace d360.web.Controllers.Services
 				}
 			}
 
+
+			dynamic _Request = new ExpandoObject();
+
 			if (itemStep.Item.Object == "Issue")
 			{
 				var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
@@ -1042,6 +1047,53 @@ namespace d360.web.Controllers.Services
 					issueItemDetails = Company.GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 					issueObjectType = issueItemDetails.Type;
 					typeName = details.TypeName;
+
+					var fieldTypes = Company.Filter<FieldType>(f => f.IssueTypeID == issue.IssueTypeID).ToList();
+					DynamicParameters dbArgs = new DynamicParameters();
+					dbArgs.Add("issueId", issue.ID);
+					List<string> fieldJoins = new List<string>();
+					List<string> selectColumns = new List<string>();
+					getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "Issue", "I.ID");
+
+					var requestSql = $@"
+							select 
+							I.Uid,
+							casset.uid as CreatedBy, 
+							advCreated.DisplayValue as CreatedByName,
+							I.CreatedOn,
+							uasset.uid as UpdatedBy, 
+							advUpdated.DisplayValue as UpdatedByName,
+							I.UpdatedOn,
+							assocAsset.uid as AssociatedAssetUid,
+							assocType.Name as AssociatedAssetType,
+							ap.DisplayPath as AssociatedAssetPath,
+							assocType.Class as _associatedAssetTypeClass,
+							{string.Join(",\n", selectColumns)}
+							from Issue I
+							{string.Join("\n", fieldJoins)}
+							left join asset casset on casset.ObjectID = I.CreatedBy and casset.Object = 'Resource'
+							left join AssetDisplayValue advCreated on advCreated.AssetID = casset.ID
+							left join asset uasset on uasset.ObjectID = I.UpdatedBy and uasset.Object = 'Resource'
+							left join AssetDisplayValue advUpdated on advUpdated.AssetID = uasset.ID
+							left join asset assocAsset on assocAsset.ID = I.AssetID
+							left join AssetType assocType on assocType.ID = assocAsset.AssetTypeID
+							left join AssetPath ap on ap.id = assocAsset.ID
+							where I.Id = @issueId
+							";
+
+					var issueData = Company.Query<dynamic>(requestSql, dbArgs).ToList().FirstOrDefault();
+
+					if (issueData != null && issueData._associatedAssetTypeClass != null)
+					{
+						var enumDisplayStatus = (AssetTypeClass)issueData._associatedAssetTypeClass;
+						string stringValue = enumDisplayStatus.ToString();
+						issueData.AssociatedAssetTypeClass = stringValue;
+					}
+					var dict = (IDictionary<string, object>)issueData;
+					dict.Remove("_associatedAssetTypeClass");
+
+					_Request.Action = dict;
+					_Request.ActionFields = fieldTypes.Select(x => new { x.Name, x.FriendlyName, x.Type }).ToList();
 				}
 			}
 			else
@@ -1083,7 +1135,7 @@ namespace d360.web.Controllers.Services
 			desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true, false, false);
 			Guid? ObjectUid = null;
 
-			if(itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
+			if (itemStep.Item.Object == SystemObjects.Artifact.ToString() || itemStep.Item.Object == SystemObjects.Taxonomy.ToString() || itemStep.Item.Object == SystemObjects.Policy.ToString())
 			{
 				ObjectUid = Company.Assets.Where(a => a.Object == itemStep.Item.Object && a.ObjectID == itemStep.Item.ObjectID).FirstOrDefault().uid;
 			}
@@ -1110,7 +1162,8 @@ namespace d360.web.Controllers.Services
 				IssueTypeName = issueTypeName,
 				AllowReassignObject = allowReassignObject,
 				AllowReassignResource = allowReassignResource,
-				IsClearAssignementsAllowed
+				IsClearAssignementsAllowed,
+				Request = _Request
 			});
 		}
 
@@ -1356,7 +1409,7 @@ namespace d360.web.Controllers.Services
 		[HttpDelete, Route("deleteItemsByUid")]
 		public HttpResponseMessage DeleteWorkflowItemsByUid([FromBody] List<Guid> items)
 		{
-			long[] itemIds = {};
+			long[] itemIds = { };
 			if (items.Any())
 			{
 				itemIds = Company.WorkflowItems.Where(i => items.Contains(i.UID.Value)).Select(i => i.ID).ToArray();
@@ -1486,7 +1539,7 @@ namespace d360.web.Controllers.Services
 		[Route("item/detailByUid/{itemUid:Guid}"), HttpGet]
 		public HttpResponseMessage GetItemDetailByUid(Guid itemUid)
 		{
-			var item = Company.WorkflowItems.AsNoTracking().Where(x => x.UID == itemUid).Select(x=>x.ID).FirstOrDefault();
+			var item = Company.WorkflowItems.AsNoTracking().Where(x => x.UID == itemUid).Select(x => x.ID).FirstOrDefault();
 
 			if (item == default)
 			{
@@ -1739,10 +1792,10 @@ namespace d360.web.Controllers.Services
 					}
 					else
 					{
-					     var assetTypeIdAddiField = Company.AssetTypes.Where(a => a.Object == objectType && a.ObjectID == objectId).FirstOrDefault()?.ID;
-						 assetFields = Company.FieldTypes
-								.Where(f => f.AssetTypeID == assetTypeIdAddiField && !excludedTypes.Contains(f.Type))
-								.ToList();
+						var assetTypeIdAddiField = Company.AssetTypes.Where(a => a.Object == objectType && a.ObjectID == objectId).FirstOrDefault()?.ID;
+						assetFields = Company.FieldTypes
+							   .Where(f => f.AssetTypeID == assetTypeIdAddiField && !excludedTypes.Contains(f.Type))
+							   .ToList();
 					}
 
 					fields = fields.Union(assetFields).ToList();
@@ -2947,10 +3000,10 @@ namespace d360.web.Controllers.Services
 		[Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
 		public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
 		{
-			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);	
-			
+			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
+
 			var sql = BuildWorkflowVersionStepFormLookupSQL(objectType, objectId, hasIssueObject);
-			
+
 			if (hasIssueObject)
 			{
 				sql = $@"{sql}
@@ -2998,7 +3051,7 @@ namespace d360.web.Controllers.Services
 										ft.LookupObjectId > 0 ";
 			}
 
-			return  $@"{sql}
+			return $@"{sql}
 					   {joinConditions}";
 		}
 
@@ -3103,7 +3156,7 @@ namespace d360.web.Controllers.Services
 			{
 				JArray sfields = new JArray(form.field);
 
-				foreach(var sfield in sfields.Children<JObject>())
+				foreach (var sfield in sfields.Children<JObject>())
 				{
 					if (sfield["@fieldtype"] != null && sfield["@fieldtype"].ToString() == "relationshiptype")
 					{
@@ -3506,10 +3559,10 @@ namespace d360.web.Controllers.Services
 				//return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));				
 			}
 
-			var itemStepId = Company.WorkflowItemSteps.Where(wis => wis.UID == itemStepUid).Select(s=>s.ID).FirstOrDefault();
+			var itemStepId = Company.WorkflowItemSteps.Where(wis => wis.UID == itemStepUid).Select(s => s.ID).FirstOrDefault();
 			if (itemStepId <= 0)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.StepNotFound);				
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.StepNotFound);
 			}
 			return GetWorkflowVersionStepDetail(itemStepId).Result;
 		}
