@@ -185,7 +185,7 @@ export class HTTPResponseOutput {
 export class HTTPResponseSettings {
 	InputStepId: string;
 	InputStepName: string;
-	Outputs: HTTPResponseSettingsOutputs;
+	Outputs: HTTPResponseSettingsOutputs[];
 }
 
 export class NodeSettings {
