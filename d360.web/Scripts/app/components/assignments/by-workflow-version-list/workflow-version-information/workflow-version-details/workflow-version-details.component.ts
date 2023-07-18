@@ -51,7 +51,7 @@ export class WorkflowVersionDetailsComponent {
 		if (this.assignmentVersionItems.length > 0 && this._workflowTypeVersion) {
 			this.selectedAssignmentVersion = this.assignmentVersionItems.filter((assignmentVersionItem: AssignmentVersionItem): boolean => assignmentVersionItem.Version === this._workflowTypeVersion)?.[0];
 		} else {
-			this.selectedAssignmentVersion = undefined;
+			this.selectedAssignmentVersion = null;
 		}
 	}
 }

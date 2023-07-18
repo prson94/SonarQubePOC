@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
@@ -16,14 +15,14 @@ export class SidePanelSwitcherComponent {
 	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
 	isInitialized: boolean = false;
 
-	constructor(private linkClickInterceptor: LinkClickInterceptor) {
+	constructor() {
 	}
 
-	secondaryPanelOpen($event: any) {
+	secondaryPanelOpen(): void {
 
 	}
 
-	clear() {
+	clear(): void {
 		this.selectedTag = null;
 		this.selectedReferenceItem = null;
 		this.selectedAsset = null;
