@@ -145,7 +145,7 @@ namespace d360.web.Controllers
 						break;
 					case "Asset":
 						dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
-						typeClause.Add($@"coalesce(wiis.AssetName, wia1.AssetName) Like @{ff.FieldName}{count}");
+						typeClause.Add($@"cast(coalesce(substring(adv.displayvalue,0,850),'(unknown)') as nvarchar(850)) Like @{ff.FieldName}{count}");
 						break;
 					case "TypeName":
 						dbArgs.Add($"{ff.FieldName}{count}", $"%{ff.RawValue}%");
@@ -231,7 +231,7 @@ namespace d360.web.Controllers
 			}
 
 			var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-								gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class], assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid, wia1.AssetName, wiis.AssetName";
+								gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class], assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid, cast(coalesce(substring(adv.displayvalue,0,850),'(unknown)') as nvarchar(850))";
 
 			var fromSql = @"		from [workflow].[type] wt 
 								inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -245,11 +245,10 @@ namespace d360.web.Controllers
 								left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
 								left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id) 
 								left  join [dbo].[intersect] inter on (wi.[object]='Intersect' and inter.id=wi.[objectId])
-								left join [workflow].[ItemAsset] wia1 on wia1.WorkFlowItemId = wi.id
-								left join [workflow].[ItemIssue] wiis on wiis.WorkFlowItemId = wi.id";
+								left join [dbo].[AssetDisplayValue] adv on adv.AssetID =  coalesce(cod.ID,ass.id)";
 			var sql = $@"
-							select wi.id as Id,                    
-							wt.name as 'WorkflowName' ,                    
+							select wi.id as Id,
+							wt.name as 'WorkflowName',
 							case when assettype.[Object] = 'ArtifactType' and assettype.[Class] = {(int)AssetTypeClass.BusinessAsset} then
 							'Business Asset'
 							when assettype.[Object] = 'ArtifactType' and assettype.[Class] = {(int)AssetTypeClass.TechnicalAsset} then
@@ -269,13 +268,15 @@ namespace d360.web.Controllers
 							else
 							''
 							end as 'Type',                    
-						 coalesce(assettype.Name, it.Name) as TypeName,                    
-						 case when wi.[object] = 'Intersect' then '(unknown relationship)'   
-						 else coalesce(wiis.AssetName,wia1.AssetName,'(unknown)') end as 'Asset',                     
+							coalesce(assettype.Name, it.Name) as TypeName,                    
+							case when wi.[object] = 'Intersect' then '(unknown relationship)'   
+							else cast(coalesce(substring(adv.displayvalue,0,850),'(unknown)') as nvarchar(850)) end 
+							as 'Asset',
 						 gr.firstName + ' ' + gr.lastName as 'Initiator',                    
-						 wi.startedOn as 'StartedOn',                    wi.CompletedOn as 'CompletedOn',
+						 wi.startedOn as 'StartedOn',
+						wi.CompletedOn as 'CompletedOn',
 						case when   wi.CompletedOn is null then    'Pending'            
-						else        'Complete'    end as [Status],
+						else 'Complete' end as [Status],
 						assettype.Object as ObjectType,
 						assettype.ObjectID as ObjectTypeID,
 						coalesce(cod.Object, ass.Object) as Object,
