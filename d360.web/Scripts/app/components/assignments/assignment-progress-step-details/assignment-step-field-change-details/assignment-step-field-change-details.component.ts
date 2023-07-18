@@ -10,7 +10,7 @@ import { WorkflowStepFieldChangeDetail } from '../../../../models/workflow.model
 	templateUrl: './assignment-step-field-change-details.component.html'
 })
 export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent implements OnInit {
-	@Input() fieldChanges: WorkflowStepFieldChangeDetail[];
+	@Input() fieldChanges: WorkflowStepFieldChangeDetail[] = [];
 
 	constructor(protected settingsService: CompanySettingsService) {
 		super(settingsService);
@@ -50,27 +50,34 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 		if (this.fieldChanges) {
 			for (const fieldChange of this.fieldChanges) {
 				// populate ChangeType
-				if (fieldChange.AppendValue === 'true') {
-					fieldChange.ChangeType = 'Append';
-				} else if (fieldChange.ClearValue === 'true') {
-					fieldChange.ChangeType = 'Clear';
-				} else {
-					fieldChange.ChangeType = 'Replace';
-				}
+				this.setChangeType(fieldChange);
 				// populate ValueSource
-				if (fieldChange.FormValue === true) {
-					if (fieldChange.ObjectType === 'Action') {
-						fieldChange.ValueSource = 'Action Form Input';
-					} else {
-						fieldChange.ValueSource = 'Form Input';
-					}
-				} else if (fieldChange.ClearValue === 'true') {
-					fieldChange.ValueSource = '--';
-				} else {
-					fieldChange.ValueSource = 'Specific Value';
-				}
+				this.setValueSource(fieldChange);
 			}
 		}
 	}
 
+	private setValueSource(fieldChange: WorkflowStepFieldChangeDetail): void {
+		if (fieldChange.FormValue === true) {
+			if (fieldChange.ObjectType === 'Action') {
+				fieldChange.ValueSource = 'Action Form Input';
+			} else {
+				fieldChange.ValueSource = 'Form Input';
+			}
+		} else if (fieldChange.ClearValue === 'true') {
+			fieldChange.ValueSource = '--';
+		} else {
+			fieldChange.ValueSource = 'Specific Value';
+		}
+	}
+
+	private setChangeType(fieldChange: WorkflowStepFieldChangeDetail): void {
+		if (fieldChange.AppendValue === 'true') {
+			fieldChange.ChangeType = 'Append';
+		} else if (fieldChange.ClearValue === 'true') {
+			fieldChange.ChangeType = 'Clear';
+		} else {
+			fieldChange.ChangeType = 'Replace';
+		}
+	}
 }
