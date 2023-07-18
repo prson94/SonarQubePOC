@@ -1572,7 +1572,7 @@ namespace d360.model.DataAccessLayer
 				if (Guid.TryParse(workflowItemUidString, out workflowItemUid))
 				{
 					dbArgs.Add("workflowItemUid", workflowItemUid);
-					conditions.Add(@"exists (select WI.VersionID from workflow.Item WI where WI.ID = WV.Version AND WI.UID = @workflowItemUid)");
+					conditions.Add(@"exists (select WI.VersionID from workflow.Item WI where WI.VersionID = WV.Id AND WI.UID = @workflowItemUid)");
 				}
 			}
 
