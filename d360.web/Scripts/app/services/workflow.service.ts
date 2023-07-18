@@ -620,28 +620,17 @@ export class WorkflowService extends BaseObservableService {
 
 	getAssignmentsByVersion(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', order: string = '', direction: number = SortOrder.Ascending, workflowItemUid: string = '', workflowTypeUid: string = ''): Observable<AssignmentByVersion> {
 		let url: string = `/api/v2/workflow/assignmentsByVersion?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
-		if (simpleFilter) {
-			url += `&_simpleFilter=${simpleFilter}`;
-		}
 
-		if (advancedFilter) {
-			url += `&_filter=${advancedFilter}`;
-		}
+		url += this.getSimpleFilterParam(simpleFilter);
 
-		if(workflowItemUid) {
-			url += `&_workflowItemUid=${workflowItemUid}`;
-		}
+		url += this.getAdvancedFilterParam(advancedFilter);
 
-		if(workflowTypeUid) {
-			url += `&_workflowTypeUid=${workflowTypeUid}`;
-		}
+		url += this.getWorkflowItemUidParam(workflowItemUid);
 
-		if (order) {
-			url += `&_order=${order}`;
-			if (direction && direction !== SortOrder.None) {
-				url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
-			}
-		}
+		url += this.getWorkflowTypeUidParam(workflowTypeUid);
+
+		url += this.getSortParam(order, direction);
+
 		return this.http.get(url)
 			.pipe(
 				map((response) => <AssignmentByVersion>response),
@@ -838,4 +827,50 @@ export class WorkflowService extends BaseObservableService {
                     );
             }));
     }
+
+	private getSimpleFilterParam(simpleFilter: string): string {
+		if (simpleFilter) {
+			return `&_simpleFilter=${simpleFilter}`;
+		} else {
+			return '';
+		}
+
+	}
+
+	private getAdvancedFilterParam(advancedFilter: string): string {
+		if (advancedFilter) {
+			return `&_filter=${advancedFilter}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getWorkflowItemUidParam(workflowItemUid: string): string {
+		if (workflowItemUid) {
+			return `&_workflowItemUid=${workflowItemUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getWorkflowTypeUidParam(workflowTypeUid: string): string {
+		if (workflowTypeUid) {
+			return `&_workflowTypeUid=${workflowTypeUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getSortParam(order: string, direction: SortOrder): string {
+		if (order) {
+			let url: string = '';
+			url += `&_order=${order}`;
+			if (direction !== SortOrder.None) {
+				url += `&_direction=${direction === SortOrder.Ascending ? 'asc' : 'desc'}`;
+			}
+			return url;
+		} else {
+			return '';
+		}
+	}
 }

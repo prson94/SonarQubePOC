@@ -3,26 +3,22 @@
 /*global $localize*/
 
 export class WorkflowHelpers {
-	static activityTypeName(workflowActivityType: WorkflowActivityType): string {
-		switch (workflowActivityType) {
-			case WorkflowActivityType.EmailNotification:
-				return $localize`Email Notification`;
-			case WorkflowActivityType.FieldChange:
-				return $localize`Field Change`;
-			case WorkflowActivityType.RelationshipChange:
-				return $localize`Relationship Update`;
-			case WorkflowActivityType.StateChange:
-				return $localize`State Change`;
-			case WorkflowActivityType.StatusChange:
-				return $localize`Status Change`;
-			case WorkflowActivityType.HTTPRequest:
-				return $localize`HTTP Request`;
-			case WorkflowActivityType.HTTPResponse:
-				return $localize`HTTP Response`;
-			default:
-				return WorkflowActivityType[workflowActivityType];
+	private static activityTypeNames: Record<WorkflowActivityType, string> = {
+		0: $localize`None`,
+		1: $localize`Email Notification`,
+		2: $localize`Status Change`,
+		3: $localize`Form`,
+		4: $localize`Procedure`,
+		5: $localize`Field Change`,
+		6: $localize`Relationship Update`,
+		7: $localize`State Change`,
+		8: $localize`Delete`,
+		9: $localize`HTTP Request`,
+		10: $localize`HTTP Response`
+	};
 
-		}
+	static activityTypeName(workflowActivityType: WorkflowActivityType): string {
+		return this.activityTypeNames[+workflowActivityType];
 	}
 
 	static stepTypeName(stepType: StepType): string {
@@ -42,32 +38,30 @@ export class WorkflowHelpers {
 		}
 	}
 
-	static getActivityTypeIcon(workflowActivityType: WorkflowActivityType, stepType?: StepType): string {
-		switch (workflowActivityType) {
-			case WorkflowActivityType.EmailNotification:
-				return 'fa-envelope';
-			case WorkflowActivityType.FieldChange:
-				return 'fa-id-card';
-			case WorkflowActivityType.RelationshipChange:
-				return 'fa-users';
-			case WorkflowActivityType.HTTPRequest:
-				return 'fa-globe';
-			case WorkflowActivityType.HTTPResponse:
-				return 'fa-cogs';
-			case WorkflowActivityType.Form:
-				return 'fa-sliders';
-			case WorkflowActivityType.Delete:
-				return 'fa-trash';
-			case WorkflowActivityType.None:
-				if (stepType === StepType.Start) {
-					return 'fa-play-circle';
-				} else {
-					return 'fa-stop-circle';
-				}
-			default:
-				return '';
+	private static stepActivityTypeIcon: Record<WorkflowActivityType, string> = {
+		0: '',
+		1: 'fa-envelope',
+		2: '',
+		3: 'fa-sliders',
+		4: '',
+		5: 'fa-id-card',
+		6: 'fa-users',
+		7: '',
+		8: 'fa-trash',
+		9: 'fa-globe',
+		10: 'fa-cogs',
+	};
 
+	static getActivityTypeIcon(workflowActivityType: WorkflowActivityType, stepType?: StepType): string {
+		const icon: string = this.stepActivityTypeIcon[+workflowActivityType];
+		if (!icon && stepType) {
+			if (stepType === StepType.Start) {
+				return 'fa-play-circle';
+			} else {
+				return 'fa-stop-circle';
+			}
 		}
+		return icon;
 	}
 
 	static formResponseTypeName(responseType: string): string {
