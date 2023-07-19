@@ -41,7 +41,7 @@ export class StepInformationComponent implements OnInit, OnChanges {
 		});
 	}
 
-	ngOnChanges(changes: SimpleChanges): void {
+	ngOnChanges(): void {
 		this.loadWorkflowDiagram();
 	}
 

@@ -12,7 +12,8 @@
 		<as-split-area class="tile tile-detail main-panel">
 			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow"
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
-			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen">
+			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
+				 (clickOutside)="closeSecondarySidePanel()">
 				<div class="panel-header">
                         <span class="header-label"
 							  i18n>Information</span>
@@ -27,8 +28,7 @@
 				</div>
 				<div class="details-container">
 					<div>
-						<d3s-side-panel-switcher #sidePanelSwitcherComponent
-												 (clickOutside)="closeSecondarySidePanel()"></d3s-side-panel-switcher>
+						<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 					</div>
 				</div>
 			</div>
