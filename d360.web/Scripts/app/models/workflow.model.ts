@@ -663,7 +663,7 @@ export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
 	HTTPResponse: {StatusCode: number, Body: string};
-	Outputs: {Id: string, Value: string};
+	Outputs: {Output:{Id: string, Value: string}[]};
 }
 
 export class WorkflowStepItemSettings {
