@@ -14,7 +14,7 @@ export class AssignmentInformationGeneralComponent {
 	private workflowChangeType: string;
 	private _assignmentItem: AssignmentItem;
 	private assetPathPartIndex: number = -1;
-	@Input() workflowItemVersion: number;
+	@Input() workflowTypeVersion: number;
 
 	@Input() set workflowItemUid(value: string) {
 		if (value) {

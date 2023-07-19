@@ -9,7 +9,11 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AssignmentVersionItem, NodeModel } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
-import { AssetDetailClickEvent, LinkClickInterceptor } from '../../../services/href-click-service';
+import {
+	AssetDetailClickEvent,
+	AssetDetailClickType,
+	LinkClickInterceptor
+} from '../../../services/href-click-service';
 import { Subscription } from 'rxjs';
 
 /*global $localize*/
@@ -88,8 +92,15 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 
 	ngOnInit(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((event: AssetDetailClickEvent) => {
-			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, event);
-			this.secondarySidePanelTab = '';
+			if(event.type === AssetDetailClickType.WorkflowVersion){
+				this.workflowTypeVersion = event.workflowTypeVersion;
+				this.workflowTypeUid = event.workflowTypeUid;
+				this.selectedNodeModel = event.selectedNodeModel;
+				this.secondarySidePanelTab = 'pendingAssignments';
+			} else {
+				this.secondarySidePanelTab = '';
+				this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, event);
+			}
 			this.secondarySidePanelOpen = true;
 		});
 	}
@@ -114,18 +125,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
-	nodeSelection(event: { selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }): void {
-		this.selectedNodeModel = event.selectedNodeModel;
-		this.workflowTypeUid = event.workflowTypeUid;
-		this.workflowTypeVersion = event.workflowTypeVersion;
-		this.secondarySidePanelTab = 'pendingAssignments';
-		this.secondarySidePanelOpen = true;
-	}
-
 	closeSecondarySidePanel() {
-		if (this.sidePanelSwitcherComponent?.isInitialized) {
-			this.secondarySidePanelOpen = false;
-			this.sidePanelSwitcherComponent.isInitialized = false;
-		}
+		this.secondarySidePanelOpen = false;
 	}
 }

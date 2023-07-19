@@ -44,6 +44,7 @@ import { FieldType } from '../../../../models/fields.model';
 import { concatMap, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 declare var window: any;
 
@@ -79,7 +80,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
-	@Output() onNodeClick: EventEmitter<{ selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }> = new EventEmitter<{ selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }>();
     @ViewChild('workflowDiagram', { static: true }) diagramRef;
     @ViewChild('workflowPalette', { static: true }) paletteRef;
 
@@ -132,7 +132,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,
         private objectDetailService: ObjectDetailService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+		private linkClickInterceptor:LinkClickInterceptor) {
         super(settingsService);
     }
     
@@ -1688,11 +1689,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 	private ObjectSingleClicked(e: any) {
 		let part = e.subject.part;
 		if (part instanceof go.Node) {
-			this.onNodeClick.emit({
+			this.linkClickInterceptor.sendEvent(e.diagram.lastInput.event, {
 				selectedNodeModel: part?.data,
 				workflowTypeUid: this.uid,
 				workflowTypeVersion: this.version
-			});
+			}, '')
 		}
 	}
 

@@ -239,6 +239,7 @@
                             <div id="WorkflowDiagram"
                                  #workflowDiagram
                                  style="overflow: hidden;"
+								 (click)="$event.stopPropagation()"
                                  class="diagram"></div>
                         </td>
                     </tr>

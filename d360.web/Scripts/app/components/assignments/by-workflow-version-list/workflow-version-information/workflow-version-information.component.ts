@@ -12,13 +12,4 @@ export class WorkflowVersionInformationComponent {
 
 	@Output() linkClick = new EventEmitter();
 	@Output() close: EventEmitter<void> = new EventEmitter<void>();
-	@Output() nodeSelection: EventEmitter<{
-		selectedNodeModel: NodeModel;
-		workflowTypeUid: string;
-		workflowTypeVersion: number
-	}> = new EventEmitter<{ selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }>();
-
-	stepSelection(event: { selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }): void {
-		this.nodeSelection.emit(event);
-	}
 }

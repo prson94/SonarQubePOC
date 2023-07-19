@@ -32,18 +32,24 @@
 		<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
 	</ng-container>
 </ng-container>
-<ng-container *ngIf="sidePanelTab === 'step-detail' && selectedAsset?.workflowItemUid && selectedAsset?.itemStepUid">
+<ng-container
+	*ngIf="sidePanelTab === AssetDetailClickType.WorkflowStep && selectedAsset?.workflowItemUid && selectedAsset?.itemStepUid">
 	<!-- to handle close and open modal events here for step details -->
 	<d3s-assignment-progress-step-details
 		[workflowItemUId]="selectedAsset.workflowItemUid"
 		[itemStepUid]="selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
 </ng-container>
 <ng-container
-	*ngIf="sidePanelTab=='workflow-information' && selectedAsset?.workflowTypeUid && selectedAsset?.workflowTypeVersion">
+	*ngIf="sidePanelTab==AssetDetailClickType.WorkflowTypeInformation && selectedAsset?.workflowTypeUid && selectedAsset?.workflowTypeVersion">
 	<d3s-workflow-information [shouldBePadded]="true"
 							  [showHeaderLine]="false"
 							  [isSidePanel]="true"
 							  [interceptLinkClick]="true"
 							  [workflowTypeUid]="selectedAsset.workflowTypeUid"
 							  [workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-workflow-information>
+</ng-container>
+<ng-container
+	*ngIf="sidePanelTab==AssetDetailClickType.WorkflowItemInformation && selectedAsset?.workflowItemUid && selectedAsset?.workflowTypeVersion">
+	<d3s-assignment-information [workflowItemUid]="selectedAsset.workflowItemUid"
+								[workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-assignment-information>
 </ng-container>

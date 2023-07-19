@@ -6,6 +6,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { Router } from '@angular/router';
 import { PopupMenuItem } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { WorkflowMonitorService } from '../../../../services/workflowmonitor.service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 /*global $localize*/
 
@@ -23,6 +24,8 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	selectedHistoryItem: VersionStepHistory;
 	WorkflowActivityType = WorkflowActivityType;
 	menuItems: PopupMenuItem[] = [new PopupMenuItem({
+		title: $localize`Show Assignment Details`
+	}), new PopupMenuItem({
 		title: $localize`Delete`
 	})];
 	showDeletionModal: boolean = false;
@@ -32,7 +35,8 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private workflowMonitorService: WorkflowMonitorService,
-		private router: Router) {
+		private router: Router,
+		private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
 	}
 
@@ -83,6 +87,12 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
 			this.showDeletionModal = true;
+		}
+		if (key === $localize`Show Assignment Details`.toLowerCase()) {
+			this.linkClickInterceptor.sendEvent(event.event, {
+				workflowItemUid: this.selectedHistoryItem.WorkflowItemUid,
+				workflowTypeVersion: this.workflowTypeVersion
+			}, '');
 		}
 	}
 

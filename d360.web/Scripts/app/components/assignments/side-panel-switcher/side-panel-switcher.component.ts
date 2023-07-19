@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { SidePanelButton } from '../../../models/side-panel.model';
+import { NodeModel } from '../../../models/workflow.model';
+import { AssetDetailClickType } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
@@ -9,6 +12,7 @@ export class SidePanelSwitcherComponent {
 	selectedTag: { selectedTag: string, uid: string };
 	selectedReferenceItem: { url: string, assetUid: string, uid: string };
 	selectedAsset: {
+		selectedNodeModel: NodeModel;
 		workflowTypeVersion: number;
 		workflowTypeUid: string,
 		workflowItemUid: string,
@@ -21,7 +25,6 @@ export class SidePanelSwitcherComponent {
 	dataProfile: object;
 	selection: { HasProfiling: boolean, AssetUid: string };
 	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
-	isInitialized: boolean = false;
 
 	constructor() {
 	}
@@ -36,4 +39,6 @@ export class SidePanelSwitcherComponent {
 		this.selectedAsset = null;
 		this.selection = null;
 	}
+
+	protected readonly AssetDetailClickType = AssetDetailClickType;
 }

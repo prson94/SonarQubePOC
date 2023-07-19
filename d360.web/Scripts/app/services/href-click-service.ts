@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { FieldDisplayModel } from '../models/fieldtype-api.model';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
+import { NodeModel } from '../models/workflow.model';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
@@ -11,7 +12,11 @@ export enum AssetDetailClickType {
     User = 'User',
     Tag = 'Tag',
 	Group = 'Group',
-	Field = 'Field'
+	Field = 'Field',
+	WorkflowStep = 'WorkflowStep',
+	WorkflowTypeInformation = 'WorkflowTypeInformation',
+	WorkflowItemInformation = 'WorkflowItemInformation',
+	WorkflowVersion = 'WorkflowVersion'
 }
 
 export class AssetDetailClickEvent {
@@ -28,6 +33,9 @@ export class AssetDetailClickEvent {
     originalEvent: any;
 	workflowItemUid: string;
 	itemStepUid: string;
+	workflowTypeUid: string;
+	workflowTypeVersion: number;
+	selectedNodeModel: NodeModel;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -193,7 +201,26 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = data.referenceListTypeUid;
             }
 
-        } else {
+			if (data?.workflowTypeUid && data?.workflowTypeVersion && !(data?.selectedNodeModel)) {
+				adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
+				adcEv.workflowTypeUid = data.workflowTypeUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+			} else if (data?.workflowItemUid && data?.itemStepUid) {
+				adcEv.type = AssetDetailClickType.WorkflowStep;
+				adcEv.workflowItemUid = data.workflowItemUid;
+				adcEv.itemStepUid = data.itemStepUid;
+			} else if(data?.workflowTypeUid && data?.workflowTypeVersion && data?.selectedNodeModel) {
+				adcEv.type = AssetDetailClickType.WorkflowVersion;
+				adcEv.workflowTypeUid = data.workflowTypeUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+				adcEv.selectedNodeModel = data.selectedNodeModel;
+			} else if (data?.workflowItemUid && data?.workflowTypeVersion) {
+				adcEv.type = AssetDetailClickType.WorkflowItemInformation;
+				adcEv.workflowItemUid = data.workflowItemUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+			}
+
+		} else {
             adcEv = null;
         }
         this.subject.next(adcEv);
@@ -208,19 +235,24 @@ export class LinkClickInterceptor {
         baseComponent.selectedAsset = null;
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
-		baseComponent.isInitialized = false;
 
-		if (event.data?.workflowTypeUid && event.data?.workflowTypeVersion) {
-			baseComponent.sidePanelTab = 'workflow-information';
+		if (event.type === AssetDetailClickType.WorkflowTypeInformation) {
+				baseComponent.sidePanelTab = AssetDetailClickType.WorkflowTypeInformation;
+				baseComponent.selectedAsset = {
+					workflowTypeUid: event.workflowTypeUid,
+					workflowTypeVersion: event.workflowTypeVersion
+				};
+		} else if (event.type === AssetDetailClickType.WorkflowStep) {
+			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowStep;
 			baseComponent.selectedAsset = {
-				workflowTypeUid: event.data.workflowTypeUid,
-				workflowTypeVersion: event.data.workflowTypeVersion
+				workflowItemUid: event.workflowItemUid,
+				itemStepUid: event.itemStepUid
 			};
-		} else if (event.data?.workflowItemUid && event.data?.itemStepUid) {
-			baseComponent.sidePanelTab = 'step-detail';
+		} else if (event.type === AssetDetailClickType.WorkflowItemInformation) {
+			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowItemInformation;
 			baseComponent.selectedAsset = {
-				workflowItemUid: event.data.workflowItemUid,
-				itemStepUid: event.data.itemStepUid
+				workflowItemUid: event.workflowItemUid,
+				workflowTypeVersion: event.workflowTypeVersion
 			};
 		} else {
 			//if some other tab is opened in side panel, force opening detail panel
@@ -246,7 +278,5 @@ export class LinkClickInterceptor {
         if (event.type !== AssetDetailClickType.Undefined) {
             baseComponent.sidePanelOpen = true;
         }
-
-		baseComponent.isInitialized = true;
-    }
+	}
 }

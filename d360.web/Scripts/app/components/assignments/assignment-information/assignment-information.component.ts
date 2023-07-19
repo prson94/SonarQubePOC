@@ -9,7 +9,7 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 })
 export class AssignmentInformationComponent {
 	@Input() showCompleteAssignment: boolean = false;
-	@Input() workflowItemVersion: number;
+	@Input() workflowTypeVersion: number;
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
