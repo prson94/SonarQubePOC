@@ -5,8 +5,7 @@ import { AssetDetailClickType } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
-	templateUrl: './side-panel-switcher.component.html',
-	styleUrls: ['./side-panel-switcher.component.less']
+	templateUrl: './side-panel-switcher.component.html'
 })
 export class SidePanelSwitcherComponent {
 	selectedTag: { selectedTag: string, uid: string };

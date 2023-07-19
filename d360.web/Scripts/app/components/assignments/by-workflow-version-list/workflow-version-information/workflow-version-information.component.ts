@@ -3,8 +3,7 @@ import { NodeModel } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-workflow-version-information',
-	templateUrl: './workflow-version-information.component.html',
-	styleUrls: ['./workflow-version-information.component.less']
+	templateUrl: './workflow-version-information.component.html'
 })
 export class WorkflowVersionInformationComponent {
 	@Input() workflowTypeUid: string;

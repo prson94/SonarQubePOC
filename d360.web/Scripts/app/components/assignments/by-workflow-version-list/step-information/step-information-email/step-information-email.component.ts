@@ -7,8 +7,7 @@ import { ResponsibilityType } from '../../../../../models/responsibility-type.mo
 
 @Component({
 	selector: 'd3s-step-information-email',
-	templateUrl: './step-information-email.component.html',
-	styleUrls: ['./step-information-email.component.less']
+	templateUrl: './step-information-email.component.html'
 })
 export class StepInformationEmailComponent implements OnInit {
 	@Input() settings: NodeSettings;

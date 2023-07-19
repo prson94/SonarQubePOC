@@ -4,8 +4,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 
 @Component({
 	selector: 'd3s-workflow-information',
-	templateUrl: './workflow-information.component.html',
-	styleUrls: ['./workflow-information.component.less']
+	templateUrl: './workflow-information.component.html'
 })
 export class WorkflowInformationComponent {
 

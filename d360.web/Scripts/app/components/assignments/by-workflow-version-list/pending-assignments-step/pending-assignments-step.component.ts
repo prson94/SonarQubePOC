@@ -12,8 +12,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-pending-assignments-step',
-	templateUrl: './pending-assignments-step.component.html',
-	styleUrls: ['./pending-assignments-step.component.less']
+	templateUrl: './pending-assignments-step.component.html'
 })
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;

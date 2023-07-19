@@ -7,8 +7,7 @@ import { isArray } from 'lodash-es';
 
 @Component({
 	selector: 'd3s-step-information-form',
-	templateUrl: './step-information-form.component.html',
-	styleUrls: ['./step-information-form.component.less']
+	templateUrl: './step-information-form.component.html'
 })
 export class StepInformationFormComponent implements OnInit {
 	@Input() selectedNode: NodeModel;

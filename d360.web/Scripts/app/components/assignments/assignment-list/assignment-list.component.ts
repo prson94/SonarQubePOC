@@ -18,8 +18,7 @@ import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-sw
 
 @Component({
 	selector: 'd3s-assignment-list',
-	templateUrl: './assignment-list.component.html',
-	styleUrls: ['./assignment-list.component.less']
+	templateUrl: './assignment-list.component.html'
 })
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
 

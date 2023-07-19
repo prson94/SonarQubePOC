@@ -20,8 +20,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'd3s-by-workflow-version-list',
-	templateUrl: './by-workflow-version-list.component.html',
-	styleUrls: ['./by-workflow-version-list.component.less']
+	templateUrl: './by-workflow-version-list.component.html'
 })
 export class ByWorkflowVersionListComponent extends BaseComponent implements OnInit, OnDestroy {
 	sidePanelOpen: boolean = true;

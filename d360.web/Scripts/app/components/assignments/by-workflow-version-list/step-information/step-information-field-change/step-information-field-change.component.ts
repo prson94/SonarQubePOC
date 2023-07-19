@@ -12,8 +12,7 @@ import { FieldType } from '../../../../../models/fields.model';
 
 @Component({
 	selector: 'd3s-step-information-field-change',
-	templateUrl: './step-information-field-change.component.html',
-	styleUrls: ['./step-information-field-change.component.less']
+	templateUrl: './step-information-field-change.component.html'
 })
 export class StepInformationFieldChangeComponent implements OnInit {
 	@Input() settings: NodeSettings;
