@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas/Gupta" id="Table.dbo.AssetDataProfile-v17">
+  <changeSet author="Pappas/Gupta" id="Table.dbo.AssetDataProfile-v18">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
@@ -51,6 +51,9 @@ BEGIN
 		[SourceLastModified] DATETIME NULL,
 		[FilterCount] BIGINT NULL,
 		[Freshness] INT NULL,
+		[ProfileSource] nvarchar(100),
+		[ProfileSeries] nvarchar(100),
+		[ProfileType] INT NULL,
 		[CreatedBy] INT NOT NULL,
 		[CreatedOn] DATETIME NOT NULL,
 		[UpdatedBy] INT NOT NULL,
@@ -77,11 +80,38 @@ IF NOT EXISTS (
 	BEGIN
 		ALTER TABLE [dbo].[AssetDataProfile] ADD [Freshness] INT NULL
 	END
+	
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') AND name = 'ProfileSource'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileSource] Nvarchar(100) NULL
+	END
+
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') AND name = 'ProfileSeries'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileSeries] Nvarchar(100) NULL
+	END
+
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') AND name = 'ProfileType'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileType] INT NULL
+	END	
 ]]>
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetDataProfile.Indices-v17">
+  <changeSet author="Pappas" id="Table.dbo.AssetDataProfile.Indices-v18">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_ProfileSetDate')
@@ -112,6 +142,11 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_StructureSignature')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_AssetID_StructureSignature ON dbo.AssetDataProfile ([AssetID], [StructureSignature])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_ProfileSeries')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_AssetDataProfile_ProfileSeries ON dbo.AssetDataProfile ([ProfileSeries]) include ([AssetID],[ProfileSetDate])
 END
 ]]>
     </sql>
