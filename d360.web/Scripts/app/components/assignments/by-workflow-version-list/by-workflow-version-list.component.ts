@@ -6,14 +6,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import {
-	AssignmentVersionItem,
-	NodeModel,
-	WorkflowDiagramModel,
-	WorkflowDiagramNode,
-	WorkflowEventRegistration,
-	WorkflowTypeNew
-} from '../../../models/workflow.model';
+import { AssignmentVersionItem, NodeModel } from '../../../models/workflow.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../../services/href-click-service';
@@ -33,10 +26,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 	secondarySidePanelOpen: boolean = false;
 	secondarySidePanelTab: string = 'pendingAssignments';
 	selectedAssignmentVersionItems: AssignmentVersionItem[];
-	versionStepId: number;
-	selectedNode: NodeModel;
-	workflowEvent: WorkflowEventRegistration;
-	nodeList: WorkflowDiagramNode[];
+	selectedNodeModel: NodeModel;
 	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
 		label: $localize`Assignments on Workflow Version`,
 		tooltip: $localize`Assignments on Workflow Version`,
@@ -78,7 +68,8 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 			needsSelection: true
 		})
 	];
-	workflowTypeNew: WorkflowTypeNew;
+	workflowTypeVersion: number;
+	workflowTypeUid: string;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	private linkInterceptorSubscription: Subscription;
 
@@ -123,18 +114,16 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
-	nodeSelection(event: { NodeModel: NodeModel, WorkflowDiagramModel: WorkflowDiagramModel }): void {
-		this.versionStepId = parseInt(event?.NodeModel?.key) ?? null;
-		this.selectedNode = event.NodeModel;
-		this.nodeList = event.WorkflowDiagramModel.Nodes;
-		this.workflowEvent = event.WorkflowDiagramModel.Event;
-		this.workflowTypeNew = event.WorkflowDiagramModel.Type;
+	nodeSelection(event: { selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }): void {
+		this.selectedNodeModel = event.selectedNodeModel;
+		this.workflowTypeUid = event.workflowTypeUid;
+		this.workflowTypeVersion = event.workflowTypeVersion;
 		this.secondarySidePanelTab = 'pendingAssignments';
 		this.secondarySidePanelOpen = true;
 	}
 
 	closeSecondarySidePanel() {
-		if(this.sidePanelSwitcherComponent?.isInitialized) {
+		if (this.sidePanelSwitcherComponent?.isInitialized) {
 			this.secondarySidePanelOpen = false;
 			this.sidePanelSwitcherComponent.isInitialized = false;
 		}

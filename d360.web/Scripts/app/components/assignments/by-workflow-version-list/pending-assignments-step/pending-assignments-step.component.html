@@ -79,7 +79,7 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n>
-			{{ workflowTypeNew?.Name }} on {{ selectedHistoryItem?.Name }}
+			{{ workflowDiagramModel?.Type?.Name }} on {{ selectedHistoryItem?.Name }}
 			initiated on {{ selectedHistoryItem?.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>

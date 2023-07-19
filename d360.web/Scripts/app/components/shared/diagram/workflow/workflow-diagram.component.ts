@@ -79,7 +79,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
-	@Output() onNodeClick: EventEmitter<{NodeModel:NodeModel, WorkflowDiagramModel: WorkflowDiagramModel}> = new EventEmitter();
+	@Output() onNodeClick: EventEmitter<{ selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }> = new EventEmitter<{ selectedNodeModel: NodeModel; workflowTypeUid: string; workflowTypeVersion: number }>();
     @ViewChild('workflowDiagram', { static: true }) diagramRef;
     @ViewChild('workflowPalette', { static: true }) paletteRef;
 
@@ -1688,7 +1688,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 	private ObjectSingleClicked(e: any) {
 		let part = e.subject.part;
 		if (part instanceof go.Node) {
-			this.onNodeClick.emit({NodeModel:part.data, WorkflowDiagramModel:this.model});
+			this.onNodeClick.emit({
+				selectedNodeModel: part?.data,
+				workflowTypeUid: this.uid,
+				workflowTypeVersion: this.version
+			});
 		}
 	}
 

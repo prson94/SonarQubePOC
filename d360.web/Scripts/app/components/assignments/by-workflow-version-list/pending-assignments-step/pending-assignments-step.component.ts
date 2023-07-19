@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { VersionStepHistory, WorkflowActivityType, WorkflowTypeNew } from '../../../../models/workflow.model';
+import { VersionStepHistory, WorkflowActivityType, WorkflowDiagramModel } from '../../../../models/workflow.model';
 import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { Router } from '@angular/router';
@@ -16,7 +16,9 @@ import { WorkflowMonitorService } from '../../../../services/workflowmonitor.ser
 })
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;
-	@Input() workflowTypeNew: WorkflowTypeNew;
+	@Input() workflowTypeVersion: number;
+	@Input() workflowTypeUid: string;
+
 	history: VersionStepHistory[];
 	selectedHistoryItem: VersionStepHistory;
 	WorkflowActivityType = WorkflowActivityType;
@@ -24,6 +26,7 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		title: $localize`Delete`
 	})];
 	showDeletionModal: boolean = false;
+	workflowDiagramModel: WorkflowDiagramModel;
 
 	constructor(
 		protected settingsService: CompanySettingsService,
@@ -36,10 +39,12 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 
 	ngOnInit() {
 		this.loadWorkflowVersionStepHistory();
+		this.loadWorkflowDiagram();
 	}
 
 	ngOnChanges() {
 		this.loadWorkflowVersionStepHistory();
+		this.loadWorkflowDiagram();
 	}
 
 	deleteAssignment = (): void => {
@@ -85,5 +90,11 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		if (item) {
 			this.selectedHistoryItem = item;
 		}
+	}
+
+	private loadWorkflowDiagram() {
+		this.workflowService.getWorkflowDiagram(0, this.workflowTypeUid, this.workflowTypeVersion).subscribe((response) => {
+			this.workflowDiagramModel = response;
+		});
 	}
 }
