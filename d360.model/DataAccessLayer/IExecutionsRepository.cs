@@ -13,7 +13,7 @@ namespace d360.model.DataAccessLayer
 
 		Task<APIExecutionAPIModelResult> GetExecutions(IEnumerable<KeyValuePair<string, string>> queryParams);
 
-		Task<EndpointPayloadResponse<dynamic>> GetExecutionStatus(Guid executionUid, bool includeResults = true);
+		Task<EndpointPayloadResponse<dynamic>> GetExecutionStatus(Guid executionUid, bool includeResults = true, bool includeProcessingDetail = false);
 
 		ApiExecution GetExecutionItemByUid(Guid executionUid);
 

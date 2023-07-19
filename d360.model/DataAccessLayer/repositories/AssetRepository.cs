@@ -4308,8 +4308,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			var sql = $@"
 						select  A.ID as AssetId,
 								A.[uid] as AssetUid,
+								A.SourceID as XrefId,
 								A.AssetTypeId,
-								A.SourceID, 
 								T.[uid] as AssetTypeUid, 
 								P.[Uid] as ParentAssetUid,
 								P.DisplayValue as ParentDisplayName,
