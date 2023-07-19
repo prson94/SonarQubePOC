@@ -58,7 +58,7 @@ export class AssignmentInformationComponent {
 					if (!assignmentItemStep.CompletedOn) {
 						this.assignmentItemStep = assignmentItemStep;
 						this.isWorkflowStepDetailLoading = true;
-						this.workflowService.getAssignmentStepDetail(assignmentItemStep.Uid).subscribe((response) => {
+						this.workflowService.getAssignmentStepDetail(assignmentItemStep.Uid).subscribe((response: WorkflowStepDetail) => {
 							this.workflowStepDetail = response;
 							this.isWorkflowStepDetailLoading = false;
 						});

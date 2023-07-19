@@ -662,15 +662,15 @@ export class WorkflowStepDetail {
 export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
-	HTTPResponse: any;
-	Outputs: any;
+	HTTPResponse: {StatusCode: number, Body: string};
+	Outputs: {Id: string, Value: string};
 }
 
 export class WorkflowStepItemSettings {
 	emails: any;
 	hasPendingForms: boolean;
 	hasEmails: boolean;
-	Responsibilities: any;
+	Responsibilities: {id: number, name: string}[];
 }
 
 export class WorkflowStepAssignedUser {
