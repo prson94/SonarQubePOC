@@ -30,7 +30,7 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse
+	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -526,7 +526,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowDetailsV2ByUid(Uid: string): Observable<any> {
+	getWorkflowDetailsV2ByUid(Uid: string): Observable<WorkflowDetails> {
 		return this.http.get(`services/workflow/item/detailByUid/${Uid}`)
 			.pipe(
 				map((response) => response),

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { WorkflowService } from '../../../../services/workflow.service';
-import { NodeSettings, WorkflowDiagramNode } from '../../../../models/workflow.model';
+import { NodeSettings, WorkflowDetails, WorkflowDiagramNode } from '../../../../models/workflow.model';
 
 @Component({
 	selector: 'd3s-assignment-step-http-response-details',
@@ -27,7 +27,7 @@ export class AssignmentStepHttpResponseDetailsComponent extends BaseComponent im
 		this.inputStepId = parseInt(this.settings.HTTPResponse.InputStepId);
 		this.isLoading = true;
 		if (this.workflowItemUId) {
-			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails) => {
+			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: WorkflowDetails) => {
 				for (const element of workflowDetails.Steps) {
 					if (element.ID === this.inputStepId) {
 						this.stepName = element.Name;

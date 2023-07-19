@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
-	RelationshipUpdateSettings,
+	RelationshipUpdateSettings, WorkflowDetails,
 	WorkflowStepDetail,
 	WorkflowStepRelationshipChangeDetail
 } from '../../../../models/workflow.model';
@@ -30,7 +30,7 @@ export class AssignmentStepRelationshipChangeDetailsComponent extends BaseCompon
 		const formFieldId: string = this.relationshipUpdate?.Relationship['@FormFieldId'] ?? null;
 		this.isLoading = true;
 		if (formStepId && formFieldId) {
-			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails) => {
+			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: WorkflowDetails) => {
 				for (const step of workflowDetails.ItemSteps) {
 					if (step.StepID === formStepId) {
 						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: WorkflowStepDetail) => {

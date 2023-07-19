@@ -963,3 +963,26 @@ export class WorkflowFormResponse {
 	CompletedOn: string;
 	UID: string;
 }
+
+export class WorkflowDetails {
+	ItemSteps: {
+		ID: number,
+		ItemID: number,
+		StepID: number,
+		StartedBy: number,
+		StartedOn: string,
+		CompletedBy: number,
+		CompletedOn: string,
+		UID: string
+	}[];
+	Steps: {
+		Name: string,
+		VersionID: number,
+		StepType: number,
+		ActivityType: number,
+		XPosition: number,
+		YPosition: number,
+		State: number,
+		ID: number
+	}[];
+}
