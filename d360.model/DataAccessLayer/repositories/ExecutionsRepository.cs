@@ -253,7 +253,7 @@ namespace d360.model.DataAccessLayer
 			}
 		}
 
-		public async Task<EndpointPayloadResponse<dynamic>> GetExecutionStatus(Guid executionUid, bool includeResults = true)
+		public async Task<EndpointPayloadResponse<dynamic>> GetExecutionStatus(Guid executionUid, bool includeResults = true, bool includeProcessingDetail = false)
 		{
 			var response = new EndpointPayloadResponse<dynamic>();
 			var dbExecutionItem = GetExecutionItemByUid(executionUid);
@@ -285,18 +285,34 @@ namespace d360.model.DataAccessLayer
 			var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
 
 			response.Code = HttpStatusCode.OK;
-			response.Payload = new
+			if (includeProcessingDetail)
 			{
-				dbExecutionItem.Total,
-				dbExecutionItem.Processed,
-				dbExecutionItem.Error,
-				dbExecutionItem.ErrorMessage,
-				Fields = JsonConvert.DeserializeObject<dynamic>(f),
-				dbExecutionItem.StartedOn,
-				dbExecutionItem.ProcessingStartedOn,
-				dbExecutionItem.CompletedOn,
-				Results = results
-			};
+				response.Payload = new
+				{
+					dbExecutionItem.Total,
+					dbExecutionItem.Processed,
+					dbExecutionItem.Error,
+					dbExecutionItem.ErrorMessage,
+					Fields = JsonConvert.DeserializeObject<dynamic>(f),
+					dbExecutionItem.StartedOn,
+					dbExecutionItem.ProcessingStartedOn,
+					dbExecutionItem.CompletedOn,
+					Results = results
+				};
+			}
+			else
+			{
+				response.Payload = new
+				{
+					dbExecutionItem.Total,
+					dbExecutionItem.Processed,
+					dbExecutionItem.Error,
+					Fields = JsonConvert.DeserializeObject<dynamic>(f),
+					dbExecutionItem.StartedOn,
+					dbExecutionItem.CompletedOn,
+					Results = results
+				};
+			}
 
 			return response;
 		}
