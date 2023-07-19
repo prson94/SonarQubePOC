@@ -1,6 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NodeModel } from '../../../../../models/workflow.model';
-import { LinkClickInterceptor } from '../../../../../services/href-click-service';
+import { Component, Input } from '@angular/core';
 
 @Component({
 	selector: 'd3s-workflow-pending-assignments',

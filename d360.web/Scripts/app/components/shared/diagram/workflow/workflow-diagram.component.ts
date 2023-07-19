@@ -1693,7 +1693,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 				selectedNodeModel: part?.data,
 				workflowTypeUid: this.uid,
 				workflowTypeVersion: this.version
-			}, '')
+			}, '');
 		}
 	}
 

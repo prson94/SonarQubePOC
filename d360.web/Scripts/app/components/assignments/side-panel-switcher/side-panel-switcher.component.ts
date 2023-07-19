@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { SidePanelButton } from '../../../models/side-panel.model';
 import { NodeModel } from '../../../models/workflow.model';
 import { AssetDetailClickType } from '../../../services/href-click-service';
 
