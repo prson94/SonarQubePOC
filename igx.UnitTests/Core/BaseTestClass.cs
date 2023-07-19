@@ -379,7 +379,7 @@ namespace igx.UnitTests
 				.Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK }));
 
 			mockRepo.Setup(x => x.GetExecutionStatus(It.IsAny<Guid>(), It.IsAny<bool>(), It.IsAny<bool>()))
-				.Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ?
+				.Returns((Guid uid, bool includeResults, bool includeProcessingDetail) => uid == Guid.Parse(DataConstants.ValidGUID) ?
 			   Task.FromResult(new EndpointPayloadResponse<dynamic>
 			   {
 				   Code = HttpStatusCode.OK,
