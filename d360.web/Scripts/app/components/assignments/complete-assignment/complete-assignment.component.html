@@ -2,7 +2,9 @@
 		   [isVisible]="isModalVisible"
 		   [showActionBar]="true"
 		   [additionalClasses]="'xlarge-dialog'"
-		   (onClose)="isModalVisible = false">
+		   (onClose)="isModalVisible = false"
+		   (onConfirm)="onFormSubmit()"
+>
 	<div class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
@@ -29,58 +31,61 @@
 				</div>
 				<d3s-loading [isLoading]="isLoading"></d3s-loading>
 				<ng-container *ngIf="!isLoading">
-				<div>subtitle</div>
-				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
-					<div class="asset-detail">
-						<div class="asset-detail-tabs">
-							<ig-property-group i18n-title title="Information" [showHeaderLine]="false">
-								<div readonly>
-									<ng-container>
-										<div class="row">
-											<div class="category-column">
-												<label class="ig-label" i18n>{{ formTitle }}</label>
-												<div class="ig-value">{{ formDescription }}</div>
-											</div>
-										</div>
-									</ng-container>
-								</div>
-							</ig-property-group>
-							<ig-property-group i18n-title title="Request" [showHeaderLine]="false">
-								<div readonly>
-									<ng-container>
-										Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
-										temporibus.
-										Culpa
-										debitis
-										error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque incidunt
-										iusto mollitia
-										nesciunt omnis, porro repellendus.
-									</ng-container>
-								</div>
-							</ig-property-group>
-							<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
-								<div readonly>
-									<ng-container>
-										<form (ngSubmit)="onFormSubmit()"
-											  #workflowForm="ngForm">
+					<div>subtitle</div>
+					<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
+						<div class="asset-detail">
+							<div class="asset-detail-tabs">
+								<ig-property-group i18n-title title="Information" [showHeaderLine]="false">
+									<div readonly>
+										<ng-container>
 											<div class="row">
-												<div class="l6 s12">
-													<d3s-workflow-form-fields [fields]="formFields" [form]="workflowForm" #fieldsComponent></d3s-workflow-form-fields>
+												<div class="category-column">
+													<label class="ig-label" i18n>{{ formTitle }}</label>
+													<div class="ig-value">{{ formDescription }}</div>
 												</div>
 											</div>
-										</form>
-									</ng-container>
-								</div>
-							</ig-property-group>
+										</ng-container>
+									</div>
+								</ig-property-group>
+								<ig-property-group i18n-title title="Request" [showHeaderLine]="false">
+									<div readonly>
+										<ng-container>
+											Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt nostrum,
+											temporibus.
+											Culpa
+											debitis
+											error maxime mollitia nostrum officia quam? Atque cumque deleniti eaque
+											incidunt
+											iusto mollitia
+											nesciunt omnis, porro repellendus.
+										</ng-container>
+									</div>
+								</ig-property-group>
+								<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
+									<div readonly>
+										<ng-container>
+											<form (ngSubmit)="onFormSubmit()"
+												  #workflowForm="ngForm">
+												<div class="row">
+													<div class="l6 s12">
+														<d3s-workflow-form-fields [fields]="formFields"
+																				  [form]="workflowForm"
+																				  #fieldsComponent></d3s-workflow-form-fields>
+													</div>
+												</div>
+											</form>
+										</ng-container>
+									</div>
+								</ig-property-group>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
-					<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [showCompleteAssignment]="false"
-											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-					<d3s-assignment-information [showCompleteAssignment]="false"
-												[workflowItemUid]="workflowItemUid"></d3s-assignment-information>
-				</div>
+					<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
+						<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [showCompleteAssignment]="false"
+												 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
+						<d3s-assignment-information [showCompleteAssignment]="false"
+													[workflowItemUid]="workflowItemUid"></d3s-assignment-information>
+					</div>
 				</ng-container>
 			</div>
 		</div>

@@ -73,13 +73,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
-	onFormSubmit() {
+	onFormSubmit(): void {
 		if (this.fieldsComponent.setValidators()) {
-			return false;
+			return;
 		}
 		this.fieldsComponent.prepareValuesForSubmit();
 
-		//save form values with stepid and itemid
+		//save form values with stepUid and itemUid
 		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
 	}
 
