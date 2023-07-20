@@ -220,12 +220,14 @@ namespace d360.web.Controllers.V2
 			Route("{executionID:Guid}"),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("includeProcessingDetail", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
 		{
-			var summaryOnly = false;
+			bool summaryOnly = false;
+			bool includeProcessingDetail = false;
 			var queryParams = Request.GetQueryNameValuePairs();
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
@@ -233,7 +235,12 @@ namespace d360.web.Controllers.V2
 				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
 			}
 
-			var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly);
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "includeprocessingdetail"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "includeprocessingdetail").Value, out includeProcessingDetail);
+			}
+
+			var res = await ExecutionsRepository.GetExecutionStatus(executionID, !summaryOnly, includeProcessingDetail);
 			return resolveEndpointPayloadResponse(res);
 		}
 

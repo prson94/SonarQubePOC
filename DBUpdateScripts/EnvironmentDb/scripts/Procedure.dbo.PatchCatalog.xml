@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.9">
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.10">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -113,14 +113,14 @@ begin
 				T.Uid = S.Uid,
 				T.[Action] = 'A'
 		from	api.ExecutionCatalogItem T
-				inner join @new_assets S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeId and T.Success is null and T.ExecutionId = @executionId and T.[Type] = @type;-- and T.ISDelete = 0;
+				inner join @new_assets S on S.SourceId = T.SourceId and T.TypeId = S.AssetTypeId and T.Success is null and T.ExecutionId = @executionId and T.[Type] = @type;
 
 		-- Update Code field if any reference item assets.
 		update	T
 		set		T.Code = P.CodeValue
 		from	Asset T
-				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type-- and S.ISDelete = 0
-				inner join api.ExecutionCatalogItemProperty P on P.SourceId = S.SourceId and P.Name = 'Code' and T.Code <> P.CodeValue and P.CodeValue is not null;
+				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type
+				inner join api.ExecutionCatalogItemProperty P on P.ExecutionId = S.ExecutionId and P.[Type] = S.[Type] and P.SourceId = S.SourceId and P.Name = 'Code' and T.Code <> P.CodeValue and P.CodeValue is not null;
 
 		-- Add/update field data.
 		merge	Field as T
