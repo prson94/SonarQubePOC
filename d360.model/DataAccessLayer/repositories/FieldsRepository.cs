@@ -470,6 +470,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.Json.ShowIfEmpty',
 
 										case when FT.Type = 'JsonElement' then FT.ColumnOrder else null end as 'Type.JsonElement.ColumnOrder',
+										case when FT.Type = 'JsonElement' then FT.ColumnWidth else null end as 'Type.JsonElement.ColumnWidth',
 										case when FT.Type = 'JsonElement' then FT.DisplayDescription else null end as 'Type.JsonElement.Description.Display',
 										case when FT.Type = 'JsonElement' then FT.IsDisplayable else null end as 'Type.JsonElement.IsDisplayable',
 										case when FT.Type = 'JsonElement' then FT.ShowIfEmpty else null end as 'Type.JsonElement.ShowIfEmpty',
@@ -1470,6 +1471,7 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.Type = DataType.JsonElement.ToString();
 					newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder.HasValue ? f.Type.JsonElement.ColumnOrder.Value : ++maxColumnIndex;
+					newFieldType.ColumnWidth = f.Type.JsonElement.ColumnWidth;
 
 					if (f.Type.JsonElement.Description != null)
 					{

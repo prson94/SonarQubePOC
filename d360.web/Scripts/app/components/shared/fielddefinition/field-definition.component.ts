@@ -816,14 +816,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			return false;
 		}
 
-		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json','JsonElement', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}
 		return true;
 	}
 	hasRequired(field: FieldDisplayModel) {
-		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}
@@ -833,7 +833,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
 		}
-		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
+		const excludeTypes: string[] = ['Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}
