@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-<changeSet author="Pappas/Gupta" id="Table.api.ExecutionAssetDataProfile-v12">
+<changeSet author="Pappas/Gupta" id="Table.api.ExecutionAssetDataProfile-v13">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetDataProfile')
@@ -55,6 +55,9 @@ BEGIN
 		[SourceLastModified] DATETIME NULL,
 		[FilterCount] BIGINT NULL,
 		[Freshness] INT NULL,
+		[ProfileSource] nvarchar(100),
+		[ProfileSeries] nvarchar(100),
+		[ProfileType] INT NULL,
 		CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED ( [ExecutionID] ASC, [ItemNumber] ASC )
 	)
 END
@@ -76,6 +79,34 @@ IF NOT EXISTS (
 	BEGIN
 		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [Freshness] INT NULL
 	END
+
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'ProfileSource'
+	)
+	BEGIN
+		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileSource] Nvarchar(100) NULL
+	END
+
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'ProfileSeries'
+	)
+	BEGIN
+		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileSeries] Nvarchar(100) NULL
+	END
+
+IF NOT EXISTS (
+	SELECT * 
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'ProfileType'
+	)
+	BEGIN
+		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileType] INT NULL
+	END
+
 		]]>
     </sql>
   </changeSet>
