@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { PopupMenuItem } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { WorkflowMonitorService } from '../../../../services/workflowmonitor.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
+import { AuthenticationService } from '../../../../services/authentication.service';
 
 /*global $localize*/
 
@@ -24,8 +25,6 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	WorkflowActivityType = WorkflowActivityType;
 	menuItems: PopupMenuItem[] = [new PopupMenuItem({
 		title: $localize`Show Assignment Details`
-	}), new PopupMenuItem({
-		title: $localize`Delete`
 	})];
 	showDeletionModal: boolean = false;
 	workflowDiagramModel: WorkflowDiagramModel;
@@ -33,6 +32,7 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	constructor(
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
+		private authenticationService: AuthenticationService,
 		private workflowMonitorService: WorkflowMonitorService,
 		private router: Router,
 		private linkClickInterceptor: LinkClickInterceptor) {
@@ -41,6 +41,11 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 
 
 	ngOnInit() {
+		if (this.authenticationService.isAdmin) {
+			this.menuItems.push(new PopupMenuItem({
+				title: $localize`Delete`
+			}));
+		}
 		this.loadWorkflowVersionStepHistory();
 		this.loadWorkflowDiagram();
 	}
