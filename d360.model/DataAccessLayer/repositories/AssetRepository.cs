@@ -5403,7 +5403,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						left join assettype ato on it.objectAssetTypeID = ato.ID
 						where (it.ObjectAssetTypeID = @AssetTypeID or it.SubjectAssetTypeID = @AssetTypeID)
 						and it.state = 1
-						order by SubjectName,ObjectName,it.id";
+						order by it.ID";
 
 			string resposibilityTypSql = $@"
 				-- Responsibility Type Assignment
