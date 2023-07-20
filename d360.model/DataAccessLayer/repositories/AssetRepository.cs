@@ -5401,7 +5401,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						left join assettype ats on it.SubjectAssetTypeID = ats.ID
 						left join [Predicate] p on p.id = it.PredicateID
 						left join assettype ato on it.objectAssetTypeID = ato.ID
-						where it.ObjectAssetTypeID = @AssetTypeID or it.SubjectAssetTypeID = @AssetTypeID";
+						where (it.ObjectAssetTypeID = @AssetTypeID or it.SubjectAssetTypeID = @AssetTypeID)
+						and it.state = 1
+						order by SubjectName,ObjectName,it.id";
 
 			string resposibilityTypSql = $@"
 				-- Responsibility Type Assignment
@@ -5612,7 +5614,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			else if (dtype.In(DataType.JsonElement))
 			{
-				if (fieldname.In("json_field", "json_attribute_path", "json_attribute_data_type"))
+				if (fieldname.In("listable", "column_width", "sort_order", "sort_by", "json_field", "json_attribute_path", "json_attribute_data_type"))
 				{
 					retval = true;
 				}
