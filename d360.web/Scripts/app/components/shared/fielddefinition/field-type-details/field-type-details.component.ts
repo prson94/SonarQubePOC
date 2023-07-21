@@ -30,21 +30,21 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	}
 
 	hasPartOfKey() {
-		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'ComputedRelationshipField', 'Json', 'JsonElement', 'Link', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
 		return true;
 	}
 	hasRequired() {
-		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
 		return true;
 	}
 	hasDisplayInColumn() {
-		const excludeTypes: string[] = ['Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
+		const excludeTypes: string[] = ['Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
@@ -59,7 +59,7 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	}
 
 	hasFormDescription() {
-		const excludeTypes: string[] = ['Path', 'Counter', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
@@ -83,7 +83,7 @@ export class FieldTypeDetailsComponent implements OnChanges {
 	}
 
 	hasEditableOnUI() {
-		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
+		const excludeTypes: string[] = ['Path', 'Counter', 'ComputedRelationshipField', 'Json', 'JsonElement', 'ComputedOwnershipLookup', 'ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Score', 'Tag'];
 		if (excludeTypes.indexOf(this.fieldType.FieldTypeValue) > -1) {
 			return false;
 		}
