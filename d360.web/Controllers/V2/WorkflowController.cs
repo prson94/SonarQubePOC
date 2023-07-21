@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core;
+using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -409,7 +410,9 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an assignment. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_initiatorUid", "Return assignments Filter by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_initiatorUid", "Return assignments filtered by provided initiator Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_assetUid", "Return assignments filtered by provided asset Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_assetTypeUid", "Return assignments filtered by provided asset type Uid", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_actionsOnly", "If true only assignments where the workflow is triggered by an action are returned. Default value is false", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json", "application/octet-stream"),
@@ -452,6 +455,49 @@ namespace d360.web.Controllers.V2
 						if (initiator == null)
 						{
 							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidInitiatorUid));
+						}
+					}
+				}
+
+				var assetType = new AssetType();
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assettypeuid"))
+				{
+					string assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assettypeuid").Value;
+					if (!Guid.TryParse(assetTypeUidString, out Guid assetTypeUid))
+					{
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, assetTypeUidString, "_assettypeuid")));
+					}
+					else
+					{
+						assetType = Company.AssetTypes.Where(ast => ast.uid == assetTypeUid).FirstOrDefault();
+
+						if (assetType == null)
+						{							
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.InvalidAssetTypeUidProvided ));
+						}
+					}
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
+				{
+					string assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
+					if (!Guid.TryParse(assetUidString, out Guid assetUid))
+					{
+						return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, assetUidString, "_assetuid")));
+					}
+					else
+					{
+						var asset = Company.Assets.Where(a => a.uid == assetUid).FirstOrDefault();
+
+						if (asset == null)
+						{
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetUid, assetUid)));
+						}
+
+						if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assettypeuid") && asset.AssetTypeID != assetType.ID)
+						{
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.AssetValidateWithAssetType));
 						}
 					}
 				}

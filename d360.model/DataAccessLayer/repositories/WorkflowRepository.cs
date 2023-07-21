@@ -1055,6 +1055,26 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assettypeuid"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_assettypeuid").Value;
+				if (Guid.TryParse(value, out Guid assetTypeUid))
+				{
+					conditions.Add("AST.Uid = @assetTypeUid");
+					dbArgs.Add("@assetTypeUid", assetTypeUid);
+				}
+			}
+
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assetuid"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_assetuid").Value;
+				if (Guid.TryParse(value, out Guid assetUid))
+				{
+					conditions.Add("A.Uid = @assetUid");
+					dbArgs.Add("@assetUid", assetUid);
+				}
+			}
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
