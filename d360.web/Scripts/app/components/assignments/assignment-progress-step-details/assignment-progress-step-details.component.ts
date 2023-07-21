@@ -26,6 +26,7 @@ import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentFormResponseComponent } from './assignment-form-response/assignment-form-response.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { Router } from '@angular/router';
 
 @Component({
 	selector: 'd3s-assignment-progress-step-details',
@@ -64,12 +65,16 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 		private responsibilityService: ResponsibilityTypeService,
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
+		private router: Router,
 		private linkClickInterceptor: LinkClickInterceptor,
 		private ref: ChangeDetectorRef) {
 		super(settingsService);
 	}
 
-	ngOnInit() {
+	ngOnInit(): void {
+		if (this.router.url === '/requests') {
+			this.showCompleteAssignment = false
+		}
 		this.load().subscribe();
 	}
 
