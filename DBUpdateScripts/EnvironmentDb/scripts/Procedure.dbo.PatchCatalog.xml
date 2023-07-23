@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v1.10">
-    <comment></comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.11">
+    <comment>GOV-28603</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[PatchCatalog] 
@@ -75,7 +75,9 @@ begin
 		update	T
 		set		T.ValueId = S.ObjectId
 		from	api.ExecutionCatalogItemProperty T
-				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.[Value] and T.[Value] is not null and T.ExecutionId = @executionId and T.[Type] = @type;
+		inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId 
+		and S.Code = T.[Value] and T.[Value] is not null 
+		and T.ExecutionId = @executionId and T.[Type] = @type;
 
 		-- Property validation.	
 		update	T
@@ -119,8 +121,11 @@ begin
 		update	T
 		set		T.Code = P.CodeValue
 		from	Asset T
-				inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null and S.ExecutionId = @executionId and S.[Type] = @type
-				inner join api.ExecutionCatalogItemProperty P on P.ExecutionId = S.ExecutionId and P.[Type] = S.[Type] and P.SourceId = S.SourceId and P.Name = 'Code' and T.Code <> P.CodeValue and P.CodeValue is not null;
+		inner join api.ExecutionCatalogItem S on S.Id = T.Id and S.Success is null 
+		and S.ExecutionId = @executionId and S.[Type] = @type
+		inner join api.ExecutionCatalogItemProperty P on P.ExecutionId = S.ExecutionId 
+		and P.[Type] = S.[Type] and P.SourceId = S.SourceId and P.Name = 'Code' 
+		and T.Code <> P.CodeValue and P.CodeValue is not null;
 
 		-- Add/update field data.
 		merge	Field as T
@@ -452,7 +457,10 @@ begin
 		set		T.Code = P.CodeValue
 		from	Asset T
 				inner join api.ExecutionCatalogItem S on S.Id = T.Id
-				inner join api.ExecutionCatalogItemProperty P on P.SourceId = S.SourceId and P.Name = 'Code' and S.ExecutionId = @executionId and S.[Type] = @type and S.ExecutionId = P.ExecutionId and S.[Type] = P.[Type];
+		inner join api.ExecutionCatalogItemProperty P on P.ExecutionId = S.ExecutionId 
+		and P.[Type] = S.[Type] and P.SourceId = S.SourceId and P.Name = 'Code' 
+		and S.ExecutionId = @executionId and S.[Type] = @type and S.ExecutionId = P.ExecutionId 
+		and S.[Type] = P.[Type];
 
 		-- Add/update field data.
 		merge	Field as T
@@ -540,34 +548,49 @@ begin
 
 		create clustered index CIX_TempIncoming on #incoming (ID);
 
+		drop table if exists #tempIntersectTypeIDs;
+			
+		select it.id Intersecttypeid
+		into #tempIntersectTypeIDs
+		from intersecttype it
+		inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4);
+		
+		create clustered index cix_intersecttype on #tempIntersectTypeIDs (Intersecttypeid);
+
 		with descendants as (
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	#incoming O
-					inner join Asset A on O.ID = A.ID
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.SubjectAssetID = O.ID
-					inner join Asset C on C.ID = I.ObjectAssetID
+			inner join [intersect] I on I.SubjectAssetID = O.ID
+			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
 			union all
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	descendants c
-					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.SubjectAssetID = c.ObjectAssetID
-					inner join Asset A on A.ID = I.ObjectAssetID
+			inner join [intersect] I on I.SubjectAssetID = c.ObjectAssetID
+			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
 		)
 		insert into #incoming
-			select ObjectAssetID from descendants;
+		select distinct d.ObjectAssetID 
+		from descendants d
+		inner join Asset C on C.ID = d.ObjectAssetID;
 		
 		with hierarchy as (
 			select	A.ID as GroupID,
 					A.AssetTypeID,
 					A.ID,
-					I.ObjectAssetID,
+					A.ID ObjectAssetID,
 					I.SubjectAssetID as ParentObjectAssetID,
 					A.Code,
 					0 as [Level]
-			from	Asset A
-					left join PredicateIntersect I on I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
-					inner join #incoming O on O.ID = A.ID
+			from	#incoming O
+			inner join Asset A on A.ID = O.ID
+			outer apply (
+			select	I.SubjectAssetID
+			from	[intersect] I
+			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
+			where	I.ObjectAssetID = A.ID
+			) I
 			union all
 			select	c.GroupID,
 					A.AssetTypeID,
@@ -580,8 +603,9 @@ begin
 					inner join Asset A on c.ParentObjectAssetID = A.ID
 					outer apply (
 						select	I.SubjectAssetID
-						from	PredicateIntersect I 
-						where	I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
+						from	[Intersect] I
+						inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
+						where	I.ObjectAssetID = A.ID
 					) I
 		)
 
@@ -680,5 +704,4 @@ end
 		]]>
     </sql>
   </changeSet>
-
 </databaseChangeLog>
