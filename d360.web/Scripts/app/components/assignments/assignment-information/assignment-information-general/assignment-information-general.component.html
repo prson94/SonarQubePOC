@@ -16,7 +16,8 @@
 				<div class="category-column">
 					<label class="ig-label" i18n>Associated with</label>
 					<div class="ig-value">{{ assetPathTextPart }}
-						<a context-link (click)="onClickAsset($event)">{{ assetPathLinkPart }}</a>
+						<a *ngIf="assetPathLinkPart" context-link (click)="onClickAsset($event)">{{ assetPathLinkPart }}</a>
+						<span *ngIf="!assetPathLinkPart">---</span>
 					</div>
 				</div>
 				<div class="category-column">

@@ -100,7 +100,7 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td>{{item.workflowName}}</td>
 					</ng-container>
-					<td>{{item.assetDisplayValue}}</td>
+					<td>{{item.assetDisplayValue ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
 						<td [innerHTML]="item[field.Name]"></td>
 					</ng-container>

@@ -48,6 +48,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	advancedFilter: string = '';
+	advancedFilterData: AdvancedFilterFieldCondition[]
 	singleActionTypeUidSelected: boolean = false;
 	singleActionTypeUidFilter: string = '';
 	actionFormFields: FieldTypeAPIModelField[] = [];
@@ -191,8 +192,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
-		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
-		for (const item of advancedFilterData) {
+		this.advancedFilterData = $event.data;
+		for (const item of this.advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
 				this.singleActionTypeUidFilter = item.value && item.value[0]?.value;
