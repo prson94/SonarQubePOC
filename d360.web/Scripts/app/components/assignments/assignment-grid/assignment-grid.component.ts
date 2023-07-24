@@ -129,7 +129,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.assignments = [this.items[0]];
 				this.selectedCount = 1;
 				this.selectionChange.emit(this.assignments);
-				this.setDisplayAssignees()
+				this.setDisplayAssignees();
 			} else {
 				this.selectedCount = 0;
 				this.selectionChange.emit(null);
