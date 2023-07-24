@@ -73,7 +73,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 
 	ngOnInit(): void {
 		if (this.router.url === '/requests') {
-			this.showCompleteAssignment = false
+			this.showCompleteAssignment = false;
 		}
 		this.load().subscribe();
 	}
@@ -159,7 +159,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	onClickResource(event: MouseEvent, resourceID: number): void {
-		if(resourceID) {
+		if (resourceID) {
 			this.linkClickInterceptor.sendEvent(event, {
 				ResourceID: resourceID
 			}, 'users/' + resourceID);
@@ -167,7 +167,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	}
 
 	onClickAsset(event: MouseEvent, resourceID: number): void {
-		if(resourceID) {
+		if (resourceID) {
 			this.linkClickInterceptor.sendEvent(event, {
 				AssetId: resourceID
 			}, 'asset/' + resourceID);

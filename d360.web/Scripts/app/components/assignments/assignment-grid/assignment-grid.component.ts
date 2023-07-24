@@ -33,6 +33,12 @@ import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.compo
 	templateUrl: './assignment-grid.component.html',
 	styleUrls: ['./assignment-grid.component.less']
 })
+
+class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
+	filteredAssignees: string[];
+	allAssignees: string[];
+}
+
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() isRequestsFlow: boolean = false;
 	currentResourceUid: string = null;
@@ -123,27 +129,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.assignments = [this.items[0]];
 				this.selectedCount = 1;
 				this.selectionChange.emit(this.assignments);
-				for (const item of this.items) {
-					const assigneesList: {
-						Name: string,
-						uid: string
-					}[] = JSON.parse(item.assigneesJson) ?? [];
-					const displayAssigneesList: { Name: string, uid: string }[] = [];
-					if (this.assigneeSearchInputList?.length > 0) {
-						for (const assigneeSearchInput of this.assigneeSearchInputList) {
-							for (const assignee of assigneesList) {
-								if (assignee.Name === assigneeSearchInput.title) {
-									displayAssigneesList.push(assignee);
-									break;
-								}
-							}
-						}
-						item.filteredAssignees = displayAssigneesList.map((assignee) => assignee.Name);
-					} else {
-						item.filteredAssignees = assigneesList.slice(0, 2).map((assignee) => assignee.Name);
-					}
-					item.allAssignees = assigneesList.map((assignee) => assignee.Name);
-				}
+				this.setDisplayAssignees()
 			} else {
 				this.selectedCount = 0;
 				this.selectionChange.emit(null);
@@ -169,6 +155,30 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			} else {
 				this.gridSelectionChange(this.items);
 			}
+		}
+	}
+
+	setDisplayAssignees(): void {
+		for (const item of this.items) {
+			const assigneesList: {
+				Name: string,
+				uid: string
+			}[] = JSON.parse(item.assigneesJson) ?? [];
+			const displayAssigneesList: { Name: string, uid: string }[] = [];
+			if (this.assigneeSearchInputList?.length > 0) {
+				for (const assigneeSearchInput of this.assigneeSearchInputList) {
+					for (const assignee of assigneesList) {
+						if (assignee.Name === assigneeSearchInput.title) {
+							displayAssigneesList.push(assignee);
+							break;
+						}
+					}
+				}
+				item.filteredAssignees = displayAssigneesList.map((assignee) => assignee.Name);
+			} else {
+				item.filteredAssignees = assigneesList.slice(0, 2).map((assignee) => assignee.Name);
+			}
+			item.allAssignees = assigneesList.map((assignee) => assignee.Name);
 		}
 	}
 
@@ -403,9 +413,4 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
-}
-
-class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
-	filteredAssignees: string[];
-	allAssignees: string[];
 }
