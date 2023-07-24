@@ -27,11 +27,11 @@ export class AssignmentHeaderComponent implements OnInit {
 	ngOnInit(): void {
 		if (this.flowContext === 'Assignment') {
 			this.showTabs = true;
+			this.header = $localize`Assignments`;
 			this.icon = 'fa-list-ul';
-			this.header = 'Assignments';
 		} else if (this.flowContext === 'Request') {
 			this.showTabs = false;
-			this.header = 'Requests';
+			this.header = $localize`Requests`;
 			this.iconPath = '../../../../../Content/images/request-icon.svg';
 		}
 	}
