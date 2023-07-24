@@ -25,19 +25,20 @@ import {
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
+import { $localize } from '@angular/localize/init';
 
 /*global $localize*/
+
+class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
+	filteredAssignees: string[];
+	allAssignees: string[];
+}
 
 @Component({
 	selector: 'd3s-assignment-grid',
 	templateUrl: './assignment-grid.component.html',
 	styleUrls: ['./assignment-grid.component.less']
 })
-
-class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
-	filteredAssignees: string[];
-	allAssignees: string[];
-}
 
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() isRequestsFlow: boolean = false;
@@ -68,6 +69,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	protected readonly JSON: JSON = JSON;
+	emptyGridMessage: string;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -85,6 +87,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
+		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.createFilterFields();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
@@ -257,6 +260,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			Type: new FieldType('DateTime'),
 			Category: ''
 		}, {
+			Name: 'assignee',
+			FriendlyName: $localize`Assignee`,
+			Type: lookupFieldTypePrimaryFilter,
+			Category: '',
+			ValueLoader: this.getFilteredAssignees
+		}, {
 			Name: 'Status',
 			FriendlyName: $localize`Status`,
 			Type: lookupFieldTypePrimaryFilter,
@@ -265,13 +274,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}];
 		if (!this.isRequestsFlow) {
 			filterFieldList.push(
-				{
-					Name: 'assignee',
-					FriendlyName: $localize`Assignee`,
-					Type: lookupFieldTypePrimaryFilter,
-					Category: '',
-					ValueLoader: this.getFilteredAssignees
-				},
 				{
 					Name: 'actionTypeUid',
 					FriendlyName: $localize`Action`,

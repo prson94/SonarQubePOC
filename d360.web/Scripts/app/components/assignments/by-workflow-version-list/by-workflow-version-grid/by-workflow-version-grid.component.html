@@ -62,6 +62,9 @@
 					</td>
 				</tr>
 			</ng-template>
+			<ng-template pTemplate="emptymessage">
+				<p i18n></p>No assignments found
+			</ng-template>
 			<ng-template pTemplate="summary">
 				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
 									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
