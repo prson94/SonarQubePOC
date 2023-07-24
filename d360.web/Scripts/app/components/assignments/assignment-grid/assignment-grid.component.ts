@@ -37,7 +37,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	@Input() isRequestsFlow: boolean = false;
 	currentResourceUid: string = null;
 	title: string = $localize`WorkFlow Items`;
-	items: WorkflowAssignmentItem[] = [];
+	items: WorkflowAssignmentGrid[] = [];
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
@@ -48,9 +48,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	assignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	advancedFilter: string = '';
-	advancedFilterData: AdvancedFilterFieldCondition[]
 	singleActionTypeUidSelected: boolean = false;
 	singleActionTypeUidFilter: string = '';
+	assigneeSearchInputList: { title: string, value: string }[];
 	actionFormFields: FieldTypeAPIModelField[] = [];
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
@@ -117,12 +117,33 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
 		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
-			this.items = results[0].items;
+			this.items = results[0].items as WorkflowAssignmentGrid[];
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
 				this.assignments = [this.items[0]];
 				this.selectedCount = 1;
 				this.selectionChange.emit(this.assignments);
+				for (const item of this.items) {
+					let assigneesList: {
+						Name: string,
+						uid: string
+					}[] = JSON.parse(item.assigneesJson) ?? [];
+					let displayAssigneesList: { Name: string, uid: string }[] = [];
+					if (this.assigneeSearchInputList?.length > 0) {
+						for (const assigneeSearchInput of this.assigneeSearchInputList) {
+							for (const assignee of assigneesList) {
+								if (assignee.Name === assigneeSearchInput.title) {
+									displayAssigneesList.push(assignee);
+									break;
+								}
+							}
+						}
+						item.filteredAssignees = displayAssigneesList.map((assignee) => assignee.Name);
+					} else {
+						item.filteredAssignees = assigneesList.slice(0, 2).map((assignee) => assignee.Name);
+					}
+					item.allAssignees = assigneesList.map((assignee) => assignee.Name);
+				}
 			} else {
 				this.selectedCount = 0;
 				this.selectionChange.emit(null);
@@ -192,24 +213,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
-		this.advancedFilterData = $event.data;
-		for (const item of this.advancedFilterData) {
+		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
+		for (const item of advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
 				this.singleActionTypeUidFilter = item.value && item.value[0]?.value;
 			}
+			if (item.field === 'assignee') {
+				this.assigneeSearchInputList = item.value;
+			}
 		}
 		this.currentPageNumber = 1;
 		this.loadData();
-	}
-
-	getAssignees(assigneeList: { Name: string, uid: string }[], count?: number): string {
-		let assigneeNames: string = '';
-		if (assigneeList && assigneeList.length > 0) {
-			const assigneeNameList: string[] = assigneeList.map((assignee) => assignee.Name)?.sort();
-			assigneeNames = count ? assigneeNameList?.slice(0, count)?.join(', ') : assigneeNameList?.join(', ');
-		}
-		return assigneeNames;
 	}
 
 	createFilterFields(): void {
@@ -388,4 +403,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+}
+
+class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
+	filteredAssignees: string[];
+	allAssignees: string[];
 }
