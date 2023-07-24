@@ -124,11 +124,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.selectedCount = 1;
 				this.selectionChange.emit(this.assignments);
 				for (const item of this.items) {
-					let assigneesList: {
+					const assigneesList: {
 						Name: string,
 						uid: string
 					}[] = JSON.parse(item.assigneesJson) ?? [];
-					let displayAssigneesList: { Name: string, uid: string }[] = [];
+					const displayAssigneesList: { Name: string, uid: string }[] = [];
 					if (this.assigneeSearchInputList?.length > 0) {
 						for (const assigneeSearchInput of this.assigneeSearchInputList) {
 							for (const assignee of assigneesList) {
