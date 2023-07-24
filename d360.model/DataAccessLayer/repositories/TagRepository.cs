@@ -16,7 +16,7 @@ using d360.model.helpers;
 using d360.model.helpers.filters;
 
 using Dapper;
-
+using MoreLinq;
 using Newtonsoft.Json;
 
 namespace d360.model.DataAccessLayer
@@ -1188,6 +1188,7 @@ namespace d360.model.DataAccessLayer
 
 		public async Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId)
 		{
+			tags = tags.DistinctBy(x => new { x.AssetUid, x.Tag }).ToList();
 			await companyContext.Connection.OpenIfClosed();
 
 			await companyContext.Connection.ExecuteAsync(@"
