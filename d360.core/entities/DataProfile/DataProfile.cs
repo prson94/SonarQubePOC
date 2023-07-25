@@ -136,7 +136,7 @@ namespace d360.core.entities
 		public string ProfileSeries { get; set; }
 
 		[DataMember]
-		public ProfileType? ProfileType { get; set; }
+		public ProfileType? ProfileType { get; set; } 
 
 		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
@@ -364,7 +364,7 @@ namespace d360.core.entities
 		public string ProfileSeries { get; set; }
 
 		[DataMember(Name = "profileType")]
-		public ProfileType? ProfileType { get; set; }
+		public ProfileType? ProfileType { get; set; } = enums.ProfileType.Full;
 
 		public DataProfileModel() { }
 
