@@ -5,6 +5,8 @@ import { GroupService } from '../../../../../services/group.service';
 import { isArray } from 'lodash-es';
 import { ResponsibilityType } from '../../../../../models/responsibility-type.model';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-step-information-email',
 	templateUrl: './step-information-email.component.html'
@@ -55,7 +57,7 @@ export class StepInformationEmailComponent implements OnInit {
 					if (!this.groups.find((g) => g.value === this.settings.MessageToGroup)) {
 						this.groups.push({
 							value: this.settings.MessageToGroup,
-							label: '<invalid group>'
+							label: $localize`<invalid group>`
 						});
 					}
 				}

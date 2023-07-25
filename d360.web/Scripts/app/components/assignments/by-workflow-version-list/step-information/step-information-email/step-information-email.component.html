@@ -3,8 +3,9 @@
 	<ng-container *ngIf="!sendFormEmail">
 		<div class="row">
 			<label class="ig-label" i18n>Recipient Type</label>
-			<div
-				class="ig-value">{{settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : settings['MessageRecipientType']}}</div>
+			<div class="ig-value" *ngIf="settings['MessageRecipientType'] === 'SpecificUser'" i18n>Specific User</div>
+			<div class="ig-value"
+				 *ngIf="settings['MessageRecipientType'] !== 'SpecificUser'">{{ settings['MessageRecipientType'] }}</div>
 		</div>
 		<div class="row" *ngIf="settings['MessageRecipientType'] == 'SpecificUser'">
 			<label class="ig-label" i18n>Recipient</label>
@@ -53,8 +54,12 @@
 		</div>
 		<div class="row" *ngIf="settings['IncludePreviousFormResponses'] != null">
 			<label class="ig-label" i18n>Include previous form responses?</label>
-			<div class="ig-value"
-				 i18n>{{settings['IncludePreviousFormResponses'].toString() == 'true' ? 'Yes' : 'No'}}</div>
+			<div class="ig-value" *ngIf="settings['IncludePreviousFormResponses'].toString() === 'true'"
+				 i18n>Yes
+			</div>
+			<div class="ig-value" *ngIf="settings['IncludePreviousFormResponses'].toString() !== 'true'"
+				 i18n>No
+			</div>
 		</div>
 	</ng-container>
 </div>
