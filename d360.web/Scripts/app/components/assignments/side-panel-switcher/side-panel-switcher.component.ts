@@ -24,13 +24,6 @@ export class SidePanelSwitcherComponent {
 	selection: { HasProfiling: boolean, AssetUid: string };
 	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
 
-	constructor() {
-	}
-
-	secondaryPanelOpen(): void {
-
-	}
-
 	clear(): void {
 		this.selectedTag = null;
 		this.selectedReferenceItem = null;
