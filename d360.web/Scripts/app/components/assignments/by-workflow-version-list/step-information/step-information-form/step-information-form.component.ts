@@ -90,7 +90,7 @@ export class StepInformationFormComponent implements OnInit {
 	}
 
 	get recipientType(): string {
-		if (this.selectedNode.settings['MessageRecipientType'] == 'SpecificUser') {
+		if (this.selectedNode.settings['MessageRecipientType'] === 'SpecificUser') {
 			return $localize`Specific User`;
 		} else {
 			return this.selectedNode.settings['MessageRecipientType'];
