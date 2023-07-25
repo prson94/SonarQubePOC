@@ -1022,7 +1022,10 @@ namespace d360.model.DataAccessLayer
 								,ADP.IsAuthorizedForPopularity
 								,ADP.SourceLastModified
 								,ADP.FilterCount
-								,ADP.Freshness 
+								,ADP.Freshness
+								,ADP.ProfileSource
+								,ADP.ProfileSeries
+								,ADP.ProfileType
 							from 
 								AssetDataProfile ADP
 								{(!string.IsNullOrWhiteSpace(joinSql) ? joinSql : "")}

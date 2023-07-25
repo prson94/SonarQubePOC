@@ -1838,6 +1838,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					{(useTempTableForResults ? $"row_number() over (order by TempA.ID) as _rowid," : "")}
 					A.ID as AssetId,
 					A.[UID] as [AssetUid],
+					A.[SourceID] as [XrefId],
 					A.AssetTypeId,
 					T.[UID] as AssetTypeUid,
 					{(includeCreatedByModifiedBy ? "UA.uid as UpdatedByUid," : "")}

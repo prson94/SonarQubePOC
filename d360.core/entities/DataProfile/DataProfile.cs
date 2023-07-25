@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using d360.core.enums;
 using Newtonsoft.Json;
 
 namespace d360.core.entities
@@ -128,6 +128,15 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int? Freshness { get; set; }
+
+		[DataMember]
+		public string ProfileSource { get; set; }
+
+		[DataMember]
+		public string ProfileSeries { get; set; }
+
+		[DataMember]
+		public ProfileType? ProfileType { get; set; }
 
 		[ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
@@ -348,6 +357,15 @@ namespace d360.core.entities
 		[DataMember(Name = "freshness")]
 		public int? Freshness { get; set; }
 
+		[DataMember(Name = "profileSource")]
+		public string ProfileSource { get; set; }
+
+		[DataMember(Name = "profileSeries")]
+		public string ProfileSeries { get; set; }
+
+		[DataMember(Name = "profileType")]
+		public ProfileType? ProfileType { get; set; }
+
 		public DataProfileModel() { }
 
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
@@ -391,6 +409,9 @@ namespace d360.core.entities
 			SourceLastModified = profile.SourceLastModified;
 			FilterCount = profile.FilterCount;
 			Freshness = profile.Freshness;
+			ProfileSource = profile.ProfileSource;
+			ProfileSeries = profile.ProfileSeries;
+			ProfileType = profile.ProfileType;
 
 			//populate sample details
 			Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>

@@ -1057,7 +1057,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 
 			const restricted = ["id", "uid", "assetid", "assetuid", "assettypeid",
-				"assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath", "displayvalue", "path"];
+				"assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath", "displayvalue", "path", "xrefid"];
 
 			if (this.relationshipTypeUid) {
 				restricted.push("source");
