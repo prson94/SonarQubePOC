@@ -67,7 +67,7 @@ export class WorkflowHelpers {
 	static formResponseTypeName(responseType: string): string {
 		switch (responseType) {
 			case 'FirstResponse':
-				return 'First Response';
+				return $localize`First Response`;
 			default:
 				return responseType;
 		}

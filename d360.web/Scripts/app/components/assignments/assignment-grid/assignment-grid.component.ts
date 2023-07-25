@@ -25,7 +25,6 @@ import {
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
-import { $localize } from '@angular/localize/init';
 
 /*global $localize*/
 
