@@ -96,4 +96,12 @@ export class StepInformationFormComponent implements OnInit {
 			return this.selectedNode.settings['MessageRecipientType']
 		}
 	}
+
+	get responseType(): string {
+		if(this.selectedNode.settings?.FormResponseType === 'FirstResponse') {
+			return $localize`First Response`
+		} else {
+			return this.selectedNode.settings?.FormResponseType
+		}
+	}
 }

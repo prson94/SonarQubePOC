@@ -33,7 +33,7 @@
 		<div class="row">
 			<label class="ig-label" i18n>Response Type</label>
 			<div
-				class="ig-value">{{selectedNode.settings?.FormResponseType === 'FirstResponse' ? 'First Response' : selectedNode.settings?.FormResponseType}}</div>
+				class="ig-value">{{ responseType }}</div>
 		</div>
 		<div class="row" *ngIf="selectedNode.fields.form['@title'] != null">
 			<label class="ig-label" i18n>Title</label>
