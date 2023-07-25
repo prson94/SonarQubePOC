@@ -40,25 +40,25 @@ export class StepInformationFieldChangeComponent implements OnInit {
 
 	getChangeType(item: WorkflowStepFieldChangeDetail): string {
 		if (item['@AppendValue'] === 'true') {
-			return 'Append';
+			return $localize`Append`;
 		} else if (item['@ClearValue'] === 'true') {
-			return 'Clear';
+			return $localize`Clear`;
 		} else {
-			return 'Replace';
+			return $localize`Replace`;
 		}
 	}
 
 	getValueSource(item: WorkflowStepFieldChangeDetail): string {
 		if (item['@UseFormValue'] === true) {
 			if (item['@ObjectType'] === 'Issue') {
-				return 'Action Form Input';
+				return $localize`Action Form Input`;
 			} else {
-				return 'Form Input';
+				return $localize`Form Input`;
 			}
 		} else if (item['@ClearValue'] === 'true') {
 			return '--';
 		} else {
-			return 'Specific Value';
+			return $localize`Specific Value`;
 		}
 	}
 
