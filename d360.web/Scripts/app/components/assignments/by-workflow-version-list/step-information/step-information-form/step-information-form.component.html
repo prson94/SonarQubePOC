@@ -4,7 +4,7 @@
 		<div class="row">
 			<label class="ig-label" i18n>Recipient Type</label>
 			<div
-				class="ig-value">{{selectedNode.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' : selectedNode.settings['MessageRecipientType'] }}</div>
+				class="ig-value">{{ recipientType }}</div>
 		</div>
 		<div class="row" *ngIf="selectedNode.settings['MessageRecipientType'] == 'SpecificUser'">
 			<label class="ig-label" i18n>Recipient</label>
@@ -12,11 +12,7 @@
 				class="ig-value">{{selectedNode.settings['MessageToUser']}}</div>
 		</div>
 		<div class="row" *ngIf="selectedNode.settings['MessageRecipientType'] == 'Responsibility'">
-			<label class="ig-label" i18n>{{
-				(selectedNode.settings.ResponsibilityTypeID == null || selectedNode.settings.ResponsibilityTypeID.length < 2)
-					? 'Responsibility'
-					: 'Responsibilities'
-				}}</label>
+			<label class="ig-label" i18n>{{ responsibilityLabel }}</label>
 			<div
 				class="ig-value">
 				<ng-container *ngFor="let x of selectedNode.settings.ResponsibilityTypeID; let i = index">

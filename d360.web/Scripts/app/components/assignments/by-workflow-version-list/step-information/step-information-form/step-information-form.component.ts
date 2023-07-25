@@ -5,6 +5,8 @@ import { ResponsibilityTypeService } from '../../../../../services/responsibilit
 import { GroupService } from '../../../../../services/group.service';
 import { isArray } from 'lodash-es';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-step-information-form',
 	templateUrl: './step-information-form.component.html'
@@ -77,5 +79,21 @@ export class StepInformationFormComponent implements OnInit {
 
 	getGroupName(): string {
 		return (this.selectedNode.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g): boolean => g.value === this.selectedNode.settings.MessageToGroup).label;
+	}
+
+	get responsibilityLabel(): string {
+		if(this.selectedNode.settings.ResponsibilityTypeID == null || this.selectedNode.settings.ResponsibilityTypeID.length < 2) {
+			return $localize`Responsibility`
+		} else {
+			return $localize`Responsibilities`
+		}
+    }
+
+	get recipientType(): string {
+		if(this.selectedNode.settings['MessageRecipientType'] == 'SpecificUser') {
+			return $localize`Specific User`
+		} else {
+			return this.selectedNode.settings['MessageRecipientType']
+		}
 	}
 }
