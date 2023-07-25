@@ -60,24 +60,24 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 	private setValueSource(fieldChange: WorkflowStepFieldChangeDetail): void {
 		if (fieldChange.FormValue === true) {
 			if (fieldChange.ObjectType === 'Action') {
-				fieldChange.ValueSource = 'Action Form Input';
+				fieldChange.ValueSource = $localize`Action Form Input`;
 			} else {
-				fieldChange.ValueSource = 'Form Input';
+				fieldChange.ValueSource = $localize`Form Input`;
 			}
 		} else if (fieldChange.ClearValue === 'true') {
 			fieldChange.ValueSource = '--';
 		} else {
-			fieldChange.ValueSource = 'Specific Value';
+			fieldChange.ValueSource = $localize`Specific Value`;
 		}
 	}
 
 	private setChangeType(fieldChange: WorkflowStepFieldChangeDetail): void {
 		if (fieldChange.AppendValue === 'true') {
-			fieldChange.ChangeType = 'Append';
+			fieldChange.ChangeType = $localize`Append`;
 		} else if (fieldChange.ClearValue === 'true') {
-			fieldChange.ChangeType = 'Clear';
+			fieldChange.ChangeType = $localize`Clear`;
 		} else {
-			fieldChange.ChangeType = 'Replace';
+			fieldChange.ChangeType = $localize`Replace`;
 		}
 	}
 }
