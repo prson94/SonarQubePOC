@@ -974,7 +974,7 @@ namespace d360.web.Controllers.V2
 				bool success = Enum.IsDefined(typeof(ProfileType), model.ProfileType);
 				if (!success)
 				{
-					return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ValidProfiletype, ((int)model.ProfileType)).ToString());
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ValidProfiletype, (int)model.ProfileType));
 				}
 
 				var profileSetDate = model.profileSetDate;
