@@ -5,10 +5,10 @@
 	</div>
 	<div class="row">
 		<label class="ig-label" i18n>Clear Relationships?</label>
-		<div i18n class="ig-value">{{ settings.RelationshipUpdate.Relationship['@ClearValue'] === 'true' ? 'Yes' : 'No' }}</div>
+		<div i18n class="ig-value">{{ getValue(settings.RelationshipUpdate.Relationship['@ClearValue']) }}</div>
 	</div>
 	<div class="row">
 		<label class="ig-label" i18n>Append Relationships?</label>
-		<div i18n class="ig-value">{{ settings.RelationshipUpdate.Relationship['@AppendValue'] === 'true' ? 'Yes' : 'No'  }}</div>
+		<div i18n class="ig-value">{{ getValue(settings.RelationshipUpdate.Relationship['@AppendValue']) }}</div>
 	</div>
 </ng-container>

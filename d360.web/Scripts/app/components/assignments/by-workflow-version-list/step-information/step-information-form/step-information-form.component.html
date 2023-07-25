@@ -47,15 +47,13 @@
 			 *ngIf="selectedNode.fields?.form != null && selectedNode.fields?.form['@allowReassignResource'] != null">
 			<label class="ig-label" i18n>Allow resource reassignment?</label>
 			<div
-				class="ig-value"
-				i18n>{{selectedNode.fields?.form['@allowReassignResource'].toString() == 'true' ? 'Yes' : 'No'}}</div>
+				class="ig-value">{{getReassignmentValue(selectedNode.fields?.form['@allowReassignResource'].toString())}}</div>
 		</div>
 		<div class="row"
 			 *ngIf="selectedNode.fields?.form != null && selectedNode.fields?.form['@allowReassignObject'] != null">
 			<label class="ig-label" i18n>Allow object reassignment?</label>
 			<div
-				class="ig-value"
-				i18n>{{selectedNode.fields?.form['@allowReassignObject'].toString() == 'true' ? 'Yes' : 'No'}}</div>
+				class="ig-value">{{getReassignmentValue(selectedNode.fields?.form['@allowReassignObject'].toString())}}</div>
 		</div>
 	</ng-container>
 </div>

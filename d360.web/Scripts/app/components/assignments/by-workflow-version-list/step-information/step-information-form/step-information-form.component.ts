@@ -53,7 +53,7 @@ export class StepInformationFormComponent implements OnInit {
 					if (!this.groups.find((g) => g.value === this.selectedNode.settings.MessageToGroup)) {
 						this.groups.push({
 							value: this.selectedNode.settings.MessageToGroup,
-							label: '<invalid group>'
+							label: $localize`<invalid group>`
 						});
 					}
 				}
@@ -78,30 +78,39 @@ export class StepInformationFormComponent implements OnInit {
 	}
 
 	getGroupName(): string {
-		return (this.selectedNode.settings.MessageToGroup == null) ? '<none>' : this.groups.find((g): boolean => g.value === this.selectedNode.settings.MessageToGroup).label;
+		return (this.selectedNode.settings.MessageToGroup == null) ? $localize`<none>` : this.groups.find((g): boolean => g.value === this.selectedNode.settings.MessageToGroup).label;
 	}
 
 	get responsibilityLabel(): string {
-		if(this.selectedNode.settings.ResponsibilityTypeID == null || this.selectedNode.settings.ResponsibilityTypeID.length < 2) {
-			return $localize`Responsibility`
+		if (this.selectedNode.settings.ResponsibilityTypeID == null || this.selectedNode.settings.ResponsibilityTypeID.length < 2) {
+			return $localize`Responsibility`;
 		} else {
-			return $localize`Responsibilities`
+			return $localize`Responsibilities`;
 		}
-    }
+	}
 
 	get recipientType(): string {
-		if(this.selectedNode.settings['MessageRecipientType'] == 'SpecificUser') {
-			return $localize`Specific User`
+		if (this.selectedNode.settings['MessageRecipientType'] == 'SpecificUser') {
+			return $localize`Specific User`;
 		} else {
-			return this.selectedNode.settings['MessageRecipientType']
+			return this.selectedNode.settings['MessageRecipientType'];
 		}
 	}
 
 	get responseType(): string {
-		if(this.selectedNode.settings?.FormResponseType === 'FirstResponse') {
-			return $localize`First Response`
+		if (this.selectedNode.settings?.FormResponseType === 'FirstResponse') {
+			return $localize`First Response`;
 		} else {
-			return this.selectedNode.settings?.FormResponseType
+			return this.selectedNode.settings?.FormResponseType;
 		}
 	}
+
+	getReassignmentValue(value: string): string {
+		if (value === 'true') {
+			return $localize`Yes`;
+		} else {
+			return $localize`No`;
+		}
+	}
+
 }
