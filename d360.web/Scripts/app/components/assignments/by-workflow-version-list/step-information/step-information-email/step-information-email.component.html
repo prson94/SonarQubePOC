@@ -1,0 +1,65 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+	<ng-container *ngIf="!sendFormEmail">
+		<div class="row">
+			<label class="ig-label" i18n>Recipient Type</label>
+			<div class="ig-value" *ngIf="settings['MessageRecipientType'] === 'SpecificUser'" i18n>Specific User</div>
+			<div class="ig-value"
+				 *ngIf="settings['MessageRecipientType'] !== 'SpecificUser'">{{ settings['MessageRecipientType'] }}</div>
+		</div>
+		<div class="row" *ngIf="settings['MessageRecipientType'] == 'SpecificUser'">
+			<label class="ig-label" i18n>Recipient</label>
+			<div class="ig-value">{{settings['MessageToUser']}}</div>
+		</div>
+		<div class="row" *ngIf="settings['MessageRecipientType'] == 'Responsibility'">
+			<label class="ig-label" i18n>Responsibility</label>
+			<div class="ig-value">
+				<ng-container *ngIf="settings['ResponsibilityTypeID'] != null; else block">
+					<div *ngFor="let r of settings.ResponsibilityTypeID; let i = index">
+						{{getResponsibilityName(i)}}
+					</div>
+				</ng-container>
+				<ng-template #block>
+					&nbsp;
+				</ng-template>
+			</div>
+		</div>
+		<div class="row" *ngIf="settings['MessageRecipientType'] == 'Group'">
+			<label class="ig-label" i18n>Group</label>
+			<div class="ig-value">{{getGroupName()}}</div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Subject</label>
+			<div class="ig-value">{{settings['MessageSubjectTemplate']}}</div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Body</label>
+			<div class="ig-value"
+				 *ngIf="settings['MessageBodyTemplate']"
+				 [innerHtml]="settings['MessageBodyTemplate'] | safeHtml">
+			</div>
+		</div>
+	</ng-container>
+	<ng-container *ngIf="sendFormEmail">
+		<div class="row">
+			<label class="ig-label" i18n>Subject</label>
+			<div class="ig-value">{{settings['MessageSubjectTemplate']}}</div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Body</label>
+			<div class="ig-value"
+				 *ngIf="settings['MessageBodyTemplate']"
+				 [innerHtml]="settings['MessageBodyTemplate'] | safeHtml">
+			</div>
+		</div>
+		<div class="row" *ngIf="settings['IncludePreviousFormResponses'] != null">
+			<label class="ig-label" i18n>Include previous form responses?</label>
+			<div class="ig-value" *ngIf="settings['IncludePreviousFormResponses'].toString() === 'true'"
+				 i18n>Yes
+			</div>
+			<div class="ig-value" *ngIf="settings['IncludePreviousFormResponses'].toString() !== 'true'"
+				 i18n>No
+			</div>
+		</div>
+	</ng-container>
+</div>

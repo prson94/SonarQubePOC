@@ -44,6 +44,7 @@ import { FieldType } from '../../../../models/fields.model';
 import { concatMap, map, tap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 declare var window: any;
 
@@ -71,6 +72,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Input() monitorView: boolean = false;
     @Input() filteredObject: string;
     @Input() filteredObjectId: number;
+	@Input() isSidePanel: boolean = false;
+	@Input() showCountPanel: boolean = true
+	@Input() hasMenu: boolean = true;
+	@Input() hasZoomButtons: boolean = false;
     @Output() selectedStepIdChange = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
@@ -127,7 +132,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private workflowFieldsService: WorkflowFieldsService,
         private uriBasedService: UriBasedService,
         private objectDetailService: ObjectDetailService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+		private linkClickInterceptor:LinkClickInterceptor) {
         super(settingsService);
     }
     
@@ -162,10 +168,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         const isSelectedStepIdChanged = changes['selectedStepId'] && changes['selectedStepId'].currentValue !== changes['selectedStepId'].previousValue;
 
         if (isVelueReadOnly) {
-            this.isReadOnly = this.readonly.toString().toLowerCase() === 'true' ? true : false;
+            this.isReadOnly = this.readonly.toString().toLowerCase() === 'true';
         }
 
         if (isModelPassed) {
+			if (this.diagram?.div) {
+				this.diagram.div = null;
+			}
+			if (this.palette?.div) {
+				this.palette.div = null;
+			}
             this.selectedData = null;
             this.initializeDiagram();
             this.initializeMenuItems();
@@ -229,6 +241,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.linkTemplateMap.add('', this.createDefaultLink());
 
         this.diagram.addDiagramListener('ChangedSelection', (e) => this.ChangedSelection(e));
+		this.diagram.addDiagramListener('ObjectSingleClicked', (e) => this.ObjectSingleClicked(e));
         this.diagram.addDiagramListener('LinkDrawn', (e) => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
         this.diagram.addDiagramListener('ExternalObjectsDropped', (e) => this.ExternalObjectsDropped(e));
@@ -938,7 +951,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             }
 
-            if (n.activityType === WorkflowActivityType.RelationshipUpdate) {
+            if (n.activityType === WorkflowActivityType.RelationshipChange) {
                 if (n.settings.RelationshipUpdate == null)
                     {n.settings.RelationshipUpdate = new RelationshipUpdateSettings();}
                 if (n.settings.RelationshipUpdate.Relationship == null)
@@ -1211,7 +1224,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 });
                 if (hasInvalidField) {return false;}
                 break;
-            case WorkflowActivityType.RelationshipUpdate:
+            case WorkflowActivityType.RelationshipChange:
                 if (n.settings == null || n.settings.RelationshipUpdate == null || n.settings.RelationshipUpdate.Relationship == null || isEmpty(n.settings.RelationshipUpdate.Relationship))
                     {return false;}
                 if (n.settings.RelationshipUpdate.Relationship['@ClearValue'] == null || n.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() === "false") {
@@ -1573,7 +1586,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.FieldChange:
                 n.settings.FieldUpdate = e.settings.FieldUpdate;
                 break;
-            case WorkflowActivityType.RelationshipUpdate:
+            case WorkflowActivityType.RelationshipChange:
                 n.settings.RelationshipUpdate = e.settings.RelationshipUpdate;
                 break;
             case WorkflowActivityType.StateChange: //status change
@@ -1647,6 +1660,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             {this.backClick();}
     }
 
+	diagramZoom(zoomIn: boolean = true): void {
+		if (zoomIn) {
+			this.diagram.scale += 0.1;
+		} else {
+			this.diagram.scale -= 0.1;
+		}
+	}
+
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
@@ -1655,7 +1676,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private resizeDiagram() {
         const dOffset = (this.hasHeader ? this.diagramOffset : this.diagramOffset - 125);
         const oOffset = (this.hasHeader ? this.overlayOffset : this.overlayOffset - 125);
-        this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
+		this.diagramRef.nativeElement.style.height = (window.innerHeight - dOffset - (this.isSidePanel ? 328 : 0)) + 'px';
         this.paletteRef.nativeElement.style.height = (window.innerHeight - dOffset) + 'px';
         this.overlayMaxHeight = window.innerHeight - oOffset;
     }
@@ -1664,6 +1685,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.layout.invalidateLayout();
         this.diagram.requestUpdate();
     }
+
+	private ObjectSingleClicked(e: any) {
+		let part = e.subject.part;
+		if (part instanceof go.Node) {
+			this.linkClickInterceptor.sendEvent(e.diagram.lastInput.event, {
+				selectedNodeModel: part?.data,
+				workflowTypeUid: this.uid,
+				workflowTypeVersion: this.version
+			}, '');
+		}
+	}
 
     private ChangedSelection(e: any) {
         let sel = e.diagram.selection;
@@ -1816,7 +1848,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private ClipboardPasted(e) {
         if (e != null && e.subject != null) {
             const nodes = e.subject.toArray();
-            
+
             for (let i = 0; i < nodes.length; i++) {
 
                 if (nodes[i].data.DiagramObjectType === DiagramObjectType.Link) {
@@ -1939,6 +1971,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         return dg;
     }
 
+
     private createTaskNode(): go.Node {
         const nodeWidth = 150;
         const nodeHeight = 75;
@@ -1980,7 +2013,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
-                    margin: 5
+                    margin: 5,
+                    visible: this.showCountPanel
                 },
                     this.makeCountPanel(nodeFontSize)
                 ),
@@ -2004,7 +2038,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             )
         );
     }
-
 
     private createTerminalNode(isStart: boolean): go.Node {
         const nodeWidth = 80;
@@ -2041,7 +2074,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
                     alignment: go.Spot.BottomRight,
-                    margin: 0
+                    margin: 0,
+                    visible: this.showCountPanel
                 },
                     this.makeTerminalCountPanel(nodeFontSize, isStart)
                 ),
@@ -2244,6 +2278,5 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 {this.model.Event.LastExecuted = null;}
         });
     }
-
 }
 

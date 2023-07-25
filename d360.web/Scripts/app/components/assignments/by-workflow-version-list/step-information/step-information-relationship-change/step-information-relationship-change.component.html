@@ -1,0 +1,14 @@
+<ng-container *ngIf="settings?.RelationshipUpdate?.Relationship">
+	<div class="row">
+		<label class="ig-label" i18n>Relationship Form Field</label>
+		<div i18n class="ig-value">{{ relationshipFormField }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Clear Relationships?</label>
+		<div i18n class="ig-value">{{ getValue(settings.RelationshipUpdate.Relationship['@ClearValue']) }}</div>
+	</div>
+	<div class="row">
+		<label class="ig-label" i18n>Append Relationships?</label>
+		<div i18n class="ig-value">{{ getValue(settings.RelationshipUpdate.Relationship['@AppendValue']) }}</div>
+	</div>
+</ng-container>

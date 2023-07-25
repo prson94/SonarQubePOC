@@ -1,0 +1,74 @@
+<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+			<ig-search-field mode="Keypress"
+							 [debounce]="600"
+							 (onSearch)="onSimpleSearch()"
+							 [(ngModel)]="simpleFilter">
+			</ig-search-field>
+		</div>
+	</div>
+	<div class="grid-actions-header-row">
+		<advanced-filtering loadIdentifier="AssignmentsByWorkflowVersion"
+							[fieldsObserver]="filterFields$"
+							(onLoad)="onFiltersLoaded()"
+							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+	</div>
+</div>
+<div class="row asset-grid-wrapper">
+	<div class="col s12">
+		<p-table #dt
+				 [loading]="isLoading"
+				 loadingIcon="fa fa-spinner"
+				 [value]="assignmentVersionItems"
+				 selectionMode="multiple"
+				 [metaKeySelection]="true"
+				 [lazy]="true"
+				 [totalRecords]="totalRecords"
+				 [scrollable]="true"
+				 [globalFilterFields]="['WorkflowName','Version','outstanding']"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 (onLazyLoad)="loadAssignmentsByVersion($event)"
+				 [selection]="selectedAssignmentVersionItems"
+				 (selectionChange)="gridSelectionChange($event)"
+				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+			<ng-template pTemplate="header">
+				<tr>
+					<th pSortableColumn="WorkflowName">
+						<ng-container i18n>Workflow Name</ng-container>
+						<d3s-sortIcon field="WorkflowName"></d3s-sortIcon>
+					</th>
+					<th pSortableColumn="Version">
+						<ng-container i18n>Version</ng-container>
+						<d3s-sortIcon field="Version"></d3s-sortIcon>
+					</th>
+					<th pSortableColumn="outstanding">
+						<ng-container i18n>Outstanding Assignments</ng-container>
+						<d3s-sortIcon field="outstanding"></d3s-sortIcon>
+					</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item" style="word-wrap: break-word">
+					<td class="break-wrap">{{item.WorkflowName}}</td>
+					<td>{{item.Version}}</td>
+					<td>
+						<span i18n *ngIf="item.Awaiting > 0"><ig-badge
+							[text]="item.Awaiting"></ig-badge> Awaiting</span>
+						<span i18n *ngIf="item.Incomplete > 0"> <ig-badge [text]="item.Incomplete"></ig-badge> Incomplete</span>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="emptymessage">
+				<p i18n></p>No assignments found
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+	</div>
+</div>

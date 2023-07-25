@@ -36,6 +36,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() igformGroup: UntypedFormGroup;
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
+	@Input() showDetailsLink: boolean = false;
+	@Input() showDetailsLinkText: string = ''
+	@Output() showDetailsClick: EventEmitter<boolean> = new EventEmitter<boolean>()
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
     @Input() showHeaderLine: boolean = true;

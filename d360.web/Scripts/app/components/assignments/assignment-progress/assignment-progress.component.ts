@@ -1,0 +1,77 @@
+import { Component, EventEmitter, Input, Output, ViewChildren } from '@angular/core';
+import { WorkflowService } from '../../../services/workflow.service';
+import { AssignmentItemStep } from '../../../models/workflow.model';
+import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
+
+@Component({
+	selector: 'd3s-assignment-progress',
+	templateUrl: './assignment-progress.component.html',
+	styleUrls: ['./assignment-progress.component.less']
+})
+export class AssignmentProgressComponent {
+
+	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
+
+	@Input() workflowUid: string;
+
+	@Input() workflowTypeVersion: number;
+
+	@Input() set workflowItemUid(value: string) {
+		this._workflowItemUid = value;
+		if (this._workflowItemUid) {
+			this.loadAssignmentSteps();
+		}
+	}
+
+	get workflowItemUid(): string {
+		return this._workflowItemUid;
+	}
+
+	@Input() showCompleteAssignment: boolean = true;
+
+	@Output() completeAssignment: EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}> = new EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}>();
+
+	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
+	isLoading: boolean = false;
+
+	assignmentItemSteps: AssignmentItemStep[];
+	private _workflowItemUid: string;
+
+	constructor(private workflowService: WorkflowService,
+				public linkClickInterceptor: LinkClickInterceptor) {
+	}
+
+	private loadAssignmentSteps() {
+		this.assignmentItemSteps = [];
+		this.isLoading = true;
+		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
+			.subscribe((response: AssignmentItemStep[]): void => {
+				this.isLoading = false;
+				this.assignmentItemSteps = response.sort(function (a: AssignmentItemStep, b: AssignmentItemStep) {
+					return (a.StartedOn < b.StartedOn) ? -1 : ((a.StartedOn > b.StartedOn) ? 1 : 0);
+				});
+			});
+	}
+
+	stepSelectionChanged(assignmentItemStep: AssignmentItemStep): void {
+		this.deselectWorkflowSteps(assignmentItemStep);
+		this.stepClickChange.emit(assignmentItemStep);
+	}
+
+	deselectWorkflowSteps(workflowItemStepToSkip?: AssignmentItemStep) {
+		for (const assignmentProgressStepComponent of this.assignmentProgressStepComponents) {
+			if (workflowItemStepToSkip !== assignmentProgressStepComponent.assignmentItemStep) {
+				assignmentProgressStepComponent.selected = false;
+			}
+		}
+	}
+}

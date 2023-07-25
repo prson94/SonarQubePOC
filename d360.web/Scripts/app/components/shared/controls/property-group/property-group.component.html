@@ -7,6 +7,9 @@
                 <i class="fa fa-question-circle" pTooltip="{{moreInfoHtml}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
             </div>
         </div>
+		<span class="show-details" *ngIf="showDetailsLink">
+			<a (click)="showDetailsClick.emit(true)">{{ showDetailsLinkText }}</a>
+		</span>
     </div>
     <div class="pg-collapsable-content" [ngClass]="{'close': !expanded, 'no-padding': !shouldBePadded}" #pgcontainer>
         <ng-content select="[inputs], [readonly]"></ng-content>

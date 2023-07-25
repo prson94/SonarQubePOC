@@ -1,0 +1,19 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail-tabs" [hidden]="isLoading">
+	<ig-property-group i18n-title title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
+		<div readonly>
+			<d3s-assignment-progress-step *ngFor="let assignmentItemStep of assignmentItemSteps"
+										  [workflowItemUid]="workflowItemUid"
+										  [assignmentItemStep]="assignmentItemStep"
+										  [showCompleteAssignment]="showCompleteAssignment"
+										  (stepClickChange)="stepSelectionChanged(assignmentItemStep)"
+										  (completeAssignment)="completeAssignment.emit($event)"
+										  [isLastStep]="assignmentItemSteps.indexOf(assignmentItemStep) === (assignmentItemSteps.length - 1)"
+			></d3s-assignment-progress-step>
+		</div>
+	</ig-property-group>
+</div>
+<div class="space-around">
+	<a (click)="linkClickInterceptor.sendEvent($event, { workflowTypeUid: workflowUid, workflowTypeVersion: workflowTypeVersion },'')"
+	   i18n>Show Workflow Diagram and Details</a>
+</div>

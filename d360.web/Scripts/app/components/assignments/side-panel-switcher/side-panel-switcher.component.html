@@ -1,0 +1,53 @@
+<ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
+	<data-profile [dataProfile]="dataProfile" [assetData]="selection"></data-profile>
+</ng-container>
+<ng-container *ngIf="sidePanelTab === 'detail'">
+	<ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+					 #assetDetail
+					 [objectUID]="selectedAsset ? selectedAsset.uid : selection?.AssetUid"
+					 [objectID]="selectedAsset && selectedAsset.id ? selectedAsset.id : null"
+					 [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
+					 [useAccordion]="true"
+					 [shouldBePadded]="false"
+					 [showHeader]="true"
+					 [showHeaderLine]="false"
+					 [spacerHeight]="'16px'"
+					 [tooltipAlign]="'left'"
+					 [isSidePanel]="true"
+					 [hasEditLink]="true"
+					 [hasAddRelationshipsPermissions]="false"
+					 [hasModifyRelationshipsPermissions]="false"
+					 [hasDeleteRelationshipsPermissions]="false"
+					 [interceptLinkClick]="true"
+					 (onEditClick)="assetGrid.triggerEdit($event)"></ig-asset-detail>
+
+	<ng-container *ngIf="selectedReferenceItem">
+		<ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+							  [highlightUid]="selectedReferenceItem.assetUid"
+							  [baseUrl]="selectedReferenceItem.url">
+		</ig-asset-type-detail>
+	</ng-container>
+	<ng-container *ngIf="selectedTag">
+		<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+	</ng-container>
+</ng-container>
+<ng-container
+	*ngIf="sidePanelTab === AssetDetailClickType.WorkflowStep && selectedAsset?.workflowItemUid && selectedAsset?.itemStepUid">
+	<d3s-assignment-progress-step-details
+		[workflowItemUId]="selectedAsset.workflowItemUid"
+		[itemStepUid]="selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
+</ng-container>
+<ng-container
+	*ngIf="sidePanelTab==AssetDetailClickType.WorkflowTypeInformation && selectedAsset?.workflowTypeUid && selectedAsset?.workflowTypeVersion">
+	<d3s-workflow-information [shouldBePadded]="true"
+							  [showHeaderLine]="false"
+							  [isSidePanel]="true"
+							  [interceptLinkClick]="true"
+							  [workflowTypeUid]="selectedAsset.workflowTypeUid"
+							  [workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-workflow-information>
+</ng-container>
+<ng-container
+	*ngIf="sidePanelTab==AssetDetailClickType.WorkflowItemInformation && selectedAsset?.workflowItemUid && selectedAsset?.workflowTypeVersion">
+	<d3s-assignment-information [workflowItemUid]="selectedAsset.workflowItemUid"
+								[workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-assignment-information>
+</ng-container>

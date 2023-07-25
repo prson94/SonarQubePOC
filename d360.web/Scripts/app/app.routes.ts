@@ -40,6 +40,8 @@ const routes: Routes = [
 	{ path: "semantics/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },
 	{ path: "tag/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
+	{ path: "assignments", loadChildren: () => import("./components/assignments/assignments.module").then((m) => m.AssignmentsModule) },
+	{ path: "requests", loadChildren: () => import("./components/assignments/assignments.module").then((m) => m.AssignmentsModule) },
 	{ path: "tag", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "dataCatalog", loadChildren: () => import("./components/data-catalog/data-catalog.module").then((m) => m.DataCatalogModule) },
 

@@ -1,0 +1,78 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { WorkflowService } from '../../../services/workflow.service';
+import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
+
+@Component({
+	selector: 'd3s-assignment-information',
+	templateUrl: './assignment-information.component.html',
+	styleUrls: ['./assignment-information.component.less']
+})
+export class AssignmentInformationComponent {
+	@Input() showCompleteAssignment: boolean = false;
+	@Input() workflowTypeVersion: number;
+
+	@Output() completeAssignment: EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}> = new EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string,
+		assetId: number
+	}>();
+	assignmentItem: AssignmentItem;
+	isAssignmentItemLoading: boolean = false;
+	isWorkflowStepDetailLoading: boolean = false;
+
+	workflowStepDetail: WorkflowStepDetail;
+	private assignmentItemStep: AssignmentItemStep;
+
+	@Input() set workflowItemUid(value: string) {
+		if (value) {
+			this.loadAssignmentItem(value);
+			this.loadAssignmentSteps(value);
+		}
+	}
+
+	constructor(private workflowService: WorkflowService) {
+	}
+
+	loadAssignmentItem(workflowItemUid: string): void {
+		this.isAssignmentItemLoading = true;
+		this.assignmentItem = null;
+		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
+			this.isAssignmentItemLoading = false;
+			this.assignmentItem = response;
+		});
+	}
+
+	private loadAssignmentSteps(workflowItemUid: string) {
+		let assignmentItemSteps: AssignmentItemStep[];
+		this.workflowStepDetail = null;
+		this.isWorkflowStepDetailLoading = true;
+		this.workflowService.getAssignmentItemSteps(workflowItemUid)
+			.subscribe((response: AssignmentItemStep[]): void => {
+				assignmentItemSteps = response;
+				this.isWorkflowStepDetailLoading = false;
+				for (const assignmentItemStep of assignmentItemSteps) {
+					if (!assignmentItemStep.CompletedOn) {
+						this.assignmentItemStep = assignmentItemStep;
+						this.isWorkflowStepDetailLoading = true;
+						this.workflowService.getAssignmentStepDetail(assignmentItemStep.Uid).subscribe((response: WorkflowStepDetail) => {
+							this.workflowStepDetail = response;
+							this.isWorkflowStepDetailLoading = false;
+						});
+						break;
+					}
+				}
+			});
+	}
+
+	completeAssignmentClick(): void {
+		this.completeAssignment.emit({
+			workflowItemUid: this.workflowItemUid,
+			stepUid: this.assignmentItemStep?.Uid,
+			assetId: this.workflowStepDetail?.ObjectID
+		});
+	}
+}

@@ -1,0 +1,166 @@
+<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+			<ig-search-field mode="Keypress"
+							 [debounce]="600"
+							 (onSearch)="onSimpleSearch()"
+							 [(ngModel)]="simpleFilter">
+			</ig-search-field>
+		</div>
+		<div class="grid-action-buttons">
+			<div>
+				<div
+					pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					tooltipPosition="left"
+					tooltipStyleClass="ig-tooltip">
+					<button igButton
+							class="ig-button-secondary"
+							[disabled]="!canExportRecords() || isExportInProgress"
+							[igDataCy]="'Assets_Export'"
+							icon="fa-download"
+							[loading]="isExportInProgress"
+							(click)="export()">
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-actions-header-row">
+		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin (click)="selectAll()" i18n-label
+				label="Select All"
+				[disabled]="items.length < 1"></button>
+		<advanced-filtering [loadIdentifier]="'Assignments'"
+							[fieldsObserver]="filterFields$"
+							(onLoad)="onFiltersLoaded()"
+							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+	</div>
+</div>
+<div class="row asset-grid-wrapper">
+	<div class="col s12">
+		<p-table #dt
+				 [loading]="isLoading"
+				 [tableStyle]="{'min-width': 'max-content'}"
+				 loadingIcon="fa fa-spinner"
+				 [value]="items"
+				 selectionMode="multiple"
+				 [metaKeySelection]="true"
+				 [lazy]="true"
+				 [first]="(currentPageNumber-1) * rowsPerPage"
+				 [totalRecords]="totalRecords"
+				 [scrollable]="true"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 sortField="StartedOn" [sortOrder]="-1"
+				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
+				 [selection]="assignments"
+				 (selectionChange)="gridSelectionChange($event)"
+				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+			<ng-template pTemplate="header">
+				<tr>
+					<ng-container *ngIf="actionFormFields.length === 0">
+						<th [pSortableColumn]="'workflowName'">
+							<ng-container i18n>Workflow Name</ng-container>
+							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
+						</th>
+					</ng-container>
+					<th [pSortableColumn]="'assetDisplayValue'">
+						<ng-container i18n>Associated with</ng-container>
+						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
+					</th>
+					<ng-container *ngFor="let field of actionFormFields">
+						<th>
+							<ng-container i18n>{{ field.FriendlyName }}</ng-container>
+						</th>
+					</ng-container>
+					<ng-container *ngIf="!isRequestsFlow">
+						<th [pSortableColumn]="'initiator'">
+							<ng-container i18n>Initiator</ng-container>
+							<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
+						</th>
+					</ng-container>
+					<th [pSortableColumn]="'StartedOn'">
+						<ng-container i18n>Initiated</ng-container>
+						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'assigneesJson'">
+						<ng-container i18n>Assignee</ng-container>
+						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Status'">
+						<ng-container i18n>Status</ng-container>
+						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
+					</th>
+					<th *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools" style="flex: 0 0 30px"></th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item" class="assignments-table-data">
+					<ng-container *ngIf="actionFormFields.length === 0">
+						<td>{{item.workflowName}}</td>
+					</ng-container>
+					<td>{{item.assetDisplayValue ?? '---'}}</td>
+					<ng-container *ngFor="let field of actionFormFields">
+						<td [innerHTML]="item[field.Name]"></td>
+					</ng-container>
+					<td *ngIf="!isRequestsFlow">{{item.initiator}}</td>
+					<td>
+						<span>{{item.StartedOn | date: 'shortDate'}}</span>
+					</td>
+					<td>
+						<span>{{ item.filteredAssignees?.join(', ') }}</span>
+						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join(', ')"
+							  tooltipStyleClass="ig-tooltip" i18n
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length-item.filteredAssignees.length) }}
+							others </span>
+					</td>
+					<td>
+						<span>{{item.Status}}</span>
+					</td>
+					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools"
+						style="flex: 0 0 30px"
+						alignFrozen="right"
+						pFrozenColumn>
+						<div class="menu-icon">
+							<button igButton
+									type="button"
+									icon="fa-ellipsis-v"
+									(click)="clickMenuIcon(item); menu.toggle($event)"></button>
+							<ig-popup-menu (onSelect)="clickMenuItem($event)"
+										   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+						</div>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="emptymessage">
+				<p>{{ emptyGridMessage }}</p>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+	</div>
+</div>
+<d3s-delete-form [callback]="deleteAssignments"
+				 [items]="assignments"
+				 [showAsModal]="true"
+				 i18n-modalTitle
+				 modalTitle="Delete Assignments"
+				 [modalCssClasses]="'medium-dialog'"
+				 [isModalVisible]="showDeletionModal"
+				 [method]="'callback'"
+				 (onCancel)="showDeletionModal=false;">
+	<div prompt>
+		<span i18n *ngFor="let assignment of assignments">
+			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue }}
+			initiated on {{ assignment.StartedOn | date: 'short' }}
+		</span>
+		<p i18n>
+			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+			Are you sure you want to delete this assignment?<br/>
+			Deleted assignments <b>cannot be retrieved</b>.
+		</p>
+	</div>
+</d3s-delete-form>

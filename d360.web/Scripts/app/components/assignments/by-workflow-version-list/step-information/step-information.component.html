@@ -1,0 +1,103 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading && selectedNode" class="asset-detail">
+	<div class="asset-detail-header">
+		<div i18n class="asset-name">
+			{{ selectedNode.name }}
+		</div>
+		<div i18n class="class-name">
+			Step
+		</div>
+	</div>
+	<div class="asset-detail-tabs">
+		<ig-property-group i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<div class="row">
+					<div class="category-column">
+						<label class="ig-label" i18n>Name</label>
+						<div class="ig-value" i18n>{{ selectedNode.name }}</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="category-column">
+						<label class="ig-label" i18n>Activity Type</label>
+						<div class="ig-value">
+							<span class="step-information-activity-icon fa" [ngClass]="icon"></span>
+							<span *ngIf="selectedNode.activityType !== 0"
+								  i18n>{{helpers.activityTypeName(selectedNode.activityType)}}</span>
+							<span *ngIf="selectedNode.activityType === 0"
+								  i18n>{{helpers.stepTypeName(selectedNode.stepType)}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title title="Details"
+						   *ngIf="(selectedNode.activityType !== WorkflowActivityType.None) && (selectedNode.activityType !== WorkflowActivityType.Form)
+						    && (selectedNode.activityType !== WorkflowActivityType.Delete)"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container [ngSwitch]="selectedNode.activityType">
+					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+						<d3s-step-information-email [settings]="selectedNode.settings"></d3s-step-information-email>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
+						<d3s-assignment-step-http-details
+							[settings]="selectedNode.settings"></d3s-assignment-step-http-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
+						<d3s-assignment-step-http-response-details [settings]="selectedNode.settings"
+																   [nodeList]="nodeList">
+						</d3s-assignment-step-http-response-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipChange">
+						<d3s-step-information-relationship-change [settings]="selectedNode.settings"
+																  [nodeList]="nodeList"></d3s-step-information-relationship-change>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+						<d3s-step-information-field-change [workflowEvent]="workflowEvent"
+														   [settings]="selectedNode.settings"></d3s-step-information-field-change>
+					</ng-container>
+				</ng-container>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title *ngIf="selectedNode.activityType === WorkflowActivityType.HTTPResponse"
+						   title="Outputs"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container>
+					<d3s-assignment-step-http-response-outputs
+						[settings]="selectedNode.settings"></d3s-assignment-step-http-response-outputs>
+				</ng-container>
+			</div>
+		</ig-property-group>
+		<ng-container *ngIf="selectedNode.activityType === WorkflowActivityType.Form">
+			<ig-property-group i18n-title title="Form Details"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-form [selectedNode]="selectedNode"></d3s-step-information-form>
+					</ng-container>
+				</div>
+			</ig-property-group>
+			<ig-property-group i18n-title title="Form Fields"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-form-fields
+							[selectedNode]="selectedNode"></d3s-step-information-form-fields>
+					</ng-container>
+				</div>
+			</ig-property-group>
+			<ig-property-group *ngIf="selectedNode.settings.SendFormEmail?.toString() === 'true'" i18n-title
+							   title="E-mail Details"
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-step-information-email [settings]="selectedNode.settings"
+													[sendFormEmail]="true"></d3s-step-information-email>
+					</ng-container>
+				</div>
+			</ig-property-group>
+		</ng-container>
+	</div>
+</div>

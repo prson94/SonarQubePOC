@@ -1,0 +1,171 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading && step" class="asset-detail">
+	<div class="asset-detail-header">
+		<div i18n class="asset-name">
+			{{ step.Name }}
+		</div>
+		<div i18n class="class-name">
+			Step
+		</div>
+	</div>
+	<div class="asset-detail-tabs">
+
+		<button igButton type="button"
+				*ngIf="showCompleteAssignment && step?.ItemSettings?.hasPendingForms && step?.IsAssignedLoginUser && !step?.CompletedOn"
+				class="ig-button-primary complete-assignment"
+				(click)="completeAssignmentClick()" i18n
+		>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
+		</button>
+
+		<ig-property-group i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<div class="row">
+					<label class="ig-label" i18n>Activity Type</label>
+					<div i18n class="ig-value">{{ activityType }}</div>
+				</div>
+				<div *ngIf="step.ActivityType === WorkflowActivityType.Form && bulkReassignments?.length > 0"
+					 class="row reassignment-details">
+					<label class="ig-label" i18n>
+						<i class="fa fa-info-circle"></i> Form was reassigned
+					</label>
+					<div i18n class="ig-value" *ngFor="let bulkReassignment of bulkReassignments; let last = last">
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.ByResourceID)">{{bulkReassignment.ByResourceName}}</a>
+						reassigned it from
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.FromResourceID)">{{bulkReassignment.FromResourceName}}</a>
+						to
+						<a context-link
+						   (click)="onClickResource($event, bulkReassignment.ToResourceID)">{{bulkReassignment.ToResourceName}}</a>
+						on {{(bulkReassignment.ReassignOn | date: 'short')}} <br *ngIf="!last"/>
+					</div>
+				</div>
+				<div *ngIf="step.ActivityType === WorkflowActivityType.Form && reassignment"
+					 class="row reassignment-details">
+					<ng-container *ngIf="reassignment?.ReassignType === 'Object'">
+						<label class="ig-label" i18n>
+							<i class="fa fa-info-circle"></i> Form was reassigned
+						</label>
+						<div i18n class="ig-value">
+							<a context-link
+							   (click)="onClickResource($event, reassignment.ByResourceID)">{{reassignment.ByResourceName}}</a>
+							reassigned this action from
+							<a context-link
+							   (click)="onClickAsset($event, step?.IssueDetails?.ObjectID)">{{step?.IssueDetails?.ObjectName}}</a>
+							to
+							<a context-link
+							   (click)="onClickAsset($event, reassignment.ObjectID)">{{reassignment.ObjectName}}</a>
+							on {{reassignment.ReassignOn | date: 'short'}}.<br/>
+							<ng-container *ngIf="reassignment.NewItemId != null">
+								A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow
+								<i class="fa fa-external-link"></i></a> has been created.
+							</ng-container>
+						</div>
+					</ng-container>
+				</div>
+				<div class="row">
+					<label class="ig-label" i18n>Status</label>
+					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
+					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form"
+								  class="row">
+						<div>
+							<ng-container i18n>Completed forms</ng-container>
+							:
+							<ng-container>{{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}
+								/{{step.ItemFields['@TotalResources']}}</ng-container>
+						</div>
+						<div *ngIf="step.ItemFields['@NumberOfResponses']">
+							<ng-container i18n>Completed by</ng-container>
+							:
+							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
+								<a context-link
+								   (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
+								<span *ngIf="!last">,</span>
+							</ng-container>
+						</div>
+						<div>
+							<ng-container i18n>Awaiting forms from</ng-container>
+							:
+							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
+								<a context-link
+								   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
+								<span *ngIf="!last">,</span>
+							</ng-container>
+						</div>
+					</ng-container>
+				</div>
+				<div class="row">
+					<label class="ig-label" i18n>Started</label>
+					<div class="ig-value">{{ step.StartedOn | date: 'short' }}</div>
+				</div>
+				<div *ngIf="step.CompletedOn" class="row">
+					<label class="ig-label" i18n>Finished</label>
+					<div class="ig-value">{{ step.CompletedOn | date: 'short' }}</div>
+				</div>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title *ngIf="step.ActivityType !== WorkflowActivityType.None && step.ActivityType !== WorkflowActivityType.Delete
+						    && step.ActivityType !== WorkflowActivityType.Form"
+						   title="Details" [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container [ngSwitch]="step.ActivityType">
+					<ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+						<d3s-assignment-step-field-change-details
+							[fieldChanges]="step.FieldChanges"></d3s-assignment-step-field-change-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+						<d3s-assignment-step-email-details [step]="step"></d3s-assignment-step-email-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
+						<d3s-assignment-step-http-details [settings]="step.Settings"
+														  [itemFields]="step.ItemFields"></d3s-assignment-step-http-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.HTTPResponse">
+						<d3s-assignment-step-http-response-details [settings]="step.Settings"
+																   [workflowItemUId]="workflowItemUId">
+						</d3s-assignment-step-http-response-details>
+					</ng-container>
+					<ng-container *ngSwitchCase="WorkflowActivityType.RelationshipChange">
+						<d3s-assignment-step-relationship-change-details [relationshipChange]="step.RelationshipChange"
+																		 [relationshipUpdate]="step.Settings?.RelationshipUpdate"
+																		 [workflowItemUId]="workflowItemUId">
+						</d3s-assignment-step-relationship-change-details>
+					</ng-container>
+				</ng-container>
+			</div>
+		</ig-property-group>
+		<ig-property-group i18n-title *ngIf="step.ActivityType === WorkflowActivityType.HTTPResponse" title="Outputs"
+						   [shouldBePadded]="false" [showHeaderLine]="false">
+			<div readonly>
+				<ng-container>
+					<d3s-assignment-step-http-response-outputs
+						[settings]="step.Settings"
+						[itemFields]="step.ItemFields"></d3s-assignment-step-http-response-outputs>
+				</ng-container>
+			</div>
+		</ig-property-group>
+		<ng-container *ngIf="step.ActivityType === WorkflowActivityType.Form">
+			<ig-property-group i18n-title title="Form Details"
+							   [showDetailsLink]="!!step.ItemFields['@NumberOfResponses']"
+							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal()
+							   [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-assignment-step-form-details [step]="step"></d3s-assignment-step-form-details>
+					</ng-container>
+				</div>
+			</ig-property-group>
+			<ig-property-group i18n-title
+							   *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true"
+							   title="E-mail Details" [shouldBePadded]="false" [showHeaderLine]="false">
+				<div readonly>
+					<ng-container>
+						<d3s-assignment-step-email-details [formEmailDetails]="true" [step]="step">
+						</d3s-assignment-step-email-details>
+					</ng-container>
+				</div>
+			</ig-property-group>
+		</ng-container>
+	</div>
+</div>
+<d3s-assignment-form-response #assignmentFormResponseComponent *ngIf="viewFormResponses"></d3s-assignment-form-response>

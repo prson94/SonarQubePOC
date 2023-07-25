@@ -1,0 +1,59 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+	<ng-container *ngIf="selectedNode.fields?.form != null">
+		<div class="row">
+			<label class="ig-label" i18n>Recipient Type</label>
+			<div
+				class="ig-value">{{ recipientType }}</div>
+		</div>
+		<div class="row" *ngIf="selectedNode.settings['MessageRecipientType'] == 'SpecificUser'">
+			<label class="ig-label" i18n>Recipient</label>
+			<div
+				class="ig-value">{{selectedNode.settings['MessageToUser']}}</div>
+		</div>
+		<div class="row" *ngIf="selectedNode.settings['MessageRecipientType'] == 'Responsibility'">
+			<label class="ig-label" i18n>{{ responsibilityLabel }}</label>
+			<div
+				class="ig-value">
+				<ng-container *ngFor="let x of selectedNode.settings.ResponsibilityTypeID; let i = index">
+					<ng-container *ngIf="selectedNode.settings.ResponsibilityTypeID[i] != null">
+						{{
+						selectedNode.settings?.ResponsibilitySide != null ? selectedNode.settings?.ResponsibilitySide :
+							''
+						}} {{getResponsibilityName(i)}}
+					</ng-container>
+				</ng-container>
+			</div>
+		</div>
+		<div class="row" *ngIf="selectedNode.settings['MessageRecipientType'] == 'Group'">
+			<label class="ig-label" i18n>Recipient Group</label>
+			<div
+				class="ig-value">{{getGroupName()}}</div>
+		</div>
+		<div class="row">
+			<label class="ig-label" i18n>Response Type</label>
+			<div
+				class="ig-value">{{ responseType }}</div>
+		</div>
+		<div class="row" *ngIf="selectedNode.fields.form['@title'] != null">
+			<label class="ig-label" i18n>Title</label>
+			<div class="ig-value">{{selectedNode.fields?.form['@title']}}</div>
+		</div>
+		<div class="row" *ngIf="selectedNode.fields.form['@description'] != null">
+			<label class="ig-label" i18n>Description</label>
+			<div class="ig-value" [innerHTML]="selectedNode.fields.form['@description'] | safeHtml"></div>
+		</div>
+		<div class="row"
+			 *ngIf="selectedNode.fields?.form != null && selectedNode.fields?.form['@allowReassignResource'] != null">
+			<label class="ig-label" i18n>Allow resource reassignment?</label>
+			<div
+				class="ig-value">{{getReassignmentValue(selectedNode.fields?.form['@allowReassignResource'].toString())}}</div>
+		</div>
+		<div class="row"
+			 *ngIf="selectedNode.fields?.form != null && selectedNode.fields?.form['@allowReassignObject'] != null">
+			<label class="ig-label" i18n>Allow object reassignment?</label>
+			<div
+				class="ig-value">{{getReassignmentValue(selectedNode.fields?.form['@allowReassignObject'].toString())}}</div>
+		</div>
+	</ng-container>
+</div>

@@ -177,15 +177,25 @@ export class HTTPResponseOutput {
 	StepName: string;
 	Id: string;
 	Name: string;
-	Type: string = "text";
-	Format: string = "json";
+	Type: string = 'text';
+	Format: string = 'json';
 	Path: string;
+}
+
+export class HTTPResponseSettingsOutputs {
+	Format: string;
+	Id: string;
+	Name: string;
+	Path: string;
+	StepId: string;
+	StepName: string;
+	Type: string;
 }
 
 export class HTTPResponseSettings {
 	InputStepId: string;
 	InputStepName: string;
-	Outputs: HTTPResponseOutput[] = [];
+	Outputs: HTTPResponseSettingsOutputs[];
 }
 
 export class NodeSettings {
@@ -219,7 +229,6 @@ export class NodeFields {
 export class FormField {
 	field: any[] = [];
 }
-
 
 
 export class ActivityTypeInfo {
@@ -295,6 +304,7 @@ export class WorkflowTypeItem {
 
 
 }
+
 export class WorkflowListItem {
 	ID: number;
 	CreatedOn: string;
@@ -326,7 +336,7 @@ export class WorkflowEventRegistration {
 	SettingsObject: any = {};
 	LastExecuted: any;
 	conditions: EventCondition[] = [];
-	IssueObject: string = "";
+	IssueObject: string = '';
 	ScoreType: number;
 }
 
@@ -402,7 +412,7 @@ export enum WorkflowActivityType {
 	Form = 3,
 	Procedure = 4,
 	FieldChange = 5,
-	RelationshipUpdate = 6,
+	RelationshipChange = 6,
 	StateChange = 7,
 	Delete = 8,
 	HTTPRequest = 9,
@@ -508,10 +518,65 @@ export class WorkflowItemStep {
 	StartedBy: string;
 	CompletedOn: string;
 	CompletedBy: string;
+	Fields: string;
 	IsIssueType: boolean;
 	Object: string;
 	ObjectID: number;
 	TypeID: number;
+	IsAssignedLoginUser: string;
+}
+
+export class AssignmentItemStep {
+	ActivityType: string;
+	Assignments: { AssigneeUid: string }[];
+	CompletedByUid: string;
+	CompletedOn: string;
+	Name: string;
+	Responses: {
+		fields: {
+			'@TotalResources': string;
+		}
+	};
+	Settings: {
+		settings: {
+			FormResponseType: string;
+			IncludePreviousFormResponses: string;
+			MessageRecipientType: string;
+			MessageToUser: string;
+			SendFormEmail: string;
+		},
+		fields: {
+			form: {
+				'@title': string;
+				field: {
+					'@id': string;
+					'@label': string;
+					'@type': string;
+				}
+			}
+		}
+	};
+	StartedByUid: string;
+	StartedOn: string;
+	State: string;
+	StepType: string;
+	Uid: string;
+}
+
+export class AssignmentItem {
+	WorkflowItemUid: string;
+	WorkflowUid: string;
+	WorkflowName: string;
+	Initiator: string;
+	InitiatorUid: string;
+	StartedOn: string;
+	CompletedOn: string;
+	Status: string;
+	AssetUid: string;
+	AssetPath: string;
+	ActionUid: string;
+	ChangeType: string;
+	initiatingObjectType: string;
 }
 
 export class BulkWorkflowFormModel {
@@ -539,59 +604,87 @@ export class EmailTaskRecipientTypeInfo {
 }
 
 export class WorkflowStepDetail {
-	ID: number;
-	StepType: StepType;
 	ActivityType: WorkflowActivityType;
-	SettingsXml: string;
+	AssetId: number;
+	AssignedUsers: WorkflowStepAssignedUser[] = [];
+	ChangeType: WorkflowChangeType;
+	CompletedBy: number;
+	CompletedOn: string;
+	Condition: any;
+	ConditionXml: string;
+	EventSettings: any;
+	EventSettingsXml: string;
+	FieldChanges: WorkflowStepFieldChangeDetail[];
+	Fields: {
+		form: {
+			'@title': string;
+			field: [
+				{
+					'@type': string;
+					'@label': string;
+					'@required': string;
+					'@id': string;
+				}
+			]
+		}
+	};
 	FieldsXml: string;
-	Settings: any;
-	Fields: any;
-	ItemSettingsXml: string;
-	ItemFieldsXml: string;
-	ItemSettings: WorkflowStepItemSettings;
+	ID: number;
+	IsAssignedLoginUser: boolean;
+	IsIssueType: boolean;
+	IsPublishedVersion: boolean;
+	IssueDetails: WorkflowStepIssueDetail;
 	ItemFields: WorkflowStepItemFields;
+	ItemFieldsXml: string;
+	ItemID: number;
+	ItemSettings: WorkflowStepItemSettings;
+	ItemSettingsXml: string;
+	ItemStepID: number;
 	Name: string;
-	ObjectType: string;
-	ObjectTypeID: number;
-	ObjectTypeName: string;
 	Object: string;
 	ObjectID: number;
 	ObjectName: string;
-	ChangeType: WorkflowChangeType;
-	ConditionXml: string;
-	Condition: any;
-	EventSettingsXml: string;
-	EventSettings: any;
-	IsIssueType: boolean;
-	Version: number;
-	IsPublishedVersion: boolean;
-	IssueDetails: WorkflowStepIssueDetail;
-	AssignedUsers: WorkflowStepAssignedUser[] = [];
-	StepID: number;
-	TypeID: number;
-	IsAssignedLoginUser: boolean;
-	ItemID: number;
-	ItemStepID: number;
-	FieldChanges: WorkflowStepFieldChangeDetail[];
+	ObjectType: string;
+	ObjectTypeID: number;
+	ObjectTypeName: string;
 	RelationshipChange: WorkflowStepRelationshipChangeDetail;
+	Settings: NodeSettings;
+	SettingsXml: string;
+	StartedBy: number;
+	StartedOn: string;
 	StateChange: State;
+	StepID: number;
+	StepType: StepType;
+	TypeID: number;
+	Version: number;
 }
 
 export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
+	HTTPResponse: {StatusCode: number, Body: string};
+	Outputs: {Output:{Id: string, Value: string}[]};
 }
 
 export class WorkflowStepItemSettings {
 	emails: any;
 	hasPendingForms: boolean;
 	hasEmails: boolean;
+	Responsibilities: {id: number, name: string}[];
 }
 
 export class WorkflowStepAssignedUser {
-	ResourceID: number;
+	CreatedOn: string;
+	Email: string;
 	FirstName: string;
+	FullName: string;
+	IsAdministrator: boolean;
+	LastLoggedInOn: string;
 	LastName: string;
+	ResourceID: number;
+	State: number;
+	Uid: string;
+	UpdatedOn: string;
 }
 
 export class WorkflowStepReassignment {
@@ -642,6 +735,7 @@ export class WorkflowStepIssueDetail {
 	ObjectID: number;
 	ObjectType: string;
 	ObjectTypeID: number;
+	AssetId: number;
 }
 
 export class WorkflowStepFieldChangeDetail {
@@ -651,10 +745,12 @@ export class WorkflowStepFieldChangeDetail {
 	Type: string;
 	Value: string;
 	UseCurrentDate: boolean;
-	FormValue: string;
+	FormValue: boolean;
 	AppendValue: string;
 	ClearValue: string;
 	ObjectType: string;
+	ChangeType: string;
+	ValueSource: string;
 }
 
 
@@ -719,4 +815,174 @@ export interface WorkflowTypeModel {
 	label?: string;
 	value?: string;
 	ID?: number;
+}
+
+export class WorkflowAssignmentItem {
+	CompletedOn: string;
+	StartedOn: string;
+	Status: string;
+	Version: number;
+	VersionId: number;
+	VersionUid: string;
+	actionUid: string;
+	actionTypeUid: string;
+	assetDisplayValue: string;
+	assetPath: string;
+	assetTypeUid: string;
+	assetUid: string;
+	assigneesJson: string;
+	initiatingObjectType: string;
+	initiatingObjectTypeName: string;
+	initiator: string;
+	initiatorUid: string;
+	workflowItemUid: string;
+	workflowName: string;
+	workflowUid: string;
+}
+
+export class WorkflowAssignments {
+	items: WorkflowAssignmentItem[] = [];
+	pageSize: number;
+	pageNum: number;
+	total: number;
+}
+
+export class WorkflowByType {
+	TypeID: number;
+	Name: string;
+	VersionName: string;
+	Version: number;
+	UpdatedOn: string;
+	UpdatedBy: string;
+	ObjectTypeName: string;
+	Object: string;
+	ObjectID: number;
+	NgUrl: string;
+	VersionID: number;
+	ObjectNames: string;
+	Responsibility: string;
+	SpecificUser: string;
+	Status: string;
+	CurrentStepID: number;
+	Settings: string;
+	ActivityType: number;
+	StepType: number;
+	ResponsibleUser: string;
+	StartedBy: string;
+}
+
+export class AssignmentVersionItem {
+	WorkflowName: string;
+	WorkflowTypeUid: string;
+	Version: number;
+	Awaiting: number;
+	Incomplete: number;
+	ChangeType: string;
+	InitiatingObjectType: string;
+	CreatedOn: string;
+	CreatedBy: string;
+	CreatedByUid: string;
+	UpdatedOn: string;
+	UpdatedBy: string;
+	UpdatedByUid: string;
+}
+
+export class AssignmentByVersion {
+	items: AssignmentVersionItem[];
+	total: number;
+	pageSize:number;
+	pageNum: number;
+}
+
+export class Actions {
+	pageSize: number;
+	pageNum: number;
+	total: number;
+	items: [
+		{
+			Uid: string;
+			CompletedOn: string;
+			AssetUid: string;
+			AssetTypeUid: string;
+			AssetTypeName: string;
+			ActionTypeUid: string;
+			ActionTypeName: string;
+			CreatedOn: string;
+			CreatedByUid: string;
+			UpdatedOn: string;
+			UpdatedByUid: string;
+		}
+	];
+}
+
+export class EmailSettings {
+	IncludePreviousFormResponses: string;
+	MessageBodyTemplate: string;
+	MessageRecipientType: string;
+	MessageSubjectTemplate: string;
+	MessageToGroup: string;
+	ResponsibilityTypeID: string[];
+	SendToDefaultUsers: string;
+}
+
+export class EmailRecipients {
+	'@address': string;
+	id: number;
+	name: string;
+	responsibility: string;
+}
+
+export class VersionStepHistory {
+	ItemStepID: number;
+	WorkflowItemUid: string;
+	StartedOn: string;
+	CompletedOn: string;
+	StartedBy: string;
+	CompletedBy: string;
+	Object: string;
+	ObjectID: number;
+	Name: string;
+	ObjectTypeName: string;
+	NgUrl: string;
+	TextPath: string;
+	StepName: string;
+	Assignments: string;
+	StepType: number;
+	ActivityType: number;
+	Comment: string;
+	Status: string;
+}
+
+export class WorkflowFormResponse {
+	ID: number;
+	ItemID: number;
+	StepID: number;
+	StartedBy: number;
+	StartedOn: string;
+	CompletedBy: number;
+	CompletedOn: string;
+	UID: string;
+}
+
+export class WorkflowDetails {
+	ItemSteps: {
+		ID: number,
+		ItemID: number,
+		StepID: number,
+		StartedBy: number,
+		StartedOn: string,
+		CompletedBy: number,
+		CompletedOn: string,
+		UID: string
+	}[];
+	Steps: {
+		Name: string,
+		VersionID: number,
+		StepType: number,
+		ActivityType: number,
+		XPosition: number,
+		YPosition: number,
+		State: number,
+		ID: number
+	}[];
 }

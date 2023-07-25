@@ -1,0 +1,43 @@
+import { Component, Input, OnInit } from '@angular/core';
+import { BaseComponent } from '../../../shared/base.component';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { NodeSettings, WorkflowStepItemFields } from '../../../../models/workflow.model';
+
+@Component({
+	selector: 'd3s-assignment-step-http-response-outputs',
+	templateUrl: './assignment-step-http-response-outputs.component.html'
+})
+export class AssignmentStepHttpResponseOutputsComponent extends BaseComponent implements OnInit {
+	@Input() settings: NodeSettings;
+	@Input() itemFields: WorkflowStepItemFields;
+	outputs: { Name: string, Path: string, Value: string }[] = [];
+
+	constructor(
+		protected settingsService: CompanySettingsService) {
+		super(settingsService);
+	}
+
+	ngOnInit(): void {
+		let stepFieldOutputs = this.itemFields?.Outputs?.Output;
+		let stepSettingOutputs = this.settings?.HTTPResponse?.Outputs;
+
+		if (stepFieldOutputs && !Array.isArray(stepFieldOutputs)) {
+			stepFieldOutputs = [stepFieldOutputs];
+		}
+
+		if (stepSettingOutputs) {
+			if (!Array.isArray(stepSettingOutputs)) {
+				stepSettingOutputs = [stepSettingOutputs];
+			}
+
+			for (const stepSettingOutput of stepSettingOutputs) {
+				const field = stepFieldOutputs?.find((f) => f.Id === stepSettingOutput.Id);
+				this.outputs.push({
+					Name: stepSettingOutput.Name,
+					Path: stepSettingOutput.Path,
+					Value: field?.Value
+				});
+			}
+		}
+	}
+}

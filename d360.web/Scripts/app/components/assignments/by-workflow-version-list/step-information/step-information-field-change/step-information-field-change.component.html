@@ -1,0 +1,32 @@
+<div *ngIf="settings.FieldUpdate?.Field != null">
+	<p-table
+		#dt
+		[value]="settings.FieldUpdate.Field"
+		selectionMode="single"
+		[metaKeySelection]="true"
+		[pageLinks]="3"
+		[paginator]="true"
+		[rows]="5"
+		[rowsPerPageOptions]="[5,10,25,50,100]">
+		<ng-template pTemplate="header">
+			<tr>
+				<th i18n>Field</th>
+				<th i18n>Change Type</th>
+				<th i18n>Value Source</th>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="body"
+					 let-item>
+			<tr [pSelectableRow]="item">
+				<td>{{getFieldName(item)}}</td>
+				<td>{{getChangeType(item)}}</td>
+				<td>{{getValueSource(item)}}</td>
+			</tr>
+		</ng-template>
+		<ng-template pTemplate="summary">
+			<d3s-grid-paging-info [first]="dt.first"
+								  [rows]="dt.rows"
+								  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		</ng-template>
+	</p-table>
+</div>

@@ -5,7 +5,7 @@ export class ModalConfig {
     public subtitle: string;
     public showTitle: boolean = true;
     public isVisible: boolean = false;
-    public showConfirm: boolean = true;
+    public showActionBar: boolean = true;
     public additionalClasses: string = "small-dialog";
     constructor(title: string) {
         this.title = title;
@@ -80,7 +80,7 @@ export class GalleryModalComponent implements OnInit {
         this.properties.push({ Name: "subtitle", Type: "string", Description: "Subtitle for dialog", Default: "" });
         this.properties.push({ Name: "showTitle", Type: "boolean", Description: "Show dialog header with title/subtitle", Default: "true" });
         this.properties.push({ Name: "isVisible", Type: "boolean", Description: "Is dialog visible?", Default: "false" });
-        this.properties.push({ Name: "showConfirm", Type: "boolean", Description: "Show standard Cancel/Confirm action buttons", Default: "false" });
+        this.properties.push({ Name: "showActionBar", Type: "boolean", Description: "Show standard Cancel/Confirm action buttons", Default: "false" });
         this.properties.push({ Name: "appendToBody", Type: "boolean", Description: "Attach the dialog to the body element", Default: "false" });
         this.properties.push({ Name: "additionalClasses", Type: "string", Description: "Additional styling classes", Default: "" });
 

@@ -1,0 +1,12 @@
+<d3s-loading [isLoading]="isAssignmentItemLoading || isWorkflowStepDetailLoading"></d3s-loading>
+<button igButton type="button" [hidden]="isWorkflowStepDetailLoading"
+		*ngIf="showCompleteAssignment && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser && !(workflowStepDetail?.CompletedOn)"
+		class="ig-button-primary complete-assignment"
+		(click)="completeAssignmentClick()" i18n
+>Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
+</button>
+<d3s-assignment-information-request [hidden]="isAssignmentItemLoading"
+									[workflowActionUid]="assignmentItem.ActionUid"
+									*ngIf="assignmentItem?.initiatingObjectType === 'Action'"></d3s-assignment-information-request>
+<d3s-assignment-information-general [hidden]="isAssignmentItemLoading" [workflowTypeVersion]="workflowTypeVersion"
+									[assignmentItem]="assignmentItem"></d3s-assignment-information-general>

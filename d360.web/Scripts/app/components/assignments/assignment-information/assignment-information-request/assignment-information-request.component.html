@@ -1,0 +1,13 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail-tabs" [hidden]="isLoading">
+	<ig-property-group i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
+		<div readonly>
+			<div class="row">
+				<div class="category-column" *ngFor="let fieldTypeModelField of fieldTypeModelFields">
+					<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
+					<div class="ig-value" [innerHTML]="actions.items?.[0]?.[fieldTypeModelField.Name]"></div>
+				</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>

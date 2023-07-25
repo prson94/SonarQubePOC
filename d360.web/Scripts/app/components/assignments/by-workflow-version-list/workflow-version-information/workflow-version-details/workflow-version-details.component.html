@@ -1,0 +1,35 @@
+<div class="asset-detail-tabs">
+	<d3s-loading [isLoading]="isLoading"></d3s-loading>
+	<ig-property-group i18n-title [title]="title" [shouldBePadded]="false" [showHeaderLine]="false"
+					   [expanded]="true" [hidden]="isLoading">
+		<div readonly>
+			<div class="row top-margin">
+				<div class="col s4">
+					<label class="ig-label" i18n>Name</label>
+					<div class="ig-value">{{ selectedAssignmentVersion?.WorkflowName }}</div>
+				</div>
+				<div class="col s4">
+					<label class="ig-label" i18n>Type</label>
+					<div class="ig-value">{{ selectedAssignmentVersion?.ChangeType }}
+						: {{ selectedAssignmentVersion?.InitiatingObjectType }}</div>
+				</div>
+				<div class="col s4">
+					<label class="ig-label" i18n>Version</label>
+					<div>{{ selectedAssignmentVersion?.Version }}</div>
+				</div>
+			</div>
+			<div class="row top-margin">
+				<div class="col s4">
+					<label class="ig-label" i18n>Update On</label>
+					<div class="ig-value">{{ selectedAssignmentVersion?.UpdatedOn | date: 'short' }}</div>
+				</div>
+				<div class="col s4">
+					<label class="ig-label" i18n>Update By</label>
+					<div class="ig-value">
+						<a context-link (click)="onClickResource($event)">{{ selectedAssignmentVersion?.UpdatedBy }}</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>

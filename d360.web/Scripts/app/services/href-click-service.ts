@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { FieldDisplayModel } from '../models/fieldtype-api.model';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
+import { NodeModel } from '../models/workflow.model';
 
 export enum AssetDetailClickType {
     Undefined = 'Undefined',
@@ -11,7 +12,11 @@ export enum AssetDetailClickType {
     User = 'User',
     Tag = 'Tag',
 	Group = 'Group',
-	Field = 'Field'
+	Field = 'Field',
+	WorkflowStep = 'WorkflowStep',
+	WorkflowTypeInformation = 'WorkflowTypeInformation',
+	WorkflowItemInformation = 'WorkflowItemInformation',
+	WorkflowVersion = 'WorkflowVersion'
 }
 
 export class AssetDetailClickEvent {
@@ -26,6 +31,11 @@ export class AssetDetailClickEvent {
     url: string;
 
     originalEvent: any;
+	workflowItemUid: string;
+	itemStepUid: string;
+	workflowTypeUid: string;
+	workflowTypeVersion: number;
+	selectedNodeModel: NodeModel;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -104,6 +114,7 @@ export class LinkClickInterceptor {
                 adcEv.type = AssetDetailClickType.User;
                 adcEv.objectType = "Resource";
                 adcEv.uid = data.uid;
+				adcEv.objectId = data.ResourceID;
             }
 
             if (data.ResourceUid) {
@@ -111,6 +122,18 @@ export class LinkClickInterceptor {
                 adcEv.objectType = "Resource";
                 adcEv.uid = data.ResourceUid;
             }
+
+			if (data.AssetUid) {
+				adcEv.type = AssetDetailClickType.Asset;
+				adcEv.objectType = "Artifact";
+				adcEv.uid = data.AssetUid;
+			}
+
+			if (data.AssetId) {
+				adcEv.type = AssetDetailClickType.Asset;
+				adcEv.objectType = "Artifact";
+				adcEv.objectId = data.AssetId;
+			}
 
             //this is a group object
             if (data.hasOwnProperty('PrimaryOwnerUid')) {
@@ -178,7 +201,26 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = data.referenceListTypeUid;
             }
 
-        } else {
+			if (data?.workflowTypeUid && data?.workflowTypeVersion && !(data?.selectedNodeModel)) {
+				adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
+				adcEv.workflowTypeUid = data.workflowTypeUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+			} else if (data?.workflowItemUid && data?.itemStepUid) {
+				adcEv.type = AssetDetailClickType.WorkflowStep;
+				adcEv.workflowItemUid = data.workflowItemUid;
+				adcEv.itemStepUid = data.itemStepUid;
+			} else if(data?.workflowTypeUid && data?.workflowTypeVersion && data?.selectedNodeModel) {
+				adcEv.type = AssetDetailClickType.WorkflowVersion;
+				adcEv.workflowTypeUid = data.workflowTypeUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+				adcEv.selectedNodeModel = data.selectedNodeModel;
+			} else if (data?.workflowItemUid && data?.workflowTypeVersion) {
+				adcEv.type = AssetDetailClickType.WorkflowItemInformation;
+				adcEv.workflowItemUid = data.workflowItemUid;
+				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+			}
+
+		} else {
             adcEv = null;
         }
         this.subject.next(adcEv);
@@ -194,11 +236,31 @@ export class LinkClickInterceptor {
         baseComponent.selectedReferenceItem = null;
         baseComponent.selectedTag = null;
 
-        //if some other tab is opened in side panel, force opening detail panel
-        baseComponent.sidePanelTab = 'detail';
+		if (event.type === AssetDetailClickType.WorkflowTypeInformation) {
+				baseComponent.sidePanelTab = AssetDetailClickType.WorkflowTypeInformation;
+				baseComponent.selectedAsset = {
+					workflowTypeUid: event.workflowTypeUid,
+					workflowTypeVersion: event.workflowTypeVersion
+				};
+		} else if (event.type === AssetDetailClickType.WorkflowStep) {
+			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowStep;
+			baseComponent.selectedAsset = {
+				workflowItemUid: event.workflowItemUid,
+				itemStepUid: event.itemStepUid
+			};
+		} else if (event.type === AssetDetailClickType.WorkflowItemInformation) {
+			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowItemInformation;
+			baseComponent.selectedAsset = {
+				workflowItemUid: event.workflowItemUid,
+				workflowTypeVersion: event.workflowTypeVersion
+			};
+		} else {
+			//if some other tab is opened in side panel, force opening detail panel
+			baseComponent.sidePanelTab = 'detail';
+		}
 
         if (event.type === AssetDetailClickType.Asset) {
-            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType, id: event.objectId };
         }
 
         if (event.type === AssetDetailClickType.ReferenceItem) {
@@ -206,7 +268,7 @@ export class LinkClickInterceptor {
         }
 
         if (event.type === AssetDetailClickType.User || event.type === AssetDetailClickType.Group) {
-            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType };
+            baseComponent.selectedAsset = { uid: event.uid, type: event.objectType, id: event.objectId };
         }
 
         if (event.type === AssetDetailClickType.Tag) {
@@ -216,5 +278,5 @@ export class LinkClickInterceptor {
         if (event.type !== AssetDetailClickType.Undefined) {
             baseComponent.sidePanelOpen = true;
         }
-    }
+	}
 }

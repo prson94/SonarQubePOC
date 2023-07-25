@@ -1,0 +1,40 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail-tabs" [hidden]="isLoading">
+	<ig-property-group i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
+		<div readonly>
+			<div class="row">
+				<div class="category-column">
+					<label class="ig-label" i18n>Workflow Name</label>
+					<div class="ig-value"><a
+						(click)="linkClickInterceptor.sendEvent($event, { workflowTypeUid: assignmentItem?.WorkflowUid, workflowTypeVersion: workflowTypeVersion },'')">{{ assignmentItem?.WorkflowName }}</a>
+					</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Workflow Type</label>
+					<div class="ig-value" i18n>{{ workflowType }}</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Associated with</label>
+					<div class="ig-value">{{ assetPathTextPart }}
+						<a *ngIf="assetPathLinkPart" context-link (click)="onClickAsset($event)">{{ assetPathLinkPart }}</a>
+						<span *ngIf="!assetPathLinkPart">---</span>
+					</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Initiated</label>
+					<div class="ig-value">{{ assignmentItem?.StartedOn | date: 'medium' }}</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Initiator</label>
+					<div class="ig-value">
+						<a context-link (click)="onClickResource($event)">{{ assignmentItem?.Initiator }}</a>
+					</div>
+				</div>
+				<div class="category-column">
+					<label class="ig-label" i18n>Status</label>
+					<div class="ig-value">{{ assignmentItem?.Status }}</div>
+				</div>
+			</div>
+		</div>
+	</ig-property-group>
+</div>

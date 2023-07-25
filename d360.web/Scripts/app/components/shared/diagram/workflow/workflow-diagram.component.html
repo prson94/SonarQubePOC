@@ -8,6 +8,12 @@
     }
 </style>
 
+<div class="row"
+	 *ngIf="isLoading">
+	<div class="col s12">
+		<d3s-loading [isLoading]="true"></d3s-loading>
+	</div>
+</div>
 <div class="tile tile-detail"
      style="max-height: 190px; height: 190px;"
      *ngIf="hasHeader">
@@ -36,12 +42,6 @@
                     <ng-template #never>Never</ng-template>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="row"
-         *ngIf="isLoading">
-        <div class="col s12">
-            <d3s-loading [isLoading]="true"></d3s-loading>
         </div>
     </div>
     <div class="row" *ngIf="!isLoading">
@@ -130,11 +130,10 @@
         </div>
     </div>
 </div>
-<div class="tile tile-detail"
-     [hidden]="isLoading">
+<div class="tile tile-detail" [hidden]="isLoading">
     <header class="workflow-tool-header">
         &nbsp;
-        <d3s-tile-actions hasMenu="true"
+        <d3s-tile-actions [hasMenu]="hasMenu"
                           [menuItems]="menuItems"
                           (menuClick)="menuClick($event)"></d3s-tile-actions>
     </header>
@@ -240,6 +239,7 @@
                             <div id="WorkflowDiagram"
                                  #workflowDiagram
                                  style="overflow: hidden;"
+								 (click)="$event.stopPropagation()"
                                  class="diagram"></div>
                         </td>
                     </tr>
@@ -247,4 +247,12 @@
             </table>
         </div>
     </div>
+	<div [hidden]="isLoading" *ngIf="hasZoomButtons" style="position:relative; bottom: 55px; left: calc(100% - 7rem) ;z-index: 3">
+		<button i18n-pTooltip pTooltip="Zoom In" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton
+				class="ig-button ig-button-icon-only ig-button-margin" icon="fa-search-plus"
+				(click)="diagramZoom()"></button>
+		<button i18n-pTooltip pTooltip="Zoom Out" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton
+				class="ig-button ig-button-icon-only ig-button-margin" icon="fa-search-minus"
+				(click)="diagramZoom(false)"></button>
+	</div>
 </div>

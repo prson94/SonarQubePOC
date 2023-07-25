@@ -1,0 +1,25 @@
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="assignment-progress-step" [class.selected]="selected" [hidden]="isLoading" role="button"
+	 tabindex="0" (click)="toggleStepDetails($event)">
+	<div class="row">
+		<div class="col s1">
+			<i class="fa spacing-top" [ngClass]="icon"></i>
+		</div>
+		<div class="col s7 header-text" i18n>
+			{{ header }}
+		</div>
+		<div class="col s4 right-align" [class.ig-light-grey-text]="assignmentItemStep.CompletedOn" i18n>
+			{{ status }}
+		</div>
+	</div>
+	<div class="row" *ngIf="!assignmentItemStep.CompletedOn && message">
+		<div class="col offset-s1 preserve-line-break ig-light-grey-text">{{message}}</div>
+	</div>
+</div>
+<button igButton type="button"
+		*ngIf="showCompleteAssignment && !assignmentItemStep.CompletedOn && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
+		class="ig-button-primary complete-assignment"
+		(click)="completeAssignmentClick()" i18n
+>Awaiting your answer&nbsp;<b>Complete the Assignment</b><span class="fa fa-pencil"></span>
+</button>
+<span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
