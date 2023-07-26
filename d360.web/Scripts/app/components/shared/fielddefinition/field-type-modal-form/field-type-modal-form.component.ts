@@ -15,6 +15,7 @@ import { PropertyGroupComponent } from "../../../shared/controls/property-group/
 import { D3SModal } from "../../../shared/modal/gov-modal.component";
 import { RelationLookupFieldTypeEditorComponent } from "./relation-lookup-field-type-editor/relation-lookup-field-type-editor.component";
 import * as DOMPurify from "dompurify";
+import { result } from "lodash-es";
 
 export enum FormState {
 	FieldTypeSelection = "FieldTypeSelection",
@@ -212,7 +213,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					if (typeof i.value === "undefined") {
 						i.value = null;
 					}
-					this.relationshipItems.push({ label: i.title, value: `${i.value}|${i.isSubject}` });
+					let directionStringPart: string = '';
+					if (results[1].Field_Relationships.filter((x) => x.title === i.title).length > 1) {
+						if (i.isSubject === true) {
+							directionStringPart = " (->)";
+						}
+						else {
+							directionStringPart = " (<-)";
+						}
+					}
+
+					this.relationshipItems.push({ label: i.title + directionStringPart, value: `${i.value}|${i.isSubject}` });
 				});
 
 				this.regexPatternTokens = [];
