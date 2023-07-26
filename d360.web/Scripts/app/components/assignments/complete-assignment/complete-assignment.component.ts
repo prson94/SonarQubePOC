@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
+import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
 
@@ -26,6 +26,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	formDescription: string = '';
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
+	request: FormRequest;
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
 	constructor(protected settingsService: CompanySettingsService,
@@ -64,6 +65,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formDescription = res.Description;
 				this.formFields = res.Fields;
 				this.isLoading = false;
+				this.request = res.Request;
 				this.fieldsComponent.setValidators();
 			});
 	}

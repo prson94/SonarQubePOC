@@ -1,5 +1,6 @@
 ﻿import { State } from './asset.model';
 import { UID } from './shared.model';
+import { FieldTypeAPIModelField } from './fieldtype-api.model';
 
 
 export class Issue {
@@ -280,6 +281,7 @@ export class WorkflowForm {
 	AllowReassignResource: boolean;
 	IsClearAssignementsAllowed: boolean;
 	ObjectUid: string;
+	Request: FormRequest;
 }
 
 export class WorkflowTypeItem {
@@ -985,4 +987,21 @@ export class WorkflowDetails {
 		State: number,
 		ID: number
 	}[];
+}
+
+export class FormRequest {
+	Action: {
+		Uid: string,
+		CreatedBy: string,
+		CreatedByName: string,
+		CreatedOn: string,
+		UpdatedBy: string,
+		UpdatedByName: string,
+		UpdatedOn: string,
+		AssociatedAssetUid: string,
+		AssociatedAssetType: string,
+		AssociatedAssetPath: string,
+		AssociatedAssetTypeClass: string
+	};
+	ActionFields: FieldTypeAPIModelField[];
 }
