@@ -23,7 +23,6 @@ using d360.model.helpers.filters;
 using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
-
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -972,7 +971,13 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfilingNotSupportAssetClass, asset.AssetType.Class.ToString()));
                 }
 
-                var profileSetDate = model.profileSetDate;
+				bool success = Enum.IsDefined(typeof(ProfileType), model.ProfileType);
+				if (!success)
+				{
+					return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ValidProfiletype, (int)model.ProfileType));
+				}
+
+				var profileSetDate = model.profileSetDate;
 				var recordExists = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).ToList().Any(x => x.ProfileSetDate.ToString("yyyy-MM-ddTHH:mm:ss") == profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss"));
 
                 //check insert
