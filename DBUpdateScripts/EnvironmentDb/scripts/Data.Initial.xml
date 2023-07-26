@@ -150,7 +150,7 @@ begin
 end
 if not exists (select 1 from SiteNav where Name = '#Requests')
 begin
-	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Requests',12,'fa-plus-square','Requests')
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Requests',12,'fa-plus-square-o','Requests')
 end
 		]]>
     </sql>
