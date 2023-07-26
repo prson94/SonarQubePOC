@@ -30,13 +30,13 @@ export class GalleryFeatureflagComponent implements OnInit {
 	) {	}
 
 	ngOnInit(): void {
-		const allFlags = this.featureFlagService.client.allFlags()
+		const allFlags = this.featureFlagService.client.allFlags();
 		this.featureFlags = Object.keys(allFlags)
 			.filter((key) => key.startsWith("Govern"))
 			.reduce((obj, key) => {
 				obj.push({
 					flag: key,
-					value: allFlags[key]
+					value: allFlags[`${key}`]
 				});
 				return obj;
 			}, []);
