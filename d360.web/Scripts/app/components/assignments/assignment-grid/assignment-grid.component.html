@@ -110,7 +110,7 @@
 					</td>
 					<td>
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
-						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join(', ')"
+						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
 							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length-item.filteredAssignees.length) }}
 							others </span>

@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NodeModel } from '../../../models/workflow.model';
 import { AssetDetailClickType } from '../../../services/href-click-service';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
@@ -23,12 +25,33 @@ export class SidePanelSwitcherComponent {
 	dataProfile: object;
 	selection: { HasProfiling: boolean, AssetUid: string };
 	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
+	@Output() closeClick: EventEmitter<void> = new EventEmitter();
+	@Input() showPanelHeader: boolean = true;
 
 	clear(): void {
 		this.selectedTag = null;
 		this.selectedReferenceItem = null;
 		this.selectedAsset = null;
 		this.selection = null;
+	}
+
+	get panelHeader(): string {
+		switch (this.sidePanelTab) {
+			case AssetDetailClickType.WorkflowStep:
+				return $localize`Step Information`;
+			case AssetDetailClickType.WorkflowTypeInformation:
+				return $localize`Workflow Information`;
+			case AssetDetailClickType.WorkflowItemInformation:
+				return $localize`Assignment Information`;
+			case 'detail':
+				if (this.selectedAsset && this.selectedAsset.type === 'Artifact') {
+					return $localize`Asset Information`;
+				} else {
+					return $localize`Information`;
+				}
+			default:
+				return $localize`Information`;
+		}
 	}
 
 	protected readonly AssetDetailClickType = AssetDetailClickType;
