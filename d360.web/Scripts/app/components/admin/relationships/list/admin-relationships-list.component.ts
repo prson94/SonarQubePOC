@@ -1,7 +1,7 @@
 ﻿import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PredicateFriendlyType } from '../../../../models/predicate.model';
-import { RelationshipType, RelationshipTypeSimpleUIModel } from '../../../../models/relationship.model';
+import { RelationshipType, RelationshipTypeSimpleUIModel, DisabledReason } from '../../../../models/relationship.model';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { CompanySettingsService } from '../../../../services/settings.service';
@@ -10,6 +10,8 @@ import { AppConstants } from '../../../../static/constants';
 import { BaseComponent } from '../../../shared/base.component';
 import { PopupMenu } from '../../../shared/controls/popup-menu/popup-menu.component';
 import { Table } from "primeng/table";
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "../../../../services/feature-flags.enum";
 
 
 @Component({
@@ -52,14 +54,15 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 		protected settingsService: CompanySettingsService,
 		private sidePanelService: SidePanelService,
 		private cdRef: ChangeDetectorRef,
-		private router: Router
+		private router: Router,
+		private featureFlagService: LaunchDarklyService
 	) {
 		super(settingsService);
 		this.filterToName = '';
 
 		this.sidePanelService.editClickSource$.subscribe((res) => {
 			const data = res as RelationshipType;
-			this.edit(RelationshipType.ConvertToUIModeldata(data));
+			this.edit(RelationshipType.ConvertToUIModeldata(data, this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)));
 		});
 	}
 
@@ -102,7 +105,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 		obs.subscribe((result) => {
 			this.relationships = [];
-			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel));
+			this.relationships = result.map((rel) => RelationshipType.ConvertToUIModeldata(rel, this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)));
 
 			this.relationships =
 				this.relationships.sort((a, b) => a.Subject > b.Subject ? 1 : -1);
@@ -115,7 +118,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 				// eslint-disable-next-line
 				menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(rel.Uid, true) });
 
-				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled });
+				menuItems.push({ "title": $localize`Edit`, callback: () => this.edit(rel), disabled: rel.IsEditDisabled, tooltip: this.getEditDisabledTooltip(rel) });
 				menuItems.push({ "title": $localize`Delete`, callback: () => { this.editorSelectedUid = rel.Uid; this.showDelete = true; } });
 				menuItems.push({ "title": $localize`Export`, callback: () => { this.downloadRel(rel); }, tooltip: $localize`Export all relationships in this type` });
 				rel.MenuItems = menuItems;
@@ -133,6 +136,34 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 			}
 			this.checkGridState();
 		});
+	}
+
+	private getEditDisabledTooltip(rel: RelationshipTypeSimpleUIModel) {
+		let tooltip = "";
+
+		if (this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)) {
+			const listSeperator = "\r\n\u2022 "; //New-line and bullet char (•)
+			console.log("R", rel.Subject + " " + rel.Object, rel.DisabledReason);
+			if (DisabledReason.InterType === (rel.DisabledReason & DisabledReason.InterType)) {
+				tooltip = $localize`Cannot edit relationship types of Inter-type Hierarchy`;
+			} else {
+				const reasons: string[] = [];
+				if (DisabledReason.HasRelationships === (rel.DisabledReason & DisabledReason.HasRelationships)) {
+					reasons.push($localize`Relationships exist for this relationship type`);
+				}
+				if (DisabledReason.HasListableRelationship === (rel.DisabledReason & DisabledReason.HasListableRelationship)) {
+					reasons.push($localize`a Relationship field type has been defined as is listable`);
+				}
+				if (DisabledReason.HasFieldFromRelationship === (rel.DisabledReason & DisabledReason.HasFieldFromRelationship)) {
+					reasons.push($localize`a Field from Relationship field type has been defined`);
+				}
+				if (reasons.length > 0) {
+					tooltip = $localize`Cannot edit relationship types when:`;
+					tooltip += listSeperator + reasons.join(listSeperator);
+				}
+			}
+		}
+		return tooltip;
 	}
 
 	private checkGridState() {

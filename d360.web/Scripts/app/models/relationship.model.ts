@@ -8,6 +8,14 @@ export enum Cardinality {
 	Many = 2
 }
 
+export enum DisabledReason {
+	None = 0,
+	InterType = 1 << 0,
+	HasRelationships = 1 << 2,
+	HasListableRelationship = 1 << 3,
+	HasFieldFromRelationship = 1 << 4
+}
+
 export class RelationshipTypeEdge {
 	Uid: string;
 	Name: string;
@@ -29,6 +37,7 @@ export class RelationshipTypeSimpleUIModel {
 	Id: number;
 	Object: string;
 	IsEditDisabled: boolean = false;
+	DisabledReason: DisabledReason = DisabledReason.None;
 }
 
 export class RelationshipType {
@@ -42,21 +51,45 @@ export class RelationshipType {
 	HasFieldTypes?: boolean;
 	HasRelationships?: boolean;
 	TotalRelationshipCount?: number;
+	HasFieldFromRelationship?: boolean;
+	HasListableRelationship?: boolean;
 
-	public static ConvertToUIModeldata(data: RelationshipType): RelationshipTypeSimpleUIModel {
+	public static ConvertToUIModeldata(data: RelationshipType, featureFlag: boolean = false): RelationshipTypeSimpleUIModel {
 		let isEditDisabled = false;
+		let reason = DisabledReason.None;
 
-		//disable edit if there are relationships
-		if (data.HasRelationships) {
-			isEditDisabled = true;
+		if (featureFlag) {
+			//disbale edit if the many side of a one-to-many/many-to-one relationship has a field type of Field from Relationship
+			if (data.HasFieldFromRelationship) {
+				reason |= DisabledReason.HasFieldFromRelationship;
+			}
+
+			//disable edit it the many side of a one-to-many/many-to-one relationship has a field type of Relationship with the Is Listable setting checked
+			if (data.HasListableRelationship) {
+				reason |= DisabledReason.HasListableRelationship;
+			}
+
+			//disable edit if there are relationships, and cardinality is not one-to-many or many-to-one
+			if (data.HasRelationships && data.Subject.Cardinality === data.Object.Cardinality) {
+				reason |= DisabledReason.HasRelationships;
+			}
+		} else {
+			//disable edit if there are relationships
+			if (data.HasRelationships) {
+				reason |= DisabledReason.HasRelationships;
+			}
 		}
 
 		//disable edit in case of parent-child relationship type
 		if (data.Predicate.Type === "InterTypeHierarchy" || data.Predicate.Type === "IntraTypeHierarchy") {
 			if (data.Subject.Cardinality === Cardinality[Cardinality.One]
 				&& data.Object.Cardinality === Cardinality[Cardinality.Many]) {
-				isEditDisabled = true;
+				reason |= DisabledReason.InterType;
 			}
+		}
+
+		if (reason !== DisabledReason.None) {
+			isEditDisabled = true;
 		}
 
 		return {
@@ -70,7 +103,8 @@ export class RelationshipType {
 			HasRelationshipsTextValue: data.HasRelationships ? $localize`True` : $localize`False`,
 			TotalRelationshipCount: data.TotalRelationshipCount,
 			Id: data.Id,
-			IsEditDisabled: isEditDisabled
+			IsEditDisabled: isEditDisabled,
+			DisabledReason: reason
 		};
 	}
 }

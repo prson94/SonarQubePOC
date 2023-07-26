@@ -54,6 +54,8 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 	selectedPredicate: PredicateDropdown;
 
 	isFormDisabled: boolean = false;
+	isCardinalityChangeAllowed = true;
+	isSaveDisabled: boolean = false;
 	isFormSet: boolean = false;
 	hasChanges: boolean = false;
 
@@ -95,8 +97,10 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 
 	async loadForm() {
 		this.isFormDisabled = false;
+		this.isSaveDisabled = false;
 		this.isFormSet = false;
 		this.hasChanges = false;
+		this.isCardinalityChangeAllowed = true;
 
 		if (this.formSub) {
 			this.formSub.unsubscribe();
@@ -137,10 +141,28 @@ export class AdminRelationshipsEditor implements OnChanges, OnInit {
 						&& this.relationshipType.Object.Cardinality === Cardinality[Cardinality.Many]) {
 						this.isFormDisabled = true;
 					}
+					this.isCardinalityChangeAllowed = false;
 				}
 
 				if (this.relationshipType.HasRelationships) {
 					this.isFormDisabled = true;
+				}
+
+				this.isSaveDisabled = this.isFormDisabled;
+				if (this.isFormDisabled) {
+					this.relationshipTypeForm.disable();
+					if (this.isCardinalityChangeAllowed) {
+						if (this.relationshipType.Subject.Cardinality === Cardinality[Cardinality.One]) {
+							this.relationshipTypeForm.controls["subjectCardinality"].enable();
+							this.isSaveDisabled = false;
+						}
+						if (this.relationshipType.Object.Cardinality === Cardinality[Cardinality.One]) {
+							this.relationshipTypeForm.controls["objectCardinality"].enable();
+							this.isSaveDisabled = false;
+						}
+					}
+				} else {
+					this.relationshipTypeForm.enable();
 				}
 
 				setTimeout(() => {

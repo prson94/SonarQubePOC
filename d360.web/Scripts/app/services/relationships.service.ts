@@ -18,6 +18,8 @@ import { forkJoin, Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 import { clone } from "lodash-es";
 import { Predicate } from '../models/predicate.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from "./feature-flags.enum";
 
 @Injectable({
 	providedIn: 'root'
@@ -26,7 +28,7 @@ export class RelationshipsService extends BaseObservableService {
 
 	private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;
 
-	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+	constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: LaunchDarklyService) { super(messagesService); }
 
 	getRelationshipTypes(assetTypeUid: string = null, includeHasRelationships: boolean = false, includeTotalRelationshipCount: boolean = false, includeDisplayFormat: boolean = false): Observable<RelationshipType[]> {
         let url = 'api/v2/relationships/types?state=1';
@@ -37,6 +39,10 @@ export class RelationshipsService extends BaseObservableService {
 
 		if (includeHasRelationships) {
 			url += `&includeHasRelationships=true`;
+			if (this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)) {
+				url += `&includeHasFieldFromRelationship=true`;
+				url += `&includeHasListableRelationship=true`;
+			}
 		}
 
 		if (includeTotalRelationshipCount) {

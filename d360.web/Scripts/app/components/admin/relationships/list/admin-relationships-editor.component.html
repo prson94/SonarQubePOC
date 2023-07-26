@@ -126,7 +126,7 @@
 	<div class="action-bar">
 		<button igButton [disabled]="isSaving" class="ig-button-secondary" type="button" (click)="cancel()" label="{{cancelLabel}}"></button>
 		<span class="grow"></span>
-		<button [disabled]="isSubmitDisabled || isSaving || isFormDisabled" [loading]="isSaving" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
+		<button [disabled]="isSubmitDisabled || isSaving || isSaveDisabled" [loading]="isSaving" igButton igAutoFocus class="ig-button-primary" margin (click)="onSubmit()" type="submit" i18n-label label="{{saveLabel}}"></button>
 	</div>
 </d3s-modal>
 
