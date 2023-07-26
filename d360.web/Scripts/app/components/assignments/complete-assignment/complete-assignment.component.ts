@@ -4,6 +4,9 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
+import { Subscription } from 'rxjs';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -28,9 +31,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
+	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	private linkInterceptorSubscription: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService) {
+				private workflowService: WorkflowService,
+				private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
 	}
 
@@ -49,6 +55,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.workflowItemUid = details.workflowItemUid;
 			this.getFormDetails();
 		}
+		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
+			this.sidePanelOpen = true;
+		});
 		this.isModalVisible = true;
 	}
 
@@ -88,5 +98,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
 		this.sidePanel = 'step-details';
 		this.assignmentItemStep = assignmentItemStep;
+	}
+
+	closeModal(): void {
+		this.isModalVisible = false;
+		this.linkInterceptorSubscription?.unsubscribe()
 	}
 }
