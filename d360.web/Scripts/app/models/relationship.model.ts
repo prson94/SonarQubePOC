@@ -54,6 +54,8 @@ export class RelationshipType {
 	HasFieldFromRelationship?: boolean;
 	HasListableRelationship?: boolean;
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	public static ConvertToUIModeldata(data: RelationshipType, featureFlag: boolean = false): RelationshipTypeSimpleUIModel {
 		let isEditDisabled = false;
 		let reason = DisabledReason.None;

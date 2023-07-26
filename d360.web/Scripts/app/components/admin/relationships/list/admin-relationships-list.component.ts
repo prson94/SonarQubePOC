@@ -143,7 +143,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
 		if (this.featureFlagService.variation<boolean>(FeatureFlags.RelationshipCardinalityTempFlag)) {
 			const listSeperator = "\r\n\u2022 "; //New-line and bullet char (•)
-			console.log("R", rel.Subject + " " + rel.Object, rel.DisabledReason);
+
 			if (DisabledReason.InterType === (rel.DisabledReason & DisabledReason.InterType)) {
 				tooltip = $localize`Cannot edit relationship types of Inter-type Hierarchy`;
 			} else {
