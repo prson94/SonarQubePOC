@@ -60,7 +60,7 @@
 											</div>
 											<div class="row">
 												<div class="category-column">
-													<p>Submitted by {{ request.Action.CreatedByName }}
+													<p>Submitted by <a (click)="onClickResource($event)">{{ request.Action.CreatedByName }}</a>
 														on {{ request.Action.CreatedOn | date: 'short'}}</p>
 													<p>Associated Asset : {{ request.Action.AssociatedAssetPath }}</p>
 												</div>
@@ -102,8 +102,8 @@
 						[storageKey]="sidePanelStorageKey"
 						hasDetail="true"
 						height="calc(100vh - 220px)">
-				<ng-container *ngIf="sidePanelOpen">
-					<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				<ng-container [hidden]="!sidePanelOpen">
+					<d3s-side-panel-switcher [showPanelHeader]="false" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>
 		</div>

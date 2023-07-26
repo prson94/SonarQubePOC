@@ -104,4 +104,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isModalVisible = false;
 		this.linkInterceptorSubscription?.unsubscribe()
 	}
+
+	onClickResource(event: MouseEvent): void {
+		if(this.request?.Action) {
+			this.linkClickInterceptor.sendEvent(event, {
+				ResourceUid: this.request.Action.CreatedBy
+			}, 'users/' + this.request.Action.CreatedBy);
+		}
+	}
+
 }
