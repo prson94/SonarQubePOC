@@ -14,23 +14,7 @@
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
 				 (clickOutside)="closeSecondarySidePanel()">
-				<div class="panel-header">
-                        <span class="header-label"
-							  i18n>Information</span>
-					<div class="button-container">
-						<button igButton
-								[attr.data-cy]="'Assignments_Secondary_Close'"
-								icon="fa-times"
-								(click)="closeSecondarySidePanel()"
-								tooltip="Close"
-								class="close-button"></button>
-					</div>
-				</div>
-				<div class="details-container">
-					<div>
-						<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
-					</div>
-				</div>
+				<d3s-side-panel-switcher (closeClick)="closeSecondarySidePanel()" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 			</div>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"

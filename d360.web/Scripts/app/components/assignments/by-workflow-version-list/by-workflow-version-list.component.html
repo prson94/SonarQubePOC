@@ -15,50 +15,32 @@
 			></d3s-by-workflow-version-grid>
 			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
 				 (clickOutside)="closeSecondarySidePanel()">
-				<div [hidden]="secondarySidePanelTab !== ''">
-					<div class="panel-header">
-							<span class="header-label"
-								  i18n>Information</span>
-						<div class="button-container">
-							<button igButton
-									[attr.data-cy]="'Assignments_Secondary_Close'"
-									icon="fa-times"
-									(click)="closeSecondarySidePanel()"
-									tooltip="Close"
-									class="close-button"></button>
-						</div>
-					</div>
-					<div class="details-container">
-						<ng-container>
-							<d3s-side-panel-switcher #sidePanelSwitcherComponent></d3s-side-panel-switcher>
-						</ng-container>
-					</div>
-				</div>
-				<div [hidden]="secondarySidePanelTab === ''">
-					<side-panel [(expanded)]="secondarySidePanelOpen"
-								[(selectedPanel)]="secondarySidePanelTab"
-								[extraButtons]="secondarySidePanelButtons"
-								closeIcon="fa-times"
-								[selectedItemsCount]="selectedAssignmentVersionItems?.length"
-								[selectedItem]="selectedAssignmentVersionItems"
-								[multipleItemsSelected]="selectedAssignmentVersionItems?.length > 1"
-								[isSecondarySidePanel]="true"
-								[setMinMaxWidth]="false"
-								[hasDetail]="false">
-						<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
-							<d3s-pending-assignments-step [versionStepId]="+selectedNodeModel?.key"
-														  [workflowTypeVersion]="workflowTypeVersion"
-														  [workflowTypeUid]="workflowTypeUid">
-							</d3s-pending-assignments-step>
-						</ng-container>
-						<ng-container *ngIf="secondarySidePanelTab === 'information'">
-							<d3s-step-information
-								[selectedNode]="selectedNodeModel"
-								[workflowTypeVersion]="workflowTypeVersion"
-								[workflowTypeUid]="workflowTypeUid"></d3s-step-information>
-						</ng-container>
-					</side-panel>
-				</div>
+				<d3s-side-panel-switcher [hidden]="secondarySidePanelTab !== ''"
+										 (closeClick)="closeSecondarySidePanel()"
+										 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				<side-panel [hidden]="secondarySidePanelTab === ''" [(expanded)]="secondarySidePanelOpen"
+							[(selectedPanel)]="secondarySidePanelTab"
+							[extraButtons]="secondarySidePanelButtons"
+							closeIcon="fa-times"
+							[selectedItemsCount]="selectedAssignmentVersionItems?.length"
+							[selectedItem]="selectedAssignmentVersionItems"
+							[multipleItemsSelected]="selectedAssignmentVersionItems?.length > 1"
+							[isSecondarySidePanel]="true"
+							[setMinMaxWidth]="false"
+							[hasDetail]="false">
+					<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
+						<d3s-pending-assignments-step [versionStepId]="+selectedNodeModel?.key"
+													  [workflowTypeVersion]="workflowTypeVersion"
+													  [workflowTypeUid]="workflowTypeUid">
+						</d3s-pending-assignments-step>
+					</ng-container>
+					<ng-container *ngIf="secondarySidePanelTab === 'information'">
+						<d3s-step-information
+							[selectedNode]="selectedNodeModel"
+							[workflowTypeVersion]="workflowTypeVersion"
+							[workflowTypeUid]="workflowTypeUid"></d3s-step-information>
+					</ng-container>
+				</side-panel>
 			</div>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
