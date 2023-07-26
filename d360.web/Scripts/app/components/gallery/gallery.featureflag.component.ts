@@ -23,7 +23,6 @@ interface FeatureFlag {
 })
 
 export class GalleryFeatureflagComponent implements OnInit {
-	properties: Array<any>;
 	public featureFlags: FeatureFlag[] = [];
 
 	constructor(
@@ -31,8 +30,6 @@ export class GalleryFeatureflagComponent implements OnInit {
 	) {	}
 
 	ngOnInit(): void {
-		this.properties = [];
-
 		const allFlags = this.featureFlagService.client.allFlags()
 		this.featureFlags = Object.keys(allFlags)
 			.filter((key) => key.startsWith("Govern"))
