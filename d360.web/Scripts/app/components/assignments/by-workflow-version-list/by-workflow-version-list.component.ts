@@ -20,7 +20,8 @@ import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'd3s-by-workflow-version-list',
-	templateUrl: './by-workflow-version-list.component.html'
+	templateUrl: './by-workflow-version-list.component.html',
+	styleUrls: ['by-workflow-version-list.component.less']
 })
 export class ByWorkflowVersionListComponent extends BaseComponent implements OnInit, OnDestroy {
 	sidePanelOpen: boolean = true;
@@ -124,7 +125,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
-	closeSecondarySidePanel() {
+	closeSecondarySidePanel(): void {
 		this.secondarySidePanelOpen = false;
 	}
 }
