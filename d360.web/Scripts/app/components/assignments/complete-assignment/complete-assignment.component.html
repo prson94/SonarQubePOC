@@ -102,8 +102,8 @@
 						[storageKey]="sidePanelStorageKey"
 						hasDetail="true"
 						height="calc(100vh - 220px)">
-				<ng-container [hidden]="!sidePanelOpen">
-					<d3s-side-panel-switcher [showPanelHeader]="false" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				<ng-container>
+					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>
 		</div>
