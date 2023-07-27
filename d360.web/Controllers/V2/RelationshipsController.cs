@@ -1004,7 +1004,17 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, State? State = null, bool? includeHasFieldTypes = null, bool? includeHasRelationships = null, bool? includeTotalRelationshipCount = null, bool? includeCreatedModifiedBy = null, Guid? RelationshipTypeUid = null, bool? includeDisplayFormat = null)
+		public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null,
+																   Guid? AssetTypeUid = null,
+																   State? State = null,
+																   bool? includeHasFieldTypes = null,
+																   bool? includeHasRelationships = null,
+																   bool? includeTotalRelationshipCount = null,
+																   bool? includeCreatedModifiedBy = null,
+																   Guid? RelationshipTypeUid = null,
+																   bool? includeDisplayFormat = null,
+																   bool? includeHasFieldFromRelationship = null,
+																   bool? includeHasListableRelationship = null)
 		{
 			var prefix = "Relationships.GetRelationshipTypesAsync => ";
 			string errorMessage;
@@ -1056,6 +1066,16 @@ namespace d360.web.Controllers.V2
 				if (includeDisplayFormat.HasValue)
 				{
 					queryParams.Add(new KeyValuePair<string, string>("includeDisplayFormat", includeDisplayFormat.ToString()));
+				}
+
+				if (includeHasFieldFromRelationship.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeHasFieldFromRelationship", includeHasFieldFromRelationship.ToString()));
+				}
+
+				if (includeHasListableRelationship.HasValue)
+				{
+					queryParams.Add(new KeyValuePair<string, string>("includeHasListableRelationship", includeHasListableRelationship.ToString()));
 				}
 
 				var types = await RelationshipRepository.GetRelationshipTypes(queryParams);
