@@ -295,6 +295,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum allowed length for ProfileSeries value is 100..
+        /// </summary>
+        public static string InvalidProfileSeriesLength {
+            get {
+                return ResourceManager.GetString("InvalidProfileSeriesLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum allowed length for ProfileSource value is 100..
+        /// </summary>
+        public static string InvalidProfileSourceLength {
+            get {
+                return ResourceManager.GetString("InvalidProfileSourceLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid similar type..
         /// </summary>
         public static string InvalidSimilarType {
