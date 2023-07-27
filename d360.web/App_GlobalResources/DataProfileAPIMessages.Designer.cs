@@ -295,6 +295,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum allowed length for ProfileSeries value is 100..
+        /// </summary>
+        public static string InvalidProfileSeriesLength {
+            get {
+                return ResourceManager.GetString("InvalidProfileSeriesLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum allowed length for ProfileSource value is 100..
+        /// </summary>
+        public static string InvalidProfileSourceLength {
+            get {
+                return ResourceManager.GetString("InvalidProfileSourceLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is an invalid similar type..
         /// </summary>
         public static string InvalidSimilarType {
@@ -610,6 +628,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        public static string SemanticTypeDisabledColumn {
+            get {
+                return ResourceManager.GetString("SemanticTypeDisabledColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Effective Range.
+        /// </summary>
+        public static string SemanticTypeEffectiveRangeColumn {
+            get {
+                return ResourceManager.GetString("SemanticTypeEffectiveRangeColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filtered Semantic Types List {0}.xlsx.
         /// </summary>
         public static string SemanticTypeExportFilename {
@@ -736,6 +772,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for &apos;ProfileType&apos; {0}. Allowed values are &apos;0&apos; for Full, &apos;1&apos; for Sample or &apos;2&apos; for Filtered..
+        /// </summary>
+        public static string ValidProfiletype {
+            get {
+                return ResourceManager.GetString("ValidProfiletype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Valid Values.
         /// </summary>
         public static string ValidValuesColumn {
@@ -743,27 +788,5 @@ namespace Resources {
                 return ResourceManager.GetString("ValidValuesColumn", resourceCulture);
             }
         }
-
-		/// <summary>
-		///   Looks up a localized string similar to Disabled.
-		/// </summary>
-		internal static string SemanticTypeDisabledColumn
-		{
-			get
-			{
-				return ResourceManager.GetString("SemanticTypeDisabledColumn", resourceCulture);
-			}
-		}
-
-		/// <summary>
-		///   Looks up a localized string similar to Effective Range.
-		/// </summary>
-		internal static string SemanticTypeEffectiveRangeColumn
-		{
-			get
-			{
-				return ResourceManager.GetString("SemanticTypeEffectiveRangeColumn", resourceCulture);
-			}
-		}
-	}
+    }
 }

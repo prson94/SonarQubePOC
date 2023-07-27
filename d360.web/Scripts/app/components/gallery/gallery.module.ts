@@ -88,6 +88,7 @@ import { InputTextareaModule } from "primeng/inputtextarea";
 import { InputTextModule } from "primeng/inputtext";
 import { GalleryTableDataTransferComponent } from './table-data-transfer/table-data-transfer.component';
 import { TableDataTransferModule } from '../shared/table-data-transfer/table-data-transfer.module';
+import { GalleryFeatureflagComponent } from './gallery.featureflag.component';
 
 @NgModule({
     imports: [
@@ -183,7 +184,8 @@ import { TableDataTransferModule } from '../shared/table-data-transfer/table-dat
 		GalleryJsonViewerComponent,
         GalleryColorSelectorComponent,
         GalleryFormFeedbackBadgesComponent,
-        GalleryDropdownBadgeComponent
+		GalleryDropdownBadgeComponent,
+		GalleryFeatureflagComponent
     ],
     providers: [
         GalleryGuard,

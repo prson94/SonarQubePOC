@@ -60,7 +60,8 @@ export class GalleryComponent implements OnInit {
         { label: "Image Picker", key: "image-picker", type: "Form" },
         { label: "Color Selector", key: "color-selector", type: "Form" },
         { label: "Dropdown Badge", key: "dropdown-badge", type: "Govern Components"},
-        { label: "Form feedback badges", key: "form-feedback-badges", type: "Form" }
+		{ label: "Form feedback badges", key: "form-feedback-badges", type: "Form" },
+        { label: "Feature Flags", key: "featureflag", type: "Misc" }
     ];
 
     categories: any[] = [];

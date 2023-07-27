@@ -543,6 +543,10 @@ namespace d360.model
 					DataProfileTable.Columns.Add("FilterCount", typeof(long));
 					DataProfileTable.Columns.Add("Freshness", typeof(int));
 
+					DataProfileTable.Columns.Add("ProfileSource", typeof(string));
+					DataProfileTable.Columns.Add("ProfileSeries", typeof(string));
+					DataProfileTable.Columns.Add("ProfileType", typeof(int));
+
 					DataProfileSampleTable.Columns.Add("ExecutionID", typeof(Guid));
 					DataProfileSampleTable.Columns.Add("ItemNumber", typeof(int));
 					DataProfileSampleTable.Columns.Add("ExecutionItemUid", typeof(Guid));
@@ -615,6 +619,10 @@ namespace d360.model
 						row["SourceLastModified"] = item.SourceLastModified ?? (object)DBNull.Value;
 						row["FilterCount"] = item.FilterCount ?? (object)DBNull.Value;
 						row["Freshness"] = item.Freshness ?? (object)DBNull.Value;
+
+						row["ProfileSource"] = item.ProfileSource ?? (object)DBNull.Value;
+						row["ProfileSeries"] = item.ProfileSeries ?? (object)DBNull.Value;
+						row["ProfileType"] = (object)(int)item.ProfileType ?? (int)ProfileType.Full;
 
 						DataProfileTable.Rows.Add(row);
 						if (item.outlierDetail != null)
@@ -956,6 +964,10 @@ namespace d360.model
 								bulkCopy.ColumnMappings.Add("FilterCount", "FilterCount");
 								bulkCopy.ColumnMappings.Add("Freshness", "Freshness");
 
+								bulkCopy.ColumnMappings.Add("ProfileSource", "ProfileSource");
+								bulkCopy.ColumnMappings.Add("ProfileSeries", "ProfileSeries");
+								bulkCopy.ColumnMappings.Add("ProfileType", "ProfileType");
+
 								bulkCopy.WriteToServer(DataProfileTable);
 							}
 
@@ -1183,6 +1195,9 @@ namespace d360.model
 													,[SourceLastModified]
 													,[FilterCount]
 													,[Freshness]
+													,[ProfileSource]
+													,[ProfileSeries]
+													,[ProfileType]
 													,[CreatedBy]
 													,[CreatedOn]
 													,[UpdatedBy]
@@ -1227,6 +1242,9 @@ namespace d360.model
 													,EDP.SourceLastModified
 													,EDP.FilterCount
 													,EDP.Freshness
+													,EDP.ProfileSource
+													,EDP.ProfileSeries
+													,EDP.ProfileType
 													,@CurrentResourceID
 													,getutcdate()
 													,@CurrentResourceID
@@ -1286,6 +1304,9 @@ namespace d360.model
 											,ADP.[SourceLastModified] = EDP.[SourceLastModified]
 											,ADP.[FilterCount] = EDP.[FilterCount]
 											,ADP.[Freshness] = EDP.[Freshness]
+											,ADP.[ProfileSource] = EDP.[ProfileSource]
+											,ADP.[ProfileSeries] = EDP.[ProfileSeries]
+											,ADP.[ProfileType] = EDP.[ProfileType]
 											,ADP.[UpdatedBy] = @CurrentResourceID
 											,ADP.[UpdatedOn] = getutcdate()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;

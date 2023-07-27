@@ -1,9 +1,11 @@
-﻿namespace d360.core.enums
+﻿using System.ComponentModel;
+
+namespace d360.core.enums
 {
-    public enum ProfileType
+	public enum ProfileType
 	{
-		Sample,
-		Full,
-		Filtered
+		Full = 0,
+		Sample = 1,
+		Filtered = 2
 	}
 }

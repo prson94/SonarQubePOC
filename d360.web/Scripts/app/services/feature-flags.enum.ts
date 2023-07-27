@@ -6,5 +6,6 @@ export enum FeatureFlags {
 	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
 
 	//temp flags
+	AssignmentsFlag = "GovernAssignmentsTemp20230815",
 	RelationshipCardinalityTempFlag = "GovernRelationshipCardinalityTemp20230901"
 }
