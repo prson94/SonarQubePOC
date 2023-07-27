@@ -95,7 +95,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						this.isLoading = false;
 						this.step = workflowStepDetail;
 						this.activityType = this.getActivityType(this.step);
-						this.activityTypeIcon = this.helper.getActivityTypeIcon(this.step.ActivityType,this.step.StepType)
+						this.activityTypeIcon = this.helper.getActivityTypeIcon(this.step.ActivityType, this.step.StepType);
 						if (this.step.ItemFields?.['@NumberOfResponses']) {
 							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
 						} else {
