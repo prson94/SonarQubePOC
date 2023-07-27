@@ -21,7 +21,9 @@
 			<div readonly>
 				<div class="row">
 					<label class="ig-label" i18n>Activity Type</label>
-					<div i18n class="ig-value">{{ activityType }}</div>
+					<div i18n class="ig-value">
+						<i class="fa spacing-top" [ngClass]="activityTypeIcon"></i>  {{ activityType }}
+					</div>
 				</div>
 				<div *ngIf="step.ActivityType === WorkflowActivityType.Form && bulkReassignments?.length > 0"
 					 class="row reassignment-details">
