@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { VersionStepHistory, WorkflowActivityType, WorkflowDiagramModel } from '../../../../models/workflow.model';
 import { BaseComponent } from '../../../shared/base.component';
@@ -8,6 +8,7 @@ import { PopupMenuItem } from '../../../shared/controls/popup-menu/popup-menu.co
 import { WorkflowMonitorService } from '../../../../services/workflowmonitor.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { AuthenticationService } from '../../../../services/authentication.service';
+import { Table } from 'primeng/table';
 
 /*global $localize*/
 
@@ -28,6 +29,8 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	})];
 	showDeletionModal: boolean = false;
 	workflowDiagramModel: WorkflowDiagramModel;
+	simpleFilter: string = '';
+	@ViewChild('pendingAssignments') pendingAssignments: Table;
 
 	constructor(
 		protected settingsService: CompanySettingsService,
@@ -104,6 +107,16 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		if (item) {
 			this.selectedHistoryItem = item;
 		}
+	}
+
+	onSimpleSearch(): void {
+		this.pendingAssignments.filterGlobal(this.simpleFilter, 'contains');
+	}
+
+	onClickAsset(event: MouseEvent, item: VersionStepHistory): void {
+		this.linkClickInterceptor.sendEvent(event, {
+			AssetId: item.ObjectID
+		}, item.NgUrl);
 	}
 
 	private loadWorkflowDiagram() {

@@ -1,12 +1,30 @@
-<header>
-	&nbsp;
-	<d3s-tile-actions *ngIf="!isLoading" [hasExport]="true" (exportClick)="export()"
-					  [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-</header>
-<input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
-	   (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..."
-	   class="grid-simple-filter">
-<p-table #dt [value]="history" [scrollable]="true" selectionMode="single" [metaKeySelection]="true"
+<div class="grid-actions-header column-layout">
+	<div class="grid-actions-header-row">
+		<div class="simple-search">
+			<ig-search-field mode="Keypress"
+							 [debounce]="600"
+							 (onSearch)="onSimpleSearch()"
+							 [(ngModel)]="simpleFilter">
+			</ig-search-field>
+		</div>
+		<div class="grid-action-buttons">
+			<div>
+				<div i18n-pTooltip
+					 pTooltip="Export to Excel"
+					 tooltipPosition="left"
+					 tooltipStyleClass="ig-tooltip">
+					<button igButton
+							class="ig-button-secondary"
+							[igDataCy]="'Pending_Assignments_Export'"
+							icon="fa-download"
+							(click)="export()">
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<p-table #pendingAssignments [value]="history" [scrollable]="true" selectionMode="single" [metaKeySelection]="true"
 		 [tableStyle]="{'min-width': 'max-content'}" [loading]="isLoading"
 		 [globalFilterFields]="['Name','Assignments','Status']" [pageLinks]="3"
 		 [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
@@ -26,23 +44,17 @@
 			</th>
 			<th class="asset-grid-tools" style="flex: 0 0 30px"></th>
 		</tr>
-		<tr [hidden]="showSimpleFilter">
-			<th>
-				<d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'Assignments'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-			<th>
-				<d3s-column-filter [field]="'Status'" [datatype]="'text'"></d3s-column-filter>
-			</th>
-		</tr>
 	</ng-template>
 	<ng-template pTemplate="body" let-item>
 		<tr [pSelectableRow]="item">
 			<td style="flex: 0 0 80px">
-				<a *ngIf="item.NgUrl != null">{{item.Name}}</a>
-				<span *ngIf="item.NgUrl == null">{{item.Name}}</span>
+				<ng-container *ngIf="item.Name">
+					<a context-link (click)="onClickAsset($event, item)" *ngIf="item.NgUrl != null">{{item.Name}}</a>
+					<span *ngIf="item.NgUrl == null">{{item.Name}}</span>
+				</ng-container>
+				<ng-container *ngIf="!item.Name">
+					<span i18n>[unknown]</span>
+				</ng-container>
 			</td>
 			<td style="flex: 0 0 100px">
 				{{ item.Assignments }}
@@ -64,12 +76,11 @@
 		</tr>
 	</ng-template>
 	<ng-template pTemplate="summary">
-		<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
-							  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+		<d3s-grid-paging-info [first]="pendingAssignments.first" [rows]="pendingAssignments.rows"
+							  [totalRecords]="pendingAssignments.totalRecords"></d3s-grid-paging-info>
 	</ng-template>
 </p-table>
 <d3s-delete-form [callback]="deleteAssignment"
-				 [items]="selectedHistoryItem"
 				 [showAsModal]="true"
 				 i18n-modalTitle
 				 modalTitle="Delete Assignment"

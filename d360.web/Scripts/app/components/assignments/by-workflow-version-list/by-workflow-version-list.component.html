@@ -29,10 +29,12 @@
 							[setMinMaxWidth]="false"
 							[hasDetail]="false">
 					<ng-container *ngIf="secondarySidePanelTab === 'pendingAssignments'">
-						<d3s-pending-assignments-step [versionStepId]="+selectedNodeModel?.key"
-													  [workflowTypeVersion]="workflowTypeVersion"
-													  [workflowTypeUid]="workflowTypeUid">
-						</d3s-pending-assignments-step>
+						<div class="pending-assignments">
+							<d3s-pending-assignments-step [versionStepId]="+selectedNodeModel?.key"
+														  [workflowTypeVersion]="workflowTypeVersion"
+														  [workflowTypeUid]="workflowTypeUid">
+							</d3s-pending-assignments-step>
+						</div>
 					</ng-container>
 					<ng-container *ngIf="secondarySidePanelTab === 'information'">
 						<d3s-step-information
