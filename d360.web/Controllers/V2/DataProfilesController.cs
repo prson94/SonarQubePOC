@@ -1008,6 +1008,16 @@ namespace d360.web.Controllers.V2
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage);
                 }
+
+                if (model.ProfileSource != null && model.ProfileSource?.Length > 100)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.InvalidProfileSourceLength);
+                }
+
+                if (model.ProfileSeries != null && model.ProfileSeries?.Length > 100)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.InvalidProfileSeriesLength);
+                }
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");

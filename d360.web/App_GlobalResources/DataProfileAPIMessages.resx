@@ -402,4 +402,10 @@
   <data name="ValidProfiletype" xml:space="preserve">
     <value>Invalid value for 'ProfileType' {0}. Allowed values are '0' for Full, '1' for Sample or '2' for Filtered.</value>
   </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>Maximum allowed length for ProfileSeries value is 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>Maximum allowed length for ProfileSource value is 100.</value>
+  </data>
 </root>
