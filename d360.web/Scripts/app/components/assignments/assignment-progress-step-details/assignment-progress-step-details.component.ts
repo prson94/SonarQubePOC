@@ -52,6 +52,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 
 	step: WorkflowStepDetail = null;
 	activityType: string = '';
+	activityTypeIcon: string = '';
 	viewFormResponses: string = '';
 	bulkReassignments: WorkflowStepReassignment[] = [];
 	reassignment: WorkflowStepReassignment = null;
@@ -90,10 +91,11 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 			this.isLoading = true;
 			return this.workflowService.getAssignmentStepDetail(this.itemStepUid)
 				.pipe(
-					map((r) => {
+					map((workflowStepDetail) => {
 						this.isLoading = false;
-						this.step = r;
+						this.step = workflowStepDetail;
 						this.activityType = this.getActivityType(this.step);
+						this.activityTypeIcon = this.helper.getActivityTypeIcon(this.step.ActivityType,this.step.StepType)
 						if (this.step.ItemFields?.['@NumberOfResponses']) {
 							this.viewFormResponses = `View Form Responses (${this.step.ItemFields['@NumberOfResponses']})`;
 						} else {
