@@ -298,13 +298,21 @@ namespace d360.model.DataAccessLayer
 
 			if (includeResults && dbExecutionItem.CompletedOn.HasValue)
 			{
-				try
-				{
-					results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
-				}
-				catch
-				{
-					results = new List<dynamic> { new { Message = "Results file no longer exists." } };
+				int attempt = 0;
+				int maxAttempt = 5;
+				while (attempt <= maxAttempt && results == null) {
+					try
+					{
+						results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
+					}
+					catch
+					{
+						if (attempt >= maxAttempt) {
+							results = new List<dynamic> { new { Message = "Results file no longer exists." } };
+						}
+						Thread.Sleep(1000);
+						attempt++;
+					}
 				}
 			}
 

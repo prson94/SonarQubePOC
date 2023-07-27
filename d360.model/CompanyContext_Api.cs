@@ -4819,6 +4819,7 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 		{
 			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 			execution.ErrorMessage = message;
+			execution.MarkedForProcessing = false;
 			execution.CompletedOn = DateTime.UtcNow;
 			Update(execution);
 		}
