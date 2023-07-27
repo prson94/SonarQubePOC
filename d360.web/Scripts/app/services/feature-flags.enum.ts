@@ -3,5 +3,8 @@ export enum FeatureFlags {
     BrandingThemeCustomCss = "GovernBrandingCustomCssPerm",
     DataProfilingUiFlag = "GovernDataProfileUiPerm",
     SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
-    ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm"
+	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
+
+	//temp flags
+	AssignmentsFlag = "GovernAssignmentsTemp20230815"
 }
