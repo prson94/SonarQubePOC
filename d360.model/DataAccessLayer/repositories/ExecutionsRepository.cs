@@ -39,8 +39,9 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<ApiExecutionInfo> BulkPatchAssetAndRelations(PatchBulkCatalogRequestModel payload)
 		{
-			var execution = new ApiExecution {
-				Method = "PATCH", 
+			var execution = new ApiExecution
+			{
+				Method = "PATCH",
 				ResourceID = CompanyContext.CurrentResourceID,
 				Route = "api/v2/executions",
 				Total = 0,
@@ -59,8 +60,8 @@ namespace d360.model.DataAccessLayer
 
 			// Save to storage container.
 			await StorageProvider.CreateFile(
-				executionInfo.StorageFolder, 
-				executionInfo.RequestFileName, 
+				executionInfo.StorageFolder,
+				executionInfo.RequestFileName,
 				JsonConvert.SerializeObject(payload)
 			);
 
@@ -80,6 +81,16 @@ namespace d360.model.DataAccessLayer
 		public ApiExecution GetExecutionItemByUid(Guid executionUid)
 		{
 			return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
+		}
+
+		public List<APIExecutionErrorApiModel> GetExecutionErrorsByUid(Guid executionUid)
+		{
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("executionUid", executionUid);
+			return CompanyContext.Database.Connection.Query<APIExecutionErrorApiModel>(
+				@$"select * from api.ExecutionAssetError EAE where ExecutionID = @executionUid
+				union
+				select * from api.ExecutionRelationshipError ERE where ExecutionID = @executionUid", dbArgs).ToList();
 		}
 
 		public async Task<APIExecutionAPIModelResult> GetExecutions(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -173,7 +184,7 @@ namespace d360.model.DataAccessLayer
 						case ExecutionInternalStatus.Running:
 							filterSql = "WHERE Ex.CompletedOn IS NULL AND Ex.ProcessingStartedOn IS NOT NULL";
 							break;
-						default:	// Basically, ExecutionInternalStatus.Completed
+						default:    // Basically, ExecutionInternalStatus.Completed
 							filterSql = "WHERE Ex.CompletedOn IS NOT NULL";
 							break;
 
@@ -265,7 +276,22 @@ namespace d360.model.DataAccessLayer
 				response.Payload = null;
 				return response;
 			}
-			
+			var errors = GetExecutionErrorsByUid(executionUid);
+
+			if (errors.Count > 0)
+			{
+				List<string> err = new List<string>();
+				if (!string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
+				{
+					err.Add(dbExecutionItem.ErrorMessage);
+				}
+				err.AddRange(errors.Select(x => x.Message));
+				dbExecutionItem.Total += errors.Count;
+				dbExecutionItem.Error += errors.Count;
+				dbExecutionItem.ErrorMessage = string.Join("; ", err);
+			}
+
+
 			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
 			List<dynamic> results = null;
@@ -364,7 +390,7 @@ namespace d360.model.DataAccessLayer
 			else
 			{
 				if (payload.Assets != null)
-				{ 
+				{
 					payload.Assets.ForEach(ag =>
 					{
 						ag.Items.ForEach(a =>
@@ -393,11 +419,11 @@ namespace d360.model.DataAccessLayer
 							}
 
 						});
-					});				
+					});
 				}
 
 				if (payload.Relations != null)
-				{ 
+				{
 					payload.Relations.ForEach(rg =>
 					{
 						rg.Items.ForEach(r =>
@@ -426,7 +452,7 @@ namespace d360.model.DataAccessLayer
 								});
 							}
 						});
-					});			
+					});
 				}
 			}
 
@@ -439,11 +465,11 @@ namespace d360.model.DataAccessLayer
 			var executionProcessingInfo = JsonConvert.DeserializeObject<ApiExecutionFields_PatchExecution>(executionProcessingInfoFields);
 
 			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 8)
-			{ 
+			{
 				try
 				{
 					await CompanyContext.Connection.OpenIfClosed();
-					
+
 					if (executionProcessingInfo.LastCompletedStepNumber <= 0)
 					{
 						using (SqlBulkCopy bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionCatalogItem", 5000, 3600))//, transaction))
@@ -555,7 +581,7 @@ namespace d360.model.DataAccessLayer
 							}
 						);
 					}
-				}				
+				}
 			} // while
 		}
 	}

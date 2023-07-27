@@ -143,4 +143,14 @@ namespace d360.core.entities
         public dynamic Fields { get; set; }
         public string ApplicationId { get; set; }
     }
+
+	public class APIExecutionErrorApiModel
+	{
+		public Guid ExecutionID { get; set; }
+		public int ItemNumber { get; set; }
+		public Guid ExecutionItemUid { get; set; }
+		public Guid Uid { get; set; }
+		public string Message { get; set; }
+
+	}
 }
