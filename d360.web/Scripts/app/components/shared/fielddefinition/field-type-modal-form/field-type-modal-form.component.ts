@@ -212,7 +212,17 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 					if (typeof i.value === "undefined") {
 						i.value = null;
 					}
-					this.relationshipItems.push({ label: i.title, value: `${i.value}|${i.isSubject}` });
+					let directionStringPart: string = '';
+					if (results[1].Field_Relationships.filter((x) => x.title === i.title).length > 1) {
+						if (i.isSubject === true) {
+							directionStringPart = " (->)";
+						}
+						else {
+							directionStringPart = " (<-)";
+						}
+					}
+
+					this.relationshipItems.push({ label: i.title + directionStringPart, value: `${i.value}|${i.isSubject}` });
 				});
 
 				this.regexPatternTokens = [];

@@ -399,4 +399,7 @@
     <value>Effective Range</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Invalid value for 'ProfileType' {0}. Allowed values are '0' for Full, '1' for Sample or '2' for Filtered.</value>
+  </data>
 </root>
