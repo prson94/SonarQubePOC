@@ -21,7 +21,8 @@ import { FieldType } from '../../../../models/fieldtype-api.model';
 
 @Component({
 	selector: 'd3s-by-workflow-version-grid',
-	templateUrl: './by-workflow-version-grid.component.html'
+	templateUrl: './by-workflow-version-grid.component.html',
+	styleUrls: ['by-workflow-version-grid.component.less']
 })
 export class ByWorkflowVersionGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	title: string = $localize`WorkFlow Items`;
