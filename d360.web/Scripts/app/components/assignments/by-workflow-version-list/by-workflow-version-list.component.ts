@@ -94,7 +94,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 
 	ngOnInit(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((event: AssetDetailClickEvent) => {
-			if(event.type === AssetDetailClickType.WorkflowVersion){
+			if (event.type === AssetDetailClickType.WorkflowVersion) {
 				this.workflowTypeVersion = event.workflowTypeVersion;
 				this.workflowTypeUid = event.workflowTypeUid;
 				this.selectedNodeModel = event.selectedNodeModel;
@@ -105,7 +105,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 			}
 			this.secondarySidePanelOpen = true;
 		});
-		this.setHeaderBreadcrumbs()
+		this.setHeaderBreadcrumbs();
 	}
 
 	ngOnDestroy(): void {
