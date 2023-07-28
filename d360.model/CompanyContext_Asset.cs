@@ -2436,7 +2436,7 @@ where	T.ExecutionID = @ExecutionID
 								                            set		S.Success = 0,
 										                            S.[Message] = @msg
                                                             from api.ExecutionDeletedAsset S
-								                            where	{chunksQueryString} and S.AssetID is not null;;",
+								                            where	{chunksQueryString} and S.AssetID is not null;",
 												 new { execution.ExecutionID, msg = ex.GetFullExceptionData(false), beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
 													addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {chunkDeletionRetryCount}", sw.ElapsedMilliseconds, ++step);
 
