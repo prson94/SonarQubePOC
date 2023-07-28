@@ -979,6 +979,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AssetTypeuid {0} is invalid.
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No asset type found with [assetTypeUid] provided..
         /// </summary>
         public static string InvalidAssetTypeUidProvided {
