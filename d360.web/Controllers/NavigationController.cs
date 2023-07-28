@@ -86,6 +86,15 @@ namespace d360.web.Controllers
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
 
+			if (!Ld.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, GetSdkFeatureFlagUser(), false))
+			{
+				nodes = nodes.Where(x => x.MenuID != "#Assignments").Where(x => x.MenuID != "#Requests").ToList(); 
+			}
+			else
+			{
+				nodes = nodes.Where(x => x.MenuID != "#Monitor").ToList();
+			}
+
 			if (nodes != null)
 			{
 				List<string> toggleVisibilityURLs = new List<string> {

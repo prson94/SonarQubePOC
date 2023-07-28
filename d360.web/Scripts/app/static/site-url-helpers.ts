@@ -43,6 +43,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
     static SITE_URL_SEMANTICTYPES_ROOT = 'semantics';
+	static SITE_URL_ASSIGNMENTS_ROOT = 'assignments';
+	static SITE_URL_REQUESTS_ROOT = 'requests';
     //asset child routes
     static SITE_URL_ASSET_RULE = 'Rule';
 

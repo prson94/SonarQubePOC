@@ -6,7 +6,8 @@ import { AssetDetailClickType } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-side-panel-switcher',
-	templateUrl: './side-panel-switcher.component.html'
+	templateUrl: './side-panel-switcher.component.html',
+	styleUrls: ['side-panel-switcher.component.less']
 })
 export class SidePanelSwitcherComponent {
 	selectedTag: { selectedTag: string, uid: string };
@@ -44,10 +45,10 @@ export class SidePanelSwitcherComponent {
 			case AssetDetailClickType.WorkflowItemInformation:
 				return $localize`Assignment Information`;
 			case 'detail':
-				if (this.selectedAsset && this.selectedAsset.type === 'Artifact') {
-					return $localize`Asset Information`;
+				if (this.selectedAsset && this.selectedAsset.type === 'Resource') {
+					return $localize`User Information`;
 				} else {
-					return $localize`Information`;
+					return $localize`Asset Information`;
 				}
 			default:
 				return $localize`Information`;
