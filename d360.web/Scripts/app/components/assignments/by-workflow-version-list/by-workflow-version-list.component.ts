@@ -15,6 +15,8 @@ import {
 	LinkClickInterceptor
 } from '../../../services/href-click-service';
 import { Subscription } from 'rxjs';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
 
 /*global $localize*/
 
@@ -83,7 +85,7 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 		private titleService: Title,
 		private linkClickInterceptor: LinkClickInterceptor,
 		secondaryNavService: SecondaryNavService,
-		headerBreadcrumbService: HeaderBreadcrumbService
+		private headerBreadcrumbService: HeaderBreadcrumbService
 	) {
 		super(companySettingsService);
 		this.secondaryNavService = secondaryNavService;
@@ -103,10 +105,16 @@ export class ByWorkflowVersionListComponent extends BaseComponent implements OnI
 			}
 			this.secondarySidePanelOpen = true;
 		});
+		this.setHeaderBreadcrumbs()
 	}
 
 	ngOnDestroy(): void {
 		this.linkInterceptorSubscription?.unsubscribe();
+	}
+
+	setHeaderBreadcrumbs(): void {
+		this.headerBreadcrumbService.clearBreadcrumbs();
+		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_BY_VERSION_ROOT));
 	}
 
 	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
