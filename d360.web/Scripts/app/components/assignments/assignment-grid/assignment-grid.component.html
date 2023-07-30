@@ -154,12 +154,15 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue }}
+			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue ?? '---' }}
 			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>
 			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-			Are you sure you want to delete this assignment?<br/>
+			Are you sure you want to delete
+			<span *ngIf="assignments.length === 1"> this assignment?</span>
+			<span *ngIf="assignments.length > 1"> these assignments?</span>
+			<br/>
 			Deleted assignments <b>cannot be retrieved</b>.
 		</p>
 	</div>
