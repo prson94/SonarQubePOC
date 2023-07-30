@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-browser',
@@ -22,12 +23,13 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         headerbreadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+		launchDarklyService: LaunchDarklyService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerbreadcrumbService;
-
+		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

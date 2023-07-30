@@ -65,6 +65,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 		private featureFlagService: LaunchDarklyService
 	) {
 		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+		this.launchDarklyService = featureFlagService;
 	}
 
 	ngOnInit() {

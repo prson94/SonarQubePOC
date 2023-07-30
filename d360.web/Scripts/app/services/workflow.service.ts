@@ -332,7 +332,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null, assetUid: string = '', assetTypeUid: string = ''): Observable<WorkflowAssignments> {
 		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		url += this.getSimpleFilterParam(simpleFilter);
@@ -342,6 +342,10 @@ export class WorkflowService extends BaseObservableService {
 		url += this.getInitiatorUidParam(initiatorUid);
 
 		url += this.getSortParam(order, direction);
+
+		url += this.getAssetUidParam(assetUid);
+
+		url += this.getAssetTypeUidParam(assetTypeUid);
 
 		if (isExport) {
 			this.
@@ -868,6 +872,22 @@ export class WorkflowService extends BaseObservableService {
 	private getInitiatorUidParam(initiatorUid: string): string {
 		if (initiatorUid) {
 			return `&_initiatorUid=${initiatorUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getAssetUidParam(assetUid: string): string {
+		if (assetUid) {
+			return `&_assetUid=${assetUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getAssetTypeUidParam(assetTypeUid: string): string {
+		if (assetTypeUid) {
+			return `&_assetTypeUid=${assetTypeUid}`;
 		} else {
 			return '';
 		}

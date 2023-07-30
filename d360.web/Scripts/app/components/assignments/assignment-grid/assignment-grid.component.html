@@ -26,10 +26,11 @@
 		</div>
 	</div>
 	<div class="grid-actions-header-row">
-		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin (click)="selectAll()" i18n-label
+		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin
+				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<advanced-filtering [loadIdentifier]="'Assignments'"
+		<advanced-filtering [loadIdentifier]="getStorageKey()"
 							[fieldsObserver]="filterFields$"
 							(onLoad)="onFiltersLoaded()"
 							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
@@ -65,7 +66,7 @@
 							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'assetDisplayValue'">
+					<th [pSortableColumn]="'assetDisplayValue'" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
@@ -88,6 +89,10 @@
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
+					<th *ngIf="assetUid || assetTypeUid">
+						<ng-container i18n>Days Open</ng-container>
+						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
+					</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
@@ -100,7 +105,7 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td>{{item.workflowName}}</td>
 					</ng-container>
-					<td>{{item.assetDisplayValue ?? '---'}}</td>
+					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
 						<td [innerHTML]="item[field.Name]"></td>
 					</ng-container>
@@ -112,8 +117,11 @@
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
 						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length-item.filteredAssignees.length) }}
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
 							others </span>
+					</td>
+					<td *ngIf="assetUid || assetTypeUid">
+						{{item.daysOpen}}
 					</td>
 					<td>
 						<span>{{item.Status}}</span>

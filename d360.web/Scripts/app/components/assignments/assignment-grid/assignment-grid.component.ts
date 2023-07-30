@@ -31,6 +31,7 @@ import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.compo
 class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
 	filteredAssignees: string[];
 	allAssignees: string[];
+	daysOpen: number;
 }
 
 @Component({
@@ -41,6 +42,8 @@ class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
 
 export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() isRequestsFlow: boolean = false;
+	@Input() assetTypeUid: string;
+	@Input() assetUid: string;
 	currentResourceUid: string = null;
 	title: string = $localize`WorkFlow Items`;
 	items: WorkflowAssignmentGrid[] = [];
@@ -78,10 +81,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
-		this.settingsService.getUserVariables().subscribe((res) => {
-			this.currentResourceUid = res.CurrentResourceUid;
-			this.loadData();
-		});
+		this.currentResourceUid = this.settingsService.CurrentResourceUid;
+		this.loadData();
 	}
 
 	ngOnInit(): void {
@@ -105,7 +106,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, true, () => {
 			this.isExportInProgress = false;
-		});
+		}, this.assetUid, this.assetTypeUid);
 	}
 
 	gridSelectionChange(event: WorkflowAssignmentItem[]): void {
@@ -121,7 +122,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.isLoading = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
-			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null, this.assetUid, this.assetTypeUid),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
 		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
@@ -131,7 +132,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.assignments = [this.items[0]];
 				this.selectedCount = 1;
 				this.selectionChange.emit(this.assignments);
-				this.setDisplayAssignees();
+				this.createDisplayColumnData();
 			} else {
 				this.selectedCount = 0;
 				this.selectionChange.emit(null);
@@ -157,30 +158,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			} else {
 				this.gridSelectionChange(this.items);
 			}
-		}
-	}
-
-	setDisplayAssignees(): void {
-		for (const item of this.items) {
-			const assigneesList: {
-				Name: string,
-				uid: string
-			}[] = JSON.parse(item.assigneesJson) ?? [];
-			const displayAssigneesList: { Name: string, uid: string }[] = [];
-			if (this.assigneeSearchInputList?.length > 0) {
-				for (const assigneeSearchInput of this.assigneeSearchInputList) {
-					for (const assignee of assigneesList) {
-						if (assignee.Name === assigneeSearchInput.title) {
-							displayAssigneesList.push(assignee);
-							break;
-						}
-					}
-				}
-				item.filteredAssignees = displayAssigneesList.map((assignee) => assignee.Name);
-			} else {
-				item.filteredAssignees = assigneesList.slice(0, 2).map((assignee) => assignee.Name);
-			}
-			item.allAssignees = assigneesList.map((assignee) => assignee.Name);
 		}
 	}
 
@@ -314,6 +291,42 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.filterFieldsSubject.complete();
 	}
 
+	getStorageKey(): string {
+		if (this.assetTypeUid) {
+			return 'assetsAssignmentGrid' + this.settingsService.CurrentResourceID;
+		} else if (this.assetUid) {
+			return 'assetAssignmentGrid' + this.settingsService.CurrentResourceID;
+		} else if (this.isRequestsFlow) {
+			return 'requestGrid' + this.settingsService.CurrentResourceID;
+		} else {
+			return 'assignmentGrid' + this.settingsService.CurrentResourceID;
+		}
+	}
+
+	private setDisplayAssignees(): void {
+		for (const item of this.items) {
+			const assigneesList: {
+				Name: string,
+				uid: string
+			}[] = JSON.parse(item.assigneesJson) ?? [];
+			const displayAssigneesList: { Name: string, uid: string }[] = [];
+			if (this.assigneeSearchInputList?.length > 0) {
+				for (const assigneeSearchInput of this.assigneeSearchInputList) {
+					for (const assignee of assigneesList) {
+						if (assignee.Name === assigneeSearchInput.title) {
+							displayAssigneesList.push(assignee);
+							break;
+						}
+					}
+				}
+				item.filteredAssignees = displayAssigneesList.map((assignee) => assignee.Name);
+			} else {
+				item.filteredAssignees = assigneesList.slice(0, 2).map((assignee) => assignee.Name);
+			}
+			item.allAssignees = assigneesList.map((assignee) => assignee.Name);
+		}
+	}
+
 	private getFilteredWorkflowNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getTypes().pipe(
 			map((workflowTypeList: WorkflowTypeModel[]) => {
@@ -398,6 +411,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			count: values.length
 		});
 	};
+
 	private getFilteredTypeNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getRelevantAssetTypes().pipe(
 			map((assetType: { uid: string, name: string }[]) => {
@@ -414,4 +428,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
+	private createDisplayColumnData() {
+		this.setDisplayAssignees();
+		this.setDaysOpen();
+	}
+
+	private setDaysOpen(): void {
+		for (const workflowAssignmentGridItem of this.items) {
+			workflowAssignmentGridItem.daysOpen = Math.floor((Date.now() - Date.parse(workflowAssignmentGridItem.StartedOn)) / (60 * (60 * 1000) * 24));
+		}
+	}
 }
