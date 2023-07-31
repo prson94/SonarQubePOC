@@ -135,7 +135,8 @@ namespace d360.model
 		#endregion
 
 		#region Utility
-		
+		private readonly Random randomNumberGenerator = new Random();
+
 		private void ChangeItemState(WorkflowItemStep item)
 		{
 			TelemetryClient.TrackTrace($"DEBUG - CHANGING ITEM STATE.");
