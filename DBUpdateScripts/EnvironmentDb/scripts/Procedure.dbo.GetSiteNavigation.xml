@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetSiteNavigation-v13">
-  <comment>GOV-21421</comment>
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetSiteNavigation-v14">
+  <comment>GOV-28566</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -336,7 +336,35 @@ WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		left join AssetTypeStyle ats on ats.id = at.ID
 		WHERE n.Name = '#ASSET_TYPE' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		and not exists (select 1 from @NoReadAssetTypes nr where nr.id = at.ID)
-
+	
+	union all
+	
+	select	Name as MenuID,
+			SortOrder,
+			0 as Feature,
+			Icon as Icon, 
+			ImageIconUrl as ImageIconUrl,
+			Title as Title,
+			NULL AS Items,
+			'' as [url]
+			,null as 'Description'
+	from	SiteNav
+	where	Name = '#Assignments' AND dbo.HasSiteNavPermission(ID, @ResourceID) = 1
+	
+	union all
+	
+	select	Name as MenuID,
+			SortOrder,
+			0 as Feature,
+			Icon as Icon, 
+			ImageIconUrl as ImageIconUrl,
+			Title as Title,
+			NULL AS Items,
+			'' as [url]
+			,null as 'Description'
+	from	SiteNav
+	where	Name = '#Requests' AND dbo.HasSiteNavPermission(ID, @ResourceID) = 1
+	
 	order by sortorder
 end
 		]]>
@@ -347,7 +375,7 @@ end
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [dbo].[GetSiteNavigation]
+Create or ALTER procedure [dbo].[GetSiteNavigation]
 	@ResourceID int = 0
 as
 begin
@@ -409,7 +437,7 @@ begin
 								from	IntersectType IT 
 										inner join [Predicate] P on IT.ObjectAssetTypeID = T.ID and P.ID = IT.PredicateID and P.Type = 3
 								)
-								and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name = '#ASSET_TYPE')
+								and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object)
 								and T.Object = 'ArtifactType'
 								and T.[Class] = 1
 								Order By 1
@@ -447,7 +475,7 @@ begin
 								from	IntersectType IT 
 										inner join [Predicate] P on IT.ObjectAssetTypeID = T.ID and P.ID = IT.PredicateID and P.Type = 3
 								)
-								and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name = '#ASSET_TYPE')
+								and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object)
 								and T.Object = 'ArtifactType'
 								and T.[Class] = 8
 								Order By 1
@@ -486,7 +514,7 @@ SELECT	n.Name as MenuID,
 					FROM		AssetType T 
 								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 								left join @NoReadAssetTypes nr on nr.id = t.id
-					WHERE		not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name = '#ASSET_TYPE')
+					WHERE		not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object)
 					and			T.Object = 'TaxonomyType'
 					ORDER BY	2
 					) BG
@@ -524,7 +552,7 @@ WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 					FROM		AssetType T 
 								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 								left join @NoReadAssetTypes nr on nr.id = t.id
-					WHERE		not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name = '#ASSET_TYPE')
+					WHERE		not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object)
 					and T.Object = 'PolicyType'
 					ORDER BY	2
 					) BG
@@ -587,7 +615,7 @@ WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 				cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 				left join @NoReadAssetTypes nr on nr.id = t.id
 		WHERE	T.Object = 'RuleType' 
-				and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name = '#ASSET_TYPE')
+				and not exists (select 1 from SiteNav v where v.ObjectID = T.ObjectID and v.Object = T.Object)
 		Order By 1
 		FOR XML PATH('nav'), TYPE
 		) AS Items,

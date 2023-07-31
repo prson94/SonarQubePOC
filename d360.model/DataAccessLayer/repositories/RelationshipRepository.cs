@@ -1309,6 +1309,8 @@ OPTION(RECOMPILE)";
 			bool includeTotalRelationshipCount = false;
 			bool includeCreatedModifiedBy = false;
 			bool includeDisplayFormat = false;
+			bool includeHasFieldFromRelationship = false;
+			bool includeHasListableRelationship = false;
 
 			if (queryParams != null)
 			{
@@ -1417,6 +1419,18 @@ OPTION(RECOMPILE)";
 					var includeDisplayFormatString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedisplayformat").Value;
 					bool.TryParse(includeDisplayFormatString, out includeDisplayFormat);
 				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasfieldfromrelationship"))
+				{
+					var includeHasFieldFromRelationshipString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldfromrelationship").Value;
+					bool.TryParse(includeHasFieldFromRelationshipString, out includeHasFieldFromRelationship);
+				}
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehaslistablerelationship"))
+				{
+					var includeHasListableRelationshipString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehaslistablerelationship").Value;
+					bool.TryParse(includeHasListableRelationshipString, out includeHasListableRelationship);
+				}
+
 			}
 
 			List<string> additionalColumns = new List<string>();
@@ -1453,6 +1467,45 @@ OPTION(RECOMPILE)";
 						updated.uid as UpdatedByUid, 
 						adv_updated.DisplayValue as UpdatedByName, 
 						I.UpdatedOn");
+			}
+
+			if (includeHasFieldFromRelationship)
+			{
+				additionalColumns.Add($@",case 
+								when exists (select top 1 1
+										from [intersecttype] it
+										inner join fieldtype ft on ft.LookupObjectType = 'IntersectType' and ft.LookupObjectID = it.id
+										where it.id = i.id
+										and ft.type = 'FieldFromRelationship'
+										and (
+											(it.SubjectCardinality = 2 and it.ObjectCardinality = 1 and it.SubjectAssetTypeID = ft.AssetTypeID)
+											OR
+											(it.SubjectCardinality = 1 and it.ObjectCardinality = 2 and it.ObjectAssetTypeID = ft.AssetTypeID)
+										)
+									)
+									then 1
+									else 0
+								end as 'HasFieldFromRelationship'");
+			}
+
+			if (includeHasListableRelationship)
+			{
+				additionalColumns.Add($@",case 
+								when exists (select top 1 1
+										from [intersecttype] it
+										inner join fieldtype ft on ft.LookupObjectType = 'IntersectType' and ft.LookupObjectID = it.id
+										where it.id = i.id
+										and ft.type = 'Relationship'
+										and ft.IsListable = 1
+										and (
+											(it.SubjectCardinality = 2 and it.ObjectCardinality = 1 and it.SubjectAssetTypeID = ft.AssetTypeID)
+											OR
+											(it.SubjectCardinality = 1 and it.ObjectCardinality = 2 and it.ObjectAssetTypeID = ft.AssetTypeID)
+										)
+									)
+									then 1
+									else 0
+								end as 'HasListableRelationship'");
 			}
 
 			var sql = $@"

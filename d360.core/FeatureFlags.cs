@@ -14,10 +14,12 @@
         public static readonly string PERM_SEMANTIC_TYPES_UI = "GovernSemanticTypesUiPerm";
 
 
-        #endregion
+		#endregion
 
-        #region Temporary Feature Flags
+		#region Temporary Feature Flags
 
-        #endregion
-    }
+		public static readonly string TEMP_ASSIGNMENTS = "GovernAssignmentsTemp20230815";
+
+		#endregion
+	}
 }

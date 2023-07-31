@@ -153,6 +153,12 @@ namespace d360.core.entities
 		public bool? HasRelationships { get; set; }
 
 		[DataMember]
+		public bool? HasFieldFromRelationship { get; set; }
+
+		[DataMember]
+		public bool? HasListableRelationship { get; set; }
+
+		[DataMember]
 		public int? TotalRelationshipCount { get; set; }
 
 		[DataMember]

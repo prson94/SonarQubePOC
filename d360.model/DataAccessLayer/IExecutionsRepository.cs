@@ -16,6 +16,7 @@ namespace d360.model.DataAccessLayer
 		Task<EndpointPayloadResponse<dynamic>> GetExecutionStatus(Guid executionUid, bool includeResults = true, bool includeProcessingDetail = false);
 
 		ApiExecution GetExecutionItemByUid(Guid executionUid);
+		List<APIExecutionErrorApiModel> GetExecutionErrorsByUid(Guid executionUid);
 
 		Task PatchCatalog(int executionId, PatchBulkCatalogRequestModel payload);
 	}
