@@ -135,7 +135,8 @@ namespace d360.model
 		#endregion
 
 		#region Utility
-		
+		private readonly Random randomNumberGenerator = new Random();
+
 		private void ChangeItemState(WorkflowItemStep item)
 		{
 			TelemetryClient.TrackTrace($"DEBUG - CHANGING ITEM STATE.");
@@ -1087,6 +1088,10 @@ namespace d360.model
 		
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
+			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
+			//https://jira.syncsort.com/browse/GOV-20872
+			Thread.Sleep(randomNumberGenerator.Next(1500));
+
 			bool isAssetEdited = false;
 			//check if the field exists
 			Field field = null;
