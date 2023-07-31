@@ -31,7 +31,7 @@ export class AssignmentInformationRequestComponent {
 		this.workflowService.getActions(this._workflowActionUid)
 			.subscribe((response: Actions) => {
 				if (response?.items?.length > 0) {
-					this.actionItems = response.items[0]
+					this.actionItems = response.items[0];
 					this.fieldsObservableService.getFieldsV2(null, this.actionItems.ActionTypeUid, null)
 						.subscribe((response: FieldTypeAPIModelField[]): void => {
 							this.fieldTypeModelFields = response;

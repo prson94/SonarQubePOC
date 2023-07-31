@@ -894,13 +894,6 @@ export class AssignmentByVersion {
 	pageNum: number;
 }
 
-export class Actions {
-	pageSize: number;
-	pageNum: number;
-	total: number;
-	items: ActionItems[];
-}
-
 export class ActionItems {
 	Uid: string;
 	CompletedOn: string;
@@ -913,6 +906,13 @@ export class ActionItems {
 	CreatedByUid: string;
 	UpdatedOn: string;
 	UpdatedByUid: string;
+}
+
+export class Actions {
+	pageSize: number;
+	pageNum: number;
+	total: number;
+	items: ActionItems[];
 }
 
 export class EmailSettings {
