@@ -123,6 +123,13 @@ namespace d360.core.validators
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.AssetTypeExistsTitle, AssetTypeErrors.AssetTypeWithUidExists);
 					}
 				}
+				if (!string.IsNullOrEmpty(model.SourceID))
+				{
+					if (CompanyContext.Any<AssetType>(i => i.SourceID == model.SourceID))
+					{
+						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.AssetTypeExistsTitle, AssetTypeErrors.AssetTypeWithSourceIdExists);
+					}
+				}
 			}
 			else
 			{

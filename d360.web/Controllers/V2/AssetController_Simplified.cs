@@ -1051,6 +1051,7 @@ namespace d360.web.Controllers.V2
 				{resultsSql}
 
 				select {string.Join("," + Environment.NewLine, columns.Where(x => !string.IsNullOrEmpty(x.Column)).Select(x => x.Column))}
+				, a.SourceId as [XrefId]
 				from @results res
 				inner join AssetDisplayValue adv on adv.AssetID = res.objectassetid
 				inner join asset a on a.ID = res.objectassetid

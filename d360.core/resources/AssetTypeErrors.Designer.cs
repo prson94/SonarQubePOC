@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An asset type with the specified [SourceID] already exists..
+        /// </summary>
+        public static string AssetTypeWithSourceIdExists {
+            get {
+                return ResourceManager.GetString("AssetTypeWithSourceIdExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An asset type with the specified [Uid] already exists..
         /// </summary>
         public static string AssetTypeWithUidExists {

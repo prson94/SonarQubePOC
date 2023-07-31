@@ -363,4 +363,7 @@
   <data name="ExportValidAssetType" xml:space="preserve">
     <value>{0} type not allowed. Only Business Asset, Technical Asset, Diagram, Rule, Model, Policy are allowed.</value>
   </data>
+  <data name="AssetTypeWithSourceIdExists" xml:space="preserve">
+    <value>An asset type with the specified [SourceID] already exists.</value>
+  </data>
 </root>

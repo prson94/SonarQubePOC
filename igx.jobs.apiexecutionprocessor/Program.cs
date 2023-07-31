@@ -1,36 +1,30 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.entities.Metric;
 using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
+using d360.extensions.mail;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
+using d360.model.DataAccessLayer;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using d360.extensions.storage;
-using System.Text;
-using d360.core;
-using d360.core.entities.Metric;
-
 using System.Threading;
-using System.Net.Http;
-using Microsoft.Extensions.Hosting;
-using d360.model.DataAccessLayer;
-using d360.core.entities.Membership;
-using d360.extensions;
-using System.Configuration;
-using d360.extensions.mail;
-using DocumentFormat.OpenXml.ExtendedProperties;
-using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
@@ -79,7 +73,6 @@ namespace igx.jobs.apiexecutionprocessor
             await job.Run(info, log);
         }
     }
-
 
     public class ApiJobProcessor
     {
@@ -153,26 +146,18 @@ namespace igx.jobs.apiexecutionprocessor
 
             var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == Info.ExecutionID).SingleOrDefault();
 
-
-            //wait a moment in case there are multiple queue messages
+            // Wait a moment in case there are multiple queue messages
             Thread.Sleep(new Random().Next(2000));
 
             try
             {
-                bool jobAlreadyRunning = false;
-
-                // jobs with a error message a retrying make them wait in line like the other batch jobs otherwise what happens is > 2 batch jobs start running 
-                // at the same time filling all the batch slots causing people to say why is my job stuck in line. 
-                if ( ( dbExecutionItem != null) && dbExecutionItem.ProcessingStartedOn.HasValue && string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
-                    jobAlreadyRunning = true;
-
-
-                //mark this execution for processing
-                if (dbExecutionItem != null)
-                {
-                    dbExecutionItem.MarkedForProcessing = true;
-                    company.Update(dbExecutionItem);
-                }
+				// jobs with a error message a retrying make them wait in line like the other batch jobs otherwise what happens is > 2 batch jobs start running 
+				// at the same time filling all the batch slots causing people to say why is my job stuck in line. 
+				bool jobAlreadyRunning = (
+					dbExecutionItem != null
+					&& dbExecutionItem.MarkedForProcessing
+					&& string.IsNullOrEmpty(dbExecutionItem.ErrorMessage)
+					);
 
                 //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
                 if (!jobAlreadyRunning && !(await ShouldRunApiJob(company, dbExecutionItem?.ExecutionID)))
@@ -180,19 +165,15 @@ namespace igx.jobs.apiexecutionprocessor
                     int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
                     TimeSpan delay = new TimeSpan(0, 0, delaySeconds);
 
-
                     if (dbExecutionItem != null)
                     {
                         dbExecutionItem.MarkedForProcessing = false;
                         company.Update(dbExecutionItem);
                     }
 
-
                     await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);
-
                     return;
                 }
-
 
                 if (dbExecutionItem != null)
                 {
@@ -220,17 +201,9 @@ namespace igx.jobs.apiexecutionprocessor
                         company.WorkflowSendBatchSize = tempWorkflowBatchSize >= 0 ? tempWorkflowBatchSize : DEFAULT_WORKFLOW_BATCH_SIZE;
                     }
 
-
-                    bool executeJob = true;
-
-
-                    if (dbExecutionItem.State == d360.core.enums.State.Deleted)
-                    {
-                        executeJob = false;
-                        log.WriteLine($"Execution job with UID {dbExecutionItem.ExecutionID} was canceled by user.");
-                    }
-
-                    dbExecutionItem.MarkedForProcessing = executeJob;
+                    bool executeJob = (dbExecutionItem.State != d360.core.enums.State.Deleted);
+                    
+					dbExecutionItem.MarkedForProcessing = executeJob;
                     company.Update(dbExecutionItem);
 
 					if (executeJob)
