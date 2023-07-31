@@ -898,21 +898,21 @@ export class Actions {
 	pageSize: number;
 	pageNum: number;
 	total: number;
-	items: [
-		{
-			Uid: string;
-			CompletedOn: string;
-			AssetUid: string;
-			AssetTypeUid: string;
-			AssetTypeName: string;
-			ActionTypeUid: string;
-			ActionTypeName: string;
-			CreatedOn: string;
-			CreatedByUid: string;
-			UpdatedOn: string;
-			UpdatedByUid: string;
-		}
-	];
+	items: ActionItems[];
+}
+
+export class ActionItems {
+	Uid: string;
+	CompletedOn: string;
+	AssetUid: string;
+	AssetTypeUid: string;
+	AssetTypeName: string;
+	ActionTypeUid: string;
+	ActionTypeName: string;
+	CreatedOn: string;
+	CreatedByUid: string;
+	UpdatedOn: string;
+	UpdatedByUid: string;
 }
 
 export class EmailSettings {

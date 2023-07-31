@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { Actions } from '../../../../models/workflow.model';
+import { ActionItems, Actions } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
+import { FormMode } from '../../../../models/form.model';
 
 @Component({
 	selector: 'd3s-assignment-information-request',
@@ -19,7 +20,7 @@ export class AssignmentInformationRequestComponent {
 	}
 
 	isLoading: boolean;
-	actions: Actions;
+	actionItems: ActionItems;
 
 	constructor(private workflowService: WorkflowService,
 				private fieldsObservableService: FieldsObservableService) {
@@ -29,9 +30,9 @@ export class AssignmentInformationRequestComponent {
 		this.isLoading = true;
 		this.workflowService.getActions(this._workflowActionUid)
 			.subscribe((response: Actions) => {
-				this.actions = response;
-				if (this.actions.items?.length > 0) {
-					this.fieldsObservableService.getFieldsV2(null, this.actions.items[0].ActionTypeUid, null)
+				if (response?.items?.length > 0) {
+					this.actionItems = response.items[0]
+					this.fieldsObservableService.getFieldsV2(null, this.actionItems.ActionTypeUid, null)
 						.subscribe((response: FieldTypeAPIModelField[]): void => {
 							this.fieldTypeModelFields = response;
 							this.isLoading = false;
@@ -42,4 +43,6 @@ export class AssignmentInformationRequestComponent {
 			});
 	}
 
+	protected readonly Object = Object;
+	protected readonly FormMode = FormMode;
 }
