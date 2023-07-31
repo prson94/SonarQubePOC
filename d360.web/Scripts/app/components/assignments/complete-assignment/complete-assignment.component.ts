@@ -35,6 +35,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	request: FormRequest;
 	cancelButtonText:string='Close'
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	@ViewChild('workflowForm') public workflowForm: NgForm;
+
 	private linkInterceptorSubscription: Subscription;
     @ViewChild('form', { static: false }) formElement: ElementRef;
 
@@ -96,10 +98,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onFormSubmit(): void {
-		// if (this.fieldsComponent.setValidators()) {
-		// 	return;
-		// }
-		// this.fieldsComponent.prepareValuesForSubmit();
+		this.prepareValuesForSubmit();
 
 		//save form values with stepUid and itemUid
 		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
@@ -121,6 +120,20 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				ResourceUid: this.request.Action.CreatedBy
 			}, 'users/' + this.request.Action.CreatedBy);
 		}
+	}
+
+	public prepareValuesForSubmit() {
+		this.formFields.forEach((x, i) => {
+			if (x.FieldType === WorkflowFormFieldType.Link) {
+				
+				const name = this.workflowForm.form.controls[`inputName_${i}`].value;
+				const url = this.workflowForm.form.controls[`inputUrl_${i}`].value;
+				x.Value =
+					name.length + url.length === 0 ? "" : name + "|" + url;
+			} else if (Array.isArray(x.Value)) {
+				x.Value = x.Value.join();
+			}
+		});
 	}
 
 }
