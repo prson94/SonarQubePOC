@@ -1,47 +1,49 @@
-import { Component, Input } from '@angular/core';
-import { BaseComponent } from '../../../shared/base.component';
-import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
-import { ControlContainer, NgForm, Validators } from '@angular/forms';
-import { CompanySettingsService } from '../../../../services/settings.service';
+import {
+
+	Component,
+	
+	Input,
+	OnInit,
+} from "@angular/core";
+import { BaseComponent } from "../../../shared/base.component";
+import {
+	WorkflowFormField,
+	WorkflowFormFieldType,
+} from "../../../../models/workflow.model";
+import { ControlContainer, NgForm, Validators } from "@angular/forms";
+import { CompanySettingsService } from "../../../../services/settings.service";
 
 @Component({
-  selector: 'd3s-complete-assignment-form-fields',
-  templateUrl: './complete-assignment-form-fields.component.html',
-  viewProviders: [{ provide: ControlContainer, useExisting: NgForm }]
+	selector: "d3s-complete-assignment-form-fields",
+	templateUrl: "./complete-assignment-form-fields.component.html",
+	styleUrls: ['./complete-assignment-form-fields.component.less'],
+	viewProviders: [{ provide: ControlContainer, useExisting: NgForm }],
 })
-export class CompleteAssignmentFormFieldsComponent {
+export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	@Input() fields: WorkflowFormField[] = [];
 	@Input() form: NgForm;
+	@Input() formElement;
 
 	fieldType = WorkflowFormFieldType;
 
 	private isSetValidatior: boolean = false;
 
-	constructor() {
+	constructor() {}
+
+	ngOnInit(): void {
+		this.setValidators()
 	}
 
 	public setValidators() {
-		if (this.isSetValidatior) {
-			return false;
-		}
-		if (!(this.form?.form && this.form.form.controls)) {
-			return true;
-		}
-		let assignValidation: boolean = false;
-		this.isSetValidatior = true;
-		this.fields.forEach((x, i) => {
-			if (x.Required) {
-				assignValidation = true;
-				if (x.FieldType === WorkflowFormFieldType.Link) {
-					this.form.form.controls[`inputUrl_${i}`].setValidators([Validators.required]);
-					this.form.form.controls[`inputUrl_${i}`].updateValueAndValidity();
-				} else {
-					this.form.form.controls[`input_${i}`].setValidators([Validators.required]);
-					this.form.form.controls[`input_${i}`].updateValueAndValidity();
+		setTimeout(() => {
+			this.fields.forEach((x, i) => {
+				if (x.Required) {
+					this.form.form.controls[`input_${i}`].setErrors({
+						required: true,
+					});
 				}
-			}
+			});
 		});
-		return assignValidation;
 	}
 
 	public prepareValuesForSubmit() {
@@ -49,11 +51,12 @@ export class CompleteAssignmentFormFieldsComponent {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
 				const name = this.form.form.controls[`inputName_${i}`].value;
 				const url = this.form.form.controls[`inputUrl_${i}`].value;
-
-				x.Value = (name.length + url.length === 0) ? '' : name + '|' + url;
+				x.Value =
+					name.length + url.length === 0 ? "" : name + "|" + url;
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
 			}
 		});
 	}
 }
+

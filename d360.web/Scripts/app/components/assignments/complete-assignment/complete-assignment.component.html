@@ -47,44 +47,41 @@
 										</ng-container>
 									</div>
 								</ig-property-group>
-								<ig-property-group *ngIf="request && request.Action" i18n-title title="Request"
-												   [showHeaderLine]="false">
+								<ig-property-group *ngIf="request && request.Action" i18n-title title="Request" [showHeaderLine]="false">
 									<div readonly>
 										<ng-container>
 											<div class="row">
-												<div *ngFor="let actionField of request.ActionFields"
-													 class="category-column">
+												<div *ngFor="let actionField of request.ActionFields" class="category-column">
 													<label class="ig-label" i18n>{{ actionField.FriendlyName }}</label>
 													<div class="ig-value"> {{ request.Action[actionField.Name] }} </div>
 												</div>
 											</div>
 											<div class="row">
 												<div class="category-column">
-													<p>Submitted by <a (click)="onClickResource($event)">{{ request.Action.CreatedByName }}</a>
-														on {{ request.Action.CreatedOn | date: 'short'}}</p>
+													<p>Submitted by {{ request.Action.CreatedByName }} on {{ request.Action.CreatedOn }}</p>
 													<p>Associated Asset : {{ request.Action.AssociatedAssetPath }}</p>
 												</div>
 											</div>
 										</ng-container>
 									</div>
 								</ig-property-group>
+								<form (ngSubmit)="onFormSubmit()"
+												  #workflowForm="ngForm"
+												  #form
+												  >
 								<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
 									<div readonly>
-										<ng-container>
-											<form (ngSubmit)="onFormSubmit()"
-												  #workflowForm="ngForm">
 												<div class="row">
 													<div class="l6 s12">
 														<d3s-complete-assignment-form-fields [fields]="formFields"
-																							 [form]="workflowForm"
-																							 #fieldsComponent>
+															[form]="workflowForm" [formElement]="formElement" >
 														</d3s-complete-assignment-form-fields>
 													</div>
-												</div>
-											</form>
-										</ng-container>
+										</div>
 									</div>
 								</ig-property-group>
+							</form>
+
 							</div>
 						</div>
 					</div>

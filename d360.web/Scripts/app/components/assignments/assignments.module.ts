@@ -119,6 +119,7 @@ import { CalendarModule } from 'primeng/calendar';
 import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
 	declarations: [
@@ -156,7 +157,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
-  CompleteAssignmentFormFieldsComponent
+  		CompleteAssignmentFormFieldsComponent
 	],
     imports: [
         AdvancedFiltersModule,
@@ -199,7 +200,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         CalendarModule,
         EditorModule,
         MultiSelectModule,
-        RadioButtonModule
+        RadioButtonModule,
+		FormFeedbackBadgesModule
     ]
 })
 export class AssignmentsModule {
