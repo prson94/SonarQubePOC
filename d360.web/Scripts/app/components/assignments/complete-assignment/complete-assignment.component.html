@@ -1,9 +1,10 @@
-<d3s-modal [showTitle]="false"
-		   [isVisible]="isModalVisible"
-		   [showActionBar]="true"
-		   [additionalClasses]="'xlarge-dialog'"
-		   (onClose)="closeModal()"
-		   (onConfirm)="onFormSubmit()"
+<d3s-modal
+	[showTitle]="false"
+	[isVisible]="isModalVisible"
+	[showActionBar]="false"
+	[additionalClasses]="'xlarge-dialog'"
+	(onClose)="closeModal()"
+	(onConfirm)="onFormSubmit()"
 >
 	<div class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
@@ -14,93 +15,197 @@
 						<span class="modal-buttons">
 							<button
 								igButton
-								[ngClass]="isAssignmentProgressSelected ? '' : 'selected'"
+								[ngClass]="
+									isAssignmentProgressSelected
+										? ''
+										: 'selected'
+								"
 								[icon]="'fa-file-text'"
 								(click)="showAssignment()"
-								class="ig-button-secondary side-panel-button">
-							</button>
+								class="ig-button-secondary side-panel-button"
+							></button>
 							<button
 								igButton
 								[icon]="'fa-list-ul'"
-								[ngClass]="isAssignmentProgressSelected ? 'selected' : ''"
+								[ngClass]="
+									isAssignmentProgressSelected
+										? 'selected'
+										: ''
+								"
 								(click)="showAssignmentProgress()"
-								class="ig-button-secondary side-panel-button">
-							</button>
+								class="ig-button-secondary side-panel-button"
+							></button>
 						</span>
 					</div>
 				</div>
 				<d3s-loading [isLoading]="isLoading"></d3s-loading>
 				<ng-container *ngIf="!isLoading">
 					<div>subtitle</div>
-					<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
+					<div
+						[hidden]="isAssignmentProgressSelected"
+						class="scrollable-content details-container"
+					>
 						<div class="asset-detail">
 							<div class="asset-detail-tabs">
-								<ig-property-group i18n-title title="Information" [showHeaderLine]="false">
+								<ig-property-group
+									i18n-title
+									title="Information"
+									[showHeaderLine]="false"
+								>
 									<div readonly>
 										<ng-container>
 											<div class="row">
 												<div class="category-column">
-													<label class="ig-label" i18n>{{ formTitle }}</label>
-													<div class="ig-value" [innerHTML]="formDescription"></div>
+													<label
+														class="ig-label"
+														i18n
+														>{{ formTitle }}</label
+													>
+													<div
+														class="ig-value"
+														[innerHTML]="
+															formDescription
+														"
+													></div>
 												</div>
 											</div>
 										</ng-container>
 									</div>
 								</ig-property-group>
-								<ig-property-group *ngIf="request && request.Action" i18n-title title="Request" [showHeaderLine]="false">
+								<ig-property-group
+									*ngIf="request && request.Action"
+									i18n-title
+									title="Request"
+									[showHeaderLine]="false"
+								>
 									<div readonly>
 										<ng-container>
 											<div class="row">
-												<div *ngFor="let actionField of request.ActionFields" class="category-column">
-													<label class="ig-label" i18n>{{ actionField.FriendlyName }}</label>
-													<div class="ig-value"> {{ request.Action[actionField.Name] }} </div>
-												</div>
-											</div>
-											<div class="row">
-												<div class="category-column">
-													<p>Submitted by {{ request.Action.CreatedByName }} on {{ request.Action.CreatedOn }}</p>
-													<p>Associated Asset : {{ request.Action.AssociatedAssetPath }}</p>
-												</div>
-											</div>
-										</ng-container>
-									</div>
-								</ig-property-group>
-								<form (ngSubmit)="onFormSubmit()"
-												  #workflowForm="ngForm"
-												  #form
-												  >
-								<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
-									<div readonly>
-												<div class="row">
-													<div class="l6 s12">
-														<d3s-complete-assignment-form-fields [fields]="formFields"
-															[form]="workflowForm" [formElement]="formElement" >
-														</d3s-complete-assignment-form-fields>
+												<div
+													*ngFor="
+														let actionField of request.ActionFields
+													"
+													class="category-column"
+												>
+													<label
+														class="ig-label"
+														i18n
+														>{{
+															actionField.FriendlyName
+														}}</label
+													>
+													<div class="ig-value">
+														{{
+															request.Action[
+																actionField.Name
+															]
+														}}
 													</div>
-										</div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="category-column">
+													<p>
+														Submitted by
+														{{
+															request.Action
+																.CreatedByName
+														}}
+														on
+														{{
+															request.Action
+																.CreatedOn
+														}}
+													</p>
+													<p>
+														Associated Asset :
+														{{
+															request.Action
+																.AssociatedAssetPath
+														}}
+													</p>
+												</div>
+											</div>
+										</ng-container>
 									</div>
 								</ig-property-group>
-							</form>
-
+								<form
+									(ngSubmit)="onFormSubmit()"
+									#workflowForm="ngForm"
+									#form
+								>
+									<ig-property-group
+										i18n-title
+										title="Form fields"
+										[showHeaderLine]="false"
+									>
+										<div readonly>
+											<div class="row">
+												<div class="l6 s12">
+													<d3s-complete-assignment-form-fields
+														[fields]="formFields"
+														[form]="workflowForm"
+														[formElement]="
+															formElement
+														"
+													>
+													</d3s-complete-assignment-form-fields>
+												</div>
+											</div>
+										</div>
+									</ig-property-group>
+									<div class="action-buttons flex-grid">
+										<button
+											igButton
+											type="button"
+											class="ig-button-secondary"
+											label="{{ cancelButtonText }}"
+											(click)="closeModal()"
+										></button>
+										<div class="flex-grow"></div>
+										<button
+											type="submit"
+											igButton
+											class="ig-button-primary"
+											label="Submit"
+											[disabled]="!workflowForm.valid"
+											(click)="onFormSubmit()"
+										></button>
+									</div>
+								</form>
 							</div>
 						</div>
 					</div>
-					<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content">
-						<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [showCompleteAssignment]="false"
-												 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-						<d3s-assignment-information [showCompleteAssignment]="false"
-													[workflowItemUid]="workflowItemUid"></d3s-assignment-information>
+					<div
+						[hidden]="!isAssignmentProgressSelected"
+						class="scrollable-content"
+					>
+						<d3s-assignment-progress
+							[workflowItemUid]="workflowItemUid"
+							[showCompleteAssignment]="false"
+							(stepClickChange)="stepClickChanged($event)"
+						></d3s-assignment-progress>
+						<d3s-assignment-information
+							[showCompleteAssignment]="false"
+							[workflowItemUid]="workflowItemUid"
+						></d3s-assignment-information>
 					</div>
 				</ng-container>
 			</div>
 		</div>
 		<div class="side-panel">
-			<side-panel [(expanded)]="sidePanelOpen"
-						[storageKey]="sidePanelStorageKey"
-						hasDetail="true"
-						height="calc(100vh - 220px)">
+			<side-panel
+				[(expanded)]="sidePanelOpen"
+				[storageKey]="sidePanelStorageKey"
+				hasDetail="true"
+				height="calc(100vh - 220px)"
+			>
 				<ng-container>
-					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+					<d3s-side-panel-switcher
+						[hidden]="!sidePanelOpen"
+						[showPanelHeader]="false"
+						#sidePanelSwitcherComponent
+					></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>
 		</div>

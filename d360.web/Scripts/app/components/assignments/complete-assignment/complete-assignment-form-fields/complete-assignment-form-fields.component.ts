@@ -2,7 +2,10 @@ import {
 
 	Component,
 	
+	ElementRef,
+	
 	Input,
+	OnDestroy,
 	OnInit,
 } from "@angular/core";
 import { BaseComponent } from "../../../shared/base.component";
@@ -11,7 +14,7 @@ import {
 	WorkflowFormFieldType,
 } from "../../../../models/workflow.model";
 import { ControlContainer, NgForm, Validators } from "@angular/forms";
-import { CompanySettingsService } from "../../../../services/settings.service";
+import { AssignmentService } from "../../assignment.service";
 
 @Component({
 	selector: "d3s-complete-assignment-form-fields",
@@ -28,14 +31,17 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 
 	private isSetValidatior: boolean = false;
 
-	constructor() {}
+	constructor(private assignmentService:AssignmentService) {}
 
 	ngOnInit(): void {
-		this.setValidators()
+		this.assignmentService.setFormValidators.subscribe(()=>{
+			this.setValidators()
+		})
 	}
 
 	public setValidators() {
-		setTimeout(() => {
+		// debugger
+		// setTimeout(() => {
 			this.fields.forEach((x, i) => {
 				if (x.Required) {
 					this.form.form.controls[`input_${i}`].setErrors({
@@ -43,7 +49,6 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 					});
 				}
 			});
-		});
 	}
 
 	public prepareValuesForSubmit() {

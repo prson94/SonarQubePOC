@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnChanges, OnInit, SimpleChange, SimpleChanges, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField, WorkflowFormFieldType } from '../../../models/workflow.model';
@@ -9,6 +9,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { CompleteAssignmentFormFieldsComponent } from './complete-assignment-form-fields/complete-assignment-form-fields.component';
 import { NgForm } from '@angular/forms';
+import { AssignmentService } from '../assignment.service';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -32,21 +33,24 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
-	// @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
+	cancelButtonText:string='Close'
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	private linkInterceptorSubscription: Subscription;
-	// @ViewChild(CompleteAssignmentFormFieldsComponents, { static: false }) fieldsComponent: CompleteAssignmentFormFieldsComponent;
     @ViewChild('form', { static: false }) formElement: ElementRef;
 
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor) {
+				private linkClickInterceptor: LinkClickInterceptor,
+				private assignmentService:AssignmentService
+				) {
 		super(settingsService);
 	}
 
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 	}
+
+
 
 	openModal(details: {
 		workflowItemUid: string,
@@ -79,8 +83,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formDescription = res.Description;
 				this.formFields = res.Fields;
 				this.isLoading = false;
-				// this.fieldsComponent.setValidators();
-				// this.request = res.Request;
+				this.assignmentService.setFormValidators.next();
+				this.request = res.Request;
 
 							
 			});
