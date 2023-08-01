@@ -132,10 +132,21 @@
 									#workflowForm="ngForm"
 									#form
 								>
+								<ng-template #requiredFieldsTemplate>
+									<ig-form-feedback-badges
+									class="ig-form-feedback-badges"
+									[igformGroup]="workflowForm.form"
+									[inputContainer]="formElement"
+								>
+								</ig-form-feedback-badges>
+								
+								</ng-template>
 									<ig-property-group
 										i18n-title
 										title="Form fields"
 										[showHeaderLine]="false"
+										[sideTemplate]="requiredFieldsTemplate"
+										[customTemplate]="true"
 									>
 										<div readonly>
 											<div class="row">
@@ -216,3 +227,5 @@
 		</div>
 	</div>
 </d3s-modal>
+
+
