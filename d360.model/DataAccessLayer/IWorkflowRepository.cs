@@ -35,8 +35,10 @@ namespace d360.model.DataAccessLayer
 
 		Task<IEnumerable<dynamic>> GetPossibleInitiators();
 
-		Task<IEnumerable<dynamic>> GetRelevantAssetTypes();
+		Task<IEnumerable<dynamic>> GetRelevantAssetTypes();		
 
 		Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		Task<long> GetAssetAssignmentCount(string type, Guid uid);
 	}
 }
