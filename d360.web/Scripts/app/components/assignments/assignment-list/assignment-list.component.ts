@@ -14,6 +14,9 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Subscription } from 'rxjs';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 /*global $localize*/
 
@@ -64,6 +67,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		private router: Router,
 		private authenticationService: AuthenticationService,
 		protected settingsService: CompanySettingsService,
+		private headerBreadcrumbService: HeaderBreadcrumbService,
 		private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
 	}
@@ -75,10 +79,19 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			this.isRequestsFlow = true;
 		}
 		this.setFlowSpecificDetails();
+		if (this.router.url === '/requests' || this.router.url === '/assignments') {
+			this.setHeaderBreadcrumbs();
+		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
 			this.secondarySidePanelOpen = true;
 		});
+	}
+
+	setHeaderBreadcrumbs(): void {
+		this.headerBreadcrumbService.clearBreadcrumbs();
+		const siteUrl: string = this.isRequestsFlow ? SiteUrlHelpers.SITE_URL_REQUESTS_ROOT : SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT;
+		this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`${this.flowContext}s`, siteUrl));
 	}
 
 	setFlowSpecificDetails(): void {

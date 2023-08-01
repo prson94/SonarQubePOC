@@ -27,11 +27,17 @@ export class AssignmentInformationComponent {
 	workflowStepDetail: WorkflowStepDetail;
 	private assignmentItemStep: AssignmentItemStep;
 
+	_workflowItemUid: string;
 	@Input() set workflowItemUid(value: string) {
 		if (value) {
+			this._workflowItemUid = value;
 			this.loadAssignmentItem(value);
 			this.loadAssignmentSteps(value);
 		}
+	}
+
+	get workflowItemUid() {
+		return this._workflowItemUid;
 	}
 
 	constructor(private workflowService: WorkflowService) {
