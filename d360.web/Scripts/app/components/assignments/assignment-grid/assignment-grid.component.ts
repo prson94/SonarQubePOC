@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { forkJoin, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
@@ -69,6 +69,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	protected readonly JSON: JSON = JSON;
 	emptyGridMessage: string;
+	loadDataSub: Subscription;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -92,6 +93,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnDestroy(): void {
+		if (this.loadDataSub) {
+			this.loadDataSub.unsubscribe();
+		}
+
 		this.destroy.next();
 		this.destroy.complete();
 	}
@@ -124,7 +129,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
 		];
-		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
+		if (this.loadDataSub) {
+			this.loadDataSub.unsubscribe();
+		}
+		this.loadDataSub = forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
 			this.items = results[0].items as WorkflowAssignmentGrid[];
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
