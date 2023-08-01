@@ -147,9 +147,12 @@
 			</div>
 		</ig-property-group>
 		<ng-container *ngIf="step.ActivityType === WorkflowActivityType.Form">
+			<ng-template #template>
+				<a (click)="openFormResponsesModal()">{{ viewFormResponses }}</a>
+			</ng-template>
 			<ig-property-group i18n-title title="Form Details"
-							   [showDetailsLink]="!!step.ItemFields['@NumberOfResponses']"
-							   [showDetailsLinkText]=viewFormResponses (showDetailsClick)=openFormResponsesModal()
+							   [customTemplate]="!!step.ItemFields['@NumberOfResponses']"
+							   [sideTemplate]="template"
 							   [shouldBePadded]="false" [showHeaderLine]="false">
 				<div readonly>
 					<ng-container>
