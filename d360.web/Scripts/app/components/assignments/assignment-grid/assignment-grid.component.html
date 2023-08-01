@@ -196,7 +196,7 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue ?? '---' }}
+			<b>{{ assignment.workflowName }}</b> on {{ assignment.assetDisplayValue ?? '---' }}
 			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>
