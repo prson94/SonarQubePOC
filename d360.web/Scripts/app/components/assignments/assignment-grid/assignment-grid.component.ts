@@ -225,12 +225,16 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			Type: new FieldType('Lookup'),
 			Category: '',
 			ValueLoader: this.getFilteredWorkflowNames
-		}, {
-			Name: 'assetDisplayValue',
-			FriendlyName: $localize`Associated with`,
-			Type: new FieldType('Text'),
-			Category: ''
-		}, {
+		}];
+		if (!this.assetUid) {
+			filterFieldList.push({
+				Name: 'assetDisplayValue',
+				FriendlyName: $localize`Associated with`,
+				Type: new FieldType('Text'),
+				Category: ''
+			});
+		}
+		filterFieldList.push({
 			Name: 'StartedOn',
 			FriendlyName: $localize`Initiated`,
 			Type: new FieldType('DateTime'),
@@ -247,7 +251,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			Type: lookupFieldTypePrimaryFilter,
 			Category: '',
 			ValueLoader: this.getFilteredStatuses
-		}];
+		});
 		if (!this.isRequestsFlow) {
 			filterFieldList.push(
 				{
@@ -366,7 +370,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			}));
 	};
 	private getFilteredActions = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
-		return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
+		let queryParams: Record<string, unknown> = { '_limitToActiveWorkflows': true };
+		if (this.assetUid) {
+			queryParams['_assetUid'] = this.assetUid;
+		}
+		return this.workflowService.getWorkflowIssueTypes(null, null, queryParams).pipe(
 			map((workflowIssueTypeList: WorkflowIssueType[]) => {
 				let workflowActionList: {
 					'name': string,
