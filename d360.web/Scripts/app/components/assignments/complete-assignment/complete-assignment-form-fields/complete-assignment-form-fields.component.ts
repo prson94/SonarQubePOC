@@ -4,9 +4,12 @@ import {
 	
 	ElementRef,
 	
+	EventEmitter,
+	
 	Input,
 	OnDestroy,
 	OnInit,
+	Output,
 } from "@angular/core";
 import { BaseComponent } from "../../../shared/base.component";
 import {
@@ -26,6 +29,8 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	@Input() fields: WorkflowFormField[] = [];
 	@Input() form: NgForm;
 	@Input() formElement;
+	// @Output() discardForm:boolean=false
+	@Output() discardForm: EventEmitter<boolean> = new EventEmitter<boolean>();
 
 	fieldType = WorkflowFormFieldType;
 
@@ -37,6 +42,25 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 		this.assignmentService.setFormValidators.subscribe(()=>{
 			this.setValidators()
 		})
+		this.handleFormInput()
+	}
+
+	handleFormInput(){
+		this.form.valueChanges
+		.pipe()
+		.subscribe(value => {
+		  for (var propName in value) {
+			  if (value[propName] === null || value[propName] === undefined || value[propName]==="")  {
+				delete value[propName];
+			  }
+			}
+			if(Object.keys(value).length){
+			  this.discardForm.emit(true);
+			}
+			else{
+			  this.discardForm.emit(false);
+			}
+		});
 	}
 
 	public setValidators() {

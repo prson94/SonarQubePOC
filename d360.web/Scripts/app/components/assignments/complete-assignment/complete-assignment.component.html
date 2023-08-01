@@ -148,6 +148,9 @@
 														[formElement]="
 															formElement
 														"
+														(discardForm)="
+															onFormInput($event)
+														"
 													>
 													</d3s-complete-assignment-form-fields>
 												</div>
@@ -159,8 +162,12 @@
 											igButton
 											type="button"
 											class="ig-button-secondary"
-											label="{{ cancelButtonText }}"
-											(click)="closeModal()"
+											label="{{
+												discardForm
+													? 'Discard Form'
+													: 'Close'
+											}}"
+											(click)="discardForm? discardFormFunc(): closeModal()"
 										></button>
 										<div class="flex-grow"></div>
 										<button

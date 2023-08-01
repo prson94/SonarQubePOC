@@ -34,6 +34,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
 	cancelButtonText:string='Close'
+	discardForm:boolean
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 
@@ -52,6 +53,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isAssignmentProgressSelected = false;
 	}
 
+	onFormInput(message){
+		this.discardForm=message
+	}
 
 
 	openModal(details: {
@@ -86,15 +90,17 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formFields = res.Fields;
 				this.isLoading = false;
 				this.assignmentService.setFormValidators.next();
-				this.request = res.Request;
-
-							
+				this.request = res.Request;		
 			});
 	}
 
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
 		this.modalTitle = 'Assignment Progress and Information';
+	}
+
+	discardFormFunc(){
+		this.workflowForm.reset()
 	}
 
 	onFormSubmit(): void {
