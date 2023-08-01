@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.11">
-    <comment>GOV-28603</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.12">
+    <comment>GOV-28603,GOV-28727</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[PatchCatalog] 
@@ -544,7 +544,8 @@ begin
 			from	api.ExecutionCatalogItem
 			where	ExecutionId = @executionId
 					and [Type] = 'A'
-					and Success = 1;
+					and Success = 1
+					and Id is not null;
 
 		create clustered index CIX_TempIncoming on #incoming (ID);
 
@@ -557,22 +558,54 @@ begin
 		
 		create clustered index cix_intersecttype on #tempIntersectTypeIDs (Intersecttypeid);
 
-		with descendants as (
+
+		drop table if exists #tempdescendants;
+		create table #tempdescendants(SubjectAssetID bigint,ObjectAssetID bigint);
+		
+		drop table if exists #tempincoming;
+		create table #tempincoming(SubjectAssetID bigint,ObjectAssetID bigint);
+		create clustered index cx_tempincoming on #tempincoming(SubjectAssetID,ObjectAssetID);
+
+		drop table if exists #child;
+		create table #child(SubjectAssetID bigint,ObjectAssetID bigint);
+
+		insert into #tempdescendants(SubjectAssetID,ObjectAssetID)
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	#incoming O
 			inner join [intersect] I on I.SubjectAssetID = O.ID
 			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
-			union all
+		
+		insert into #tempincoming
+		select * from #tempdescendants;
+		
+		WHILE ((Select Count(*) from #tempdescendants) > 0)
+		begin
+			insert into #child(SubjectAssetID,ObjectAssetID)
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
-			from	descendants c
+			from	#tempdescendants c
 			inner join [intersect] I on I.SubjectAssetID = c.ObjectAssetID
-			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid
-		)
+			inner join #tempIntersectTypeIDs t on t.Intersecttypeid = I.Intersecttypeid;
+			
+			delete c
+			from #child c
+			inner join #tempincoming t on t.SubjectAssetID = c.SubjectAssetID and t.ObjectAssetID = c.ObjectAssetID;
+			
+			delete from #tempdescendants;
+			
+			insert into #tempdescendants
+			select * from #child;
+			
+			insert into #tempincoming(SubjectAssetID,ObjectAssetID)
+			select distinct SubjectAssetID,ObjectAssetID from #tempdescendants;
+			
+			delete from #child;
+		end
+
 		insert into #incoming
 		select distinct d.ObjectAssetID 
-		from descendants d
+		from #tempincoming d
 		inner join Asset C on C.ID = d.ObjectAssetID;
 		
 		with hierarchy as (
