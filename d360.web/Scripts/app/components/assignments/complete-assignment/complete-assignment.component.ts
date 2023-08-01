@@ -1,12 +1,15 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnChanges, OnInit, SimpleChange, SimpleChanges, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
+import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField, WorkflowFormFieldType } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
 import { Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
+import { CompleteAssignmentFormFieldsComponent } from './complete-assignment-form-fields/complete-assignment-form-fields.component';
+import { NgForm } from '@angular/forms';
+import { AssignmentService } from '../assignment.service';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -30,19 +33,30 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
-	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
+	cancelButtonText:string='Close'
+	discardForm:boolean
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	@ViewChild('workflowForm') public workflowForm: NgForm;
+
 	private linkInterceptorSubscription: Subscription;
+    @ViewChild('form', { static: false }) formElement: ElementRef;
 
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor) {
+				private linkClickInterceptor: LinkClickInterceptor,
+				private assignmentService:AssignmentService
+				) {
 		super(settingsService);
 	}
 
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 	}
+
+	onFormInput(message){
+		this.discardForm=message
+	}
+
 
 	openModal(details: {
 		workflowItemUid: string,
@@ -75,8 +89,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formDescription = res.Description;
 				this.formFields = res.Fields;
 				this.isLoading = false;
-				this.request = res.Request;
-				this.fieldsComponent.setValidators();
+				this.assignmentService.setFormValidators.next();
+				this.request = res.Request;		
 			});
 	}
 
@@ -85,11 +99,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
+	discardFormFunc(){
+		this.workflowForm.reset()
+	}
+
 	onFormSubmit(): void {
-		if (this.fieldsComponent.setValidators()) {
-			return;
-		}
-		this.fieldsComponent.prepareValuesForSubmit();
+		this.prepareValuesForSubmit();
 
 		//save form values with stepUid and itemUid
 		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
@@ -111,6 +126,20 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				ResourceUid: this.request.Action.CreatedBy
 			}, 'users/' + this.request.Action.CreatedBy);
 		}
+	}
+
+	public prepareValuesForSubmit() {
+		this.formFields.forEach((x, i) => {
+			if (x.FieldType === WorkflowFormFieldType.Link) {
+				
+				const name = this.workflowForm.form.controls[`inputName_${i}`].value;
+				const url = this.workflowForm.form.controls[`inputUrl_${i}`].value;
+				x.Value =
+					name.length + url.length === 0 ? "" : name + "|" + url;
+			} else if (Array.isArray(x.Value)) {
+				x.Value = x.Value.join();
+			}
+		});
 	}
 
 }
