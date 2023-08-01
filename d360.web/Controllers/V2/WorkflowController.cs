@@ -474,7 +474,7 @@ namespace d360.web.Controllers.V2
 
 						if (assetType == null)
 						{							
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.InvalidAssetTypeUidProvided ));
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid) ));
 						}
 					}
 				}
@@ -763,7 +763,7 @@ namespace d360.web.Controllers.V2
 				var row = new ExcelRow();
 
 				row.Add(item.workflowName);
-				row.Add(item.assetDisplayValue);
+				row.Add(item.assetDisplayValue ?? "(unknown)");
 				if (!hasSingleActionFilter)
 				{
 					row.Add(item.initiatingObjectType);
