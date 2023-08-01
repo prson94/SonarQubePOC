@@ -414,4 +414,5 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+	protected readonly Object = Object;
 }

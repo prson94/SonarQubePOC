@@ -26,7 +26,8 @@
 		</div>
 	</div>
 	<div class="grid-actions-header-row">
-		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin (click)="selectAll()" i18n-label
+		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin
+				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
 		<advanced-filtering [loadIdentifier]="'Assignments'"
@@ -104,7 +105,46 @@
 					</ng-container>
 					<td>{{item.assetDisplayValue ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
-						<td [innerHTML]="item[field.Name]"></td>
+						<td>
+							<ng-container [ngSwitch]="Object.keys(field.Type)?.[0]">
+								<div *ngSwitchCase="'Html'">
+									<div class="ig-value"
+										 [innerHTML]="item[field.Name] | safeHtml"></div>
+								</div>
+								<div *ngSwitchCase="'Link'">
+									<div class="ig-value"><a
+										[href]="item[field.Name]?.split('|')?.[1]">
+										{{ item[field.Name]?.split('|')?.[0] }}</a>
+									</div>
+								</div>
+								<div *ngSwitchCase="'DateTime'">
+									<div
+										class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
+								</div>
+								<div *ngSwitchCase="'Date'">
+									<div
+										class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
+								</div>
+								<div *ngSwitchCase="'Lookup'">
+									<div class="ig-value"> {{ item[field.Name] }} </div>
+								</div>
+								<div *ngSwitchCase="'Boolean'">
+									<div class="ig-value">
+										<ng-container *ngIf="item[field.Name] === true">
+											<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+											<ng-container i18n>True</ng-container>
+										</ng-container>
+										<ng-template *ngIf="item[field.Name] === false">
+											<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+											<ng-container i18n>False</ng-container>
+										</ng-template>
+									</div>
+								</div>
+								<div *ngSwitchDefault>
+									<div class="ig-value">{{ item[field.Name] }}</div>
+								</div>
+							</ng-container>
+						</td>
 					</ng-container>
 					<td *ngIf="!isRequestsFlow">{{item.initiator}}</td>
 					<td>
@@ -114,7 +154,7 @@
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
 						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length-item.filteredAssignees.length) }}
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
 							others </span>
 					</td>
 					<td>
