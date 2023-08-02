@@ -332,7 +332,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, exportFileName: string = '', callback: () => void = null): Observable<WorkflowAssignments> {
 		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		url += this.getSimpleFilterParam(simpleFilter);
@@ -343,13 +343,12 @@ export class WorkflowService extends BaseObservableService {
 
 		url += this.getSortParam(order, direction);
 
-		if (isExport) {
+		if (exportFileName) {
 			this.
 			http
 				.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
 				.subscribe((data) => {
-					const filename = `Filtered Assignment List`;
-					this.downloadFile(data, filename);
+					this.downloadFile(data, exportFileName);
 					if (callback) {
 						callback();
 					}
