@@ -473,8 +473,8 @@ namespace d360.web.Controllers.V2
 						assetType = Company.AssetTypes.Where(ast => ast.uid == assetTypeUid).FirstOrDefault();
 
 						if (assetType == null)
-						{							
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid) ));
+						{
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid)));
 						}
 					}
 				}
@@ -800,10 +800,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var exportSheetRows = new List<ExcelRow> {
-				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("mm/dd/yyyy hh:mm:ss")},
-				new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString()},
-				new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString()},
-				new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString()}
+				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")}
 			};
 
 			if (isRequestExport)
@@ -817,6 +814,10 @@ namespace d360.web.Controllers.V2
 				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeName, actionTypeName });
 				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeUID, actionTypeUid.ToString() });
 			}
+
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString() });
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString() });
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString() });
 
 			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{
