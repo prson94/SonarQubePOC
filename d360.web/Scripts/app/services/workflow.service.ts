@@ -332,7 +332,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, exportFileName: string = '', callback: () => void = null): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, actionsOnly: boolean = false, exportFileName: string = '', callback: () => void = null): Observable<WorkflowAssignments> {
 		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		url += this.getSimpleFilterParam(simpleFilter);
@@ -342,6 +342,8 @@ export class WorkflowService extends BaseObservableService {
 		url += this.getInitiatorUidParam(initiatorUid);
 
 		url += this.getSortParam(order, direction);
+
+		url += this.getActionsOnlyParam(actionsOnly);
 
 		if (exportFileName) {
 			this.
@@ -867,6 +869,14 @@ export class WorkflowService extends BaseObservableService {
 	private getInitiatorUidParam(initiatorUid: string): string {
 		if (initiatorUid) {
 			return `&_initiatorUid=${initiatorUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getActionsOnlyParam(actionsOnly: boolean): string {
+		if (actionsOnly) {
+			return `&_actionsOnly=${actionsOnly}`;
 		} else {
 			return '';
 		}

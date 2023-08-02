@@ -103,7 +103,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	export() {
 		this.isExportInProgress = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
-		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, this.getExportFileName(), () => {
+		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, this.isRequestsFlow, this.getExportFileName(), () => {
 			this.isExportInProgress = false;
 		});
 	}
@@ -121,7 +121,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.isLoading = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
-			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder),
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, this.isRequestsFlow),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter?.value ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter.value, null) : of([])
 		];
 		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
