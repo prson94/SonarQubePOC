@@ -9,7 +9,6 @@
         </div>
 		<span class="show-details" *ngIf="customTemplate">
             <ng-container *ngTemplateOutlet="sideTemplate"></ng-container>
-			<!-- <a (click)="showDetailsClick.emit(true)">{{ showDetailsLinkText }}</a> -->
 		</span>
     </div>
     <div class="pg-collapsable-content" [ngClass]="{'close': !expanded, 'no-padding': !shouldBePadded}" #pgcontainer>
