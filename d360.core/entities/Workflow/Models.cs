@@ -677,6 +677,12 @@ namespace d360.core.entities.Workflow
 
 		public string Name { get; set; }
 
-		public long AssetId { get; set; }
+		public long? AssetId { get; set; }
+
+		public Guid? AssetUid { get; set; }
+
+		public DateTime? InitiatedOn { get; set; }
+
+		public string InitiatedBy { get; set; }
 	}
 }

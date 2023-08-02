@@ -286,16 +286,15 @@ export class WorkflowService extends BaseObservableService {
     }
 
 	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<WorkflowFormResponse> {
-		this._assignmentCompletedSubject.next(true);
-		return of();
-		//return this.http
-		//	.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
-		//	.pipe(
-		//		map((response) => {
-		//			return response;
-		//		}),
-		//		catchError((err) => this.handleError(err))
-		//	);
+		return this.http
+			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
+			.pipe(
+				map((response) => {
+					this._assignmentCompletedSubject.next(true);
+					return response;
+				}),
+				catchError((err) => this.handleError(err))
+			);
 	}
 
     getActivityTypes(): Observable<ActivityTypeInfo[]> {

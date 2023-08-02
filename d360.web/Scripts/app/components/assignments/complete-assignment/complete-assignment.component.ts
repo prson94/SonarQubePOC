@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
+import { AssignmentItemStep, SingleAssignment, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
 
@@ -29,6 +29,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assignmentItemStep: AssignmentItemStep;
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
+	multiSubmitionItems: SingleAssignment[] = [];
+
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private cdRef: ChangeDetectorRef
@@ -43,12 +45,19 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	openModal(details: {
 		workflowItemUid: string,
 		stepUid: string,
-		assetId: number
+		assetId: number,
+		items?: SingleAssignment[]
 	}): void {
 		if (details) {
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
+			if (details.items) {
+				this.multiSubmitionItems = details.items;
+			}
+			else {
+				this.multiSubmitionItems = [];
+			}
 			this.getFormDetails();
 		}
 		this.isModalVisible = true;
@@ -86,12 +95,23 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 		this.fieldsComponent.prepareValuesForSubmit();
 
-		//save form values with stepUid and itemUid
-		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
+		if (this.isMultiSubmition) {
+			this.multiSubmitionItems.forEach((item) => {
+				this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields).subscribe();
+			});
+		}
+		else {
+			//save form values with stepUid and itemUid
+			this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
+		}
 	}
 
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
 		this.sidePanel = 'step-details';
 		this.assignmentItemStep = assignmentItemStep;
+	}
+
+	get isMultiSubmition(): boolean {
+		return this.multiSubmitionItems.length > 1;
 	}
 }

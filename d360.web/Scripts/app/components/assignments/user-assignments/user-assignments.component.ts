@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentItem, SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
+import { AssignmentsMultiPickerComponent } from '../assignments-multi-picker/assignments-multi-picker.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 
 @Component({
@@ -23,6 +24,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 
 	isMe: boolean = false;
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
+	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
 
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
@@ -86,7 +88,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		console.log(item);
 
 		if (item.AssociatedItems.length > 1) {
-			window.alert("multi assignment completion not yet implemented");
+			this.multiAssignComponent.openModal(item.AssociatedItems);
 		}
 		else {
 			const assignment = item.AssociatedItems[0];
@@ -96,6 +98,20 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				assetId: assignment.AssetId
 			});
 		}
+	}
 
+	onAssignmentSelection(selectedItems: SingleAssignment[]) {
+		if (selectedItems.length === 0) {
+			return;
+		}
+
+		const mainItem = selectedItems[0];
+
+		this.completeAssignmentComponent.openModal({
+			workflowItemUid: mainItem.WorkflowItemUid,
+			stepUid: mainItem.ItemStepUid,
+			assetId: mainItem.AssetId,
+			items: selectedItems
+		});
 	}
 }

@@ -6,6 +6,7 @@ import { CoreModule } from '../../shared/core.module';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { RouterModule } from '@angular/router';
 import { AssignmentsModule } from '../assignments.module';
+import { AssignmentsMultiPickerModule } from '../assignments-multi-picker/assignments-multi-picker.module';
 
 @NgModule({
 	declarations: [
@@ -17,7 +18,8 @@ import { AssignmentsModule } from '../assignments.module';
 		CoreModule,
 		IgBadgeModule,
 		RouterModule,
-		AssignmentsModule
+		AssignmentsModule,
+		AssignmentsMultiPickerModule
 	],
 	exports: [
 		UserAssignmentsComponent

@@ -993,13 +993,16 @@ export class WorkflowUserGroupedAssignments {
 	StepName: string;
 	Version: number;
 	Count: number;
-	AssociatedItems: AssociatedItems[];
+	AssociatedItems: SingleAssignment[];
 	AssociatedWith: string;
 }
 
-export class AssociatedItems {
+export class SingleAssignment {
 	WorkflowItemUid: string;
 	ItemStepUid: string;
 	Name: string;
 	AssetId: number;
+	AssetUid: string;
+	InitiatedOn: Date;
+	InitiatedBy: string;
 }
