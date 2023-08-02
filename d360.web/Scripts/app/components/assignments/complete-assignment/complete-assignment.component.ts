@@ -1,13 +1,11 @@
-import { Component, ElementRef, OnChanges, OnInit, SimpleChange, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField, WorkflowFormFieldType } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields.component';
 import { Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
-import { CompleteAssignmentFormFieldsComponent } from './complete-assignment-form-fields/complete-assignment-form-fields.component';
 import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
 
