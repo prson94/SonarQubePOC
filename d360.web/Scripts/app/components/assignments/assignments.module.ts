@@ -190,6 +190,9 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		AutoCompleteModule,
 		DropdownModule,
 		WorkflowModule
+	],
+	exports: [
+		CompleteAssignmentComponent
 	]
 })
 export class AssignmentsModule {

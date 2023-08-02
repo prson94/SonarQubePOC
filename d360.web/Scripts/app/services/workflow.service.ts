@@ -30,14 +30,14 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails
+	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails, WorkflowUserGroupedAssignments
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
@@ -48,6 +48,8 @@ import { SortOrder } from '../models/enums.model';
 })
 export class WorkflowService extends BaseObservableService {
 
+	private _assignmentCompletedSubject = new Subject<boolean>();
+	assignmentCompletedSubject = this._assignmentCompletedSubject.asObservable();
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService);}
 
     getMyCounts(daysToLookBack: number, resourceId?: number) : Observable<Count[]> {
@@ -284,12 +286,16 @@ export class WorkflowService extends BaseObservableService {
     }
 
 	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<WorkflowFormResponse> {
-		return this.http
-			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
-			.pipe(
-				map((response) => response),
-				catchError((err) => this.handleError(err))
-			);
+		this._assignmentCompletedSubject.next(true);
+		return of();
+		//return this.http
+		//	.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
+		//	.pipe(
+		//		map((response) => {
+		//			return response;
+		//		}),
+		//		catchError((err) => this.handleError(err))
+		//	);
 	}
 
     getActivityTypes(): Observable<ActivityTypeInfo[]> {
@@ -625,6 +631,16 @@ export class WorkflowService extends BaseObservableService {
 		return this.http.get(url)
 			.pipe(
 				map((response) => <AssignmentByVersion>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getUserAssignments(resourceUid: string): Observable<WorkflowUserGroupedAssignments[]> {
+		const url: string = `api/v2/workflow/assignments/${resourceUid}`;
+
+		return this.http.get(url)
+			.pipe(
+				map((response) => <WorkflowUserGroupedAssignments>response),
 				catchError((err) => this.handleError(err))
 			);
 	}

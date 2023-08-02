@@ -21,6 +21,9 @@ import { SettingsProviderService } from "@precisely/prism-ng/govern";
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
 
+// eslint-disable-next-line no-var
+declare var CurrentResourceUid;
+
 @Injectable({
 	providedIn: 'root'
 })
@@ -122,17 +125,17 @@ export class CompanySettingsService extends BaseObservableService {
 		return this.appSettings.find((a) => a.Name === setting).Value;
 	}
 
-    getSettingById(setting: CompanySettingEnum): SettingsGetModel {
-        const settingId: number = <number>setting;
-        let foundSetting: SettingsGetModel = null;
-        if (this.settings && this.settings.length > 0) {
-            foundSetting = this.settings.find((s) => s.SettingID === settingId);
-        }
-        return foundSetting;
-    }
+	getSettingById(setting: CompanySettingEnum): SettingsGetModel {
+		const settingId: number = <number>setting;
+		let foundSetting: SettingsGetModel = null;
+		if (this.settings && this.settings.length > 0) {
+			foundSetting = this.settings.find((s) => s.SettingID === settingId);
+		}
+		return foundSetting;
+	}
 
-    private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
-        const currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
+	private parseSettingChange(setting: SettingsPutModel): SettingsPutModel {
+		const currentSetting = this.settings.find((s) => s.SettingID === setting.SettingID);
 
 		if (currentSetting.BooleanSetting && setting.BooleanSetting && currentSetting.BooleanSetting.Value !== setting.BooleanSetting.Value) {
 			currentSetting.BooleanSetting.Value = setting.BooleanSetting.Value;
@@ -162,11 +165,11 @@ export class CompanySettingsService extends BaseObservableService {
 		return null;
 	}
 
-    putSetting(setting: SettingsPutModel): Observable<any> {
-        const updatedSetting = this.parseSettingChange(setting);
-        var headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
+	putSetting(setting: SettingsPutModel): Observable<any> {
+		const updatedSetting = this.parseSettingChange(setting);
+		var headers = new HttpHeaders({
+			'Content-Type': 'application/json'
+		});
 
 		return this.http.put('/api/v2/environment/settings', JSON.stringify(updatedSetting), { headers });
 	}
@@ -241,6 +244,18 @@ export class CompanySettingsService extends BaseObservableService {
 			}
 		}
 		return this._currentResourceID;
+	}
+
+	private _currentResourceUid: string | undefined;
+	get CurrentResourceUid(): string {
+		if (typeof this._currentResourceUid === "undefined") {
+			if (typeof CurrentResourceUid === "undefined") {
+				firstValueFrom(this.getUserVariables()).then((res) => this._currentResourceUid = res.CurrentResourceID);
+			} else {
+				this._currentResourceUid = CurrentResourceUid;
+			}
+		}
+		return this._currentResourceUid;
 	}
 
 }

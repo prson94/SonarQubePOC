@@ -1,1 +1,75 @@
-<p>user-assignments works!</p>
+<div class="user-assignments tile tile-detail">
+	<div class="user-assignments-header">
+		<h3 i18n><b>My Assignments</b></h3>
+		<a routerLink="/assignments" i18n>See all Assignments</a>
+	</div>
+	<div class="table-wrapper">
+		<p-table #dt
+				 [loading]="isLoading"
+				 [tableStyle]="{'min-width': 'max-content'}"
+				 loadingIcon="fa fa-spinner"
+				 [value]="assignments"
+				 selectionMode="multiple"
+				 [metaKeySelection]="true"
+				 [first]="(currentPageNumber-1) * rowsPerPage"
+				 [totalRecords]="totalRecords"
+				 [scrollable]="true"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 [loadingIcon]="'fa fa-spinner fa-spin'"
+				 [scrollHeight]="'calc(100vh - 353px)'"
+				 sortField="StartedOn" [sortOrder]="-1"
+				 [rows]="rowsPerPage"
+				 [rowsPerPageOptions]="defaultPagingOptions">
+			<ng-template pTemplate="header">
+				<tr>
+					<th [pSortableColumn]="'WorkflowName'">
+						<ng-container i18n>Workflow Name</ng-container>
+						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'StepName'">
+						<ng-container i18n>Step</ng-container>
+						<d3s-sortIcon [field]="'StepName'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'AssociatedWith'">
+						<ng-container i18n>Associated with</ng-container>
+						<d3s-sortIcon [field]="'AssociatedWith'"></d3s-sortIcon>
+					</th>
+					<th [pSortableColumn]="'Count'">
+						<ng-container i18n>Count</ng-container>
+						<d3s-sortIcon [field]="'Count'"></d3s-sortIcon>
+					</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body" let-item>
+				<tr [pSelectableRow]="item" class="assignments-table-data">
+					<td>
+						<ng-container *ngIf="isMe">
+							<a href="#" (click)="onItemClick($event, item)">
+								{{item.WorkflowName}}
+							</a>
+						</ng-container>
+						<ng-container *ngIf="!isMe">
+							{{item.WorkflowName}}
+						</ng-container>
+						<span *ngIf="item.Version > 1" class="light-text">version {{item.Version}}</span>
+					</td>
+					<td>{{item.StepName}}</td>
+					<td>{{item.AssociatedWith ?? '---'}}</td>
+					<td>
+						<ig-badge [text]="item.Count"></ig-badge>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="emptymessage">
+				<p i18n>No assignments found</p>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+		</p-table>
+	</div>
+</div>
+
+<d3s-complete-assignment #completeAssignmentComponent></d3s-complete-assignment>

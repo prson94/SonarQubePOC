@@ -1720,5 +1720,69 @@ namespace d360.model.DataAccessLayer
 
 			return assignments;
 		}
+
+		public async Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid)
+		{
+			string sql = @"
+						declare @resourceId int;
+						select @resourceId = ResourceID from reporting.Global_Resource where uid = @resourceUid;
+
+						with user_ass as(select
+						 wt.name as Name
+						,wt.uid as uid
+						,wv.[version]
+						, wvs.name as Step
+						,wvs.Id as StepId
+						,count(1) as Total
+						,string_agg(CAST(wia.Id as nvarchar(40)),',') as WorkflowAssignments
+						from
+							[workflow].[type] wt
+							inner join [workflow].[version] wv on (wt.id = wv.typeid)
+							inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+							inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+							inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @resourceId and (wia.itemstepid = wis.id or wia.itemstepid is null))
+							inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+						where
+						wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id)
+
+						select 
+						ua.Name as WorkflowName, 
+						ua.Step as StepName, 
+						ua.[Version], 
+						ua.uid as WorkflowTypeUid, 
+						ua.Total as [Count],
+						AssociatedWith.json as _associatedWith
+						from user_ass ua
+						outer apply (
+						select 
+							wi.UID as WorkflowItemUid, 
+							ObjectData.Name,
+							wis.UID as ItemStepUid,
+							ObjectData.AssetId
+						from workflow.ItemAssignment wia
+						left join workflow.Item wi on wi.ID = wia.ItemID
+						left join workflow.ItemStep wis on wis.ID = wia.ItemStepID
+						outer apply (
+						 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId from [Issue] I 
+						 left join [Asset] a on a.ID = I.AssetID
+						 left join [AssetDisplayValue] adv on adv.AssetID = a.ID
+						 left join [AssetType] at on at.ID = I.AssetTypeID
+						 where I.ID = wi.ObjectID AND wi.Object = 'Issue'
+						 union 
+						 select top 1 ID.[Name], null as AssetId from [IntersectDetail] ID
+						 where ID.ID = wi.ObjectID AND wi.Object = 'Intersect'
+						  union 
+						 select top 1 adv.DisplayValue, A.ID AS AssetId from [asset] A
+						  left join [AssetDisplayValue] adv on adv.AssetID = a.ID
+						 where A.ObjectID = wi.ObjectID AND A.Object = wi.Object AND wi.Object <> 'Intersect' AND wi.Object <> 'Issue'
+						)ObjectData(Name, AssetId)
+						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
+						)AssociatedWith(json)
+						order by ua.Name";
+			var data = await CompanyContext.Database.Connection.QueryAsync<WorkflowUserGroupedAssignments>(sql, new { resourceUid });
+			return data.ToList();
+		}
+
 	}
 }

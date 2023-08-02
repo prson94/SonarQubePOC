@@ -75,6 +75,9 @@ export class AssignmentInformationComponent {
 	}
 
 	completeAssignmentClick(): void {
+		console.log(this.workflowItemUid);
+		console.log(this.assignmentItemStep?.Uid);
+		console.log(this.workflowStepDetail?.ObjectID);
 		this.completeAssignment.emit({
 			workflowItemUid: this.workflowItemUid,
 			stepUid: this.assignmentItemStep?.Uid,

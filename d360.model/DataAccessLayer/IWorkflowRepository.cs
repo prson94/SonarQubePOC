@@ -38,5 +38,7 @@ namespace d360.model.DataAccessLayer
 		Task<IEnumerable<dynamic>> GetRelevantAssetTypes();
 
 		Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid);
+
 	}
 }

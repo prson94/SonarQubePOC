@@ -662,15 +662,15 @@ export class WorkflowStepDetail {
 export class WorkflowStepItemFields {
 	form: any;
 	Reassigned: any;
-	HTTPResponse: {StatusCode: number, Body: string};
-	Outputs: {Output:{Id: string, Value: string}[]};
+	HTTPResponse: { StatusCode: number, Body: string };
+	Outputs: { Output: { Id: string, Value: string }[] };
 }
 
 export class WorkflowStepItemSettings {
 	emails: any;
 	hasPendingForms: boolean;
 	hasEmails: boolean;
-	Responsibilities: {id: number, name: string}[];
+	Responsibilities: { id: number, name: string }[];
 }
 
 export class WorkflowStepAssignedUser {
@@ -890,7 +890,7 @@ export class AssignmentVersionItem {
 export class AssignmentByVersion {
 	items: AssignmentVersionItem[];
 	total: number;
-	pageSize:number;
+	pageSize: number;
 	pageNum: number;
 }
 
@@ -985,4 +985,21 @@ export class WorkflowDetails {
 		State: number,
 		ID: number
 	}[];
+}
+
+export class WorkflowUserGroupedAssignments {
+	WorkflowName: string;
+	WorkflowTypeUid: string
+	StepName: string;
+	Version: number;
+	Count: number;
+	AssociatedItems: AssociatedItems[];
+	AssociatedWith: string;
+}
+
+export class AssociatedItems {
+	WorkflowItemUid: string;
+	ItemStepUid: string;
+	Name: string;
+	AssetId: number;
 }

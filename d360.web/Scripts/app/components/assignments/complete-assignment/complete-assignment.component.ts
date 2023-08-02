@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssignmentItemStep, WorkflowForm, WorkflowFormField } from '../../../models/workflow.model';
@@ -8,7 +8,8 @@ import { WorkflowFormFieldsComponent } from '../../workflow/workflow-form-fields
 @Component({
 	selector: 'd3s-complete-assignment',
 	templateUrl: './complete-assignment.component.html',
-	styleUrls: ['./complete-assignment.component.less']
+	styleUrls: ['./complete-assignment.component.less'],
+	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit {
 
@@ -29,7 +30,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
 	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService) {
+		private workflowService: WorkflowService,
+		private cdRef: ChangeDetectorRef
+	) {
 		super(settingsService);
 	}
 
@@ -49,6 +52,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.getFormDetails();
 		}
 		this.isModalVisible = true;
+		this.cdRef.markForCheck();
 	}
 
 	showAssignment(): void {
@@ -64,7 +68,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.formDescription = res.Description;
 				this.formFields = res.Fields;
 				this.isLoading = false;
-				this.fieldsComponent.setValidators();
+				this.cdRef.markForCheck();
+				setTimeout(() => {
+					this.fieldsComponent.setValidators();
+				}, 100);
 			});
 	}
 

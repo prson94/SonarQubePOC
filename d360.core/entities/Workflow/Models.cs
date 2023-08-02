@@ -646,4 +646,37 @@ namespace d360.core.entities.Workflow
 	}
 
 	#endregion
+
+	public class WorkflowUserGroupedAssignments
+	{
+		public string WorkflowName { get; set; }
+		public Guid WorkflowTypeUid { get; set; }
+		public string StepName { get; set; }
+		public int Version { get; set; }
+		public int Count { get; set; }
+		[JsonIgnore]
+		public string _associatedWith { get; set; }
+		public List<AssociatedItems> AssociatedItems { get {
+				if (string.IsNullOrEmpty(this._associatedWith))
+				{
+					return new List<AssociatedItems>();
+				}
+				else
+				{
+					return JsonConvert.DeserializeObject<List<AssociatedItems>>(this._associatedWith);
+				}
+			} 
+		}
+	}
+
+	public class AssociatedItems
+	{
+		public Guid WorkflowItemUid { get; set; }
+
+		public Guid ItemStepUid { get; set; }
+
+		public string Name { get; set; }
+
+		public long AssetId { get; set; }
+	}
 }

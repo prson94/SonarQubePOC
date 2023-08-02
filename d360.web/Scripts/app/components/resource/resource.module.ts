@@ -15,7 +15,6 @@ import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
-import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 import { ApiKeyUsersGuard } from '../../guards/api-key-users.gurard';
 
 import { ResourceComponent } from './resource.component';
@@ -38,6 +37,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { ResourceApiKeyModule } from './api-key/resource-api.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
 
 @NgModule({
     declarations: [
@@ -72,8 +72,8 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         //d3s
         D3SSharedModule,          
         CoreModule,   
-        SocialModule,
-        SharedAssignmentsModule,
+		SocialModule,
+		UserAssignmentsModule,
         PipesModule,
         TilesModule,
         SharedDynamicGridEditorModule,

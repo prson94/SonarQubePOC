@@ -38,7 +38,7 @@
      class="row home-tiles">
     <div [class]="'col s12 l' + colSize"
          *ngIf="showAssignmentTile">
-        <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
+        <d3s-user-assignments></d3s-user-assignments>
     </div>
     <div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
         <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
