@@ -502,12 +502,6 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-
-				if (cancellationToken == null)
-				{
-					cancellationToken = CancellationToken.None;
-				}
-
 				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams, cancellationToken).ConfigureAwait(false);
 
 				if (isStreamResponse)
