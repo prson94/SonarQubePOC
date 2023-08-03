@@ -332,7 +332,7 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', order: string = '', direction: number = SortOrder.Ascending, isExport: boolean = false, callback: () => void = null, assetUid: string = '', assetTypeUid: string = ''): Observable<WorkflowAssignments> {
+	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', assetUid:string='',assetTypeUid:string='', order: string = '', direction: number = SortOrder.Ascending, actionsOnly: boolean = false, exportFileName: string = '', callback: () => void = null): Observable<WorkflowAssignments> {
 		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
 		url += this.getSimpleFilterParam(simpleFilter);
@@ -347,13 +347,14 @@ export class WorkflowService extends BaseObservableService {
 
 		url += this.getAssetTypeUidParam(assetTypeUid);
 
-		if (isExport) {
+		url += this.getActionsOnlyParam(actionsOnly);
+
+		if (exportFileName) {
 			this.
 			http
 				.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
 				.subscribe((data) => {
-					const filename = `Filtered Assignment List`;
-					this.downloadFile(data, filename);
+					this.downloadFile(data, exportFileName);
 					if (callback) {
 						callback();
 					}
@@ -888,6 +889,14 @@ export class WorkflowService extends BaseObservableService {
 	private getAssetTypeUidParam(assetTypeUid: string): string {
 		if (assetTypeUid) {
 			return `&_assetTypeUid=${assetTypeUid}`;
+		} else {
+			return '';
+		}
+	}
+
+	private getActionsOnlyParam(actionsOnly: boolean): string {
+		if (actionsOnly) {
+			return `&_actionsOnly=${actionsOnly}`;
 		} else {
 			return '';
 		}

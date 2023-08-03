@@ -13,7 +13,6 @@ import { AuthenticationService } from '../../../services/authentication.service'
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Subscription } from 'rxjs';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
