@@ -16,8 +16,6 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 
 	fieldType = WorkflowFormFieldType;
 
-	private isSetValidatior: boolean = false;
-
 	constructor(private assignmentService: AssignmentService) {
 	}
 
@@ -46,8 +44,6 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	}
 
 	public setValidators() {
-		// debugger
-		// setTimeout(() => {
 		this.fields.forEach((x, i) => {
 			if (x.Required) {
 				this.form.form.controls[`input_${i}`].setErrors({
