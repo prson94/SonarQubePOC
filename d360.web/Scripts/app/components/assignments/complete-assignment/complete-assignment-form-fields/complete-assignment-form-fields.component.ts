@@ -29,8 +29,8 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	handleFormInput() {
 		this.form.valueChanges
 			.pipe()
-			.subscribe(value => {
-				for (var propName in value) {
+			.subscribe((value) => {
+				for (const propName in value) {
 					if (value[propName] === null || value[propName] === undefined || value[propName] === '') {
 						delete value[propName];
 					}
@@ -46,7 +46,7 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	public setValidators() {
 		this.fields.forEach((x, i) => {
 			if (x.Required) {
-				this.form.form.controls[`input_${i}`].setErrors({
+				this.form.form.controls[`input_${i}`]?.setErrors({
 					required: true
 				});
 			}

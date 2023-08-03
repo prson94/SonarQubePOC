@@ -34,12 +34,14 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     @Input() showTitle: boolean = true;
     @Input() includePreciselyLogo: boolean = false;
     @Input() subtitle: string;
+    @Input() secondaryButtonDisabled:boolean
 
     @Input() formFeedbackPortalName: string;
 
     @Input() modalSidePanelAssetUID: string = 'TETET';
 
     @Input() appendToBody: boolean = false;
+    @Input() discardForm:boolean=false
 
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
@@ -113,14 +115,16 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     }
 
     public closePopUp() {
-        if (this.modalDiv) {
+        if (this.modalDiv && !this.discardForm) {
             this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
             window.setTimeout(function () {
                 this.modalDiv.nativeElement.className = "modal-overlay";
                 this.onClose.emit(null);
             }.bind(this), 250);
-
             this.display = false;
+        }
+        else{
+            this.onClose.emit(null);
         }
 
     }

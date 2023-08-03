@@ -1,7 +1,13 @@
 <d3s-modal
 	[showTitle]="false"
 	[isVisible]="isModalVisible"
-	[showActionBar]="false"
+	[showActionBar]="true"
+	[confirmButtonLabel]="'Submit'"
+	[cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
+	[secondaryButtonDisabled]="!workflowForm?.valid"
+	[discardForm]="discardForm"
+	(onClose)="discardForm ? discardFormFunc() : closeModal()"
+	(onConfirm)="onFormSubmit()"
 	[additionalClasses]="'xlarge-dialog'"
 >
 	<div class="modal-with-side-panel">
@@ -166,7 +172,7 @@
 											</div>
 										</div>
 									</ig-property-group>
-									<div class="action-buttons flex-grid">
+									<!-- <div class="action-buttons flex-grid">
 										<button
 											igButton
 											type="button"
@@ -187,7 +193,7 @@
 											[disabled]="!workflowForm.valid"
 											(click)="onFormSubmit()"
 										></button>
-									</div>
+									</div> -->
 								</form>
 							</div>
 						</div>
