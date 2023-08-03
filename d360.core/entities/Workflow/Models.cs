@@ -684,5 +684,7 @@ namespace d360.core.entities.Workflow
 		public DateTime? InitiatedOn { get; set; }
 
 		public string InitiatedBy { get; set; }
+
+		public string ObjectType { get; set; }
 	}
 }

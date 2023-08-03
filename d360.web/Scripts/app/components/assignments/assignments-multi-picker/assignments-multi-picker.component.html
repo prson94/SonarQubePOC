@@ -93,8 +93,9 @@
 												<ng-container i18n>Associated With</ng-container>
 												<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
 											</th>
-											<th>
+											<th [pSortableColumn]="'ObjectType'">
 												<ng-container i18n>Object Type</ng-container>
+												<d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon>
 											</th>
 											<th [pSortableColumn]="'InitiatedBy'">
 												<ng-container i18n>Initiated By</ng-container>
@@ -118,7 +119,7 @@
 												{{item.Name}}
 											</td>
 											<td>
-												{{item.AssetUid ? 'Asset' : 'Asset Type'}}
+												{{item.ObjectType}}
 											</td>
 											<td>{{item.InitiatedBy}}</td>
 											<td>{{item.InitiatedOn}}</td>

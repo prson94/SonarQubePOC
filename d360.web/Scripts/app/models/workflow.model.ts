@@ -1005,4 +1005,5 @@ export class SingleAssignment {
 	AssetUid: string;
 	InitiatedOn: Date;
 	InitiatedBy: string;
+	ObjectType: string;
 }

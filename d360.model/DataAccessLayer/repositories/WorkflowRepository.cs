@@ -1781,26 +1781,27 @@ namespace d360.model.DataAccessLayer
 							ObjectData.AssetId, 
 							ObjectData.AssetUid, 
 							wis.StartedOn as InitiatedOn,
-							adv.DisplayValue as InitiatedBy
+							adv.DisplayValue as InitiatedBy,
+							ObjectData.ObjectType
 						from workflow.ItemAssignment wia
 						left join workflow.Item wi on wi.ID = wia.ItemID
 						left join workflow.ItemStep wis on wis.ID = wia.ItemStepID
 						left join [asset] crAsset on crAsset.Object = 'Resource' and crAsset.ObjectId = wis.StartedBy
 						left join AssetDisplayValue adv on adv.AssetID = crAsset.ID
 						outer apply (
-							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid from [Issue] I 
+							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset' else 'Asset Type' end as ObjectType from [Issue] I 
 							 left join [Asset] a on a.ID = I.AssetID
 							 left join [AssetDisplayValue] adv on adv.AssetID = a.ID
 							 left join [AssetType] at on at.ID = I.AssetTypeID
 							 where I.ID = wi.ObjectID AND wi.Object = 'Issue'
 							 union 
-							 select top 1 ID.[Name], null as AssetId, null as AssetUid from [IntersectDetail] ID
+							 select top 1 ID.[Name], null as AssetId, null as AssetUid, 'Relationship' from [IntersectDetail] ID
 							 where ID.ID = wi.ObjectID AND wi.Object = 'Intersect'
 							  union 
-							 select top 1 adv.DisplayValue, A.ID AS AssetId, a.uid as AssetUid from [asset] A
+							 select top 1 adv.DisplayValue, A.ID AS AssetId, a.uid as AssetUid,'Asset' from [asset] A
 							  left join [AssetDisplayValue] adv on adv.AssetID = a.ID
 						 where A.ObjectID = wi.ObjectID AND A.Object = wi.Object AND wi.Object <> 'Intersect' AND wi.Object <> 'Issue'
-						)ObjectData(Name, AssetId, AssetUid)
+						)ObjectData(Name, AssetId, AssetUid, ObjectType)
 						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
 						)AssociatedWith(json)
 						order by ua.Name";
