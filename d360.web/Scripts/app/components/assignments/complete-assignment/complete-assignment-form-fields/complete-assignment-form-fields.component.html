@@ -31,6 +31,7 @@
 		</span>
 
 		<input
+			igInput
 			*ngSwitchCase="fieldType.Integer"
 			[name]="'input_' + indx"
 			style="width: 100%"
@@ -39,6 +40,7 @@
 			required="{{field.Required}}"
 		/>
 		<textarea
+			igInput
 			*ngSwitchCase="fieldType.TextArea"
 			[name]="'input_' + indx"
 			style="width: 100%"
@@ -101,6 +103,7 @@
 		</div>
 		<div *ngSwitchCase="fieldType.Link">
 			<input
+				igInput
 				[name]="'inputName_' + indx"
 				ngModel
 				style="width: 100%"
@@ -109,6 +112,7 @@
 			/>
 			<div i18n>(Link Name)</div>
 			<input
+				igInput
 				[name]="'inputUrl_' + indx"
 				ngModel
 				style="width: 100%"
