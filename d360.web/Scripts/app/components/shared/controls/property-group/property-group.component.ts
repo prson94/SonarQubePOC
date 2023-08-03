@@ -38,7 +38,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
 	@Input() customTemplate: boolean = false;
-    @Input() sideTemplate: TemplateRef<any>;
+    @Input() sideTemplate: TemplateRef<Element>;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
     @Input() showHeaderLine: boolean = true;
