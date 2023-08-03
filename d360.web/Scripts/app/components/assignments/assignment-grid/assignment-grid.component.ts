@@ -55,7 +55,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	simpleFilter: string = '';
 	advancedFilter: string = '';
 	singleActionTypeUidSelected: boolean = false;
-	singleActionTypeUidFilter: string = '';
+	singleActionTypeUidFilter: { title: string, value: string };
 	assigneeSearchInputList: { title: string, value: string }[];
 	actionFormFields: FieldTypeAPIModelField[] = [];
 	showDeletionModal: boolean = false;
@@ -103,7 +103,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	export() {
 		this.isExportInProgress = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
-		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, true, () => {
+		this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.maxExportRows, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, this.isRequestsFlow, this.getExportFileName(), () => {
 			this.isExportInProgress = false;
 		});
 	}
@@ -121,8 +121,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.isLoading = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
-			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, false, null),
-			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter, null) : of([])
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.sortField, this.sortOrder, this.isRequestsFlow),
+			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter?.value ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter.value, null) : of([])
 		];
 		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
 			this.items = results[0].items as WorkflowAssignmentGrid[];
@@ -229,7 +229,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		for (const item of advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
-				this.singleActionTypeUidFilter = item.value && item.value[0]?.value;
+				this.singleActionTypeUidFilter = item.value?.[0];
 			}
 			if (item.field === 'assignee') {
 				this.assigneeSearchInputList = item.value;
@@ -325,6 +325,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
 	private getFilteredStatuses = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		const statusValues: string[] = ['Pending', 'Complete'];
 		const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
@@ -333,6 +334,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			count: values.length
 		});
 	};
+
 	private getFilteredAssignees = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getPossibleAssignees().pipe(
 			map((assignees: { uid: string, Name: string }[]) => {
@@ -352,6 +354,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
 	private getFilteredActions = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getWorkflowIssueTypes(null, null, { '_limitToActiveWorkflows': true }).pipe(
 			map((workflowIssueTypeList: WorkflowIssueType[]) => {
@@ -371,6 +374,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
 	private getFilteredInitiator = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getPossibleInitiators().pipe(
 			map((initiators: { uid: string, Name: string }[]) => {
@@ -390,6 +394,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
 	private getFilteredTypes = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		const typeValues: string[] = ['Action', 'Business Asset', 'Model', 'Policy', 'Relationship', 'Rule', 'Technical Asset'];
 		const values: string[] = typeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
@@ -398,6 +403,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			count: values.length
 		});
 	};
+
 	private getFilteredTypeNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getRelevantAssetTypes().pipe(
 			map((assetType: { uid: string, name: string }[]) => {
@@ -414,5 +420,19 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				};
 			}));
 	};
+
+	private getExportFileName(): string {
+		let fileName: string = '';
+		if (this.singleActionTypeUidSelected) {
+			fileName += `${this.singleActionTypeUidFilter.title} `;
+		}
+		if (this.isRequestsFlow) {
+			fileName += 'Filtered Request List';
+		} else {
+			fileName += 'Filtered Assignment List';
+		}
+		return fileName;
+	}
+
 	protected readonly Object = Object;
 }
