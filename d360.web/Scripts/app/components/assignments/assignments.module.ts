@@ -114,7 +114,9 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
 import { WorkflowModule } from '../workflow/workflow.module';
-import { CompleteAssignmentFormFieldsComponent } from './complete-assignment/complete-assignment-form-fields/complete-assignment-form-fields.component';
+import {
+	CompleteAssignmentFormFieldsComponent
+} from './complete-assignment/complete-assignment-form-fields/complete-assignment-form-fields.component';
 import { CalendarModule } from 'primeng/calendar';
 import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -157,52 +159,52 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
-  		CompleteAssignmentFormFieldsComponent
+		CompleteAssignmentFormFieldsComponent
 	],
-    imports: [
-        AdvancedFiltersModule,
-        AngularSplitModule,
-        AssetDetailModule,
-        AssetTypeDetailModule,
-        AssignmentsRoutingModule,
-        ButtonModule,
-        CheckboxModule,
-        CommonModule,
-        CoreModule,
-        D3SColumnFilterModule,
-        D3SSortIconModule,
-        DataProfileModule,
-        DirectivesModule,
-        FormsModule,
-        IgBadgeModule,
-        InputTextModule,
-        PageHeaderModule,
-        PipesModule,
-        PopupMenuModule,
-        PortalsModule,
-        PropertyGroupModule,
-        RouterModule,
-        SearchFieldModule,
-        SharedDeleteFormModule,
-        SharedGridPagingInfoModule,
-        SharedModule,
-        SidePanelModule,
-        SiteModalModule,
-        TableModule,
-        TabsModule,
-        TaggedAssetDetailModule,
-        TilesModule,
-        TooltipModule,
-        WorkflowDiagramModule,
-        AutoCompleteModule,
-        DropdownModule,
-        WorkflowModule,
-        CalendarModule,
-        EditorModule,
-        MultiSelectModule,
-        RadioButtonModule,
+	imports: [
+		AdvancedFiltersModule,
+		AngularSplitModule,
+		AssetDetailModule,
+		AssetTypeDetailModule,
+		AssignmentsRoutingModule,
+		ButtonModule,
+		CheckboxModule,
+		CommonModule,
+		CoreModule,
+		D3SColumnFilterModule,
+		D3SSortIconModule,
+		DataProfileModule,
+		DirectivesModule,
+		FormsModule,
+		IgBadgeModule,
+		InputTextModule,
+		PageHeaderModule,
+		PipesModule,
+		PopupMenuModule,
+		PortalsModule,
+		PropertyGroupModule,
+		RouterModule,
+		SearchFieldModule,
+		SharedDeleteFormModule,
+		SharedGridPagingInfoModule,
+		SharedModule,
+		SidePanelModule,
+		SiteModalModule,
+		TableModule,
+		TabsModule,
+		TaggedAssetDetailModule,
+		TilesModule,
+		TooltipModule,
+		WorkflowDiagramModule,
+		AutoCompleteModule,
+		DropdownModule,
+		WorkflowModule,
+		CalendarModule,
+		EditorModule,
+		MultiSelectModule,
+		RadioButtonModule,
 		FormFeedbackBadgesModule
-    ]
+	]
 })
 export class AssignmentsModule {
 }

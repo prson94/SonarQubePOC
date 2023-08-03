@@ -1,7 +1,13 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AssignmentItemStep, FormRequest, WorkflowForm, WorkflowFormField, WorkflowFormFieldType } from '../../../models/workflow.model';
+import {
+	AssignmentItemStep,
+	FormRequest,
+	WorkflowForm,
+	WorkflowFormField,
+	WorkflowFormFieldType
+} from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
@@ -31,19 +37,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
-	cancelButtonText:string='Close'
-	discardForm:boolean
+	discardForm: boolean;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 
 	private linkInterceptorSubscription: Subscription;
-    @ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild('form', { static: false }) formElement: ElementRef;
 
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
 				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService:AssignmentService
-				) {
+				private assignmentService: AssignmentService
+	) {
 		super(settingsService);
 	}
 
@@ -51,8 +56,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isAssignmentProgressSelected = false;
 	}
 
-	onFormInput(message){
-		this.discardForm=message
+	onFormInput(message) {
+		this.discardForm = message;
 	}
 
 
@@ -83,12 +88,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isLoading = true;
 		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
 			.subscribe((res: WorkflowForm) => {
-				this.formTitle = res.Title;
-				this.formDescription = res.Description;
-				this.formFields = res.Fields;
 				this.isLoading = false;
-				this.assignmentService.setFormValidators.next();
-				this.request = res.Request;		
+				if (res) {
+					this.formTitle = res.Title;
+					this.formDescription = res.Description;
+					this.formFields = res.Fields;
+					this.request = res.Request;
+					this.assignmentService.setFormValidators.next();
+				}
 			});
 	}
 
@@ -97,8 +104,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 	}
 
-	discardFormFunc(){
-		this.workflowForm.reset()
+	discardFormFunc() {
+		this.workflowForm.reset();
 	}
 
 	onFormSubmit(): void {
@@ -115,25 +122,25 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	closeModal(): void {
 		this.isModalVisible = false;
-		this.linkInterceptorSubscription?.unsubscribe()
+		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
 	onClickResource(event: MouseEvent): void {
-		if(this.request?.Action) {
+		if (this.request?.Action) {
 			this.linkClickInterceptor.sendEvent(event, {
 				ResourceUid: this.request.Action.CreatedBy
 			}, 'users/' + this.request.Action.CreatedBy);
 		}
 	}
 
-	public prepareValuesForSubmit() {
+	public prepareValuesForSubmit(): void {
 		this.formFields.forEach((x, i) => {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
-				
+
 				const name = this.workflowForm.form.controls[`inputName_${i}`].value;
 				const url = this.workflowForm.form.controls[`inputUrl_${i}`].value;
 				x.Value =
-					name.length + url.length === 0 ? "" : name + "|" + url;
+					name.length + url.length === 0 ? '' : name + '|' + url;
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
 			}

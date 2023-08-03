@@ -260,6 +260,23 @@ export class WorkflowFormField {
 
 }
 
+export class FormRequest {
+	Action: {
+		Uid: string,
+		CreatedBy: string,
+		CreatedByName: string,
+		CreatedOn: string,
+		UpdatedBy: string,
+		UpdatedByName: string,
+		UpdatedOn: string,
+		AssociatedAssetUid: string,
+		AssociatedAssetType: string,
+		AssociatedAssetPath: string,
+		AssociatedAssetTypeClass: string
+	};
+	ActionFields: FieldTypeAPIModelField[];
+}
+
 export class WorkflowForm {
 	Fields: WorkflowFormField[] = [];
 	Title: string;
@@ -987,21 +1004,4 @@ export class WorkflowDetails {
 		State: number,
 		ID: number
 	}[];
-}
-
-export class FormRequest {
-	Action: {
-		Uid: string,
-		CreatedBy: string,
-		CreatedByName: string,
-		CreatedOn: string,
-		UpdatedBy: string,
-		UpdatedByName: string,
-		UpdatedOn: string,
-		AssociatedAssetUid: string,
-		AssociatedAssetType: string,
-		AssociatedAssetPath: string,
-		AssociatedAssetTypeClass: string
-	};
-	ActionFields: FieldTypeAPIModelField[];
 }

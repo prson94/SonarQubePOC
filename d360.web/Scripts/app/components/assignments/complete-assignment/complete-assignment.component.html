@@ -42,177 +42,153 @@
 						</span>
 					</div>
 				</div>
-				<d3s-loading [isLoading]="isLoading"></d3s-loading>
-				<ng-container *ngIf="!isLoading">
-					<div>subtitle</div>
-					<div
-						[hidden]="isAssignmentProgressSelected"
-						class="scrollable-content details-container"
-					>
-						<div class="asset-detail">
-							<div class="asset-detail-tabs">
-								<ig-property-group
-									i18n-title
-									title="Information"
-									[showHeaderLine]="false"
-								>
-									<div readonly>
-										<ng-container>
-											<div class="row">
-												<div class="category-column">
-													<label
-														class="ig-label"
-														i18n
-														>{{ formTitle }}</label
-													>
-													<div
-														class="ig-value"
-														[innerHTML]="
+				<div>subtitle</div>
+				<div
+					[hidden]="isAssignmentProgressSelected"
+					class="scrollable-content details-container"
+				>
+					<d3s-loading [isLoading]="isLoading"></d3s-loading>
+					<div *ngIf="!isLoading" class="asset-detail">
+						<div class="asset-detail-tabs">
+							<ig-property-group
+								i18n-title
+								title="Information"
+								[showHeaderLine]="false"
+							>
+								<div readonly>
+									<ng-container>
+										<div class="row">
+											<div class="category-column">
+												<label
+													class="ig-label"
+													i18n
+												>{{ formTitle }}</label
+												>
+												<div
+													class="ig-value"
+													[innerHTML]="
 															formDescription
 														"
-													></div>
-												</div>
+												></div>
 											</div>
-										</ng-container>
-									</div>
-								</ig-property-group>
-								<ig-property-group
-									*ngIf="request && request.Action"
-									i18n-title
-									title="Request"
-									[showHeaderLine]="false"
-								>
-									<div readonly>
-										<ng-container>
-											<div class="row">
-												<div
-													*ngFor="
+										</div>
+									</ng-container>
+								</div>
+							</ig-property-group>
+							<ig-property-group
+								*ngIf="request && request.Action"
+								i18n-title
+								title="Request"
+								[showHeaderLine]="false"
+							>
+								<div readonly>
+									<ng-container>
+										<div class="row">
+											<div
+												*ngFor="
 														let actionField of request.ActionFields
 													"
-													class="category-column"
+												class="category-column"
+											>
+												<label
+													class="ig-label"
+													i18n
+												>{{
+													actionField.FriendlyName
+													}}</label
 												>
-													<label
-														class="ig-label"
-														i18n
-														>{{
-															actionField.FriendlyName
-														}}</label
-													>
-													<div class="ig-value">
-														{{
-															request.Action[
-																actionField.Name
-															]
-														}}
-													</div>
-												</div>
-											</div>
-											<div class="row">
-												<div class="category-column">
-													<p>
-														Submitted by
-														{{
-															request.Action
-																.CreatedByName
-														}}
-														on
-														{{
-															request.Action
-																.CreatedOn
-														}}
-													</p>
-													<p>
-														Associated Asset :
-														{{
-															request.Action
-																.AssociatedAssetPath
-														}}
-													</p>
-												</div>
-											</div>
-										</ng-container>
-									</div>
-								</ig-property-group>
-								<form
-									(ngSubmit)="onFormSubmit()"
-									#workflowForm="ngForm"
-									#form
-								>
-								<ng-template #requiredFieldsTemplate>
-									<ig-form-feedback-badges
-									class="ig-form-feedback-badges"
-									[igformGroup]="workflowForm.form"
-									[inputContainer]="formElement"
-								>
-								</ig-form-feedback-badges>
-								
-								</ng-template>
-									<ig-property-group
-										i18n-title
-										title="Form fields"
-										[showHeaderLine]="false"
-										[sideTemplate]="requiredFieldsTemplate"
-										[customTemplate]="true"
-									>
-										<div readonly>
-											<div class="row">
-												<div class="l6 s12">
-													<d3s-complete-assignment-form-fields
-														[fields]="formFields"
-														[form]="workflowForm"
-														[formElement]="
-															formElement
-														"
-														(discardForm)="
-															onFormInput($event)
-														"
-													>
-													</d3s-complete-assignment-form-fields>
+												<div class="ig-value">
+													{{
+													request.Action[
+														actionField.Name
+														]
+													}}
 												</div>
 											</div>
 										</div>
-									</ig-property-group>
-									<!-- <div class="action-buttons flex-grid">
-										<button
-											igButton
-											type="button"
-											class="ig-button-secondary"
-											label="{{
-												discardForm
-													? 'Discard Form'
-													: 'Close'
-											}}"
-											(click)="discardForm? discardFormFunc(): closeModal()"
-										></button>
-										<div class="flex-grow"></div>
-										<button
-											type="submit"
-											igButton
-											class="ig-button-primary"
-											label="Submit"
-											[disabled]="!workflowForm.valid"
-											(click)="onFormSubmit()"
-										></button>
-									</div> -->
-								</form>
-							</div>
+										<div class="row">
+											<div class="category-column">
+												<p>
+													Submitted by
+													{{
+													request.Action
+														.CreatedByName
+													}}
+													on
+													{{
+													request.Action
+														.CreatedOn
+													}}
+												</p>
+												<p>
+													Associated Asset :
+													{{
+													request.Action
+														.AssociatedAssetPath
+													}}
+												</p>
+											</div>
+										</div>
+									</ng-container>
+								</div>
+							</ig-property-group>
+							<form
+								(ngSubmit)="onFormSubmit()"
+								#workflowForm="ngForm"
+								#form
+							>
+								<ng-template #requiredFieldsTemplate>
+									<ig-form-feedback-badges
+										class="ig-form-feedback-badges"
+										[igformGroup]="workflowForm.form"
+										[inputContainer]="formElement"
+									>
+									</ig-form-feedback-badges>
+
+								</ng-template>
+								<ig-property-group
+									i18n-title
+									title="Form fields"
+									[showHeaderLine]="false"
+									[sideTemplate]="requiredFieldsTemplate"
+									[customTemplate]="true"
+								>
+									<div readonly>
+										<div class="row">
+											<div class="l6 s12">
+												<d3s-complete-assignment-form-fields
+													[fields]="formFields"
+													[form]="workflowForm"
+													[formElement]="
+															formElement
+														"
+													(discardForm)="
+															onFormInput($event)
+														"
+												>
+												</d3s-complete-assignment-form-fields>
+											</div>
+										</div>
+									</div>
+								</ig-property-group>
+							</form>
 						</div>
 					</div>
-					<div
-						[hidden]="!isAssignmentProgressSelected"
-						class="scrollable-content"
-					>
-						<d3s-assignment-progress
-							[workflowItemUid]="workflowItemUid"
-							[showCompleteAssignment]="false"
-							(stepClickChange)="stepClickChanged($event)"
-						></d3s-assignment-progress>
-						<d3s-assignment-information
-							[showCompleteAssignment]="false"
-							[workflowItemUid]="workflowItemUid"
-						></d3s-assignment-information>
-					</div>
-				</ng-container>
+				</div>
+				<div
+					[hidden]="!isAssignmentProgressSelected"
+					class="scrollable-content"
+				>
+					<d3s-assignment-progress
+						[workflowItemUid]="workflowItemUid"
+						[showCompleteAssignment]="false"
+						(stepClickChange)="stepClickChanged($event)"
+					></d3s-assignment-progress>
+					<d3s-assignment-information
+						[showCompleteAssignment]="false"
+						[workflowItemUid]="workflowItemUid"
+					></d3s-assignment-information>
+				</div>
 			</div>
 		</div>
 		<div class="side-panel">
