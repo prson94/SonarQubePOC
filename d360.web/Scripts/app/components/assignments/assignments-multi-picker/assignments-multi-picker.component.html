@@ -1,63 +1,21 @@
 <d3s-modal [showTitle]="false"
 		   [isVisible]="isModalVisible"
-		   [showActionBar]="true"
 		   [additionalClasses]="'large-dialog'"
-		   (onConfirm)="onFormSubmit()"
 		   (onClose)="isModalVisible = false">
-	<div class="modal-with-side-panel">
+	<div class="modal-with-side-panel multi-assignment-selector">
 		<div class="modal-dialog-main-panel">
-			<div class="content condensed-table">
-				<div class="table-wrapper">
-					<p-table #dt
-							 [tableStyle]="{'min-width': 'max-content'}"
-							 loadingIcon="fa fa-spinner"
-							 [value]="assignments"
-							 selectionMode="multiple"
-							 [metaKeySelection]="true"
-							 [scrollable]="true"
-							 [scrollHeight]="'calc(100vh - 353px)'"
-							 [(selection)]="selected"
-							 [sortOrder]="-1">
-						<ng-template pTemplate="header">
-							<tr>
-								<th style="width: 36px;">
-									<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-								</th>
-								<th [pSortableColumn]="'Name'">
-									<ng-container i18n>Associated Asset</ng-container>
-									<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-								</th>
-								<th [pSortableColumn]="'InitiatedBy'">
-									<ng-container i18n>Initiated By</ng-container>
-									<d3s-sortIcon [field]="'InitiatedBy'"></d3s-sortIcon>
-								</th>
-								<th [pSortableColumn]="'InitiatedOn'">
-									<ng-container i18n>Initiated</ng-container>
-									<d3s-sortIcon [field]="'InitiatedOn'"></d3s-sortIcon>
-								</th>
-								<th>
-
-								</th>
-							</tr>
-						</ng-template>
-						<ng-template pTemplate="body" let-item>
-							<tr [pSelectableRow]="item" class="assignments-table-data">
-								<td>
-									<p-tableCheckbox [value]="item"></p-tableCheckbox>
-								</td>
-								<td>
-									{{item.Name}}
-								</td>
-								<td>{{item.InitiatedBy}}</td>
-								<td>{{item.InitiatedOn}}</td>
-								<td>
-									bnt
-								</td>
-							</tr>
-						</ng-template>
-					</p-table>
-				</div>
+			<div *ngIf="isLoading" style="width:100%; text-align:center;">
+				<div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
 			</div>
+
+			<ng-container *ngIf="!isLoading">
+				<ng-container *ngTemplateOutlet="assignmentsPicker;"></ng-container>
+				<div class="action-bar">
+					<button igButton class="ig-button-secondary" (click)="isModalVisible = false" i18n>Close</button>
+					<span class="grow"></span>
+					<button igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0">Complete Assignments > </button>
+				</div>
+			</ng-container>
 		</div>
 		<div class="side-panel">
 			<side-panel [(expanded)]="sidePanelOpen"
@@ -89,3 +47,92 @@
 		</div>
 	</div>
 </d3s-modal>
+
+<ng-template #assignmentsPicker>
+	<div class="content condensed-table">
+		<div class="modal-edit-form">
+			<div i18n class="title">Select Assignments</div>
+			<div class="subtitle">Request Certification</div>
+		</div>
+		<div class="asset-detail">
+			<div class="asset-detail-tabs">
+				<ig-property-group i18n-title title="Assignment Information" [showHeaderLine]="false" [shouldBePadded]="false">
+					<div readonly>
+						<div class="row">
+
+							<div class="category-column">
+								<label class="ig-label" i18n>{{ formTitle }}</label>
+								<div class="ig-value" [innnerHTML]="formDescription"></div>
+							</div>
+
+						</div>
+					</div>
+				</ig-property-group>
+
+				<ig-property-group i18n-title title="Assignments" [showHeaderLine]="false" [shouldBePadded]="false">
+					<div readonly>
+						<div class="row">
+
+							<div class="table-wrapper">
+								<p-table #dt
+										 [tableStyle]="{'min-width': 'max-content'}"
+										 loadingIcon="fa fa-spinner"
+										 [value]="assignments"
+										 selectionMode="multiple"
+										 [metaKeySelection]="true"
+										 [scrollable]="true"
+										 [scrollHeight]="'calc(100vh - 353px)'"
+										 [(selection)]="selected"
+										 [sortOrder]="-1">
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 36px;">
+												<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+											</th>
+											<th [pSortableColumn]="'Name'">
+												<ng-container i18n>Associated With</ng-container>
+												<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+											</th>
+											<th>
+												<ng-container i18n>Object Type</ng-container>
+											</th>
+											<th [pSortableColumn]="'InitiatedBy'">
+												<ng-container i18n>Initiated By</ng-container>
+												<d3s-sortIcon [field]="'InitiatedBy'"></d3s-sortIcon>
+											</th>
+											<th [pSortableColumn]="'InitiatedOn'">
+												<ng-container i18n>Initiated</ng-container>
+												<d3s-sortIcon [field]="'InitiatedOn'"></d3s-sortIcon>
+											</th>
+											<th>
+
+											</th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr [pSelectableRow]="item" class="assignments-table-data">
+											<td>
+												<p-tableCheckbox [value]="item"></p-tableCheckbox>
+											</td>
+											<td>
+												{{item.Name}}
+											</td>
+											<td>
+												{{item.AssetUid ? 'Asset' : 'Asset Type'}}
+											</td>
+											<td>{{item.InitiatedBy}}</td>
+											<td>{{item.InitiatedOn}}</td>
+											<td>
+												<button *ngIf="item.AssetUid" igButton icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
+											</td>
+										</tr>
+									</ng-template>
+								</p-table>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+			</div>
+		</div>
+	</div>
+</ng-template>

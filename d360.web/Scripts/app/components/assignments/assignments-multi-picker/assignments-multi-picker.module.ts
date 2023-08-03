@@ -6,6 +6,7 @@ import { CoreModule } from '../../shared/core.module';
 import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { TableModule } from 'primeng/table';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 
 
 
@@ -23,7 +24,8 @@ import { TableModule } from 'primeng/table';
 		AssetDetailModule,
 		SidePanelModule,
 
-		TableModule
+		TableModule,
+		PropertyGroupModule
 	]
 })
 export class AssignmentsMultiPickerModule { }
