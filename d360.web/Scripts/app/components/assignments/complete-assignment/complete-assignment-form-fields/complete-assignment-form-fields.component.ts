@@ -31,7 +31,7 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 			.pipe()
 			.subscribe((value) => {
 				for (const propName in value) {
-					if (value[propName] === null || value[propName] === undefined || value[propName] === '') {
+					if (!value[propName]) {
 						delete value[propName];
 					}
 				}
