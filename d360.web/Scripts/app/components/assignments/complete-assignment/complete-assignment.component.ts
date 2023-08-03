@@ -34,6 +34,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	sidePanel: string = 'asset-details';
 	formTitle: string = '';
 	formDescription: string = '';
+	assetName: string = '';
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
@@ -96,6 +97,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.formDescription = res.Description;
 					this.formFields = res.Fields;
 					this.request = res.Request;
+					this.assetName = res.ObjectName;
 					this.assignmentService.setFormValidators.next();
 				}
 			});
@@ -133,6 +135,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.linkClickInterceptor.sendEvent(event, {
 				ResourceUid: this.request.Action.CreatedBy
 			}, 'users/' + this.request.Action.CreatedBy);
+		}
+	}
+
+	onClickAsset(event: MouseEvent): void {
+		if (this.assetId) {
+			this.linkClickInterceptor.sendEvent(event, {
+				AssetId: this.assetId
+			}, 'asset/' + this.assetId);
 		}
 	}
 
