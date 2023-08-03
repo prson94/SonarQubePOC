@@ -379,6 +379,25 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
+		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemUid)
+		{
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
+			dbArgs.Add("workflowItemUid", workflowItemUid);
+
+			var sql = @"
+				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
+				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
+				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
+
+				select 
+				case when @doesExists is not null then 1 else 0 end as [exists], 
+				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
+				case when @hasAccess is not null then 1 else 0 end as [hasAccess]";
+
+			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
+		}
+
 		public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
 		{
 			var dbArgs = new DynamicParameters();

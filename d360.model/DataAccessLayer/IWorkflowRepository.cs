@@ -40,5 +40,7 @@ namespace d360.model.DataAccessLayer
 		Task<WorkflowInstanceDetailsByVersionAPIModel> GetWorkflowInstanceDetailsByVersion(IEnumerable<KeyValuePair<string, string>> queryParams);
 		Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid);
 
+		Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemUid);
+
 	}
 }

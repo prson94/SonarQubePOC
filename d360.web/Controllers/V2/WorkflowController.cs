@@ -712,6 +712,21 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
+		/// Get the details of workflow item step if user has access
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("assignments/{workflowItemUid}/state"),
+			SwaggerProduces("application/json"),
+			ApiExplorerSettings(IgnoreApi = false)
+		]
+		public async Task<IHttpActionResult> GetRelevantAssetTypes(Guid workflowItemUid)
+		{
+			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemUid));
+		}
+
+		/// <summary>
 		/// Create the Excel document for export
 		/// </summary>
 		/// <returns>A spreadsheet populated with a list of Assignments/Requests</returns>
