@@ -20,6 +20,6 @@
 		*ngIf="showCompleteAssignment && !assignmentItemStep.CompletedOn && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
 		class="ig-button-primary complete-assignment"
 		(click)="completeAssignmentClick()" i18n
->Awaiting your answer&nbsp;<b>Complete the Assignment</b><span class="fa fa-pencil"></span>
+>Awaiting your answer&nbsp;&nbsp;<b>Complete the Assignment</b><span class="fa fa-pencil"></span>
 </button>
 <span class="fa fa-caret-down position-center" *ngIf="!isLastStep"></span>
