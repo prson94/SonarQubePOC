@@ -82,6 +82,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	showAssignment(): void {
 		this.isAssignmentProgressSelected = false;
 		this.modalTitle = 'Assignment';
+		this.sidePanelSwitcherComponent.clear();
+
 	}
 
 	getFormDetails(): void {
@@ -102,6 +104,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
 		this.modalTitle = 'Assignment Progress and Information';
+		this.sidePanelSwitcherComponent.clear();
 	}
 
 	discardFormFunc() {
