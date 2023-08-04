@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
 import { ControlContainer, NgForm } from '@angular/forms';
 import { AssignmentService } from '../../assignment.service';
+import { unset } from 'lodash-es';
 
 @Component({
 	selector: 'd3s-complete-assignment-form-fields',
@@ -32,7 +33,8 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 			.subscribe((value) => {
 				for (const propName in value) {
 					if (!value[propName]) {
-						delete value[propName];
+						unset(value, propName);
+
 					}
 				}
 				if (Object.keys(value).length) {
