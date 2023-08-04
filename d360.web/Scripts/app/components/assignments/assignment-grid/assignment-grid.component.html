@@ -63,12 +63,12 @@
 			<ng-template pTemplate="header">
 				<tr>
 					<ng-container *ngIf="actionFormFields.length === 0">
-						<th [pSortableColumn]="'workflowName'">
+						<th [pSortableColumn]="'workflowName'" class="workflow-name-column">
 							<ng-container i18n>Workflow Name</ng-container>
 							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'assetDisplayValue'" *ngIf="!assetUid">
+					<th [pSortableColumn]="'assetDisplayValue'" class="associated-with-column" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>

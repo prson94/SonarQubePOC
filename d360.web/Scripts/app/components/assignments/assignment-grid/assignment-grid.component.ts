@@ -334,7 +334,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	private getFilteredWorkflowNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getTypes().pipe(
 			map((workflowTypeList: WorkflowTypeModel[]) => {
-				let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
+				let workflowNameList: string[] = [];
+				for (const workflowType of workflowTypeList) {
+					if (workflowType?.Name && !workflowNameList.includes(workflowType.Name)) {
+						workflowNameList.push(workflowType.Name);
+					}
+				}
 				workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 				return {
 					items: workflowNameList,
