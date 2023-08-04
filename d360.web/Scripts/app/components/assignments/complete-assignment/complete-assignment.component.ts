@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
+	AssignmentByVersion,
 	AssignmentItemStep,
 	FormRequest,
 	WorkflowForm,
@@ -40,11 +41,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
 	discardForm: boolean;
+	workflowTypeUid: string;
+	workflowTypeVersion: number;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
-	@ViewChild('workflowForm') public workflowForm: NgForm;
 
-	private linkInterceptorSubscription: Subscription;
+	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+	private linkInterceptorSubscription: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
@@ -73,7 +76,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			this.getFormDetails();
+			this.loadFormDetails();
+			this.loadWorkflowTypeDetails();
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -87,22 +91,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment';
 		this.sidePanelSwitcherComponent.clear();
 
-	}
-
-	getFormDetails(): void {
-		this.isLoading = true;
-		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
-			.subscribe((res: WorkflowForm) => {
-				this.isLoading = false;
-				if (res) {
-					this.formTitle = res.Title;
-					this.formDescription = res.Description;
-					this.formFields = res.Fields;
-					this.request = res.Request;
-					this.assetName = res.ObjectName;
-					this.assignmentService.setFormValidators.next();
-				}
-			});
 	}
 
 	showAssignmentProgress(): void {
@@ -148,7 +136,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 	}
 
-	public prepareValuesForSubmit(): void {
+	prepareValuesForSubmit(): void {
 		this.formFields.forEach((x, i) => {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
 
@@ -162,4 +150,29 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		});
 	}
 
+	private loadFormDetails(): void {
+		this.isLoading = true;
+		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
+			.subscribe((res: WorkflowForm) => {
+				this.isLoading = false;
+				if (res) {
+					this.formTitle = res.Title;
+					this.formDescription = res.Description;
+					this.formFields = res.Fields;
+					this.request = res.Request;
+					this.assetName = res.ObjectName;
+					this.assignmentService.setFormValidators.next();
+				}
+			});
+	}
+
+	private loadWorkflowTypeDetails() {
+		this.workflowService.getAssignmentsByVersion(1, 1, undefined, undefined, undefined, undefined, this.workflowItemUid)
+			.subscribe((response: AssignmentByVersion): void => {
+				if (response?.items?.length > 0) {
+					this.workflowTypeUid = response.items[0].WorkflowTypeUid;
+					this.workflowTypeVersion = response.items[0].Version;
+				}
+			});
+	}
 }
