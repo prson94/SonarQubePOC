@@ -3,6 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
 	AssignmentByVersion,
+	AssignmentItem,
 	AssignmentItemStep,
 	FormRequest,
 	WorkflowForm,
@@ -70,14 +71,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		workflowItemUid: string,
 		stepUid: string,
 		assetId: number
-	},selectedWorkflowItems?): void {
-		this.workflowName=selectedWorkflowItems[0]?.workflowName
+	}): void {
 		if (details) {
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
+			this.getWorkFlowData()
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -174,5 +175,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowTypeVersion = response.items[0].Version;
 				}
 			});
+	}
+
+	getWorkFlowData(){
+		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
+			this.workflowName=response.WorkflowName
+		});
 	}
 }
