@@ -181,7 +181,9 @@
 				>
 					<d3s-assignment-progress
 						[workflowItemUid]="workflowItemUid"
+						[workflowUid]="workflowTypeUid"
 						[showCompleteAssignment]="false"
+						[workflowTypeVersion]="workflowTypeVersion"
 						(stepClickChange)="stepClickChanged($event)"
 					></d3s-assignment-progress>
 					<d3s-assignment-information
