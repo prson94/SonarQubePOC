@@ -51,6 +51,8 @@
 			*ngSwitchCase="fieldType.Date"
 			[(ngModel)]="field.Value"
 			[name]="'input_' + indx"
+			appendTo="body"
+			baseZIndex="20000"
 			required="{{field.Required}}"
 		></p-calendar>
 		<div *ngSwitchCase="fieldType.List">
@@ -176,6 +178,5 @@
 			</p-editor>
 		</div>
 	</div>
-	<div class="col s12">&nbsp;</div>
 </div>
 
