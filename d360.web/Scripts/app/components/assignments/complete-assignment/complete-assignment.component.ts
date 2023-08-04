@@ -28,6 +28,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
 	workflowItemUid: string;
+	workflowName:string;
 	stepUid: string;
 	assetId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
@@ -66,7 +67,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		workflowItemUid: string,
 		stepUid: string,
 		assetId: number
-	}): void {
+	},selectedWorkflowItems?): void {
+		this.workflowName=selectedWorkflowItems[0]?.workflowName
 		if (details) {
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
