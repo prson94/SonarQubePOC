@@ -1719,13 +1719,13 @@ namespace d360.model.DataAccessLayer
 		{
 			long ID = 0;
 
-			if(type.ToLower() ==  "asset")
+			if(type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
 			{
 				var asset = CompanyContext.Assets.Where(a => a.uid == uid).FirstOrDefault();
 				ID = asset?.ID ?? 0;
 			}
 
-			if (type.ToLower() == "assettype")
+			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
 			{
 				var assetType = CompanyContext.AssetTypes.Where(ast => ast.uid == uid).FirstOrDefault();
 				ID = assetType?.ID ?? 0;

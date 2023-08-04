@@ -680,15 +680,15 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssignmentCount(string type, Guid uid)
 		{
-			List<string> allowedTypes = new List<string>() { "assettype", "asset" };
+			List<string> allowedTypes = new List<string> { "assettype", "asset" };
 
-			if (!allowedTypes.Contains(type.ToLower()))
+			if (!allowedTypes.Contains(type))
 			{
 				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidObjectType, type)));
 			}
 
 
-			if (type.ToLower() == "asset")
+			if (type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
 			{
 				var asset = Company.Assets.Where(a => a.uid == uid).FirstOrDefault();
 
@@ -698,7 +698,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			if (type.ToLower() == "assettype")
+			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
 			{
 				var assetType = Company.AssetTypes.Where(ast=>ast.uid == uid).FirstOrDefault();
 
