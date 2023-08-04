@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { AssignmentsMultiPickerComponent } from './assignments-multi-picker.component';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { CoreModule } from '../../shared/core.module';
-import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { TableModule } from 'primeng/table';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 
 
@@ -21,9 +21,8 @@ import { PropertyGroupModule } from '../../shared/controls/property-group/proper
 		CommonModule,
 		SiteModalModule,
 		CoreModule,
-		AssetDetailModule,
+		AssetPreviewModule,
 		SidePanelModule,
-
 		TableModule,
 		PropertyGroupModule
 	]

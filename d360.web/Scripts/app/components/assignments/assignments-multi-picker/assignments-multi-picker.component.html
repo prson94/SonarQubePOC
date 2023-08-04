@@ -20,24 +20,16 @@
 		<div class="side-panel">
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
+						[selectedItem]="selectedForInfoPanel?.uid"
 						hasDetail="true"
 						height="calc(100vh - 220px)">
 				<ng-container *ngIf="sidePanelOpen">
-					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
-									 [objectID]="assetId"
-									 objectType="Artifact"
-									 [useAccordion]="true"
-									 [shouldBePadded]="false"
-									 [showHeader]="true"
-									 [showHeaderLine]="false"
-									 [spacerHeight]="'16px'"
-									 [tooltipAlign]="'left'"
-									 [isSidePanel]="false"
-									 [hideLinks]="true"
-									 [hasAddRelationshipsPermissions]="false"
-									 [hasModifyRelationshipsPermissions]="false"
-									 [hasDeleteRelationshipsPermissions]="false"
-									 [interceptLinkClick]="true"></ig-asset-detail>
+					<asset-preview *ngIf="sidePanel === 'asset-details' && selectedForInfoPanel"
+								   [assetUid]="selectedForInfoPanel.uid"
+								   [assetType]="selectedForInfoPanel.type"
+								   [hasEditLink]="false"
+								   [hasOpenLink]="true"></asset-preview>
+
 					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'"
 														  [workflowItemUId]="workflowItemUid"
 														  [showCompleteAssignment]="false"
@@ -78,7 +70,6 @@
 										 [tableStyle]="{'min-width': 'max-content'}"
 										 loadingIcon="fa fa-spinner"
 										 [value]="assignments"
-										 selectionMode="multiple"
 										 [metaKeySelection]="true"
 										 [scrollable]="true"
 										 [scrollHeight]="'calc(100vh - 353px)'"
@@ -111,19 +102,19 @@
 										</tr>
 									</ng-template>
 									<ng-template pTemplate="body" let-item>
-										<tr [pSelectableRow]="item" class="assignments-table-data">
-											<td>
+										<tr #el [pSelectableRow]="item" class="table-row">
+											<td (click)="selectSingleItem($event,item,el);">
 												<p-tableCheckbox [value]="item"></p-tableCheckbox>
 											</td>
-											<td>
+											<td (click)="selectSingleItem($event,item,el);">
 												{{item.Name}}
 											</td>
-											<td>
+											<td (click)="selectSingleItem($event,item,el);">
 												{{item.ObjectType}}
 											</td>
-											<td>{{item.InitiatedBy}}</td>
-											<td>{{item.InitiatedOn}}</td>
-											<td>
+											<td (click)="selectSingleItem($event,item,el);"> {{item.InitiatedBy}}</td>
+											<td (click)="selectSingleItem($event,item,el);">{{item.InitiatedOn  | date:'shortDate'}}</td>
+											<td class="info-panel-button">
 												<button *ngIf="item.AssetUid" igButton icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
 											</td>
 										</tr>

@@ -1789,7 +1789,7 @@ namespace d360.model.DataAccessLayer
 						left join [asset] crAsset on crAsset.Object = 'Resource' and crAsset.ObjectId = wis.StartedBy
 						left join AssetDisplayValue adv on adv.AssetID = crAsset.ID
 						outer apply (
-							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset' else 'Asset Type' end as ObjectType from [Issue] I 
+							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset Type' else 'Asset' end as ObjectType from [Issue] I 
 							 left join [Asset] a on a.ID = I.AssetID
 							 left join [AssetDisplayValue] adv on adv.AssetID = a.ID
 							 left join [AssetType] at on at.ID = I.AssetTypeID

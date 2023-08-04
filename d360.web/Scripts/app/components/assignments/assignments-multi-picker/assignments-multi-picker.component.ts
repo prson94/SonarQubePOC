@@ -1,5 +1,7 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, OnInit, EventEmitter, Output, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, OnInit, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
+import { Table } from 'primeng/table';
 import { SingleAssignment } from '../../../models/workflow.model';
+import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
 
 @Component({
@@ -9,29 +11,31 @@ import { WorkflowService } from '../../../services/workflow.service';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None
 })
-export class AssignmentsMultiPickerComponent implements OnInit {
+export class AssignmentsMultiPickerComponent {
 	@Output() onAssignmentSelection = new EventEmitter<SingleAssignment[]>();
 
 	isModalVisible: boolean = false;
 	sidePanelOpen: boolean = false;
 	workflowItemUid: string;
 	stepUid: string;
-	assetId: number;
 	sidePanelStorageKey: string = 'MultiAssignments_Component';
 	sidePanel: string = 'asset-details';
+
+	selectedForInfoPanel: { uid: string, type: string };
 
 	assignments: SingleAssignment[] = [];
 	selected: SingleAssignment[] = [];
 	isLoading: boolean = false;
 	formTitle: string = '';
 	formDescription: string = '';
+
+	@ViewChild('dt', { static: false }) tableEl: Table;
+
 	constructor(
 		private cdRef: ChangeDetectorRef,
+		private sidePanelService: SidePanelService,
 		private workflowService: WorkflowService
 	) { }
-
-	ngOnInit(): void {
-	}
 
 	public openModal(assignments: SingleAssignment[]) {
 		this.isModalVisible = true;
@@ -65,5 +69,80 @@ export class AssignmentsMultiPickerComponent implements OnInit {
 
 	openAssetSidePanel(item: SingleAssignment) {
 		console.log(item);
+		this.sidePanel = 'asset-details';
+		this.selectedForInfoPanel = { type: 'Artifact', uid: item.AssetUid };
+		this.sidePanelService.setSidePanelState({ expanded: true });
+		this.cdRef.markForCheck();
 	}
+
+
+	private lastSelectedElement: SingleAssignment;
+
+	private triggerRerenderOfSelection() {
+		// primeNg library expects us to pass new array whenever we want to change contents of array
+		this.selected = this.selected.slice();
+		this.cdRef.markForCheck();
+	}
+
+	selectSingleItem(event: MouseEvent, item: SingleAssignment, element: ElementRef = null) {
+		//p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+		if (event && element) {
+			if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+				if (this.selected.filter((x) => x.WorkflowItemUid === item.WorkflowItemUid).length > 0) {
+					this.selected = this.selected.filter((x) => x.WorkflowItemUid !== item.WorkflowItemUid);
+					this.triggerRerenderOfSelection();
+				}
+				else {
+					this.selected.push(item);
+					this.triggerRerenderOfSelection();
+				}
+
+				this.lastSelectedElement = item;
+				return;
+			}
+			if (event.shiftKey) {
+				let lastIndex = this.assignments.indexOf(this.lastSelectedElement);
+				if (lastIndex === -1 && this.selected.length === 1) {
+					lastIndex = this.assignments.indexOf(this.selected[0]);
+				}
+				let currentIndex = this.assignments.indexOf(item);
+
+				if (lastIndex > currentIndex) {
+					lastIndex += currentIndex;
+					currentIndex = lastIndex - currentIndex;
+					lastIndex -= currentIndex;
+				}
+
+				const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+				for (let i = lastIndex; i <= currentIndex; i++) {
+					if (!tableRows[i].classList.contains('p-highlight')) {
+						this.selected.push(this.assignments[i]);
+						this.triggerRerenderOfSelection();
+					}
+				}
+
+				this.lastSelectedElement = item;
+				return;
+			}
+
+		}
+		const target = (<any>(event.target));
+		if (element && target.nodeName !== "P-TABLECHECKBOX") {
+			this.selected = [];
+			this.selected.push(item);
+			this.triggerRerenderOfSelection();
+			this.lastSelectedElement = item;
+		} else {
+			if (this.selected.filter((x) => x.WorkflowItemUid === item.WorkflowItemUid).length > 0) {
+				this.selected = this.selected.filter((x) => x.WorkflowItemUid !== item.WorkflowItemUid);
+				this.triggerRerenderOfSelection();
+			}
+			else {
+				this.selected.push(item);
+				this.triggerRerenderOfSelection();
+			}
+			this.lastSelectedElement = item;
+		}
+	}
+
 }
