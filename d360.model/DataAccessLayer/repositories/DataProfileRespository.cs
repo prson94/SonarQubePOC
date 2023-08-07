@@ -306,6 +306,128 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
+		public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();
+			var results = new AssetDataProfilesApiViewModel
+			{
+				pageNum = CompanyContext.ParsePageNumber(queryParams, 1),
+				pageSize = CompanyContext.ParsePageSize(queryParams)
+			};
+			string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
+
+			List<string> whereClauses = new List<string>();
+
+			foreach (var param in queryParams)
+			{
+				switch (param.Key.ToLower())
+				{
+					case "_filter":
+						var fieldList = new List<DefaultFilter>
+						{
+							new DefaultFilter("assetUid", "A.Uid", SqlFieldType.Guid),
+							new DefaultFilter("ProfileIdentifier", "ADP.ProfileIdentifier", SqlFieldType.Text),
+							new DefaultFilter("profileSetDate", "ADP.profileSetDate", SqlFieldType.DateTime),
+							new DefaultFilter("typeQualifier", "ADP.typeQualifier", SqlFieldType.Text),
+							new DefaultFilter("type", "ADP.type", SqlFieldType.Text),
+							new DefaultFilter("ftaVersion", "ADP.ftaVersion", SqlFieldType.Text),
+							new DefaultFilter("freshness", "ADP.freshness", SqlFieldType.Number),
+							new DefaultFilter("ProfileSource", "ADP.ProfileSource", SqlFieldType.Text),
+							new DefaultFilter("ProfileSeries", "ADP.ProfileSeries", SqlFieldType.Text),
+							new DefaultFilter("ProfileType", "coalesce(ADP.ProfileType,0)", SqlFieldType.Number),
+						};
+
+						CompanyContext.ParseAdvancedFilterQueryParameter(
+							queryParams,
+							fieldList,
+							out DynamicParameters advFilterArgs,
+							out List<string> advFilterStatements);
+
+
+						if (advFilterArgs != null && advFilterStatements != null)
+						{
+							dbArgs.AddDynamicParams(advFilterArgs);
+							whereClauses.AddRange(advFilterStatements);
+						}
+
+						break;
+				}
+			}
+
+			var whereConditions = whereClauses.Count > 0 ? $"where {string.Join(" AND ", whereClauses)}" : "";
+
+
+
+			bool includeTotal = true;
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+			}
+
+			bool includeSamples = true;
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includesamples"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includesamples").Value, out includeSamples);
+			}
+
+			var dataProfileIdsSql = $@"
+						drop table if exists #tempADPS;
+						drop table if exists #assetdataprofileids
+						create table #assetdataprofileids (
+							id bigint, 
+							ProfileSetDate DateTime
+						);
+
+						insert into #assetdataprofileids
+						select ADP.ID, ADP.[ProfileSetDate]
+						from AssetDataProfile ADP
+						inner join Asset A on A.id = ADP.AssetID
+						{whereConditions}
+						order by ADP.[ProfileSetDate] desc
+						{offset}";
+
+			var dataProfileSamplesSql = $@"
+						select adps.AssetDataProfileId,adps.SampleType,adps.[Key],adps.[Value]
+						into #tempADPS
+						from #assetdataprofileids tempADP
+						inner join AssetDataProfileSample adps on adps.AssetDataProfileId = tempADP.ID;";
+
+			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples, "inner join #assetdataprofileids ids on ids.ID = ADP.ID");
+
+
+			var countSql = $@"select count(1) 
+							  from AssetDataProfile ADP 
+							  inner join Asset A on A.id = ADP.AssetID 
+							  {whereConditions}
+							  option (recompile)";
+
+			if (includeTotal)
+			{
+				results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
+			}
+			else
+			{
+				results.total = null;
+			}
+
+			string sql = $@"
+						{dataProfileIdsSql}
+
+						{dataProfileSamplesSql}
+
+						{dataProfileSQL}
+						order by ADP.[ProfileSetDate] desc
+						for Json Path
+						option (recompile)";
+			var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
+			var json = string.Join("", jsonStrings);
+
+			results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+
+			return results;
+		}
 
 		public async Task<List<DataProfileUpsertResponse>> UpsertAsync(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
 		{
