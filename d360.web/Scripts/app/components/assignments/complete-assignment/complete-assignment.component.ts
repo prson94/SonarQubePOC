@@ -82,7 +82,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
-			this.getWorkFlowData()
+			this.getWorkFlowData();
 			
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
@@ -186,7 +186,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	getWorkFlowData(){
 		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
-			this.workflowName=response.WorkflowName
+			this.workflowName=response.WorkflowName;
 		});
 	}
 }
