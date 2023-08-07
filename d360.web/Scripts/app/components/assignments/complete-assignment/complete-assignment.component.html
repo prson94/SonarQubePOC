@@ -10,7 +10,8 @@
 	(onConfirm)="onFormSubmit()"
 	[additionalClasses]="'xlarge-dialog'"
 >
-	<div class="modal-with-side-panel">
+	<d3s-loading [isLoading]="isLoading"></d3s-loading>
+	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
@@ -42,7 +43,7 @@
 						</span>
 					</div>
 				</div>
-				<div>{{workflowName}} <a (click)="onClickAsset($event)" #assetClick>{{ assetName }}</a></div>
+				<div>{{workflowName}} <a (click)="onClickAsset($event)">{{ assetName }}</a></div>
 				<div
 					[hidden]="isAssignmentProgressSelected"
 					class="scrollable-content details-container"

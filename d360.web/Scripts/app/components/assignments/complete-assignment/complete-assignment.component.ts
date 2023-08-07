@@ -45,10 +45,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
-
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
-	@ViewChild('assetClick') assetClick: ElementRef;
 
 	private linkInterceptorSubscription: Subscription;
 
@@ -64,7 +62,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isAssignmentProgressSelected = false;
 	}
 
-	onFormInput(message) {
+	onFormInput(message): void {
 		this.discardForm = message;
 	}
 
@@ -91,17 +89,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isAssignmentProgressSelected = false;
 		this.modalTitle = 'Assignment';
 		this.sidePanelSwitcherComponent.clear();
-		this.assetClick.nativeElement.click();
 	}
 
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
 		this.modalTitle = 'Assignment Progress and Information';
 		this.sidePanelSwitcherComponent.clear();
-		this.assetClick.nativeElement.click();
 	}
 
-	discardFormFunc() {
+	discardFormFunc(): void {
 		this.workflowForm.reset();
 	}
 
@@ -170,12 +166,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.assetId = res.ObjectID;
 					}
 					this.assignmentService.setFormValidators.next();
-					this.assetClick.nativeElement.click();
 				}
 			});
 	}
 
-	private loadWorkflowTypeDetails() {
+	private loadWorkflowTypeDetails(): void {
 		this.workflowService.getAssignmentsByVersion(1, 1, null, null, null, null, this.workflowItemUid)
 			.subscribe((response: AssignmentByVersion): void => {
 				if (response?.items?.length > 0) {
@@ -185,7 +180,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	getWorkFlowData() {
+	getWorkFlowData(): void {
 		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.workflowName = response.WorkflowName;
 		});

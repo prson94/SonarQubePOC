@@ -6,12 +6,12 @@
 				<div class="category-column">
 					<p>
 						Submitted by
-						{{request.Action.CreatedByName}}
+						<a (click)="onClickResource($event)">{{request.Action.CreatedByName}}</a>
 						on
-						{{request.Action.CreatedOn}}
+						{{request.Action.CreatedOn | date: 'short' }}
 					</p>
 					<p>
-						Associated Asset :{{request.Action.AssociatedAssetPath}}
+						Associated Asset : <a (click)="onClickAsset($event)">{{request.Action.AssociatedAssetPath}}</a>
 					</p>
 				</div>
 			</div>

@@ -4,6 +4,7 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
 import { FormMode } from '../../../../models/form.model';
+import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-information-request',
@@ -23,6 +24,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	actionItems: ActionItems;
 
 	constructor(private workflowService: WorkflowService,
+				private linkClickInterceptor: LinkClickInterceptor,
 				private fieldsObservableService: FieldsObservableService) {
 	}
 
@@ -60,6 +62,23 @@ export class AssignmentInformationRequestComponent implements OnInit {
 				}
 			});
 	}
+
+	onClickResource(event: MouseEvent): void {
+		if (this.request?.Action) {
+			this.linkClickInterceptor.sendEvent(event, {
+				ResourceUid: this.request.Action.CreatedBy
+			}, 'users/' + this.request.Action.CreatedBy);
+		}
+	}
+
+	onClickAsset(event: MouseEvent): void {
+		if (this.request?.Action) {
+			this.linkClickInterceptor.sendEvent(event, {
+				AssetUid: this.request.Action.AssociatedAssetUid
+			}, 'asset/' + this.request.Action.AssociatedAssetUid);
+		}
+	}
+
 
 	protected readonly Object = Object;
 	protected readonly FormMode = FormMode;
