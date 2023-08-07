@@ -71,6 +71,7 @@
         </span>
     </div>
 	<ig-portal-renderer name="asset-description"></ig-portal-renderer>
+	assignmentCount {{assignmentCount}} in sidebar
     <d3s-tabs
         [items]="items"
         [showOnlyMainTab]="showOnlyMainTab"
@@ -79,6 +80,7 @@
         [isScoringScreen]="isScoringScreen"
         [searchDetails]="searchDetails"
         [statistics]="statistics"
+		[assignmentCount]="assignmentCount"
         [emitSecondaryNav]="true">
     </d3s-tabs>
 </div>

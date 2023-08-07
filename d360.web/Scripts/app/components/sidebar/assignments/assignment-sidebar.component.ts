@@ -8,7 +8,6 @@ import { Subscription } from 'rxjs';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
-	selector: 'd3s-assignments',
 	templateUrl: './assignment-sidebar.component.html'
 })
 export class AssignmentSidebarComponent extends BaseComponent {
