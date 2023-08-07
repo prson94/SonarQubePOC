@@ -293,7 +293,6 @@ namespace d360.web.Controllers.V2
             {
                 return await sendConflictNotAccessible();
             }
-            var prefix = "dataprofiles.series => ";
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();

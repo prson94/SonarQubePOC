@@ -318,12 +318,9 @@ namespace d360.model.DataAccessLayer
 
 			List<string> whereClauses = new List<string>();
 
-			foreach (var param in queryParams)
+			if (queryParams.Any(q => q.Key.ToLowerInvariant() == "_filter"))
 			{
-				switch (param.Key.ToLower())
-				{
-					case "_filter":
-						var fieldList = new List<DefaultFilter>
+				var fieldList = new List<DefaultFilter>
 						{
 							new DefaultFilter("assetUid", "A.Uid", SqlFieldType.Guid),
 							new DefaultFilter("ProfileIdentifier", "ADP.ProfileIdentifier", SqlFieldType.Text),
@@ -337,20 +334,17 @@ namespace d360.model.DataAccessLayer
 							new DefaultFilter("ProfileType", "coalesce(ADP.ProfileType,0)", SqlFieldType.Number),
 						};
 
-						CompanyContext.ParseAdvancedFilterQueryParameter(
-							queryParams,
-							fieldList,
-							out DynamicParameters advFilterArgs,
-							out List<string> advFilterStatements);
+				CompanyContext.ParseAdvancedFilterQueryParameter(
+					queryParams,
+					fieldList,
+					out DynamicParameters advFilterArgs,
+					out List<string> advFilterStatements);
 
 
-						if (advFilterArgs != null && advFilterStatements != null)
-						{
-							dbArgs.AddDynamicParams(advFilterArgs);
-							whereClauses.AddRange(advFilterStatements);
-						}
-
-						break;
+				if (advFilterArgs != null && advFilterStatements != null)
+				{
+					dbArgs.AddDynamicParams(advFilterArgs);
+					whereClauses.AddRange(advFilterStatements);
 				}
 			}
 
