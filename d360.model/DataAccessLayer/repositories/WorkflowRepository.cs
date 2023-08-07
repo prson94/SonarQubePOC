@@ -1714,5 +1714,46 @@ namespace d360.model.DataAccessLayer
 
 			return assignments;
 		}
+
+		public async Task<long> GetAssetAssignmentCount(string type, Guid uid)
+		{
+			long ID = 0;
+
+			if(type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
+			{
+				var asset = CompanyContext.Assets.Where(a => a.uid == uid).FirstOrDefault();
+				ID = asset?.ID ?? 0;
+			}
+
+			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
+			{
+				var assetType = CompanyContext.AssetTypes.Where(ast => ast.uid == uid).FirstOrDefault();
+				ID = assetType?.ID ?? 0;
+			}
+
+			var sql = $@"
+						select
+							count(*)
+						from
+						(
+							select 
+								Wi.ID
+							from 
+								workflow.Item WI
+								inner join 
+								Asset A on WI.Object <> 'Issue' and wi.CompletedOn is null and A.[Object] = WI.Object and A.ObjectID = WI.ObjectID and {(type == "asset" ? "A.id=@ID" : "A.assettypeid=@ID")}
+							union
+							select 
+								Wi.ID 
+							from 
+								workflow.Item WI
+								inner join 
+								Issue I on WI.Object = 'Issue' and wi.CompletedOn is null and I.[ID] = WI.ObjectID
+								inner join 
+								Asset A on A.ID = I.AssetID and {(type == "asset" ? "A.Id=@ID" : "A.assetTypeId=@ID")}
+						) items";
+
+			return await CompanyContext.QueryFirstOrDefaultAsync<long>(sql, new { ID }, ApiTimeout);
+		}
 	}
 }
