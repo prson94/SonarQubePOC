@@ -30,14 +30,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
 	workflowItemUid: string;
-	workflowName:string;
+	workflowName: string;
 	stepUid: string;
-	assetId: number;
 	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 	sidePanel: string = 'asset-details';
 	formTitle: string = '';
 	formDescription: string = '';
 	assetName: string = '';
+	assetId: number;
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	request: FormRequest;
@@ -48,7 +48,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
-	@ViewChild('assetClick') assetClick:ElementRef;
+	@ViewChild('assetClick') assetClick: ElementRef;
 
 	private linkInterceptorSubscription: Subscription;
 
@@ -71,19 +71,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	openModal(details: {
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}): void {
 		if (details) {
-			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			
-
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
 			this.getWorkFlowData();
-			
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -134,7 +129,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 	}
 
-	onClickAsset(event:MouseEvent): void {
+	onClickAsset(event: MouseEvent): void {
 		if (this.assetId) {
 			this.linkClickInterceptor.sendEvent(event, {
 				AssetId: this.assetId
@@ -166,10 +161,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.formDescription = res.Description;
 					this.formFields = res.Fields;
 					this.request = res.Request;
-					this.assetName = res.ObjectName;
+					if (res.IssueObjectID) {
+						this.assetName = res.IssueObjectName;
+						this.assetId = res.IssueObjectID;
+					} else {
+						this.assetName = res.ObjectName;
+						this.assetId = res.ObjectID;
+					}
 					this.assignmentService.setFormValidators.next();
 					this.assetClick.nativeElement.click();
-
 				}
 			});
 	}
@@ -184,9 +184,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	getWorkFlowData(){
+	getWorkFlowData() {
 		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
-			this.workflowName=response.WorkflowName;
+			this.workflowName = response.WorkflowName;
 		});
 	}
 }
