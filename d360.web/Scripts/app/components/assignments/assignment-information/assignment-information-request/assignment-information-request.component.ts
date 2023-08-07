@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { ActionItems, Actions } from '../../../../models/workflow.model';
+import { Component, Input, OnInit } from '@angular/core';
+import { ActionItems, Actions, FormRequest, WorkflowForm } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
@@ -10,14 +10,14 @@ import { FormMode } from '../../../../models/form.model';
 	templateUrl: './assignment-information-request.component.html',
 	styleUrls: ['./assignment-information-request.component.less']
 })
-export class AssignmentInformationRequestComponent {
-	private _workflowActionUid: string;
+export class AssignmentInformationRequestComponent implements OnInit {
 	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
-	@Input() set workflowActionUid(value: string) {
-		this._workflowActionUid = value;
-		this.loadData();
-	}
+	@Input() workflowActionUid: string;
+	@Input() workflowItemUid: string;
+	@Input() stepUid: string;
+	@Input() showSubmittedByData: boolean = false;
+	request: FormRequest;
 
 	isLoading: boolean;
 	actionItems: ActionItems;
@@ -26,9 +26,16 @@ export class AssignmentInformationRequestComponent {
 				private fieldsObservableService: FieldsObservableService) {
 	}
 
-	loadData() {
+	ngOnInit(): void {
+		this.loadData();
+		if (this.showSubmittedByData) {
+			this.loadFormDetails();
+		}
+	}
+
+	loadData(): void {
 		this.isLoading = true;
-		this.workflowService.getActions(this._workflowActionUid)
+		this.workflowService.getActions(this.workflowActionUid)
 			.subscribe((response: Actions) => {
 				if (response?.items?.length > 0) {
 					this.actionItems = response.items[0];
@@ -39,6 +46,17 @@ export class AssignmentInformationRequestComponent {
 						});
 				} else {
 					this.isLoading = false;
+				}
+			});
+	}
+
+	private loadFormDetails(): void {
+		this.isLoading = true;
+		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
+			.subscribe((res: WorkflowForm) => {
+				this.isLoading = false;
+				if (res) {
+					this.request = res.Request;
 				}
 			});
 	}

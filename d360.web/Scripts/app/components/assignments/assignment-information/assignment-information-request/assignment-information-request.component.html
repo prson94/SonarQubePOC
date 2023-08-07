@@ -2,6 +2,19 @@
 <div class="asset-detail-tabs" [hidden]="isLoading">
 	<ig-property-group *ngIf="actionItems" i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
+			<div *ngIf="showSubmittedByData" class="row">
+				<div class="category-column">
+					<p>
+						Submitted by
+						{{request.Action.CreatedByName}}
+						on
+						{{request.Action.CreatedOn}}
+					</p>
+					<p>
+						Associated Asset :{{request.Action.AssociatedAssetPath}}
+					</p>
+				</div>
+			</div>
 			<div class="row">
 				<div class="category-column" *ngFor="let fieldTypeModelField of fieldTypeModelFields">
 					<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
