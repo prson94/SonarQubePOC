@@ -155,12 +155,21 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, null, this.assetTypeApiModel.uid));
 						this.secondaryNavService.setCurrentArea(this.assetTypeApiModel.Name, res, $localize`Assets`);
 						if (this.assetTypeApiModel.HasV2Workflows) {
-							this.secondaryNavService.showItem(
-								new SecondaryNavItem($localize`Workflow`,
-									'workflowmonitor',
-									['fa-usb'],
-									`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
-							);
+							if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Workflow`,
+										'workflowmonitor',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+								);
+							} else {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Assignments`,
+										'assignments',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/assignments`)
+								);
+							}
 						}
 					});
 					this.navigationItemsSubs.push(breadCrumbsSub);

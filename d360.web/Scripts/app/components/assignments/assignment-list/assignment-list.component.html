@@ -1,4 +1,4 @@
-<ng-container *ngIf="showAssignmentHeader">
+<ng-container *ngIf="showPageHeader">
 	<d3s-assignment-header [flowContext]="flowContext"></d3s-assignment-header>
 </ng-container>
 <div class="row">
@@ -10,7 +10,8 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
-			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow"
+			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow" [assetUid]="assetUid"
+								 [assetTypeUid]="assetTypeUid"
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
 				 (clickOutside)="closeSecondarySidePanel()">
@@ -34,7 +35,8 @@
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-assignment-information [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
 												[workflowTypeVersion]="selectedWorkflowItems?.[0].Version"
-												*ngIf="selectedWorkflowItems?.length === 1" [showCompleteAssignment]="!isRequestsFlow"
+												*ngIf="selectedWorkflowItems?.length === 1"
+												[showCompleteAssignment]="!isRequestsFlow"
 												(completeAssignment)="completeAssignmentComponent.openModal($event)"
 												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"

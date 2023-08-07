@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -29,11 +30,13 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 		private assetService: AssetService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
-		protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		launchDarklyService: LaunchDarklyService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
+		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {

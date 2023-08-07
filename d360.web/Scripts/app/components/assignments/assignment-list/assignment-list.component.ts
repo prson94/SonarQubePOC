@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
@@ -25,6 +25,9 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 })
 export class AssignmentListComponent extends BaseComponent implements OnInit, OnDestroy {
 
+	@Input() showPageHeader: boolean = true;
+	@Input() assetTypeUid: string;
+	@Input() assetUid: string;
 	@ViewChild(AssignmentProgressComponent) assignmentProgressComponent: AssignmentProgressComponent;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	isRequestsFlow: boolean = false; // flag checks if url is requests
@@ -33,12 +36,12 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	showSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelTab: string = 'information';
-	showAssignmentHeader: boolean = true;
 	isAdmin: boolean = false;
 	secondarySidePanelOpen: boolean = false;
 	selectedWorkflowItems: WorkflowAssignmentItem[] = [];
 	assignmentItemStep: AssignmentItemStep;
 	sidePanelButtons: SidePanelButton[] = [];
+
 	sidePanelMultiSelectButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`${this.selectedWorkflowItems?.length} Assignments Selected`,
@@ -54,7 +57,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			needsSelection: true
 		})
 	];
-
 	@ViewChild('assignmentGridComponent') assignmentGridComponent: AssignmentGridComponent;
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	private linkInterceptorSubscription: Subscription;
@@ -165,8 +167,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	closeSecondarySidePanel(): void {
 		this.secondarySidePanelOpen = false;
-		this.assignmentProgressComponent.deselectWorkflowSteps();
-		this.sidePanelSwitcherComponent.clear();
+		this.assignmentProgressComponent?.deselectWorkflowSteps();
+		this.sidePanelSwitcherComponent?.clear();
 	}
 
 	ngOnDestroy(): void {
