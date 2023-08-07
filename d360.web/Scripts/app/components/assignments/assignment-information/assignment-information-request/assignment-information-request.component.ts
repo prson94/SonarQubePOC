@@ -63,4 +63,5 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	protected readonly Object = Object;
 	protected readonly FormMode = FormMode;
+	protected readonly JSON = JSON;
 }

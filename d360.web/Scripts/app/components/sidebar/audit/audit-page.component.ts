@@ -7,6 +7,7 @@ import { AuditService } from '../../../services/audit.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Subscription } from 'rxjs';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
     selector: 'd3s-audit-page',
@@ -23,11 +24,13 @@ export class AuditPageComponent extends BaseComponent implements OnInit, OnDestr
         private auditService: AuditService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService
+        protected settingsService: CompanySettingsService,
+		launchDarklyService: LaunchDarklyService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
+		this.launchDarklyService = launchDarklyService;
     }
 
     ngOnInit() {

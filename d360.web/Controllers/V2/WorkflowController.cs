@@ -473,8 +473,8 @@ namespace d360.web.Controllers.V2
 						assetType = Company.AssetTypes.Where(ast => ast.uid == assetTypeUid).FirstOrDefault();
 
 						if (assetType == null)
-						{							
-							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid) ));
+						{
+							return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, assetTypeUid)));
 						}
 					}
 				}
@@ -665,6 +665,52 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
+		/// Get the count of assignments for a given asset/asset type.
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("assignment/count/{type}/{uid:Guid}"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Count of open assignments for a given asset/assettype"),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the type parameter on the request is invalid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that an asset/asset type was not found for the given uid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = false)
+		]
+		public async Task<IHttpActionResult> GetAssignmentCount(string type, Guid uid)
+		{
+			List<string> allowedTypes = new List<string> { "assettype", "asset" };
+
+			if (!allowedTypes.Contains(type))
+			{
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidObjectType, type)));
+			}
+
+
+			if (type.Equals("asset", StringComparison.InvariantCultureIgnoreCase))
+			{
+				var asset = Company.Assets.Where(a => a.uid == uid).FirstOrDefault();
+
+				if (asset == null)
+				{
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetUid, uid)));
+				}
+			}
+
+			if (type.Equals("assettype", StringComparison.InvariantCultureIgnoreCase))
+			{
+				var assetType = Company.AssetTypes.Where(ast=>ast.uid == uid).FirstOrDefault();
+
+				if (assetType == null) {
+					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ApiMessages.InvalidAssetTypeUid, uid)));
+				}
+			}
+
+			return Ok(await workflowRepository.GetAssetAssignmentCount(type, uid));
+		}
+
+		/// <summary>
 		/// Create the Excel document for export
 		/// </summary>
 		/// <returns>A spreadsheet populated with a list of Assignments/Requests</returns>
@@ -800,10 +846,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var exportSheetRows = new List<ExcelRow> {
-				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("mm/dd/yyyy hh:mm:ss")},
-				new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString()},
-				new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString()},
-				new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString()}
+				new ExcelRow { ExcelExports.WorkflowAssignments_ExportDate, DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")}
 			};
 
 			if (isRequestExport)
@@ -817,6 +860,10 @@ namespace d360.web.Controllers.V2
 				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeName, actionTypeName });
 				exportSheetRows.Add(new ExcelRow { ExcelExports.WorkflowAssignments_ActionTypeUID, actionTypeUid.ToString() });
 			}
+
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageSize, assignments.pageSize.ToString() });
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_PageNum, assignments.pageNum.ToString() });
+			exportSheetRows.Add(new ExcelRow { ExcelExports.Common_Total, assignments.total.ToString() });
 
 			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{

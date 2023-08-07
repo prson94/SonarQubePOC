@@ -144,8 +144,8 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
-		ByWorkflowVersionListComponent,
 		ByWorkflowVersionGridComponent,
+		ByWorkflowVersionListComponent,
 		CompleteAssignmentComponent,
 		PendingAssignmentsStepComponent,
 		SidePanelSwitcherComponent,
@@ -161,12 +161,16 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		WorkflowVersionInformationComponent,
 		CompleteAssignmentFormFieldsComponent
 	],
+	exports: [
+		AssignmentListComponent
+	],
 	imports: [
 		AdvancedFiltersModule,
 		AngularSplitModule,
 		AssetDetailModule,
 		AssetTypeDetailModule,
 		AssignmentsRoutingModule,
+		AutoCompleteModule,
 		ButtonModule,
 		CheckboxModule,
 		CommonModule,
@@ -175,6 +179,7 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		D3SSortIconModule,
 		DataProfileModule,
 		DirectivesModule,
+		DropdownModule,
 		FormsModule,
 		IgBadgeModule,
 		InputTextModule,
@@ -203,7 +208,8 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		EditorModule,
 		MultiSelectModule,
 		RadioButtonModule,
-		FormFeedbackBadgesModule
+		FormFeedbackBadgesModule,
+		WorkflowModule
 	]
 })
 export class AssignmentsModule {

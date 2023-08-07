@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Type {0} is invalid..
+        /// </summary>
+        public static string InvalidObjectType {
+            get {
+                return ResourceManager.GetString("InvalidObjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid order passed in the request. Valid values are: StartedOn and CompletedOn.
         /// </summary>
         public static string InvalidOrderParameterPassed {
