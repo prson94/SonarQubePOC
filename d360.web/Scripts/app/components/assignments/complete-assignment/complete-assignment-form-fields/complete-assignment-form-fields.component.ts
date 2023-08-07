@@ -32,9 +32,8 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 			.pipe()
 			.subscribe((value) => {
 				for (const propName in value) {
-					if (!value[propName]) {
+					if (!Object.getOwnPropertyDescriptor(value, propName).value) {
 						unset(value, propName);
-
 					}
 				}
 				if (Object.keys(value).length) {
