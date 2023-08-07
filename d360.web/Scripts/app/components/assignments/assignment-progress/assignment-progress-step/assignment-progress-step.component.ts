@@ -73,7 +73,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 			this.workflowService.getAssignmentStepDetail(this.assignmentItemStep.Uid).subscribe((response) => {
 				this.workflowStepDetail = response;
 				this.isLoading = false;
-				this.assigneeNames = this.workflowStepDetail.AssignedUsers.map((assignee) => assignee.FullName)?.sort();
+				this.assigneeNames = this.workflowStepDetail?.AssignedUsers.map((assignee) => assignee.FullName)?.sort();
 			});
 		}
 	}
@@ -84,6 +84,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 		this.linkClickInterceptor.sendEvent(event, {
 			workflowItemUid: this.workflowItemUid,
 			itemStepUid: this.assignmentItemStep?.Uid,
+			showCompleteAssignment: this.showCompleteAssignment
 		}, null);
 	}
 

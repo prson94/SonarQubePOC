@@ -36,6 +36,7 @@ export class AssetDetailClickEvent {
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 	selectedNodeModel: NodeModel;
+	showCompleteAssignment: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -209,6 +210,7 @@ export class LinkClickInterceptor {
 				adcEv.type = AssetDetailClickType.WorkflowStep;
 				adcEv.workflowItemUid = data.workflowItemUid;
 				adcEv.itemStepUid = data.itemStepUid;
+				adcEv.showCompleteAssignment = data.showCompleteAssignment;
 			} else if(data?.workflowTypeUid && data?.workflowTypeVersion && data?.selectedNodeModel) {
 				adcEv.type = AssetDetailClickType.WorkflowVersion;
 				adcEv.workflowTypeUid = data.workflowTypeUid;
@@ -246,7 +248,8 @@ export class LinkClickInterceptor {
 			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowStep;
 			baseComponent.selectedAsset = {
 				workflowItemUid: event.workflowItemUid,
-				itemStepUid: event.itemStepUid
+				itemStepUid: event.itemStepUid,
+				showCompleteAssignment: event.showCompleteAssignment
 			};
 		} else if (event.type === AssetDetailClickType.WorkflowItemInformation) {
 			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowItemInformation;

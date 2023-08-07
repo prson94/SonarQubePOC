@@ -18,6 +18,7 @@ export class SidePanelSwitcherComponent {
 		workflowTypeUid: string,
 		workflowItemUid: string,
 		itemStepUid: string,
+		showCompleteAssignment: boolean,
 		id: number,
 		uid: string,
 		type: string
