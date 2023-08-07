@@ -48,6 +48,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild('assetClick') assetClick:ElementRef;
+
 	private linkInterceptorSubscription: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
@@ -76,9 +78,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.assetId = details.assetId;
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
+			
+
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
 			this.getWorkFlowData()
+			
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -129,7 +134,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 	}
 
-	onClickAsset(event: MouseEvent): void {
+	onClickAsset(event:MouseEvent): void {
 		if (this.assetId) {
 			this.linkClickInterceptor.sendEvent(event, {
 				AssetId: this.assetId
@@ -163,6 +168,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.request = res.Request;
 					this.assetName = res.ObjectName;
 					this.assignmentService.setFormValidators.next();
+					this.assetClick.nativeElement.click();
+
 				}
 			});
 	}
