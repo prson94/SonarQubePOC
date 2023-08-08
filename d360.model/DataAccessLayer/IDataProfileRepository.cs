@@ -17,6 +17,8 @@ namespace d360.model.DataAccessLayer
 
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams);
 
+        Task<AssetDataProfilesApiViewModel> GetDataProfiles(IEnumerable<KeyValuePair<string, string>> queryParams);
+
         Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
 
         Task<List<DataProfileDeleteResponse>> DeleteAsync(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
