@@ -6,8 +6,7 @@
 >Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
 </button>
 <div class="asset-detail-tabs" *ngIf="assignmentItem?.initiatingObjectType === 'Action'">
-	<ig-property-group i18n-title title="Request" [shouldBePadded]="false"
-					   [showHeaderLine]="false">
+	<ig-property-group i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<ng-container>
 				<d3s-assignment-information-request [workflowActionUid]="assignmentItem.ActionUid"

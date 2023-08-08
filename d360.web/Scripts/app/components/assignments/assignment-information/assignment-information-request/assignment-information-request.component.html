@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div [hidden]="isLoading">
+<ng-container *ngIf="!isLoading">
 	<div *ngIf="showSubmittedByData" class="row">
 		<div class="category-column">
 			<p>
@@ -69,4 +69,4 @@
 			</ng-container>
 		</div>
 	</div>
-</div>
+</ng-container>
