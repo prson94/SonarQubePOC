@@ -3,8 +3,7 @@
 		   [showActionBar]="true"
 		   [additionalClasses]="'xlarge-dialog'"
 		   (onClose)="isModalVisible = false"
-		   (onConfirm)="onFormSubmit()"
->
+		   (onConfirm)="onFormSubmit()">
 	<div class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
@@ -12,19 +11,17 @@
 					<div i18n class="title">
 						{{ modalTitle }}
 						<span class="modal-buttons">
-							<button
-								igButton
-								[ngClass]="isAssignmentProgressSelected ? '' : 'selected'"
-								[icon]="'fa-file-text'"
-								(click)="showAssignment()"
-								class="ig-button-secondary side-panel-button">
+							<button igButton
+									[ngClass]="isAssignmentProgressSelected ? '' : 'selected'"
+									[icon]="'fa-file-text'"
+									(click)="showAssignment()"
+									class="ig-button-secondary side-panel-button">
 							</button>
-							<button
-								igButton
-								[icon]="'fa-list-ul'"
-								[ngClass]="isAssignmentProgressSelected ? 'selected' : ''"
-								(click)="showAssignmentProgress()"
-								class="ig-button-secondary side-panel-button">
+							<button igButton
+									[icon]="'fa-list-ul'"
+									[ngClass]="isAssignmentProgressSelected ? 'selected' : ''"
+									(click)="showAssignmentProgress()"
+									class="ig-button-secondary side-panel-button">
 							</button>
 						</span>
 					</div>
@@ -61,6 +58,9 @@
 										</ng-container>
 									</div>
 								</ig-property-group>
+
+								<d3s-assignment-asset-list *ngIf="isBulkRespond" [items]="multiSubmitionItems"></d3s-assignment-asset-list>
+
 								<ig-property-group i18n-title title="Form fields" [showHeaderLine]="false">
 									<div readonly>
 										<ng-container>
@@ -95,22 +95,21 @@
 						hasDetail="true"
 						height="calc(100vh - 220px)">
 				<ng-container *ngIf="sidePanelOpen">
-					<ig-asset-detail
-						*ngIf="sidePanel === 'asset-details'"
-						[objectID]="assetId"
-						objectType="Artifact"
-						[useAccordion]="true"
-						[shouldBePadded]="false"
-						[showHeader]="true"
-						[showHeaderLine]="false"
-						[spacerHeight]="'16px'"
-						[tooltipAlign]="'left'"
-						[isSidePanel]="false"
-						[hideLinks]="true"
-						[hasAddRelationshipsPermissions]="false"
-						[hasModifyRelationshipsPermissions]="false"
-						[hasDeleteRelationshipsPermissions]="false"
-						[interceptLinkClick]="true"></ig-asset-detail>
+					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
+									 [objectID]="assetId"
+									 objectType="Artifact"
+									 [useAccordion]="true"
+									 [shouldBePadded]="false"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="false"
+									 [hideLinks]="true"
+									 [hasAddRelationshipsPermissions]="false"
+									 [hasModifyRelationshipsPermissions]="false"
+									 [hasDeleteRelationshipsPermissions]="false"
+									 [interceptLinkClick]="true"></ig-asset-detail>
 					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'"
 														  [workflowItemUId]="workflowItemUid"
 														  [showCompleteAssignment]="false"

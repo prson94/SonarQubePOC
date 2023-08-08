@@ -991,6 +991,7 @@ export class SingleAssignment {
 	WorkflowItemUid: string;
 	ItemStepUid: string;
 	Name: string;
+	AssetTypeName: string;
 	AssetId: number;
 	AssetUid: string;
 	InitiatedOn: Date;

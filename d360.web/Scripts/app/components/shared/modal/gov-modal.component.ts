@@ -44,7 +44,8 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
 
-    @ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
+	@ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
+	zIndex: string = "20000 !important";
 
 	private display: boolean = false;
 
@@ -128,8 +129,15 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
     confirm() {
         this.onConfirm.emit('confirm');
         this.closePopUp();
-    }
+	}
 
+	public hide() {
+		this.zIndex = "15000 !important";
+	}
+
+	public show() {
+		this.zIndex = "20000 !important";
+	}
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private isInShadowDom(element: any): boolean {
 		return element && element.getRootNode() instanceof ShadowRoot;

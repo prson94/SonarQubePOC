@@ -676,6 +676,7 @@ namespace d360.core.entities.Workflow
 		public Guid ItemStepUid { get; set; }
 
 		public string Name { get; set; }
+		public string AssetTypeName { get; set; }
 
 		public long? AssetId { get; set; }
 

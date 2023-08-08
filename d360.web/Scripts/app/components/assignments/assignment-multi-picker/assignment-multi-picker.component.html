@@ -1,4 +1,5 @@
-<d3s-modal [showTitle]="false"
+<d3s-modal #modal
+		   [showTitle]="false"
 		   [isVisible]="isModalVisible"
 		   [additionalClasses]="'large-dialog'"
 		   (onClose)="isModalVisible = false">
@@ -20,20 +21,30 @@
 		<div class="side-panel">
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
-						[selectedItem]="selectedForInfoPanel?.uid"
+						[selectedItem]="selectedForInfoPanel?.assetId || selectedForInfoPanel?.workflowItemUid"
 						hasDetail="true"
 						height="calc(100vh - 220px)">
 				<ng-container *ngIf="sidePanelOpen">
-					<asset-preview *ngIf="sidePanel === 'asset-details' && selectedForInfoPanel"
-								   [assetUid]="selectedForInfoPanel.uid"
-								   [assetType]="selectedForInfoPanel.type"
-								   [hasEditLink]="false"
-								   [hasOpenLink]="true"></asset-preview>
+					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
+									 [objectID]="selectedForInfoPanel?.assetId"
+									 objectType="selectedForInfoPanel?.type"
+									 [useAccordion]="true"
+									 [shouldBePadded]="false"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="false"
+									 [hideLinks]="true"
+									 [hasAddRelationshipsPermissions]="false"
+									 [hasModifyRelationshipsPermissions]="false"
+									 [hasDeleteRelationshipsPermissions]="false"
+									 [interceptLinkClick]="true"></ig-asset-detail>
 
 					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'"
-														  [workflowItemUId]="workflowItemUid"
+														  [workflowItemUId]="selectedForInfoPanel.workflowItemUid"
 														  [showCompleteAssignment]="false"
-														  [itemStepUid]="assignmentItemStep?.Uid"></d3s-assignment-progress-step-details>
+														  [itemStepUid]="selectedForInfoPanel.assignmentItemStepUid"></d3s-assignment-progress-step-details>
 				</ng-container>
 			</side-panel>
 		</div>
@@ -115,7 +126,7 @@
 											<td (click)="selectSingleItem($event,item,el);"> {{item.InitiatedBy}}</td>
 											<td (click)="selectSingleItem($event,item,el);">{{item.InitiatedOn  | date:'shortDate'}}</td>
 											<td class="info-panel-button">
-												<button *ngIf="item.AssetUid" igButton icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
+												<button igButton icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
 											</td>
 										</tr>
 									</ng-template>

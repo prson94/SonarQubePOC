@@ -95,8 +95,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             this.backgroundImage = bgImage;
         }
 
-        this.numTiles = (this.showAssignmentTile ? 1 : 0)
-            + (this.showBoardTile ? 1 : 0)
+        this.numTiles = (this.showBoardTile ? 1 : 0)
             + (this.showActivityTile ? 1 : 0);
 
         this.colSize = 12.0 / (this.numTiles === 0 ? 1 : this.numTiles);

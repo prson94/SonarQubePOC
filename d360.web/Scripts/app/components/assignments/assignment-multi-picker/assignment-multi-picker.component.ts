@@ -1,13 +1,15 @@
 import { ChangeDetectorRef, ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 import { SingleAssignment } from '../../../models/workflow.model';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
+import { D3SModal } from '../../shared/modal/gov-modal.component';
 
 @Component({
 	selector: 'd3s-assignments-multi-picker',
-	templateUrl: './assignments-multi-picker.component.html',
-	styleUrls: ['./assignments-multi-picker.component.less'],
+	templateUrl: './assignment-multi-picker.component.html',
+	styleUrls: ['./assignment-multi-picker.component.less'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None
 })
@@ -16,12 +18,11 @@ export class AssignmentsMultiPickerComponent {
 
 	isModalVisible: boolean = false;
 	sidePanelOpen: boolean = false;
-	workflowItemUid: string;
 	stepUid: string;
 	sidePanelStorageKey: string = 'MultiAssignments_Component';
 	sidePanel: string = 'asset-details';
 
-	selectedForInfoPanel: { uid: string, type: string };
+	selectedForInfoPanel: { assetId: number, type: string, workflowItemUid: string, assignmentItemStepUid: string };
 
 	assignments: SingleAssignment[] = [];
 	selected: SingleAssignment[] = [];
@@ -30,12 +31,20 @@ export class AssignmentsMultiPickerComponent {
 	formDescription: string = '';
 
 	@ViewChild('dt', { static: false }) tableEl: Table;
+	@ViewChild('modal', { static: false }) modelEl: D3SModal;
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
 		private sidePanelService: SidePanelService,
-		private workflowService: WorkflowService
-	) { }
+		private workflowService: WorkflowService,
+		private hrefService: LinkClickInterceptor
+	) {
+		this.hrefService.getEvents().subscribe((res) => {
+			console.log(res);
+			this.sidePanel = 'step-details';
+			this.selectedForInfoPanel = { type: res.objectType, assetId: res.objectId, workflowItemUid: null, assignmentItemStepUid: null };
+		});
+	}
 
 	public openModal(assignments: SingleAssignment[]) {
 		this.isModalVisible = true;
@@ -62,12 +71,12 @@ export class AssignmentsMultiPickerComponent {
 
 	confirm() {
 		this.onAssignmentSelection.emit(this.selected);
-
+		this.modelEl.hide();
 	}
 
 	openAssetSidePanel(item: SingleAssignment) {
-		this.sidePanel = 'asset-details';
-		this.selectedForInfoPanel = { type: 'Artifact', uid: item.AssetUid };
+		this.sidePanel = 'step-details';
+		this.selectedForInfoPanel = { type: null, assetId: null, workflowItemUid: item.WorkflowItemUid, assignmentItemStepUid: item.ItemStepUid };
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.markForCheck();
 	}

@@ -30,6 +30,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	@ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
 	multiSubmitionItems: SingleAssignment[] = [];
+	isBulkRespond: boolean = false;
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
@@ -54,9 +55,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.workflowItemUid = details.workflowItemUid;
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
+				this.isBulkRespond = true;
 			}
 			else {
 				this.multiSubmitionItems = [];
+				this.isBulkRespond = false;
 			}
 			this.getFormDetails();
 		}

@@ -6,7 +6,7 @@ import { CoreModule } from '../../shared/core.module';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { RouterModule } from '@angular/router';
 import { AssignmentsModule } from '../assignments.module';
-import { AssignmentsMultiPickerModule } from '../assignments-multi-picker/assignments-multi-picker.module';
+import { AssignmentsMultiPickerModule } from '../assignment-multi-picker/assignment-multi-picker.module';
 
 @NgModule({
 	declarations: [

@@ -114,6 +114,7 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
 import { WorkflowModule } from '../workflow/workflow.module';
+import { AssignmentAssetListComponent } from './assignment-asset-list/assignment-asset-list.component';
 
 @NgModule({
 	declarations: [
@@ -150,10 +151,12 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		WorkflowInformationComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent
+		WorkflowVersionInformationComponent,
+		AssignmentAssetListComponent
 	],
 	exports: [
 		AssignmentListComponent,
+		AssignmentProgressStepDetailsComponent,
 		CompleteAssignmentComponent
 	],
 	imports: [

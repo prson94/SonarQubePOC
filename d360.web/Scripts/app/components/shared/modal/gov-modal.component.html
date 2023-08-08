@@ -1,22 +1,22 @@
-﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap>
-    <div class="modal-dialog {{additionalClasses}} {{(includePreciselyLogo ? 'modal-with-background' : '')}}">
-        <div *ngIf="includePreciselyLogo" class="white-background"></div>
-        <div *ngIf="showTitle" class="modal-title-bar">
-            <div style="display:block">
-                <h1>{{title}}</h1>
-                <h2 *ngIf="subtitle" [innerHTML]="subtitle"></h2>
-            </div>
-            <span class="grow"></span>
-            <ig-portal-renderer *ngIf="formFeedbackPortalName != null" [name]="formFeedbackPortalName"></ig-portal-renderer>
-        </div>
-        <ng-content></ng-content>
-        <div *ngIf="showActionBar" class="action-bar">
-            <button igButton class="ig-button-secondary" (click)="closePopUp()" i18n>{{ cancelButtonLabel }}</button>
-            <span class="grow"></span>
-            <button *ngIf="showConfirm" igButton class="ig-button-primary" (click)="confirm()">
-                <ng-container i18n>{{ confirmButtonLabel }}</ng-container>
-            </button>
-        </div>
-        <img *ngIf="includePreciselyLogo" class="about-binary" src="../../../../../Content/images/About-Binary.png" />
-    </div>
+﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap [style.z-index]="zIndex">
+	<div class="modal-dialog {{additionalClasses}} {{(includePreciselyLogo ? 'modal-with-background' : '')}}">
+		<div *ngIf="includePreciselyLogo" class="white-background"></div>
+		<div *ngIf="showTitle" class="modal-title-bar">
+			<div style="display:block">
+				<h1>{{title}}</h1>
+				<h2 *ngIf="subtitle" [innerHTML]="subtitle"></h2>
+			</div>
+			<span class="grow"></span>
+			<ig-portal-renderer *ngIf="formFeedbackPortalName != null" [name]="formFeedbackPortalName"></ig-portal-renderer>
+		</div>
+		<ng-content></ng-content>
+		<div *ngIf="showActionBar" class="action-bar">
+			<button igButton class="ig-button-secondary" (click)="closePopUp()" i18n>{{ cancelButtonLabel }}</button>
+			<span class="grow"></span>
+			<button *ngIf="showConfirm" igButton class="ig-button-primary" (click)="confirm()">
+				<ng-container i18n>{{ confirmButtonLabel }}</ng-container>
+			</button>
+		</div>
+		<img *ngIf="includePreciselyLogo" class="about-binary" src="../../../../../Content/images/About-Binary.png" />
+	</div>
 </div>

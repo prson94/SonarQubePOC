@@ -5,7 +5,7 @@ import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../model
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
-import { AssignmentsMultiPickerComponent } from '../assignments-multi-picker/assignments-multi-picker.component';
+import { AssignmentsMultiPickerComponent } from '../assignment-multi-picker/assignment-multi-picker.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 
 /*global $localize*/
