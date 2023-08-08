@@ -55,6 +55,7 @@
 								i18n-title
 								title="Information"
 								[showHeaderLine]="false"
+								[shouldBePadded]="false"
 							>
 								<div readonly>
 									<ng-container>
@@ -77,8 +78,13 @@
 								</div>
 							</ig-property-group>
 							<ig-property-group *ngIf="request && request.Action" i18n-title title="Request"
-											   [shouldBePadded]="false"
-											   [showHeaderLine]="false">
+											   [shouldBePadded]="false" [customTemplate]="true"
+											   [showHeaderLine]="false" [sideTemplate]="requestSidePanel">
+								<ng-template #requestSidePanel>
+									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>Open in side
+										panel</a>
+									<a *ngIf="sidePanelOpen" (click)="sidePanelOpen=false" i18n>Close side panel</a>
+								</ng-template>
 								<div readonly>
 									<ng-container>
 										<d3s-assignment-information-request [showSubmittedByData]="true"

@@ -134,6 +134,16 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 	}
 
+	showRequestSidePanel(event: MouseEvent): void {
+		if (this.request) {
+			this.linkClickInterceptor.sendEvent(event, {
+				workflowActionUid: this.request.Action.Uid,
+				itemStepUid: this.stepUid,
+				workflowItemUid: this.workflowItemUid
+			}, '');
+		}
+	}
+
 	prepareValuesForSubmit(): void {
 		this.formFields.forEach((x, i) => {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
