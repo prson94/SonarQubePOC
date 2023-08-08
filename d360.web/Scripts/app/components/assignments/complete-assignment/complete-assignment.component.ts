@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
@@ -55,9 +55,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	private linkInterceptorSubscription: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService: AssignmentService
+		private workflowService: WorkflowService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		private assignmentService: AssignmentService,
+		private cdRef: ChangeDetectorRef
 	) {
 		super(settingsService);
 	}
@@ -82,6 +83,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.workflowItemUid = details.workflowItemUid;
 
 			this.loadWorkflowTypeDetails();
+			this.loadFormDetails();
 			this.getWorkFlowData();
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
@@ -91,7 +93,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.multiSubmitionItems = [];
 				this.isBulkRespond = false;
 			}
-			this.getFormDetails();
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -199,6 +200,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.assetId = res.ObjectID;
 					}
 					this.assignmentService.setFormValidators.next();
+					this.cdRef.markForCheck();
 				}
 			});
 	}
@@ -209,6 +211,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				if (response?.items?.length > 0) {
 					this.workflowTypeUid = response.items[0].WorkflowTypeUid;
 					this.workflowTypeVersion = response.items[0].Version;
+					this.cdRef.markForCheck();
 				}
 			});
 	}
@@ -216,6 +219,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	getWorkFlowData(): void {
 		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.workflowName = response.WorkflowName;
+			this.cdRef.markForCheck();
 		});
 	}
 
