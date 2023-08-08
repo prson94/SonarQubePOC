@@ -13,7 +13,7 @@
         <div *ngIf="showActionBar" class="action-bar">
             <button igButton class="ig-button-secondary" (click)="closePopUp()" i18n>{{ cancelButtonLabel }}</button>
             <span class="grow"></span>
-            <button *ngIf="showConfirm" igButton class="ig-button-primary" (click)="confirm()">
+            <button *ngIf="showConfirm" igButton class="ig-button-primary" (click)="confirm()" [disabled]="secondaryButtonDisabled">
                 <ng-container i18n>{{ confirmButtonLabel }}</ng-container>
             </button>
         </div>

@@ -11,6 +11,7 @@
     NgModule,
     OnInit,
     Output,
+    TemplateRef,
     ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -36,9 +37,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() igformGroup: UntypedFormGroup;
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
-	@Input() showDetailsLink: boolean = false;
-	@Input() showDetailsLinkText: string = ''
-	@Output() showDetailsClick: EventEmitter<boolean> = new EventEmitter<boolean>()
+	@Input() customTemplate: boolean = false;
+    @Input() sideTemplate: TemplateRef<Element>;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
     @Input() showHeaderLine: boolean = true;

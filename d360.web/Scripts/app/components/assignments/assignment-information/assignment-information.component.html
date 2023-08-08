@@ -5,8 +5,15 @@
 		(click)="completeAssignmentClick()" i18n
 >Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
 </button>
-<d3s-assignment-information-request [hidden]="isAssignmentItemLoading"
-									[workflowActionUid]="assignmentItem.ActionUid"
-									*ngIf="assignmentItem?.initiatingObjectType === 'Action'"></d3s-assignment-information-request>
+<div class="asset-detail-tabs" *ngIf="assignmentItem?.initiatingObjectType === 'Action'">
+	<ig-property-group i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
+		<div readonly>
+			<ng-container>
+				<d3s-assignment-information-request [workflowActionUid]="assignmentItem.ActionUid"
+				></d3s-assignment-information-request>
+			</ng-container>
+		</div>
+	</ig-property-group>
+</div>
 <d3s-assignment-information-general [hidden]="isAssignmentItemLoading" [workflowTypeVersion]="workflowTypeVersion"
 									[assignmentItem]="assignmentItem"></d3s-assignment-information-general>

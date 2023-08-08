@@ -13,12 +13,10 @@ export class AssignmentInformationComponent {
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}> = new EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}>();
 	assignmentItem: AssignmentItem;
 	isAssignmentItemLoading: boolean = false;
@@ -77,8 +75,7 @@ export class AssignmentInformationComponent {
 	completeAssignmentClick(): void {
 		this.completeAssignment.emit({
 			workflowItemUid: this.workflowItemUid,
-			stepUid: this.assignmentItemStep?.Uid,
-			assetId: this.workflowStepDetail?.ObjectID
+			stepUid: this.assignmentItemStep?.Uid
 		});
 	}
 }

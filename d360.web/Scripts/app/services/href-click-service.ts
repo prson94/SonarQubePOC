@@ -16,7 +16,8 @@ export enum AssetDetailClickType {
 	WorkflowStep = 'WorkflowStep',
 	WorkflowTypeInformation = 'WorkflowTypeInformation',
 	WorkflowItemInformation = 'WorkflowItemInformation',
-	WorkflowVersion = 'WorkflowVersion'
+	WorkflowVersion = 'WorkflowVersion',
+	WorkflowRequestInformation = 'WorkflowRequestInformation',
 }
 
 export class AssetDetailClickEvent {
@@ -33,9 +34,11 @@ export class AssetDetailClickEvent {
     originalEvent: any;
 	workflowItemUid: string;
 	itemStepUid: string;
+	workflowActionUid: string;
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 	selectedNodeModel: NodeModel;
+	showCompleteAssignment: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -201,23 +204,31 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = data.referenceListTypeUid;
             }
 
-			if (data?.workflowTypeUid && data?.workflowTypeVersion && !(data?.selectedNodeModel)) {
-				adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
-				adcEv.workflowTypeUid = data.workflowTypeUid;
-				adcEv.workflowTypeVersion = data.workflowTypeVersion;
-			} else if (data?.workflowItemUid && data?.itemStepUid) {
-				adcEv.type = AssetDetailClickType.WorkflowStep;
-				adcEv.workflowItemUid = data.workflowItemUid;
-				adcEv.itemStepUid = data.itemStepUid;
-			} else if(data?.workflowTypeUid && data?.workflowTypeVersion && data?.selectedNodeModel) {
-				adcEv.type = AssetDetailClickType.WorkflowVersion;
-				adcEv.workflowTypeUid = data.workflowTypeUid;
-				adcEv.workflowTypeVersion = data.workflowTypeVersion;
-				adcEv.selectedNodeModel = data.selectedNodeModel;
-			} else if (data?.workflowItemUid && data?.workflowTypeVersion) {
-				adcEv.type = AssetDetailClickType.WorkflowItemInformation;
-				adcEv.workflowItemUid = data.workflowItemUid;
-				adcEv.workflowTypeVersion = data.workflowTypeVersion;
+			if(data) {
+				if (data.workflowTypeUid && data.workflowTypeVersion && !(data.selectedNodeModel)) {
+					adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
+					adcEv.workflowTypeUid = data.workflowTypeUid;
+					adcEv.workflowTypeVersion = data.workflowTypeVersion;
+				} else if (data.workflowItemUid && data.itemStepUid && !(data.workflowActionUid)) {
+					adcEv.type = AssetDetailClickType.WorkflowStep;
+					adcEv.workflowItemUid = data.workflowItemUid;
+					adcEv.itemStepUid = data.itemStepUid;
+					adcEv.showCompleteAssignment = data.showCompleteAssignment;
+				} else if(data.workflowTypeUid && data.workflowTypeVersion && data.selectedNodeModel) {
+					adcEv.type = AssetDetailClickType.WorkflowVersion;
+					adcEv.workflowTypeUid = data.workflowTypeUid;
+					adcEv.workflowTypeVersion = data.workflowTypeVersion;
+					adcEv.selectedNodeModel = data.selectedNodeModel;
+				} else if (data.workflowItemUid && data.workflowTypeVersion) {
+					adcEv.type = AssetDetailClickType.WorkflowItemInformation;
+					adcEv.workflowItemUid = data.workflowItemUid;
+					adcEv.workflowTypeVersion = data.workflowTypeVersion;
+				} else if(data.workflowItemUid && data.itemStepUid && data.workflowActionUid) {
+					adcEv.type = AssetDetailClickType.WorkflowRequestInformation;
+					adcEv.workflowItemUid = data.workflowItemUid;
+					adcEv.itemStepUid = data.itemStepUid;
+					adcEv.workflowActionUid = data.workflowActionUid;
+				}
 			}
 
 		} else {
@@ -246,13 +257,21 @@ export class LinkClickInterceptor {
 			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowStep;
 			baseComponent.selectedAsset = {
 				workflowItemUid: event.workflowItemUid,
-				itemStepUid: event.itemStepUid
+				itemStepUid: event.itemStepUid,
+				showCompleteAssignment: event.showCompleteAssignment
 			};
 		} else if (event.type === AssetDetailClickType.WorkflowItemInformation) {
 			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowItemInformation;
 			baseComponent.selectedAsset = {
 				workflowItemUid: event.workflowItemUid,
 				workflowTypeVersion: event.workflowTypeVersion
+			};
+		} else if(event.type === AssetDetailClickType.WorkflowRequestInformation) {
+			baseComponent.sidePanelTab = AssetDetailClickType.WorkflowRequestInformation;
+			baseComponent.selectedAsset = {
+				workflowItemUid: event.workflowItemUid,
+				itemStepUid: event.itemStepUid,
+				workflowActionUid: event.workflowActionUid
 			};
 		} else {
 			//if some other tab is opened in side panel, force opening detail panel
