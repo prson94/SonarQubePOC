@@ -16,7 +16,6 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
-import { result } from 'lodash-es';
 
 @Component({
 	selector: 'd3s-complete-assignment',
