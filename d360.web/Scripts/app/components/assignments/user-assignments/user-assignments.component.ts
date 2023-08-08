@@ -104,9 +104,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
         }
         else if (res.exists && res.hasAccess && !res.isCompleted) {
             const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
-            if (item) {
-                this.onItemClick(null, item);
-            }
+            this.onItemClick(null, item);
         }
         else if (!res.exists) {
             window.alert("does not exist");
