@@ -45,4 +45,5 @@ export class AssignmentInformationRequestComponent {
 
 	protected readonly Object = Object;
 	protected readonly FormMode = FormMode;
+	protected readonly JSON = JSON;
 }

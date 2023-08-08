@@ -136,8 +136,8 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
-		ByWorkflowVersionListComponent,
 		ByWorkflowVersionGridComponent,
+		ByWorkflowVersionListComponent,
 		CompleteAssignmentComponent,
 		PendingAssignmentsStepComponent,
 		SidePanelSwitcherComponent,
@@ -152,12 +152,16 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent
 	],
+	exports: [
+		AssignmentListComponent
+	],
 	imports: [
 		AdvancedFiltersModule,
 		AngularSplitModule,
 		AssetDetailModule,
 		AssetTypeDetailModule,
 		AssignmentsRoutingModule,
+		AutoCompleteModule,
 		ButtonModule,
 		CheckboxModule,
 		CommonModule,
@@ -166,6 +170,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		D3SSortIconModule,
 		DataProfileModule,
 		DirectivesModule,
+		DropdownModule,
 		FormsModule,
 		IgBadgeModule,
 		InputTextModule,
@@ -187,8 +192,6 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		TilesModule,
 		TooltipModule,
 		WorkflowDiagramModule,
-		AutoCompleteModule,
-		DropdownModule,
 		WorkflowModule
 	]
 })

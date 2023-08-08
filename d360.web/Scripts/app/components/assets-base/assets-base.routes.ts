@@ -5,10 +5,12 @@ import { RelationshipsComponent } from '../sidebar/relationships/relationships.c
 import { DiagramComponent } from '../sidebar/visualization/diagram.component';
 import { MonitorWorkflowComponent } from '../sidebar/workflowmonitor/monitor-workflow.component';
 import { AssetsBaseComponent } from './assets-base.component';
+import { AssignmentSidebarComponent } from '../sidebar/assignments/assignment-sidebar.component';
 
 const routes: Routes = [
     { path: ':assetTypeUid', component: AssetsBaseComponent },
 	{ path: ':assetTypeUid/workflowmonitor', component: MonitorWorkflowComponent },
+	{ path: ':assetTypeUid/assignments', component: AssignmentSidebarComponent },
 	{ path: ':assetTypeUid/diagrams', component: DiagramComponent },
 	{ path: ':uid/log', component: AuditComponent },
 	{ path: ':uid/relationships', component: RelationshipsComponent },

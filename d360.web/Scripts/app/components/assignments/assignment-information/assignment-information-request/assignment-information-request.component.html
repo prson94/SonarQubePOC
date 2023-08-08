@@ -25,7 +25,20 @@
 								class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'shortDate' ?? '---' }} </div>
 						</div>
 						<div *ngSwitchCase="'Lookup'">
-							<div class="ig-value"> {{ actionItems[fieldTypeModelField.Name] ?? '---' }} </div>
+							<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class !== 'Reference'">
+								{{ actionItems[fieldTypeModelField.Name] ?? '---' }}
+							</div>
+							<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class === 'Reference'">
+								<ul *ngIf="actionItems[fieldTypeModelField.Name]">
+									<li *ngFor="let listItem of JSON.parse(actionItems[fieldTypeModelField.Name])">
+										<span class="ref-list-color">
+											<span *ngIf="listItem.color" class="ig-colorfield-swatch"
+												  [ngStyle]="{'background-color': listItem.color}"></span>
+											<span>{{listItem.name}}</span>
+										</span>
+									</li>
+								</ul>
+							</div>
 						</div>
 						<div *ngSwitchCase="'Boolean'">
 							<div class="ig-value">

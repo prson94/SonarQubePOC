@@ -209,6 +209,55 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
+		public async Task<List<ProfilesSeriesApiViewModel>> GetDataProfilesSeries(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();
+			List<string> whereClauses = new List<string>();
+
+			if (queryParams.Any(q => q.Key.ToLowerInvariant() == "_filter"))
+			{
+				var fieldList = new List<DefaultFilter>
+						{
+							new DefaultFilter("assetUid", "A.Uid", SqlFieldType.Guid),
+							new DefaultFilter("ProfileIdentifier", "ADP.ProfileIdentifier", SqlFieldType.Text),
+							new DefaultFilter("profileSetDate", "ADP.profileSetDate", SqlFieldType.DateTime),
+							new DefaultFilter("typeQualifier", "ADP.typeQualifier", SqlFieldType.Text),
+							new DefaultFilter("type", "ADP.type", SqlFieldType.Text),
+							new DefaultFilter("ftaVersion", "ADP.ftaVersion", SqlFieldType.Text),
+							new DefaultFilter("freshness", "ADP.freshness", SqlFieldType.Number),
+							new DefaultFilter("ProfileSource", "ADP.ProfileSource", SqlFieldType.Text),
+							new DefaultFilter("ProfileSeries", "ADP.ProfileSeries", SqlFieldType.Text),
+							new DefaultFilter("ProfileType", "coalesce(ADP.ProfileType,0)", SqlFieldType.Number),
+						};
+
+				CompanyContext.ParseAdvancedFilterQueryParameter(
+					queryParams,
+					fieldList,
+					out DynamicParameters advFilterArgs,
+					out List<string> advFilterStatements);
+
+
+				if (advFilterArgs != null && advFilterStatements != null)
+				{
+					dbArgs.AddDynamicParams(advFilterArgs);
+					whereClauses.AddRange(advFilterStatements);
+				}
+			}
+
+			var additionalWhereClause = whereClauses.Count > 0 ? $"And {string.Join(" AND ", whereClauses)}" : "";
+
+			string sql = $@"
+							select distinct ADP.ProfileSeries
+							from dbo.AssetDataProfile ADP
+							inner join Asset a on A.id = ADP.AssetID
+						    where ADP.ProfileSeries is not null 
+							{additionalWhereClause}
+							order by 1";
+			var results = await CompanyContext.QueryAsync<ProfilesSeriesApiViewModel>(sql, dbArgs, ApiTimeout);
+
+			return results.ToList();
+		}
+
 		public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			var dbArgs = new DynamicParameters();

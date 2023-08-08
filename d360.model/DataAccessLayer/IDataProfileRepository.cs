@@ -13,6 +13,8 @@ namespace d360.model.DataAccessLayer
 
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
 
+        Task<List<ProfilesSeriesApiViewModel>> GetDataProfilesSeries(IEnumerable<KeyValuePair<string, string>> queryParams);
+
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams);
 
         Task<AssetDataProfilesApiViewModel> GetDataProfiles(IEnumerable<KeyValuePair<string, string>> queryParams);
