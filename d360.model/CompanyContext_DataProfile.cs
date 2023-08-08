@@ -95,6 +95,7 @@ namespace d360.model
 					table.Columns.Add("ItemNumber", typeof(int));
 					table.Columns.Add("ExecutionItemUid", typeof(Guid));
 					table.Columns.Add("AssetUid", typeof(Guid));
+					table.Columns.Add("ProfileSeries", typeof(string));
 					table.Columns.Add("StartDate", typeof(DateTime));
 					table.Columns.Add("EndDate", typeof(DateTime));
 					table.Columns.Add("Cascade", typeof(bool));
@@ -116,7 +117,23 @@ namespace d360.model
 						{
 							row["ExecutionItemUid"] = DBNull.Value;
 						}
-						row["AssetUid"] = item.AssetUid;
+						if (item.AssetUid.HasValue)
+						{
+							row["AssetUid"] = item.AssetUid;
+						}
+						else
+						{
+							row["AssetUid"] = Guid.Empty;
+						}
+
+						if (!string.IsNullOrWhiteSpace(item.ProfileSeries))
+						{
+							row["ProfileSeries"] = item.ProfileSeries;
+						}
+						else
+						{
+							row["ProfileSeries"] = DBNull.Value;
+						}
 						row["StartDate"] = item.StartDate;
 
 						if (item.StartDate == DateTime.MinValue)
@@ -129,6 +146,12 @@ namespace d360.model
 						if (item.EndDate == DateTime.MinValue)
 						{
 							errorMessages.Add("EndDate is a required field");
+						}
+
+						if ((Guid)row["AssetUid"] == Guid.Empty && string.IsNullOrWhiteSpace(item.ProfileSeries))
+						{
+							row["Message"] = "AssetUid or ProfileSeries is required field.";
+							row["Success"] = 0;
 						}
 
 						if (errorMessages.Any())
@@ -153,6 +176,7 @@ namespace d360.model
 						bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 						bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 						bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+						bulkCopy.ColumnMappings.Add("ProfileSeries", "ProfileSeries");
 						bulkCopy.ColumnMappings.Add("StartDate", "StartDate");
 						bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
 						bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
@@ -171,16 +195,61 @@ namespace d360.model
 						update	api.ExecutionDeleteAssetDataProfile
 						set		Success = 0,
 								[Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid.'
-						where	ExecutionID = @ExecutionID and ([AssetUid] is null or [AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+						where	ExecutionID = @ExecutionID and ([AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER))
+						and coalesce(ProfileSeries,'') = '';
+
 
 						update	DEDP
 						set		Success = 0,
 								[Message] = coalesce([Message] + '; ', '') + 'Asset not found based on Uid provided'
-						from
-							api.ExecutionDeleteAssetDataProfile DEDP
-							left Join
-							Asset A on DEDP.AssetUid = A.Uid
-						where	ExecutionID = @ExecutionID and A.Uid is null;
+						from	api.ExecutionDeleteAssetDataProfile DEDP
+						left Join Asset A on DEDP.AssetUid = A.Uid
+						where	ExecutionID = @ExecutionID and A.Uid is null
+						and ([AssetUid] != CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER));
+
+						drop table if exists #tempProfileSeries;
+
+						select distinct adp.ProfileSeries 
+						into #tempProfileSeries
+						from api.ExecutionDeleteAssetDataProfile DEDP
+						inner join dbo.AssetDataProfile adp on adp.ProfileSeries = DEDP.ProfileSeries
+						where DEDP.ExecutionID = @ExecutionID and DEDP.ProfileSeries is not null
+						and ADP.ProfileSetDate between DEDP.startDate and DEDP.endDate;
+
+						create clustered index cx_tempProfileSeries on #tempProfileSeries(ProfileSeries);
+
+						update	DEDP
+						set		Success = 0,
+								[Message] = coalesce([Message] + '; ', '') + 'Asset Profile not found based on ProfileSeries, StartDate and EndDate provided'
+						from   api.ExecutionDeleteAssetDataProfile DEDP
+						left Join #tempProfileSeries A on A.ProfileSeries = DEDP.ProfileSeries
+						where	ExecutionID = @ExecutionID 
+						and ([AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER))
+						and A.ProfileSeries is null and (DEDP.ProfileSeries is not null);
+
+
+						drop table if exists #tempProfileSeriesAssetUid;
+
+						select distinct DEDP.ItemNumber 
+						into #tempProfileSeriesAssetUid
+						from api.ExecutionDeleteAssetDataProfile DEDP
+						inner join dbo.AssetDataProfile adp on adp.ProfileSeries = DEDP.ProfileSeries
+						inner join Asset A on A.ID = adp.AssetID and A.uid = DEDP.AssetUid
+						where DEDP.ExecutionID = @ExecutionID and DEDP.ProfileSeries is not null
+						and (DEDP.[AssetUid] != CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER))
+						and ADP.ProfileSetDate between DEDP.startDate and DEDP.endDate
+						option (recompile);
+
+						create clustered index cx_tempProfileSeriesAssetUid on #tempProfileSeriesAssetUid(ItemNumber);
+
+						update	DEDP
+						set		Success = 0,
+								[Message] = coalesce([Message] + '; ', '') + 'Asset Profile not found based on AssetUid,ProfileSeries, StartDate and EndDate provided'
+						from   api.ExecutionDeleteAssetDataProfile DEDP
+						left Join #tempProfileSeriesAssetUid A on A.ItemNumber = DEDP.ItemNumber
+						where	ExecutionID = @ExecutionID 
+						and (DEDP.[AssetUid] != CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER))  and (DEDP.ProfileSeries is not null)
+						and A.ItemNumber is null;
 
 						update	api.ExecutionDeleteAssetDataProfile
 						set		Success = 0,
@@ -197,10 +266,10 @@ namespace d360.model
 							update	EDP
 							set		Success = 0,
 									[Message] = coalesce([Message] + '; ', '') + '{CompanyContextApiError.DataProfilingNoPermission}'
-							from	
-									api.ExecutionDeleteAssetDataProfile EDP
-							where 
-									EDP.ExecutionID = @ExecutionID and not exists (
+							from	api.ExecutionDeleteAssetDataProfile EDP
+							where   EDP.ExecutionID = @ExecutionID 
+									and EDP.[AssetUid] != CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)
+									and not exists (
 												select 1
 												from	Asset A
 														outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
@@ -223,6 +292,72 @@ namespace d360.model
 														and 
 														P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
 												);
+
+							if exists(select 1 from api.ExecutionDeleteAssetDataProfile DEDP
+									  where ExecutionID = @ExecutionID and DEDP.ProfileSeries is not null
+									  and DEDP.Success is null)
+							begin
+								drop table if exists #TempcheckPermission;
+
+								select distinct DEDP.ItemNumber,DEDP.ProfileSeries,ADP.AssetID,Null Success
+								into #TempcheckPermission
+								from  api.ExecutionDeleteAssetDataProfile DEDP
+								inner join dbo.AssetDataProfile ADP on ADP.ProfileSeries = DEDP.ProfileSeries
+								where ExecutionID = @ExecutionID and DEDP.ProfileSeries is not null
+								and DEDP.[AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) 
+								and DEDP.Success is null
+								and ADP.ProfileSetDate between DEDP.startDate and DEDP.endDate;
+
+								create clustered index cx_TempcheckPermission on #TempcheckPermission(ItemNumber);
+
+								update	TempEDP
+								set		Success = 0
+								from	#TempcheckPermission TempEDP
+								where   not exists (
+													select 1
+													from	Asset A
+															outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+															where	
+															A.ID = TempEDP.AssetId 
+															and
+															(															
+																(
+																	P.AssetID = A.ID
+																	or 
+																	P.AssetTypeID is null
+																)
+																OR
+																(																	
+																	P.AssetID=0 
+																	and 
+																	P.AssetTypeID=A.AssetTypeID
+																)
+															)
+															and 
+															P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p	
+													);
+
+								drop table if exists #tempnotpremission;
+								select distinct ItemNumber,ProfileSeries
+								into #tempnotpremission
+								from #TempcheckPermission t
+								where t.Success = 0;
+
+								create clustered index cdx_tempnotpremission on #tempnotpremission(ItemNumber,ProfileSeries)
+
+								update	EDP
+								set		Success = 0,
+										[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete profiling data for this ProfileSeries Assets'
+								from	api.ExecutionDeleteAssetDataProfile EDP
+								inner join #tempnotpremission t on t.ItemNumber  = EDP.ItemNumber and t.ProfileSeries  = EDP.ProfileSeries 
+								where  EDP.ExecutionID = @ExecutionID and EDP.ProfileSeries is not null
+								and EDP.[AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) 
+
+								drop table if exists #tempProfileSeries;
+								drop table if exists #TempcheckPermission;
+								drop table if exists #tempnotpremission;
+
+							END
 						END
 ",
 									new { execution.ExecutionID, execution.ResourceID, p = Permission.EditAsset }, commandTimeout: timeout);
@@ -254,6 +389,7 @@ namespace d360.model
 								create table #child (
 									itemnumber int,
 									assetID bigint,
+									profileSeries nvarchar(100),
 									startDate datetime,
 									endDate datetime
 								)
@@ -262,30 +398,97 @@ namespace d360.model
 								create table #parent (
 									itemnumber int,
 									assetID bigint,
+									profileSeries nvarchar(100),
 									startDate datetime,
 									endDate datetime
 								)
+
+								drop table if exists #deleteItemCount
+								create table #deleteItemCount (
+									itemnumber int,
+									DeletedCount bigint
+								)
+
+								create clustered index cx_deleteItemCount on #deleteItemCount(itemnumber) 
 
 								drop table if exists #deleteAssetDataProfile
 								create table #deleteAssetDataProfile (
 									itemnumber int,
 									assetID bigint,
+									profileSeries nvarchar(100),
 									startDate datetime,
 									endDate datetime
 								)
+
+								create clustered index cx_deleteAssetDataProfile on #deleteAssetDataProfile(assetID)
+
+
+								drop table if exists #tempIntersectTypeIDS
+								create table #tempIntersectTypeIDS (
+									IntersecttypeID int
+								)
+
+								create clustered index cx_tempIntersectTypeIDS on #tempIntersectTypeIDS(IntersecttypeID);
+
+								insert into #tempIntersectTypeIDS
+								select IT.ID IntersecttypeID
+								from intersecttype IT
+								inner join [Predicate] P on IT.PredicateID = P.ID and P.[Type] in (3,4)
+								option (recompile);
+
+								drop table if exists #TempExecDeleAssetDataProfile
+								create table #TempExecDeleAssetDataProfile (
+									Itemnumber int,
+									AssetUid uniqueidentifier,
+									ProfileSeries Varchar(100),
+									startDate datetime,
+									endDate datetime,
+									[Cascade] bit
+								)
+
+								insert into #TempExecDeleAssetDataProfile
+								(Itemnumber,AssetUid,ProfileSeries,startDate,endDate,[Cascade])
+								select E.ItemNumber,
+								 E.AssetUid,
+								 E.ProfileSeries,
+								 E.StartDate,
+								 E.EndDate,
+								 E.[Cascade]
+								 from API.ExecutionDeleteAssetDataProfile E
+								Where {querySuffix};
+
+
+								insert into #TempExecDeleAssetDataProfile
+								(Itemnumber,AssetUid,ProfileSeries,startDate,endDate,[Cascade])
+								select distinct E.ItemNumber,
+								 A.Uid AssetUid,
+								 E.ProfileSeries,
+								 E.StartDate,
+								 E.EndDate,
+								 E.[Cascade]
+								 from #TempExecDeleAssetDataProfile E
+								 inner join dbo.AssetDataProfile ADP on ADP.ProfileSeries = E.ProfileSeries 
+											and ADP.ProfileSetDate between E.startDate and E.endDate
+								 inner join Asset a on A.id = ADP.AssetID
+								 where E.ProfileSeries is not null 
+								 and E.[AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)
+								option (recompile);
+
+								delete E
+								from #TempExecDeleAssetDataProfile E
+								where E.ProfileSeries is not null 
+								and E.[AssetUid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER);
 
 								insert into #parent
 								select 
 									ItemNumber,
 									ID,
+									ProfileSeries,
 									startdate,
 									enddate
-								from 
-									Asset A
-									inner join
-									API.ExecutionDeleteAssetDataProfile E on A.uid = E.AssetUid and E.[Cascade] = 1
-								Where
-									{querySuffix}	                                
+								from #TempExecDeleAssetDataProfile E 
+									inner join	Asset A on A.uid = E.AssetUid 
+								Where E.[Cascade] = 1;
 
 								insert into #deleteAssetDataProfile
 								select * from #parent
@@ -294,13 +497,16 @@ namespace d360.model
 								BEGIN
 									insert into #child
 									select 
-										ItemNumber,
-										AAP.ObjectAssetID as AssetID,
-										p.startDate,
-										p.endDate
+										P.ItemNumber,
+										I.ObjectAssetID as AssetID,
+										P.ProfileSeries,
+										P.startDate,
+										P.endDate
 									from 
 										#parent P 
-										inner join PredicateIntersect AAP on AAP.SubjectAssetID = P.AssetID and AAP.PredicateType in (3,4)
+										inner join [intersect] I on I.SubjectAssetID = P.AssetID 
+										inner join #tempIntersectTypeIDS IT on IT.IntersectTypeID = I.IntersectTypeID
+										option (recompile);
 
 									delete from #parent 
 	
@@ -308,29 +514,34 @@ namespace d360.model
 									select * from #child
 
 									insert into #deleteAssetDataProfile
-									select 
-										c.* 
-									from 
-										#child c 
-										left join 
-										#deleteAssetDataProfile a on c.assetID=a.assetID and a.startdate =c.startdate and a.enddate=c.enddate
-									where a.assetID is null
+									select c.* 
+									from #child c 
+									left join #deleteAssetDataProfile a 
+										 on c.assetID=a.assetID and a.startdate =c.startdate and a.enddate=c.enddate
+									where a.assetID is null;
 
-									delete from #child
+									delete from #child;
 								END
 
 								insert into #deleteAssetDataProfile
 								select 
-									ItemNumber,
-									id,
-									startdate,
-									enddate
-								from 
-									Asset A
-									inner join
-									API.ExecutionDeleteAssetDataProfile E on A.uid = E.AssetUid and E.[Cascade] = 0
-								where
-									{querySuffix}	                                
+									E.ItemNumber,
+									A.id,
+									E.ProfileSeries,
+									E.startdate,
+									E.enddate
+								from #TempExecDeleAssetDataProfile E
+								inner join Asset A on A.uid = E.AssetUid 
+								where E.[Cascade] = 0
+								option (recompile);
+
+								drop table if exists #deletedResultsConsolidate
+								create table #deletedResultsConsolidate (
+									itemnumber int,
+									id bigint
+								)
+
+								create clustered index cx_deletedResultsConsolidate on #deletedResultsConsolidate(id);
 
 								drop table if exists #deletedResults
 								create table #deletedResults (
@@ -338,24 +549,69 @@ namespace d360.model
 									id bigint
 								)
 
-								merge AssetDataProfile as ADP
-								using (select * from #deleteAssetDataProfile) DADP
-								on DADP.assetID = ADP.AssetID and ADP.ProfileSetDate between DADP.startDate and DADP.endDate
-								when matched then
-								DELETE
-								OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults;
+								if exists(select 1 from #deleteAssetDataProfile where ProfileSeries is not null)
+								begin
+									merge AssetDataProfile as ADP
+									using (select * from #deleteAssetDataProfile where ProfileSeries is not null) DADP
+									on DADP.assetID = ADP.AssetID and ADP.ProfileSetDate between DADP.startDate and DADP.endDate
+									and ADP.ProfileSeries =  DADP.ProfileSeries and ADP.ProfileSeries is not null
+									when matched then
+									DELETE OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults
+									option(recompile);
 
-							
-								Delete from AssetDataProfileSample where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
-								Delete from AssetDataProfileSampleJson where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
+									insert into #deletedResultsConsolidate
+									select * from #deletedResults;
+
+									delete from #deletedResults;
+								end
+
+								if exists(select 1 from #deleteAssetDataProfile where ProfileSeries is null)
+								begin
+									merge AssetDataProfile as ADP
+									using (select * from #deleteAssetDataProfile where ProfileSeries is null) DADP
+									on DADP.assetID = ADP.AssetID and ADP.ProfileSetDate between DADP.startDate and DADP.endDate
+									when matched then
+									DELETE OUTPUT DADP.itemNumber, DELETED.ID into #deletedResults
+									option(recompile);
+
+									insert into #deletedResultsConsolidate
+									select * from #deletedResults;
+								end
+
+								if exists(select 1 from #deletedResultsConsolidate)
+								begin
+									Delete t 
+									from AssetDataProfileSample t
+									where exists (select 1 from #deletedResultsConsolidate dr 
+												  where dr.ID = t.AssetDataProfileID 
+												  and dr.ItemNumber between @beginItemNumber and @endItemNumber );
+
+									Delete t 
+									from AssetDataProfileSampleJson t
+									where exists (select 1 from #deletedResultsConsolidate dr 
+												  where dr.ID = t.AssetDataProfileID 
+												  and dr.ItemNumber between @beginItemNumber and @endItemNumber );
+
+									insert into #deleteItemCount
+									select DR.itemNumber,count(distinct ID) DeletedCount
+									from #deletedResultsConsolidate DR
+									group by DR.itemNumber;
+								end
+
 
 								Update E
 								set E.DeletedCount = DR.DeletedCount
-								from 
-								api.ExecutionDeleteAssetDataProfile E 
-								cross apply (select itemNumber, Count(ID) as DeletedCount from #deletedResults DR where DR.itemnumber = E.itemNumber group by itemNumber) DR
-								where 
-								{querySuffix}";
+								from api.ExecutionDeleteAssetDataProfile E 
+								inner join #deleteItemCount DR on DR.itemnumber = E.itemNumber
+								where {querySuffix}
+
+								drop table if exists #child;
+								drop table if exists #parent;
+								drop table if exists #deleteAssetDataProfile;
+								drop table if exists #tempIntersectTypeIDS;
+								drop table if exists #deleteItemCount;
+								drop table if exists #deletedResultsConsolidate;
+								drop table if exists #TempExecDeleAssetDataProfile;";
 
 					for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
 					{

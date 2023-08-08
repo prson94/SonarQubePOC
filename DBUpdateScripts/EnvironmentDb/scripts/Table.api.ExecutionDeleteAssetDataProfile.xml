@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionDeleteAssetDataProfile-v1">
+  <changeSet author="Puneet Gupta" id="Table.api.ExecutionDeleteAssetDataProfile-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,8 +20,9 @@
 								[Message] [nvarchar](2500) NULL,
 								[ExecutionItemUid] [uniqueidentifier] NULL,
 								[AssetUid] [uniqueidentifier] NOT NULL,
-								[StartDate] [date] NOT NULL,
-								[EndDate] [date] NOT NULL,
+								[ProfileSeries] [nvarchar](100) NULL,
+								[StartDate] [DATETIME] NOT NULL,
+								[EndDate] [DATETIME] NOT NULL,
 								[Cascade] [bit] NOT NULL DEFAULT 0,
 								[DeletedCount] [bigint] NULL,
 								CONSTRAINT [PK_ExecutionDeleteAssetDataProfile] PRIMARY KEY NONCLUSTERED 
@@ -54,6 +55,26 @@
 		
 			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [StartDate] DATE NOT NULL
 			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [EndDate] DATE NOT NULL
+		]]>
+	</rollback>
+  </changeSet>
+	<changeSet author="Puneet Gupta" id="Column.api.ExecutionDeleteAssetDataProfile-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (SELECT * FROM sys.columns 
+							WHERE object_id = OBJECT_ID(N'[api].[ExecutionDeleteAssetDataProfile]') 
+							AND name = 'ProfileSeries')
+			BEGIN
+				alter table [api].ExecutionDeleteAssetDataProfile add [ProfileSeries] Nvarchar(100) NULL
+			END
+		]]>
+    </sql>
+	<rollback>	
+		<![CDATA[			
+			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] drop Column if exists ProfileSeries;
 		]]>
 	</rollback>
   </changeSet>
