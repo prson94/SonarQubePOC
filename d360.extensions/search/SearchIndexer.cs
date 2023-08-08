@@ -694,7 +694,8 @@ namespace d360.extensions.search
                         };
                     };
                     break;
-                case AssetTypeClass.ReferenceItemType:
+				case AssetTypeClass.Reference:
+				case AssetTypeClass.ReferenceItemType:
                     string pathSeperator = "||";
                     where.Add("att.[state] =  " + ((int)State.Active).ToString());
                     where.Add("att.[Class] = @assettypeclass");
