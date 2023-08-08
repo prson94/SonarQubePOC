@@ -153,7 +153,8 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		WorkflowVersionInformationComponent
 	],
 	exports: [
-		AssignmentListComponent
+		AssignmentListComponent,
+		CompleteAssignmentComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -193,9 +194,6 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		TooltipModule,
 		WorkflowDiagramModule,
 		WorkflowModule
-	],
-	exports: [
-		CompleteAssignmentComponent
 	]
 })
 export class AssignmentsModule {
