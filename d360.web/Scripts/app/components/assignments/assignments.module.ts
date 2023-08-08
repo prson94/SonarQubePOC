@@ -114,6 +114,14 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
 import { WorkflowModule } from '../workflow/workflow.module';
+import {
+	CompleteAssignmentFormFieldsComponent
+} from './complete-assignment/complete-assignment-form-fields/complete-assignment-form-fields.component';
+import { CalendarModule } from 'primeng/calendar';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { AssignmentAssetListComponent } from './assignment-asset-list/assignment-asset-list.component';
 
 @NgModule({
@@ -152,6 +160,7 @@ import { AssignmentAssetListComponent } from './assignment-asset-list/assignment
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
+		CompleteAssignmentFormFieldsComponent,
 		AssignmentAssetListComponent
 	],
 	exports: [
@@ -196,6 +205,14 @@ import { AssignmentAssetListComponent } from './assignment-asset-list/assignment
 		TilesModule,
 		TooltipModule,
 		WorkflowDiagramModule,
+		AutoCompleteModule,
+		DropdownModule,
+		WorkflowModule,
+		CalendarModule,
+		EditorModule,
+		MultiSelectModule,
+		RadioButtonModule,
+		FormFeedbackBadgesModule,
 		WorkflowModule
 	]
 })

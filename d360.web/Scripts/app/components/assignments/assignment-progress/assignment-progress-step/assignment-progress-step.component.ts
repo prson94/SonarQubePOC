@@ -26,12 +26,10 @@ export class AssignmentProgressStepComponent implements OnInit {
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}> = new EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}>();
 
 	@Output() stepClickChange: EventEmitter<void> = new EventEmitter<void>();
@@ -75,7 +73,7 @@ export class AssignmentProgressStepComponent implements OnInit {
 			this.workflowService.getAssignmentStepDetail(this.assignmentItemStep.Uid).subscribe((response) => {
 				this.workflowStepDetail = response;
 				this.isLoading = false;
-				this.assigneeNames = this.workflowStepDetail.AssignedUsers.map((assignee) => assignee.FullName)?.sort();
+				this.assigneeNames = this.workflowStepDetail?.AssignedUsers.map((assignee) => assignee.FullName)?.sort();
 			});
 		}
 	}
@@ -86,14 +84,14 @@ export class AssignmentProgressStepComponent implements OnInit {
 		this.linkClickInterceptor.sendEvent(event, {
 			workflowItemUid: this.workflowItemUid,
 			itemStepUid: this.assignmentItemStep?.Uid,
+			showCompleteAssignment: this.showCompleteAssignment
 		}, null);
 	}
 
 	completeAssignmentClick(): void {
 		this.completeAssignment.emit({
 			workflowItemUid: this.workflowItemUid,
-			stepUid: this.assignmentItemStep.Uid,
-			assetId: this.workflowStepDetail.ObjectID
+			stepUid: this.assignmentItemStep.Uid
 		});
 	}
 

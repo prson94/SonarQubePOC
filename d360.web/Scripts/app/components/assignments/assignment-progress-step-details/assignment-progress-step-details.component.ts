@@ -19,7 +19,6 @@ import {
 	WorkflowStepDetail,
 	WorkflowStepReassignment
 } from '../../../models/workflow.model';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -40,12 +39,10 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	@Output() close = new EventEmitter();
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}> = new EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}>();
 
 	@ViewChild(AssignmentFormResponseComponent) assignmentFormResponseComponent: AssignmentFormResponseComponent;
@@ -63,7 +60,6 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 
 
 	constructor(
-		private responsibilityService: ResponsibilityTypeService,
 		protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private router: Router,
@@ -139,8 +135,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	completeAssignmentClick(): void {
 		this.completeAssignment.emit({
 			workflowItemUid: this.workflowItemUId,
-			stepUid: this.itemStepUid,
-			assetId: this.step.ObjectID
+			stepUid: this.itemStepUid
 		});
 	}
 
