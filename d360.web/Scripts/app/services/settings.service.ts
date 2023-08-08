@@ -20,6 +20,8 @@ import { SettingsProviderService } from "@precisely/prism-ng/govern";
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceID;
+// eslint-disable-next-line no-var
+declare var CurrentResourceUid;
 
 // eslint-disable-next-line no-var
 declare var CurrentResourceUid;
@@ -250,12 +252,11 @@ export class CompanySettingsService extends BaseObservableService {
 	get CurrentResourceUid(): string {
 		if (typeof this._currentResourceUid === "undefined") {
 			if (typeof CurrentResourceUid === "undefined") {
-				firstValueFrom(this.getUserVariables()).then((res) => this._currentResourceUid = res.CurrentResourceID);
+				firstValueFrom(this.getUserVariables()).then((res) => this._currentResourceUid = res.CurrentResourceUid);
 			} else {
 				this._currentResourceUid = CurrentResourceUid;
 			}
 		}
 		return this._currentResourceUid;
 	}
-
 }

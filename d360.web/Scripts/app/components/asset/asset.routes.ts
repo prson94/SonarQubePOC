@@ -1,6 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AssetComponent } from './asset.component';
+import { FeatureFlagGuard } from '../../guards/feature-flag.guard';
 
 const routes: Routes = [
 	{ path: ':assetUid', component: AssetComponent },
@@ -10,7 +11,8 @@ const routes: Routes = [
 	{ path: ":assetUid/comments", loadChildren: () => import("../../components/sidebar/comments/comments.module").then((m) => m.CommentsModule) },
 	{ path: ":uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: ":assetUid/actions", loadChildren: () => import("../../components/sidebar/actions/actions.module").then((m) => m.ActionsModule) },
-	{ path: ":assetUid/workflowmonitor", loadChildren: () => import("../../components/sidebar/workflowmonitor/workflow-monitor.module").then((m) => m.WorkflowMonitorModule) },
+	{ path: ":assetUid/workflowmonitor", loadChildren: () => import("../../components/sidebar/workflowmonitor/workflow-monitor.module").then((m) => m.WorkflowMonitorModule), canActivate: [FeatureFlagGuard] },
+	{ path: ":assetUid/assignments", loadChildren: () => import("../../components/sidebar/assignments/assignment-sidebar.module").then((m) => m.AssignmentSidebarModule), canActivate: [FeatureFlagGuard] },
 	{ path: ":assetUid/followers", loadChildren: () => import("../../components/sidebar/followers/followers.module").then((m) => m.FollowersModule) },
 	{ path: ":assetUid/results", loadChildren: () => import("../../components/sidebar/ruleresults/rule-results.module").then((m) => m.RuleResultsModule) },
 	{ path: ":assetUid/owners", loadChildren: () => import("../../components/sidebar/ownership/ownership.module").then((m) => m.OwnershipModule) },

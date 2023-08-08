@@ -26,10 +26,11 @@
 		</div>
 	</div>
 	<div class="grid-actions-header-row">
-		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin (click)="selectAll()" i18n-label
+		<button *ngIf="isAdmin && !isRequestsFlow" igButton type="button" class="ig-button-secondary" margin
+				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<advanced-filtering [loadIdentifier]="'Assignments'"
+		<advanced-filtering [loadIdentifier]="getStorageKey()"
 							[fieldsObserver]="filterFields$"
 							(onLoad)="onFiltersLoaded()"
 							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
@@ -62,12 +63,12 @@
 			<ng-template pTemplate="header">
 				<tr>
 					<ng-container *ngIf="actionFormFields.length === 0">
-						<th [pSortableColumn]="'workflowName'">
+						<th [pSortableColumn]="'workflowName'" class="workflow-name-column">
 							<ng-container i18n>Workflow Name</ng-container>
 							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'assetDisplayValue'">
+					<th [pSortableColumn]="'assetDisplayValue'" class="associated-with-column" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
@@ -90,6 +91,10 @@
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
+					<th *ngIf="assetUid || assetTypeUid">
+						<ng-container i18n>Days Open</ng-container>
+						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
+					</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
@@ -102,9 +107,48 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td>{{item.workflowName}}</td>
 					</ng-container>
-					<td>{{item.assetDisplayValue ?? '---'}}</td>
+					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
-						<td [innerHTML]="item[field.Name]"></td>
+						<td>
+							<ng-container [ngSwitch]="Object.keys(field.Type)?.[0]">
+								<div *ngSwitchCase="'Html'">
+									<div class="ig-value"
+										 [innerHTML]="item[field.Name] | safeHtml"></div>
+								</div>
+								<div *ngSwitchCase="'Link'">
+									<div class="ig-value"><a
+										[href]="item[field.Name]?.split('|')?.[1]">
+										{{ item[field.Name]?.split('|')?.[0] }}</a>
+									</div>
+								</div>
+								<div *ngSwitchCase="'DateTime'">
+									<div
+										class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
+								</div>
+								<div *ngSwitchCase="'Date'">
+									<div
+										class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
+								</div>
+								<div *ngSwitchCase="'Lookup'">
+									<div class="ig-value"> {{ item[field.Name] }} </div>
+								</div>
+								<div *ngSwitchCase="'Boolean'">
+									<div class="ig-value">
+										<ng-container *ngIf="item[field.Name] === true">
+											<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+											<ng-container i18n>True</ng-container>
+										</ng-container>
+										<ng-template *ngIf="item[field.Name] === false">
+											<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+											<ng-container i18n>False</ng-container>
+										</ng-template>
+									</div>
+								</div>
+								<div *ngSwitchDefault>
+									<div class="ig-value">{{ item[field.Name] }}</div>
+								</div>
+							</ng-container>
+						</td>
 					</ng-container>
 					<td *ngIf="!isRequestsFlow">{{item.initiator}}</td>
 					<td>
@@ -114,8 +158,11 @@
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
 						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length-item.filteredAssignees.length) }}
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
 							others </span>
+					</td>
+					<td *ngIf="assetUid || assetTypeUid">
+						{{item.daysOpen}}
 					</td>
 					<td>
 						<span>{{item.Status}}</span>
@@ -156,7 +203,7 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue ?? '---' }}
+			<b>{{ assignment.workflowName }}</b> on {{ assignment.assetDisplayValue ?? '---' }}
 			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>

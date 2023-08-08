@@ -595,6 +595,12 @@ namespace d360.core.entities
         public DateTime effectiveDate { get; set; }
     }
 
+    public class ProfilesSeriesApiViewModel
+    {
+        [DataMember]
+        public string ProfileSeries { get; set; }
+    }
+
     public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel
     {
         [DataMember]
