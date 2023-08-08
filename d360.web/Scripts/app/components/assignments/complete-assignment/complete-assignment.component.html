@@ -43,13 +43,46 @@
 						</span>
 					</div>
 				</div>
-				<div>{{workflowName}} <a (click)="onClickAsset($event)">{{ assetName }}</a></div>
+				<div>
+					{{ workflowName }}
+					<a (click)="onClickAsset($event)">{{ assetName }}</a>
+				</div>
 				<div
 					[hidden]="isAssignmentProgressSelected"
 					class="scrollable-content details-container"
 				>
 					<d3s-loading [isLoading]="isLoading"></d3s-loading>
 					<div *ngIf="!isLoading" class="asset-detail">
+						<div class="d-flex column" *ngIf="hasObjectReassign">
+							<div>What would you like to do?</div>
+							<div class="radio-button">
+								<p-radioButton
+									igRadioButton
+									value="completeForm"
+									label="Complete the Form"
+									[(ngModel)]="radioSelectionValue"
+								>
+								</p-radioButton>
+							</div>
+							<div class="radio-button">
+								<p-radioButton
+									igRadioButton
+									value="reassignUser"
+									label="Reassign"
+									[(ngModel)]="radioSelectionValue"
+								>
+								</p-radioButton>
+							</div>
+							<div class="radio-button">
+								<p-radioButton
+									igRadioButton
+									value="changeAsset"
+									label="Change the Associated Asset"
+									[(ngModel)]="radioSelectionValue"
+								>
+								</p-radioButton>
+							</div>
+						</div>
 						<div class="asset-detail-tabs">
 							<ig-property-group
 								i18n-title
@@ -61,36 +94,53 @@
 									<ng-container>
 										<div class="row">
 											<div class="category-column">
-												<label
-													class="ig-label"
-													i18n
-												>{{ formTitle }}</label
-												>
+												<label class="ig-label" i18n>{{
+													formTitle
+												}}</label>
 												<div
 													class="ig-value"
 													[innerHTML]="
-															formDescription
-														"
+														formDescription
+													"
 												></div>
 											</div>
 										</div>
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<ig-property-group *ngIf="request && request.Action" i18n-title title="Request"
-											   [shouldBePadded]="false" [customTemplate]="true"
-											   [showHeaderLine]="false" [sideTemplate]="requestSidePanel">
+							<ig-property-group
+								*ngIf="request && request.Action"
+								i18n-title
+								title="Request"
+								[shouldBePadded]="false"
+								[customTemplate]="true"
+								[showHeaderLine]="false"
+								[sideTemplate]="requestSidePanel"
+							>
 								<ng-template #requestSidePanel>
-									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>Open in side
-										panel</a>
-									<a *ngIf="sidePanelOpen" (click)="sidePanelOpen=false" i18n>Close side panel</a>
+									<a
+										*ngIf="!sidePanelOpen"
+										(click)="showRequestSidePanel($event)"
+										i18n
+										>Open in side panel</a
+									>
+									<a
+										*ngIf="sidePanelOpen"
+										(click)="sidePanelOpen = false"
+										i18n
+										>Close side panel</a
+									>
 								</ng-template>
 								<div readonly>
 									<ng-container>
-										<d3s-assignment-information-request [showSubmittedByData]="true"
-																			[workflowActionUid]="request.Action.Uid"
-																			[stepUid]="stepUid"
-																			[workflowItemUid]="workflowItemUid">
+										<d3s-assignment-information-request
+											[showSubmittedByData]="true"
+											[workflowActionUid]="
+												request.Action.Uid
+											"
+											[stepUid]="stepUid"
+											[workflowItemUid]="workflowItemUid"
+										>
 										</d3s-assignment-information-request>
 									</ng-container>
 								</div>
@@ -107,11 +157,14 @@
 										[inputContainer]="formElement"
 									>
 									</ig-form-feedback-badges>
-
 								</ng-template>
 								<ig-property-group
 									i18n-title
 									title="Form fields"
+									*ngIf="
+										!hasObjectReassign ||
+										radioSelectionValue === 'completeForm'
+									"
 									[showHeaderLine]="false"
 									[sideTemplate]="requiredFieldsTemplate"
 									[customTemplate]="true"
@@ -122,12 +175,10 @@
 												<d3s-complete-assignment-form-fields
 													[fields]="formFields"
 													[form]="workflowForm"
-													[formElement]="
-															formElement
-														"
+													[formElement]="formElement"
 													(discardForm)="
-															onFormInput($event)
-														"
+														onFormInput($event)
+													"
 												>
 												</d3s-complete-assignment-form-fields>
 											</div>
@@ -135,6 +186,138 @@
 									</div>
 								</ig-property-group>
 							</form>
+							<ng-container
+								*ngIf="radioSelectionValue === 'reassignUser'"
+							>
+								<div class="ig-value">Reassign:</div>
+								<input
+									type="text"
+									pInputText
+									size="100"
+									(input)="
+										dt.filterGlobal(
+											$event.target.value,
+											'contains'
+										)
+									"
+									i18n-placeholder
+									placeholder="Search"
+									class="grid-simple-filter"
+								/>
+								<p-table
+									#dt
+									[value]="reassignAvailableTypes"
+									[rows]="5"
+									[paginator]="true"
+									[globalFilterFields]="['text']"
+									[pageLinks]="3"
+								>
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 4rem"></th>
+											<th [pSortableColumn]="'text'">
+												<ng-container i18n
+													>Name</ng-container
+												>
+												<d3s-sortIcon
+													[field]="'text'"
+												></d3s-sortIcon>
+											</th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr>
+											<td>
+												<p-tableRadioButton
+													[value]="item"
+												></p-tableRadioButton>
+											</td>
+											<td>
+												<div
+													class="row-data"
+												>
+													{{ item.text }}
+													<button igButton icon="fa-info-circle" class="ig-state-focus"></button>
+												</div>
+											</td>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="summary">
+										<d3s-grid-paging-info
+											[first]="dt.first"
+											[rows]="dt.rows"
+											[totalRecords]="dt.totalRecords"
+										></d3s-grid-paging-info>
+									</ng-template>
+								</p-table>
+							</ng-container>
+							<ng-container
+								*ngIf="radioSelectionValue === 'changeAsset'"
+							>
+								<div class="ig-value">
+									Chooose the new associated asset:
+								</div>
+								<input
+									type="text"
+									pInputText
+									size="100"
+									(input)="
+										dt.filterGlobal(
+											$event.target.value,
+											'contains'
+										)
+									"
+									i18n-placeholder
+									placeholder="Search"
+									class="grid-simple-filter"
+								/>
+								<p-table
+									#dt
+									[value]="assets"
+									[rows]="5"
+									[paginator]="true"
+									[globalFilterFields]="['Name']"
+									[pageLinks]="3"
+								>
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 4rem"></th>
+											<th [pSortableColumn]="'Name'">
+												<ng-container i18n
+													>Name</ng-container
+												>
+												<d3s-sortIcon
+													[field]="'Name'"
+												></d3s-sortIcon>
+											</th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr>
+											<td>
+												<p-tableRadioButton
+													[value]="item"
+												></p-tableRadioButton>
+											</td>
+											<td>
+												<div
+												class="row-data"
+												>
+													{{ item.Name }}
+													<button igButton icon="fa-info-circle" class="ig-state-focus"></button>
+												</div>
+											</td>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="summary">
+										<d3s-grid-paging-info
+											[first]="dt.first"
+											[rows]="dt.rows"
+											[totalRecords]="dt.totalRecords"
+										></d3s-grid-paging-info>
+									</ng-template>
+								</p-table>
+							</ng-container>
 						</div>
 					</div>
 				</div>
@@ -174,5 +357,3 @@
 		</div>
 	</div>
 </d3s-modal>
-
-

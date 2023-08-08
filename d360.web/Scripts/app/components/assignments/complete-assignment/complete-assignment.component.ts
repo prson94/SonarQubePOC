@@ -11,7 +11,7 @@ import {
 	WorkflowFormFieldType
 } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { Subscription } from 'rxjs';
+import {Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
@@ -44,6 +44,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	discardForm: boolean;
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
+	reassignAvailableTypes = [];
+	hasObjectReassign:boolean=false
+	radioSelectionValue:string;
+	assets=[]
+
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -77,6 +82,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
 			this.getWorkFlowData();
+			this.getWorkflowReassignmentAssets()
+
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -115,6 +122,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	closeModal(): void {
 		this.isModalVisible = false;
+		this.radioSelectionValue=""
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
@@ -175,6 +183,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.assetName = res.ObjectName;
 						this.assetId = res.ObjectID;
 					}
+					if (res.AllowReassignObject) {
+						this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
+					}
+					if (res.AllowReassignResource) {
+						this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
+					}
+
+					this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
 					this.assignmentService.setFormValidators.next();
 				}
 			});
@@ -191,8 +207,17 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	getWorkFlowData(): void {
-		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((response: AssignmentItem): void => {
-			this.workflowName = response.WorkflowName;
+		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((res: AssignmentItem): void => {
+			this.workflowName = res.WorkflowName;
 		});
 	}
+	
+	getWorkflowReassignmentAssets(){
+		this.workflowService.getWorkflowReassignmentAssetsById(this.workflowItemUid)
+		.subscribe((result) => {
+			this.assets = result;
+		});
+	}
+
+	
 }

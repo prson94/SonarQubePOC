@@ -824,6 +824,14 @@ export class WorkflowService extends BaseObservableService {
             }));
     }
 
+    getWorkflowReassignmentAssetsById(workflowItemId: string){
+        return this.http.get(`api/v2/workflow/reassignmentByUid/objects/${workflowItemId}?query=`)
+        .pipe(
+            map((response) => response),
+            catchError((err) => this.handleError(err))
+        );
+    }
+
 	private getSimpleFilterParam(simpleFilter: string): string {
 		if (simpleFilter) {
 			return `&_simpleFilter=${simpleFilter}`;
