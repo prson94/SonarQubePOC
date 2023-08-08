@@ -987,16 +987,6 @@ export class WorkflowDetails {
 	}[];
 }
 
-export class WorkflowUserGroupedAssignments {
-	WorkflowName: string;
-	WorkflowTypeUid: string
-	StepName: string;
-	Version: number;
-	Count: number;
-	AssociatedItems: SingleAssignment[];
-	AssociatedWith: string;
-}
-
 export class SingleAssignment {
 	WorkflowItemUid: string;
 	ItemStepUid: string;
@@ -1006,4 +996,14 @@ export class SingleAssignment {
 	InitiatedOn: Date;
 	InitiatedBy: string;
 	ObjectType: string;
+}
+
+export class WorkflowUserGroupedAssignments {
+	WorkflowName: string;
+	WorkflowTypeUid: string
+	StepName: string;
+	Version: number;
+	Count: number;
+	AssociatedItems: SingleAssignment[];
+	AssociatedWith: string;
 }

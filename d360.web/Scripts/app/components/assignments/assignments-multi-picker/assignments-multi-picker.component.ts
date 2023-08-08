@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, OnInit, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 import { SingleAssignment } from '../../../models/workflow.model';
 import { SidePanelService } from '../../../services/side-panel.service';
@@ -44,7 +44,6 @@ export class AssignmentsMultiPickerComponent {
 		this.cdRef.detectChanges();
 
 		this.workflowService.getAssignmentStepDetail(this.assignments[0].ItemStepUid).subscribe((res) => {
-			console.log(res);
 			if (res.Fields.form) {
 				this.formTitle = res.Fields.form['@title'];
 				this.formDescription = res.Fields.form['@description'];
@@ -62,13 +61,11 @@ export class AssignmentsMultiPickerComponent {
 	}
 
 	confirm() {
-		console.log("here");
 		this.onAssignmentSelection.emit(this.selected);
 
 	}
 
 	openAssetSidePanel(item: SingleAssignment) {
-		console.log(item);
 		this.sidePanel = 'asset-details';
 		this.selectedForInfoPanel = { type: 'Artifact', uid: item.AssetUid };
 		this.sidePanelService.setSidePanelState({ expanded: true });
@@ -84,6 +81,8 @@ export class AssignmentsMultiPickerComponent {
 		this.cdRef.markForCheck();
 	}
 
+	// ignore complexity
+	// eslint-disable-next-line
 	selectSingleItem(event: MouseEvent, item: SingleAssignment, element: ElementRef = null) {
 		//p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
 		if (event && element) {
@@ -113,10 +112,10 @@ export class AssignmentsMultiPickerComponent {
 					lastIndex -= currentIndex;
 				}
 
-				const tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+				const tableRows = (<Table>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
 				for (let i = lastIndex; i <= currentIndex; i++) {
-					if (!tableRows[i].classList.contains('p-highlight')) {
-						this.selected.push(this.assignments[i]);
+					if (!tableRows[`${i}`].classList.contains('p-highlight')) {
+						this.selected.push(this.assignments[`${i}`]);
 						this.triggerRerenderOfSelection();
 					}
 				}
@@ -126,6 +125,9 @@ export class AssignmentsMultiPickerComponent {
 			}
 
 		}
+
+		// ignore casting to any error, EventTarget class to do not expose public member nodeName which is used in this code
+		// eslint-disable-next-line
 		const target = (<any>(event.target));
 		if (element && target.nodeName !== "P-TABLECHECKBOX") {
 			this.selected = [];

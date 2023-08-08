@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AssignmentItem, SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
 import { AssignmentsMultiPickerComponent } from '../assignments-multi-picker/assignments-multi-picker.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-user-assignments',
@@ -33,10 +35,9 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
 		private changeDetectorRef: ChangeDetectorRef) {
-		super(settingsService)
+		super(settingsService);
 		this.initialWorkflowItemUid = '';
-		this.workflowService.assignmentCompletedSubject.subscribe((res) => {
-			console.log("here");
+		this.workflowService.assignmentCompletedSubject.subscribe(() => {
 			this.loadUserAssignments();
 		});
 
@@ -87,29 +88,33 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 					if (this.initialWorkflowItemUid) {
 						this.workflowService.getWorkflowStateForUser(this.initialWorkflowItemUid)
 							.subscribe((res) => {
-								if (!res.hasAccess) {
-									window.alert("no access");
-								}
-								else if (res.exists && res.hasAccess && !res.isCompleted) {
-									const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
-									if (item) {
-										this.onItemClick(null, item);
-									}
-								}
-								else if (!res.exists) {
-									window.alert("does not exist");
-								}
-								else if (res.isCompleted) {
-									window.alert("completed");
-								}
+								this.handleWorkflowItemLoad(res);
 
-							})
+							});
 					}
 
 					this.isLoading = false;
 					this.changeDetectorRef.markForCheck();
 				});
 	}
+
+	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; }) {
+        if (!res.hasAccess) {
+            window.alert("no access");
+        }
+        else if (res.exists && res.hasAccess && !res.isCompleted) {
+            const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
+            if (item) {
+                this.onItemClick(null, item);
+            }
+        }
+        else if (!res.exists) {
+            window.alert("does not exist");
+        }
+        else if (res.isCompleted) {
+            window.alert("completed");
+        }
+    }
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
 		if ($event) {

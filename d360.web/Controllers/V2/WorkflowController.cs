@@ -502,12 +502,6 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-
-				if (cancellationToken == null)
-				{
-					cancellationToken = CancellationToken.None;
-				}
-
 				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams, cancellationToken).ConfigureAwait(false);
 
 				if (isStreamResponse)
@@ -558,7 +552,6 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetWorkflowAssignmentsGrouped(Guid resourceUid)
 		{
 			var prefix = "Workflow.GetWorkflowAssignmentsGrouped => ";
-			var queryParams = Request.GetQueryNameValuePairs();
 			try
 			{
 				var response = await workflowRepository.GetWorkflowAssignmentListGroupedForUser(resourceUid).ConfigureAwait(false);

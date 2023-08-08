@@ -445,7 +445,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 	getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
-		if (changeType == null || <any>changeType === '') { return of([]); }
+		if (changeType == null || changeType.toString() === '') { return of([]); }
 
 		return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
 			.pipe(

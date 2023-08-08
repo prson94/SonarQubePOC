@@ -23,9 +23,6 @@ declare var CurrentResourceID;
 // eslint-disable-next-line no-var
 declare var CurrentResourceUid;
 
-// eslint-disable-next-line no-var
-declare var CurrentResourceUid;
-
 @Injectable({
 	providedIn: 'root'
 })
