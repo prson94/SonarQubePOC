@@ -528,7 +528,10 @@ namespace d360.core.entities
     public class AssetDataProfileDeleteModel : IExecutionItem
     {
         [DataMember]
-        public Guid AssetUid { get; set; }
+        public Guid? AssetUid { get; set; }
+
+        [DataMember]
+        public string ProfileSeries { get; set; }
 
         [DataMember]
         public DateTime StartDate { get; set; }
