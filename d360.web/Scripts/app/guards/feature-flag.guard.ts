@@ -16,13 +16,13 @@ export class FeatureFlagGuard implements CanActivate {
 
 	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
 
-		if (state.url.startsWith('/monitor')) {
+		if (state.url.startsWith('/monitor') || state.url.endsWith('/workflowmonitor')) {
 			if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			}
 		}
 
-		if (state.url.startsWith('/assignments') || state.url.startsWith('/requests')) {
+		if (state.url.startsWith('/assignments') || state.url.startsWith('/requests') || state.url.endsWith('/assignments')) {
 			if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			}

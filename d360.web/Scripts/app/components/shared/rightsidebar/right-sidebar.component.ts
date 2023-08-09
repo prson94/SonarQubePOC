@@ -116,6 +116,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     dataClassification: string;
     showDataClassification: boolean = false;
     assetActionWidth: number = 0;
+    assignmentCount: number;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -277,6 +278,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             } else {
+                if(this.currentObject?.hasWorkFlow) {
+                  this.loadAssetTypeAssignmentCount();
+                }
                 this.showStatus = false;
                 this.showDataClassification = false;
                 this.statistics = null;
@@ -419,7 +423,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 });
         }
 
-
+        this.loadAssetAssignmentCount();
 
 		this.objectStatisticsService.getObjectStatistics(this.currentObject.Uid).subscribe(
 			(result) => {
@@ -536,5 +540,19 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     emitChanges() {
         this.ref.markForCheck();
         this.changed.emit();
+    }
+
+    private loadAssetAssignmentCount(): void {
+        this.workflowService.getAssetAssignmentCount(this.currentObject.Uid).subscribe((response: number): void => {
+            this.assignmentCount = response;
+			this.ref.detectChanges();
+        });
+    }
+
+    private loadAssetTypeAssignmentCount(): void {
+        this.workflowService.getAssetTypeAssignmentCount(this.currentObject.Uid).subscribe((response: number): void => {
+            this.assignmentCount = response;
+			this.ref.detectChanges();
+        });
     }
 }

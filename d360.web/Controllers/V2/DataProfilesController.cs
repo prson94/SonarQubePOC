@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
@@ -236,13 +236,169 @@ namespace d360.web.Controllers.V2
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-
         /// <summary>
-        /// Provides support for adding Data Profile records.
+        /// Retrieves list of unique series contained in an environment.
         /// </summary>
-        /// <param name="models">Data Profile record collection.</param>
-        /// <returns>Results response stating the success or failure or the request.</returns>
+        /// <remarks>
+        /// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        ///     
+        ///     Example :
+        ///     - **Uid comparing operators ** (assetUid)
+        ///         - Equals operator - assetUid eq 00000000-0000-0000-0000-000000000000
+        ///     - **Comparison Operators**
+        ///         - Equals operator - {fieldname} eq 'Data'
+        ///         - Not equals operator - {fieldname} ne 'Data'
+        ///         - Contains operator - {fieldname} ct 'Data'  
+        ///         - Greater than operator - {fieldname} gt 99
+        ///         - Greater than or equal operator - {fieldname} ge 99
+        ///         - Less than operator - {fieldname} lt 99
+        ///         - Less than or equal operator - {fieldname} le 99
+        ///         - Not populated operator - {fieldname} eq null
+        ///         - populated operator - {fieldname} ne null
+        ///         - DateTime Is Before Operator - {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+        ///         - DateTime Is After Operator - {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+        ///         - DateTime Is Between Operator - ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+        ///     
+        ///     - **Logical Operators**
+        ///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+        ///         
+        ///     - **Profile Type**
+        ///         - Full       -  {fieldname} eq 0
+        ///         - Sample     -  {fieldname} eq 1
+        ///         - Filtered   -  {fieldname} eq 2
+        ///         
+        /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset audit data.
+        /// </remarks>
+        /// <returns>A list of unique series results</returns>
         [
+            HttpGet,
+            Route(""),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_includeChildAssets", " If true returns the data profile results for all descendant assets of the specified asset for the same date criteria.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", "The filter expression used to filter Profile data by assetUid (Uid),ProfileIdentifier (Text), profileSetDate (DateTime),typeQualifier (Text),type (Text),ftaVersion (Text),freshness (Number),ProfileSource (Text), ProfileSeries (Text) and ProfileType (Number) fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetDataProfiles()
+        {
+            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            {
+                return await sendConflictNotAccessible();
+            }
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var results = await DataProfiles.GetDataProfiles(queryParams);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (ArgumentException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage));
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
+        }
+
+		/// <summary>
+		/// Retrieves list of unique series contained in an environment.
+		/// </summary>
+		/// <remarks>
+		/// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+		///     
+		///     Example :
+		///     - **Uid comparing operators ** (assetUid)
+		///         - Equals operator - assetUid eq 00000000-0000-0000-0000-000000000000
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///         - DateTime Is Before Operator - {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+		///         - DateTime Is After Operator - {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+		///         - DateTime Is Between Operator - ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+		///     
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///         
+		///     - **Profile Type**
+		///         - Full       -  {fieldname} eq 0
+		///         - Sample     -  {fieldname} eq 1
+		///         - Filtered   -  {fieldname} eq 2
+		///         
+		/// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset audit data.
+		/// </remarks>
+		/// <returns>A list of unique series results</returns>
+		[
+			HttpGet,
+			Route("series"),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(ProfilesSeriesApiViewModel)),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("_filter", "The filter expression used to filter ProfileSeries by assetUid (Uid),profileSetDate (DateTime),typeQualifier (Text),type (Text),ftaVersion (Text),freshness (Number),ProfileSource (Text)and ProfileType (Number) fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+		]
+		public async Task<IHttpActionResult> GetDataProfilesSeries()
+		{
+			if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+			{
+				return await sendConflictNotAccessible();
+			}
+			
+			try
+			{
+				var queryParams = Request.GetQueryNameValuePairs();
+
+				var results = await DataProfiles.GetDataProfilesSeries(queryParams);
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+			}
+			catch (ArgumentException ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage));
+			}
+			catch (FilterExpressionParserException ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+			}
+		}
+		/// <summary>
+		/// Provides support for adding Data Profile records.
+		/// </summary>
+		/// <param name="models">Data Profile record collection.</param>
+		/// <returns>Results response stating the success or failure or the request.</returns>
+		[
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),

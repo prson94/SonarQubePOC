@@ -114,6 +114,14 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
 import { WorkflowModule } from '../workflow/workflow.module';
+import {
+	CompleteAssignmentFormFieldsComponent
+} from './complete-assignment/complete-assignment-form-fields/complete-assignment-form-fields.component';
+import { CalendarModule } from 'primeng/calendar';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
 	declarations: [
@@ -136,8 +144,8 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		AssignmentStepHttpResponseOutputsComponent,
 		AssignmentStepRelationshipChangeDetailsComponent,
 		AssignmentsContainerComponent,
-		ByWorkflowVersionListComponent,
 		ByWorkflowVersionGridComponent,
+		ByWorkflowVersionListComponent,
 		CompleteAssignmentComponent,
 		PendingAssignmentsStepComponent,
 		SidePanelSwitcherComponent,
@@ -150,7 +158,11 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		WorkflowInformationComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent
+		WorkflowVersionInformationComponent,
+		CompleteAssignmentFormFieldsComponent
+	],
+	exports: [
+		AssignmentListComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
@@ -158,6 +170,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		AssetDetailModule,
 		AssetTypeDetailModule,
 		AssignmentsRoutingModule,
+		AutoCompleteModule,
 		ButtonModule,
 		CheckboxModule,
 		CommonModule,
@@ -166,6 +179,7 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		D3SSortIconModule,
 		DataProfileModule,
 		DirectivesModule,
+		DropdownModule,
 		FormsModule,
 		IgBadgeModule,
 		InputTextModule,
@@ -189,6 +203,12 @@ import { WorkflowModule } from '../workflow/workflow.module';
 		WorkflowDiagramModule,
 		AutoCompleteModule,
 		DropdownModule,
+		WorkflowModule,
+		CalendarModule,
+		EditorModule,
+		MultiSelectModule,
+		RadioButtonModule,
+		FormFeedbackBadgesModule,
 		WorkflowModule
 	]
 })

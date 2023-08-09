@@ -38,7 +38,7 @@ export function getFormControlDomElement({ formContainer, controlName }: { formC
 		return fromCache;
 	}
 
-	const controls = formContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]") as HTMLElement[];
+	const controls = formContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "], [ng-reflect-name="+ controlName + "]") as HTMLElement[];
 	if (controls && controls.length > 0) {
 		FormFeedbackStorage.add(controlName, controls[0]);
 		return controls[0];
@@ -57,7 +57,6 @@ export function getRequiredCount({ formGroup, formContainer }: { formGroup: Unty
 	Object.keys(formGroup.controls).forEach((x) => {
 		const control = <UntypedFormControl>formGroup.get(x);
 		const elem = getFormControlDomElement({ formContainer, controlName: x });
-
 		if (elem && control && control.errors && control.errors["required"] === true) {
 			reqCount++;
 		}

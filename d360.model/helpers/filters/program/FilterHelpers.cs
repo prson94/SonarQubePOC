@@ -37,6 +37,14 @@ namespace d360.model.helpers.filters.program
             {
                 throw new FilterExpressionParserException("Text values should be placed within quotations.");
             }
+            else if (type == "guid" && !string.IsNullOrEmpty(value.ToString()))
+            {
+                Guid guidvalue;
+                if (!Guid.TryParse(value.ToString().Replace("'", ""), out guidvalue))
+                {
+                    throw new FilterExpressionParserException($"Invalid Uid value : {value.ToString()}");
+                }
+            }
         }
 
         public static string GetSQLOperator(string value)

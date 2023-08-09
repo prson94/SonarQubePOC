@@ -152,15 +152,24 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 					const breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.assetTypeApiModel.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe((res) => {
 						this.baseAssetTypeUid = this.assetTypeApiModel.uid;
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.assetTypeApiModel.HasDashboards });
-						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, null, this.assetTypeApiModel.uid));
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, this.assetTypeApiModel.HasV2Workflows, this.assetTypeApiModel.uid));
 						this.secondaryNavService.setCurrentArea(this.assetTypeApiModel.Name, res, $localize`Assets`);
 						if (this.assetTypeApiModel.HasV2Workflows) {
-							this.secondaryNavService.showItem(
-								new SecondaryNavItem($localize`Workflow`,
-									'workflowmonitor',
-									['fa-usb'],
-									`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
-							);
+							if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Workflow`,
+										'workflowmonitor',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+								);
+							} else {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Assignments`,
+										'assetTypeAssignments',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/assignments`)
+								);
+							}
 						}
 					});
 					this.navigationItemsSubs.push(breadCrumbsSub);

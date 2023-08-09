@@ -528,7 +528,10 @@ namespace d360.core.entities
     public class AssetDataProfileDeleteModel : IExecutionItem
     {
         [DataMember]
-        public Guid AssetUid { get; set; }
+        public Guid? AssetUid { get; set; }
+
+        [DataMember]
+        public string ProfileSeries { get; set; }
 
         [DataMember]
         public DateTime StartDate { get; set; }
@@ -593,6 +596,12 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime effectiveDate { get; set; }
+    }
+
+    public class ProfilesSeriesApiViewModel
+    {
+        [DataMember]
+        public string ProfileSeries { get; set; }
     }
 
     public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel

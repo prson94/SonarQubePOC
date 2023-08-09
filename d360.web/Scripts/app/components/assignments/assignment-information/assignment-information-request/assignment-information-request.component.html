@@ -1,50 +1,72 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="asset-detail-tabs" [hidden]="isLoading">
-	<ig-property-group *ngIf="actionItems" i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
-		<div readonly>
-			<div class="row">
-				<div class="category-column" *ngFor="let fieldTypeModelField of fieldTypeModelFields">
-					<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
-					<ng-container [ngSwitch]="Object.keys(fieldTypeModelField.Type)?.[0]">
-						<div *ngSwitchCase="'Html'">
-							<div class="ig-value"
-								 [innerHTML]="actionItems[fieldTypeModelField.Name] | safeHtml"></div>
-						</div>
-						<div *ngSwitchCase="'Link'">
-							<div class="ig-value"><a
-								[href]="actionItems[fieldTypeModelField.Name]?.split('|')?.[1]">
-								{{ actionItems[fieldTypeModelField.Name]?.split('|')?.[0] }}</a>
-							</div>
-						</div>
-						<div *ngSwitchCase="'DateTime'">
-							<div
-								class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'short' ?? '---' }} </div>
-						</div>
-						<div *ngSwitchCase="'Date'">
-							<div
-								class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'shortDate' ?? '---' }} </div>
-						</div>
-						<div *ngSwitchCase="'Lookup'">
-							<div class="ig-value"> {{ actionItems[fieldTypeModelField.Name] ?? '---' }} </div>
-						</div>
-						<div *ngSwitchCase="'Boolean'">
-							<div class="ig-value">
-								<ng-container *ngIf="actionItems[fieldTypeModelField.Name] === true">
-									<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
-									<ng-container i18n>True</ng-container>
-								</ng-container>
-								<ng-template *ngIf="actionItems[fieldTypeModelField.Name] === false">
-									<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
-									<ng-container i18n>False</ng-container>
-								</ng-template>
-							</div>
-						</div>
-						<div *ngSwitchDefault>
-							<div class="ig-value">{{ actionItems[fieldTypeModelField.Name] ?? '---' }}</div>
-						</div>
-					</ng-container>
-				</div>
-			</div>
+<ng-container *ngIf="!isLoading">
+	<div *ngIf="showSubmittedByData" class="row">
+		<div class="category-column">
+			<p>
+				Submitted by
+				<a (click)="onClickResource($event)">{{request.Action.CreatedByName}}</a>
+				on
+				{{request.Action.CreatedOn | date: 'short' }}
+			</p>
+			<p>
+				Associated Asset : <a (click)="onClickAsset($event)">{{request.Action.AssociatedAssetPath}}</a>
+			</p>
 		</div>
-	</ig-property-group>
-</div>
+	</div>
+	<div class="row" *ngIf="actionItems">
+		<div class="category-column" *ngFor="let fieldTypeModelField of fieldTypeModelFields">
+			<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
+			<ng-container [ngSwitch]="Object.keys(fieldTypeModelField.Type)?.[0]">
+				<div *ngSwitchCase="'Html'">
+					<div class="ig-value"
+						 [innerHTML]="actionItems[fieldTypeModelField.Name] | safeHtml"></div>
+				</div>
+				<div *ngSwitchCase="'Link'">
+					<div class="ig-value"><a
+						[href]="actionItems[fieldTypeModelField.Name]?.split('|')?.[1]">
+						{{ actionItems[fieldTypeModelField.Name]?.split('|')?.[0] }}</a>
+					</div>
+				</div>
+				<div *ngSwitchCase="'DateTime'">
+					<div
+						class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'short' ?? '---' }} </div>
+				</div>
+				<div *ngSwitchCase="'Date'">
+					<div
+						class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'shortDate' ?? '---' }} </div>
+				</div>
+				<div *ngSwitchCase="'Lookup'">
+					<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class !== 'Reference'">
+						{{ actionItems[fieldTypeModelField.Name] ?? '---' }}
+					</div>
+					<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class === 'Reference'">
+						<ul *ngIf="actionItems[fieldTypeModelField.Name]">
+							<li *ngFor="let listItem of JSON.parse(actionItems[fieldTypeModelField.Name])">
+										<span class="ref-list-color">
+											<span *ngIf="listItem.color" class="ig-colorfield-swatch"
+												  [ngStyle]="{'background-color': listItem.color}"></span>
+											<span>{{listItem.name}}</span>
+										</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div *ngSwitchCase="'Boolean'">
+					<div class="ig-value">
+						<ng-container *ngIf="actionItems[fieldTypeModelField.Name] === true">
+							<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
+							<ng-container i18n>True</ng-container>
+						</ng-container>
+						<ng-template *ngIf="actionItems[fieldTypeModelField.Name] === false">
+							<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
+							<ng-container i18n>False</ng-container>
+						</ng-template>
+					</div>
+				</div>
+				<div *ngSwitchDefault>
+					<div class="ig-value">{{ actionItems[fieldTypeModelField.Name] ?? '---' }}</div>
+				</div>
+			</ng-container>
+		</div>
+	</div>
+</ng-container>

@@ -30,7 +30,7 @@
 				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<advanced-filtering [loadIdentifier]="'Assignments'"
+		<advanced-filtering [loadIdentifier]="getStorageKey()"
 							[fieldsObserver]="filterFields$"
 							(onLoad)="onFiltersLoaded()"
 							(onChange)="advancedFiltersChanged($event)"></advanced-filtering>
@@ -63,12 +63,12 @@
 			<ng-template pTemplate="header">
 				<tr>
 					<ng-container *ngIf="actionFormFields.length === 0">
-						<th [pSortableColumn]="'workflowName'">
+						<th [pSortableColumn]="'workflowName'" class="workflow-name-column">
 							<ng-container i18n>Workflow Name</ng-container>
 							<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'assetDisplayValue'">
+					<th [pSortableColumn]="'assetDisplayValue'" class="associated-with-column" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>					
@@ -94,6 +94,10 @@
 					<th [pSortableColumn]="'assigneesJson'">
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
+					</th>
+					<th *ngIf="assetUid || assetTypeUid">
+						<ng-container i18n>Days Open</ng-container>
+						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'Status'">
 						<ng-container i18n>Status</ng-container>
@@ -162,6 +166,9 @@
 							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
 							others </span>
 					</td>
+					<td *ngIf="assetUid || assetTypeUid">
+						{{item.daysOpen}}
+					</td>
 					<td>
 						<span>{{item.Status}}</span>
 					</td>
@@ -201,7 +208,7 @@
 				 (onCancel)="showDeletionModal=false;">
 	<div prompt>
 		<span i18n *ngFor="let assignment of assignments">
-			{{ assignment.workflowName }} on {{ assignment.assetDisplayValue ?? '---' }}
+			<b>{{ assignment.workflowName }}</b> on {{ assignment.assetDisplayValue ?? '---' }}
 			initiated on {{ assignment.StartedOn | date: 'short' }}
 		</span>
 		<p i18n>

@@ -32,12 +32,10 @@ export class AssignmentProgressComponent {
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}> = new EventEmitter<{
 		workflowItemUid: string,
-		stepUid: string,
-		assetId: number
+		stepUid: string
 	}>();
 
 	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();

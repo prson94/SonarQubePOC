@@ -27,6 +27,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
+import { FeatureFlags } from '../../services/feature-flags.enum';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 /*global $localize*/
 
@@ -106,6 +108,7 @@ export class BaseComponent {
 	// default paging options
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	defaultInitialItemsPerPage = 10;
+	launchDarklyService: LaunchDarklyService
 
 	protected secondaryNavService: SecondaryNavService = null;
 	protected webAnalyticsService: WebAnalyticsService = null;
@@ -544,18 +547,31 @@ export class BaseComponent {
 
 			if (opts.hasMonitor) {
 				let url = ``;
-				if (this.baseAssetUid) {
-					url = `/asset/${this.baseAssetUid}/workflowmonitor`;
+				if (!this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+					if (this.baseAssetUid) {
+						url = `/asset/${this.baseAssetUid}/workflowmonitor`;
+					} else if (this.baseAssetTypeUid) {
+						url = `/assets/${this.baseAssetTypeUid}/workflowmonitor`;
+					}
+					this.monitorSidebar = new SecondaryNavItem(
+						$localize`Workflow`,
+						'monitor',
+						['fa-usb'],
+						url, null, 30
+					);
+				} else {
+					if (this.baseAssetUid) {
+						url = `/asset/${this.baseAssetUid}/assignments`;
+					} else if (this.baseAssetTypeUid) {
+						url = `/assets/${this.baseAssetTypeUid}/assignments`;
+					}
+					this.monitorSidebar = new SecondaryNavItem(
+						$localize`Assignments`,
+						'assetAssignments',
+						['fa-usb'],
+						url, null, 30
+					);
 				}
-				else if (this.baseAssetTypeUid) {
-					url = `/assets/${this.baseAssetTypeUid}/workflowmonitor`;
-				}
-				this.monitorSidebar = new SecondaryNavItem(
-					$localize`Workflow`,
-					'monitor',
-					['fa-usb'],
-					url, null, 30
-				);
 				this.secondaryNavService.showItem(this.monitorSidebar);
 			}
 
@@ -603,7 +619,7 @@ export class BaseComponent {
 
 				this.secondaryNavService.showItem(this.scoreSidebar);
 
-				if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
+				if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement) && !this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
 					this.actionsSidebar = new SecondaryNavItem(
 						$localize`Actions`, 'Actions', null,
 						`/asset/${this.uid}/actions`, null, 27
