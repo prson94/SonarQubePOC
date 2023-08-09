@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { SingleAssignment } from '../../../models/workflow.model';
-import { AssetDetailClickEvent, AssetDetailClickType, LinkClickInterceptor } from '../../../services/href-click-service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 @Component({
 	selector: 'd3s-assignment-asset-list',
