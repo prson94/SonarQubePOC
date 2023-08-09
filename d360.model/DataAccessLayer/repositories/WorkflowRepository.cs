@@ -392,7 +392,7 @@ namespace d360.model.DataAccessLayer
 
 				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
 				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
-				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and (wia.ResourceObjectID = @resourceId or (wia.ResourceObjectId is null and wia.StartedBy = @resourceId)) where wi.UID = @workflowItemUid)
+				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
 
 				select 
 				case when @doesExists is not null then 1 else 0 end as [exists], 

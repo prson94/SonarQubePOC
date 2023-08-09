@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -31,10 +31,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 
 	urlWorkflowTypeUid: string = '';
 	urlWorkflowStepUid: string = '';
-
+	urlWorkflowVersion: number = 0;
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
+		private router: Router,
 		private changeDetectorRef: ChangeDetectorRef) {
 		super(settingsService);
 		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
@@ -43,10 +44,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 
 		this.route.queryParams
-			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid: string }) => {
+			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid: string, version: number }) => {
 				if (params.workflowTypeUid) {
 					this.urlWorkflowTypeUid = params.workflowTypeUid.toLowerCase();
 					this.urlWorkflowStepUid = params.workflowItemStepUid.toLowerCase();
+					this.urlWorkflowVersion = +params.version;
 				}
 			});
 	}
@@ -91,30 +93,56 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 						this.workflowService.getWorkflowStateForUser(this.urlWorkflowStepUid)
 							.subscribe((res) => {
 								this.handleWorkflowItemLoad(res);
+								this.isLoading = false;
+								this.changeDetectorRef.markForCheck();
 							});
 					}
-
-					this.isLoading = false;
-					this.changeDetectorRef.markForCheck();
+					else {
+						this.isLoading = false;
+						this.changeDetectorRef.markForCheck();
+					}
 				});
 	}
 
 	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string }) {
-		console.log(res);
-		if (!res.hasAccess) {
-			//to be implemented in another JIRA
-        }
-		else if (res.exists && res.hasAccess && !res.isCompleted) {
-			const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid));
-            this.onItemClick(null, item);
-        }
-        else if (!res.exists) {
-			//to be implemented in another JIRA
-        }
-        else if (res.isCompleted) {
-			//to be implemented in another JIRA
-        }
-    }
+		// check if there is exiting step in assignments
+		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
+		if (assignmentItem) {
+			this.onItemClick(null, assignmentItem);
+		}
+		else {
+			// check if there is exiting workflow type + version combination to open form
+			assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
+			if (assignmentItem) {
+				this.onItemClick(null, assignmentItem);
+			}
+			else {
+				this.handleNoAssignments(res);
+			}
+		}
+	}
+
+	modalVisible: boolean = false;
+	errorModalTitle: string;
+	errorModalMessage: string;
+	private handleNoAssignments(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string; }) {
+		if (!res.exists) {
+			this.errorModalTitle = $localize`Assignment Not Found`;
+			this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
+			this.modalVisible = true;
+		}
+		else if (res.isCompleted) {
+			this.errorModalTitle = $localize`Assignment Completed`;
+			this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
+			this.modalVisible = true;
+		}
+		else if (!res.hasAccess) {
+			this.errorModalTitle = $localize`You Cannot View the Assignment`;
+			this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
+			this.modalVisible = true;
+		}
+		
+	}
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
 		if ($event) {
