@@ -120,7 +120,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			$event.stopPropagation();
 		}
 
-		if (item.AssociatedItems.length > 0) {
+		if (item.AssociatedItems.length > 1) {
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
 		else {
