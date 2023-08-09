@@ -38,6 +38,7 @@ export class TabsComponent implements OnDestroy {
     @Input() area = { icon: 'fa-folder', title: '', tabTitle: '' };
     @Input() emitSecondaryNav = false;
     @Input() statistics: ObjectStatistics;
+	@Input() assignmentCount: number;
     @Input() searchDetails: SearchDetail;
     @Input() isScoringScreen = false;
 
@@ -243,5 +244,16 @@ export class TabsComponent implements OnDestroy {
 	get isMainTabVisible() {
 
 		return !this.isScoringScreen && !this.hideMainTab && this.area?.tabTitle !== $localize`Relationship Types`;
+	}
+
+	getTabTooltip(tab: Tab): string {
+		if (tab.title === 'Assignments') {
+			if (this.assignmentCount === 1) {
+				return $localize`There is 1 outstanding Assignment`;
+			} else if (this.assignmentCount > 1) {
+				return $localize`There are ${this.assignmentCount} outstanding Assignments`;
+			}
+		}
+		return '';
 	}
 }

@@ -831,6 +831,21 @@ export class WorkflowService extends BaseObservableService {
             catchError((err) => this.handleError(err))
         );
     }
+	getAssetAssignmentCount(assetUid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/assignment/count/asset/${assetUid}`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getAssetTypeAssignmentCount(assetTypeUid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/assignment/count/assettype/${assetTypeUid}`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	private getSimpleFilterParam(simpleFilter: string): string {
 		if (simpleFilter) {
