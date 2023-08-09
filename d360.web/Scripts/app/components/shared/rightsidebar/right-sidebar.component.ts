@@ -423,7 +423,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 });
         }
 
-                this.loadAssetAssignmentCount();
+        this.loadAssetAssignmentCount();
 
 		this.objectStatisticsService.getObjectStatistics(this.currentObject.Uid).subscribe(
 			(result) => {
@@ -545,12 +545,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private loadAssetAssignmentCount(): void {
         this.workflowService.getAssetAssignmentCount(this.currentObject.Uid).subscribe((response: number): void => {
             this.assignmentCount = response;
+			this.ref.detectChanges();
         });
     }
 
     private loadAssetTypeAssignmentCount(): void {
         this.workflowService.getAssetTypeAssignmentCount(this.currentObject.Uid).subscribe((response: number): void => {
             this.assignmentCount = response;
+			this.ref.detectChanges();
         });
     }
 }

@@ -16,13 +16,13 @@ export class AssignmentSidebarComponent extends BaseComponent {
 	constructor(
 		private route: ActivatedRoute,
 		secondaryNavService: SecondaryNavService,
-		headerbreadcrumbService: HeaderBreadcrumbService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
 		protected settingsService: CompanySettingsService,
 		launchDarklyService: LaunchDarklyService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
-		this.breadcrumbsService = headerbreadcrumbService;
+		this.breadcrumbsService = headerBreadcrumbService;
 		this.launchDarklyService = launchDarklyService;
 	}
 
