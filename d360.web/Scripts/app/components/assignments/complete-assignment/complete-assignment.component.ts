@@ -262,4 +262,16 @@ export class CompleteAssignmentComponent
 				this.assets = result;
 			});
 	}
+	
+	handleInfoButtonClick(event,row){
+		if (this.assetId) {
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					AssetId: Number(row.ObjectID),
+				},
+				"asset/" + Number(row.ObjectID)
+			);
+		}
+	}
 }
