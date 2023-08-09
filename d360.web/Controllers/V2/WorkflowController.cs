@@ -867,7 +867,7 @@ namespace d360.web.Controllers.V2
 
 			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{
-				new ExcelSheet(ExcelExports.WorkflowAssignments_Assignments)
+				new ExcelSheet(exportName)
 				{
 					HeaderRows = headers,
 
