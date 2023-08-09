@@ -3,7 +3,7 @@
 	<ig-property-group i18n-title title="Associated Assets ({{items.length}})" [showHeaderLine]="false">
 		<div readonly>
 			<div class="asset-item" *ngFor="let item of items">
-				<a href="#" *ngIf="item.ObjectType === 'Asset'">{{item.Name}} <span class="light-text">({{item.AssetTypeName}})</span></a>
+				<a href="#" (click)="assetSelected($event, item)" *ngIf="item.ObjectType === 'Asset'">{{item.Name}} <span class="light-text">({{item.AssetTypeName}})</span></a>
 				<span *ngIf="item.ObjectType === 'Asset Type'">{{item.Name}} <span class="light-text">(Asset Type)</span></span>
 				<span href="#" *ngIf="item.ObjectType === 'Relationship'">{{item.Name}} <span class="light-text">(Relationship)</span></span>
 			</div>

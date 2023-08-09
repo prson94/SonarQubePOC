@@ -99,18 +99,18 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	}
 
 	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; }) {
-        if (!res.hasAccess) {
-            window.alert("no access");
+		if (!res.hasAccess) {
+			//to be implemented in another JIRA
         }
         else if (res.exists && res.hasAccess && !res.isCompleted) {
             const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
             this.onItemClick(null, item);
         }
         else if (!res.exists) {
-            window.alert("does not exist");
+			//to be implemented in another JIRA
         }
         else if (res.isCompleted) {
-            window.alert("completed");
+			//to be implemented in another JIRA
         }
     }
 
@@ -120,8 +120,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			$event.stopPropagation();
 		}
 
-		if (item.AssociatedItems.length > 1) {
-			this.multiAssignComponent.openModal(item.AssociatedItems);
+		if (item.AssociatedItems.length > 0) {
+			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
 		else {
 			const assignment = item.AssociatedItems[0];
@@ -146,5 +146,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			assetId: mainItem.AssetId,
 			items: selectedItems
 		});
+	}
+
+	onCompleteAssignmentModalClose(event: { isBack: boolean }) {
+		if (event.isBack === false) {
+			this.multiAssignComponent.closeDialog();
+		}
 	}
 }

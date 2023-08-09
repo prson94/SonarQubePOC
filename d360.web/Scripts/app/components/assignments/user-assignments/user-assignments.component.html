@@ -72,6 +72,6 @@
 	</div>
 </div>
 
-<d3s-complete-assignment #completeAssignmentComponent></d3s-complete-assignment>
+<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"></d3s-complete-assignment>
 
 <d3s-assignments-multi-picker #multiAssignComponent (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>

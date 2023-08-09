@@ -1,4 +1,4 @@
-<d3s-modal
+<d3s-modal #modal
 	[showTitle]="false"
 	[isVisible]="isModalVisible"
 	[showActionBar]="true"
@@ -8,6 +8,12 @@
 	[discardForm]="discardForm"
 	(onClose)="discardForm ? discardFormFunc() : closeModal()"
 	(onConfirm)="onFormSubmit()"
+	[closePopupOnConfirm]="false"
+	[showBack]="isBulkRespond"
+    (onBack)="onBack()"
+	(onCloseClick)="onCloseClick()"
+	i18n-backButtonLabel
+	backButtonLabel="Back to Assignment Selection"
 	[additionalClasses]="'xlarge-dialog'"
 >
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -15,9 +21,10 @@
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
-					<div i18n class="title">
+					<div class="title">
 						{{ modalTitle }}
-						<span class="modal-buttons">
+						<span class="title-emp" *ngIf="isBulkRespond" i18n>Bulk Respond</span>
+						<span class="modal-buttons" *ngIf="!isBulkRespond">
 							<button
 								igButton
 								[ngClass]="
@@ -43,7 +50,7 @@
 						</span>
 					</div>
 				</div>
-				<div>{{workflowName}} <a (click)="onClickAsset($event)">{{ assetName }}</a></div>
+				<div style="padding:16px 0 0 0"><span class="light-text">{{workflowName}} </span><a (click)="onClickAsset($event)">{{ assetName }}</a></div>
 				<div
 					[hidden]="isAssignmentProgressSelected"
 					class="scrollable-content details-container"

@@ -1,22 +1,21 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
-	AssignmentByVersion,
-	AssignmentItem,
 	AssignmentItemStep,
 	FormRequest,
-	WorkflowForm,
+	SingleAssignment,
 	WorkflowFormField,
-	WorkflowFormFieldType
+	WorkflowFormFieldType,
+    WorkflowFormResponse
 } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Observable, Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
-import { result } from 'lodash-es';
+import { D3SModal } from '../../shared/modal/gov-modal.component';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -46,9 +45,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	discardForm: boolean;
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
+
+	@Output() onModalClose = new EventEmitter<{ isBack: boolean }>();
+
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild('modal', { static: false }) modal: D3SModal;
 
 	multiSubmitionItems: SingleAssignment[] = [];
 	isBulkRespond: boolean = false;
@@ -129,8 +132,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						if (results[2]) {
 							this.workflowName = results[2].WorkflowName;
 						}
-
 						this.isLoading = false;
+						this.cdRef.markForCheck();
 					});
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
@@ -157,17 +160,37 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.workflowForm.reset();
 	}
 
+	onBack(): void {
+		this.workflowForm.reset();
+		this.onModalClose.emit({ isBack: true });
+	}
+
+	onCloseClick(): void{
+		this.onModalClose.emit({ isBack: false });
+	}
+
 	onFormSubmit(): void {
 		this.prepareValuesForSubmit();
 
 		if (this.isMultiSubmition) {
+			const obs: Observable<WorkflowFormResponse>[] = [];
 			this.multiSubmitionItems.forEach((item) => {
-				this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields).subscribe();
+				obs.push(this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields));
+			});
+
+			forkJoin(obs).subscribe(() => {
+				this.closeModal();
+				this.modal.closePopUp();
+				this.onModalClose.emit({ isBack: false });
 			});
 		}
 		else {
 			//save form values with stepUid and itemUid
-			this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
+			this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
+				this.closeModal();
+				this.modal.closePopUp();
+				this.onModalClose.emit({ isBack: false });
+			});
 		}
 	}
 
@@ -179,6 +202,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	closeModal(): void {
 		this.isModalVisible = false;
 		this.linkInterceptorSubscription?.unsubscribe();
+		this.cdRef.markForCheck();
 	}
 
 	onClickResource(event: MouseEvent): void {

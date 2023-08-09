@@ -1,50 +1,55 @@
 ﻿import {
 	AfterViewInit,
-    Component,
-    ElementRef,
-    EventEmitter,
-    HostListener,
-    Input,
-    OnChanges,
-    OnDestroy,
-    Output,
-    SimpleChanges,
-    ViewChild,
-    ViewEncapsulation
+	Component,
+	ElementRef,
+	EventEmitter,
+	HostListener,
+	Input,
+	OnChanges,
+	OnDestroy,
+	Output,
+	SimpleChanges,
+	ViewChild,
+	ViewEncapsulation
 } from '@angular/core';
 import { DocumentUtilService } from "../../../services/document-util.service";
 
 /*global $localize*/
 
 @Component({
-    selector: 'd3s-modal',
+	selector: 'd3s-modal',
 	templateUrl: 'gov-modal.component.html',
 	styleUrls: ['gov-modal.component.less'],
 	encapsulation: ViewEncapsulation.None
 })
 
 export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
-    @Input() title: string = $localize`Default Title`;
-    @Input() additionalClasses: string = '';
-    @Input() isVisible: boolean = false;
-    @Input() showConfirm: boolean = true;
+	@Input() title: string = $localize`Default Title`;
+	@Input() additionalClasses: string = '';
+	@Input() isVisible: boolean = false;
+	@Input() showConfirm: boolean = true;
 	@Input() showActionBar: boolean = false;
+	@Input() showBack: boolean = false;
 	@Input() confirmButtonLabel: string = $localize`Confirm`;
 	@Input() cancelButtonLabel: string = $localize`Cancel`;
-    @Input() showTitle: boolean = true;
-    @Input() includePreciselyLogo: boolean = false;
-    @Input() subtitle: string;
-    @Input() secondaryButtonDisabled:boolean
+	@Input() closePopupOnConfirm: boolean = true;
+	@Input() backButtonLabel: string = $localize`Back`;
+	@Input() showTitle: boolean = true;
+	@Input() includePreciselyLogo: boolean = false;
+	@Input() subtitle: string;
+	@Input() secondaryButtonDisabled: boolean
 
-    @Input() formFeedbackPortalName: string;
+	@Input() formFeedbackPortalName: string;
 
-    @Input() modalSidePanelAssetUID: string = 'TETET';
+	@Input() modalSidePanelAssetUID: string = 'TETET';
 
-    @Input() appendToBody: boolean = false;
-    @Input() discardForm:boolean=false
+	@Input() appendToBody: boolean = false;
+	@Input() discardForm: boolean = false
 
-    @Output() onClose = new EventEmitter();
-    @Output() onConfirm = new EventEmitter();
+	@Output() onClose = new EventEmitter();
+	@Output() onCloseClick = new EventEmitter();
+	@Output() onBack = new EventEmitter();
+	@Output() onConfirm = new EventEmitter();
 
 	@ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
 	zIndex: string = "20000 !important";
@@ -53,86 +58,92 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
 
 	constructor(private docUtil: DocumentUtilService) { }
 
-    ngAfterViewInit() {
-        if (this.appendToBody) {
+	ngAfterViewInit() {
+		if (this.appendToBody) {
 			setTimeout(() => {
 				this.docUtil.appendToBody(this.modalDiv.nativeElement);
 
-            });
-        }
-    }
+			});
+		}
+	}
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.isVisible !== undefined && (changes.isVisible.previousValue !== changes.isVisible.currentValue)) {
-            if (changes.isVisible.currentValue) {
-                this.showPopUp();
-            }
-            else {
-                this.closePopUp();
-            }
-        }
-    }
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes.isVisible !== undefined && (changes.isVisible.previousValue !== changes.isVisible.currentValue)) {
+			if (changes.isVisible.currentValue) {
+				this.showPopUp();
+			}
+			else {
+				this.closePopUp();
+			}
+		}
+	}
 
-    ngOnDestroy() {
-        if (this.appendToBody) {
-            this.modalDiv.nativeElement.remove();
-        }
-    }
-
-
-    checkKey(event: KeyboardEvent) {
-        if (event.keyCode) {
-            if (event.keyCode === 27) {
-                if (!event.defaultPrevented) {
-                    this.closePopUp();
-                }
-            }
-        }
-    }
+	ngOnDestroy() {
+		if (this.appendToBody) {
+			this.modalDiv.nativeElement.remove();
+		}
+	}
 
 
-    @HostListener('wheel', ['$event'])
-    handleWheelEvent(event) {
+	checkKey(event: KeyboardEvent) {
+		if (event.keyCode) {
+			if (event.keyCode === 27) {
+				if (!event.defaultPrevented) {
+					this.closePopUp();
+				}
+			}
+		}
+	}
+
+
+	@HostListener('wheel', ['$event'])
+	handleWheelEvent(event) {
 		const path: any[] = event.composedPath();
 		//add scroll exceptions here
-        if (this.display === true
-            && !(path.filter((x) => x.tagName === 'D3S-TAG-USAGE').length > 0)
-            && !(path.filter((x) => x.tagName === 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
-            && !(path.filter((x) => x.tagName === 'P-DROPDOWNITEM').length > 0)
+		if (this.display === true
+			&& !(path.filter((x) => x.tagName === 'D3S-TAG-USAGE').length > 0)
+			&& !(path.filter((x) => x.tagName === 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
+			&& !(path.filter((x) => x.tagName === 'P-DROPDOWNITEM').length > 0)
 			&& !(path.filter((x) => x.tagName === 'IG-PROPERTY-GROUP').length > 0)
-			&& !(path.filter((x) => x.tagName === 'TABLE').length > 0) 
-		){
-            event.preventDefault();
-        }
-    }
+			&& !(path.filter((x) => x.tagName === 'TABLE').length > 0)
+		) {
+			event.preventDefault();
+		}
+	}
 
-    showPopUp() {
-        this.display = true;
-        if (this.modalDiv) {
-            this.modalDiv.nativeElement.className = "modal-overlay";
-            this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
-            this.modalDiv.nativeElement.focus();
-        }
-    }
+	showPopUp() {
+		this.display = true;
+		if (this.modalDiv) {
+			this.modalDiv.nativeElement.className = "modal-overlay";
+			this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
+			this.modalDiv.nativeElement.focus();
+		}
+	}
 
-    public closePopUp() {
-        if (this.modalDiv && !this.discardForm) {
-            this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
-            window.setTimeout(function () {
-                this.modalDiv.nativeElement.className = "modal-overlay";
-                this.onClose.emit(null);
-            }.bind(this), 250);
-            this.display = false;
-        }
-        else{
-            this.onClose.emit(null);
-        }
+	public closePopUp() {
+		if (this.modalDiv && !this.discardForm) {
+			this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
+			window.setTimeout(function () {
+				this.modalDiv.nativeElement.className = "modal-overlay";
+				this.onClose.emit(null);
+			}.bind(this), 250);
+			this.display = false;
+		}
+		else {
+			this.onClose.emit(null);
+		}
+	}
 
-    }
+	confirm() {
+		this.onConfirm.emit('confirm');
+		if (this.closePopupOnConfirm) {
+			this.closePopUp();
+		}
+	}
 
-    confirm() {
-        this.onConfirm.emit('confirm');
-        this.closePopUp();
+	back() {
+		this.closePopUp();
+		this.onBack.emit();
 	}
 
 	public hide() {

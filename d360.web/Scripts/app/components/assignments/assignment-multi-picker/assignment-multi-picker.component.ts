@@ -15,6 +15,7 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 })
 export class AssignmentsMultiPickerComponent {
 	@Output() onAssignmentSelection = new EventEmitter<SingleAssignment[]>();
+	workflowTypeName: string;
 
 	isModalVisible: boolean = false;
 	sidePanelOpen: boolean = false;
@@ -40,16 +41,16 @@ export class AssignmentsMultiPickerComponent {
 		private hrefService: LinkClickInterceptor
 	) {
 		this.hrefService.getEvents().subscribe((res) => {
-			console.log(res);
 			this.sidePanel = 'step-details';
 			this.selectedForInfoPanel = { type: res.objectType, assetId: res.objectId, workflowItemUid: null, assignmentItemStepUid: null };
 		});
 	}
 
-	public openModal(assignments: SingleAssignment[]) {
+	public openModal(assignments: SingleAssignment[], workflowTypeName: string) {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;
+		this.workflowTypeName = workflowTypeName;
 		this.cdRef.detectChanges();
 
 		this.workflowService.getAssignmentStepDetail(this.assignments[0].ItemStepUid).subscribe((res) => {
