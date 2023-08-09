@@ -29,22 +29,24 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
 
-	initialWorkflowItemUid: string = '';
+	urlWorkflowTypeUid: string = '';
+	urlWorkflowStepUid: string = '';
 
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
 		private changeDetectorRef: ChangeDetectorRef) {
 		super(settingsService);
-		this.initialWorkflowItemUid = '';
+		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
 		this.workflowService.assignmentCompletedSubject.subscribe(() => {
 			this.loadUserAssignments();
 		});
 
 		this.route.queryParams
-			.subscribe((params: { initialWorkflowItemUid: string }) => {
-				if (params.initialWorkflowItemUid) {
-					this.initialWorkflowItemUid = params.initialWorkflowItemUid.toLowerCase();
+			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid: string }) => {
+				if (params.workflowTypeUid) {
+					this.urlWorkflowTypeUid = params.workflowTypeUid.toLowerCase();
+					this.urlWorkflowStepUid = params.workflowItemStepUid.toLowerCase();
 				}
 			});
 	}
@@ -85,11 +87,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 						}
 					});
 
-					if (this.initialWorkflowItemUid) {
-						this.workflowService.getWorkflowStateForUser(this.initialWorkflowItemUid)
+					if (this.urlWorkflowStepUid) {
+						this.workflowService.getWorkflowStateForUser(this.urlWorkflowStepUid)
 							.subscribe((res) => {
 								this.handleWorkflowItemLoad(res);
-
 							});
 					}
 
@@ -98,12 +99,13 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				});
 	}
 
-	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; }) {
+	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string }) {
+		console.log(res);
 		if (!res.hasAccess) {
 			//to be implemented in another JIRA
         }
-        else if (res.exists && res.hasAccess && !res.isCompleted) {
-            const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
+		else if (res.exists && res.hasAccess && !res.isCompleted) {
+			const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid));
             this.onItemClick(null, item);
         }
         else if (!res.exists) {

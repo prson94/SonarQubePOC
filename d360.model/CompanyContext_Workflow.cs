@@ -358,10 +358,11 @@ namespace d360.model
 			return "";
 		}
 
-		private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
+		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
-			return await Database.Connection.QueryAsync<dynamic>(@"
+			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
 					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
+					into #results
 					from(
 					select 
 					wt.name as Name
@@ -402,7 +403,13 @@ namespace d360.model
 					group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
 					) as Sub on
 					wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
-					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
+
+					select wfm.*, wt.uid as WorkflowTypeUid, wis.UID as WorkflowItemStepUid from #results wfm
+					inner join workflow.Type wt on wt.ID = wfm.Id
+					inner join workflow.[ItemStep] wis on wis.ID = wfm.StepId
+					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc
+
+					drop table if exists #results", new { r = resourceId, newOffset });
 		}
 
 		private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
@@ -3380,7 +3387,7 @@ namespace d360.model
 				return;
 			}
 
-			// 0.5 determine how many days ago last digest was sent
+			//0.5 determine how many days ago last digest was sent
 			int newDelta = 0;
 			int previousDayOfWeek;
 			do
@@ -3431,8 +3438,7 @@ namespace d360.model
 				// 3 get oustanding assignments
 				foreach (dynamic user in users)
 				{
-					dynamic workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
-
+					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
 
 					StringBuilder sb = new StringBuilder();
 					string subject = string.Empty;
@@ -3455,7 +3461,7 @@ namespace d360.model
 					sb.Append(tblHeader);
 					int i = 0;
 					int totalNew = 0;
-					foreach (dynamic item in workflows)
+					foreach (UsersOutstandingWorkflows item in workflows)
 					{
 						if (i % 2 == 0)
 						{
@@ -3466,7 +3472,7 @@ namespace d360.model
 							sb.Append(tblTRWhite);
 						}
 
-						string url = $"{rootUrl}/workflow/workflowlistnew/{item.Id}/{item.Version}/{item.StepId}/1";
+						string url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
 						sb.Append($"<td style='text-align: left;padding-left:5px;'><a style='font-size:12px;font-family: Trebuchet MS, Arial, Helvetica, sans - serif;'  href='{url}'>{item.Name}</a></td>");
 						sb.Append($"<td style='text-align: center'>{span}{item.Version}</span></td>");
 						sb.Append($"<td style='text-align: left'>{span}{item.Step}</span></td>");
@@ -3486,7 +3492,7 @@ namespace d360.model
 
 					sb.Append("</tbody></table>");
 
-					sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/assignments' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
 
 					subject = $"{environment}{totalNew} new workflow items require your attention";
 

@@ -823,7 +823,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 
-	getWorkflowStateForUser(workflowItemUid: string): Observable<{ exists: boolean, hasAccess: boolean, isCompleted: boolean }> {
+	getWorkflowStateForUser(workflowItemUid: string): Observable<{ exists: boolean, hasAccess: boolean, isCompleted: boolean, workflowItemUid:string }> {
 		return this.http.get(`api/v2/workflow/assignments/${workflowItemUid}/state`)
 			.pipe(
 				map((response) => response),
