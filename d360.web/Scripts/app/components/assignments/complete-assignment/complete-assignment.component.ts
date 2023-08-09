@@ -257,7 +257,7 @@ export class CompleteAssignmentComponent
 
 	getWorkflowReassignmentAssets() {
 		this.workflowService
-			.getWorkflowReassignmentAssetsById(this.workflowItemUid)
+			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
 				this.assets = result;
 			});
