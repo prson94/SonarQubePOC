@@ -203,13 +203,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
 		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
+		this.assigneeSearchInputList = [];
 		for (const item of advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
 				this.singleActionTypeUidFilter = item.value?.[0];
 			}
-			if (item.field === 'assignee') {
-				this.assigneeSearchInputList = item.value;
+			if (item.field === 'assignee' && item.operator === 'Equals') {
+				for( const value of item.value) {
+					if (!this.assigneeSearchInputList.includes(value)) {
+						this.assigneeSearchInputList.push(value);
+					}
+				}
 			}
 		}
 		this.currentPageNumber = 1;
