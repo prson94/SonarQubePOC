@@ -83,7 +83,6 @@ export class CompleteAssignmentComponent
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
 			this.getWorkFlowData();
-			this.getWorkflowReassignmentAssets();
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor
 			.getEvents()
@@ -223,6 +222,9 @@ export class CompleteAssignmentComponent
 
 					this.hasObjectReassign =
 						this.reassignAvailableTypes.length > 0;
+					if (this.hasObjectReassign) {
+						this.getWorkflowReassignmentAssets();
+					}
 					this.assignmentService.setFormValidators.next();
 				}
 			});
@@ -262,8 +264,8 @@ export class CompleteAssignmentComponent
 				this.assets = result;
 			});
 	}
-	
-	handleInfoButtonClick(event,row){
+
+	handleInfoButtonClick(event:MouseEvent, row: { ObjectID: string; }) {
 		if (this.assetId) {
 			this.linkClickInterceptor.sendEvent(
 				event,

@@ -141,7 +141,6 @@
 																item
 															)
 														">
-														<!-- <a (click)="onClickAsset($event)">{{ assetName }}</a> -->
 													</button>
 												</div>
 											</td>
@@ -182,13 +181,7 @@
 											<td>
 												<div class="row-data">
 													{{ item.Name }}
-
-													<a (click)="
-															handleInfoButtonClick(
-																$event,
-																item
-															)
-														">
+													<a (click)="handleInfoButtonClick($event,item)">
 														<button igButton icon="fa-info-circle"
 															class="ig-state-focus"></button>
 													</a>
