@@ -12,7 +12,7 @@ const routes: Routes = [
 		pathMatch: "full"
 	},
 
-	// lazy loaded modules 
+	// lazy loaded modules
 	{ path: "assettype", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/assets-base/assets-base.module").then((m) => m.AssetsBaseModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/reference/reference.module").then((m) => m.ReferenceModule) },
