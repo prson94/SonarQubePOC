@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -35,7 +35,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
-		private router: Router,
 		private changeDetectorRef: ChangeDetectorRef) {
 		super(settingsService);
 		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
@@ -44,11 +43,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 
 		this.route.queryParams
-			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid: string, version: number }) => {
+			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid?: string, version: number }) => {
 				if (params.workflowTypeUid) {
-					this.urlWorkflowTypeUid = params.workflowTypeUid.toLowerCase();
-					this.urlWorkflowStepUid = params.workflowItemStepUid.toLowerCase();
-					this.urlWorkflowVersion = +params.version;
+					this.urlWorkflowTypeUid = (params.workflowTypeUid ?? "").toLowerCase();
+					this.urlWorkflowStepUid = (params.workflowItemStepUid ?? "").toLowerCase();
+					this.urlWorkflowVersion = +(params.version ?? 0);
 				}
 			});
 	}
@@ -97,6 +96,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 								this.changeDetectorRef.markForCheck();
 							});
 					}
+					else if (this.urlWorkflowTypeUid) {
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null });
+						this.isLoading = false;
+						this.changeDetectorRef.markForCheck();
+					}
 					else {
 						this.isLoading = false;
 						this.changeDetectorRef.markForCheck();
@@ -141,7 +145,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 			this.modalVisible = true;
 		}
-		
+
 	}
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
