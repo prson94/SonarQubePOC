@@ -210,7 +210,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				this.singleActionTypeUidFilter = item.value?.[0];
 			}
 			if (item.field === 'assignee' && item.operator === 'Equals') {
-				for( const value of item.value) {
+				for (const value of item.value) {
 					if (!this.assigneeSearchInputList.includes(value)) {
 						this.assigneeSearchInputList.push(value);
 					}
