@@ -1,6 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
-import { CompanySettingsService } from '../../../services/settings.service';
+import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
+import { BaseComponent } from "../../shared/base.component";
+import { CompanySettingsService } from "../../../services/settings.service";
 import {
 	AssignmentByVersion,
 	AssignmentItem,
@@ -8,35 +8,38 @@ import {
 	FormRequest,
 	WorkflowForm,
 	WorkflowFormField,
-	WorkflowFormFieldType
-} from '../../../models/workflow.model';
-import { WorkflowService } from '../../../services/workflow.service';
-import {Subscription } from 'rxjs';
-import { LinkClickInterceptor } from '../../../services/href-click-service';
-import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
-import { NgForm } from '@angular/forms';
-import { AssignmentService } from '../assignment.service';
+	WorkflowFormFieldType,
+} from "../../../models/workflow.model";
+import { WorkflowService } from "../../../services/workflow.service";
+import { Subscription } from "rxjs";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
+import { SidePanelSwitcherComponent } from "../side-panel-switcher/side-panel-switcher.component";
+import { NgForm } from "@angular/forms";
+import { AssignmentService } from "../assignment.service";
 
 @Component({
-	selector: 'd3s-complete-assignment',
-	templateUrl: './complete-assignment.component.html',
-	styleUrls: ['./complete-assignment.component.less']
+	selector: "d3s-complete-assignment",
+	templateUrl: "./complete-assignment.component.html",
+	styleUrls: ["./complete-assignment.component.less"],
 })
-export class CompleteAssignmentComponent extends BaseComponent implements OnInit {
-
+export class CompleteAssignmentComponent
+	extends BaseComponent
+	implements OnInit
+{
 	isModalVisible: boolean = false;
 	loading: boolean = false;
 	isAssignmentProgressSelected: boolean = false;
-	modalTitle: string = 'Assignment';
+	modalTitle: string = "Assignment";
 	sidePanelOpen: boolean = false;
 	workflowItemUid: string;
 	workflowName: string;
 	stepUid: string;
-	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
-	sidePanel: string = 'asset-details';
-	formTitle: string = '';
-	formDescription: string = '';
-	assetName: string = '';
+	sidePanelStorageKey: string =
+		"CompleteAssignment_" + this.settingsService.CurrentResourceID;
+	sidePanel: string = "asset-details";
+	formTitle: string = "";
+	formDescription: string = "";
+	assetName: string = "";
 	assetId: number;
 	formFields: WorkflowFormField[] = [];
 	assignmentItemStep: AssignmentItemStep;
@@ -45,20 +48,22 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 	reassignAvailableTypes = [];
-	hasObjectReassign:boolean=false
-	radioSelectionValue:string;
-	assets=[]
+	hasObjectReassign: boolean = false;
+	radioSelectionValue: string;
+	assets = [];
 
-	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
-	@ViewChild('workflowForm') public workflowForm: NgForm;
-	@ViewChild('form', { static: false }) formElement: ElementRef;
+	@ViewChild("sidePanelSwitcherComponent")
+	sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	@ViewChild("workflowForm") public workflowForm: NgForm;
+	@ViewChild("form", { static: false }) formElement: ElementRef;
 
 	private linkInterceptorSubscription: Subscription;
 
-	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService: AssignmentService
+	constructor(
+		protected settingsService: CompanySettingsService,
+		private workflowService: WorkflowService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		private assignmentService: AssignmentService
 	) {
 		super(settingsService);
 	}
@@ -71,36 +76,36 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.discardForm = message;
 	}
 
-
-	openModal(details: {
-		workflowItemUid: string,
-		stepUid: string
-	}): void {
+	openModal(details: { workflowItemUid: string; stepUid: string }): void {
 		if (details) {
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
 			this.loadFormDetails();
 			this.loadWorkflowTypeDetails();
 			this.getWorkFlowData();
-			this.getWorkflowReassignmentAssets()
-
+			this.getWorkflowReassignmentAssets();
 		}
-		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
-			this.sidePanelOpen = true;
-		});
+		this.linkInterceptorSubscription = this.linkClickInterceptor
+			.getEvents()
+			.subscribe((ev) => {
+				this.linkClickInterceptor.handleEvent(
+					this.sidePanelSwitcherComponent,
+					ev
+				);
+				this.sidePanelOpen = true;
+			});
 		this.isModalVisible = true;
 	}
 
 	showAssignment(): void {
 		this.isAssignmentProgressSelected = false;
-		this.modalTitle = 'Assignment';
+		this.modalTitle = "Assignment";
 		this.sidePanelSwitcherComponent.clear();
 	}
 
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
-		this.modalTitle = 'Assignment Progress and Information';
+		this.modalTitle = "Assignment Progress and Information";
 		this.sidePanelSwitcherComponent.clear();
 	}
 
@@ -112,54 +117,73 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.prepareValuesForSubmit();
 
 		//save form values with stepUid and itemUid
-		this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe();
+		this.workflowService
+			.submitWorkflowFormByUid(
+				this.workflowItemUid,
+				this.stepUid,
+				this.formFields
+			)
+			.subscribe();
 	}
 
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
-		this.sidePanel = 'step-details';
+		this.sidePanel = "step-details";
 		this.assignmentItemStep = assignmentItemStep;
 	}
 
 	closeModal(): void {
 		this.isModalVisible = false;
-		this.radioSelectionValue=""
+		this.radioSelectionValue = "";
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
 	onClickResource(event: MouseEvent): void {
 		if (this.request?.Action) {
-			this.linkClickInterceptor.sendEvent(event, {
-				ResourceUid: this.request.Action.CreatedBy
-			}, 'users/' + this.request.Action.CreatedBy);
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					ResourceUid: this.request.Action.CreatedBy,
+				},
+				"users/" + this.request.Action.CreatedBy
+			);
 		}
 	}
 
 	onClickAsset(event: MouseEvent): void {
 		if (this.assetId) {
-			this.linkClickInterceptor.sendEvent(event, {
-				AssetId: this.assetId
-			}, 'asset/' + this.assetId);
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					AssetId: this.assetId,
+				},
+				"asset/" + this.assetId
+			);
 		}
 	}
 
 	showRequestSidePanel(event: MouseEvent): void {
 		if (this.request) {
-			this.linkClickInterceptor.sendEvent(event, {
-				workflowActionUid: this.request.Action.Uid,
-				itemStepUid: this.stepUid,
-				workflowItemUid: this.workflowItemUid
-			}, '');
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					workflowActionUid: this.request.Action.Uid,
+					itemStepUid: this.stepUid,
+					workflowItemUid: this.workflowItemUid,
+				},
+				""
+			);
 		}
 	}
 
 	prepareValuesForSubmit(): void {
 		this.formFields.forEach((x, i) => {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
-
-				const name = this.workflowForm.form.controls[`inputName_${i}`].value;
-				const url = this.workflowForm.form.controls[`inputUrl_${i}`].value;
+				const name =
+					this.workflowForm.form.controls[`inputName_${i}`].value;
+				const url =
+					this.workflowForm.form.controls[`inputUrl_${i}`].value;
 				x.Value =
-					name.length + url.length === 0 ? '' : name + '|' + url;
+					name.length + url.length === 0 ? "" : name + "|" + url;
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
 			}
@@ -168,7 +192,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	private loadFormDetails(): void {
 		this.isLoading = true;
-		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
+		this.workflowService
+			.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
 			.subscribe((res: WorkflowForm) => {
 				this.isLoading = false;
 				if (res) {
@@ -184,20 +209,36 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.assetId = res.ObjectID;
 					}
 					if (res.AllowReassignObject) {
-						this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
+						this.reassignAvailableTypes.push({
+							value: "object",
+							text: "Object",
+						});
 					}
 					if (res.AllowReassignResource) {
-						this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
+						this.reassignAvailableTypes.push({
+							value: "resource",
+							text: "Resource",
+						});
 					}
 
-					this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
+					this.hasObjectReassign =
+						this.reassignAvailableTypes.length > 0;
 					this.assignmentService.setFormValidators.next();
 				}
 			});
 	}
 
 	private loadWorkflowTypeDetails(): void {
-		this.workflowService.getAssignmentsByVersion(1, 1, null, null, null, null, this.workflowItemUid)
+		this.workflowService
+			.getAssignmentsByVersion(
+				1,
+				1,
+				null,
+				null,
+				null,
+				null,
+				this.workflowItemUid
+			)
 			.subscribe((response: AssignmentByVersion): void => {
 				if (response?.items?.length > 0) {
 					this.workflowTypeUid = response.items[0].WorkflowTypeUid;
@@ -207,17 +248,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	getWorkFlowData(): void {
-		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((res: AssignmentItem): void => {
-			this.workflowName = res.WorkflowName;
-		});
-	}
-	
-	getWorkflowReassignmentAssets(){
-		this.workflowService.getWorkflowReassignmentAssetsById(this.workflowItemUid)
-		.subscribe((result) => {
-			this.assets = result;
-		});
+		this.workflowService
+			.getAssignmentItem(this.workflowItemUid)
+			.subscribe((res: AssignmentItem): void => {
+				this.workflowName = res.WorkflowName;
+			});
 	}
 
-	
+	getWorkflowReassignmentAssets() {
+		this.workflowService
+			.getWorkflowReassignmentAssetsById(this.workflowItemUid)
+			.subscribe((result) => {
+				this.assets = result;
+			});
+	}
 }
