@@ -145,7 +145,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 			this.modalVisible = true;
 		}
-
 	}
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {

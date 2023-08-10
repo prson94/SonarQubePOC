@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
@@ -25,6 +25,8 @@ import {
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
+import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
+import { ActivatedRoute } from '@angular/router';
 
 /*global $localize*/
 
@@ -40,7 +42,7 @@ class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
 	styleUrls: ['./assignment-grid.component.less']
 })
 
-export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy {
+export class AssignmentGridComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit {
 	@Input() isRequestsFlow: boolean = false;
 	@Input() assetTypeUid: string;
 	@Input() assetUid: string;
@@ -73,15 +75,25 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	protected readonly JSON: JSON = JSON;
 	emptyGridMessage: string;
 	loadDataSub: Subscription;
+	urlLoadAssignment: string;
 
+	@ViewChild('completeAssignmentComponent', { static:true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
+				private route: ActivatedRoute,
 				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				private changeDetectorRef: ChangeDetectorRef,
 				protected settingsService: CompanySettingsService,
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService) {
 		super(settingsService);
+		this.urlLoadAssignment = null;
+		this.route.queryParams
+			.subscribe((params: { loadAssignment: string }) => {
+				if (params.loadAssignment) {
+					this.urlLoadAssignment = (params.loadAssignment ?? "").toLowerCase();
+				}
+			});
 		this.currentResourceUid = this.settingsService.CurrentResourceUid;
 		this.loadData();
 	}
@@ -101,6 +113,48 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.destroy.next();
 		this.destroy.complete();
 	}
+
+	ngAfterViewInit() {
+		if (this.urlLoadAssignment) {
+			this.loadAssignmentFromUrl();
+		}
+	}
+
+	modalVisible: boolean = false;
+	errorModalTitle: string;
+	errorModalMessage: string;
+	private loadAssignmentFromUrl() {
+        const params = this.urlLoadAssignment.split('|');
+        const itemUid = params[0];
+        const stepUid = params[1];
+        this.workflowService.getWorkflowStateForUser(stepUid)
+			.subscribe((res) => {
+				if (!res.exists) {
+					this.errorModalTitle = $localize`Assignment Not Found`;
+					this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
+					this.modalVisible = true;
+				}
+				else if (res.isCompleted) {
+					this.errorModalTitle = $localize`Assignment Completed`;
+					this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
+					this.modalVisible = true;
+				}
+				else if (!res.hasAccess) {
+					this.errorModalTitle = $localize`You Cannot View the Assignment`;
+					this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
+					this.modalVisible = true;
+				}
+				else {
+					this.completeAssignmentComponent.openModal({
+						workflowItemUid: itemUid,
+						stepUid: stepUid,
+						assetId: 0
+					});
+				}
+                this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
+            });
+    }
 
 	canExportRecords() {
 		return this.totalRecords <= this.maxExportRows;
@@ -124,6 +178,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		if (!this.currentResourceUid) {
 			return;
 		}
+
 		this.isLoading = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
@@ -147,6 +202,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			}
 			this.actionFormFields = results[1] && results[1].length > 0 ? results[1] : [];
 			this.isLoading = false;
+
 			this.changeDetectorRef.markForCheck();
 		});
 	}
@@ -480,4 +536,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	protected readonly Object = Object;
+
+	onCompleteAssignmentModalClose() {
+		this.loadData();
+	}
 }
