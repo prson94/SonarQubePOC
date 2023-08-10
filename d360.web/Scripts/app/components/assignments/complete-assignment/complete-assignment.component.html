@@ -143,11 +143,7 @@
 												<div class="row-data">
 													{{ item.text }}
 													<button igButton icon="fa-info-circle" class="ig-state-focus"
-															(click)="
-															handleInfoButtonClick(
-																item
-															)
-														">
+															(click)="handleInfoButtonClick($event,item)">
 													</button>
 												</div>
 											</td>
