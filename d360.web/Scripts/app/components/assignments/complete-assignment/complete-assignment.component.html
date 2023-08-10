@@ -28,7 +28,7 @@
 				</div>
 				<div>
 					{{ workflowName }}
-					<a (click)="onClickAsset($event)">{{ assetName }}</a>
+					<a (click)="onClickAsset($event,this.assetId)">{{ assetName }}</a>
 				</div>
 				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
 					<d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -144,7 +144,7 @@
 													{{ item.FullName }}
 													<button igButton icon="fa-info-circle" class="ig-state-focus"
 															(click)="
-															handleInfoButtonClick(
+															onClickResource(
 																$event,
 																item.ResourceID
 															)
@@ -193,13 +193,9 @@
 													{{ item.Name }}
 													<button igButton icon="fa-info-circle"
 															class="ig-state-focus"
-															(click)="
-															handleInfoButtonClick(
-																$event,
-																item.ObjectID
-															)
+															(click)="onClickAsset($event, Number(item.ObjectID))
 														"
-															></button>
+													></button>
 												</div>
 											</td>
 										</tr>

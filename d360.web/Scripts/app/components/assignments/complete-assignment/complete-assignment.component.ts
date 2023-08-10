@@ -49,7 +49,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	hasObjectReassign: boolean = false;
 	radioSelectionValue: string;
 	assets = [];
-	userData=[]
+	userData = [];
 
 	@ViewChild('sidePanelSwitcherComponent')
 	sidePanelSwitcherComponent: SidePanelSwitcherComponent;
@@ -63,7 +63,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				private workflowService: WorkflowService,
 				private linkClickInterceptor: LinkClickInterceptor,
 				private assignmentService: AssignmentService,
-				private resourceService:ResourcesService
+				private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -146,26 +146,24 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
-	onClickResource(event: MouseEvent): void {
-		if (this.request?.Action) {
-			this.linkClickInterceptor.sendEvent(
-				event,
-				{
-					ResourceUid: this.request.Action.CreatedBy
-				},
-				'users/' + this.request.Action.CreatedBy
-			);
-		}
+	onClickResource(event: MouseEvent, resourceId: number): void {
+		this.linkClickInterceptor.sendEvent(
+			event,
+			{
+				ResourceID: resourceId
+			},
+			'users/' + resourceId
+		);
 	}
 
-	onClickAsset(event: MouseEvent): void {
+	onClickAsset(event: MouseEvent, assetId: number): void {
 		if (this.assetId) {
 			this.linkClickInterceptor.sendEvent(
 				event,
 				{
-					AssetId: this.assetId
+					AssetId: assetId
 				},
-				'asset/' + this.assetId
+				'asset/' + assetId
 			);
 		}
 	}
@@ -234,7 +232,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.reassignAvailableTypes.length > 0;
 					if (this.hasObjectReassign) {
 						this.getWorkflowReassignmentAssets();
-						this.getAllUsersData()
+						this.getAllUsersData();
 					}
 					this.assignmentService.setFormValidators.next();
 				}
@@ -268,7 +266,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	getWorkflowReassignmentAssets() {
+	getWorkflowReassignmentAssets(): void {
 		this.workflowService
 			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
@@ -276,32 +274,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	handleInfoButtonClick(event: MouseEvent, ObjectID: string) {
-		if(this.radioSelectionValue==='changeAsset'){
-			if (this.assetId) {
-				this.linkClickInterceptor.sendEvent(
-					event,
-					{
-						AssetId: Number(ObjectID)
-					},
-					'asset/' + Number(ObjectID)
-				);
-			}
-			}
-		else if(this.radioSelectionValue==='reassignUser'){
-			this.linkClickInterceptor.sendEvent(
-				event,
-				{
-					ResourceUid: ObjectID
-				},
-				'users/' + ObjectID
-			);
-		}
+	getAllUsersData(): void {
+		this.resourceService.getResources(false).subscribe((res) => {
+			this.userData = res;
+		});
 	}
 
-	getAllUsersData(){
-		this.resourceService.getResources(false).subscribe((res)=>{
-			this.userData=res;
-		})
-	}
+	protected readonly Number = Number;
 }
