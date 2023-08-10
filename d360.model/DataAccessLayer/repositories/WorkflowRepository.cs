@@ -1003,7 +1003,7 @@ namespace d360.model.DataAccessLayer
 						parameters: new { query }));
 		}
 
-		public async Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams)
+		public async Task<WorkflowAssignmentApiModel> GetWorkflowAssignmentList(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken cancellationToken)
 		{
 			var dbArgs = new DynamicParameters();
 
@@ -1380,7 +1380,13 @@ namespace d360.model.DataAccessLayer
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
 
 			var multiSQL = $"{sql}; {countSQL}";
-			using (var multi = await CompanyContext.QueryMultipleAsync(multiSQL, dbArgs, ApiTimeout))
+
+			using (var multi = await CompanyContext.Database.Connection.QueryMultipleAsync(
+				  new CommandDefinition(multiSQL,
+				  cancellationToken: cancellationToken,
+				  parameters: dbArgs,
+				  commandTimeout: ApiTimeout
+				)))
 			{
 				assignments.items = multi.Read<dynamic>().ToList();
 				assignments.total = multi.Read<int>().First();

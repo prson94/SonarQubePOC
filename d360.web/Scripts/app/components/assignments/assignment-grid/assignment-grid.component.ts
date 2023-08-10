@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { forkJoin, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
@@ -72,6 +72,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	protected readonly JSON: JSON = JSON;
 	emptyGridMessage: string;
+	loadDataSub: Subscription;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -93,6 +94,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnDestroy(): void {
+		if (this.loadDataSub) {
+			this.loadDataSub.unsubscribe();
+		}
+
 		this.destroy.next();
 		this.destroy.complete();
 	}
@@ -125,7 +130,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.assetUid, this.assetTypeUid, this.sortField, this.sortOrder),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter.value, null) : of([])
 		];
-		forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
+		if (this.loadDataSub) {
+			this.loadDataSub.unsubscribe();
+		}
+		this.loadDataSub = forkJoin(sources).subscribe((results: [WorkflowAssignments, FieldTypeAPIModelField[]]) => {
 			this.items = results[0].items as WorkflowAssignmentGrid[];
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
@@ -203,13 +211,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	advancedFiltersChanged($event: Filters): void {
 		this.advancedFilter = $event.filter;
 		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
+		this.assigneeSearchInputList = [];
 		for (const item of advancedFilterData) {
 			if (item.field === 'actionTypeUid') {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
 				this.singleActionTypeUidFilter = item.value?.[0];
 			}
-			if (item.field === 'assignee') {
-				this.assigneeSearchInputList = item.value;
+			if (item.field === 'assignee' && item.operator === 'Equals') {
+				for (const value of item.value) {
+					if (!this.assigneeSearchInputList.includes(value)) {
+						this.assigneeSearchInputList.push(value);
+					}
+				}
 			}
 		}
 		this.currentPageNumber = 1;

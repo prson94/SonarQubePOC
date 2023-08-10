@@ -96,7 +96,7 @@
 											<div class="category-column">
 												<label class="ig-label" i18n>{{
 													formTitle
-												}}</label>
+													}}</label>
 												<div
 													class="ig-value"
 													[innerHTML]="
@@ -122,13 +122,13 @@
 										*ngIf="!sidePanelOpen"
 										(click)="showRequestSidePanel($event)"
 										i18n
-										>Open in side panel</a
+									>Open in side panel</a
 									>
 									<a
 										*ngIf="sidePanelOpen"
 										(click)="sidePanelOpen = false"
 										i18n
-										>Close side panel</a
+									>Close side panel</a
 									>
 								</ng-template>
 								<div readonly>
@@ -218,7 +218,8 @@
 											<th style="width: 4rem"></th>
 											<th [pSortableColumn]="'text'">
 												<ng-container i18n
-													>Name</ng-container
+												>Name
+												</ng-container
 												>
 												<d3s-sortIcon
 													[field]="'text'"
@@ -238,7 +239,8 @@
 													class="row-data"
 												>
 													{{ item.text }}
-													<button igButton icon="fa-info-circle" class="ig-state-focus"></button>
+													<button igButton icon="fa-info-circle"
+															class="ig-state-focus"></button>
 												</div>
 											</td>
 										</tr>
@@ -285,7 +287,8 @@
 											<th style="width: 4rem"></th>
 											<th [pSortableColumn]="'Name'">
 												<ng-container i18n
-													>Name</ng-container
+												>Name
+												</ng-container
 												>
 												<d3s-sortIcon
 													[field]="'Name'"
@@ -302,10 +305,11 @@
 											</td>
 											<td>
 												<div
-												class="row-data"
+													class="row-data"
 												>
 													{{ item.Name }}
-													<button igButton icon="fa-info-circle" class="ig-state-focus"></button>
+													<button igButton icon="fa-info-circle"
+															class="ig-state-focus"></button>
 												</div>
 											</td>
 										</tr>

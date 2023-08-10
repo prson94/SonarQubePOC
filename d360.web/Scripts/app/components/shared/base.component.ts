@@ -567,7 +567,7 @@ export class BaseComponent {
 					}
 					this.monitorSidebar = new SecondaryNavItem(
 						$localize`Assignments`,
-						'assignments',
+						'assetAssignments',
 						['fa-usb'],
 						url, null, 30
 					);

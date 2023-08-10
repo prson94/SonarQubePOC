@@ -11,8 +11,8 @@ import { AssignmentSidebarRoutes } from './assignment-sidebar-routes.module';
 	],
 	imports: [
 		AssignmentSidebarRoutes,
-		AssignmentsModule,
-		CommonModule
+		CommonModule,
+		AssignmentsModule
 	]
 })
 export class AssignmentSidebarModule {

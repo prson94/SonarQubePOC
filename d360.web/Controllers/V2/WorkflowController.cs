@@ -422,7 +422,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetWorkflowAssignments()
+		public async Task<IHttpActionResult> GetWorkflowAssignments(CancellationToken cancellationToken)
 		{
 			var prefix = "Workflow.GetWorkflowAssignments => ";
 			var queryParams = Request.GetQueryNameValuePairs();
@@ -502,7 +502,7 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams).ConfigureAwait(false);
+				var response = await workflowRepository.GetWorkflowAssignmentList(queryParams, cancellationToken).ConfigureAwait(false);
 
 				if (isStreamResponse)
 				{
@@ -867,7 +867,7 @@ namespace d360.web.Controllers.V2
 
 			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{
-				new ExcelSheet(ExcelExports.WorkflowAssignments_Assignments)
+				new ExcelSheet(exportName)
 				{
 					HeaderRows = headers,
 

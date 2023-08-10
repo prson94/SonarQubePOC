@@ -169,7 +169,8 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "Use this field to set the direction and proeprty to sort by. The syntax is: asc(propertyName) or desc(propertyName). By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false)
 		]
 		public async Task<IHttpActionResult> GetCatalogAssetsAsync(CancellationToken cancellationToken)
 		{

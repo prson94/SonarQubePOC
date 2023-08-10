@@ -824,6 +824,22 @@ export class WorkflowService extends BaseObservableService {
             }));
     }
 
+	getAssetAssignmentCount(assetUid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/assignment/count/asset/${assetUid}`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getAssetTypeAssignmentCount(assetTypeUid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/assignment/count/assettype/${assetTypeUid}`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
     getWorkflowReassignmentAssetsById(workflowItemId: string){
         return this.http.get(`api/v2/workflow/reassignmentByUid/objects/${workflowItemId}?query=`)
         .pipe(
