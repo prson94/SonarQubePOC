@@ -11,7 +11,7 @@ import {
 	WorkflowFormFieldType
 } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
@@ -90,9 +90,61 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		if (details) {
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			this.loadFormDetails();
-			this.loadWorkflowTypeDetails();
-			this.getWorkFlowData();
+			forkJoin(
+				this.workflowService.getWorkflowFormByUid(
+					this.workflowItemUid,
+					this.stepUid
+				),
+				this.workflowService.getAssignmentsByVersion(
+					1,
+					1,
+					null,
+					null,
+					null,
+					null,
+					this.workflowItemUid
+				),
+				this.workflowService.getAssignmentItem(this.workflowItemUid)
+			).subscribe((res) => {
+				if (res[0]) {
+					this.formTitle = res[0].Title;
+					this.formDescription = res[0].Description;
+					this.formFields = res[0].Fields;
+					this.request = res[0].Request;
+					if (res[0].IssueObjectID) {
+						this.assetName = res[0].IssueObjectName;
+						this.assetId = res[0].IssueObjectID;
+					} else {
+						this.assetName = res[0].ObjectName;
+						this.assetId = res[0].ObjectID;
+					}
+					if (res[0].AllowReassignObject) {
+						this.reassignAvailableTypes.push({
+							value: "object",
+							text: "Object",
+						});
+					}
+					if (res[0].AllowReassignResource) {
+						this.reassignAvailableTypes.push({
+							value: "resource",
+							text: "Resource",
+						});
+					}
+
+					this.hasObjectReassign =
+						this.reassignAvailableTypes.length > 0;
+					if (this.hasObjectReassign) {
+						this.getWorkflowReassignmentAssets();
+						this.getAllUsersData();
+					}
+					this.assignmentService.setFormValidators.next();
+				}
+				if (res[1]?.items?.length > 0) {
+					this.workflowTypeUid = res[1].items[0].WorkflowTypeUid;
+					this.workflowTypeVersion = res[1].items[0].Version;
+				}
+				this.workflowName = res[2].WorkflowName;
+			});
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor
 			.getEvents()
