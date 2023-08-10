@@ -229,6 +229,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 					this.hasObjectReassign =
 						this.reassignAvailableTypes.length > 0;
+					if (this.hasObjectReassign) {
+						this.getWorkflowReassignmentAssets();
+					}
 					this.assignmentService.setFormValidators.next();
 				}
 			});
@@ -263,9 +266,21 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	getWorkflowReassignmentAssets() {
 		this.workflowService
-			.getWorkflowReassignmentAssetsById(this.workflowItemUid)
+			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
 				this.assets = result;
 			});
+	}
+
+	handleInfoButtonClick(event:MouseEvent, row: { ObjectID: string; }) {
+		if (this.assetId) {
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					AssetId: Number(row.ObjectID),
+				},
+				"asset/" + Number(row.ObjectID)
+			);
+		}
 	}
 }

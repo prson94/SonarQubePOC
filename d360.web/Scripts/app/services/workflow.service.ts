@@ -824,6 +824,13 @@ export class WorkflowService extends BaseObservableService {
             }));
     }
 
+    getWorkflowReassignmentAssetsByUid(workflowItemId: string){
+        return this.http.get(`api/v2/workflow/reassignmentByUid/objects/${workflowItemId}?query=`)
+        .pipe(
+            map((response) => response),
+            catchError((err) => this.handleError(err))
+        );
+    }
 	getAssetAssignmentCount(assetUid: string): Observable<number> {
 		return this.http.get(`api/v2/workflow/assignment/count/asset/${assetUid}`)
 			.pipe(
