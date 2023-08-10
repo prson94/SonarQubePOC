@@ -34,7 +34,7 @@
 					<d3s-loading [isLoading]="isLoading"></d3s-loading>
 					<div *ngIf="!isLoading" class="asset-detail">
 						<div class="d-flex column" *ngIf="hasObjectReassign">
-							<div>What would you like to do?</div>
+							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
 											   [(ngModel)]="radioSelectionValue">
@@ -161,8 +161,8 @@
 								</p-table>
 							</ng-container>
 							<ng-container *ngIf="radioSelectionValue === 'changeAsset'">
-								<div class="ig-value">
-									Chooose the new associated asset:
+								<div class="ig-value" i18n>
+									Choose the new associated asset:
 								</div>
 								<input type="text" pInputText size="100" (input)="
 										dt.filterGlobal(

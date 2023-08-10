@@ -104,6 +104,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.sidePanelOpen = true;
 			});
 		this.isModalVisible = true;
+		this.radioSelectionValue = 'completeForm';
 	}
 
 	showAssignment(): void {
