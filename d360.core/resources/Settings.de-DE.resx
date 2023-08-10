@@ -434,7 +434,7 @@
     <value>Als Transformationslimit verwenden</value>
   </data>
   <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
-    <value>Mit dieser Einstellung wird festgelegt, welche Benutzergruppen E-Mails erhalten, wenn Aufgaben in einem Workflow keinem Benutzer zugewiesen werden können. Wenn auf 0 festgelegt oder nicht definiert, erhalten alle Administratoren in einer Region die Zuweisungen.</value>
+    <value>Mit dieser Einstellung wird festgelegt, welche Benutzergruppen E-Mails erhalten, wenn Verantwortungen in einem Workflow keinem Benutzer zugewiesen werden können. Wenn auf 0 festgelegt oder nicht definiert, erhalten alle Administratoren in einer Region die Zuweisungen.</value>
   </data>
   <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
     <value>Workflow-Standardbenutzergruppe</value>

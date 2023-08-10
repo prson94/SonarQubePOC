@@ -397,4 +397,13 @@
     <value>Intervallo effettivo</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Valore non valido per 'ProfileType' {0}. I valori consentito sono '0' per Completo, '1' per Campione o '2' per Filtrato.</value>
+  </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>La lunghezza massima consentita per il valore ProfileSeries è 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>La lunghezza massima consentita per il valore ProfileSource è 100.</value>
+  </data>
 </root>
