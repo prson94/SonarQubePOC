@@ -76,25 +76,15 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-FullText-v2" runInTransaction="false">
+  <changeSet author="PuneetGupta" id="Table.dbo.Field-FullText-v3" runInTransaction="false">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
+IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
 BEGIN
-	CREATE FULLTEXT INDEX ON [dbo].[Field] KEY INDEX [UQ_Field_ID] ON [FieldCatalog]
-END
-
-IF EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Value' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
-BEGIN
-	ALTER FULLTEXT INDEX ON [dbo].[Field] DROP ([Value])
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'FormattedValue' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
-BEGIN
-	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([FormattedValue] LANGUAGE 1033)
+	DROP FULLTEXT INDEX ON [dbo].[Field]
 END
 		]]>
     </sql>
