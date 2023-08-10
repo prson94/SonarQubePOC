@@ -272,14 +272,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	handleInfoButtonClick(event:MouseEvent, row: { ObjectID: string; }) {
+	handleInfoButtonClick(event: MouseEvent, row: { ObjectID: string; }) {
 		if (this.assetId) {
 			this.linkClickInterceptor.sendEvent(
 				event,
 				{
-					AssetId: Number(row.ObjectID),
+					AssetId: Number(row.ObjectID)
 				},
-				"asset/" + Number(row.ObjectID)
+				'asset/' + Number(row.ObjectID)
 			);
 		}
 	}

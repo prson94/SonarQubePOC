@@ -1,7 +1,8 @@
 <d3s-modal [showTitle]="false" [isVisible]="isModalVisible" [showActionBar]="true" [confirmButtonLabel]="'Submit'"
-	[cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'" [secondaryButtonDisabled]="!workflowForm?.valid"
-	[discardForm]="discardForm" (onClose)="discardForm ? discardFormFunc() : closeModal()" (onConfirm)="onFormSubmit()"
-	[additionalClasses]="'xlarge-dialog'">
+		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'" [secondaryButtonDisabled]="!workflowForm?.valid"
+		   [discardForm]="discardForm" (onClose)="discardForm ? discardFormFunc() : closeModal()"
+		   (onConfirm)="onFormSubmit()"
+		   [additionalClasses]="'xlarge-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
@@ -14,12 +15,14 @@
 									isAssignmentProgressSelected
 										? ''
 										: 'selected'
-								" [icon]="'fa-file-text'" (click)="showAssignment()" class="ig-button-secondary side-panel-button"></button>
+								" [icon]="'fa-file-text'" (click)="showAssignment()"
+									class="ig-button-secondary side-panel-button"></button>
 							<button igButton [icon]="'fa-list-ul'" [ngClass]="
 									isAssignmentProgressSelected
 										? 'selected'
 										: ''
-								" (click)="showAssignmentProgress()" class="ig-button-secondary side-panel-button"></button>
+								" (click)="showAssignmentProgress()"
+									class="ig-button-secondary side-panel-button"></button>
 						</span>
 					</div>
 				</div>
@@ -34,23 +37,23 @@
 							<div>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
-									[(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="reassignUser" label="Reassign"
-									[(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="changeAsset" label="Change the Associated Asset"
-									[(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
 						</div>
 						<div class="asset-detail-tabs">
 							<ig-property-group i18n-title title="Information" [showHeaderLine]="false"
-								[shouldBePadded]="false">
+											   [shouldBePadded]="false">
 								<div readonly>
 									<ng-container>
 										<div class="row">
@@ -67,8 +70,8 @@
 								</div>
 							</ig-property-group>
 							<ig-property-group *ngIf="request && request.Action" i18n-title title="Request"
-								[shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
-								[sideTemplate]="requestSidePanel">
+											   [shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
+											   [sideTemplate]="requestSidePanel">
 								<ng-template #requestSidePanel>
 									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>Open in side
 										panel</a>
@@ -77,7 +80,7 @@
 								<div readonly>
 									<ng-container>
 										<d3s-assignment-information-request [showSubmittedByData]="true"
-											[workflowActionUid]="
+																			[workflowActionUid]="
 												request.Action.Uid
 											" [stepUid]="stepUid" [workflowItemUid]="workflowItemUid">
 										</d3s-assignment-information-request>
@@ -87,19 +90,23 @@
 							<form (ngSubmit)="onFormSubmit()" #workflowForm="ngForm" #form>
 								<ng-template #requiredFieldsTemplate>
 									<ig-form-feedback-badges class="ig-form-feedback-badges"
-										[igformGroup]="workflowForm.form" [inputContainer]="formElement">
+															 [igformGroup]="workflowForm.form"
+															 [inputContainer]="formElement">
 									</ig-form-feedback-badges>
 								</ng-template>
 								<ig-property-group i18n-title title="Form fields" *ngIf="
 										!hasObjectReassign ||
 										radioSelectionValue === 'completeForm'
-									" [showHeaderLine]="false" [sideTemplate]="requiredFieldsTemplate" [customTemplate]="true"
-									[shouldBePadded]="false">
+									" [showHeaderLine]="false" [sideTemplate]="requiredFieldsTemplate"
+												   [customTemplate]="true"
+												   [shouldBePadded]="false">
 									<div readonly>
 										<div class="row">
 											<div class="l6 s12">
 												<d3s-complete-assignment-form-fields [fields]="formFields"
-													[form]="workflowForm" [formElement]="formElement" (discardForm)="
+																					 [form]="workflowForm"
+																					 [formElement]="formElement"
+																					 (discardForm)="
 														onFormInput($event)
 													">
 												</d3s-complete-assignment-form-fields>
@@ -115,9 +122,9 @@
 											$event.target.value,
 											'contains'
 										)
-									" i18n-placeholder placeholder="Search" class="grid-simple-filter" />
+									" i18n-placeholder placeholder="Search" class="grid-simple-filter"/>
 								<p-table #dt [value]="reassignAvailableTypes" [rows]="5" [paginator]="true"
-									[globalFilterFields]="['text']" [pageLinks]="3">
+										 [globalFilterFields]="['text']" [pageLinks]="3">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
@@ -136,7 +143,7 @@
 												<div class="row-data">
 													{{ item.text }}
 													<button igButton icon="fa-info-circle" class="ig-state-focus"
-														(click)="
+															(click)="
 															handleInfoButtonClick(
 																item
 															)
@@ -148,7 +155,7 @@
 									</ng-template>
 									<ng-template pTemplate="summary">
 										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
-											[totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 									</ng-template>
 								</p-table>
 							</ng-container>
@@ -161,9 +168,9 @@
 											$event.target.value,
 											'contains'
 										)
-									" i18n-placeholder placeholder="Search" class="grid-simple-filter" />
+									" i18n-placeholder placeholder="Search" class="grid-simple-filter"/>
 								<p-table #dt [value]="assets" [rows]="5" [paginator]="true"
-									[globalFilterFields]="['Name']" [pageLinks]="3">
+										 [globalFilterFields]="['Name']" [pageLinks]="3">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
@@ -180,17 +187,18 @@
 											</td>
 											<td>
 												<div
-												class="row-data"
+													class="row-data"
 												>
 													{{ item.Name }}
-													<button igButton icon="fa-info-circle" class="ig-state-focus"></button>
+													<button igButton icon="fa-info-circle"
+															class="ig-state-focus"></button>
 												</div>
 											</td>
 										</tr>
 									</ng-template>
 									<ng-template pTemplate="summary">
 										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
-											[totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 									</ng-template>
 								</p-table>
 							</ng-container>
@@ -199,8 +207,9 @@
 				</div>
 				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content progress-container">
 					<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [workflowUid]="workflowTypeUid"
-						[showCompleteAssignment]="false" [workflowTypeVersion]="workflowTypeVersion"
-						(stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
+											 [showCompleteAssignment]="false"
+											 [workflowTypeVersion]="workflowTypeVersion"
+											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
 					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
 					</d3s-assignment-information>
 				</div>
@@ -208,10 +217,10 @@
 		</div>
 		<div class="side-panel">
 			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" hasDetail="true"
-				height="calc(100vh - 220px)">
+						height="calc(100vh - 220px)">
 				<ng-container>
 					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false"
-						#sidePanelSwitcherComponent></d3s-side-panel-switcher>
+											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>
 		</div>
