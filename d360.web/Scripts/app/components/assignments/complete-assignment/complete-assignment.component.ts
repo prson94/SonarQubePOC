@@ -16,6 +16,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
+import { ResourcesService } from '../../../services/resources.service';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -48,6 +49,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	hasObjectReassign: boolean = false;
 	radioSelectionValue: string;
 	assets = [];
+	userData=[]
 
 	@ViewChild('sidePanelSwitcherComponent')
 	sidePanelSwitcherComponent: SidePanelSwitcherComponent;
@@ -60,7 +62,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
 				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService: AssignmentService
+				private assignmentService: AssignmentService,
+				private resourceService:ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -231,6 +234,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.reassignAvailableTypes.length > 0;
 					if (this.hasObjectReassign) {
 						this.getWorkflowReassignmentAssets();
+						this.getAllUsersData()
 					}
 					this.assignmentService.setFormValidators.next();
 				}
@@ -272,15 +276,32 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	handleInfoButtonClick(event: MouseEvent, row: { ObjectID: string; }) {
-		if (this.assetId) {
+	handleInfoButtonClick(event: MouseEvent, ObjectID: string) {
+		if(this.radioSelectionValue==='changeAsset'){
+			if (this.assetId) {
+				this.linkClickInterceptor.sendEvent(
+					event,
+					{
+						AssetId: Number(ObjectID)
+					},
+					'asset/' + Number(ObjectID)
+				);
+			}
+			}
+		else if(this.radioSelectionValue==='reassignUser'){
 			this.linkClickInterceptor.sendEvent(
 				event,
 				{
-					AssetId: Number(row.ObjectID)
+					ResourceUid: ObjectID
 				},
-				'asset/' + Number(row.ObjectID)
+				'users/' + ObjectID
 			);
 		}
+	}
+
+	getAllUsersData(){
+		this.resourceService.getResources(false).subscribe((res)=>{
+			this.userData=res;
+		})
 	}
 }
