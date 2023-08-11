@@ -902,7 +902,10 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			if (includeOwnershipLookup && ownershipFieldTypes.Any())
 			{
 				populateOwnershipLookupTableSQL = @"
-					declare @id int = (select top 1 id from assettype where id = @assettypeid)
+					declare @id int = (select top 1 id from assettype where id = @assettypeid),
+							@IsAssetNotZero int = 0,
+							@IsAssetZero int = 0;
+
 
 					drop table if exists #OwnershipLookupAssets;
 					create table #OwnershipLookupAssets (
@@ -918,6 +921,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						SecurityAssetId int,
 						SecurityAssetUid uniqueidentifier
 					);
+					create clustered index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
+
 					insert into #OwnershipLookupAssets
 						SELECT [AssetID]
 							  ,[ResponsibilityTypeID]
@@ -930,54 +935,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							  ,[ResourceUid]
 							  ,[SecurityAssetId]
 							  ,[SecurityAssetUid]
-						FROM [dbo].[ResponsibilityDetail] rd
-						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id
+						FROM [dbo].[DropResponsibilityDetailByAssetTypeIDTesting](@id) rd
+						where IsVisible = 1
 						option(recompile);
 
-					if exists (select top 1 1 from ResponsibilityDetail rd where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id)
-					begin
-						insert into #OwnershipLookupAssets
-						select a.[ID] as AssetID
-							 ,rd.[ResponsibilityTypeID]
-							 ,rd.[ResponsibilityTypeName]
-							 ,rd.[ResourceName]
-							 ,rd.[SecurityAsset]
-							 ,rd.[SecurityAssetName]
-							 ,rd.[Context]
-							 ,rd.[ResourceId]
-							 ,rd.[ResourceUid]
-							 ,rd.[SecurityAssetId]
-							 ,rd.[SecurityAssetUid]
-						from ResponsibilityDetail rd
-						inner join asset a on rd.assettypeid = a.assettypeid
-						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id
-						option(recompile);
-					end
+						select @IsAssetZero = count(1) 
+						from (
+						select top 1 AssetId from #OwnershipLookupAssets where AssetId = 0
+						) a;
 
-					drop table if exists #tempApplyToTypeOwnership
-					select * 
-					into #tempApplyToTypeOwnership
-					from ResponsibilityDetail rd 
-					where rd.AssetTypeID = 0 and rd.IsVisible = 1
-
-					insert into #OwnershipLookupAssets
-					select a.[ID] as AssetID
-						 ,rd.[ResponsibilityTypeID]
-						 ,rd.[ResponsibilityTypeName]
-						 ,rd.[ResourceName]
-						 ,rd.[SecurityAsset]
-						 ,rd.[SecurityAssetName]
-						 ,rd.[Context]
-						 ,rd.[ResourceId]
-						 ,rd.[ResourceUid]
-						 ,rd.[SecurityAssetId]
-						 ,rd.[SecurityAssetUid]
-					from #tempApplyToTypeOwnership rd
-					inner join asset a on rd.assetid = a.id
-					where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id
-					option(recompile);
-
-					create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
+						select @IsAssetNotZero = count(1) 
+						from (
+						select top 1 AssetId from #OwnershipLookupAssets where AssetId != 0
+						) a;
 					";
 
 				List<string> ownershipJoins = new List<string>();
@@ -1001,7 +971,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					{
 						innerOwnershipQuery = $@"select ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl from #OwnershipLookupAssets ola{f.ID}
 							cross apply (select  concat('resource/', cast(ResourceID as varchar)) as ResourceItemUrl) ola{f.ID}x
-							where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
+							where ola{f.ID}.assetid in (0,a.id) {responsibilityIdCondition}
 							group by ResponsibilityTypeName, ResourceName, ResourceUid, ResourceItemUrl";
 						simpleFilterOwnershipOnResource = true;
 					}
@@ -1009,7 +979,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					{
 						innerOwnershipQuery = $@"select ResponsibilityTypeName, SecurityAssetName as ResourceName, SecurityAssetUid as ResourceUid, ResourceItemUrl  from #OwnershipLookupAssets ola{f.ID}
 							cross apply (select  concat(case SecurityAsset when 'R' then '/resource/' else '/group/' end, cast(SecurityAssetID as varchar)) as ResourceItemUrl) ola{f.ID}x
-							where ola{f.ID}.assetid = a.id {responsibilityIdCondition}
+							where ola{f.ID}.assetid in (0,a.id) {responsibilityIdCondition}
 							group by ResponsibilityTypeName, SecurityAssetName, SecurityAssetUid, ResourceItemUrl";
 						simpleFilterOwnershipOnSecurityAsset = true;
 					}
@@ -1399,11 +1369,27 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						{
 							ownershipSimpleFilterFields.Add("SecurityAssetName");
 						}
-						string simpleFilterOwnership = $@"select  A.ID
+
+						string simpleFilterOwnership = $@"
+								select  A.ID
 								from    Asset A  
-                                where A.AssetTypeID = @assettypeid and exists (select 1 from #OwnershipLookupAssets ola where ola.assetid = a.id
-													and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
+								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where A.AssetTypeID = @assettypeid and @IsAssetZero = 1 and tfa.AssetId is null 
+								and exists (select 1 from #OwnershipLookupAssets ola 
+											where ola.assetid = 0
+											and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
+
 						simpleFilters.Add(simpleFilterOwnership);
+
+						string simpleFilterOwnership2 = $@"
+								select  ola.assetid
+								from    #OwnershipLookupAssets ola  
+								left join #TempFilteredAssets tfa on tfa.AssetId = ola.assetid
+								where tfa.AssetId is null and @IsAssetNotZero = 1 and ola.assetid <> 0
+								and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))})";
+
+						simpleFilters.Add(simpleFilterOwnership2);
+
 					}
 
 					//do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
