@@ -11,4 +11,5 @@ export class WorkflowPendingAssignmentsComponent {
 	@Input() workflowTypeVersion: number;
 	@Input() title: string = $localize`Pending Assignments`;
 	@Input() showCountPanel: boolean = true;
+	@Input() nodeClickPropagate: boolean;
 }
