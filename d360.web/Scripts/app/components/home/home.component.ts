@@ -16,6 +16,8 @@ import { BaseComponent } from "../shared/base.component";
 import { CommentType } from "../../models/social.model";
 import { CompanySettingsService } from "../../services/settings.service";
 import { CompanySettingEnum } from "../../models/settings.model";
+import { FeatureFlags } from "../../services/feature-flags.enum";
+import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 
 @Component({
     selector: "home",
@@ -49,7 +51,9 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private colSize = 4;
     public hasResults = false;
     public dashboard: DashboardModel = null;
-    private sub;
+	private sub;
+
+	assignmentFeatureFlag: boolean = false;
 
     constructor(
         protected titleService: Title,
@@ -58,7 +62,8 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         protected router: Router,
         secondaryNavService: SecondaryNavService,
         private dashboardService: DashboardService,
-        protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		private featureFlagService: LaunchDarklyService
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
@@ -68,7 +73,9 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             if (val instanceof NavigationEnd) {
                 this.hasResults = false;
             }
-        });
+		});
+
+		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
     }
 
     ngOnInit() {
@@ -95,8 +102,16 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             this.backgroundImage = bgImage;
         }
 
-        this.numTiles = (this.showBoardTile ? 1 : 0)
-            + (this.showActivityTile ? 1 : 0);
+		if (this.assignmentFeatureFlag) {
+			this.numTiles = (this.showBoardTile ? 1 : 0)
+				+ (this.showActivityTile ? 1 : 0);
+		}
+		else {
+			this.numTiles = (this.showAssignmentTile ? 1 : 0)
+				+ (this.showBoardTile ? 1 : 0)
+				+ (this.showActivityTile ? 1 : 0);
+		}
+
 
         this.colSize = 12.0 / (this.numTiles === 0 ? 1 : this.numTiles);
 
