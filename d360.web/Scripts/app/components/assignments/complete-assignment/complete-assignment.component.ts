@@ -250,67 +250,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		});
 	}
 
-	private loadFormDetails(): void {
-		this.isLoading = true;
-		this.workflowService
-			.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
-			.subscribe((res: WorkflowForm) => {
-				this.isLoading = false;
-				if (res) {
-					this.formTitle = res.Title;
-					this.formDescription = res.Description;
-					this.formFields = res.Fields;
-					this.request = res.Request;
-					if (res.IssueObjectID) {
-						this.assetName = res.IssueObjectName;
-						this.assetId = res.IssueObjectID;
-					} else {
-						this.assetName = res.ObjectName;
-						this.assetId = res.ObjectID;
-					}
-					if (res.AllowReassignObject) {
-						this.reassignAvailableTypes.push({
-							value: 'object',
-							text: 'Object'
-						});
-					}
-					if (res.AllowReassignResource) {
-						this.reassignAvailableTypes.push({
-							value: 'resource',
-							text: 'Resource'
-						});
-					}
-
-					this.hasObjectReassign =
-						this.reassignAvailableTypes.length > 0;
-					if (this.hasObjectReassign) {
-						this.getWorkflowReassignmentAssets();
-						this.getAllUsersData();
-					}
-					this.assignmentService.setFormValidators.next();
-				}
-			});
-	}
-
-	private loadWorkflowTypeDetails(): void {
-		this.workflowService
-			.getAssignmentsByVersion(
-				1,
-				1,
-				null,
-				null,
-				null,
-				null,
-				this.workflowItemUid
-			)
-			.subscribe((response: AssignmentByVersion): void => {
-				if (response?.items?.length > 0) {
-					this.workflowTypeUid = response.items[0].WorkflowTypeUid;
-					this.workflowTypeVersion = response.items[0].Version;
-				}
-			});
-	}
-
 	getWorkFlowData(): void {
 		this.workflowService
 			.getAssignmentItem(this.workflowItemUid)
