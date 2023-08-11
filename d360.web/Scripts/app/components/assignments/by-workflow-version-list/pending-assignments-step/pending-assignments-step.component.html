@@ -27,7 +27,7 @@
 <p-table #pendingAssignments [value]="history" [scrollable]="true" selectionMode="single" [metaKeySelection]="true"
 		 [tableStyle]="{'min-width': 'max-content'}" [loading]="isLoading"
 		 [globalFilterFields]="['Name','Assignments','Status']" [pageLinks]="3"
-		 [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+		 [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
 	<ng-template pTemplate="header">
 		<tr>
 			<th [pSortableColumn]="'Name'" style="flex: 0 0 100px">
