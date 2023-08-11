@@ -2,11 +2,9 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
-	AssignmentByVersion,
 	AssignmentItem,
 	AssignmentItemStep,
 	FormRequest,
-	WorkflowForm,
 	WorkflowFormField,
 	WorkflowFormFieldType
 } from '../../../models/workflow.model';
@@ -121,14 +119,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					}
 					if (res[0].AllowReassignObject) {
 						this.reassignAvailableTypes.push({
-							value: "object",
-							text: "Object",
+							value: 'object',
+							text: 'Object'
 						});
 					}
 					if (res[0].AllowReassignResource) {
 						this.reassignAvailableTypes.push({
-							value: "resource",
-							text: "Resource",
+							value: 'resource',
+							text: 'Resource'
 						});
 					}
 
@@ -177,9 +175,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onFormSubmit(): void {
-		if(this.radioSelectionValue==="completeForm"){
+		if (this.radioSelectionValue === 'completeForm') {
 			this.prepareValuesForSubmit();
-			//save form values with stepUid and itemUid
 			this.workflowService
 				.submitWorkflowFormByUid(
 					this.workflowItemUid,
@@ -187,20 +184,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.formFields
 				)
 				.subscribe();
-		}
-		else if(this.radioSelectionValue==="reassignUser"){
-			console.log(this.tableRadioSelection)
-			this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((res)=>{
-				console.log(res)
-			})
-		}
-		else if(this.radioSelectionValue==="changeAsset"){
-			this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid,this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object,this.stepUid)
-			.subscribe((result) => {
-				console.log(result)
+		} else if (this.radioSelectionValue === 'reassignUser') {
+			console.log(this.tableRadioSelection);
+			this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((res) => {
+				console.log(res);
 			});
+		} else if (this.radioSelectionValue === 'changeAsset') {
+			this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, this.stepUid)
+				.subscribe((result) => {
+					console.log(result);
+				});
 		}
-		
+
 	}
 
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
@@ -286,7 +281,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.userData = res;
 		});
 	}
-
 
 
 	protected readonly Number = Number;

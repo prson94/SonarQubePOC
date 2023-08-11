@@ -1,6 +1,6 @@
 <d3s-modal [showTitle]="false" [isVisible]="isModalVisible" [showActionBar]="true" [confirmButtonLabel]="'Submit'"
-[cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'" [secondaryButtonDisabled]="!workflowForm?.valid"
-[discardForm]="discardForm" (onClose)="discardForm ? discardFormFunc() : closeModal()"
+		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'" [secondaryButtonDisabled]="!workflowForm?.valid"
+		   [discardForm]="discardForm" (onClose)="discardForm ? discardFormFunc() : closeModal()"
 		   (onConfirm)="onFormSubmit()"
 		   [additionalClasses]="'xlarge-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -125,7 +125,8 @@
 										)
 									" i18n-placeholder placeholder="Search" class="grid-simple-filter"/>
 								<p-table #dt [value]="userData" [rows]="5" [paginator]="true"
-										 [globalFilterFields]="['text']" [pageLinks]="3" [(selection)]="tableRadioSelection">
+										 [globalFilterFields]="['text']" [pageLinks]="3"
+										 [(selection)]="tableRadioSelection">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
@@ -138,7 +139,7 @@
 									<ng-template pTemplate="body" let-item>
 										<tr>
 											<td>
-												<p-tableRadioButton [value]="item" ></p-tableRadioButton>
+												<p-tableRadioButton [value]="item"></p-tableRadioButton>
 											</td>
 											<td>
 												<div class="row-data">
@@ -172,7 +173,8 @@
 										)
 									" i18n-placeholder placeholder="Search" class="grid-simple-filter"/>
 								<p-table #dt [value]="assets" [rows]="5" [paginator]="true"
-										 [globalFilterFields]="['Name']" [pageLinks]="3"   [(selection)]="tableRadioSelection">
+										 [globalFilterFields]="['Name']" [pageLinks]="3"
+										 [(selection)]="tableRadioSelection">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
@@ -185,7 +187,7 @@
 									<ng-template pTemplate="body" let-item>
 										<tr>
 											<td>
-												<p-tableRadioButton [value]="item" ></p-tableRadioButton>
+												<p-tableRadioButton [value]="item"></p-tableRadioButton>
 											</td>
 											<td>
 												<div
