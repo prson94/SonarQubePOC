@@ -546,11 +546,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 	protected readonly Object = Object;
 
-	protected readonly Object = Object;
-
 	onCompleteAssignmentModalClose() {
 		this.loadData();
 	}
+
 	private loadActionTypeCount() {
 		const queryParams: Record<string, unknown> = { '_hasAssignments': true };
 		if (this.assetUid) {
