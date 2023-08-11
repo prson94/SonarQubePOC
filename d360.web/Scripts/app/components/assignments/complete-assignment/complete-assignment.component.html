@@ -32,8 +32,7 @@
 					[hidden]="isAssignmentProgressSelected"
 					class="scrollable-content details-container"
 				>
-					<d3s-loading [isLoading]="isLoading"></d3s-loading>
-					<div *ngIf="!isLoading" class="asset-detail">
+					<div class="asset-detail">
 						<div class="d-flex column" *ngIf="hasObjectReassign">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">

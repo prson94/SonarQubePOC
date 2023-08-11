@@ -45,6 +45,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowTypeVersion: number;
 	reassignAvailableTypes = [];
 	hasObjectReassign: boolean = false;
+	isLoading: boolean = false;
 	radioSelectionValue: string;
 	assets = [];
 	userData = [];
@@ -89,6 +90,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		if (details) {
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
+			this.isLoading = true;
 			forkJoin(
 				this.workflowService.getWorkflowFormByUid(
 					this.workflowItemUid,
@@ -105,6 +107,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				),
 				this.workflowService.getAssignmentItem(this.workflowItemUid)
 			).subscribe((res) => {
+				this.isLoading = false;
 				if (res[0]) {
 					this.formTitle = res[0].Title;
 					this.formDescription = res[0].Description;
