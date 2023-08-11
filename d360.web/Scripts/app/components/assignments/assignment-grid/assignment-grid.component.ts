@@ -69,10 +69,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	})];
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
-	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	protected readonly JSON: JSON = JSON;
 	emptyGridMessage: string;
 	loadDataSub: Subscription;
+	areTypesLoaded: boolean = false;
+
+	private actionTypeCount: number = 0;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -89,7 +91,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	ngOnInit(): void {
 		this.isAdmin = this.authenticationService.isAdmin;
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
-		this.createFilterFields();
+		this.loadActionTypeCount();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
 	}
 
@@ -230,6 +232,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	createFilterFields(): void {
+		const filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
 		const filterFieldList: AdvancedFilterFieldType[] = [{
@@ -270,7 +273,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				{
 					Name: 'actionTypeUid',
 					FriendlyName: $localize`Action`,
-					Type: lookupFieldTypePrimaryFilter,
+					Type: this.actionTypeCount > 0 ? lookupFieldTypePrimaryFilter : new FieldType('Lookup'),
 					Category: '',
 					ValueLoader: this.getFilteredActions
 				},
@@ -303,9 +306,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				}
 			);
 		}
-		this.filterFields$ = this.filterFieldsSubject.asObservable();
-		this.filterFieldsSubject.next(filterFieldList);
-		this.filterFieldsSubject.complete();
+		this.filterFields$ = filterFieldsSubject.asObservable();
+		filterFieldsSubject.next(filterFieldList);
+		filterFieldsSubject.complete();
 	}
 
 	getStorageKey(): string {
@@ -391,9 +394,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	};
 
 	private getFilteredActions = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
-		const queryParams: Record<string, unknown> = { '_limitToActiveWorkflows': true };
+		const queryParams: Record<string, unknown> = { '_hasAssignments': true };
 		if (this.assetUid) {
 			queryParams['_assetUid'] = this.assetUid;
+		} else if (this.assetTypeUid) {
+			queryParams['_assetTypeUid'] = this.assetTypeUid;
 		}
 		return this.workflowService.getWorkflowIssueTypes(null, null, queryParams).pipe(
 			map((workflowIssueTypeList: WorkflowIssueType[]) => {
@@ -483,6 +488,19 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		return fileName;
 	}
-
 	protected readonly Object = Object;
+
+	private loadActionTypeCount() {
+		const queryParams: Record<string, unknown> = { '_hasAssignments': true };
+		if (this.assetUid) {
+			queryParams['_assetUid'] = this.assetUid;
+		} else if (this.assetTypeUid) {
+			queryParams['_assetTypeUid'] = this.assetTypeUid;
+		}
+		this.workflowService.getWorkflowIssueTypes(null, null, queryParams).subscribe((response: WorkflowIssueType[]): void => {
+			this.actionTypeCount = response?.length;
+			this.createFilterFields();
+			this.areTypesLoaded = true;
+		});
+	}
 }
