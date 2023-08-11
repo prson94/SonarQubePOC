@@ -127,6 +127,9 @@
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>ONGELDIG MODEL GEEN VELDEN DOORGEVOERD</value>
   </data>
+  <data name="InvalidObjectType" xml:space="preserve">
+    <value>Type {0} is ongeldig.</value>
+  </data>
   <data name="InvalidOrderParameterPassed" xml:space="preserve">
     <value>Ongeldige volgorde doorgevoerd in de aanvraag. Geldige waarden zijn: StartedOn en CompletedOn</value>
   </data>

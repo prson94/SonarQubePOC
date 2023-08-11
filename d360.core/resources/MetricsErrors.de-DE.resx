@@ -290,7 +290,7 @@
     <value>Bei '[Threshold]' muss es sich um einen Wert zwischen 0 und 1 handeln.</value>
   </data>
   <data name="UidGovernanceOwnerCheck" xml:space="preserve">
-    <value>Die UID-Governance-Eignerüberprüfung darf keinem bekannten Aufgabentyp entsprechen.</value>
+    <value>Die UID-Governance-Eignerüberprüfung darf keinem bekannten Verantwortungstyp entsprechen.</value>
   </data>
   <data name="UidGovernancePredicateCheck" xml:space="preserve">
     <value>Die UID-Governance-Prädikatsüberprüfung darf keinem bekannten Prädikat entsprechen.</value>

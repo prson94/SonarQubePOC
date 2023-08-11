@@ -227,10 +227,10 @@
     <value>Beziehungstypen</value>
   </data>
   <data name="ResponsibilitiesTab" xml:space="preserve">
-    <value>Aufgaben</value>
+    <value>Verantwortungen</value>
   </data>
   <data name="ResponsibilitiesTabTitle" xml:space="preserve">
-    <value>Aufgabentypen</value>
+    <value>Verantwortungstypen</value>
   </data>
   <data name="RuleResultsTab" xml:space="preserve">
     <value>Regelergebnisse</value>

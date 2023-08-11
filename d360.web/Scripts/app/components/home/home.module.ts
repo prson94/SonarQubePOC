@@ -24,6 +24,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 
 
 @NgModule({
@@ -46,6 +47,7 @@ import { UserAssignmentsModule } from '../assignments/user-assignments/user-assi
         IgColorPickerModule,
 		SocialModule,
 		UserAssignmentsModule,
+		SharedAssignmentsModule,
         TilesModule,
         SharedGridPagingInfoModule, 
         ShortcutDisplayModule,

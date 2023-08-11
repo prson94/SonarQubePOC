@@ -2890,7 +2890,10 @@ namespace d360.model
 						if (fieldRecord == null && obj == SystemObjects.Issue)
 						{
 							Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
-							fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+							if (issue?.AssetID != null)
+							{
+								fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+							}							
 						}
 
 						if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")

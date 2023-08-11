@@ -397,4 +397,13 @@
     <value>Rango efectivo</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Valor no válido para 'ProfileType' {0}. Los valores permitidos son '0' para Full, '1' para Sample y '2' para Filtered.</value>
+  </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>La longitud máxima permitida para ProfileSeries es 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>La longitud máxima permitida para ProfileSource es 100.</value>
+  </data>
 </root>

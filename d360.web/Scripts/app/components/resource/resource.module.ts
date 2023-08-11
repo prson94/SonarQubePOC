@@ -38,6 +38,7 @@ import { TableModule } from 'primeng/table';
 import { ResourceApiKeyModule } from './api-key/resource-api.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 
 @NgModule({
     declarations: [
@@ -73,6 +74,7 @@ import { UserAssignmentsModule } from '../assignments/user-assignments/user-assi
         D3SSharedModule,          
         CoreModule,   
 		SocialModule,
+		SharedAssignmentsModule,
 		UserAssignmentsModule,
         PipesModule,
         TilesModule,

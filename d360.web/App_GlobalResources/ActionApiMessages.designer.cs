@@ -295,6 +295,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [_hasAssignments] value provided is not valid..
+        /// </summary>
+        public static string InvalidHasAssignments {
+            get {
+                return ResourceManager.GetString("InvalidHasAssignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [_limitToActiveWorkflows] value provided is not valid..
         /// </summary>
         public static string InvalidLimitActiveWorkflow {

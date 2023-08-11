@@ -73,7 +73,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Input() filteredObject: string;
     @Input() filteredObjectId: number;
 	@Input() isSidePanel: boolean = false;
-	@Input() showCountPanel: boolean = true
+	@Input() showCountPanel: boolean = true;
+	@Input() nodeClickPropagate: boolean = false;
 	@Input() hasMenu: boolean = true;
 	@Input() hasZoomButtons: boolean = false;
     @Output() selectedStepIdChange = new EventEmitter();
@@ -1688,7 +1689,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
 	private ObjectSingleClicked(e: any) {
 		let part = e.subject.part;
-		if (part instanceof go.Node) {
+		if (part instanceof go.Node && this.nodeClickPropagate) {
 			this.linkClickInterceptor.sendEvent(e.diagram.lastInput.event, {
 				selectedNodeModel: part?.data,
 				workflowTypeUid: this.uid,

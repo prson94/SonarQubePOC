@@ -760,7 +760,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			ApiExplorerSettings(IgnoreApi = false)
 		]
-		public async Task<IHttpActionResult> GetRelevantAssetTypes(Guid workflowItemStepUid)
+		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemUid)
 		{
 			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemStepUid));
 		}
@@ -922,7 +922,7 @@ namespace d360.web.Controllers.V2
 
 			var document = new ExcelDocument(string.Format(ExcelExports.Common_ExportName, exportName, DateTime.Now.ToString("ddd MMM dd yyyy")))
 			{
-				new ExcelSheet(ExcelExports.WorkflowAssignments_Assignments)
+				new ExcelSheet(exportName)
 				{
 					HeaderRows = headers,
 
