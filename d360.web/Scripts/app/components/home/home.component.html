@@ -1,61 +1,82 @@
 ﻿<div>
-    <div *ngIf="showTitle">
-        <div [style.color]="titleColor"
-             [style.font-size]="titleSize"
-             class="title-setting">{{title}}</div>
-    </div>
+	<div *ngIf="showTitle">
+		<div [style.color]="titleColor"
+			 [style.font-size]="titleSize"
+			 class="title-setting">{{title}}</div>
+	</div>
 </div>
 
 <div class="row" *ngIf="showActivityDetails">
-    <div class="col s12">
-        <d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName"
-                                   (close)="showActivityDetails = false;"
-                                   [daysToLookBack]="activityDaysToLookBack"></d3s-activity-details-tile>
-    </div>
+	<div class="col s12">
+		<d3s-activity-details-tile [objectId]="selectedArtifactTypeId" [objectName]="selectedArtifactTypeName"
+								   (close)="showActivityDetails = false;"
+								   [daysToLookBack]="activityDaysToLookBack"></d3s-activity-details-tile>
+	</div>
 </div>
 
 <div class="row" *ngIf="showBoardDetails">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <d3s-social-board [followerUid]=""
-                              [limitToType]="selectedCommentType"
-                              [daysToLookBack]="boardDaysToLookBack"
-                              [hasNewInput]="false"
-                              [hasCloseButton]="true"
-                              (close)="showBoardDetails=false"></d3s-social-board>
-        </div>
-    </div>
+	<div class="col s12">
+		<div class="tile tile-detail">
+			<d3s-social-board [followerUid]=""
+							  [limitToType]="selectedCommentType"
+							  [daysToLookBack]="boardDaysToLookBack"
+							  [hasNewInput]="false"
+							  [hasCloseButton]="true"
+							  (close)="showBoardDetails=false"></d3s-social-board>
+		</div>
+	</div>
 </div>
 
 <div class="homeTileArea">
-    <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"
-                     (resultsChange)="checkHasResults($event)"
-                     hasResults="{{ hasResults }}"></d3s-home-search>
-    <span><d3s-shortcut-display *ngIf="!showActivityDetails && !showBoardDetails"></d3s-shortcut-display></span>
+	<d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"
+					 (resultsChange)="checkHasResults($event)"
+					 hasResults="{{ hasResults }}"></d3s-home-search>
+	<span><d3s-shortcut-display *ngIf="!showActivityDetails && !showBoardDetails"></d3s-shortcut-display></span>
 </div>
 
-<div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"
-     class="row home-tiles">
-    <div [class]="'col s12 l' + colSize"
-         *ngIf="showAssignmentTile">
-        <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
-    </div>
-    <div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
-        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
-                        [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
-    </div>
-    <div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
-        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
-                           [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
-    </div>
-</div>
+<ng-container *ngIf="!assignmentFeatureFlag">
+	<div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"
+		 class="row home-tiles">
+		<div [class]="'col s12 l' + colSize"
+			 *ngIf="showAssignmentTile">
+			<d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
+		</div>
+		<div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
+			<d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
+							[(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
+		</div>
+		<div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
+			<d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
+							   [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
+		</div>
+	</div>
+</ng-container>
+<ng-container *ngIf="assignmentFeatureFlag">
+	<div *ngIf="showAssignmentTile" class="row home-tiles">
+		<div class="col s12 l12">
+			<d3s-user-assignments></d3s-user-assignments>
+		</div>
+	</div>
+
+	<div *ngIf="!showActivityDetails && !showBoardDetails && numTiles > 0"
+		 class="row home-tiles">
+		<div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
+			<d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
+							[(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
+		</div>
+		<div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
+			<d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
+							   [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
+		</div>
+	</div>
+</ng-container>
 
 <div *ngIf="dashboard != null"
-     [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null"
-     class="tile tile-detail"
-     style="position: relative;">
-    <d3s-powerbi-viewer *ngIf="dashboard.DashboardType == 'PowerBi'"
-                        [dashboard]="dashboard"></d3s-powerbi-viewer>
-    <d3s-sagacity-viewer *ngIf="dashboard.DashboardType == 'DqPlus'"
-                         [dashboard]="dashboard"></d3s-sagacity-viewer>
+	 [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null"
+	 class="tile tile-detail"
+	 style="position: relative;">
+	<d3s-powerbi-viewer *ngIf="dashboard.DashboardType == 'PowerBi'"
+						[dashboard]="dashboard"></d3s-powerbi-viewer>
+	<d3s-sagacity-viewer *ngIf="dashboard.DashboardType == 'DqPlus'"
+						 [dashboard]="dashboard"></d3s-sagacity-viewer>
 </div>
