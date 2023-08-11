@@ -760,7 +760,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			ApiExplorerSettings(IgnoreApi = false)
 		]
-		public async Task<IHttpActionResult> GetRelevantAssetTypes(Guid workflowItemUid)
+		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemUid)
 		{
 			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemUid));
 		}
