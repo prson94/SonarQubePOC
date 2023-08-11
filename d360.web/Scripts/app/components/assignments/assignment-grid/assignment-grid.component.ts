@@ -69,11 +69,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	})];
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
-	private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 	protected readonly JSON: JSON = JSON;
 	emptyGridMessage: string;
 	loadDataSub: Subscription;
-	private actionTypeCount: number;
+	areTypesLoaded: boolean = false;
+
+	private actionTypeCount: number = 0;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
@@ -231,9 +232,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	createFilterFields(): void {
+		const filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
-		const lookupFieldTypeFilter: FieldType = new FieldType('Lookup');
 		const filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'workflowName',
 			FriendlyName: $localize`Workflow Name`,
@@ -272,7 +273,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				{
 					Name: 'actionTypeUid',
 					FriendlyName: $localize`Action`,
-					Type: this.actionTypeCount > 0 ? lookupFieldTypePrimaryFilter : lookupFieldTypeFilter,
+					Type: this.actionTypeCount > 0 ? lookupFieldTypePrimaryFilter : new FieldType('Lookup'),
 					Category: '',
 					ValueLoader: this.getFilteredActions
 				},
@@ -305,9 +306,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				}
 			);
 		}
-		this.filterFields$ = this.filterFieldsSubject.asObservable();
-		this.filterFieldsSubject.next(filterFieldList);
-		this.filterFieldsSubject.complete();
+		this.filterFields$ = filterFieldsSubject.asObservable();
+		filterFieldsSubject.next(filterFieldList);
+		filterFieldsSubject.complete();
 	}
 
 	getStorageKey(): string {
@@ -487,7 +488,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		return fileName;
 	}
-
 	protected readonly Object = Object;
 
 	private loadActionTypeCount() {
@@ -500,6 +500,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.workflowService.getWorkflowIssueTypes(null, null, queryParams).subscribe((response: WorkflowIssueType[]): void => {
 			this.actionTypeCount = response?.length;
 			this.createFilterFields();
+			this.areTypesLoaded = true;
 		});
 	}
 }
