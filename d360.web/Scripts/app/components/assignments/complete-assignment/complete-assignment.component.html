@@ -50,7 +50,7 @@
 						</span>
 					</div>
 				</div>
-				<div style="padding:16px 0 0 0"><span class="light-text">{{workflowName}} </span><a (click)="onClickAsset($event)">{{ assetName }}</a></div>
+				<div>{{workflowName}}<span i18n> on </span> <a (click)="onClickAsset($event)">{{ assetName }}</a></div>
 				<div
 					[hidden]="isAssignmentProgressSelected"
 					class="scrollable-content details-container"

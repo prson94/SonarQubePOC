@@ -1649,17 +1649,39 @@ namespace d360.model.DataAccessLayer
 				whereConditions = whereConditions.Trim();
 			}
 
+			var classCaseStatements = new List<string>();
+
+			foreach (AssetTypeClassInfo assetClass in AssetTypeClass.BusinessAsset.GetAsList())
+			{
+				classCaseStatements.Add($"when class = {(int)assetClass.ID} then '{assetClass.Name}'");
+			}
+
+
+			var classSQL = $@"CASE when IT.ID is not null then 'Action'
+								{string.Join(Environment.NewLine, classCaseStatements)}
+								else 'Unknown'
+								END as InitiatingObjectType,";
+
+			var changeTypeStatements = new List<string>();
+
+			foreach (ChangeTypeInfo changeType in ChangeType.Add.GetList())
+			{
+				changeTypeStatements.Add($"when WER.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
+			}
+
+
+			var changeTypeSQL = $@"CASE 
+									{string.Join(Environment.NewLine, changeTypeStatements)}
+									else 'Unknown'
+									END as ChangeType,";
+
 			var selectColumns = $@"WT.Name as WorkflowName,
 							WT.uid as WorkflowTypeUid,
 							wv.Version,				
 							awaiting.count as Awaiting,
-							incomplete.count as Incomplete,
-							WER.ChangeType,
-							CASE when IT.ID is not null then 'Action'
-							when AST.ID is not null then
-								TRY_CAST(+ast.Class as nvarchar)
-							else 'Unknown'
-							END as InitiatingObjectType,
+							incomplete.count as Incomplete,							
+							{classSQL}
+							{changeTypeSQL}
 							WV.CreatedOn,
 							GR_Created.FirstName + ' ' + GR_Created.LastName as CreatedBy,
 							GR_Created.uid as CreatedByUid,
@@ -1714,28 +1736,7 @@ namespace d360.model.DataAccessLayer
 				assignments.total = multi.Read<int>().First();
 				assignments.pageNum = pageNum;
 				assignments.pageSize = pageSize;
-			}
-
-			if (assignments.items != null)
-			{
-				var classes = AssetTypeClass.BusinessAsset.GetAsList();
-				var changeTypes = ChangeType.Add.GetList();
-
-				foreach (var assignment in assignments.items)
-				{
-					if (!string.IsNullOrEmpty(assignment.InitiatingObjectType))
-					{
-						var cs = classes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.InitiatingObjectType);
-						assignment.InitiatingObjectType = cs?.Name;
-					}
-
-					if (!string.IsNullOrEmpty(assignment.ChangeType))
-					{
-						var ct = changeTypes.FirstOrDefault(x => ((int)x.ID).ToString() == assignment.ChangeType);
-						assignment.ChangeType = ct?.Name;
-					}
-				}
-			}
+			}			
 
 			return assignments;
 		}

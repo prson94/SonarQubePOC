@@ -195,6 +195,9 @@
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Invalid direction passed in the request.</value>
   </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>[_hasAssignments] value provided is not valid.</value>
+  </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
     <value>[_limitToActiveWorkflows] value provided is not valid.</value>
   </data>

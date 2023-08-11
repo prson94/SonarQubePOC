@@ -763,4 +763,7 @@
   <data name="IpSettingNotAllowed" xml:space="preserve">
     <value>L’adresse IP {0} n’est pas autorisée pour les restrictions IP.</value>
   </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>AssetTypeuid {0} est non valide</value>
+  </data>
 </root>

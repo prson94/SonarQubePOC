@@ -122,7 +122,7 @@
     <value>Um den Filter [_assigneeuid] zu verwenden, muss auch der Filter [_assetTypeUid] oder [_assetUid] angegeben werden.</value>
   </data>
   <data name="DuplicateResponsibilityRule" xml:space="preserve">
-    <value>Keine eindeutigen Aufgabenregel-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
+    <value>Keine eindeutigen Verantwortungsregel-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
     <value>[AssetTypeClass] ungültig. [{0}] ist nicht gültig.</value>
@@ -134,16 +134,16 @@
     <value>UID '{0}' ist keine gültige Ressource oder Gruppe.</value>
   </data>
   <data name="InvalidResponsibilityUid" xml:space="preserve">
-    <value>Sie haben keine gültige Aufgabentyp-UID für diese Anforderung angegeben.</value>
+    <value>Sie haben keine gültige Verantwortungstyp-UID für diese Anforderung angegeben.</value>
   </data>
   <data name="InvalidTestType" xml:space="preserve">
     <value>Ungültiger Testtyp. Gültige Werte sind 'when' und 'then'</value>
   </data>
   <data name="ReponsibilityOverrideExists" xml:space="preserve">
-    <value>Aufgaben-Override für '{0}' bereits vorhanden.</value>
+    <value>Verantwortungs-Override für '{0}' bereits vorhanden.</value>
   </data>
   <data name="ReposibilityTypeNotValidForAsset" xml:space="preserve">
-    <value>Aufgabentyp für aktuelles Asset nicht gültig.</value>
+    <value>Verantwortungstyp für aktuelles Asset nicht gültig.</value>
   </data>
   <data name="ResourceGroupUidNotExists" xml:space="preserve">
     <value>Ressource/Gruppe mit UID '{0}' nicht vorhanden.</value>
@@ -155,22 +155,22 @@
     <value>Liste der Ressourcen-UIDs darf nicht leer sein.</value>
   </data>
   <data name="ResponsibilitySuccessAddMessage" xml:space="preserve">
-    <value>Aufgabe hinzugefügt</value>
+    <value>Verantwortungen hinzugefügt</value>
   </data>
   <data name="ResponsibilitySuccessDeleteMessage" xml:space="preserve">
-    <value>Aufgabe gelöscht</value>
+    <value>Verantwortung gelöscht</value>
   </data>
   <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
-    <value>Der Aufgabentyp hat Asset-Zuordnungen und kann nicht gelöscht werden. Zum Löschen aller Zuordnungen und Regeln [cascade]=true verwenden</value>
+    <value>Der Verantwortungstyp hat Asset-Zuordnungen und kann nicht gelöscht werden. Zum Löschen aller Zuordnungen und Regeln [cascade]=true verwenden</value>
   </data>
   <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
-    <value>Aufgabentyp mit UID '{0}' nicht vorhanden.</value>
+    <value>Verantwortungstyp mit UID '{0}' nicht vorhanden.</value>
   </data>
   <data name="ResponsibilityUidNonUnique" xml:space="preserve">
-    <value>Keine eindeutigen Aufgaben-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
+    <value>Keine eindeutigen Verantwortungs-UIDs: {0}. Kennungen müssen innerhalb einer Tabelle eindeutig sein.</value>
   </data>
   <data name="ResponsibilityUidNotExist" xml:space="preserve">
-    <value>Aufgabe mit UID '{0}' nicht vorhanden.</value>
+    <value>Verantwortung mit UID '{0}' nicht vorhanden.</value>
   </data>
   <data name="_assettypeuid" xml:space="preserve">
     <value>_assettypeuid</value>

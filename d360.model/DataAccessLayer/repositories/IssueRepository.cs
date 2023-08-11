@@ -29,6 +29,7 @@ namespace d360.model.DataAccessLayer
 			bool hasResourceParam = false;
 			bool hasAssetParam = false;
 			bool limitToActiveWorkflows = false;
+			bool hasAssignments = false;
 
 			List<string> issueConditions = new List<string>();
 			List<string> assetConditions = new List<string>();
@@ -57,10 +58,20 @@ namespace d360.model.DataAccessLayer
 
 
 			var workflowSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1)";
-			var workflowObjectSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1
-									WHERE (E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') IS NULL) 
+
+			var assetCondition = $@"(E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') IS NULL) 
 									OR ((E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObject""]/@Value)[1]', 'nvarchar(max)') = AT.[Object] 
-									AND E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') = AT.ObjectID)))";
+									AND E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') = AT.ObjectID))";
+
+			var workflowObjectSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1
+									WHERE {assetCondition})";
+			
+			var assignmentsSql = $@"SELECT 1
+									  FROM [workflow].[EventRegistration] E
+									  inner join workflow.Version V on E.TypeID=V.TypeID
+									  inner join workflow.item wi on wi.VersionID = v.ID and CompletedOn is null
+									where 
+										E.[Object] = 'IssueType' and E.ObjectID = IT.ID";
 
 			issueTypeSql = baseIssueTypesSql;
 
@@ -73,6 +84,7 @@ namespace d360.model.DataAccessLayer
 			var assetUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assetuid");
 			var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
 			var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
+			var hasAssignmentsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_hasassignments");
 
 			hasAssetParam = !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) || !string.IsNullOrWhiteSpace(assetUidParam.Value);
 
@@ -120,6 +132,29 @@ namespace d360.model.DataAccessLayer
 
 						issueConditions.Add(activeWorkflowSql);
 						assetConditions.Add(workflowObjectSql);
+					}
+
+				}
+				else
+				{
+					throw new ArgumentException(IssueErrors.InvalidLimitProvided);
+				}
+			}
+			#endregion
+
+			#region Limit By Actions with open assignments
+
+			if (hasAssignmentsParam.Key != null)
+			{
+				if (hasAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAssignmentsParam.Value) && bool.TryParse(hasAssignmentsParam.Value, out hasAssignments))
+				{
+					if (hasAssignments)
+					{
+						var assetAssignmentsSQL = $@"exists ({assignmentsSql} and ({assetCondition}))";
+						var issueAssignmentsSql = hasAssetParam ? assetAssignmentsSQL : $@"exists({assignmentsSql})";
+
+						issueConditions.Add(issueAssignmentsSql);
+						assetConditions.Add(assetAssignmentsSQL);
 					}
 
 				}
