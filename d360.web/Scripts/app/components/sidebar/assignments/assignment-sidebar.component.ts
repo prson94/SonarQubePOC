@@ -32,8 +32,6 @@ export class AssignmentSidebarComponent extends BaseComponent {
 			this.baseAssetTypeUid = params['assetTypeUid'];
 			if (this.baseAssetUid) {
 				this.buildSecondaryNavigationByAssetUid(this.baseAssetUid);
-			} else if (this.baseAssetTypeUid) {
-				this.buildSecondaryNavigationForAssetTypeUid(this.baseAssetTypeUid);
 			}
 		});
 	}
