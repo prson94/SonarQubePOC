@@ -127,6 +127,9 @@
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>UNGÜLTIGES MODELL; KEINE FELDER ÜBERGEBEN</value>
   </data>
+  <data name="InvalidObjectType" xml:space="preserve">
+    <value>Typ {0} ist ungültig.</value>
+  </data>
   <data name="InvalidOrderParameterPassed" xml:space="preserve">
     <value>Ungültige Reihenfolge in der Anforderung übergeben. Gültige Werte: StartedOn und CompletedOn</value>
   </data>

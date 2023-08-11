@@ -397,4 +397,13 @@
     <value>Gültigkeitsbereich</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Ungültiger Wert für 'ProfileType' {0}. Erlaubte Werte sind '0' für Voll, '1' für Stichprobe oder '2' für Gefiltert.</value>
+  </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>Die maximal zulässige Länge für den Wert von ProfileSeries ist 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>Die maximal zulässige Länge für den Wert von ProfileSource ist 100.</value>
+  </data>
 </root>

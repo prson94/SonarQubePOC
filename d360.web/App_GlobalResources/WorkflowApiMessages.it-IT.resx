@@ -127,6 +127,9 @@
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>MODELLO NON VALIDO: NESSUN CAMPO TRASMESSO</value>
   </data>
+  <data name="InvalidObjectType" xml:space="preserve">
+    <value>Il tipo {0} non è valido.</value>
+  </data>
   <data name="InvalidOrderParameterPassed" xml:space="preserve">
     <value>Ordine non valido trasmesso nella richiesta. I valori validi sono: StartedOn e CompletedOn</value>
   </data>

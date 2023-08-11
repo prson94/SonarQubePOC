@@ -134,6 +134,6 @@
     <value>Prädikat nicht vorhanden.</value>
   </data>
   <data name="InvalidResponsibilityType" xml:space="preserve">
-    <value>Aufgabentyp nicht vorhanden.</value>
+    <value>Verantwortungstyp nicht vorhanden.</value>
   </data>
 </root>

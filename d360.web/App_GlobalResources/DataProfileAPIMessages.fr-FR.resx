@@ -397,4 +397,13 @@
     <value>Plage effective</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Valeur non valide pour ’ProfileType’ {0}. Les valeurs autorisées sont ’0’ pour Complet, ’1’ pour Échantillon ou ’2’ pour Filtré.</value>
+  </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>La longueur maximale autorisée pour la valeur ProfileSeries est de 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>La longueur maximale autorisée pour la valeur ProfileSource est de 100.</value>
+  </data>
 </root>
