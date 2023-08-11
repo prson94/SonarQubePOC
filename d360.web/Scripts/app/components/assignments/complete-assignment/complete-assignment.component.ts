@@ -50,6 +50,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	radioSelectionValue: string;
 	assets = [];
 	userData = [];
+	tableRadioSelection;
 
 	@ViewChild('sidePanelSwitcherComponent')
 	sidePanelSwitcherComponent: SidePanelSwitcherComponent;
@@ -176,16 +177,30 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onFormSubmit(): void {
-		this.prepareValuesForSubmit();
-
-		//save form values with stepUid and itemUid
-		this.workflowService
-			.submitWorkflowFormByUid(
-				this.workflowItemUid,
-				this.stepUid,
-				this.formFields
-			)
-			.subscribe();
+		if(this.radioSelectionValue==="completeForm"){
+			this.prepareValuesForSubmit();
+			//save form values with stepUid and itemUid
+			this.workflowService
+				.submitWorkflowFormByUid(
+					this.workflowItemUid,
+					this.stepUid,
+					this.formFields
+				)
+				.subscribe();
+		}
+		else if(this.radioSelectionValue==="reassignUser"){
+			console.log(this.tableRadioSelection)
+			this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((res)=>{
+				console.log(res)
+			})
+		}
+		else if(this.radioSelectionValue==="changeAsset"){
+			this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid,this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object,this.stepUid)
+			.subscribe((result) => {
+				console.log(result)
+			});
+		}
+		
 	}
 
 	stepClickChanged(assignmentItemStep: AssignmentItemStep): void {
@@ -271,6 +286,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.userData = res;
 		});
 	}
+
+
 
 	protected readonly Number = Number;
 }

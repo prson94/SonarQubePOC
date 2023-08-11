@@ -253,8 +253,8 @@ export class WorkflowService extends BaseObservableService {
 
     reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
         return this.http
-            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
-            .pipe(
+        .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
+        .pipe(
                 map((response) => <JsonResult>response),
                 catchError((err) => this.handleError(err))
             );
@@ -924,4 +924,20 @@ export class WorkflowService extends BaseObservableService {
 			return '';
 		}
 	}
+
+    reassignWorkflowResourceByUid(itemStepUid,resourceId,clearAssignments:boolean){
+        return this.http.get(`services/workflow/ReassignWorkflowResourceByUid/${itemStepUid}/${resourceId}/${clearAssignments}`)
+        .pipe(
+            map((response) => <WorkflowStepDetail>response),
+            catchError((err) => this.handleError(err))
+        );
+	}
+
+    reassignWorkflowObjectByUid(itemUID,workflowTypeUID,objectId,objectType,itemStepUID){
+        return this.http.get(`services/workflow/ReassignWorkflowObjectByUid/${itemUID}/${workflowTypeUID}/${objectId}/${objectType}/${itemStepUID}`)
+        .pipe(
+            map((response) => response),
+            catchError((err) => this.handleError(err))
+        );
+    }
 }
