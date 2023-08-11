@@ -935,7 +935,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 							  ,[ResourceUid]
 							  ,[SecurityAssetId]
 							  ,[SecurityAssetUid]
-						FROM [dbo].[DropResponsibilityDetailByAssetTypeIDTesting](@id) rd
+						FROM [dbo].[ResponsibilityDetailByAssetTypeID](@id) rd
 						where IsVisible = 1
 						option(recompile);
 
