@@ -127,6 +127,9 @@
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
     <value>MODÈLE NON VALIDE AUCUN CHAMP TRANSMIS</value>
   </data>
+  <data name="InvalidObjectType" xml:space="preserve">
+    <value>Le type d’asset {0} est non valide.</value>
+  </data>
   <data name="InvalidOrderParameterPassed" xml:space="preserve">
     <value>Ordre non valide transmis dans la requête. Les valeurs valides sont : StartedOn et CompletedOn</value>
   </data>

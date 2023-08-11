@@ -26,11 +26,12 @@
 						</span>
 					</div>
 				</div>
-				<div>
-					{{ workflowName }}
-					<a (click)="onClickAsset($event,this.assetId)">{{ assetName }}</a>
-				</div>
-				<div [hidden]="isAssignmentProgressSelected" class="scrollable-content details-container">
+				<div>{{workflowName}}<span i18n> on </span> <a
+					(click)="onClickAsset($event, this.assetId)">{{ assetName }}</a></div>
+				<div
+					[hidden]="isAssignmentProgressSelected"
+					class="scrollable-content details-container"
+				>
 					<d3s-loading [isLoading]="isLoading"></d3s-loading>
 					<div *ngIf="!isLoading" class="asset-detail">
 						<div class="d-flex column" *ngIf="hasObjectReassign">

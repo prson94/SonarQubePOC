@@ -440,7 +440,7 @@
     <value>Ressource</value>
   </data>
   <data name="Responsibility" xml:space="preserve">
-    <value>Aufgabe</value>
+    <value>Verantwortung</value>
   </data>
   <data name="ResponsibilityNameMax250" xml:space="preserve">
     <value>Der angegebene Name darf höchstens 250 Zeichen lang sein.</value>
@@ -449,7 +449,7 @@
     <value>ResponsibilityType</value>
   </data>
   <data name="ResponsibilityTypeRule" xml:space="preserve">
-    <value>Aufgabentypregel</value>
+    <value>Verantwortungstypregel</value>
   </data>
   <data name="SelectPredicate" xml:space="preserve">
     <value>Wählen Sie ein Prädikat für diese Beziehung aus.</value>

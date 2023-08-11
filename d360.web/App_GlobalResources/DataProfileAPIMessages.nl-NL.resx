@@ -397,4 +397,13 @@
     <value>Effectief bereik</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="ValidProfiletype" xml:space="preserve">
+    <value>Ongeldige waarde voor ProfileType {0}. Toegestane waarden zijn 0 voor volledig, 1 voor voorbeeld of 2 voor gefilterd.</value>
+  </data>
+  <data name="InvalidProfileSeriesLength" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor de waarde van ProfileSeries is 100.</value>
+  </data>
+  <data name="InvalidProfileSourceLength" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor de waarde van ProfileSource is 100.</value>
+  </data>
 </root>

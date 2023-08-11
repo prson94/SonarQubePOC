@@ -236,7 +236,7 @@
     <value>Speichern fehlgeschlagen</value>
   </data>
   <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
-    <value>Asset, Asset-Typ, Tag, Workflow-Typ, RelationshipType oder Aufgabentyp für UID nicht gefunden</value>
+    <value>Asset, Asset-Typ, Tag, Workflow-Typ, RelationshipType oder Verantwortungstyp für UID nicht gefunden</value>
   </data>
   <data name="ApiEntryNotFound" xml:space="preserve">
     <value>API-Entität nicht gefunden</value>
@@ -353,7 +353,7 @@
     <value>Feldtypfehler</value>
   </data>
   <data name="FieldUseInResponsibilityRule" xml:space="preserve">
-    <value>Dieser Feldtyp wird in einer Aufgabenregel verwendet und die Regel muss zuerst gelöscht werden.</value>
+    <value>Dieser Feldtyp wird in einer Verantwortungsregel verwendet und die Regel muss zuerst gelöscht werden.</value>
   </data>
   <data name="FieldValidateWithAssetType" xml:space="preserve">
     <value>Feld '{0}' ist für den angegebenen Asset-Typ nicht gültig.</value>
@@ -467,7 +467,7 @@
     <value>Zu aktualisierendes Exportvorlagendesign nicht gefunden.</value>
   </data>
   <data name="UsedinResponsibilityRules" xml:space="preserve">
-    <value>In Aufgabenregeln verwendet</value>
+    <value>In Verantwortungsregeln verwendet</value>
   </data>
   <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
     <value>Benutzer {0} ist bereits Mitglied dieser Gruppe</value>
@@ -762,5 +762,8 @@
   </data>
   <data name="IpSettingNotAllowed" xml:space="preserve">
     <value>Die IP-Adresse {0} ist für IP-Einschränkungen nicht zulässig.</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>AssetTypeuid {0} ist ungültig</value>
   </data>
 </root>

@@ -122,10 +122,10 @@
     <value>{0} konnte nicht entfernt werden.</value>
   </data>
   <data name="Error_ResponsibilitiesAssignedToGroup" xml:space="preserve">
-    <value>Der Gruppe, die entfernt werden soll, ist mindestens eine Aufgabe zugewiesen. Entfernen Sie diese Aufgaben, bevor Sie fortfahren.</value>
+    <value>Der Gruppe, die entfernt werden soll, ist mindestens eine Verantwortung zugewiesen. Entfernen Sie diese Verantwortungen, bevor Sie fortfahren.</value>
   </data>
   <data name="Error_ResponsibilityType_ExistingResponsibilities" xml:space="preserve">
-    <value>Es gibt vorhandene Zuordnungen basierend auf diesem Aufgabentyp. Entfernen Sie diese Zuordnungen, bevor Sie fortfahren.</value>
+    <value>Es gibt vorhandene Zuordnungen basierend auf diesem Verantwortungstyp. Entfernen Sie diese Zuordnungen, bevor Sie fortfahren.</value>
   </data>
   <data name="Error_Name_Required" xml:space="preserve">
     <value>Der Name ist erforderlich.</value>
