@@ -925,19 +925,21 @@ export class WorkflowService extends BaseObservableService {
 		}
 	}
 
-    reassignWorkflowResourceByUid(itemStepUid,resourceId,clearAssignments:boolean){
-        return this.http.get(`services/workflow/ReassignWorkflowResourceByUid/${itemStepUid}/${resourceId}/${clearAssignments}`)
-        .pipe(
-            map((response) => <WorkflowStepDetail>response),
-            catchError((err) => this.handleError(err))
-        );
+    reassignWorkflowResourceByUid(itemStepUid: string,resourceId: number,clearAssignments:boolean): Observable<JsonResult>{
+		return this.http
+			.post(`services/workflow/ReassignWorkflowResourceByUid/${itemStepUid}/${resourceId}/${clearAssignments}`, null)
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
 	}
 
-    reassignWorkflowObjectByUid(itemUID,workflowTypeUID,objectId,objectType,itemStepUID){
-        return this.http.get(`services/workflow/ReassignWorkflowObjectByUid/${itemUID}/${workflowTypeUID}/${objectId}/${objectType}/${itemStepUID}`)
-        .pipe(
-            map((response) => response),
-            catchError((err) => this.handleError(err))
-        );
+    reassignWorkflowObjectByUid(itemUID: string,workflowTypeUID: string,objectId: number,objectType: string,itemStepUID: string): Observable<JsonResult>{
+		const url: string = `services/workflow/ReassignWorkflowObjectByUid/${itemUID}/${workflowTypeUID}/${objectId}/${objectType}/${itemStepUID}`;
+		return this.http.post(url, null)
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
     }
 }
