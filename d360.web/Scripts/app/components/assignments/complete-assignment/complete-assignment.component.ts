@@ -68,8 +68,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	assets = [];
 	userData = [];
 	tableRadioSelection;
-
-	@ViewChild('sidePanelSwitcherComponent')
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChild('modal', { static: false }) modal: D3SModal;
