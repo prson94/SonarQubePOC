@@ -30,14 +30,14 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails
+	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails, WorkflowUserGroupedAssignments
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { AssetTypeClass } from '../models/asset.model';
@@ -48,42 +48,44 @@ import { SortOrder } from '../models/enums.model';
 })
 export class WorkflowService extends BaseObservableService {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService);}
+	private _assignmentCompletedSubject = new Subject<boolean>();
+	assignmentCompletedSubject = this._assignmentCompletedSubject.asObservable();
+	constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getMyCounts(daysToLookBack: number, resourceId?: number) : Observable<Count[]> {
-        return this.http.get(`api/count/assignments/${daysToLookBack}` + (resourceId ? `?id=${resourceId}` : ''))
-            .pipe(
-                map((response) => <Count[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getMyCounts(daysToLookBack: number, resourceId?: number): Observable<Count[]> {
+		return this.http.get(`api/count/assignments/${daysToLookBack}` + (resourceId ? `?id=${resourceId}` : ''))
+			.pipe(
+				map((response) => <Count[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    exportAllIssueDetails(all?: boolean) {
-        window.location.assign(`services/workflow/all/issues/excel/excel.xls?all=${(all === undefined || all) ? 'true':'false'}`);
-    }
+	exportAllIssueDetails(all?: boolean) {
+		window.location.assign(`services/workflow/all/issues/excel/excel.xls?all=${(all === undefined || all) ? 'true' : 'false'}`);
+	}
 
-    getAllIssueDetails(all?: boolean): Observable<IssueDetail[]> {
-        const url = `services/workflow/${(all === undefined || all) ? 'all':'my'}/issues?$orderby=DateStarted%20desc,Issue`;
+	getAllIssueDetails(all?: boolean): Observable<IssueDetail[]> {
+		const url = `services/workflow/${(all === undefined || all) ? 'all' : 'my'}/issues?$orderby=DateStarted%20desc,Issue`;
 
-        return this.http.get(url)
-            .pipe(
-                map((response) => <IssueDetail[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(url)
+			.pipe(
+				map((response) => <IssueDetail[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIssues(objectID: number, objectType: string): Observable<Issue[]> {
-        let url = 'services/workflow/issue/type/';
+	getIssues(objectID: number, objectType: string): Observable<Issue[]> {
+		let url = 'services/workflow/issue/type/';
 
-        if (objectID > 0 && objectType != null) {
-            url += `${objectID}/${objectType}`;
-        }
+		if (objectID > 0 && objectType != null) {
+			url += `${objectID}/${objectType}`;
+		}
 
-        return this.http.get(url)
-            .pipe(
-                map((response) => <Issue[]>response),
-                catchError((err) => this.handleError(err))
-            );
+		return this.http.get(url)
+			.pipe(
+				map((response) => <Issue[]>response),
+				catchError((err) => this.handleError(err))
+			);
 	}
 
 	getIssuesByAssetUid(uid: string): Observable<Issue[]> {
@@ -96,44 +98,43 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Observable<JsonResult> {
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/json'
-        });
-        return this.http
-            .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers })
-            .pipe(
-            map((response) => <JsonResult>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	updateIssue(issue: Issue, action: string, comment: string, assignTo?: string): Observable<JsonResult> {
+		const headers = new HttpHeaders({
+			'Content-Type': 'application/json'
+		});
+		return this.http
+			.post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers })
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    raiseIssues(actionTypeUid: string, action: any): Observable<ApiResult & ErrorResponse> {
-        const actionArray: ActionEditorModel[] = [];
-        actionArray.push(action);
+	raiseIssues(actionTypeUid: string, action: any): Observable<ApiResult & ErrorResponse> {
+		const actionArray: ActionEditorModel[] = [];
+		actionArray.push(action);
 
-        return this.http.post(`/api/v2/actions/${actionTypeUid}?lookupFieldsPassedByValue=true`, actionArray)
-            .pipe(
-                map((response) => <ApiResult & ErrorResponse> response[0]),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.post(`/api/v2/actions/${actionTypeUid}?lookupFieldsPassedByValue=true`, actionArray)
+			.pipe(
+				map((response) => <ApiResult & ErrorResponse>response[0]),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowIssueTypes(object: string = null, objectId: number = null, params: any): Observable<WorkflowIssueType[]> {
-        var qString = '';
-        if (params) {
-            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
-            if (qString)
-                {qString = '?' + qString;}
-        }
+	getWorkflowIssueTypes(object: string = null, objectId: number = null, params: any): Observable<WorkflowIssueType[]> {
+		var qString = '';
+		if (params) {
+			qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+			if (qString) { qString = '?' + qString; }
+		}
 
-        return this.http.get(`/api/v2/actions/types${qString}`)
-            .pipe(
-                map((response) => <WorkflowIssueType[]>response)
-            );
-    }
+		return this.http.get(`/api/v2/actions/types${qString}`)
+			.pipe(
+				map((response) => <WorkflowIssueType[]>response)
+			);
+	}
 
-	getActions(actionUid?:string): Observable<Actions> {
+	getActions(actionUid?: string): Observable<Actions> {
 		return this.http.get('/api/v2/actions?' + (actionUid ? `actionUid=${actionUid}` : ''))
 			.pipe(
 				map((response) => <Actions>response),
@@ -141,56 +142,56 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    getAdminWorkflowIssueTypes(): Observable<WorkflowIssueType[]> {
-        return this.http.get('/api/v2/actions/types')
-            .pipe(
-                map((response) => <WorkflowIssueType[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getAdminWorkflowIssueTypes(): Observable<WorkflowIssueType[]> {
+		return this.http.get('/api/v2/actions/types')
+			.pipe(
+				map((response) => <WorkflowIssueType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIssueByUID(uid: string): Observable<WorkflowIssueType> {
-        return this.http.get(`api/IssueType/${uid}`)
-            .pipe(
-                map((response) => <WorkflowIssueType>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getIssueByUID(uid: string): Observable<WorkflowIssueType> {
+		return this.http.get(`api/IssueType/${uid}`)
+			.pipe(
+				map((response) => <WorkflowIssueType>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
+	deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
 
-        var model = { cascade: false };
-        var queryString = '?_RequestfromUI=true';
+		var model = { cascade: false };
+		var queryString = '?_RequestfromUI=true';
 
-        const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-            body: model
-        };
+		const httpHeaders = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+			body: model
+		};
 
-        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}` + queryString, httpHeaders)
-            .pipe(
-                map((response) => <ApiResult & ErrorResponse>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.delete(`/api/v2/actions/type/${actionTypeUid}` + queryString, httpHeaders)
+			.pipe(
+				map((response) => <ApiResult & ErrorResponse>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    saveIssueType(issueType: WorkflowIssueType): Observable<ApiResult & ErrorResponse> {
-        var model = { Uid: issueType.Uid, Name: issueType.Name, Description: issueType.Description };
-        if (issueType.Uid == null || !issueType.Uid) {
-            return this.http.post(`/api/v2/actions/type/`, model)
-                .pipe(
-                    map((response) => <ApiResult & ErrorResponse>response),
-                    catchError((err) => this.handleError(err))
-                );
-        }
-        return this.http.put(`/api/v2/actions/type/`, model)
-            .pipe(
-                map((response) => <ApiResult & ErrorResponse>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	saveIssueType(issueType: WorkflowIssueType): Observable<ApiResult & ErrorResponse> {
+		var model = { Uid: issueType.Uid, Name: issueType.Name, Description: issueType.Description };
+		if (issueType.Uid == null || !issueType.Uid) {
+			return this.http.post(`/api/v2/actions/type/`, model)
+				.pipe(
+					map((response) => <ApiResult & ErrorResponse>response),
+					catchError((err) => this.handleError(err))
+				);
+		}
+		return this.http.put(`/api/v2/actions/type/`, model)
+			.pipe(
+				map((response) => <ApiResult & ErrorResponse>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    //#region diagram
+	//#region diagram
 
 	// ignore complexity codacy issue
 	// eslint-disable-next-line
@@ -212,36 +213,36 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    //#endregion
+	//#endregion
 
 
-    //#region bulk
+	//#region bulk
 
-    getWorkflowBulkForm(model: BulkWorkflowFormModel):Observable<any> {
-        return this.http.post('/services/workflow/form/bulk', model)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowBulkForm(model: BulkWorkflowFormModel): Observable<any> {
+		return this.http.post('/services/workflow/form/bulk', model)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    submitBulkWorkflowForm(model: BulkWorkflowFormModel) : Observable<any>{
-        return this.http.post('/services/workflow/SubmitWorkflowForm/bulk', model)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-               );
-    }
+	submitBulkWorkflowForm(model: BulkWorkflowFormModel): Observable<any> {
+		return this.http.post('/services/workflow/SubmitWorkflowForm/bulk', model)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    //#endregion
+	//#endregion
 
-    getWorkflowForm(id: number, itemStepId: number): Observable<WorkflowForm> {
-        return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
-            .pipe(
-                map((response) => <WorkflowForm>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowForm(id: number, itemStepId: number): Observable<WorkflowForm> {
+		return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
+			.pipe(
+				map((response) => <WorkflowForm>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getWorkflowFormByUid(id: string, itemStepId: string): Observable<WorkflowForm> {
 		return this.http.get(`/services/workflow/formByUid/${id}/${itemStepId}`)
@@ -251,86 +252,88 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
-        return this.http
-        .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
-        .pipe(
-                map((response) => <JsonResult>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string, stepId: number, resourceId: number = null): Observable<JsonResult> {
-        let url = `services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`;
-
-        if (!isNaN(resourceId))
-            {url += `?resourceId=${resourceId}`;}
-
-        return this.http
-            .post(url, null)
-            .pipe(
-                map((response) => <JsonResult>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-    submitWorkflowForm(itemId: number, stepId: number, fields: any[]): Observable<any> {
-        return this.http
-            .post(`services/workflow/SubmitWorkflowForm/${itemId}/${stepId}`, fields)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
-	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<WorkflowFormResponse> {
+	reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
 		return this.http
-			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
+			.post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string, stepId: number, resourceId: number = null): Observable<JsonResult> {
+		let url = `services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`;
+
+		if (!isNaN(resourceId)) { url += `?resourceId=${resourceId}`; }
+
+		return this.http
+			.post(url, null)
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	submitWorkflowForm(itemId: number, stepId: number, fields: any[]): Observable<any> {
+		return this.http
+			.post(`services/workflow/SubmitWorkflowForm/${itemId}/${stepId}`, fields)
 			.pipe(
 				map((response) => response),
 				catchError((err) => this.handleError(err))
 			);
 	}
 
-    getActivityTypes(): Observable<ActivityTypeInfo[]> {
-        return this.http.get('services/workflow/activitytypes')
-            .pipe(
-                map((response) => <ActivityTypeInfo[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	submitWorkflowFormByUid(itemId: string, stepId: string, fields: WorkflowFormField[]): Observable<WorkflowFormResponse> {
+		return this.http
+			.post(`services/workflow/SubmitWorkflowFormByUid/${itemId}/${stepId}`, fields)
+			.pipe(
+				map((response) => {
+					this._assignmentCompletedSubject.next(true);
+					return response;
+				}),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getChangeTypes(): Observable<ChangeTypeInfo[]> {
-         return this.http.get('services/workflow/changetypes')
-            .pipe(
-                map((response) => <ChangeTypeInfo[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getActivityTypes(): Observable<ActivityTypeInfo[]> {
+		return this.http.get('services/workflow/activitytypes')
+			.pipe(
+				map((response) => <ActivityTypeInfo[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getTransitionTypes(): Observable<TransitionTypeInfo[]> {
-        return this.http.get('services/workflow/transitiontypes')
-            .pipe(
-                map((response) => <TransitionTypeInfo[]>response),
-                catchError((err) => this.handleError(err))
-             );
-    }
+	getChangeTypes(): Observable<ChangeTypeInfo[]> {
+		return this.http.get('services/workflow/changetypes')
+			.pipe(
+				map((response) => <ChangeTypeInfo[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getAdminTypes(): Observable<WorkflowTypeItem[]> {
-        return this.http.get('api/v2/workflow/types')
-            .pipe(
-            map((response) => <WorkflowTypeItem[]> response),
-                catchError((err) => this.handleError(err))
-            );
+	getTransitionTypes(): Observable<TransitionTypeInfo[]> {
+		return this.http.get('services/workflow/transitiontypes')
+			.pipe(
+				map((response) => <TransitionTypeInfo[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getAdminTypes(): Observable<WorkflowTypeItem[]> {
+		return this.http.get('api/v2/workflow/types')
+			.pipe(
+				map((response) => <WorkflowTypeItem[]>response),
+				catchError((err) => this.handleError(err))
+			);
 	}
 
 	getActionTypeByUid(uid: string): Observable<WorkflowTypeItem[]> {
 		return this.http.get(`/api/v2/actions/types?_actionTypeUid=${uid}`)
-            .pipe(
-            map((response) => <WorkflowTypeItem[]> response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+			.pipe(
+				map((response) => <WorkflowTypeItem[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getWorkflowAssignments(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = '', initiatorUid: string = '', assetUid:string='',assetTypeUid:string='', order: string = '', direction: number = SortOrder.Ascending, actionsOnly: boolean = false, exportFileName: string = '', callback: () => void = null): Observable<WorkflowAssignments> {
 		let url: string = `api/v2/workflow/assignments?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
@@ -351,7 +354,7 @@ export class WorkflowService extends BaseObservableService {
 
 		if (exportFileName) {
 			this.
-			http
+				http
 				.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
 				.subscribe((data) => {
 					this.downloadFile(data, exportFileName);
@@ -363,7 +366,7 @@ export class WorkflowService extends BaseObservableService {
 		} else {
 			return this
 				.http
-				.get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' })})
+				.get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
 				.pipe(
 					map((response) => <WorkflowAssignments>response),
 					catchError((err) => {
@@ -377,31 +380,31 @@ export class WorkflowService extends BaseObservableService {
 		}
 	}
 
-    getWorkflowTypeId(uid: string):Observable<number> {
-        return this.http.get(`api/v2/workflow/type/${uid}/id`)
-            .pipe(
-                map((response) => <number>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowTypeId(uid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/type/${uid}/id`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowId(uid: string): Observable<number> {
-        return this.http.get(`api/v2/workflow/${uid}/legacyData`)
-            .pipe(
-                map((response) => <number>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowId(uid: string): Observable<number> {
+		return this.http.get(`api/v2/workflow/${uid}/legacyData`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getTypes(): Observable<WorkflowTypeModel[]> {
-        return this.http.get('services/workflow/types')
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getTypes(): Observable<WorkflowTypeModel[]> {
+		return this.http.get('services/workflow/types')
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-	getPossibleAssignees(): Observable<{uid: string, Name: string}[]> {
+	getPossibleAssignees(): Observable<{ uid: string, Name: string }[]> {
 		return this.http.get('api/v2/workflow/possibleAssignees')
 			.pipe(
 				map((response) => response),
@@ -409,7 +412,7 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getPossibleInitiators(): Observable<{uid: string, Name: string}[]> {
+	getPossibleInitiators(): Observable<{ uid: string, Name: string }[]> {
 		return this.http.get('api/v2/workflow/possibleInitiators')
 			.pipe(
 				map((response) => response),
@@ -417,7 +420,7 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getRelevantAssetTypes(): Observable<{uid: string, name: string}[]> {
+	getRelevantAssetTypes(): Observable<{ uid: string, name: string }[]> {
 		return this.http.get('api/v2/workflow/relevantAssetTypes')
 			.pipe(
 				map((response) => response),
@@ -425,111 +428,108 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    getObjectTypes(objectID: number, objectType: string): Observable<WorkflowListItem[]> {
-        return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
-            .pipe(
-                map((response) => <WorkflowListItem[]> response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getObjectTypes(objectID: number, objectType: string): Observable<WorkflowListItem[]> {
+		return this.http.get(`services/workflow/types/${objectID}/${objectType}`)
+			.pipe(
+				map((response) => <WorkflowListItem[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getScoreTypes(objectID: number, objectType: string) {
-        return this.http.get(`services/workflow/scoretypes/${objectID}/${objectType}`)
-            .pipe(
-                map((response) => <any[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getScoreTypes(objectID: number, objectType: string) {
+		return this.http.get(`services/workflow/scoretypes/${objectID}/${objectType}`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
-        if (changeType == null || <any>changeType === '')
-            {return of([]);}
+	getWorkflowObjectTypes(changeType: WorkflowChangeType): Observable<WorkflowObjectType[]> {
+		if (changeType == null || changeType.toString() === '') { return of([]); }
 
-        return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
-            .pipe(
-            map((response) => <WorkflowObjectType[]>response),
-                catchError((err) => this.handleError(err))
-            );
+		return this.http.get(`services/workflow/objecttypes?changeType=${changeType}`)
+			.pipe(
+				map((response) => <WorkflowObjectType[]>response),
+				catchError((err) => this.handleError(err))
+			);
 
-    }
+	}
 
-    getWorkflowFieldTypes(id: number, type: string, allowHtml: boolean = false, additionalFields: string = ""): Observable<FieldType[]> {
-          if (id == null || type == null)
-            {return of([]);}
-        return this.http.get(`services/workflow/fieldtypes/${type}/${id}?allowHtml=${allowHtml}&additionalFields=${additionalFields}`)
-            .pipe(
-                map((response) => <FieldType[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowFieldTypes(id: number, type: string, allowHtml: boolean = false, additionalFields: string = ""): Observable<FieldType[]> {
+		if (id == null || type == null) { return of([]); }
+		return this.http.get(`services/workflow/fieldtypes/${type}/${id}?allowHtml=${allowHtml}&additionalFields=${additionalFields}`)
+			.pipe(
+				map((response) => <FieldType[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowItemDetails(typeId: number, itemId: number): Observable<any[]> {
-        return this.http.get(`services/workflow/item/details/${typeId}/${itemId}`)
-            .pipe(
-                map((response) => <any[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowItemDetails(typeId: number, itemId: number): Observable<any[]> {
+		return this.http.get(`services/workflow/item/details/${typeId}/${itemId}`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    saveWorkflowDiagramModel(model: WorkflowDiagramModel): Observable<number> {
-        //returns workflowtype id
-        return this.http.post('services/workflow/diagram/save', model)
-            .pipe(
-                map((response) => <number>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	saveWorkflowDiagramModel(model: WorkflowDiagramModel): Observable<number> {
+		//returns workflowtype id
+		return this.http.post('services/workflow/diagram/save', model)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    cloneWorkflowDiagramModel(uid: string): Observable<string> {
-        //returns workflowtype newly created id
-        return this.http.post('services/workflow/diagram/clone', { UID:uid })
-            .pipe(
-                map((response) => <string>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	cloneWorkflowDiagramModel(uid: string): Observable<string> {
+		//returns workflowtype newly created id
+		return this.http.post('services/workflow/diagram/clone', { UID: uid })
+			.pipe(
+				map((response) => <string>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getLookupList(id: number): Observable<any[]> {
-        return this.http.get(`api/lookup/list/${id}`)
-            .pipe(
-                map((response) => <any[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getLookupList(id: number): Observable<any[]> {
+		return this.http.get(`api/lookup/list/${id}`)
+			.pipe(
+				map((response) => <any[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    hasPendingWorkflowItems(id: number): Observable<boolean> {
-        return this.http.get(`services/workflow/type/${id}/haspendingitems`)
-            .pipe(
-                map((response) => <boolean>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	hasPendingWorkflowItems(id: number): Observable<boolean> {
+		return this.http.get(`services/workflow/type/${id}/haspendingitems`)
+			.pipe(
+				map((response) => <boolean>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    deleteWorkflowType(id: number, uid: string): Observable<number> {
-        return this.http.delete(`services/workflow/type/${id}/${uid}/delete`)
-            .pipe(
-                map((response) => <number>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	deleteWorkflowType(id: number, uid: string): Observable<number> {
+		return this.http.delete(`services/workflow/type/${id}/${uid}/delete`)
+			.pipe(
+				map((response) => <number>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowTypeModel(id: number,uid:string): Observable<WorkflowDiagramModel> {
-        if ((id == null || id < 1) && (uid==null  || uid === "00000000-0000-0000-0000-000000000000"))
-            {return of(null);}
-        return this.http.get(`services/workflow/type/${id}/${uid}`)
-            .pipe(
-            map((response) => <WorkflowDiagramModel>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowTypeModel(id: number, uid: string): Observable<WorkflowDiagramModel> {
+		if ((id == null || id < 1) && (uid == null || uid === "00000000-0000-0000-0000-000000000000")) { return of(null); }
+		return this.http.get(`services/workflow/type/${id}/${uid}`)
+			.pipe(
+				map((response) => <WorkflowDiagramModel>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowDetailsV2(id: number): Observable<any> {
-        return this.http.get(`services/workflow/item/detail/${id}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowDetailsV2(id: number): Observable<any> {
+		return this.http.get(`services/workflow/item/detail/${id}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getWorkflowDetailsV2ByUid(Uid: string): Observable<WorkflowDetails> {
 		return this.http.get(`services/workflow/item/detailByUid/${Uid}`)
@@ -539,65 +539,65 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    getWorkflowVersions(id: number): Observable<WorkflowVersion[]> {
-        return this.http.get(`services/workflow/type/${id}/versions`)
-            .pipe(
-                map((response) => <WorkflowVersion[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowVersions(id: number): Observable<WorkflowVersion[]> {
+		return this.http.get(`services/workflow/type/${id}/versions`)
+			.pipe(
+				map((response) => <WorkflowVersion[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getAssignedWorkflowInstancesByTypeId(id: number, resourceId: number,version:number,stepId:number): Observable<any> {
-        let url = `services/workflow/type/${id}/myinstances`;
-        if (resourceId && !isNaN(resourceId)) {
-            url += `?resourceId=${resourceId}`;
-            url += `&version=${version}`;
-            url += `&stepId=${stepId}`;
-        }
-        else {
-            url += `?version=${version}`;
-            url += `&stepId=${stepId}`;
-        }
-        return this.http.get(url)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getAssignedWorkflowInstancesByTypeId(id: number, resourceId: number, version: number, stepId: number): Observable<any> {
+		let url = `services/workflow/type/${id}/myinstances`;
+		if (resourceId && !isNaN(resourceId)) {
+			url += `?resourceId=${resourceId}`;
+			url += `&version=${version}`;
+			url += `&stepId=${stepId}`;
+		}
+		else {
+			url += `?version=${version}`;
+			url += `&stepId=${stepId}`;
+		}
+		return this.http.get(url)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getAssignedWorkflowInstancesSummary(id: number, resourceId: number, version: number, stepId: number): Observable<any> {
-        let url = `services/workflow/type/${id}/myinstances/summary`;
-        if (resourceId && !isNaN(resourceId)) {
-            url += `?resourceId=${resourceId}`;
-            url += `&version=${version}`;
-            url += `&stepId=${stepId}`;
-        }
-        else {
-            url += `?version=${version}`;
-            url += `&stepId=${stepId}`;
-        }
-        return this.http.get(url)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getAssignedWorkflowInstancesSummary(id: number, resourceId: number, version: number, stepId: number): Observable<any> {
+		let url = `services/workflow/type/${id}/myinstances/summary`;
+		if (resourceId && !isNaN(resourceId)) {
+			url += `?resourceId=${resourceId}`;
+			url += `&version=${version}`;
+			url += `&stepId=${stepId}`;
+		}
+		else {
+			url += `?version=${version}`;
+			url += `&stepId=${stepId}`;
+		}
+		return this.http.get(url)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowProcedures(): Observable<WorkflowTaskProcedure[]> {
-        return this.http.get('services/workflow/procedures')
-            .pipe(
-            map((response) => <WorkflowTaskProcedure[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowProcedures(): Observable<WorkflowTaskProcedure[]> {
+		return this.http.get('services/workflow/procedures')
+			.pipe(
+				map((response) => <WorkflowTaskProcedure[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getEmailTaskRecipientType(): Observable<EmailTaskRecipientTypeInfo[]> {
-        return this.http.get('services/workflow/emailtaskrecipienttypes')
-            .pipe(
-            map((response) => <EmailTaskRecipientTypeInfo[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getEmailTaskRecipientType(): Observable<EmailTaskRecipientTypeInfo[]> {
+		return this.http.get('services/workflow/emailtaskrecipienttypes')
+			.pipe(
+				map((response) => <EmailTaskRecipientTypeInfo[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getWorkflowsByTypeList(types?: string, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowByType[]> {
 		let uri = 'services/workflow/typelist';
@@ -634,131 +634,141 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    getWorkflowVersionStepHistory(id: number, filteredObject?: string, filteredObjectId?: number):Observable<any> {
-        let uri = `services/workflow/versionstep/history/${id}`;
+	getUserAssignments(resourceUid: string): Observable<WorkflowUserGroupedAssignments[]> {
+		const url: string = `api/v2/workflow/assignments/${resourceUid}`;
 
-        if (filteredObject != null && filteredObjectId != null) {
-            uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
-        }
+		return this.http.get(url)
+			.pipe(
+				map((response) => <WorkflowUserGroupedAssignments>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-        return this.http.get(uri)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
+	getWorkflowVersionStepHistory(id: number, filteredObject?: string, filteredObjectId?: number): Observable<any> {
+		let uri = `services/workflow/versionstep/history/${id}`;
 
-    }
+		if (filteredObject != null && filteredObjectId != null) {
+			uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+		}
 
-    getWorkflowVersionStepEvents(id: number):Observable<any> {
-        return this.http.get(`services/workflow/versionstep/events/${id}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(uri)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
 
-    exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null) {
+	}
 
-        let uri = `services/workflow/versionstep/history/${id}/excel.xls`;
+	getWorkflowVersionStepEvents(id: number): Observable<any> {
+		return this.http.get(`services/workflow/versionstep/events/${id}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-        if (filteredObject != null && filteredObjectId != null) {
-            uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
-        }
+	exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null) {
+
+		let uri = `services/workflow/versionstep/history/${id}/excel.xls`;
+
+		if (filteredObject != null && filteredObjectId != null) {
+			uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+		}
 
 
-        this.http.get(uri, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'excel.xlsx'));
-    }
+		this.http.get(uri, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'excel.xlsx'));
+	}
 
-    getWorkflowOpenActions(types: string):Observable<any> {
-        return this.http.get(`services/workflow/openactions?types=${types}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowOpenActions(types: string): Observable<any> {
+		return this.http.get(`services/workflow/openactions?types=${types}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowVersionStepFormLookups(object: string, objectId: number, issueObject: string = null, issueObjectId: number = null): Observable<any> {
-        let query = ``;
+	getWorkflowVersionStepFormLookups(object: string, objectId: number, issueObject: string = null, issueObjectId: number = null): Observable<any> {
+		let query = ``;
 
-        if (issueObject != null) {
-            query = `?issueObject=${issueObject}&issueObjectId=${issueObjectId}`;
-        }
+		if (issueObject != null) {
+			query = `?issueObject=${issueObject}&issueObjectId=${issueObjectId}`;
+		}
 
-        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}${query}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}${query}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIssueObjectSuggestions(phrase: string): Observable<any> {
-        return this.http.get(`api/tagsuggestions?phrase=${phrase}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getIssueObjectSuggestions(phrase: string): Observable<any> {
+		return this.http.get(`api/tagsuggestions?phrase=${phrase}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getAllowIntersectTypes(object: string, objectId: number) : Observable<any>{
-        return this.http.get(`api/${object}/${objectId}/relationshiptypes`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getAllowIntersectTypes(object: string, objectId: number): Observable<any> {
+		return this.http.get(`api/${object}/${objectId}/relationshiptypes`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIntersectType(id: number) : Observable<any>{
-        return this.http.get(`api/v2/relationships/types/${id}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getIntersectType(id: number): Observable<any> {
+		return this.http.get(`api/v2/relationships/types/${id}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getReferenceItemsForField(fieldId: number): Observable<any> {
-        return this.http.get(`api/referenceItems/field/${fieldId}/items.json`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getReferenceItemsForField(fieldId: number): Observable<any> {
+		return this.http.get(`api/referenceItems/field/${fieldId}/items.json`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getIssueTypeAllocations(actionTypeUid: string): Observable<AllocationAPIModel[]>{
-        return this.http.get(`api/v2/actions/allocations/${actionTypeUid}`)
-            .pipe(
-                map((response) => {
-                    const r = <AllocationAPIModel[]>response;
-                    r.forEach((x) => x.ClassName = AssetTypeClass[x.Class]);
-                    return r;
-                }),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getIssueTypeAllocations(actionTypeUid: string): Observable<AllocationAPIModel[]> {
+		return this.http.get(`api/v2/actions/allocations/${actionTypeUid}`)
+			.pipe(
+				map((response) => {
+					const r = <AllocationAPIModel[]>response;
+					r.forEach((x) => x.ClassName = AssetTypeClass[x.Class]);
+					return r;
+				}),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    postIssueTypeAllocation(actionTypeUid: string, allocation: AllocationRequestModel): Observable<JsonResult> {
-        return this.http.post(`/api/v2/actions/allocation/${actionTypeUid}`, allocation)
-            .pipe(
-                map((response) => <ApiResult & ErrorResponse>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	postIssueTypeAllocation(actionTypeUid: string, allocation: AllocationRequestModel): Observable<JsonResult> {
+		return this.http.post(`/api/v2/actions/allocation/${actionTypeUid}`, allocation)
+			.pipe(
+				map((response) => <ApiResult & ErrorResponse>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    deleteIssueTypeAllocation(actionTypeUid: string, assetTypeUid: string): Observable<JsonResult> {
+	deleteIssueTypeAllocation(actionTypeUid: string, assetTypeUid: string): Observable<JsonResult> {
 
-        return this.http.delete(`/api/v2/actions/allocations/${actionTypeUid}/${assetTypeUid}`)
-            .pipe(
-                map((response) => <ErrorResponse>response),
-                catchError((err) => this.handleError(err))
-        );
-    }
+		return this.http.delete(`/api/v2/actions/allocations/${actionTypeUid}/${assetTypeUid}`)
+			.pipe(
+				map((response) => <ErrorResponse>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    clearLastExecutionDate(id: number, uid: string):Observable<any> {
-        return this.http.delete(`services/workflow/lastexecution/${id}/${uid}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	clearLastExecutionDate(id: number, uid: string): Observable<any> {
+		return this.http.delete(`services/workflow/lastexecution/${id}/${uid}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getWorkflowItemSteps(itemId: number): Observable<WorkflowItemStep[]> {
 		return this.http.get(`services/workflow/item/${itemId}`)
@@ -784,45 +794,54 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-    exportItemSteps(itemId: number) {
-        this.http.get(`services/workflow/item/${itemId}/excel/excel.xls`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, "Workflow Steps.xlsx"));
-    }
+	exportItemSteps(itemId: number) {
+		this.http.get(`services/workflow/item/${itemId}/excel/excel.xls`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, "Workflow Steps.xlsx"));
+	}
 
-    getWorkflowStepDetail(itemStepId: number):Observable<any> {
-        return this.http.get(`services/workflow/step/detail/${itemStepId}`)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getWorkflowStepDetail(itemStepId: number): Observable<any> {
+		return this.http.get(`services/workflow/step/detail/${itemStepId}`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getAssignmentStepDetail(itemStepUid: string):Observable<WorkflowStepDetail> {
-        return this.http.get(`services/workflow/step/detailByUid/${itemStepUid}`)
-            .pipe(
-                map((response) => <WorkflowStepDetail>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getAssignmentStepDetail(itemStepUid: string): Observable<WorkflowStepDetail> {
+		return this.http.get(`services/workflow/step/detailByUid/${itemStepUid}`)
+			.pipe(
+				map((response) => <WorkflowStepDetail>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    postWorkflowBulkReassign(model: BulkWorkflowReassignModel):Observable<any> {
-        return this.http.post('services/workflow/ReassignWorkflowResource/bulk', model)
-            .pipe(
-                map((response) => response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	postWorkflowBulkReassign(model: BulkWorkflowReassignModel): Observable<any> {
+		return this.http.post('services/workflow/ReassignWorkflowResource/bulk', model)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    getWorkflowReassignmentAssets(e: Observable<any>, workflowItemId: number,): Observable<WorkflowReassignmentAsset[]> {
-        return e.pipe(
-            distinctUntilChanged(),
-            switchMap((e) => {
-                return this.http.get(`api/v2/workflow/reassignment/objects/${workflowItemId}?query=${e}`)
-                    .pipe(
-                        map((response) => response),
-                        catchError((err) => this.handleError(err))
-                    );
-            }));
-    }
+
+	getWorkflowStateForUser(workflowItemUid: string): Observable<{ exists: boolean, hasAccess: boolean, isCompleted: boolean }> {
+		return this.http.get(`api/v2/workflow/assignments/${workflowItemUid}/state`)
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	getWorkflowReassignmentAssets(e: Observable<any>, workflowItemId: number,): Observable<WorkflowReassignmentAsset[]> {
+		return e.pipe(
+			distinctUntilChanged(),
+			switchMap((e) => {
+				return this.http.get(`api/v2/workflow/reassignment/objects/${workflowItemId}?query=${e}`)
+					.pipe(
+						map((response) => response),
+						catchError((err) => this.handleError(err))
+					);
+			}));
+	}
 
     getWorkflowReassignmentAssetsByUid(workflowItemId: string){
         return this.http.get(`api/v2/workflow/reassignmentByUid/objects/${workflowItemId}?query=`)

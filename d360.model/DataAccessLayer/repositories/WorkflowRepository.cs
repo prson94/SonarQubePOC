@@ -379,6 +379,25 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
+		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemUid)
+		{
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
+			dbArgs.Add("workflowItemUid", workflowItemUid);
+
+			var sql = @"
+				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
+				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
+				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
+
+				select 
+				case when @doesExists is not null then 1 else 0 end as [exists], 
+				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
+				case when @hasAccess is not null then 1 else 0 end as [hasAccess]";
+
+			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
+		}
+
 		public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
 		{
 			var dbArgs = new DynamicParameters();
@@ -1762,5 +1781,76 @@ namespace d360.model.DataAccessLayer
 
 			return await CompanyContext.QueryFirstOrDefaultAsync<long>(sql, new { ID }, ApiTimeout);
 		}
+
+		public async Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid)
+		{
+			string sql = @"
+						declare @resourceId int;
+						select @resourceId = ResourceID from reporting.Global_Resource where uid = @resourceUid;
+
+						with user_ass as(select
+						 wt.name as Name
+						,wt.uid as uid
+						,wv.[version]
+						, wvs.name as Step
+						,wvs.Id as StepId
+						,count(1) as Total
+						,string_agg(CAST(wia.Id as nvarchar(40)),',') as WorkflowAssignments
+						from
+							[workflow].[type] wt
+							inner join [workflow].[version] wv on (wt.id = wv.typeid)
+							inner join [workflow].[item] wi on (wv.id = wi.versionid)	
+							inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+							inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @resourceId and (wia.itemstepid = wis.id or wia.itemstepid is null))
+							inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+						where
+						wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id)
+
+						select 
+						ua.Name as WorkflowName, 
+						ua.Step as StepName, 
+						ua.[Version], 
+						ua.uid as WorkflowTypeUid, 
+						ua.Total as [Count],
+						AssociatedWith.json as _associatedWith
+						from user_ass ua
+						outer apply (
+						select 
+							wi.UID as WorkflowItemUid, 
+							ObjectData.Name,
+							ObjectData.AssetTypeName,
+							wis.UID as ItemStepUid,
+							ObjectData.AssetId, 
+							ObjectData.AssetUid, 
+							wis.StartedOn as InitiatedOn,
+							adv.DisplayValue as InitiatedBy,
+							ObjectData.ObjectType
+						from workflow.ItemAssignment wia
+						left join workflow.Item wi on wi.ID = wia.ItemID
+						left join workflow.ItemStep wis on wis.ID = wia.ItemStepID
+						left join [asset] crAsset on crAsset.Object = 'Resource' and crAsset.ObjectId = wis.StartedBy
+						left join AssetDisplayValue adv on adv.AssetID = crAsset.ID
+						outer apply (
+							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset Type' else 'Asset' end as ObjectType, at.Name as AssetTypeName from [Issue] I 
+							 left join [Asset] a on a.ID = I.AssetID
+							 left join [AssetDisplayValue] adv on adv.AssetID = a.ID
+							 left join [AssetType] at on at.ID = I.AssetTypeID
+							 where I.ID = wi.ObjectID AND wi.Object = 'Issue'
+							 union 
+							 select top 1 ID.[Name], null as AssetId, null as AssetUid, 'Relationship', null as AssetTypeName from [IntersectDetail] ID
+							 where ID.ID = wi.ObjectID AND wi.Object = 'Intersect'
+							  union 
+							 select top 1 adv.DisplayValue, A.ID AS AssetId, a.uid as AssetUid,'Asset', null as AssetTypeName from [asset] A
+							  left join [AssetDisplayValue] adv on adv.AssetID = a.ID
+						 where A.ObjectID = wi.ObjectID AND A.Object = wi.Object AND wi.Object <> 'Intersect' AND wi.Object <> 'Issue'
+						)ObjectData(Name, AssetId, AssetUid, ObjectType, AssetTypeName)
+						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
+						)AssociatedWith(json)
+						order by ua.Name";
+			var data = await CompanyContext.Database.Connection.QueryAsync<WorkflowUserGroupedAssignments>(sql, new { resourceUid });
+			return data.ToList();
+		}
+
 	}
 }

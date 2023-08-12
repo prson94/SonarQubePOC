@@ -1,22 +1,38 @@
-<d3s-modal [showTitle]="false" [isVisible]="isModalVisible" [showActionBar]="true" [confirmButtonLabel]="'Submit'"
-		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'" [secondaryButtonDisabled]="!workflowForm?.valid"
-		   [discardForm]="discardForm" (onClose)="discardForm ? discardFormFunc() : closeModal()"
+<d3s-modal #modal
+		   [showTitle]="false"
+		   [isVisible]="isModalVisible"
+		   [showActionBar]="true"
+		   [confirmButtonLabel]="'Submit'"
+		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
+		   [secondaryButtonDisabled]="!workflowForm?.valid"
+		   [discardForm]="discardForm"
+		   (onClose)="discardForm ? discardFormFunc() : closeModal()"
 		   (onConfirm)="onFormSubmit()"
-		   [additionalClasses]="'xlarge-dialog'">
+		   [closePopupOnConfirm]="false"
+		   [showBack]="isBulkRespond"
+		   (onBack)="onBack()"
+		   (onCloseClick)="onCloseClick()"
+		   i18n-backButtonLabel
+		   backButtonLabel="Back to Assignment Selection"
+		   [additionalClasses]="'xlarge-dialog'"
+>
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
-					<div i18n class="title">
+					<div class="title">
 						{{ modalTitle }}
-						<span class="modal-buttons">
-							<button igButton [ngClass]="
+						<span class="title-emp" *ngIf="isBulkRespond" i18n>Bulk Respond</span>
+						<span class="modal-buttons" *ngIf="!isBulkRespond">
+							<button
+								igButton
+								[ngClass]="
 									isAssignmentProgressSelected
 										? ''
 										: 'selected'
 								" [icon]="'fa-file-text'" (click)="showAssignment()"
-									class="ig-button-secondary side-panel-button"></button>
+								class="ig-button-secondary side-panel-button"></button>
 							<button igButton [icon]="'fa-list-ul'" [ngClass]="
 									isAssignmentProgressSelected
 										? 'selected'
@@ -87,7 +103,15 @@
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<form (ngSubmit)="onFormSubmit()" #workflowForm="ngForm" #form>
+
+							<d3s-assignment-asset-list *ngIf="isBulkRespond"
+													   [items]="multiSubmitionItems"></d3s-assignment-asset-list>
+
+							<form
+								(ngSubmit)="onFormSubmit()"
+								#workflowForm="ngForm"
+								#form
+							>
 								<ng-template #requiredFieldsTemplate>
 									<ig-form-feedback-badges class="ig-form-feedback-badges"
 															 [igformGroup]="workflowForm.form"

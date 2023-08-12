@@ -1,0 +1,141 @@
+<d3s-modal #modal
+		   [showTitle]="false"
+		   [isVisible]="isModalVisible"
+		   [additionalClasses]="'large-dialog'"
+		   (onClose)="isModalVisible = false">
+	<div class="modal-with-side-panel multi-assignment-selector">
+		<div class="modal-dialog-main-panel">
+			<div *ngIf="isLoading" style="width:100%; text-align:center;">
+				<div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+			</div>
+
+			<ng-container *ngIf="!isLoading">
+				<ng-container *ngTemplateOutlet="assignmentsPicker;"></ng-container>
+				<div class="action-bar">
+					<button igButton class="ig-button-secondary" (click)="isModalVisible = false" i18n>Close</button>
+					<span class="grow"></span>
+					<button igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0">Complete Assignments > </button>
+				</div>
+			</ng-container>
+		</div>
+		<div class="side-panel">
+			<side-panel [(expanded)]="sidePanelOpen"
+						[storageKey]="sidePanelStorageKey"
+						[selectedItem]="selectedForInfoPanel?.assetId || selectedForInfoPanel?.workflowItemUid"
+						hasDetail="true"
+						height="calc(100vh - 220px)">
+				<ng-container *ngIf="sidePanelOpen">
+					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
+									 [objectID]="selectedForInfoPanel?.assetId"
+									 objectType="selectedForInfoPanel?.type"
+									 [useAccordion]="true"
+									 [shouldBePadded]="false"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="false"
+									 [hideLinks]="true"
+									 [hasAddRelationshipsPermissions]="false"
+									 [hasModifyRelationshipsPermissions]="false"
+									 [hasDeleteRelationshipsPermissions]="false"
+									 [interceptLinkClick]="true"></ig-asset-detail>
+
+					<d3s-assignment-progress-step-details *ngIf="sidePanel === 'step-details'"
+														  [workflowItemUId]="selectedForInfoPanel.workflowItemUid"
+														  [showCompleteAssignment]="false"
+														  [itemStepUid]="selectedForInfoPanel.assignmentItemStepUid"></d3s-assignment-progress-step-details>
+				</ng-container>
+			</side-panel>
+		</div>
+	</div>
+</d3s-modal>
+
+<ng-template #assignmentsPicker>
+	<div class="content condensed-table">
+		<div class="modal-edit-form">
+			<div i18n class="title">Select Assignments</div>
+			<div class="subtitle">{{workflowTypeName}}</div>
+		</div>
+		<div class="asset-detail">
+			<div class="asset-detail-tabs">
+				<ig-property-group i18n-title title="Assignment Information" [showHeaderLine]="false" [shouldBePadded]="false">
+					<div readonly>
+						<div class="row">
+
+							<div class="category-column">
+								<label class="ig-label" i18n>{{ formTitle }}</label>
+								<div class="ig-value" [innnerHTML]="formDescription"></div>
+							</div>
+
+						</div>
+					</div>
+				</ig-property-group>
+
+				<ig-property-group i18n-title title="Assignments" [showHeaderLine]="false" [shouldBePadded]="false">
+					<div readonly>
+						<div class="row">
+
+							<div class="table-wrapper">
+								<p-table #dt
+										 [tableStyle]="{'min-width': 'max-content'}"
+										 loadingIcon="fa fa-spinner"
+										 [value]="assignments"
+										 [metaKeySelection]="true"
+										 [scrollable]="true"
+										 [scrollHeight]="'calc(100vh - 353px)'"
+										 [(selection)]="selected"
+										 [sortOrder]="-1">
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 36px;">
+												<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+											</th>
+											<th [pSortableColumn]="'Name'">
+												<ng-container i18n>Associated With</ng-container>
+												<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+											</th>
+											<th [pSortableColumn]="'ObjectType'">
+												<ng-container i18n>Object Type</ng-container>
+												<d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon>
+											</th>
+											<th [pSortableColumn]="'InitiatedBy'">
+												<ng-container i18n>Initiated By</ng-container>
+												<d3s-sortIcon [field]="'InitiatedBy'"></d3s-sortIcon>
+											</th>
+											<th [pSortableColumn]="'InitiatedOn'">
+												<ng-container i18n>Initiated</ng-container>
+												<d3s-sortIcon [field]="'InitiatedOn'"></d3s-sortIcon>
+											</th>
+											<th>
+
+											</th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr #el [pSelectableRow]="item" class="table-row">
+											<td (click)="selectSingleItem($event,item,el);">
+												<p-tableCheckbox [value]="item"></p-tableCheckbox>
+											</td>
+											<td (click)="selectSingleItem($event,item,el);">
+												{{item.Name}}
+											</td>
+											<td (click)="selectSingleItem($event,item,el);">
+												{{item.ObjectType}}
+											</td>
+											<td (click)="selectSingleItem($event,item,el);"> {{item.InitiatedBy}}</td>
+											<td (click)="selectSingleItem($event,item,el);">{{item.InitiatedOn  | date:'shortDate'}}</td>
+											<td class="info-panel-button">
+												<button igButton icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
+											</td>
+										</tr>
+									</ng-template>
+								</p-table>
+							</div>
+						</div>
+					</div>
+				</ig-property-group>
+			</div>
+		</div>
+	</div>
+</ng-template>

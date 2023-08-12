@@ -22,7 +22,7 @@ using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-using DocumentFormat.OpenXml.Vml;
+
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 
@@ -538,6 +538,46 @@ namespace d360.web.Controllers.V2
 
 		}
 
+		[
+			HttpGet,
+			Route("assignments/{resourceUid}"),
+			SwaggerConsumes("application/json"),
+			SwaggerProduces("application/json", "application/octet-stream"),
+			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowUserGroupedAssignments)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = false)
+		]
+		public async Task<IHttpActionResult> GetWorkflowAssignmentsGrouped(Guid resourceUid)
+		{
+			var prefix = "Workflow.GetWorkflowAssignmentsGrouped => ";
+			try
+			{
+				var response = await workflowRepository.GetWorkflowAssignmentListGroupedForUser(resourceUid).ConfigureAwait(false);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+			}
+			catch (ArgumentException aex)
+			{
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, aex.Message)).ConfigureAwait(false);
+			}
+			catch (GenericException gex)
+			{
+				return await Task.FromResult(errorMessageResponse(gex.StatusCode, gex.StatusMessage, gex.StatusDescription)).ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+			}
+
+		}
+
 		/// <summary>
 		/// Get the details for a specific workflow item.
 		/// </summary>
@@ -708,6 +748,21 @@ namespace d360.web.Controllers.V2
 			}
 
 			return Ok(await workflowRepository.GetAssetAssignmentCount(type, uid));
+		}
+
+		/// <summary>
+		/// Get the details of workflow item step if user has access
+		/// </summary>
+		/// <returns></returns>
+		[
+			HttpGet,
+			Route("assignments/{workflowItemUid}/state"),
+			SwaggerProduces("application/json"),
+			ApiExplorerSettings(IgnoreApi = false)
+		]
+		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemUid)
+		{
+			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemUid));
 		}
 
 		/// <summary>

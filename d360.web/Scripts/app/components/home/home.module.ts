@@ -9,7 +9,6 @@ import { SocialModule } from '../shared/social/social.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 import { ShortcutDisplayModule } from '../shared/shortcutdisplay/shortcut-display.module';
 import { DashboardModule } from '../sidebar/dashboard/dashboard.module';
 
@@ -24,6 +23,8 @@ import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
+import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 
 
 @NgModule({
@@ -44,8 +45,9 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
         CoreModule,
         SearchModule,
         IgColorPickerModule,
-        SocialModule,
-        SharedAssignmentsModule,
+		SocialModule,
+		UserAssignmentsModule,
+		SharedAssignmentsModule,
         TilesModule,
         SharedGridPagingInfoModule, 
         ShortcutDisplayModule,
