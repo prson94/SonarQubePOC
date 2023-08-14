@@ -47,7 +47,7 @@ namespace d360.model
 
 		internal IQueueSource QueueSource;
 		internal IMailProvider Mail;
-		public readonly CommunityContext Community;
+		private readonly CommunityContext Community;
 		private bool IsEventingEnabled;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);

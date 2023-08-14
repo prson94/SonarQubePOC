@@ -3385,19 +3385,19 @@ namespace d360.model
 			int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
 			//Check if today is a day to send digest emails
-			//if (((int)Math.Pow(2, todayDayOfWeek) & digestDays) == 0)
-			//{
-			//	return;
-			//}
+			if (((int)Math.Pow(2, todayDayOfWeek) & digestDays) == 0)
+			{
+				return;
+			}
 
 			//0.5 determine how many days ago last digest was sent
-			//int newDelta = 0;
-			//int previousDayOfWeek;
-			//do
-			//{
-			//	newDelta++;
-			//	previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
-			//} while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
+			int newDelta = 0;
+			int previousDayOfWeek;
+			do
+			{
+				newDelta++;
+				previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
+			} while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
 
 
 			// 1 determine which users have outstanding workflows
@@ -3439,9 +3439,9 @@ namespace d360.model
 				#endregion
 
 				// 3 get oustanding assignments
-				foreach (dynamic user in users.Where(x=> x.ID == 56))
+				foreach (dynamic user in users)
 				{
-					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, 10000);
+					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
 
 					StringBuilder sb = new StringBuilder();
 					string subject = string.Empty;

@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
@@ -149,7 +149,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				else {
 					this.completeAssignmentComponent.openModal({
 						workflowItemUid: itemUid,
-						stepUid: stepUid,
+						stepUid,
 						assetId: 0
 					});
 				}

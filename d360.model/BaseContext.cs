@@ -81,7 +81,7 @@ namespace d360.model
 
         public string CompanyConnectionString { get; set; }
 
-		public bool FeatureFlags_TEMP_ASSIGNMENTS { get; set; } = false;
+		public bool FeatureFlags_TEMP_ASSIGNMENTS { get; set; }
 
 		internal ICachingProvider Caching;
 
