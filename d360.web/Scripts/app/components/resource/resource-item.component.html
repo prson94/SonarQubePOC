@@ -20,13 +20,16 @@
                 </div>
             </div>
         </div>
+    </div>
+    <ng-container *ngIf="!assignmentFeatureFlag">
         <div class="col s12 m6 l6">
             <div>
                 <d3s-assignments *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments>
                 <d3s-assignments *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments>
             </div>
         </div>
-    </div>
+    </ng-container>
+
     <div *ngSwitchCase="PageMode.EditingInfo">
         <div class="col s12">
             <div class="tile tile-detail">
@@ -58,6 +61,16 @@
         </div>
     </div>
 </div>
+<ng-container *ngIf="assignmentFeatureFlag">
+    <div class="row" *ngIf="!isLoading">
+        <div class="col s12 m12 l">
+            <div>
+                <d3s-user-assignments [userUid]="resourceUid"></d3s-user-assignments>
+            </div>
+        </div>
+    </div>
+</ng-container>
+
 <d3s-resource-api *ngIf="showAllUsersAPIKey" [isVisible]="isApiKeysPopupVisible" (onClose)="isApiKeysPopupVisible=false"></d3s-resource-api>
 
 

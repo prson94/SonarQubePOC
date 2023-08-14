@@ -122,6 +122,7 @@ import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
+import { AssignmentAssetListComponent } from './assignment-asset-list/assignment-asset-list.component';
 
 @NgModule({
 	declarations: [
@@ -159,10 +160,13 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
-		CompleteAssignmentFormFieldsComponent
+		CompleteAssignmentFormFieldsComponent,
+		AssignmentAssetListComponent
 	],
 	exports: [
-		AssignmentListComponent
+		AssignmentListComponent,
+		AssignmentProgressStepDetailsComponent,
+		CompleteAssignmentComponent
 	],
 	imports: [
 		AdvancedFiltersModule,
