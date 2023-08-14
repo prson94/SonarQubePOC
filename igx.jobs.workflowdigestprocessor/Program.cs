@@ -93,7 +93,7 @@ namespace igx.jobs.workflowdigestprocessor
 
 
 						company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
-						company.FeatureFlags_TEMP_ASSIGNMENTS = false;
+
 						await company.SendDigestEmails(c.EnvironmentLevel);
 					}
 					catch (Exception ex)
