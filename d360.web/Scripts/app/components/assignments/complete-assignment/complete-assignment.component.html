@@ -49,19 +49,19 @@
 					class="scrollable-content details-container"
 				>
 					<div class="asset-detail">
-						<div class="d-flex column" *ngIf="hasObjectReassign">
+						<div class="d-flex column" *ngIf="allowReassignObject || allowReassignResource">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
 											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
-							<div class="radio-button">
+							<div class="radio-button" *ngIf="allowReassignResource">
 								<p-radioButton igRadioButton value="reassignUser" label="Reassign"
 											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
-							<div class="radio-button">
+							<div class="radio-button" *ngIf="allowReassignObject">
 								<p-radioButton igRadioButton value="changeAsset" label="Change the Associated Asset"
 											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>

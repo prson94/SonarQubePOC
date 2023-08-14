@@ -12,7 +12,6 @@ import {
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
-	AssignmentItem,
 	AssignmentItemStep,
 	FormRequest,
 	SingleAssignment,
@@ -61,8 +60,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	@Output() onModalClose = new EventEmitter<{ isBack: boolean }>();
 
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
-	reassignAvailableTypes = [];
-	hasObjectReassign: boolean = false;
 	isLoading: boolean = false;
 	radioSelectionValue: string;
 	assets = [];
@@ -74,6 +71,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	multiSubmitionItems: SingleAssignment[] = [];
 	isBulkRespond: boolean = false;
+	allowReassignObject: boolean = false;
+	allowReassignResource: boolean = false;
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 
@@ -140,6 +139,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = res.ObjectName;
 								this.assetId = res.ObjectID;
 							}
+							this.allowReassignObject = res.AllowReassignObject;
+							this.allowReassignResource = res.AllowReassignResource;
+
+							if (this.allowReassignObject) {
+								this.loadWorkflowReassignmentAssets();
+							}
+							if (this.allowReassignResource) {
+								this.loadAllUsersData();
+							}
 							this.assignmentService.setFormValidators.next();
 						}
 
@@ -156,62 +164,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.isLoading = false;
 						this.cdRef.markForCheck();
 					});
-			forkJoin(
-				this.workflowService.getWorkflowFormByUid(
-					this.workflowItemUid,
-					this.stepUid
-				),
-				this.workflowService.getAssignmentsByVersion(
-					1,
-					1,
-					null,
-					null,
-					null,
-					null,
-					this.workflowItemUid
-				),
-				this.workflowService.getAssignmentItem(this.workflowItemUid)
-			).subscribe((res) => {
-				this.isLoading = false;
-				if (res[0]) {
-					this.formTitle = res[0].Title;
-					this.formDescription = res[0].Description;
-					this.formFields = res[0].Fields;
-					this.request = res[0].Request;
-					if (res[0].IssueObjectID) {
-						this.assetName = res[0].IssueObjectName;
-						this.assetId = res[0].IssueObjectID;
-					} else {
-						this.assetName = res[0].ObjectName;
-						this.assetId = res[0].ObjectID;
-					}
-					if (res[0].AllowReassignObject) {
-						this.reassignAvailableTypes.push({
-							value: 'object',
-							text: 'Object'
-						});
-					}
-					if (res[0].AllowReassignResource) {
-						this.reassignAvailableTypes.push({
-							value: 'resource',
-							text: 'Resource'
-						});
-					}
-
-					this.hasObjectReassign =
-						this.reassignAvailableTypes.length > 0;
-					if (this.hasObjectReassign) {
-						this.getWorkflowReassignmentAssets();
-						this.getAllUsersData();
-					}
-					this.assignmentService.setFormValidators.next();
-				}
-				if (res[1]?.items?.length > 0) {
-					this.workflowTypeUid = res[1].items[0].WorkflowTypeUid;
-					this.workflowTypeVersion = res[1].items[0].Version;
-				}
-				this.workflowName = res[2].WorkflowName;
-			});
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor
 			.getEvents()
@@ -357,7 +309,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		return this.multiSubmitionItems.length > 1;
 	}
 
-	getWorkflowReassignmentAssets(): void {
+	loadWorkflowReassignmentAssets(): void {
 		this.workflowService
 			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
@@ -365,12 +317,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 	}
 
-	getAllUsersData(): void {
+	loadAllUsersData(): void {
 		this.resourceService.getResources(false).subscribe((res) => {
 			this.userData = res;
 		});
 	}
-
 
 	protected readonly Number = Number;
 }
