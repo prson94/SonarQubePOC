@@ -22,7 +22,7 @@ using d360.core.queue;
 using d360.model.workflow;
 
 using Dapper;
-
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 
@@ -2893,7 +2893,7 @@ namespace d360.model
 							if (issue?.AssetID != null)
 							{
 								fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-							}							
+							}
 						}
 
 						if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
@@ -3385,19 +3385,19 @@ namespace d360.model
 			int todayDayOfWeek = (int)DateTime.UtcNow.DayOfWeek;
 
 			//Check if today is a day to send digest emails
-			if (((int)Math.Pow(2, todayDayOfWeek) & digestDays) == 0)
-			{
-				return;
-			}
+			//if (((int)Math.Pow(2, todayDayOfWeek) & digestDays) == 0)
+			//{
+			//	return;
+			//}
 
 			//0.5 determine how many days ago last digest was sent
-			int newDelta = 0;
-			int previousDayOfWeek;
-			do
-			{
-				newDelta++;
-				previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
-			} while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
+			//int newDelta = 0;
+			//int previousDayOfWeek;
+			//do
+			//{
+			//	newDelta++;
+			//	previousDayOfWeek = (7 + todayDayOfWeek - newDelta) % 7;
+			//} while (((int)Math.Pow(2, previousDayOfWeek) & digestDays) == 0);
 
 
 			// 1 determine which users have outstanding workflows
@@ -3439,9 +3439,9 @@ namespace d360.model
 				#endregion
 
 				// 3 get oustanding assignments
-				foreach (dynamic user in users)
+				foreach (dynamic user in users.Where(x=> x.ID == 56))
 				{
-					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
+					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, 10000);
 
 					StringBuilder sb = new StringBuilder();
 					string subject = string.Empty;
@@ -3474,14 +3474,23 @@ namespace d360.model
 						{
 							sb.Append(tblTRWhite);
 						}
+
 						string url = "";
-						if (item.WorkflowItemStepUid.HasValue)
+
+						if (this.FeatureFlags_TEMP_ASSIGNMENTS)
 						{
-							url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							if (item.WorkflowItemStepUid.HasValue)
+							{
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							}
+							else
+							{
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							}
 						}
 						else
 						{
-							url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							url = $"{rootUrl}/workflow/workflowlistnew/{item.Id}/{item.Version}/{item.StepId}/1";
 						}
 						sb.Append($"<td style='text-align: left;padding-left:5px;'><a style='font-size:12px;font-family: Trebuchet MS, Arial, Helvetica, sans - serif;'  href='{url}'>{item.Name}</a></td>");
 						sb.Append($"<td style='text-align: center'>{span}{item.Version}</span></td>");
@@ -3502,7 +3511,14 @@ namespace d360.model
 
 					sb.Append("</tbody></table>");
 
-					sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/assignments' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					if (FeatureFlags_TEMP_ASSIGNMENTS)
+					{
+						sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/assignments' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					}
+					else
+					{
+						sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					}
 
 					subject = $"{environment}{totalNew} new workflow items require your attention";
 
@@ -3608,12 +3624,15 @@ namespace d360.model
 			}
 
 			string prefix = Community.GetPrimaryUrlPrefix();
+			string url = $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
 
-			var dbArgs = new DynamicParameters();
-			dbArgs.Add("itemId", itemId);
-			dbArgs.Add("itemStepId", itemStepID);
+			if (FeatureFlags_TEMP_ASSIGNMENTS)
+			{
+				var dbArgs = new DynamicParameters();
+				dbArgs.Add("itemId", itemId);
+				dbArgs.Add("itemStepId", itemStepID);
 
-			string sql = @$"
+				string sql = @$"
 					select uid from workflow.Item where id = @itemId
 
 					select uid from workflow.ItemStep where id = @itemStepId
@@ -3631,24 +3650,24 @@ namespace d360.model
 					select 'Asset', a.uid from workflow.Item wi 
 					inner join Asset A on A.Object = WI.Object AND a.ObjectID = wi.ObjectID
 					where wi.ID = @itemId and wi.Object <> 'Intersect' and wi.Object <> 'Issue'";
-			var urlData = await QueryMultipleAsync(sql, dbArgs);
+				var urlData = await QueryMultipleAsync(sql, dbArgs);
 
-			var itemUid = urlData.Read<Guid>().First();
-			var itemStepUid = urlData.Read<Guid>().First();
-			var objectData = urlData.Read<dynamic>().First();
+				var itemUid = urlData.Read<Guid>().First();
+				var itemStepUid = urlData.Read<Guid>().First();
+				var objectData = urlData.Read<dynamic>().First();
 
-			string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
-			string url = $"https://{prefix}.data3sixty.com/assignments";
-			if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
-			{
-				url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
+				string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
+				url = $"https://{prefix}.data3sixty.com/assignments";
+				if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
+				{
+					url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
+				}
+				else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
+				{
+					url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
+				}
+				url += queryParamPart;
 			}
-			else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
-			{
-				url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
-			}
-
-			url += queryParamPart;
 
 			string initiatedBy = "(unknown)";
 
