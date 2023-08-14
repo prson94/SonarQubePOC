@@ -1,0 +1,141 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityDetailByAssetTypeID-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[ResponsibilityDetailByAssetTypeID]
+        (		        
+	        @AssetTypeID int
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+		With AssetRule as
+		(
+			select a.AssetTypeID AssetTypeID,
+			rasset.AssetID,
+			rasset.RuleID
+			from  [dbo].[asset] a
+			inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID)
+			where a.AssetTypeID = @AssetTypeID
+			union all 
+			select rasset.AssetTypeID,
+			rasset.AssetID,
+			rasset.RuleID
+			from  [dbo].[ResponsibilityRuleResultAsset] rasset
+			where (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID)
+		)
+		select	r.id as RuleID,
+				r.ResponsibilityTypeID as ResponsibilityTypeID,
+				RT.Name as ResponsibilityTypeName,
+				rasset.AssetID,
+				rasset.AssetTypeID,
+				rresource.SecurityAssetID as ResourceID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				rresource.SecurityAsset,
+				rresource.SecurityAssetID,
+				RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+				r.Context,
+				r.ApplyToType,
+				r.IsVisible,
+				NULL as OverrideID,
+				RES.uid as ResourceUid,
+				RES.uid as SecurityAssetUid
+		from	AssetRule rasset
+				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+				inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+				inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+				inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
+		where 	RES.State=1
+		union all
+		select	r.id as RuleID,
+				r.ResponsibilityTypeID as ResponsibilityTypeID,
+				RT.Name as ResponsibilityTypeName,
+				rasset.AssetID,
+				rasset.AssetTypeID,
+				RG.ResourceID as ResourceID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				rresource.SecurityAsset,
+				rresource.SecurityAssetID,
+				G.Name as SecurityAssetName,
+				r.Context,
+				r.ApplyToType,
+				r.IsVisible,
+				NULL as OverrideID,
+				RES.uid as ResourceUid,
+				secasset.uid as SecurityAssetUid
+		from	AssetRule rasset
+				inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+				inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+				inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+				inner join dbo.[Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+				inner join dbo.[Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = rresource.SecurityAssetID
+				inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+		where 	RES.State=1
+		union all
+		select	0 as RuleID,
+				oride.ResponsibilityTypeID as ResponsibilityTypeID,
+				RT.Name as ResponsibilityTypeName,
+				oride.AssetID,
+				a.AssetTypeID as AssetTypeID,
+				RES.ResourceID as ResourceID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				oride.SecurityAsset,
+				oride.SecurityAssetID,
+				RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+				oride.Context,
+				cast(0 as bit) as ApplyToType,
+				cast(1 as bit) as IsVisible,
+				oride.ID as OverrideID,
+				RES.uid as ResourceUid,
+				RES.uid as SecurityAssetUid
+		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+				inner join dbo.ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+				inner join [dbo].asset a on (a.id = oride.assetID and a.AssetTypeID = @AssetTypeID)
+				inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+		union all
+		select	0 as RuleID,
+				oride.ResponsibilityTypeID as ResponsibilityTypeID,
+				RT.Name as ResponsibilityTypeName,
+				oride.AssetID,
+				a.AssetTypeID as AssetTypeID,
+				RES.ResourceID as ResourceID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				oride.SecurityAsset,
+				oride.SecurityAssetID,
+				G.[Name] as SecurityAssetName,
+				oride.Context,
+				cast(0 as bit) as ApplyToType,
+				cast(1 as bit) as IsVisible,
+				oride.ID as OverrideID,
+				RES.uid as ResourceUid,
+				secasset.uid as SecurityAssetUid
+		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+				inner join dbo.ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+				inner join [dbo].asset a on (a.id = oride.assetID and a.AssetTypeID = @AssetTypeID)
+				inner join dbo.[Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
+				inner join dbo.[Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = oride.SecurityAssetID
+				inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
+		      )
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
+
