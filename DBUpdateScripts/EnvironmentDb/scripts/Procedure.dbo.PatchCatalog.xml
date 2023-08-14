@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.12">
-    <comment>GOV-28603,GOV-28727</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.13">
+    <comment>GOV-28803</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[PatchCatalog] 
@@ -61,15 +61,42 @@ begin
 				inner join Asset S on S.SourceId = T.SourceId and T.Success is null and T.TypeId = S.AssetTypeID and T.TypeId is not null and T.ExecutionId = @executionId and T.[Type] = @type;-- and T.ISDelete = 0;
 
 		-- Updated field types based on property names
+		drop table if exists #tempExecutionCatalogItem;
+		create table #tempExecutionCatalogItem(SourceIdPrefix nvarchar(200),SourceId nvarchar(500),TypeId int,
+											   Name nvarchar(250),FieldTypeId int,AssetTypeId int)
+
+		create clustered index cx_tempExecutionCatalogItem on #tempExecutionCatalogItem(SourceIdPrefix);
+
+		insert into #tempExecutionCatalogItem
+		select distinct substring(T.SourceId,1,200),
+				T.SourceId,
+				I.TypeId,
+				T.Name,
+				cast(null as int) FieldTypeId,
+				cast(null as int) AssetTypeId
+		from api.ExecutionCatalogItemProperty  T
+		inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] 
+		and I.SourceId = T.SourceId and I.Success is null
+		where T.ExecutionId = @executionId and T.[Type] = @type;
+
 		update	T
 		set		T.FieldTypeId = S.ID,
+		T.AssetTypeId = L.ID
+		from #tempExecutionCatalogItem T
+		inner join FieldType S on S.AssetTypeID = T.TypeId and S.Name = T.Name
+		left join AssetType L on L.Object = Cast(S.LookupObjectType+'Type' as nvarchar(50)) 
+							 and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+
+
+		update T
+		set	T.FieldTypeId = I.FieldTypeId,
 				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
-				T.ValueAssetTypeId = L.ID
+		T.ValueAssetTypeId = I.AssetTypeId
 		from	api.ExecutionCatalogItemProperty  T
-				inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and I.ExecutionId = @executionId and I.[Type] = @type and I.Success is null
-				--and I.ISDelete = 0 
-				inner join FieldType S on S.AssetTypeID = I.TypeId and S.Name = T.Name
-				left join AssetType L on L.Object = S.LookupObjectType+'Type' and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+		inner join #tempExecutionCatalogItem I on I.SourceIdPrefix = substring(T.SourceId,1,200)
+		where T.ExecutionId = @executionId and T.[Type] = @type;
+
+		drop table if exists #tempExecutionCatalogItem;
 
 		-- Resolve ValueId (the legacy ObjectId) for Code value / lookup fields
 		update	T
@@ -80,20 +107,28 @@ begin
 		and T.ExecutionId = @executionId and T.[Type] = @type;
 
 		-- Property validation.	
+		drop table if exists #tempValidateCatItemProperty;
+		create table #tempValidateCatItemProperty (SourceIdPrefix NVarchar(200),SourceId NVarchar(500),[Message] NVarchar(4000));
+		create clustered index cx_tempValidateCatItemProperty on #tempValidateCatItemProperty(SourceIdPrefix);
+		
+		insert into #tempValidateCatItemProperty(SourceIdPrefix,SourceId,[Message])
+		select	substring(I.SourceId,1,200),I.SourceId,
+				SubString(string_agg(V.[Message], '; '),1,4000) as [Message]
+		from	api.ExecutionCatalogItemProperty I
+				inner join FieldType S on S.ID = I.FieldTypeId 
+				cross apply api.ValidateCatalogItemProperty(I.[Name], I.[Value], I.ValueId, S.IsRequired, S.[Type], S.[Length], S.MinimumLength, S.MaximumLength) V
+		where	I.ExecutionId = @executionId and I.[Type] = @type and V.Success = 0
+		group by substring(I.SourceId,1,200),I.SourceId;
+
 		update	T
 		set		T.Success = 0,
 				T.Message = coalesce(T.Message, '') + Val.Message
 		from	api.ExecutionCatalogItem T
-				cross apply (
-						select	string_agg(V.[Message], '; ') as [Message]
-						from	api.ExecutionCatalogItemProperty I
-								inner join FieldType S on S.ID = I.FieldTypeId 
-								cross apply api.ValidateCatalogItemProperty(I.[Name], I.[Value], I.ValueId, S.IsRequired, S.[Type], S.[Length], S.MinimumLength, S.MaximumLength) V
-						where	I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SourceId = T.SourceId and V.Success = 0
-						group by I.SourceId
-				) Val
+		inner join #tempValidateCatItemProperty Val on Val.SourceIdPrefix = substring(T.SourceId,1,200) and Val.SourceId = T.SourceId
 		where	T.ExecutionId = @executionId and T.[Type] = @type ;--and T.ISDelete = 0;
 
+		drop table if exists #tempValidateCatItemProperty;
+		
 		-- Capture new asset records.
 		declare @new_assets table(Id bigint, Uid uniqueidentifier, AssetTypeID int, SourceId nvarchar(500));
 
@@ -128,8 +163,11 @@ begin
 		and T.Code <> P.CodeValue and P.CodeValue is not null;
 
 		-- Add/update field data.
-		merge	Field as T
-		using	(
+		drop table if exists #tempfield;
+		
+		create table #tempfield(Id int,[Object] nvarchar(50),[ObjectID] int,FieldTypeId int,[Value] nvarchar(max),ValueId bigint);
+		create clustered index cx_tempfield on #tempfield(id);
+		insert into #tempfield
 				select	distinct
 						I.Id,
 						A.Object,
@@ -142,12 +180,22 @@ begin
 							P.SourceId = I.SourceId 
 							and P.ExecutionId = I.ExecutionId 
 							and P.[Type] = I.[Type] 
-							and I.ExecutionId = @executionId 
-							and I.[Type] = @type 
-							and I.Success is null 
 							--and I.ISDelete = 0
 							and P.FieldTypeID is not null
 						inner join Asset A on A.ID = I.Id
+		where	I.ExecutionId = @executionId 
+				and I.[Type] = @type 
+				and I.Success is null; 		
+
+		merge	Field as T
+		using	(
+				select	T.Id,
+						T.Object,
+						T.ObjectId,
+						T.FieldTypeId,
+						T.Value,
+						T.ValueId
+				from	#tempfield T
 				) as S
 		on		(S.Id = T.AssetId and S.FieldTypeId = T.FieldTypeID)
 		when	matched then
@@ -159,6 +207,8 @@ begin
 		when	not matched by target then
 		insert	(AssetID, ObjectType, ObjectID, FieldTypeID, [Value], FormattedValue)
 		values	(S.Id, S.Object, S.ObjectId, S.FieldTypeId, iif(S.ValueId is null, null, S.ValueId), iif(S.ValueId is null, S.[Value], null));
+
+		drop table #tempfield;
 
 		update	api.ExecutionCatalogItem 
 		set		Success = 1
@@ -235,6 +285,8 @@ begin
 
 		create clustered index cix_TempDIds on #d_ids (TargetId);
 
+		drop table if exists #d_ignore_ids;
+
 		-- Delete content
 		delete	t
 		from	AssetDataProfileSampleJson t 
@@ -275,6 +327,8 @@ begin
 				and [Action] is not null
 				and Success is null
 				and IsDelete = 1;
+				
+		drop table if exists #d_ids;
 	end
 
 	if @type = 'R'
@@ -379,19 +433,48 @@ begin
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID and IT.ObjectCardinality = 1;
 
 		-- Updated field types based on property names
+
+		drop table if exists #tempExecutionCatalogItemI;
+		create table #tempExecutionCatalogItemI
+		(SubjectSourceIdPrefix nvarchar(200),ObjectSourceIdPrefix  nvarchar(200),
+		SubjectSourceId nvarchar(500),ObjectSourceId nvarchar(500),
+		TypeId int,Name nvarchar(250),FieldTypeId int,AssetTypeId int);
+		
+		create clustered index cx_tempExecutionCatalogItemI on #tempExecutionCatalogItemI(SubjectSourceIdPrefix,ObjectSourceIdPrefix);
+
+		insert into #tempExecutionCatalogItemI
+		select distinct substring(T.SubjectSourceId,1,200),
+				substring(T.ObjectSourceId,1,200),
+				T.SubjectSourceId,
+				T.ObjectSourceId,
+				I.TypeId,
+				T.Name,
+				cast(null as int) FieldTypeId,
+				cast(null as int) AssetTypeId
+		from api.ExecutionCatalogItemProperty  T
+		inner join api.ExecutionCatalogItem I on I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] 
+		and I.SubjectSourceId = T.SubjectSourceId and I.ObjectSourceId = T.ObjectSourceId 
+		and I.Success is null
+		where T.ExecutionId = @executionId and T.[Type] = @type;
+		
 		update	T
 		set		T.FieldTypeId = S.ID,
+		T.AssetTypeId = L.ID
+		from #tempExecutionCatalogItemI T
+		inner join FieldType S on S.IntersectTypeID = T.TypeId and S.Name = T.Name
+		left join AssetType L on L.Object = S.LookupObjectType
+							 and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+		
+		update T
+		set	T.FieldTypeId = I.FieldTypeId,
 				T.CodeValue = iif(T.Name = 'Code', T.Value, null),
-				T.ValueAssetTypeId = L.ID
+		T.ValueAssetTypeId = I.AssetTypeId
 		from	api.ExecutionCatalogItemProperty T
-				inner join api.ExecutionCatalogItem I on 
-					I.ExecutionId = T.ExecutionId and I.ExecutionId = @executionId 
-					and I.[Type] = T.[Type] and I.[Type] = @type 
-					and I.Success is null 
-					and I.SubjectSourceId = T.SubjectSourceId 
-					and I.ObjectSourceId = T.ObjectSourceId 
-				inner join FieldType S on S.IntersectTypeID = I.TypeId and S.Name = T.Name
-				left join AssetType L on L.Object = S.LookupObjectType and L.ObjectID = S.LookupObjectID and S.[Type] = 'Lookup';
+		inner join #tempExecutionCatalogItemI I on I.SubjectSourceIdPrefix = substring(T.SubjectSourceId,1,200) and I.ObjectSourceIdPrefix = substring(T.ObjectSourceId,1,200)
+		where T.ExecutionId = @executionId and T.[Type] = @type;
+
+		drop table if exists #tempExecutionCatalogItemI;
+
 
 		-- Resolve ValueId (the legacy ObjectId) for Code value / lookup fields
 		update	T
@@ -400,19 +483,31 @@ begin
 				inner join Asset S on S.AssetTypeID = T.ValueAssetTypeId and S.Code = T.CodeValue and T.CodeValue is not null and T.ExecutionId = @executionId and T.[Type] = @type;
 
 		-- Property validation.	
+		drop table if exists #tempValidateCatItemPropertyI;
+		create table #tempValidateCatItemPropertyI (SubjectSourceIdPrefix NVarchar(200),ObjectSourceIdPrefix NVarchar(200),SubjectSourceId NVarchar(500),ObjectSourceId NVarchar(500),[Message] NVarchar(4000));
+		create clustered index cx_tempValidateCatItemPropertyI on #tempValidateCatItemPropertyI(SubjectSourceIdPrefix,ObjectSourceIdPrefix);
+		
+		insert into #tempValidateCatItemPropertyI(SubjectSourceIdPrefix,ObjectSourceIdPrefix,
+		SubjectSourceId,ObjectSourceId,[Message])
+		select	substring(I.SubjectSourceId,1,200), substring(I.ObjectSourceId,1,200),
+				I.SubjectSourceId, I.ObjectSourceId,string_agg(V.[Message], '; ') as [Message]
+		from	api.ExecutionCatalogItemProperty I
+				inner join FieldType S on S.ID = I.FieldTypeId 
+				cross apply api.ValidateCatalogItemProperty(I.[Name], I.[Value], I.ValueId, S.IsRequired, S.[Type], S.[Length], S.MinimumLength, S.MaximumLength) V
+		where	I.ExecutionId = @executionId and I.[Type] = @type and V.Success = 0
+		group by substring(I.SubjectSourceId,1,200), substring(I.ObjectSourceId,1,200),
+				 I.SubjectSourceId, I.ObjectSourceId
+
+
 		update	T
 		set		T.Success = 0,
 				T.Message = coalesce(T.Message, '') + Val.Message
 		from	api.ExecutionCatalogItem T
-				cross apply (
-						select	string_agg(V.[Message], '; ') as [Message]
-						from	api.ExecutionCatalogItemProperty I
-								inner join FieldType S on S.ID = I.FieldTypeId 
-								cross apply api.ValidateCatalogItemProperty(I.[Name], I.[Value], I.ValueId, S.IsRequired, S.[Type], S.[Length], S.MinimumLength, S.MaximumLength) V
-						where	I.ExecutionId = T.ExecutionId and I.[Type] = T.[Type] and I.SubjectSourceId = T.SubjectSourceId and I.ObjectSourceId = T.ObjectSourceId and V.Success = 0
-						group by I.SubjectSourceId, I.ObjectSourceId
-				) Val
+		inner join #tempValidateCatItemPropertyI Val on Val.SubjectSourceId = substring(T.SubjectSourceId,1,200) and Val.ObjectSourceId = substring(T.ObjectSourceId,1,200)
+		and Val.SubjectSourceId = T.SubjectSourceId and Val.ObjectSourceId = T.ObjectSourceId
 		where	T.ExecutionId = @executionId and T.[Type] = @type;
+
+		drop table if exists #tempValidateCatItemPropertyI;
 
 		-- Update the Intersect table for existing relationships.
 		update	T
@@ -693,15 +788,27 @@ begin
 
 
 		-- Recalculate display values.
-		merge       AssetDisplayValue as T
-		using       (
+		drop table if exists #tempADV;
+		create table #tempADV(ID bigint,[DisplayValue] [nvarchar](max),
+							  [DisplayValueHash] [nvarchar](50),
+							  [DisplayValuePrefix] [nvarchar](250)
+							 )
+		create clustered index cx_tempADV on #tempADV(ID);
+
+		insert into #tempADV
+		(ID,DisplayValue,DisplayValueHash,DisplayValuePrefix)
 				select		A.Id,
 							ADV.DisplayValue,
 							CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
 							SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
 					from    (select distinct Id from #incoming) A
 							cross apply GetAssetDisplayValueById(A.Id)ADV
-					where   ADV.DisplayValue is not null
+		where   ADV.DisplayValue is not null;
+		
+		
+		merge       AssetDisplayValue as T
+		using       (select A.*
+					 from    #tempADV A
 					) as S
 		on          ( T.AssetID = S.Id )
 		when		matched then
@@ -713,6 +820,8 @@ begin
 		when		not matched by target then
 		insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 		values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @date);
+		
+		drop table if exists #tempADV;
 	end
 
 	if @type = 'E'
