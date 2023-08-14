@@ -274,15 +274,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.onModalClose.emit({ isBack: false });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
-				console.log(this.tableRadioSelection);
-				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((res) => {
+				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
 					this.onModalClose.emit({ isBack: false });
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, this.stepUid)
-					.subscribe((result) => {
+					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
 						this.onModalClose.emit({ isBack: false });
