@@ -265,14 +265,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		});
 	}
 
-	getWorkFlowData(): void {
-		this.workflowService
-			.getAssignmentItem(this.workflowItemUid)
-			.subscribe((res: AssignmentItem): void => {
-				this.workflowName = res.WorkflowName;
-			});
-	}
-
 	getWorkflowReassignmentAssets(): void {
 		this.workflowService
 			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
