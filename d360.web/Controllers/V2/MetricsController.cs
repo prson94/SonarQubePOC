@@ -754,7 +754,7 @@ namespace d360.web.Controllers.V2
 					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
 				}
 
-				var execution = getApiExecution(model.Count);
+				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 
 				return ResponseMessage(
 					Request.CreateResponse(
@@ -1232,7 +1232,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
 		{
 			List<DataQualityResponseModel> responseList;
-			var execution = getApiExecution(request.Count);
+			var execution = getApiExecution(request.Count, action: ApiExecutionAction.PostDataQualityResults);
 			responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution)).ConfigureAwait(false);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
@@ -1489,7 +1489,7 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			var execution = getApiExecution(1);
+			var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataQualityResults);
 			var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution)).ConfigureAwait(false);
 
 			if (responseList == null)
@@ -1544,7 +1544,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
 		{
 			List<DataQualityResponseModel> responseList;
-			var execution = getApiExecution(request.Count);
+			var execution = getApiExecution(request.Count, action: ApiExecutionAction.PutDataQualityResults);
 			responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution)).ConfigureAwait(false);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
@@ -1599,7 +1599,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(request.Count);
+				var execution = getApiExecution(request.Count, action: ApiExecutionAction.PostDataQualityResults);
 
 				ApiExecutionInfo executionInfo = await MetricsRepository.PostBulkDataQualityResults(request, execution, triggersWorkflow);
 

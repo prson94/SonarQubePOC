@@ -896,7 +896,6 @@ namespace d360.model
                 }
             }
 
-			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionResponsibilityTypeRelationOverrideItem");
 			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
             addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 			

@@ -48,27 +48,9 @@ namespace igx.jobs.apiexecutionprocessor
 
     public class ApiExecutionProcessor
     {
-        //#if DEBUG
-        //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
-        //#else
         public async static Task Run([QueueTrigger("%ApiExecutionQueue%", Connection = "QueueStorageAccount")] string myQueueItem, TextWriter log)
-        //#endif
         {
-            ApiExecutionInfo info = null;
-            /*#if DEBUG
-                        info = new ApiExecutionInfo
-                        {
-                            Action = ApiExecutionAction.PostAssets,
-                            CompanyDomainPrefix = "mpappas.eng",
-                            CompanyID = 2, 
-                            ResourceID = 3,
-                            ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7")
-                        };
-            #else*/
-            info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
-            //#endif
-
-            //Should this job be allowed to run?
+            var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
             var job = new ApiJobProcessor();
             await job.Run(info, log);
         }
@@ -86,14 +68,11 @@ namespace igx.jobs.apiexecutionprocessor
         DummyCachingProvider dummyCachingProvider;
         private CompanyContext company;
         AzureStorageProvider storage;
-        ApiExecutionInfo Info;
 
         public async Task Run(ApiExecutionInfo info, TextWriter log)
         {
             CoreFunction.AITrackJobStart(functionName);
             CoreFunction.AITrackEvent(functionName, $"Starting Batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
-
-            Info = info;
 
             #region Create EF connection
 
@@ -106,9 +85,9 @@ namespace igx.jobs.apiexecutionprocessor
             company = JobDbContextCreator.CreateCompanyContext(
                 new UriSecurityContextProvider
                 {
-                    CompanyID = Info.CompanyID,
-                    ResourceID = Info.ResourceID ?? 0,
-                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    CompanyID = info.CompanyID,
+                    ResourceID = info.ResourceID ?? 0,
+                    CompanyPrefix = info.CompanyDomainPrefix,
                     IsAdministrator = false
                 },
                 new MandrillMailProvider
@@ -126,9 +105,9 @@ namespace igx.jobs.apiexecutionprocessor
                 queue,
                 new UriSecurityContextProvider
                 {
-                    CompanyID = Info.CompanyID,
-                    ResourceID = Info.ResourceID ?? 0,
-                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    CompanyID = info.CompanyID,
+                    ResourceID = info.ResourceID ?? 0,
+                    CompanyPrefix = info.CompanyDomainPrefix,
                     IsAdministrator = false
                 });
 
@@ -144,37 +123,10 @@ namespace igx.jobs.apiexecutionprocessor
 
             #endregion
 
-            var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == Info.ExecutionID).SingleOrDefault();
-
-            // Wait a moment in case there are multiple queue messages
-            Thread.Sleep(new Random().Next(2000));
+            var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == info.ExecutionID).SingleOrDefault();
 
             try
             {
-				// jobs with a error message a retrying make them wait in line like the other batch jobs otherwise what happens is > 2 batch jobs start running 
-				// at the same time filling all the batch slots causing people to say why is my job stuck in line. 
-				bool jobAlreadyRunning = (
-					dbExecutionItem != null
-					&& dbExecutionItem.MarkedForProcessing
-					&& string.IsNullOrEmpty(dbExecutionItem.ErrorMessage)
-					);
-
-                //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
-                if (!jobAlreadyRunning && !(await ShouldRunApiJob(company, dbExecutionItem?.ExecutionID)))
-                {
-                    int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
-                    TimeSpan delay = new TimeSpan(0, 0, delaySeconds);
-
-                    if (dbExecutionItem != null)
-                    {
-                        dbExecutionItem.MarkedForProcessing = false;
-                        company.Update(dbExecutionItem);
-                    }
-
-                    await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);
-                    return;
-                }
-
                 if (dbExecutionItem != null)
                 {
                     int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;
@@ -203,12 +155,21 @@ namespace igx.jobs.apiexecutionprocessor
 
                     bool executeJob = (dbExecutionItem.State != d360.core.enums.State.Deleted);
                     
-					dbExecutionItem.MarkedForProcessing = executeJob;
-                    company.Update(dbExecutionItem);
-
 					if (executeJob)
                     {
-						string resultsSql = "";
+						var action = info.Action ?? dbExecutionItem.Action;
+
+						#region Inline Actions/Funcs
+
+						Action markExecutionAsProcessing = () => {
+							dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
+							company.Update(dbExecutionItem);
+						};
+
+						Action markExecutionAsComplete = () =>
+						{
+							company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
+						};
 
 						Action<string> markExecutionAsErred = (err) => {
 							dbExecutionItem.ErrorMessage = err;
@@ -244,14 +205,20 @@ namespace igx.jobs.apiexecutionprocessor
 							}
 						};
 
-						switch (Info.Action)
+						#endregion
+
+						string resultsSql = "";
+
+						markExecutionAsProcessing();
+
+						switch (action)
                         {
 							case ApiExecutionAction.PostAssets:
                                 var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
 								assetTypeActionLogic = async (at) =>
 								{
-									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
-									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
+									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
+									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, useTempTableForFields: false);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(postAssetsFields.AssetTypeUid);
@@ -260,8 +227,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
 								assetTypeActionLogic = async (at) =>
 								{
-									var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
-									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
+									var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
+									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, useTempTableForFields: false);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(putAssetsFields.AssetTypeUid);
@@ -270,8 +237,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
 								assetTypeActionLogic = async (at) =>
 								{
-									var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
-									company.RemoveAssets(dbExecutionItem, at, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
+									var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(info.StorageFolder, info.RequestFileName);
+									company.RemoveAssets(dbExecutionItem, at, deleteAssets, dbExecutionTimeout, info.SendWorkflowEvents);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(deleteAssetsFields.AssetTypeUid);
@@ -280,8 +247,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
 								intersectTypeActionLogic = async (it) =>
 								{
-									var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
-									company.ImportRelationships(dbExecutionItem, it, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+									var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(info.StorageFolder, info.RequestFileName);
+									company.ImportRelationships(dbExecutionItem, it, postRelationships, dbExecutionTimeout, info.SendWorkflowEvents, false);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(postRelationshipsFields.IntersectTypeUid);
@@ -290,8 +257,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 var putRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutRelationships>(dbExecutionItem.Fields);
 								intersectTypeActionLogic = async (it) =>
 								{
-									var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(Info.StorageFolder, Info.RequestFileName);
-									company.PutRelationships(dbExecutionItem, it, putRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+									var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(info.StorageFolder, info.RequestFileName);
+									company.PutRelationships(dbExecutionItem, it, putRelationships, dbExecutionTimeout, info.SendWorkflowEvents, false);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(putRelationshipsFields.IntersectTypeUid);
@@ -300,27 +267,27 @@ namespace igx.jobs.apiexecutionprocessor
                                 var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
 								intersectTypeActionLogic = async (it) =>
 								{
-									var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
-									company.DeleteRelationships(dbExecutionItem, it, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
+									var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(info.StorageFolder, info.RequestFileName);
+									company.DeleteRelationships(dbExecutionItem, it, deleteRelationships, dbExecutionTimeout, info.SendWorkflowEvents);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(deleteRelationshipsFields.IntersectTypeUid);
 								break;
                             case ApiExecutionAction.DeleteAssetTypes:
-                                var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
+                                var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(info.StorageFolder, info.RequestFileName);
                                 company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
                                 company.CreateRollupPathChangedExecution();
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostCrossReferences:
-                                var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(Info.StorageFolder, Info.RequestFileName);
+                                var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
                                 await company.ImportCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
 								resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostDataQualityResults:
-                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(Info.StorageFolder, Info.RequestFileName);
+                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
 
-                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, info.SendWorkflowEvents);
                                 postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
 								
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
@@ -334,22 +301,22 @@ namespace igx.jobs.apiexecutionprocessor
 
                                 break;
                             case ApiExecutionAction.PostDataProfile:
-                                var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+                                var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(info.StorageFolder, info.RequestFileName);
 								await company.UpsertDataProfilesAsync(postDataProfile, dbExecutionItem, true, dbExecutionTimeout);
 								resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PutDataProfile:
-                                var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(Info.StorageFolder, Info.RequestFileName);
+                                var putDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(info.StorageFolder, info.RequestFileName);
 								await company.UpsertDataProfilesAsync(putDataProfile, dbExecutionItem, false, dbExecutionTimeout);
 								resultsSql = @"select [ItemNumber], AssetUid as [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.DeleteDataProfile:
-                                var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(Info.StorageFolder, Info.RequestFileName);
+                                var deleteDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetDataProfileDeleteModel>>(info.StorageFolder, info.RequestFileName);
 								await company.DeleteDataProfilesAsync(deleteDataProfile, dbExecutionItem, dbExecutionTimeout);
 								resultsSql = @"select [ItemNumber], [ExecutionItemUid], AssetUid as [uid], StartDate, EndDate, [Cascade], [Message], [Success] from api.ExecutionDeleteAssetDataProfile where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostResponsibilityOverride:
-                                var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(Info.StorageFolder, Info.RequestFileName);
+                                var postResponsibilityOverride = await storage.DeserializeJsonObjectFromBlobAsync<List<BulkResponsibilityOverridePostModel>>(info.StorageFolder, info.RequestFileName);
                                 await company.BulkInsertResponsibilityOverrideAsync(postResponsibilityOverride, dbExecutionItem, dbExecutionTimeout);
 								resultsSql = @"select [ItemNumber], AssetUid, [ExecutionItemUid], [Message], [Success] from api.ExecutionResponsibilityTypeRelationOverrideItem where ExecutionID = @executionId order by ItemNumber asc";
 								break;
@@ -364,26 +331,30 @@ namespace igx.jobs.apiexecutionprocessor
 								company.Update(dbExecutionItem);
                                 break;
                             case ApiExecutionAction.UpsertUsers:
-                                UserUpsertModel model = await storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(Info.StorageFolder, Info.RequestFileName);
+                                UserUpsertModel model = await storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
                                 await membershipRepository.ProcessUpsertUsers(dbExecutionItem, model.Users, model.LookupFieldsPassedByValue, model.IsInsert, false).ConfigureAwait(false);
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionUser where ExecutionID = @executionId order by ItemNumber asc";
 								break;
 							case ApiExecutionAction.PatchCatalog:
 								var execRepo = new ExecutionsRepository(company, queue, storage);
-								var patchCatalogPayload = await storage.DeserializeJsonObjectFromBlobAsync<PatchBulkCatalogRequestModel>(Info.StorageFolder, Info.RequestFileName);
+								var patchCatalogPayload = await storage.DeserializeJsonObjectFromBlobAsync<PatchBulkCatalogRequestModel>(info.StorageFolder, info.RequestFileName);
 								await execRepo.PatchCatalog(dbExecutionItem.Id, patchCatalogPayload);
 								resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
+								markExecutionAsComplete = () =>
+								{
+									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
+								};
 								break;
 						}
 
 						if (!string.IsNullOrEmpty(resultsSql))
 						{
 							var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
-							await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, results);
+							await storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, results);
+							markExecutionAsComplete();
+							CoreFunction.AITrackJobCompletedNoErrors(functionName);
 						}
                     }
-
-                    CoreFunction.AITrackJobCompletedNoErrors(functionName);
                 }
                 else
                 {
@@ -393,27 +364,35 @@ namespace igx.jobs.apiexecutionprocessor
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, Info.CompanyID, new Dictionary<string, string>() {
-                    { "ExecutionID", Info.ExecutionID.ToString() },
-                    { "StorageFolder", Info.StorageFolder },
-                    { "RequestFileName", Info.RequestFileName },
-                    { "ResponseFileName", Info.ResponseFileName }
-                });
-				
-				company.UpdateExecutionWithErrorFromException(dbExecutionItem, ex);
-            }
-        }
+				int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
+				int maxRetryCount = 20;
+				int retryCount = maxRetryCount;
+				if (!dbExecutionItem.RetryCount.HasValue)
+				{
+					dbExecutionItem.RetryCount = 0;
+				}
+				dbExecutionItem.RetryCount += 1;
+				retryCount = dbExecutionItem.RetryCount.Value;
+				company.Update(dbExecutionItem);
 
-        /// <summary>
-        /// Checks if the current company should permit a new api job to start
-        /// </summary>
-        /// <param name="company"></param>
-        /// <param name="executionID"></param>
-        /// <returns></returns>
-        private async Task<bool> ShouldRunApiJob(CompanyContext company, Guid? executionID)
-        {
-            // call function in db to see if the api job should run
-            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID }, commandTimeout:300);
+				if (retryCount < maxRetryCount)
+				{
+					TimeSpan delay = new TimeSpan(0, 0, delaySeconds * retryCount); // Incremental backoff.
+					await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);				
+				}
+				else 
+				{
+					CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() {
+						{ "ExecutionID", info.ExecutionID.ToString() },
+						{ "StorageFolder", info.StorageFolder },
+						{ "RequestFileName", info.RequestFileName },
+						{ "ResponseFileName", info.ResponseFileName }
+					});
+					company.UpdateExecutionWithErrorFromException(dbExecutionItem, ex);
+				}
+
+				return;
+            }
         }
     }
 }

@@ -1134,8 +1134,7 @@ namespace d360.model.DataAccessLayer
 				CompanyID = Company.CurrentCompanyID,
 				CompanyDomainPrefix = Company.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PostResponsibilityOverride
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);

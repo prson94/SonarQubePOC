@@ -1579,8 +1579,7 @@ from	IntersectType I
 				CompanyID = companyContext.CurrentCompanyID,
 				ResourceID = companyContext.CurrentResourceID,
 				CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
-				ExecutionID = Guid.NewGuid(),
-				Action = ApiExecutionAction.PutRelationships,
+				ExecutionID = execution.ExecutionID,
 				SendWorkflowEvents = triggerWorkflow
 			};
 
@@ -1661,7 +1660,9 @@ from	IntersectType I
 
 		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false)
 		{
-			return companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
+			var results = companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
+			companyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteRelationships);
+			return results;
 		}
 
 		public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, ApiExecution execution, bool triggerWorkflow = false)

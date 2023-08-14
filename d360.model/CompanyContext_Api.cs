@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using System;
@@ -44,9 +45,10 @@ namespace d360.model
 
 		void CalculateProposedKeyHashesBulkLoad(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField");
 
-		void CompleteApiExecutionAndGetCounts(Guid executionId, string apiTableName);
+		void CompleteApiExecutionAndGetCounts(Guid executionId, ApiExecutionAction action);
+		void CompleteApiExecutionAndGetCounts(int executionId, ApiExecutionAction action);
 
-		List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
+		List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false);
 
 		List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
 
@@ -54,9 +56,9 @@ namespace d360.model
 
 		Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);
 
-		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
 		
-		void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true);
+		void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
 
@@ -64,7 +66,7 @@ namespace d360.model
 
 		List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, SystemObjects objectType, string IdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
 
-		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
 
 		List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
 
@@ -1609,31 +1611,120 @@ where   ER.ExecutionID = @ExecutionID
 			}
 		}
 
-		public void CompleteApiExecutionAndGetCounts(Guid executionId, string apiTableName)
+		private void completeApiExecutionAndGetCounts(ApiExecutionAction action, int? id, Guid? uid)
 		{
-			Connection.Execute($@"
-update	E 
-set		E.CompletedOn = @dt,
-		E.MarkedForProcessing = 0,
-		E.[Total] = Tc.Cnt,
-		E.Processed = Pc.Cnt,
-		E.[Error] = Ec.Cnt
-from	api.Execution E
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 0 
-		) Ec
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID and Success = 1
-		) Pc
-		cross apply (
-			select count(1) as Cnt from api.{apiTableName} where ExecutionID = E.ExecutionID
-		) Tc
-where	E.ExecutionID = @executionId",
-new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
-);
+			string apiTableName = null;
+			switch (action)
+			{
+				case ApiExecutionAction.DeleteAssets:
+					apiTableName = "ExecutionDeletedAsset";
+					break;
+				case ApiExecutionAction.DeleteAssetTypes:
+					apiTableName = "ExecutionDeletedAssetType";
+					break;
+				case ApiExecutionAction.DeleteDataProfile:
+					apiTableName = "ExecutionDeleteAssetDataProfile";
+					break;
+				case ApiExecutionAction.DeleteDataQualityResults:
+					apiTableName = "ExecutionDeleteAssetResult";
+					break;
+				case ApiExecutionAction.DeleteFieldTypes:
+					apiTableName = "Execution";
+					break;
+				case ApiExecutionAction.DeleteGroups:
+					apiTableName = "ExecutionDeletedGroup";
+					break;
+				case ApiExecutionAction.DeleteRelationships:
+					apiTableName = "ExecutionDeletedRelationship";
+					break;
+				case ApiExecutionAction.PatchCatalog:
+					apiTableName = "ExecutionCatalogItem";
+					break;
+				case ApiExecutionAction.PostAssets:
+				case ApiExecutionAction.PutAssets:
+					apiTableName = "ExecutionAsset";
+					break;
+				case ApiExecutionAction.PostCrossReferences:
+					apiTableName = "ExecutionAssetCrossReference";
+					break;
+				case ApiExecutionAction.PostDataProfile:
+				case ApiExecutionAction.PutDataProfile:
+					apiTableName = "ExecutionAssetDataProfile";
+					break;
+				case ApiExecutionAction.PostDataQualityResults:
+				case ApiExecutionAction.PutDataQualityResults:
+					apiTableName = "ExecutionAssetResult";
+					break;
+				case ApiExecutionAction.PostGroups:
+				case ApiExecutionAction.PutGroups:
+					apiTableName = "ExecutionGroup";
+					break;
+				case ApiExecutionAction.PostRelationships:
+				case ApiExecutionAction.PutRelationships:
+					apiTableName = "ExecutionRelationship";
+					break;
+				case ApiExecutionAction.PostResponsibilityOverride:
+					apiTableName = "ExecutionResponsibilityTypeRelationOverrideItem";
+					break;
+				case ApiExecutionAction.PostResponsibilityTypes:
+				case ApiExecutionAction.PutResponsibilityTypes:
+					apiTableName = "ExecutionResponsibilityType";
+					break;
+				case ApiExecutionAction.UpsertUsers:
+					apiTableName = "ExecutionUser";
+					break;
+				case ApiExecutionAction.DeleteUsers:
+				case ApiExecutionAction.PostAssetTypes:
+				case ApiExecutionAction.PutAssetTypes:
+				default:
+					apiTableName = null;
+					break;
+			}
+
+			string whereId = "ExecutionID";
+			string paramId = "@uid";
+			if (id.HasValue)
+			{
+				whereId = "Id";
+				paramId = "@id";
+			}
+
+			if (!string.IsNullOrEmpty(apiTableName))
+			{
+				Connection.Execute($@"
+	update	E 
+	set		E.[State] = 4,
+			E.CompletedOn = @dt,
+			E.[Total] = Tc.Cnt,
+			E.Processed = Pc.Cnt,
+			E.[Error] = Ec.Cnt
+	from	api.Execution E
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereId} and Success = 0 
+			) Ec
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereId} and Success = 1
+			) Pc
+			cross apply (
+				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereId}
+			) Tc
+	where	E.{whereId} = {paramId}",
+					new { uid, id, dt = DateTime.UtcNow }, commandTimeout: 540
+				);
+			}
 		}
 
-		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true)
+		public void CompleteApiExecutionAndGetCounts(Guid executionId, ApiExecutionAction action)
+		{
+			completeApiExecutionAndGetCounts(action, null, executionId);
+		}
+
+		public void CompleteApiExecutionAndGetCounts(int executionId, ApiExecutionAction action)
+		{
+			completeApiExecutionAndGetCounts(action, executionId, null);
+		}
+
+		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false)
 		{
 			List<DatabaseBulkRelationshipResult> results = new List<DatabaseBulkRelationshipResult>();
 			bool generalChecksCompleted = false;
@@ -1857,32 +1948,29 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 
 								#endregion
 
-								#region Audit
+								#region Execution Log
 
-								string auditSql = @"
-													insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-														select	distinct
-																A.Object, 
-																A.ObjectID,
-																SUBSTRING(A.DisplayValue,1,250), 
-																@r, 
-																@dt, 
-																'Deleted', 
-																'Intersect',
-																I.ID, 
-																TName.[Name], 
-																'Relationship', 
-																'This relationship has been removed.' 
-														from	[Intersect] I
-																inner join AssetDetail A on {0}
-																cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
-																inner join api.ExecutionDeletedRelationship S on S.IntersectID = I.ID 
-																	and S.ExecutionID = @executionID 
-																	and S.ItemNumber between @beginItemNumber and @endItemNumber 
-																	and S.Success is null;";
+								string logSql = @"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select o.IntersectId,
+					A.Object, 
+					A.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					TName.[Name] as TypeName
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionDeletedRelationship o on o.ExecutionID = e.ExecutionID 
+				and e.ExecutionID = @ExecutionID 
+				and o.ItemNumber between @beginItemNumber and @endItemNumber 
+				and o.Success is null
+			inner join Asset a on (a.Id = o.SubjectID or a.Id = o.ObjectID)
+			left join AssetDisplayValue d on d.AssetID = a.Id
+			inner join [Intersect] I on I.ID = o.IntersectID
+			cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName";
 
-								Connection.Execute(string.Format(auditSql, "A.ID = I.SubjectAssetID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-								Connection.Execute(string.Format(auditSql, "A.ID = I.ObjectAssetID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+								Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 								#endregion
 
@@ -1943,13 +2031,16 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 					endItemNumber += loopSize;
 				}
 
-				CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedRelationship");
+				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				
 				Connection.Close();
 
+				// Workflow
 				if (sendWorkflowEvents)
 				{
 					SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
 				}
+				// Scoring
 				CreateDeleteRelationshipsExecution(execution.ExecutionID, it.ID);
 			}
 
@@ -2298,7 +2389,7 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
             return models;
         }
 
-		public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
+		public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
@@ -2510,17 +2601,12 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 
 					select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
 					union all
-					select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships
-";
+					select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships";
 
-            IEnumerable<DatabaseBulkRelationshipResult> events = Connection.Query<DatabaseBulkRelationshipResult>(sql,
-            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-
-			// TODO: Add event grid calls here.
+            Connection.Query<DatabaseBulkRelationshipResult>(sql, new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true)
+		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportRelationships";
@@ -3269,7 +3355,8 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 
 														update	T
 														set		T.IntersectID = S.ID,
-																T.uid = IT.uid
+																T.uid = IT.uid,
+																T.IsNew = iif(S.[Action] = 'INSERT', 1, 0)
 														from	api.ExecutionRelationship T
 																inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
 																inner join [Intersect] IT on IT.ID = S.ID
@@ -3287,6 +3374,33 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 										fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
 										addMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
 									}
+
+									#region Execution Log
+
+									string logSql = @"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select o.IntersectId,
+					A.Object, 
+					A.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					TName.[Name] as TypeName,
+					o.IsNew
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
+				and e.ExecutionID = @ExecutionID 
+				and o.ItemNumber between @beginItemNumber and @endItemNumber 
+				and o.Success is null
+			inner join Asset a on (a.Id = o.SubjectAssetID or a.Id = o.ObjectAssetID)
+			left join AssetDisplayValue d on d.AssetID = a.Id
+			inner join [Intersect] I on I.ID = o.IntersectID
+			cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName";
+
+									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+									#endregion
 
 									// Update success flag
 									sw.Restart();
@@ -3340,8 +3454,10 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 						endItemNumber += loopSize;
 					}
 
-					CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
 					Connection.Close();
+
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+
 					sw.Restart();
 
 					if (sendWorkflowEvents)
@@ -3872,7 +3988,7 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
             return res;
         }
 
-		public List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true)
+		public List<DatabaseBulkRelationshipUpdateResult> PutRelationships(ApiExecution execution, IntersectType rt, RelationshipUpdates import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "PutRelationships";
@@ -4385,6 +4501,33 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 										addMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
 									}
 
+									#region Execution Log
+
+									string logSql = @"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select o.IntersectId,
+					A.Object, 
+					A.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					TName.[Name] as TypeName,
+					o.IsNew
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
+				and e.ExecutionID = @ExecutionID 
+				and o.ItemNumber between @beginItemNumber and @endItemNumber 
+				and o.Success is null
+			inner join Asset a on (a.Id = o.SubjectAssetID or a.Id = o.ObjectAssetID)
+			left join AssetDisplayValue d on d.AssetID = a.Id
+			inner join [Intersect] I on I.ID = o.IntersectID
+			cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName";
+
+									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+									#endregion
+
 									// Update success flag
 									sw.Restart();
 									Connection.Execute(
@@ -4437,8 +4580,10 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 						endItemNumber += loopSize;
 					}
 
-					CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionRelationship");
 					Connection.Close();
+
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+
 					sw.Restart();
 
 					if (sendWorkflowEvents)
@@ -4819,7 +4964,6 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 		{
 			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 			execution.ErrorMessage = message;
-			execution.MarkedForProcessing = false;
 			execution.CompletedOn = DateTime.UtcNow;
 			Update(execution);
 		}

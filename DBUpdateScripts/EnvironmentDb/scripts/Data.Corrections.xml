@@ -854,6 +854,62 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 	</sql>
   </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-28445">
+	<comment>GOV-28445 - Change the execution table to include the Action being performed</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+	update	T
+	set		T.[Action] = S.[Action]
+	from	api.Execution T
+			inner join (
+				select	Id,
+						case
+							when Method = 'DELETE' and [Route] like '/api/v2/assets/%' then 0
+							when Method = 'POST' and [Route] like '/api/v2/assets/%' then 1
+							when Method = 'PUT' and [Route] like '/api/v2/assets/%' then 2
+							when Method = 'DELETE' and [Route] like '/api/v2/relationships/%' then 3
+							when Method = 'POST' and [Route] like '/api/v2/relationships/%' then 4
+							when Method = 'PUT' and [Route] like '/api/v2/relationships/%' then 5
+							when Method = 'DELETE' and [Route] = '/api/v2/assets' then 6
+							when Method = 'POST' and [Route] = '/api/v2/assets' then 7
+							when Method = 'PUT' and [Route] = '/api/v2/assets' then 8
+							when Method = 'POST' and [Route] = '/api/v2/crossreferences/batch' then 9
+							when Method = 'POST' and [Route] = '/api/v2/crossreferences/bulk' then 9
+							when Method = 'POST' and [Route] = '/api/v2/metrics/quality/results' then 10
+							when Method = 'POST' and [Route] = '/api/v2/metrics/quality/batch/results' then 10
+							when Method = 'POST' and [Route] = '/api/v2/dataprofiles' then 11
+							when Method = 'POST' and [Route] like '/api/v2/dataprofiles/%' then 11
+							when Method = 'PUT' and [Route] = '/api/v2/dataprofiles' then 12
+							when Method = 'PUT' and [Route] like '/api/v2/dataprofiles/%' then 12
+							when Method = 'DELETE' and [Route] like '/api/v2/dataprofiles/%' then 13
+							when Method = 'PUT' and [Route] = '/api/v2/membership/users' then 13
+							when Method = 'PUT' and [Route] = '/api/v2/membership/users' then 13
+							when Method = 'POST' and [Route] = '/api/v2/responsibilities/batch' then 14
+							when Method = 'DELETE' and [Route] = '/api/v2/fields/batch' then 15
+							when Method = 'POST' and [Route] = '/api/v2/membership/users' then 16
+							when Method = 'POST' and [Route] = '/api/v2/membership/batch/users' then 16
+							when Method = 'PUT' and [Route] = '/api/v2/membership/users' then 16
+							when Method = 'PUT' and [Route] = '/api/v2/membership/batch/users' then 16
+							when Method = 'PATCH' then 17
+							when Method = 'DELETE' and [Route] = '/api/v2/membership/groups' then 18
+							when Method = 'POST' and [Route] = '/api/v2/membership/groups' then 19
+							when Method = 'PUT' and [Route] = '/api/v2/membership/groups' then 20	
+							when Method = 'DELETE' and [Route] = '/api/v2/metrics/quality/results' then 21
+							when Method = 'POST' and [Route] = '/api/v2/responsibilities/types' then 22
+							when Method = 'PUT' and [Route] = '/api/v2/responsibilities/types' then 23
+							when Method = 'PUT' and [Route] = '/api/v2/metrics/quality/results' then 24
+							when Method = 'PUT' and [Route] = '/api/v2/metrics/quality/batch/results' then 24
+							else 100
+						end as [Action]
+				from	api.Execution
+		) S on S.Id = T.Id;
+	]]>
+	</sql>
+  </changeSet>
 </databaseChangeLog>
 
 

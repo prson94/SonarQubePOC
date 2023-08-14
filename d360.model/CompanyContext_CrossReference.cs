@@ -178,8 +178,6 @@ namespace d360.model
 						Message ='Added Successfully'
 						Where ExecutionID=@executionID and Success is null; ",
 					new { executionID = execution.ExecutionID }, commandTimeout: timeout);
-
-				CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetCrossReference");
 			}
 			finally
 			{

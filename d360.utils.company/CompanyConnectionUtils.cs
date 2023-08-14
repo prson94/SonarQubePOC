@@ -21,23 +21,24 @@ namespace d360.utils.company
         public static string GetCompanyConnectionString(int companyID)
         {
             string connectionString = "";
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                if (cnn.State != System.Data.ConnectionState.Open)
-                {
-                    cnn.Open();
-                }
 
-                var company = cnn.Query<dynamic>(
-                    @"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
-                    new { companyID }
-                ).FirstOrDefault();
+			using (var cnn = new SqlConnection(Config.GetValue<string>("CommunityContext")))
+			{
+				if (cnn.State != System.Data.ConnectionState.Open)
+				{
+					cnn.Open();
+				}
 
-                if (company != null)
-                {
-                    connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
-                }
-            }
+				var company = cnn.Query<dynamic>(
+					@"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
+					new { companyID }
+				).FirstOrDefault();
+
+				if (company != null)
+				{
+					connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
+				}
+			}
 
             return connectionString;
         }

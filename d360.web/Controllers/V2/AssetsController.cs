@@ -1653,7 +1653,8 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
 				}
 
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
+				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
+				ExecutionsRepository.UpsertExecution(execution);
 				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -1739,7 +1740,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
 				}
 
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
+				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
 				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -1821,8 +1822,8 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.RequestMaxAsset, MAX_SYNCHRONOUS_API_ITEM_COUNT, MAX_SYNCHRONOUS_API_ITEM_COUNT)));
 				}
 
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
-				List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAsset(assets, assetType, execution, triggersWorkflow);
+				var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
+				List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAssets(assets, assetType, execution, triggersWorkflow);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -2749,7 +2750,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
 				}
 
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
+				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
 
 				ApiExecutionInfo executionInfo = await AssetRepository.PostBulkAssets(assets, execution, triggersWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
@@ -2825,7 +2826,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
 				}
 
-				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
+				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
 				var executionInfo = await AssetRepository.PutBulkAssets(assetTypeUid, assets, execution, triggersWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
 			}
@@ -2901,9 +2902,9 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage));
 				}
 
-				var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId);
+				var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
 
-				var executionInfo = await AssetRepository.BulkDeleteAssets(assetTypeUid, assets, execution, clearAllAssetsFromType, triggersWorkflow);
+				var executionInfo = await AssetRepository.DeleteBulkAssets(assetTypeUid, assets, execution, clearAllAssetsFromType, triggersWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
 			}
 			catch (Exception ex)
@@ -2972,7 +2973,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				List<ApiExecutionFields_DeleteAssetTypes> typesForDelete = assetTypes.Select(x => new ApiExecutionFields_DeleteAssetTypes() { AssetTypeUid = x.Uid }).ToList();
-				var execution = getApiExecution(assetTypes.Count, typesForDelete);
+				var execution = getApiExecution(assetTypes.Count, typesForDelete, action: ApiExecutionAction.DeleteAssetTypes);
 
 				ApiExecutionInfo executionInfo = await AssetRepository.DeleteBulkAssetTypes(assetTypes, execution);
 
@@ -3072,13 +3073,13 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(AssetsApiMessages.AssetTypeInProcessNotDelete, assetType.Uid.ToString())));
 				}
 
-				var execution = getApiExecution(1, fieldObj);
+				var execution = getApiExecution(1, fieldObj, action: ApiExecutionAction.DeleteAssetTypes);
 				var deletes = new AssetTypeDeletes
 				{
 					new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid }
 				};
 
-				var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, execution, false);
+				var deleteAssetTypesResults = AssetRepository.DeleteAssetType(deletes, execution, false);
 				Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
 
 				return await Task.FromResult<IHttpActionResult>(

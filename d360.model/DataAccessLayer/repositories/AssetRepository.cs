@@ -2823,7 +2823,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 											WHERE  [Uid]= @AssetUid", new { AssetUid }, ApiTimeout).FirstOrDefault();
 		}
 
-
 		private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
 		{
 			var sql = $@"drop table if exists #family
@@ -3083,23 +3082,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				}).ToList();
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
-		{
-			CompanyContext.Add(execution);
-
-			List<DatabaseBulkAssetResult> results = null;
-			try
-			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
-			}
-			catch (Exception ex)
-			{
-				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
-			}
-
-			return results;
-		}
-
 		public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
 		{
 			var parentType = SystemObjects.ArtifactType;
@@ -3334,23 +3316,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
-		{
-			CompanyContext.Add(execution);
-
-			List<DatabaseBulkAssetResult> results = null;
-			try
-			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
-			}
-			catch (Exception ex)
-			{
-				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
-			}
-
-			return results;
-		}
-
 		public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
 		{
 			List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
@@ -3552,7 +3517,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
 		}
 
-		public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
+		public List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			CompanyContext.Add(execution);
 
@@ -3560,6 +3525,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			try
 			{
 				results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssets);
 			}
 			catch (Exception ex)
 			{
@@ -3569,21 +3535,29 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return results;
 		}
 
-		public async Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution)
+		public List<DatabaseBulkAssetTypeResult> DeleteAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
 		{
-			var executionInfo = new ApiExecutionInfo
+			if (assetTypes.Count > 1)
 			{
-				CompanyID = CompanyContext.CurrentCompanyID,
-				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
-				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.DeleteAssetTypes
-			};
+				throw new ArgumentException(AssetTypeErrors.MaxNumberAllowedAssetType);
+			}
 
-			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
+			CompanyContext.Add(execution);
+			List<DatabaseBulkAssetTypeResult> results = null;
+			try
+			{
+				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, stateChangeOnly);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssetTypes);
+			}
+			catch (Exception ex)
+			{
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+			}
+
+			return results;
 		}
-
-		public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
+		
+		public async Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
@@ -3591,10 +3565,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.DeleteAssets,
 				SendWorkflowEvents = sendWorkflowEvents
 			};
-
 
 			if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
 			{
@@ -3611,6 +3583,37 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
+		public async Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution)
+		{
+			var executionInfo = new ApiExecutionInfo
+			{
+				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+				ExecutionID = Guid.NewGuid(),
+				ResourceID = execution.ResourceID
+			};
+
+			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
+		}
+
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
+		{
+			CompanyContext.Add(execution);
+
+			List<DatabaseBulkAssetResult> results = null;
+			try
+			{
+				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutAssets);
+			}
+			catch (Exception ex)
+			{
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+			}
+
+			return results;
+		}
+
 		public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
@@ -3619,11 +3622,26 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PutAssets,
 				SendWorkflowEvents = sendWorkflowEvents
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
+		}
+
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
+		{
+			List<DatabaseBulkAssetResult> results = null;
+			try
+			{
+				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostAssets);
+			}
+			catch (Exception ex)
+			{
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
+			}
+
+			return results;
 		}
 
 		public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -3634,7 +3652,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PostAssets,
 				SendWorkflowEvents = sendWorkflowEvents
 			};
 
@@ -3820,7 +3837,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 			return resultsModel;
 		}
-
+	
 		public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
 		{
 			var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
@@ -4199,31 +4216,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid }, ApiTimeout);
 		}
 
-
-
-		public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
-		{
-			if (assetTypes.Count > 1)
-			{
-				throw new ArgumentException(AssetTypeErrors.MaxNumberAllowedAssetType);
-			}
-
-			CompanyContext.Add(execution);
-			List<DatabaseBulkAssetTypeResult> results = null;
-			try
-			{
-				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, stateChangeOnly);
-			}
-			catch (Exception ex)
-			{
-				string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-				execution.ErrorMessage = message;
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
-			}
-
-			return results;
-		}
 
 		public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false)
 		{
@@ -5042,6 +5034,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			union
 			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
+		
 		public async Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetType, List<dynamic> customfields, CancellationToken? cancellationToken = null)
 		{
 			string customfieldSelect = "";
@@ -5646,6 +5639,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				}
 			}
 		}
+		
 		public void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "")
 		{
 			bool isShowValue = true;
@@ -5674,6 +5668,5 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				document.SetCellStyle(rowNumber, index, styleGray);
 			}
 		}
-
 	}
 }

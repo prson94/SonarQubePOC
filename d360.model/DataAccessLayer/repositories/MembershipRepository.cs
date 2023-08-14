@@ -1341,7 +1341,7 @@ namespace d360.model.DataAccessLayer
 								end = itemNumber
 							});
 
-			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionUser");
+			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.UpsertUsers);
 
 			return results;
 		}
@@ -1352,9 +1352,8 @@ namespace d360.model.DataAccessLayer
 			{
 				CompanyID = CompanyContext.CurrentCompanyID,
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
-				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.UpsertUsers
+				ExecutionID = execution.ExecutionID,
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, model, StorageProvider, QueueSource).ConfigureAwait(false);
@@ -1380,7 +1379,7 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.UpdateGroups(execution, groups);
-				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionGroup");
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutGroups);
 			}
 			catch (Exception ex)
 			{
@@ -1397,7 +1396,7 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.UpdateGroups(execution, groups);
-				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionGroup");
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostGroups);
 			}
 			catch (Exception ex)
 			{
@@ -1416,7 +1415,7 @@ namespace d360.model.DataAccessLayer
 			try
 			{
 				results = CompanyContext.DeleteGroups(execution, groups);
-				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedGroup");
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteGroups);
 			}
 			catch (Exception ex)
 			{

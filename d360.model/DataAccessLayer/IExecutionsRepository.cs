@@ -19,5 +19,7 @@ namespace d360.model.DataAccessLayer
 		List<APIExecutionErrorApiModel> GetExecutionErrorsByUid(Guid executionUid);
 
 		Task PatchCatalog(int executionId, PatchBulkCatalogRequestModel payload);
+
+		void UpsertExecution(ApiExecution execution);
 	}
 }

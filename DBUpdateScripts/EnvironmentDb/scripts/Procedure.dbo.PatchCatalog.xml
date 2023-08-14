@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.12">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.PatchCatalog-v1.13">
     <comment>GOV-28603,GOV-28727</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -17,18 +17,6 @@ create or alter procedure [dbo].[PatchCatalog]
 as
 begin
 	set nocount on;
-	if @type = 'B'
-	begin
-		-- Update the execution record.
-		update	T 
-		set		T.[State] = 1,
-				T.ProcessingStartedOn = getutcdate(),
-				T.MarkedForProcessing = 1,
-				T.[Total] = mT.[Total]
-		from	api.Execution T
-				cross apply (select count(1) as [Total] from api.ExecutionCatalogItem where ExecutionId = T.Id) mT
-		where	T.Id = @executionId;
-	end
 
 	if @type = 'A'
 	begin
@@ -720,18 +708,6 @@ begin
 		-- Clear out the data we do not need any more.
 		delete	api.ExecutionCatalogItemProperty
 		where	ExecutionID = @executionId;
-
-		-- Update the execution record.
-		update	T 
-		set		T.[State] = 4,
-				T.CompletedOn = getutcdate(),
-				T.MarkedForProcessing = 0,
-				T.[Processed] = mP.[Processed],
-				T.[Error] = mE.[Error]
-		from	api.Execution T
-				cross apply (select count(1) as [Processed] from api.ExecutionCatalogItem where ExecutionId = T.Id and [Action] is not null) mP
-				cross apply (select count(1) as [Error] from api.ExecutionCatalogItem where ExecutionId = T.Id and Success = 0) mE
-		where	T.Id = @executionId;
 	end
 end
 		]]>

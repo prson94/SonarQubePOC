@@ -63,6 +63,11 @@ namespace d360.core
             }
         }
 
+		public static T AsObject<T>(this string item)
+		{ 
+			return JsonConvert.DeserializeObject<T>(item);
+		}
+
         public static string AsJson<T>(this T item)
         {
             var json = JsonConvert.SerializeObject(item);
