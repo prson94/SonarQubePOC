@@ -342,7 +342,7 @@ namespace d360.web.Controllers.Services
 			};
 		}
 
-		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUid:int}/{resourceId:int}/{clearAssignments:bool}")]
+		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUid:Guid}/{resourceId:Guid}/{clearAssignments:Guid}")]
 		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments)
 		{
 
