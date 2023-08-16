@@ -1325,13 +1325,13 @@ namespace d360.model.DataAccessLayer
 
 			var assetJoins = $@"FROM
 								assignments WA
-								INNER JOIN 
+								LEFT JOIN 
 								Asset A on WA.Object=A.object and WA.ObjectID= A.objectID and WA.Object <> 'Issue'
-								INNER JOIN 
+								LEFT JOIN 
 								AssetPath AP on A.ID=AP.ID
-								INNER JOIN 
+								LEFT JOIN 
 								AssetType AST on AST.ID = A.AssetTypeID
-								INNER JOIN 
+								LEFT JOIN 
 								AssetDisplayValue ADV on A.id = ADV.AssetID
 								OUTER APPLY (select {classSQL})IOT
 								{assigneesSql}
@@ -1340,7 +1340,8 @@ namespace d360.model.DataAccessLayer
 										null as uid  										
 								) as IT
 								{string.Join("\n", fieldJoins.GetStatements())}
-								{whereConditions}";
+								{whereConditions} 
+								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
 
 			var assigmentsSQL = $@"SELECT
 							{actionSelects}
