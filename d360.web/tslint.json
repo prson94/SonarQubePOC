@@ -1,4 +1,10 @@
 {
-  "defaultSeverity": "warning",
-  "extends": [ "tslint-angular" ]
+	"defaultSeverity": "warning",
+	"extends": [ "tslint-angular" ],
+	"rules": {
+		"selector-pseudo-element-no-unknown": [
+			true,
+			{ "ignorePseudoElements": [ "ng-deep" ] }
+		]
+	}
 }

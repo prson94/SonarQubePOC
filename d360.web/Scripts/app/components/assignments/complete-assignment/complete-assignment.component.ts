@@ -28,6 +28,7 @@ import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
+import { JsonResult } from '../../../models/jsonresult.model';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -219,7 +220,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	onFormSubmit(): void {
 		const isCompleteForm: boolean = this.radioSelectionValue === 'completeForm';
 		if (this.isMultiSubmition) {
-			const obs: Observable<any>[] = [];
+			const obs: Observable<WorkflowFormResponse | JsonResult>[] = [];
 			let isBack: boolean = false;
 
 			if (this.radioSelectionValue === 'completeForm') {
