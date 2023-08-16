@@ -212,9 +212,13 @@ export class SiteUrlHelpers {
     }
 
     // getAssetTypeConfigurationUrl - Generates the url for a configuration page of an object based on its type
-    static getAssetTypeConfigurationUrl(type: string, uid: string): string {
+	static getAssetTypeConfigurationUrl(type: string, uid: string): string {
         return `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${type}/${uid}/details`;
-    }
+	}
+
+	static getRefererenceTypeUrl(uid: string): string {
+		return `${SiteUrlHelpers.SITE_URL_REFERENCE_V2_ROOT}/${uid}/details`;
+	}
 
 	// getAssetTypeUrl - Generates the url for an object based on its type
 	static getGroupUrl(uid: string): string {

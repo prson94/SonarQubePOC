@@ -38,7 +38,7 @@
                 <p-table #dt
                          [igDataCy]="'ReferenceItemTypes_Page_'"
                          [value]="referenceTypes"
-                         [(selection)]="selectedItem"
+                         [(selection)]="selected"
                          (selectionChange)="selectRow($event)"
                          [globalFilterFields]="['Name',parentKey]"
                          [metaKeySelection]="true"
@@ -145,13 +145,19 @@
                         [setMinMaxWidth]="false"
                         [storageKey]="sidePanelStorageKey"
                         [expanded]="true"
-                        [showEmptyOverlay]="!selectedItem && !selectedForInfoPanel"
+                        [showEmptyOverlay]="!selected && !selectedForInfoPanel"
                         (expandedChange)="sidePanelOpen=$event"
                         hasDetail="true">
                 <ng-container *ngIf="sidePanelOpen">
-                    <ng-container *ngIf="selectedItem && !selectedForInfoPanel">
-                        <ig-asset-type-detail-v2 [uid]="selectedItem.uid" (onEditClick)="onEditClick.emit($event)">
+                    <ng-container *ngIf="selected && !selectedForInfoPanel">
+                        <ig-asset-type-detail-v2 [uid]="selected.uid" (onEditClick)="openEditForm($event)">
                         </ig-asset-type-detail-v2>
+                    </ng-container>
+                    <ng-container *ngIf="selectedForInfoPanel && !selected">
+                        <asset-preview [assetUid]="selectedForInfoPanel.AssetUid"
+                                       [assetType]="selectedForInfoPanel.Object"
+                                       [hasEditLink]="false"
+                                       [hasOpenLink]="true"></asset-preview>
                     </ng-container>
                 </ng-container>
             </side-panel>

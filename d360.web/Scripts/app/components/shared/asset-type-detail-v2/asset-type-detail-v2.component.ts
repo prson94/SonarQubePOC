@@ -150,10 +150,15 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	}
 
 	onAssetTypeOpen(isNewTab = false) {
-		const openUrl = this.isAdmin ? SiteUrlHelpers.getAssetTypeConfigurationUrl(
+		let openUrl = this.isAdmin ? SiteUrlHelpers.getAssetTypeConfigurationUrl(
 			AssetTypeClass[this.assetTypeModel.Class.ID],
 			this.uid
 		) : SiteUrlHelpers.getAssetTypeUrl(this.uid);
+
+		if (this.assetTypeModel.Class.ID === 9) {
+			openUrl = SiteUrlHelpers.getRefererenceTypeUrl(this.uid);
+		}
+
 		if (isNewTab) {
 			window.open(openUrl, '_blank');
 		} else {

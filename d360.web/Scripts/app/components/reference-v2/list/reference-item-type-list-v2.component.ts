@@ -15,6 +15,7 @@ import { IOutputData } from "angular-split";
 import { Subscription } from "rxjs";
 import { AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
 import { SidePanelService } from "../../../services/side-panel.service";
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 /*global $localize*/
 
@@ -41,7 +42,6 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	assetTypeClass: AssetTypeClass = AssetTypeClass.Reference;
 	public simpleFilterValue: string = "";
 
-	selectedItem: AssetTypeApiModel = null;
 	selectedForInfoPanel: unknown = null;
 	isModalVisible: boolean = false;
 	sidePanelStorageKey: string = "ReferenceItemType";
@@ -70,9 +70,6 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	get assetTypEditorTitle(): string {
 		return this.selected != null ? $localize`Edit Reference List` : $localize`Add Reference List`;
 	}
-	get baseUrl() {
-		return `reference`;
-	}
 
 
 	constructor(
@@ -93,13 +90,13 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 					this.secondarySidePanel = "field";
 					this.secondarySidePanelOpen = true;
 				}
-			} else if (ev.type === AssetDetailClickType.Asset) {
-				if (ev.url === "iteminformation") {
-					this.selectedForSecondaryPanel = ev.data;
-					this.secondarySidePanel = "item";
-					this.secondarySidePanelOpen = true;
-				}
-
+			} else if (ev.type === AssetDetailClickType.Asset && ev.url === "iteminformation") {
+				this.selectedForSecondaryPanel = ev.data;
+				this.secondarySidePanel = "item";
+				this.secondarySidePanelOpen = true;
+			} else {
+				this.selected = null;
+				this.selectedForInfoPanel = { AssetUid: ev.data.uid, Object: ev.data.type };
 			}
 		});
 
@@ -161,11 +158,11 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	listItemTransform(type: AssetTypeApiModel) {
 		//set menu items
 		const menuItems = [];
-		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedItem = type; this.sidePanelOpen = true; } });
+		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selected = type; this.sidePanelOpen = true; } });
 		menuItems.push({ "title": $localize`Open`, callback: () => this.openItem(type.uid) });
 		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.openItem(type.uid, true) });
 		if (this.hasModifyAssetPermissions()) { menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.uid) }); }
-		if (this.hasDeleteAssetPermissions) { menuItems.push({ "title": $localize`Delete`, callback: () => { this.referenceItemTypeToDelete = type; } }); }
+		if (this.hasDeleteAssetPermissions()) { menuItems.push({ "title": $localize`Delete`, callback: () => { this.referenceItemTypeToDelete = type; } }); }
 		type[this.menuKey] = menuItems;
 
 		type[this.parentKey] = this.getParent(type);
@@ -182,7 +179,8 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 
 	selectRow(row: AssetTypeApiModel) {
 		this.secondarySidePanelOpen = false;
-		this.selectedItem = row;
+		this.selectedForInfoPanel = null;
+		this.selected = row;
 		this.selectedChange.emit(row);
 	}
 
@@ -195,7 +193,7 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	}
 
 	onDeleteClose($event) {
-		this.selectedItem = null;
+		this.selected = null;
 		this.referenceItemTypeToDelete = null;
 		if ($event) {
 			this.load();
@@ -208,7 +206,7 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	}
 
 	ngOnChanges(changes: SimpleChanges) {
-		if (changes.selectedItem && changes.selectedItem.currentValue !== changes.selectedItem.previousValue) {
+		if (changes.selected && changes.selected.currentValue !== changes.selected.previousValue) {
 			this.selectedForInfoPanel = null;
 		}
 	}
@@ -234,8 +232,8 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	}
 
 	get anySelectedItem(): unknown {
-		if (this.selectedItem) {
-			return this.selectedItem;
+		if (this.selected) {
+			return this.selected;
 		}
 		else {
 			return this.selectedForInfoPanel;
@@ -255,7 +253,7 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	}
 
 	openItem(uid: string, newTab: boolean = false) {
-		const url = `${this.baseUrl}/${uid}/details`;
+		const url = SiteUrlHelpers.getRefererenceTypeUrl(uid);
 		if (newTab) {
 			// eslint-disable-next-line
 			window.open(url, "_blank");

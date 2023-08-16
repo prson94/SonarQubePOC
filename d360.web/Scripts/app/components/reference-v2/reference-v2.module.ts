@@ -47,6 +47,7 @@ import { SiteModalModule } from "../shared/modal/gov-modal.module";
 import { PortalsModule } from '../shared/portals/portals.module';
 import { AuditModule } from '../sidebar/audit/audit.module';
 import { MonitorModule } from '../monitor/monitor.module';
+import { AssetPreviewModule } from '../shared/asset-preview/asset-preview.module';
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
@@ -96,6 +97,7 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 		SharedResponsibilitiesModule,
 		RelationshipGridModule,
 		MonitorModule,
+		AssetPreviewModule,
 		ReferenceItemsModule,
 
 		SharedDeleteFormModule,
