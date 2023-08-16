@@ -391,7 +391,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[HttpPost, Route("ReassignWorkflowObjectByUid/{itemUID:Guid}/{workflowTypeUID:Guid}/{objectId:int}/{objectType}/{itemStepUID:Guid}")]
-		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, Guid? resourceUID)
+		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, Guid? resourceUID = null)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == workflowTypeUID).FirstOrDefault();
 
@@ -423,16 +423,16 @@ namespace d360.web.Controllers.Services
 
 			int? resourceId = null;
 
-			if (resourceUID.HasValue)
+			if (resourceUID != null && resourceUID != Guid.Empty)
 			{
-				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID.Value).FirstOrDefault();
+				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUID).FirstOrDefault();
 
 				if (resource == null)
 				{
 					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
 				}
 
-				resourceId = resource.ResourceID;
+				resourceId = resource.ResourceID;								
 			}
 
 			return ReassignWorkflowObject(item.ID, type.ID, objectId, objectType, itemStep.ID, resourceId);
