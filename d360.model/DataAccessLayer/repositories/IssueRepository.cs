@@ -64,14 +64,7 @@ namespace d360.model.DataAccessLayer
 									AND E.Condition.value('(./Conditions/Condition[@ContextualFieldID=""IssueObjectID""]/@Value)[1]', 'int') = AT.ObjectID))";
 
 			var workflowObjectSql = $@"EXISTS (SELECT 1 FROM workflow.type T INNER JOIN workflow.EventRegistration E on E.TypeID = T.ID and E.[Object] = 'IssueType' and E.ObjectID = IT.ID and T.State = 1
-									WHERE {assetCondition})";
-			
-			var assignmentsSql = $@"SELECT 1
-									  FROM [workflow].[EventRegistration] E
-									  inner join workflow.Version V on E.TypeID=V.TypeID
-									  inner join workflow.item wi on wi.VersionID = v.ID and CompletedOn is null
-									where 
-										E.[Object] = 'IssueType' and E.ObjectID = IT.ID";
+									WHERE {assetCondition})";			
 
 			issueTypeSql = baseIssueTypesSql;
 
@@ -87,6 +80,16 @@ namespace d360.model.DataAccessLayer
 			var hasAssignmentsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_hasassignments");
 
 			hasAssetParam = !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) || !string.IsNullOrWhiteSpace(assetUidParam.Value);
+
+			var assignmentsSql = $@"SELECT 1
+									  FROM [workflow].[EventRegistration] E
+									  inner join workflow.Version V on E.TypeID=V.TypeID
+									  inner join workflow.item wi on wi.VersionID = v.ID and CompletedOn is null
+									  {(string.IsNullOrWhiteSpace(assetUidParam.Value) ? "" : 
+									  @"left join asset A2 on WI.Object <> 'Issue' and A.object = WI.object and WI.objectID=A.objectID and A2.ID = A.ID
+									  left join issue I on WI.object = 'Issue' and WI.objectID=I.ID and I.AssetID = A.ID")}										
+									where 
+										E.[Object] = 'IssueType' and E.ObjectID = IT.ID";
 
 			#region Action Type
 
@@ -149,8 +152,8 @@ namespace d360.model.DataAccessLayer
 				if (hasAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAssignmentsParam.Value) && bool.TryParse(hasAssignmentsParam.Value, out hasAssignments))
 				{
 					if (hasAssignments)
-					{
-						var assetAssignmentsSQL = $@"exists ({assignmentsSql} and ({assetCondition}))";
+					{													
+						var assetAssignmentsSQL = $@"exists ({assignmentsSql} and ({assetCondition}) {(!string.IsNullOrWhiteSpace(assetUidParam.Value) ? "and (A2.Id is not null or I.assetID is not null)" : "")})";
 						var issueAssignmentsSql = hasAssetParam ? assetAssignmentsSQL : $@"exists({assignmentsSql})";
 
 						issueConditions.Add(issueAssignmentsSql);

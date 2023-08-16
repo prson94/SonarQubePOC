@@ -109,11 +109,11 @@ namespace igx.functions.databasetaskprocessor
                         }
 
                         var checkoutAndGetQueueItemSql = $@"
-                            declare @IDs table (ID uniqueidentifier)
+                            declare @IDs table (ID uniqueidentifier,index ix_IDs clustered (ID))
 
                             ;WITH CTE AS 
                             ( 
-                                SELECT TOP {numberOfQueueItems} * 
+                                SELECT TOP {numberOfQueueItems} MachineAssigned, ID
                                 FROM [queue].[task]
                                 where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
                                 ORDER BY [Date] ASC
@@ -133,7 +133,7 @@ namespace igx.functions.databasetaskprocessor
                         {
                             try
                             {
-                                queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction: trans).ToList();
+                                queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction: trans,commandTimeout: 60).ToList();
 
                                 trans.Commit();
                             }

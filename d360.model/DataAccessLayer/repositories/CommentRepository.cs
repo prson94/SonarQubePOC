@@ -859,7 +859,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 							notification.RecipientEmail = r.Email;
 							notification.RecipientName = r.FullName;
 
-							var commentUrl = $"/sidebar/comments/{assetDetail.uid}";
+							var commentUrl = $"/asset/{assetDetail.uid}/comments";
 							var assetUrl = $"/asset/{assetDetail.uid}";
 
 							if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.AssetTypeID, r.ResourceID))

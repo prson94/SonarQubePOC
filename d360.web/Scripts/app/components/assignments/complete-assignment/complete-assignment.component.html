@@ -1,188 +1,288 @@
 <d3s-modal #modal
-	[showTitle]="false"
-	[isVisible]="isModalVisible"
-	[showActionBar]="true"
-	[confirmButtonLabel]="'Submit'"
-	[cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
-	[secondaryButtonDisabled]="!workflowForm?.valid"
-	[discardForm]="discardForm"
-	(onClose)="discardForm ? discardFormFunc() : closeModal()"
-	(onConfirm)="onFormSubmit()"
-	[closePopupOnConfirm]="false"
-	[showBack]="isBulkRespond"
-    (onBack)="onBack()"
-	(onCloseClick)="onCloseClick()"
-	i18n-backButtonLabel
-	backButtonLabel="Back to Assignment Selection"
-	[additionalClasses]="'xlarge-dialog'"
->
+		   [showTitle]="false"
+		   [isVisible]="isModalVisible"
+		   [showActionBar]="true"
+		   [confirmButtonLabel]="'Submit'"
+		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
+		   [secondaryButtonDisabled]="radioSelectionValue === 'completeForm' && !workflowForm?.valid"
+		   [discardForm]="discardForm"
+		   (onClose)="discardForm ? discardFormFunc() : closeModal()"
+		   (onConfirm)="onFormSubmit()"
+		   [closePopupOnConfirm]="false"
+		   [showBack]="isBulkRespond"
+		   (onBack)="onBack()"
+		   (onCloseClick)="onCloseClick()"
+		   i18n-backButtonLabel
+		   backButtonLabel="Back to Assignment Selection"
+		   [additionalClasses]="'xlarge-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
 					<div class="title">
-						{{ modalTitle }}
-						<span class="title-emp" *ngIf="isBulkRespond" i18n>Bulk Respond</span>
-						<span class="modal-buttons" *ngIf="!isBulkRespond">
-							<button
-								igButton
-								[ngClass]="
+						<ng-container *ngIf="onlyAdminReassignMode"><span i18n>Reassign</span></ng-container>
+						<ng-container *ngIf="!onlyAdminReassignMode">{{ modalTitle }}</ng-container>
+
+						<span class="title-emp" *ngIf="isBulkRespond && !onlyAdminReassignMode" i18n>Bulk Respond</span>
+						<span class="modal-buttons" *ngIf="!isBulkRespond && !onlyAdminReassignMode">
+							<button igButton
+									[ngClass]="
 									isAssignmentProgressSelected
 										? ''
 										: 'selected'
-								"
-								[icon]="'fa-file-text'"
-								(click)="showAssignment()"
-								class="ig-button-secondary side-panel-button"
-							></button>
-							<button
-								igButton
-								[icon]="'fa-list-ul'"
-								[ngClass]="
+								" [icon]="'fa-file-text'" (click)="showAssignment()"
+									class="ig-button-secondary side-panel-button"></button>
+							<button igButton [icon]="'fa-list-ul'" [ngClass]="
 									isAssignmentProgressSelected
 										? 'selected'
 										: ''
-								"
-								(click)="showAssignmentProgress()"
-								class="ig-button-secondary side-panel-button"
-							></button>
+								" (click)="showAssignmentProgress()"
+									class="ig-button-secondary side-panel-button"></button>
 						</span>
 					</div>
 				</div>
-				<div>{{workflowName}}<span i18n> on </span> <a (click)="onClickAsset($event)">{{ assetName }}</a></div>
-				<div
-					[hidden]="isAssignmentProgressSelected"
-					class="scrollable-content details-container"
-				>
-					<d3s-loading [isLoading]="isLoading"></d3s-loading>
-					<div *ngIf="!isLoading" class="asset-detail">
+				<div>
+					{{workflowName}}<span i18n> on </span> <a (click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
+				</div>
+				<div [hidden]="isAssignmentProgressSelected"
+					 class="scrollable-content details-container">
+					<div class="asset-detail">
+						<div class="d-flex column" *ngIf="(allowReassignObject || allowReassignResource) && !onlyAdminReassignMode">
+							<div i18n>What would you like to do?</div>
+							<div class="radio-button">
+								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
+											   [(ngModel)]="radioSelectionValue">
+								</p-radioButton>
+							</div>
+							<div class="radio-button" *ngIf="allowReassignResource">
+								<p-radioButton igRadioButton value="reassignUser" label="Reassign"
+											   [(ngModel)]="radioSelectionValue">
+								</p-radioButton>
+							</div>
+							<div class="radio-button" *ngIf="allowReassignObject">
+								<p-radioButton igRadioButton value="changeAsset" label="Change the Associated Asset"
+											   [(ngModel)]="radioSelectionValue">
+								</p-radioButton>
+							</div>
+							<div class="govern-hr"></div>
+						</div>
 						<div class="asset-detail-tabs">
-							<ig-property-group
-								i18n-title
-								title="Information"
-								[showHeaderLine]="false"
-								[shouldBePadded]="false"
-							>
+							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title title="Information" [showHeaderLine]="false"
+											   [shouldBePadded]="false">
 								<div readonly>
 									<ng-container>
 										<div class="row">
 											<div class="category-column">
-												<label
-													class="ig-label"
-													i18n
-												>{{ formTitle }}</label
-												>
-												<div
-													class="ig-value"
-													[innerHTML]="
-															formDescription
-														"
-												></div>
+												<label class="ig-label" i18n>
+													{{
+													formTitle
+													}}
+												</label>
+												<div class="ig-value" [innerHTML]="
+														formDescription
+													"></div>
 											</div>
 										</div>
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<ig-property-group *ngIf="request && request.Action" i18n-title title="Request"
-											   [shouldBePadded]="false" [customTemplate]="true"
-											   [showHeaderLine]="false" [sideTemplate]="requestSidePanel">
+							<ig-property-group *ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title title="Request"
+											   [shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
+											   [sideTemplate]="requestSidePanel">
 								<ng-template #requestSidePanel>
-									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>Open in side
-										panel</a>
-									<a *ngIf="sidePanelOpen" (click)="sidePanelOpen=false" i18n>Close side panel</a>
+									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>
+										Open in side
+										panel
+									</a>
+									<a *ngIf="sidePanelOpen" (click)="sidePanelOpen = false" i18n>Close side panel</a>
 								</ng-template>
 								<div readonly>
 									<ng-container>
 										<d3s-assignment-information-request [showSubmittedByData]="true"
-																			[workflowActionUid]="request.Action.Uid"
-																			[stepUid]="stepUid"
-																			[workflowItemUid]="workflowItemUid">
+																			[workflowActionUid]="
+												request.Action.Uid
+											" [stepUid]="stepUid" [workflowItemUid]="workflowItemUid">
 										</d3s-assignment-information-request>
 									</ng-container>
 								</div>
 							</ig-property-group>
 
-							<d3s-assignment-asset-list *ngIf="isBulkRespond" [items]="multiSubmitionItems"></d3s-assignment-asset-list>
-							
-							<form
-								(ngSubmit)="onFormSubmit()"
-								#workflowForm="ngForm"
-								#form
-							>
-								<ng-template #requiredFieldsTemplate>
-									<ig-form-feedback-badges
-										class="ig-form-feedback-badges"
-										[igformGroup]="workflowForm.form"
-										[inputContainer]="formElement"
-									>
-									</ig-form-feedback-badges>
+							<d3s-assignment-asset-list *ngIf="isBulkRespond && radioSelectionValue === 'completeForm'"
+													   [items]="multiSubmitionItems"></d3s-assignment-asset-list>
 
+							<form *ngIf="radioSelectionValue === 'completeForm'"
+								  (ngSubmit)="onFormSubmit()"
+								  #workflowForm="ngForm"
+								  #form>
+								<ng-template #requiredFieldsTemplate>
+									<ig-form-feedback-badges class="ig-form-feedback-badges"
+															 [igformGroup]="workflowForm.form"
+															 [inputContainer]="formElement">
+									</ig-form-feedback-badges>
 								</ng-template>
-								<ig-property-group
-									i18n-title
-									title="Form fields"
-									[showHeaderLine]="false"
-									[sideTemplate]="requiredFieldsTemplate"
-									[customTemplate]="true"
-								>
+								<ig-property-group i18n-title title="Form fields" *ngIf="
+										!hasObjectReassign ||
+										radioSelectionValue === 'completeForm'
+									" [showHeaderLine]="false" [sideTemplate]="requiredFieldsTemplate"
+												   [customTemplate]="true"
+												   [shouldBePadded]="false">
 									<div readonly>
 										<div class="row">
 											<div class="l6 s12">
-												<d3s-complete-assignment-form-fields
-													[fields]="formFields"
-													[form]="workflowForm"
-													[formElement]="
-															formElement
-														"
-													(discardForm)="
-															onFormInput($event)
-														"
-												>
+												<d3s-complete-assignment-form-fields [fields]="formFields"
+																					 [form]="workflowForm"
+																					 [formElement]="formElement"
+																					 (discardForm)="
+														onFormInput($event)
+													">
 												</d3s-complete-assignment-form-fields>
 											</div>
 										</div>
 									</div>
 								</ig-property-group>
 							</form>
+
+							<ng-container *ngIf="radioSelectionValue === 'reassignUser'">
+								<div class="ig-value">Choose the new assignee:</div>
+								<div class="search-field">
+									<ig-search-field mode="Keypress"
+													 [debounce]="600"
+													 (onSearch)="dt.filterGlobal($event.target.value,'contains')">
+									</ig-search-field>
+								</div>
+
+								<p-table #dt [value]="userData" [rows]="5" [paginator]="true"
+										 [globalFilterFields]="['text']" [pageLinks]="3"
+										 [(selection)]="tableRadioSelection">
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 40px"></th>
+											<th [pSortableColumn]="'text'">
+												<ng-container i18n>Name</ng-container>
+												<d3s-sortIcon [field]="'text'"></d3s-sortIcon>
+											</th>
+											<th style="width: 50px"></th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr>
+											<td>
+												<p-tableRadioButton [value]="item"></p-tableRadioButton>
+											</td>
+											<td>
+												{{ item.FullName }}
+											</td>
+											<td>
+												<button igButton icon="fa-info-circle" class="ig-state-focus"
+														(click)="
+															onClickResource(
+																$event,
+																item.ResourceID
+															)
+														">
+												</button>
+											</td>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="summary">
+										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+									</ng-template>
+								</p-table>
+
+
+								<div *ngIf="onlyAdminReassignMode" class="checkbox-selector">
+									<p-checkbox igCheckbox
+												[(ngModel)]="sendFormEmails"
+												label="Send form e-mails"
+												i18n-label
+												binary="true">
+									</p-checkbox>
+
+								</div>
+
+								<div class="checkbox-selector">
+									<p-checkbox igCheckbox
+												[(ngModel)]="clearOtherAssignments"
+												label="Clear other assignments"
+												i18n-label
+												binary="true">
+									</p-checkbox>
+
+									<span class="field-tooltip fa fa-question-circle"
+										  i18n-pTooltip
+										  pTooltip="This removes all other assignees of this form. Selected user will become the only assignee."
+										  tooltipPosition="top"
+										  tooltipStyleClass="ig-tooltip"></span>
+								</div>
+
+							</ng-container>
+							<ng-container *ngIf="radioSelectionValue === 'changeAsset'">
+								<div class="ig-value" i18n>
+									Choose the new associated asset:
+								</div>
+								<input type="text" pInputText size="100" (input)="
+										dt.filterGlobal(
+											$event.target.value,
+											'contains'
+										)
+									" i18n-placeholder placeholder="Search" class="grid-simple-filter" />
+								<p-table #dt [value]="assets" [rows]="5" [paginator]="true"
+										 [globalFilterFields]="['Name']" [pageLinks]="3"
+										 [(selection)]="tableRadioSelection">
+									<ng-template pTemplate="header">
+										<tr>
+											<th style="width: 4rem"></th>
+											<th [pSortableColumn]="'Name'">
+												<ng-container i18n>Name</ng-container>
+												<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+											</th>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="body" let-item>
+										<tr>
+											<td>
+												<p-tableRadioButton [value]="item"></p-tableRadioButton>
+											</td>
+											<td>
+												<div class="row-data">
+													{{ item.Name }}
+													<button igButton icon="fa-info-circle"
+															class="ig-state-focus"
+															(click)="onClickAsset($event, Number(item.ObjectID))
+														"></button>
+												</div>
+											</td>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="summary">
+										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+									</ng-template>
+								</p-table>
+							</ng-container>
 						</div>
 					</div>
 				</div>
-				<div
-					[hidden]="!isAssignmentProgressSelected"
-					class="scrollable-content progress-container"
-				>
-					<d3s-assignment-progress
-						[workflowItemUid]="workflowItemUid"
-						[workflowUid]="workflowTypeUid"
-						[showCompleteAssignment]="false"
-						[workflowTypeVersion]="workflowTypeVersion"
-						(stepClickChange)="stepClickChanged($event)"
-					></d3s-assignment-progress>
-					<d3s-assignment-information
-						[showCompleteAssignment]="false"
-						[workflowItemUid]="workflowItemUid"
-					></d3s-assignment-information>
+				<div [hidden]="!isAssignmentProgressSelected" class="scrollable-content progress-container">
+					<d3s-assignment-progress [workflowItemUid]="workflowItemUid" [workflowUid]="workflowTypeUid"
+											 [showCompleteAssignment]="false"
+											 [workflowTypeVersion]="workflowTypeVersion"
+											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
+					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
+					</d3s-assignment-information>
 				</div>
 			</div>
 		</div>
 		<div class="side-panel">
-			<side-panel
-				[(expanded)]="sidePanelOpen"
-				[storageKey]="sidePanelStorageKey"
-				hasDetail="true"
-				height="calc(100vh - 220px)"
-			>
+			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" hasDetail="true"
+						height="calc(100vh - 220px)">
 				<ng-container>
-					<d3s-side-panel-switcher
-						[hidden]="!sidePanelOpen"
-						[showPanelHeader]="false"
-						#sidePanelSwitcherComponent
-					></d3s-side-panel-switcher>
+					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false"
+											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>
 		</div>
 	</div>
 </d3s-modal>
-
-

@@ -18,6 +18,7 @@ import { CompleteAssignmentComponent } from '../complete-assignment/complete-ass
 })
 export class UserAssignmentsComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() userUid: string;
+	@Input() isAdminPage: boolean = false;
 	loadSub: Subscription;
 
 	totalRecords: number;
@@ -32,6 +33,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	urlWorkflowTypeUid: string = '';
 	urlWorkflowStepUid: string = '';
 	urlWorkflowVersion: number = 0;
+	onlyAdminReassignMode: boolean = false;
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
@@ -69,6 +71,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	}
 
 	loadUserAssignments() {
+		if (!this.isMe && this.isAdminPage) {
+			this.onlyAdminReassignMode = true;
+		}
+
 		if (this.loadSub) {
 			this.loadSub.unsubscribe();
 		}
@@ -181,9 +187,13 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 	}
 
-	onCompleteAssignmentModalClose(event: { isBack: boolean }) {
+	onCompleteAssignmentModalClose(event: { isBack: boolean, isCompleteForm: boolean }) {
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
 		}
+		else if (!event.isCompleteForm) {
+			this.multiAssignComponent.removeSelected();
+		}
+		this.loadUserAssignments();
 	}
 }

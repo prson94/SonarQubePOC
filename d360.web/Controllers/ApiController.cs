@@ -2403,7 +2403,8 @@ namespace d360.web.Controllers
 						{columns}
 						A.ResourceID ID,
 						A.ResourceID,
-						A.FirstName + ' ' + A.LastName as FullName 
+						A.FirstName + ' ' + A.LastName as FullName,
+						A.Uid
 				from    (
 						select	GR.FirstName,
 								GR.LastName,
@@ -2412,7 +2413,8 @@ namespace d360.web.Controllers
 								GR.State,
 								GR.IsAdministrator,
 								GR.ResourceID,
-								AI.ID as ID
+								AI.ID as ID,
+								GR.Uid
 						from	reporting.Global_Resource GR
 						inner join Asset AI on AI.Uid = GR.Uid
 								where {statusCondition} 

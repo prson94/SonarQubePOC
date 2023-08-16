@@ -14,7 +14,8 @@
 				<div class="action-bar">
 					<button igButton class="ig-button-secondary" (click)="isModalVisible = false" i18n>Close</button>
 					<span class="grow"></span>
-					<button igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0">Complete Assignments > </button>
+					<button *ngIf="!onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Complete Assignments > </button>
+					<button *ngIf="onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Reassign > </button>
 				</div>
 			</ng-container>
 		</div>
@@ -83,7 +84,7 @@
 										 [value]="assignments"
 										 [metaKeySelection]="true"
 										 [scrollable]="true"
-										 [scrollHeight]="'calc(100vh - 353px)'"
+										 [scrollHeight]="'calc(100vh - 410px)'"
 										 [(selection)]="selected"
 										 [sortOrder]="-1">
 									<ng-template pTemplate="header">

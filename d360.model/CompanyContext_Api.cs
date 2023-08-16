@@ -145,7 +145,7 @@ namespace d360.model
 											[Ignore] [bit] NULL,
 									);
 
-									CREATE NONCLUSTERED INDEX IX_TempExecutionField ON #ExecutionField ( ExecutionID ASC, ItemNumber ASC, FieldName ASC );
+									CREATE CLUSTERED INDEX IX_TempExecutionField ON #ExecutionField ( ExecutionID ASC, ItemNumber ASC, FieldName ASC );
 								", transaction: trans);
 			}
 		}
@@ -2911,9 +2911,13 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 
 					if (useTempTablesForIntersects)
 					{
-						intersectTempTableQuery = @$"drop table if exists #tempIntersects
+						intersectTempTableQuery = @$"
+										drop table if exists #tempIntersects;
+										create table #tempIntersects(Id int,SubjectAssetID bigint,ObjectAssetID bigint);
+										create clustered index cx_tempIntersects on #tempIntersects(SubjectAssetID,ObjectAssetID);
+
+										insert into #tempIntersects
 										select I.Id, I.SubjectAssetID, I.ObjectAssetID
-										into #tempIntersects
 										from [IntersectType] IT 
 										inner join [Intersect] I on I.IntersectTypeID = IT.ID
 										where IT.uid = @uid";
@@ -2935,7 +2939,7 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 												@otid = ObjectAssetTypeID,
 												@it = ID
 										from	IntersectType
-										where	[uid] = @uid
+										where	[uid] = @uid;
 
 										update	T
 										set		T.SubjectAssetID = coalesce(I.SubjectAssetID, 0),
@@ -2949,6 +2953,27 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 										
 										{intersectTempTableQuery}
 
+										drop table if exists #tempassetS;
+										drop table if exists #tempassetO;
+
+										create table #tempassetS(Id bigint,AssetTypeID int,Uid Uniqueidentifier);
+										create table #tempassetO(Id bigint,AssetTypeID int,Uid Uniqueidentifier);
+
+										insert into #tempassetS(ID,AssetTypeID,Uid)
+										select distinct S.ID,S.AssetTypeID,S.Uid
+										from Asset S
+										inner join api.ExecutionRelationship T on T.ExecutionID = @ExecutionID and T.SubjectUid = S.Uid
+										where S.AssetTypeID = @stid;
+
+										insert into #tempassetO(ID,AssetTypeID,Uid)
+										select distinct O.ID,O.AssetTypeID,O.Uid
+										from Asset O
+										inner join api.ExecutionRelationship T on T.ExecutionID = @ExecutionID and T.ObjectUid = O.Uid
+										where O.AssetTypeID = @otid;
+
+										create clustered index cx_tempassetS on #tempassetS(Uid);
+										create clustered index cx_tempassetO on #tempassetO(Uid);
+
 										update	T
 										set		T.SubjectAssetID = coalesce(S.ID, 0),
 												T.SubjectAssetTypeID = coalesce(S.AssetTypeID, 0),
@@ -2956,11 +2981,12 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 												T.ObjectAssetTypeID = coalesce(O.AssetTypeID, 0),
 												T.IsNew = iif(I.Id is null, 1, 0)
 										from	api.ExecutionRelationship T
-												left join Asset S on S.AssetTypeID = @stid and S.[uid] = T.SubjectUid
-												left join Asset O on O.AssetTypeID = @otid and O.[uid] = T.ObjectUid
+												left join #tempassetS S on S.[uid] = T.SubjectUid
+												left join #tempassetO O on O.[uid] = T.ObjectUid
 												left join IntersectType IT on IT.uid = @uid
 												{intersectCheckJoin}
-											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1);
+											where T.ExecutionID = @ExecutionID and (T.IsNew is null OR T.IsNew = 1)
+										option (recompile);
 
 										if @sc = 9 and @stid = 0
 										begin
@@ -2974,24 +3000,26 @@ new { executionId, dt = DateTime.UtcNow }, commandTimeout: 540
 
 										if @oc = 9 and @otid = 0 
 										begin
-										update	T
-										set		T.ObjectAssetID = 0,
-												T.ObjectAssetTypeID = O.ID
-										from	api.ExecutionRelationship T
-												inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
-												where T.ExecutionID = @ExecutionID;
+											update	T
+											set		T.ObjectAssetID = 0,
+													T.ObjectAssetTypeID = O.ID
+											from	api.ExecutionRelationship T
+													inner join AssetType O on O.[uid] = T.ObjectUid and O.[Class] = @oc  and T.ObjectAssetTypeID = 0
+													where T.ExecutionID = @ExecutionID;
 										end
 
 										if ((@sc = 9 and @stid = 0) or (@oc = 9 and @otid = 0))
 										begin
-										update	T
-										set		T.IsNew = 0
-										from	api.ExecutionRelationship T
-												inner join [Intersect] I on  I.IntersectTypeId = @it 
-												and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
-												and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
-										where T.ExecutionID = @ExecutionID and T.IsNew = 1;
+											update	T
+											set		T.IsNew = 0
+											from	api.ExecutionRelationship T
+													inner join [Intersect] I on  I.IntersectTypeId = @it 
+													and I.SubjectAssetId= T.SubjectAssetID and I.SubjectAssetTypeId= T.SubjectAssetTypeID 
+													and I.ObjectAssetId = T.ObjectAssetId and I.ObjectAssetTypeID = T.ObjectAssetTypeID
+											where T.ExecutionID = @ExecutionID and T.IsNew = 1;
 										end
+										drop table if exists #tempassetS;
+										drop table if exists #tempassetO;
 											",
 										new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
 					addMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);
