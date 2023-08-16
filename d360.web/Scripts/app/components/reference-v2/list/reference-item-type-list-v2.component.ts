@@ -257,6 +257,7 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	openItem(uid: string, newTab: boolean = false) {
 		const url = `${this.baseUrl}/${uid}/details`;
 		if (newTab) {
+			// eslint-disable-next-line
 			window.open(url, "_blank");
 		}
 		else {

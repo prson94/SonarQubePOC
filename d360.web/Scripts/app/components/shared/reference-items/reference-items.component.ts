@@ -126,6 +126,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		});
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	ngOnChanges(changes: SimpleChanges) {
 		if (changes.referenceItemTypeUid && changes.referenceItemTypeUid.currentValue !== changes.referenceItemTypeUid.previousValue) {
 			this.load();
@@ -275,6 +277,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
+	// ignore complexity codacy issue
+	// eslint-disable-next-line
 	private loadAssets(event) {
 		if (event) {
 			let sort = event.sortField;
