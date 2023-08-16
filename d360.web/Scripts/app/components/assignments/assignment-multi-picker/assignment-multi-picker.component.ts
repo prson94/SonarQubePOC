@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild, Input } from '@angular/core';
 import { Table } from 'primeng/table';
 import { SingleAssignment } from '../../../models/workflow.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
@@ -15,6 +15,8 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 })
 export class AssignmentsMultiPickerComponent {
 	@Output() onAssignmentSelection = new EventEmitter<SingleAssignment[]>();
+	@Input() onlyAdminReassignMode: boolean = false;
+
 	workflowTypeName: string;
 
 	isModalVisible: boolean = false;
@@ -67,6 +69,18 @@ export class AssignmentsMultiPickerComponent {
 	public closeDialog() {
 		this.isModalVisible = false;
 		this.selected = [];
+		this.cdRef.markForCheck();
+	}
+
+	public removeSelected() {
+		this.selected.forEach((item) => {
+			const idx = this.assignments.indexOf(item);
+			this.assignments.splice(idx, 1);
+		});
+		this.selected = [];
+		if (this.assignments.length === 0) {
+			this.closeDialog();
+		}
 		this.cdRef.markForCheck();
 	}
 

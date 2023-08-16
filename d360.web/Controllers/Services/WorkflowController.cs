@@ -342,8 +342,8 @@ namespace d360.web.Controllers.Services
 			};
 		}
 
-		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUID:Guid}/{resourceUid:Guid}/{clearAssignments:bool}")]
-		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments)
+		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUID:Guid}/{resourceUid:Guid}/{clearAssignments:bool}/{sendFormEmails:bool}")]
+		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments, bool sendFormEmails)
 		{
 
 			var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.UID == itemStepUID);
@@ -360,13 +360,13 @@ namespace d360.web.Controllers.Services
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
 			}
 
-			var response = await ReassignWorkflowResource(itemStep.ID, resource.ResourceID, clearAssignments);
+			var response = await ReassignWorkflowResource(itemStep.ID, resource.ResourceID, clearAssignments, sendFormEmails: sendFormEmails);
 
 			return response;
 		}
 
 		[HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
-		public async Task<HttpResponseMessage> ReassignWorkflowResource(long itemStepId, int resourceId, bool clearAssignments)
+		public async Task<HttpResponseMessage> ReassignWorkflowResource(long itemStepId, int resourceId, bool clearAssignments, bool sendFormEmails = true)
 		{
 			try
 			{
@@ -379,7 +379,7 @@ namespace d360.web.Controllers.Services
 				else
 				{
 					var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, clearAssignments);
+					await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, sendFormEmails, clearAssignments);
 				}
 
 				return Request.CreateResponse(HttpStatusCode.Accepted, -1);

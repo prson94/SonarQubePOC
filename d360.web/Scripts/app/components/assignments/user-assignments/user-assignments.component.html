@@ -44,12 +44,12 @@
 			<ng-template pTemplate="body" let-item>
 				<tr [pSelectableRow]="item" class="assignments-table-data">
 					<td>
-						<ng-container *ngIf="isMe">
+						<ng-container *ngIf="isMe || onlyAdminReassignMode">
 							<a href="#" (click)="onItemClick($event, item)">
 								{{item.WorkflowName}}
 							</a>
 						</ng-container>
-						<ng-container *ngIf="!isMe">
+						<ng-container *ngIf="!isMe && !onlyAdminReassignMode">
 							{{item.WorkflowName}}
 						</ng-container>
 						<span *ngIf="item.Version > 1" class="light-text">version {{item.Version}}</span>
@@ -72,6 +72,6 @@
 	</div>
 </div>
 
-<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"></d3s-complete-assignment>
+<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)" [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
 
-<d3s-assignments-multi-picker #multiAssignComponent (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
+<d3s-assignments-multi-picker #multiAssignComponent (onAssignmentSelection)="onAssignmentSelection($event)" [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-assignments-multi-picker>
