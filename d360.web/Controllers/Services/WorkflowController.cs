@@ -891,6 +891,8 @@ namespace d360.web.Controllers.Services
 			bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignResource"), out bool allowReassignResource);
 			bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
 
+			allowReassignResource = allowReassignObject = true;
+
 			if (string.IsNullOrEmpty(xml))
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.VersionStepIDNotFound);

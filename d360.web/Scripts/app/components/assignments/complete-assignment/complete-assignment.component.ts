@@ -206,10 +206,23 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onFormSubmit(): void {
 		if (this.isMultiSubmition) {
-			const obs: Observable<WorkflowFormResponse>[] = [];
-			this.multiSubmitionItems.forEach((item) => {
-				obs.push(this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields));
-			});
+			const obs: Observable<any>[] = [];
+
+			if (this.radioSelectionValue === 'completeForm') {
+				this.prepareValuesForSubmit();
+				this.multiSubmitionItems.forEach((item) => {
+					obs.push(this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields));
+				});
+
+			} else if (this.radioSelectionValue === 'reassignUser') {
+				this.multiSubmitionItems.forEach((item) => {
+					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, false));
+				});
+			} else if (this.radioSelectionValue === 'changeAsset') {
+				this.multiSubmitionItems.forEach((item) => {
+					obs.push(this.workflowService.reassignWorkflowObjectByUid(item.WorkflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, item.ItemStepUid));
+				});
+			}
 
 			forkJoin(obs).subscribe(() => {
 				this.closeModal();
@@ -226,7 +239,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.onModalClose.emit({ isBack: false });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
-				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.ResourceID, false).subscribe((): void => {
+				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, false).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
 					this.onModalClose.emit({ isBack: false });

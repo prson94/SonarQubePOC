@@ -152,5 +152,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
 		}
+		this.loadUserAssignments();
 	}
 }
