@@ -101,18 +101,18 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; }) {
 		if (!res.hasAccess) {
 			//to be implemented in another JIRA
-        }
-        else if (res.exists && res.hasAccess && !res.isCompleted) {
-            const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
-            this.onItemClick(null, item);
-        }
-        else if (!res.exists) {
+		}
+		else if (res.exists && res.hasAccess && !res.isCompleted) {
+			const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
+			this.onItemClick(null, item);
+		}
+		else if (!res.exists) {
 			//to be implemented in another JIRA
-        }
-        else if (res.isCompleted) {
+		}
+		else if (res.isCompleted) {
 			//to be implemented in another JIRA
-        }
-    }
+		}
+	}
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
 		if ($event) {
@@ -148,9 +148,12 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 	}
 
-	onCompleteAssignmentModalClose(event: { isBack: boolean }) {
+	onCompleteAssignmentModalClose(event: { isBack: boolean, isCompleteForm: boolean }) {
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
+		}
+		else if (!event.isCompleteForm) {
+			this.multiAssignComponent.removeSelected();
 		}
 		this.loadUserAssignments();
 	}

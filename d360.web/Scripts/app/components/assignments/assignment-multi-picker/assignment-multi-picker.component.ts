@@ -70,6 +70,18 @@ export class AssignmentsMultiPickerComponent {
 		this.cdRef.markForCheck();
 	}
 
+	public removeSelected() {
+		this.selected.forEach((item) => {
+			const idx = this.assignments.indexOf(item);
+			this.assignments.splice(idx, 1);
+		});
+		this.selected = [];
+		if (this.assignments.length === 0) {
+			this.closeDialog();
+		}
+		this.cdRef.markForCheck();
+	}
+
 	confirm() {
 		this.onAssignmentSelection.emit(this.selected);
 		this.modelEl.hide();

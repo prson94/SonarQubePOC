@@ -1,4 +1,5 @@
 @import "../../../../../Content/styles/infogix-ui/IgColorVariables";
+@import "../../../../../Content/styles/_Variables.less";
 
 .modal-buttons {
   float: right;
@@ -26,12 +27,27 @@
 }
 
 
-.radio-button{
+.radio-button {
   padding: 5px 0 5px 0;
 }
 
-.row-data{
+.row-data {
   justify-content: space-between;
   display: flex;
   padding-right: 10px;
+}
+
+:host ::ng-deep ig-search-field {
+  width: 100%;
+  padding-bottom: 16px;
+  padding-right: 16px;
+}
+
+.checkbox-selector {
+  padding-bottom: 16px;
+
+  .field-tooltip {
+    margin-left: 5px;
+    color: @ig-purple;
+  }
 }

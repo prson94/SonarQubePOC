@@ -57,7 +57,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 
-	@Output() onModalClose = new EventEmitter<{ isBack: boolean }>();
+	@Output() onModalClose = new EventEmitter<{ isBack: boolean, isCompleteForm: boolean }>();
 
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	isLoading: boolean = false;
@@ -73,15 +73,17 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isBulkRespond: boolean = false;
 	allowReassignObject: boolean = false;
 	allowReassignResource: boolean = false;
+	clearOtherAssignments: boolean = false;
+
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService: AssignmentService,
-				private cdRef: ChangeDetectorRef,
-				private resourceService: ResourcesService
+		private workflowService: WorkflowService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		private assignmentService: AssignmentService,
+		private cdRef: ChangeDetectorRef,
+		private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -197,16 +199,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.workflowForm.reset();
-		this.onModalClose.emit({ isBack: true });
+		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
 	}
 
 	onCloseClick(): void {
-		this.onModalClose.emit({ isBack: false });
+		this.onModalClose.emit({ isBack: false, isCompleteForm: true });
 	}
 
 	onFormSubmit(): void {
+		const isCompleteForm: boolean = this.radioSelectionValue === 'completeForm';
 		if (this.isMultiSubmition) {
 			const obs: Observable<any>[] = [];
+			let isBack: boolean = false;
 
 			if (this.radioSelectionValue === 'completeForm') {
 				this.prepareValuesForSubmit();
@@ -215,11 +219,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				});
 
 			} else if (this.radioSelectionValue === 'reassignUser') {
+				isBack = true;
 				this.multiSubmitionItems.forEach((item) => {
-					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, false));
+					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments));
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.multiSubmitionItems.forEach((item) => {
+					isBack = true;
 					obs.push(this.workflowService.reassignWorkflowObjectByUid(item.WorkflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, item.ItemStepUid));
 				});
 			}
@@ -227,7 +233,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			forkJoin(obs).subscribe(() => {
 				this.closeModal();
 				this.modal.closePopUp();
-				this.onModalClose.emit({ isBack: false });
+				this.onModalClose.emit({ isBack, isCompleteForm });
 			});
 		} else {
 			//save form values with stepUid and itemUid
@@ -236,20 +242,20 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.onModalClose.emit({ isBack: false });
+					this.onModalClose.emit({ isBack: false, isCompleteForm });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
-				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, false).subscribe((): void => {
+				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.onModalClose.emit({ isBack: false });
+					this.onModalClose.emit({ isBack: false, isCompleteForm });
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, this.stepUid)
 					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
-						this.onModalClose.emit({ isBack: false });
+						this.onModalClose.emit({ isBack: false, isCompleteForm });
 					});
 			}
 		}
