@@ -4,6 +4,7 @@ import {
 	Component,
 	ElementRef,
 	EventEmitter,
+	Input,
 	OnDestroy,
 	OnInit,
 	Output,
@@ -35,6 +36,8 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() onlyAdminReassignMode: boolean = false;
+
 	isModalVisible: boolean = false;
 	loading: boolean = false;
 	isAssignmentProgressSelected: boolean = false;
@@ -74,6 +77,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	allowReassignObject: boolean = false;
 	allowReassignResource: boolean = false;
 	clearOtherAssignments: boolean = false;
+	sendFormEmails: boolean = true;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
@@ -110,6 +114,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		items?: SingleAssignment[]
 	}): void {
 		if (details) {
+			if (this.onlyAdminReassignMode) {
+				this.radioSelectionValue = 'reassignUser';
+			}
+			else {
+				this.radioSelectionValue = 'completeForm';
+			}
+
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
 
@@ -178,7 +189,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			});
 		this.isModalVisible = true;
 		this.cdRef.markForCheck();
-		this.radioSelectionValue = 'completeForm';
 	}
 
 	showAssignment(): void {
@@ -221,7 +231,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			} else if (this.radioSelectionValue === 'reassignUser') {
 				isBack = true;
 				this.multiSubmitionItems.forEach((item) => {
-					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments));
+					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails));
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.multiSubmitionItems.forEach((item) => {
@@ -245,7 +255,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.onModalClose.emit({ isBack: false, isCompleteForm });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
-				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments).subscribe((): void => {
+				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
 					this.onModalClose.emit({ isBack: false, isCompleteForm });
@@ -333,12 +343,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
 				this.assets = result;
+				this.cdRef.markForCheck();
 			});
 	}
 
 	loadAllUsersData(): void {
 		this.resourceService.getResources(false).subscribe((res) => {
 			this.userData = res;
+			this.cdRef.markForCheck();
 		});
 	}
 

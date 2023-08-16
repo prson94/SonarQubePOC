@@ -18,6 +18,7 @@ import { CompleteAssignmentComponent } from '../complete-assignment/complete-ass
 })
 export class UserAssignmentsComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() userUid: string;
+	@Input() isAdminPage: boolean = false;
 	loadSub: Subscription;
 
 	totalRecords: number;
@@ -30,7 +31,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
 
 	initialWorkflowItemUid: string = '';
-
+	onlyAdminReassignMode: boolean = false;
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
@@ -66,6 +67,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	}
 
 	loadUserAssignments() {
+		if (!this.isMe && this.isAdminPage) {
+			this.onlyAdminReassignMode = true;
+		}
+
 		if (this.loadSub) {
 			this.loadSub.unsubscribe();
 		}

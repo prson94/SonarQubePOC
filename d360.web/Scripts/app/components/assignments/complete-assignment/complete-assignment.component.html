@@ -21,9 +21,11 @@
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
 					<div class="title">
-						{{ modalTitle }}
-						<span class="title-emp" *ngIf="isBulkRespond" i18n>Bulk Respond</span>
-						<span class="modal-buttons" *ngIf="!isBulkRespond">
+						<ng-container *ngIf="onlyAdminReassignMode"><span i18n>Reassign</span></ng-container>
+						<ng-container *ngIf="!onlyAdminReassignMode">{{ modalTitle }}</ng-container>
+
+						<span class="title-emp" *ngIf="isBulkRespond && !onlyAdminReassignMode" i18n>Bulk Respond</span>
+						<span class="modal-buttons" *ngIf="!isBulkRespond && !onlyAdminReassignMode">
 							<button igButton
 									[ngClass]="
 									isAssignmentProgressSelected
@@ -46,7 +48,7 @@
 				<div [hidden]="isAssignmentProgressSelected"
 					 class="scrollable-content details-container">
 					<div class="asset-detail">
-						<div class="d-flex column" *ngIf="allowReassignObject || allowReassignResource">
+						<div class="d-flex column" *ngIf="(allowReassignObject || allowReassignResource) && !onlyAdminReassignMode">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
@@ -63,6 +65,7 @@
 											   [(ngModel)]="radioSelectionValue">
 								</p-radioButton>
 							</div>
+							<div class="govern-hr"></div>
 						</div>
 						<div class="asset-detail-tabs">
 							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title title="Information" [showHeaderLine]="false"
@@ -139,8 +142,8 @@
 									</div>
 								</ig-property-group>
 							</form>
+
 							<ng-container *ngIf="radioSelectionValue === 'reassignUser'">
-								<hr />
 								<div class="ig-value">Choose the new assignee:</div>
 								<div class="search-field">
 									<ig-search-field mode="Keypress"
@@ -187,6 +190,17 @@
 															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 									</ng-template>
 								</p-table>
+
+
+								<div *ngIf="onlyAdminReassignMode" class="checkbox-selector">
+									<p-checkbox igCheckbox
+												[(ngModel)]="sendFormEmails"
+												label="Send form e-mails"
+												i18n-label
+												binary="true">
+									</p-checkbox>
+
+								</div>
 
 								<div class="checkbox-selector">
 									<p-checkbox igCheckbox
