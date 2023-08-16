@@ -14,11 +14,25 @@
 			</div>
 		</ig-property-group>
 		<ng-container *ngFor="let response of step.ItemFields?.form;index as i">
-			<ig-property-group i18n-title title="{{ 'Response ' + (i+1) + ' by ' + response.resourceName}}" [shouldBePadded]="false"
+			<ig-property-group i18n-title title="{{ 'Response ' + (i+1) + ' by ' + response.resourceName}}"
+							   [shouldBePadded]="false"
 							   [showHeaderLine]="false">
 				<div class="fields" readonly *ngFor="let field of response?.field">
 					<label class="ig-label">{{ field?.["@label"] }}</label>
-					<span class="ig-value">{{ field?.["@displayvalue"] }}</span>
+					<ng-container [ngSwitch]="field?.['@fieldtype']">
+						<ng-container *ngSwitchCase="'date'">
+							{{(field?.['@displayvalue'] == null ? getDate(field?.['@value']) : getDate(field?.['@displayvalue']))}}
+						</ng-container>
+						<ng-container *ngSwitchCase="'html'">
+							<div [innerHtml]="field?.['@value'] | safeHtml"></div>
+						</ng-container>
+						<ng-container *ngSwitchCase="'link'">
+							<a href="{{getUrl(field?.['@value'])}}" target="_blank">{{getName(field?.['@value'])}}</a>
+						</ng-container>
+						<ng-container *ngSwitchDefault>
+							{{(field?.['@displayvalue'] == null ? field?.['@value'] : field?.['@displayvalue'])}}
+						</ng-container>
+					</ng-container>
 				</div>
 			</ig-property-group>
 		</ng-container>

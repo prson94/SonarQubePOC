@@ -14,4 +14,20 @@ export class AssignmentFormResponseComponent {
 		this.step = step;
 		this.isModalVisible = true;
 	}
+
+	getDate(value: string): string {
+		if (!isNaN(Date.parse(value))) {
+			return new Date(value).toLocaleDateString();
+		} else {
+			return '';
+		}
+	}
+
+	getUrl(value: string): string {
+		return value.split('|')[1];
+	}
+
+	getName(value: string): string {
+		return value.split('|')[0];
+	}
 }
