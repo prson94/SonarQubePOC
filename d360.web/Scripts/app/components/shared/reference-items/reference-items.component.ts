@@ -24,6 +24,12 @@ import { PermissionsService } from '../../../services/permissions.service';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 
+/*global $localize*/
+
+export class ReferenceItemAPIModel {
+	AssetUid: string;
+	DisplayPath: string;
+}
 
 @Component({
 	selector: 'd3s-reference-items',
@@ -64,14 +70,14 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 
 	public rowsPerPage: number;
 	private sortField: string;
-	items: any[] = [];
+	items: ReferenceItemAPIModel[] = [];
 	private totalRecords: number = 10000;
 	private destroy = new Subject<void>();
 
 	columns: GridColumn[] = [];
 	fields: GridField[] = [];
 
-	private selected: any;
+	private selected: ReferenceItemAPIModel;
 	showEditor: boolean = false;
 	showDelete: boolean = false;
 	private sub: Subscription;
@@ -194,6 +200,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 				if (asset.DisplayPath) {
 					const pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
 					for (let i = 0; i < pathSegments.length; i++) {
+						// eslint-disable-next-line
 						asset["PATH_SEGMENT_IDX_" + i] = pathSegments[i];
 					}
 				}
@@ -228,7 +235,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 			this.isLoading = false;
 			this.cdRef.detectChanges();
 		},
-			(err) => {
+			() => { //err
 				this.items = [];
 				this.totalRecords = 0;
 				this.isLoading = false;
@@ -236,7 +243,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 			});
 	}
 
-	listItemTransform(item: any) {
+	listItemTransform(item: unknown) {
 		//set menu items
 		const menuItems = [];
 		menuItems.push({ "action": "edit" , "title": $localize`Edit`, "disabled": !this.hasModifyAssetPermissions() });
@@ -330,7 +337,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.showDelete = false;
 	}
 
-	public saveReferenceItem(event) {
+	public saveReferenceItem() {
 		this.showEditor = false;
 	}
 	private canExportRecords() {
@@ -369,7 +376,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.selectedItem = item;
 	}
 
-	saveItem($event) {
+	saveItem() {
 		this.showEditor = false;
 		this.load();
 	}

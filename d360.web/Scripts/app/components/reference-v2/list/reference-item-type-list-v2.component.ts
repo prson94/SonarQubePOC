@@ -13,9 +13,10 @@ import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { IOutputData } from "angular-split";
 import { Subscription } from "rxjs";
-import { AssetDetailClickEvent, AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
+import { AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
 import { SidePanelService } from "../../../services/side-panel.service";
 
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-reference-item-type-list',
@@ -41,10 +42,10 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	public simpleFilterValue: string = "";
 
 	selectedItem: AssetTypeApiModel = null;
-	selectedForInfoPanel: any = null;
+	selectedForInfoPanel: unknown = null;
 	isModalVisible: boolean = false;
 	sidePanelStorageKey: string = "ReferenceItemType";
-	referenceItemTypeToDelete: any = null;
+	referenceItemTypeToDelete: AssetTypeApiModel = null;
 	formParentName: string = "";
 	parentTypeName: string = "";
 	sidePanelOpen: boolean = false;
@@ -125,13 +126,14 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 		this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
 			.subscribe((data) => {
-				const result = data.map((x) => (x as any) as AssetTypeApiModel);
+				const result = data.map((x) => (x as unknown) as AssetTypeApiModel);
 				this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
 				if (this.referenceTypes.length > 0) {
 					if (this.initialSelectedListUid?.length > 0) {
 						const index = this.referenceTypes.findIndex((x) => x.uid === this.initialSelectedListUid);
 						this.initialSelectedListUid = '';
 						if (index >= 0 && index < this.referenceTypes.length) {
+							// eslint-disable-next-line
 							this.selected = this.referenceTypes[index];
 
 							const page = Math.floor(index / 10);
@@ -159,11 +161,11 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	listItemTransform(type: AssetTypeApiModel) {
 		//set menu items
 		const menuItems = [];
-		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedItem = type; this.sidePanelOpen = true } });
-		menuItems.push({ "title": $localize`Open`, callback: () => this.open(type.uid) });
-		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.open(type.uid, true) });
-		if (this.hasModifyAssetPermissions()) { menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.uid) }) }
-		if (this.hasDeleteAssetPermissions) { menuItems.push({ "title": $localize`Delete`, callback: () => { this.referenceItemTypeToDelete = type; } }) }
+		menuItems.push({ "title": $localize`View Information`, callback: () => { this.selectedItem = type; this.sidePanelOpen = true; } });
+		menuItems.push({ "title": $localize`Open`, callback: () => this.openItem(type.uid) });
+		menuItems.push({ "title": $localize`Open In New Tab`, callback: () => this.openItem(type.uid, true) });
+		if (this.hasModifyAssetPermissions()) { menuItems.push({ "title": $localize`Edit`, callback: () => this.openEditForm(type.uid) }); }
+		if (this.hasDeleteAssetPermissions) { menuItems.push({ "title": $localize`Delete`, callback: () => { this.referenceItemTypeToDelete = type; } }); }
 		type[this.menuKey] = menuItems;
 
 		type[this.parentKey] = this.getParent(type);
@@ -178,14 +180,14 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 		return "---";
 	}
 
-	selectRow(row: any) {
+	selectRow(row: AssetTypeApiModel) {
 		this.secondarySidePanelOpen = false;
 		this.selectedItem = row;
 		this.selectedChange.emit(row);
 	}
 
 	selectReferenceListType($event, item: AssetTypeApiModel) {
-		this.open(item.uid);
+		this.openItem(item.uid);
 	}
 
 	private onSelect() {
@@ -248,11 +250,11 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	onEditFormClose() {
 		this.isModalVisible = false;
 	}
-	onEditSaveFinished($event) {
+	onEditSaveFinished() {
 		this.load();
 	}
 
-	open(uid: string, newTab: boolean = false) {
+	openItem(uid: string, newTab: boolean = false) {
 		const url = `${this.baseUrl}/${uid}/details`;
 		if (newTab) {
 			window.open(url, "_blank");

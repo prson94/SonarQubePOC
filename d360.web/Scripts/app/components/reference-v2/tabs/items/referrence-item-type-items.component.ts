@@ -19,7 +19,7 @@ export class ReferenceItemTypeItemsComponent implements OnInit {
 	ngOnInit() {
 		this.route.params.subscribe((params) => {
 			this.uid = params["uid"];
-			this.load()
+			this.load();
 		});
 	}
 

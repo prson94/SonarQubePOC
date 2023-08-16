@@ -5,6 +5,7 @@ import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { isEmpty } from 'lodash-es';
 
+/*global $localize*/
 
 @Component({
 	selector: "d3s-reference-item-type-header",

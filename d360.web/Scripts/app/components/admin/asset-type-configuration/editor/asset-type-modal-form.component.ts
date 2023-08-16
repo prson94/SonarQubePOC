@@ -160,7 +160,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 
 		if (this.isReferenceItemTypeForm) {
-			this.assetTypeForm.get('predicateUid').valueChanges.subscribe(val => {
+			this.assetTypeForm.get('predicateUid').valueChanges.subscribe((val) => {
 				if (val) {
 					this.assetTypeForm.controls['referenceParentUid'].setValidators([Validators.required]);
 				} else {
