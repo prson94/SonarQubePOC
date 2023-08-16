@@ -72,6 +72,10 @@
 					<th [pSortableColumn]="'assetDisplayValue'" class="associated-with-column" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
+					</th>					
+					<th [pSortableColumn]="'objectType'">
+						<ng-container i18n>Object Type</ng-container>
+						<d3s-sortIcon [field]="'objectType'"></d3s-sortIcon>
 					</th>
 					<ng-container *ngFor="let field of actionFormFields">
 						<th>
@@ -108,7 +112,8 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td>{{item.workflowName}}</td>
 					</ng-container>
-					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
+					<td>{{item.assetDisplayValue ?? '---'}}</td>
+					<td>{{item.objectType ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
 						<td>
 							<ng-container [ngSwitch]="Object.keys(field.Type)?.[0]">
