@@ -113,6 +113,9 @@
                              [required]="isRequired()">
                     </ig-date>
                 </div>
+                <div *ngSwitchCase="'Color'">
+                    <ig-color-picker igSize="full" [colors]="defaultColorOptions" [formControlName]="field.FieldName" [invalidOptions]="['Custom']"></ig-color-picker>
+                </div>
 
                 <div *ngSwitchCase="'LazyLookup'">
                     <div class="{{field?.MultiSelect ? 'd3s-color-picker multi multi-select-lazy-load' : ''}}">
@@ -180,8 +183,8 @@
 
                                 <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
                                 <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label ?? item.Text"
-                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item." 
-                                      tooltipStyleClass="ig-tooltip" 
+                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item."
+                                      tooltipStyleClass="ig-tooltip"
                                       tooltipPosition="top"></span>
 
                                 <div class="info-button"
@@ -247,8 +250,8 @@
 
                                                 <span *ngIf="!field.UseColorControl && item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label"></span>
                                                 <span *ngIf="!field.UseColorControl && !item?.hasAssetReadAccess" class="item-value" [innerHTML]="item.label"
-                                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item." 
-                                                      tooltipStyleClass="ig-tooltip" 
+                                                      i18n-pTooltip pTooltip="You do not have permission to view the details of this item."
+                                                      tooltipStyleClass="ig-tooltip"
                                                       tooltipPosition="top"></span>
                                             </td>
                                             <td style="justify-content: flex-end;" *ngIf="useSidePanel && item.value && item?.hasAssetReadAccess">

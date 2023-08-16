@@ -1,0 +1,189 @@
+﻿<as-split *ngIf="!isSidePanel; else sidePanelTemplate"
+          [gutterSize]="sidePanelService.draggableAreaWidth"
+          [class.side-panel-close]="!sidePanelOpen"
+          (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)"
+          unit="pixel"
+          direction="horizontal"
+          class="col s12 split"
+          style="display: flex">
+    <as-split-area class="tile tile-detail main-panel reference-item-grid">
+        <ng-template [ngTemplateOutlet]="itemGridTemplate"></ng-template>
+    </as-split-area>
+    <as-split-area [size]="getSidePanelWidth()"
+                   [minSize]="getSidePanelMinWidth()"
+                   [maxSize]="getSidePanelMaxWidth()"
+                   class="tile tile-detail side-panel">
+        <side-panel [selectedItem]="anySelectedItem"
+                    [setMinMaxWidth]="false"
+                    [storageKey]="sidePanelStorageKey"
+                    [expanded]="true"
+                    [showEmptyOverlay]="!selectedItem && !selectedForInfoPanel"
+                    (expandedChange)="sidePanelOpen=$event"
+                    hasDetail="true">
+            <ng-container *ngIf="sidePanelOpen">
+                <ng-container *ngIf="selectedItem && !selectedForInfoPanel">
+                    <ig-asset-detail #assetDetail
+                                     [objectUID]="selectedItem.AssetUid"
+                                     [objectType]="'ReferenceItem'"
+                                     [useAccordion]="true"
+                                     [shouldBePadded]="false"
+                                     [showHeader]="true"
+                                     [showHeaderLine]="false"
+                                     [spacerHeight]="'16px'"
+                                     [tooltipAlign]="'left'"
+                                     [isSidePanel]="true"
+                                     [hasEditLink]="true"
+                                     [showTabs]="false"
+                                     [hideLinks]="true"
+                                     [hasAddRelationshipsPermissions]="false"
+                                     [hasModifyRelationshipsPermissions]="false"
+                                     [hasDeleteRelationshipsPermissions]="false"
+                                     [interceptLinkClick]="true"
+                                     (onEditClick)="triggerEdit($event)"></ig-asset-detail>
+                </ng-container>
+            </ng-container>
+        </side-panel>
+    </as-split-area>
+</as-split>
+
+<ng-template #itemGridTemplate>
+    <div class="grid-actions-header column-layout">
+        <div class="grid-actions-header-row">
+            <div class="simple-search">
+                <ig-search-field [debounce]="600"
+                                 [(ngModel)]="simpleFilterValue"
+                                 (onSearch)="dt.filterGlobal($event, 'contains');"
+                                 mode="Keypress">
+                </ig-search-field>
+            </div>
+            <div class="grid-action-buttons">
+                <button *ngIf="true || canAddReferenceItem"
+                        [igDataCy]="'ReferenceItem_Add'"
+                        (click)="openEditForm(null)"
+                        igButton
+                        pTooltip="Add Reference Item"
+                        i18n-pTooltip
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip"
+                        class="ig-button-primary"
+                        icon="fa-plus">
+                </button>
+
+                <div pTooltip="{{exportMessage}}"
+                     tooltipPosition="left"
+                     tooltipStyleClass="ig-tooltip">
+                    <button igButton
+                            class="ig-button-secondary"
+                            [disabled]="!canExportRecords() || isExportInProgress"
+                            [igDataCy]="'ReferenceItem_Export'"
+                            icon="fa-download"
+                            [loading]="isExportInProgress"
+                            (click)="export(false)">
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <p-table #dt
+                 [igDataCy]="'ReferenceItems_Page_'"
+                 [value]="items"
+                 [(selection)]="selectedItem"
+                 (selectionChange)="selectRow($event)"
+                 [globalFilterFields]="['Code']"
+                 [metaKeySelection]="true"
+                 dataKey="AssetUid"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 paginatorDropdownAppendTo="body"
+                 [rows]="rowsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
+                 responsiveLayout="scroll"
+                 [tableStyle]="{'min-width': 'max-content'}"
+                 [loading]="isLoading"
+                 [loadingIcon]="'fa fa-spinner fa-spin'">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th *ngFor="let column of columns"
+                        [pSortableColumn]="column.sortable ? column.datafield : null">
+                        {{column.text}}
+                        <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
+                    </th>
+                    <th class="asset-grid-tools" style="width: 30px"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr #tableRow (dblclick)="selectArtifact($event, item)" [pSelectableRow]="item" (focus)="selectRow(item)"
+                    (contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectRow(item)">
+                    <td *ngFor="let column of columns">
+                        <ng-container *ngIf="isSidePanel && column.apiName === 'Code'; else outputDynamicField">
+                            <a (click)="sidePanelFieldClicked($event, item);">{{item['Code']}}</a>
+                        </ng-container>
+                        <ng-template #outputDynamicField>
+                            <d3s-dynamic-field-value [column]="column" [fields]="fields"
+                                                     [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
+
+                        </ng-template>
+
+
+                    </td>
+                    <td class="asset-grid-tools" #assetGridTools>
+                        <div style="display:inline-block">
+                            <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                            <ig-popup-menu (onSelect)="clickMenuItem(item,$event)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                        </div>
+                    </td>
+                    <button class="ig-float-popup-container" #floatButton>
+                        <ig-popup-menu (onSelect)="clickMenuItem(item,$event)" [items]="item[menuKey]" #floatMenu [tabIndex]="1">
+                        </ig-popup-menu>
+                    </button>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </div>
+</ng-template>
+
+<ng-template #sidePanelTemplate>
+    <div class="items-tab">
+        <ng-template [ngTemplateOutlet]="itemGridTemplate"></ng-template>
+    </div>
+</ng-template>
+
+
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectType]="'ReferenceItem'"
+                  [title]="referenceItemTitle"
+                  [selection]="editorSelected"
+                  [rowID]="rowID"
+                  [objectTypeUid]="referenceItemTypeUid"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+
+</d3s-modal>
+
+<d3s-modal additionalClasses="modal-delete-form medium-dialog"
+           (onClose)="showDelete=false"
+           [showTitle]="false"
+           [isVisible]="showDelete">
+    <d3s-asset-delete-editor *ngIf="showDelete"
+                             [uid]="selectedItem?.AssetUid"
+                             [assetTypeUid]="referenceItemTypeUid"
+                             (onCancel)="showDelete = false"
+                             (onDeleted)="onDeleted()"
+                             [displayValue]="selectedItem?.Code">
+    </d3s-asset-delete-editor>
+</d3s-modal>

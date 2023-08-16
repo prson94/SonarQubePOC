@@ -1421,7 +1421,7 @@ order by Sort, title";
 			var list = new List<EditableField>();
 			var row = 1;
 
-			list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
+			list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString(), Category = "General" });
 
 			//if the reference type has a parent we need to add parent field with the values from the parent
 			var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == "ReferenceItemType" && a.ObjectID == id);
@@ -1430,11 +1430,20 @@ order by Sort, title";
 			if (parentType != null)
 			{
 				var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-				list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
+				list.Add(new EditableField {
+					Row = row++,
+					Column = 1,
+					FieldName = "ParentUid",
+					Category = "General",
+					Name = parentType.Name,
+					FieldType = DataType.Lookup.ToString(),
+					Required = true,
+					MultiSelect = false,
+					Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList()
+				});
 			}
 
-
-			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, false);
+			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, true);
 			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
 
 			list.ForEach(f =>

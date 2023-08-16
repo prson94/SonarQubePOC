@@ -4233,6 +4233,92 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 					}
 					break;
 				#endregion
+				case SystemObjects.ReferenceItem:
+					#region Fields
+					{
+						var sType = type.ToString();
+						var asset = Company.Filter<Asset>(
+							x => x.ObjectID == id && x.Object == sType,
+							x => x.AssetType).FirstOrDefault();
+
+						if (asset != null)
+						{
+							var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+
+							var color = string.IsNullOrEmpty(asset.Color) ? "None" : Company.Query<string>($@"SELECT top 1 JSON_VALUE(ACJ.ColorJSON,'$.Name') as name, JSON_VALUE(ACJ.ColorJSON,'$.Value') as color FROM dbo.GetAssetColorJsonByColor({asset.Color}) ACJ FOR JSON PATH").SingleOrDefault();
+
+							dynamicRows.ForEach(r => {
+								var idx = r.FirstColumnFields.FindIndex(f => f.FieldName == "Code");
+								if(idx > -1)
+								{
+									r.FirstColumnFields.Insert(idx + 1, new ReadOnlyField { Name = "Color", FieldName = "Color", Value = color, DataType = "color" });
+								}
+							});
+
+							model.rows.AddRange(dynamicRows);
+
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 2,
+								FirstColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+							},
+								SecondColumnFields = new List<ReadOnlyField>
+							{
+								new ReadOnlyField { Name = FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+							},
+								Category = FieldInfo.SystemFieldCategory
+							});
+
+							if (asset.UpdatedOn.HasValue)
+							{
+								model.rows.Add(new DetailReadOnlyRowModel
+								{
+									columns = 2,
+									FirstColumnFields = new List<ReadOnlyField> {
+									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+								},
+									SecondColumnFields = new List<ReadOnlyField> {
+									new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+								},
+									Category = FieldInfo.SystemFieldCategory
+								});
+							}
+							else
+							{
+								model.rows.Add(new DetailReadOnlyRowModel
+								{
+									columns = 1,
+									FirstColumnFields = new List<ReadOnlyField> {
+									new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+								},
+									Category = FieldInfo.SystemFieldCategory
+								});
+							}
+
+							IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
+							if (users != null)
+							{
+								if (asset.CreatedBy.HasValue)
+								{
+									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
+										FieldInfo.CreatedBy_Name,
+										users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
+								}
+
+								if (asset.UpdatedBy.HasValue)
+								{
+									model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
+										FieldInfo.UpdatedBy_Name,
+										users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
+								}
+							}
+						}
+					}
+					break;
+
+				#endregion
 				case SystemObjects.Report:
 					#region Fields
 					var report = Company.GetById<Report>(id, i => i.Responsibilities);

@@ -62,6 +62,8 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 	formParentName: string = '';
 	isModalVisible: boolean = false;
 
+	itemCount: number = null;
+
 	tab: string = 'detail';
 
 	onEditFormClose() {
@@ -111,6 +113,9 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 					if (this.assetTypeModel) {
 						this.fillCategories(this.assetTypeModel);
 						this.loadState();
+						if (this.isReferenceItemType) {
+							this.getItemCount();
+						}
 						this.isLoading = false;
 						this.cdRef.markForCheck();
 					}
@@ -249,7 +254,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			value: assetTypeModel?.IconStyle?.BackColor
 		};
 
-		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset) {
+		if (![AssetTypeClass.DiagramAsset, AssetTypeClass.Reference].includes(assetTypeModel.Class.ID)) {
 			this.addFieldsToCategory($localize`Styles`, [
 				{
 					name: $localize`Background Color`,
@@ -393,6 +398,19 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 			case `User`: return AssetTypeClass.User; 
 		}
 		return this.assetTypeModel.Class.Value as AssetTypeClass;
+	}
+
+	get isReferenceItemType(): boolean {
+		return this.assetTypeModel.Class.ID === AssetTypeClass.Reference;
+	}
+
+	getItemCount() {
+		this.assetsService.getAssetCountsByAssetTypeUid(this.uid).subscribe((res) => {
+			if (res[0]) {
+				this.itemCount = res[0].count;
+				this.cdRef.markForCheck();
+			}
+		});
 	}
 
 	clickTab(key: string) {

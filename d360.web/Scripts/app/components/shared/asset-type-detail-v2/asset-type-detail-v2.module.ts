@@ -10,6 +10,7 @@ import { AssetTypeDetailFieldComponent } from "./asset-type-details-field/asset-
 import { TooltipModule } from 'primeng/tooltip';
 import { AssetTypeModalFormModule } from '../../admin/asset-type-configuration/editor/asset-type-modal-form.module';
 import { SharedFieldDefinitionModule } from '../fielddefinition/shared-field-definition.module';
+import { ReferenceItemsModule } from "../reference-items/reference-items.module";
 
 
 @NgModule({
@@ -21,7 +22,8 @@ import { SharedFieldDefinitionModule } from '../fielddefinition/shared-field-def
 		PropertyGroupModule,
 		TooltipModule,
 		AssetTypeModalFormModule,
-		SharedFieldDefinitionModule
+		SharedFieldDefinitionModule,
+		ReferenceItemsModule
     ],
     declarations: [
         AssetTypeDetailCategoryComponent,
