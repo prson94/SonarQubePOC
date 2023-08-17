@@ -1846,7 +1846,7 @@ namespace d360.model.DataAccessLayer
 						, wvs.name as Step
 						,wvs.Id as StepId
 						,count(1) as Total
-						,string_agg(CAST(wia.Id as nvarchar(40)),',') as WorkflowAssignments
+						,string_agg(CAST(wia.Id as nvarchar(max)),',') as WorkflowAssignments
 						from
 							[workflow].[type] wt
 							inner join [workflow].[version] wv on (wt.id = wv.typeid)
