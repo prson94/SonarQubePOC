@@ -44,7 +44,6 @@ export class AssignmentsMultiPickerComponent {
 	) {
 		this.hrefService.getEvents().subscribe((res) => {
 			this.sidePanel = 'asset-details';
-			console.log(res);
 			this.selectedForInfoPanel = { type: res.objectType, assetUid: res.uid, workflowItemUid: null, Version: null };
 		});
 	}
