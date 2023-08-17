@@ -1370,7 +1370,8 @@ namespace d360.model.DataAccessLayer
 										null as uid  										
 								) as IT
 								{string.Join("\n", fieldJoins.GetStatements())}
-								{whereConditions}";
+								{whereConditions}
+								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
 
 			var relationshipJoins = $@"FROM assignments WA
 								INNER JOIN 
@@ -1386,8 +1387,7 @@ namespace d360.model.DataAccessLayer
 										null as uid  										
 								) as IT
 								{string.Join("\n", fieldJoins.GetStatements())}
-								{whereConditions} 
-								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
+								{whereConditions}";
 
 			var assigmentsSQL = $@"SELECT
 							{actionSelects}
