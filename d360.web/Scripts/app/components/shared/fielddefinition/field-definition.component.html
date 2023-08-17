@@ -230,7 +230,8 @@
 									[IsFlexApply]="true"
 									(onSearch)="dt1.filterGlobal($event, 'contains')">
 				</ig-search-field>
-				<button igButton
+				<button *ngIf="showAddButton"
+						igButton
 						[attr.data-cy]="'FieldType_Add'"
 						pTooltip="Add Field"
 						i18n-pTooltip

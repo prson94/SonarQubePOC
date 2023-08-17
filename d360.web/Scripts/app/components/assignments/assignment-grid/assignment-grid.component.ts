@@ -2,7 +2,6 @@ import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDes
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
-import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { map } from 'rxjs/operators';
@@ -83,7 +82,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	constructor(private wfMonitorService: WorkflowMonitorService,
 				private workflowService: WorkflowService,
 				private route: ActivatedRoute,
-				public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
 				private changeDetectorRef: ChangeDetectorRef,
 				protected settingsService: CompanySettingsService,
 				private fieldsService: FieldsObservableService,
@@ -104,14 +102,17 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.isAdmin = this.authenticationService.isAdmin;
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
-		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+	}
+
+	loadRowsPerPage(event: LazyLoadEvent): void {
+		const rowsPerPageStorage: string = localStorage.getItem(this.storageKey);
+		this.rowsPerPage = rowsPerPageStorage != null ? Number(rowsPerPageStorage) : event?.rows;
 	}
 
 	ngOnDestroy(): void {
 		if (this.loadDataSub) {
 			this.loadDataSub.unsubscribe();
 		}
-
 		this.destroy.next();
 		this.destroy.complete();
 	}
@@ -176,6 +177,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.selectionChange.emit(event);
 	}
 
+	setRowsPerPage(event): void {
+		if (event?.rows) {
+			localStorage.setItem(this.storageKey, event.rows);
+		}
+	}
+
 	private loadData(): void {
 		if (!this.currentResourceUid) {
 			return;
@@ -184,7 +191,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.isLoading = true;
 		const initiatorUid: string = this.isRequestsFlow ? this.currentResourceUid : null;
 		const sources: Observable<WorkflowAssignments | FieldTypeAPIModelField[]>[] = [
-			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.assetUid, this.assetTypeUid, this.sortField, this.sortOrder),
+			this.workflowService.getWorkflowAssignments(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, initiatorUid, this.assetUid, this.assetTypeUid, this.sortField, this.sortOrder, this.isRequestsFlow),
 			this.singleActionTypeUidSelected && this.singleActionTypeUidFilter ? this.fieldsService.getFieldsV2(null, this.singleActionTypeUidFilter.value, null) : of([])
 		];
 		if (this.loadDataSub) {
@@ -210,7 +217,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
-		this.rowsPerPage = event.rows;
+		this.loadRowsPerPage(event);
 		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
 		this.sortField = event.sortField == null ? '' : event.sortField;
 		this.currentPageNumber = (event.first / event.rows) + 1;
@@ -367,7 +374,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		filterFieldsSubject.complete();
 	}
 
-	getStorageKey(): string {
+	get storageKey(): string {
 		if (this.assetTypeUid) {
 			return 'assetsAssignmentGrid' + this.settingsService.CurrentResourceID;
 		} else if (this.assetUid) {
@@ -544,6 +551,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		return fileName;
 	}
+
 	protected readonly Object = Object;
 
 	onCompleteAssignmentModalClose() {

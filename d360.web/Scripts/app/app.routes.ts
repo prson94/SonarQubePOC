@@ -20,6 +20,7 @@ const routes: Routes = [
 	{ path: "help", loadChildren: () => import("./components/help/help.module").then((m) => m.HelpModule) },
 	{ path: "admin", loadChildren: () => import("./components/admin/admin.module").then((m) => m.AdminModule) },
 	{ path: "monitor", loadChildren: () => import("./components/monitor/monitor.module").then((m) => m.MonitorModule), canActivate: [FeatureFlagGuard] },
+	{ path: "reference", loadChildren: () => import("./components/reference-v2/reference-v2.module").then((m) => m.ReferenceV2Module), canActivate: [FeatureFlagGuard] },
 	{ path: "quality/rule", loadChildren: () => import("./components/rule/rule.module").then((m) => m.RuleModule) },
 	{ path: "tag", loadChildren: () => import("./components/tag/tag.module").then((m) => m.TagModule) },
 	{ path: "connectorLabel", loadChildren: () => import("./components/connector-label/connector-label.module").then((m) => m.ConnectorLabelModule) },

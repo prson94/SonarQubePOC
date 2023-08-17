@@ -1,0 +1,41 @@
+.reference-item-tab {
+  .grid-actions-header {
+    display: inline-flex;
+    padding: 8px 0;
+    width: 100%;
+
+    .grid-actions-header-row {
+      button {
+        margin-left: 8px;
+      }
+    }
+  }
+}
+
+.reference-item-grid {
+  padding: 12px;
+
+  .table-wrapper {
+    padding: 12px;
+    position: relative;
+
+    .p-datatable-wrapper {
+      max-height: calc(100vh - 326px);
+    }
+
+    td.grid-tools-column {
+      padding-left: 0;
+      width: 30px;
+      position: sticky;
+      right: -1px;
+      z-index: 1;
+      background: inherit;
+
+      .token-popup-menu {
+        button {
+          background: white;
+        }
+      }
+    }
+  }
+}

@@ -277,7 +277,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		}
 
 		if (!this.isActionForm()) {
-			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate' && this.objectType !== 'TaskType';
+			this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate' && this.objectType !== 'TaskType' && !this.isReferenceItem();
 		}
 
 
@@ -405,7 +405,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					this.handleEditor(result);
 				});
 		}
-		else if (this.objectType === "IntersectType" && !id) {
+		else if ((this.objectType === "IntersectType" || this.objectType === "ReferenceItem") && !id) {
 			this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, id, this.objectType)
 				.subscribe((result) => {
 					this.handleEditor(result);
@@ -458,13 +458,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					this.useSidePanel = true;
 				}
 
+				if (this.isReferenceItem() && f.FieldName === "Code" && f.FieldType === "System") {
+					f.FieldType = "Text";
+				}
+
 				if (f.FieldType === "Html") {
 					f.Value = DOMPurify.sanitize(f.Value);
 				}
 
 				if (f.Category == null) {
 					currentCategory = "";
-					if (f.FieldName && f.FieldName.toLowerCase() === 'parentuid') {
+					if (f.FieldName && (f.FieldName.toLowerCase() === 'parentuid' || this.isReferenceItem())) {
 						currentCategory = "General";
 					}
 				}
@@ -1205,6 +1209,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 	isActionForm() {
 		return this.objectType === 'Issue';
+	}
+
+	isReferenceItem() {
+		return this.objectType === "ReferenceItem";
 	}
 
 	get headerWrapperHeight(): number {
