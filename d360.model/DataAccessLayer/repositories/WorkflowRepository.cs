@@ -1375,6 +1375,8 @@ namespace d360.model.DataAccessLayer
 			var relationshipJoins = $@"FROM assignments WA
 								INNER JOIN 
 								[Intersect] I on WA.Object= 'Intersect' and WA.ObjectID=  I.ID 
+								left join asset a on a.ID = -1
+							    left join AssetType AST on AST.ID = -1	
 								INNER JOIN IntersectDetail ID ON ID.ID = I.ID
 								OUTER APPLY (select 'Relationship' as initiatingObjectType)IOT
 								outer apply (select 'Relationship' as [Type])ObjectType(Type)

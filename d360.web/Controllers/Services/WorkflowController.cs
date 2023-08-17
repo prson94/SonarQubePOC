@@ -845,8 +845,8 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
-		[Route("formByUid/{typeUID:Guid}/{itemStepUID:Guid}"), HttpGet]
-		public async Task<HttpResponseMessage> GetWorkflowFormByUid(Guid typeUID, Guid itemStepUID)
+		[Route("formByUid/{itemUid:Guid}/{itemStepUID:Guid}"), HttpGet]
+		public async Task<HttpResponseMessage> GetWorkflowFormByUid(Guid itemUid, Guid itemStepUID)
 		{
 			var itemStep = Company.WorkflowItemSteps.Where(x => x.UID == itemStepUID).Include(x => x.Item).Include(x => x.Step).FirstOrDefault();
 
@@ -855,9 +855,11 @@ namespace d360.web.Controllers.Services
 				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowItemDeleted);
 			}
 
-			var type = Company.WorkflowTypes.Where(x => x.UID == typeUID).FirstOrDefault();
+			var typeId = Company.Query<int?>(@"select wv.TypeID from workflow.Item wi
+				inner join workflow.Version wv on wv.ID = wi.VersionID
+				where wi.uid = @itemUid", new { itemUid }).FirstOrDefault();
 
-			var response = await GetWorkflowForm((type == null ? 0 : type.ID), itemStep.ID);
+			var response = await GetWorkflowForm((typeId.HasValue ? typeId.Value : 0), itemStep.ID);
 
 			return response;
 		}
