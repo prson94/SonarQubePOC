@@ -161,7 +161,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
-		this.loadRowsPerPage(event)
+		this.loadRowsPerPage(event);
 		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
 		this.sortField = event.sortField == null ? '' : event.sortField;
 		this.currentPageNumber = (event.first / event.rows) + 1;
