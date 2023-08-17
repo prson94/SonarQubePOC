@@ -69,13 +69,13 @@
 									</div>
 								</div>
 
-								<div class="field-col" *ngIf="hasPredicateUid">
+								<div class="field-col" *ngIf="hasPredicateUid || isReferenceItemTypeForm">
 									<label for="predicateUid" class="ig-label" i18n>Predicate to Parent</label>
 									<p-dropdown name="predicateUid"
 												formControlName="predicateUid"
 												[igDataCy]="'Asset_Type_Modal_Field_predicateUid'"
 												igDropdown
-												required
+												[required]="hasPredicateUid"
 												tabindex="30"
 												igSize="full"
 												[appendTo]="'body'"
@@ -83,7 +83,21 @@
 
 								</div>
 
-								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
+								<div class="field-col" *ngIf="isReferenceItemTypeForm &&  assetTypeForm.get('predicateUid').value">
+									<label for="referenceParentUid" class="ig-label" i18n>Parent</label>
+									<p-dropdown name="referenceParentUid"
+												formControlName="referenceParentUid"
+												[igDataCy]="'Asset_Type_Modal_Field_referenceParentUid'"
+												igDropdown
+												required
+												tabindex="35"
+												igSize="full"
+												[appendTo]="'body'"
+												[options]="parentSelectItem"></p-dropdown>
+
+								</div>
+
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value && !isReferenceItemTypeForm">
 									<div class="flex">
 										<label for="autoDisplayParent" class="ig-label" i18n>Auto Display Owner/Parent</label>
 										<span class="field-tooltip fa fa-question-circle"
@@ -101,7 +115,7 @@
 											   trueLabel="True"
 											   falseLabel="False"></ig-switch>
 								</div>
-								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value">
+								<div class="field-col" *ngIf="!isHierarchy && assetTypeForm.get('predicateUid').value && !isReferenceItemTypeForm">
 									<div class="flex">
 										<label for="canEditParent" class="ig-label" i18n>Edit Parent</label>
 										<span class="field-tooltip fa fa-question-circle"
@@ -191,6 +205,16 @@
 											  ngDefaultControl #ed>
 									</p-editor>
 								</div>
+								<div class="field-col" *ngIf="isReferenceItemTypeForm">
+									<label for="description" class="ig-label" i18n>Source Notes</label>
+									<p-editor formControlName="notes"
+											  [igDataCy]="'Asset_Modal_Field_notes'"
+											  attr.name="notes"
+											  tabindex="85"
+											  [style]="{'height':'150px'}"
+											  ngDefaultControl #edNotes>
+									</p-editor>
+								</div>
 								<div class="field-col" *ngIf="hasUseAsTransformation">
 									<label for="useAsTransformation" class="ig-label" i18n>Use As Transformation</label>
 									<ig-switch [attr.name]="'useAsTransformation'"
@@ -204,7 +228,7 @@
 
 
 								</div>
-								<div class="field-col" *ngIf="!isDiagramAssetTypeForm">
+								<div class="field-col" *ngIf="!isDiagramAssetTypeForm && !isReferenceItemTypeForm">
 									<label for="isDescriptionEnabled" class="ig-label" i18n>Show Description on List Page</label>
 									<ig-switch (onChange)="onIsDescriptionEnabledChange($event)"
 											   [attr.name]="'isDescriptionEnabled'"
@@ -218,7 +242,7 @@
 
 
 								</div>
-								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true && !isDiagramAssetTypeForm"
+								<div *ngIf="assetTypeForm.get('isDescriptionEnabled').value === true && !isDiagramAssetTypeForm && !isReferenceItemTypeForm"
 									 class="field-col">
 									<div class="flex">
 										<div class="flex-col">

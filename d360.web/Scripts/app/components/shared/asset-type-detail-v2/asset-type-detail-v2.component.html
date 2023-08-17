@@ -31,7 +31,8 @@
 		</div>
 		<div class="windowtabs" *ngIf="!isDetailsPage">
 			<button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')" i18n>Details</button>
-			<button [class]="(tab == 'fields') ? 'tab-selected' : 'tab'" (click)="clickTab('fields')" i18n>Fields</button>
+			<button *ngIf="isReferenceItemType" [class]="(tab == 'items') ? 'tab-selected' : 'tab'" (click)="clickTab('items')"><div style="display:flex"><div i18n>Items</div> <div class="count-badge">{{itemCount}}</div></div></button>
+			<button *ngIf="isAdmin" [class]="(tab == 'fields') ? 'tab-selected' : 'tab'" (click)="clickTab('fields')" i18n>Fields</button>
 		</div>
 		<div class="asset-detail-tabs">
 			<ng-container [ngSwitch]="tab">
@@ -49,11 +50,19 @@
 					</div>
 				</ng-container>
 				<ng-container *ngSwitchCase="'fields'">
-					<d3s-field-definition-tile [assetTypeUid]="assetTypeModel.uid"
+					<d3s-field-definition-tile *ngIf="isAdmin"
+											   [assetTypeUid]="assetTypeModel.uid"
 											   [typeName]="assetTypeModel.Name"
 											   [allowSingleSegmentPath]="false"
 											   [isSidePanel]="true"
 											   [title]="objectName"></d3s-field-definition-tile>
+				</ng-container>
+				<ng-container *ngSwitchCase="'items'">
+					<d3s-reference-items *ngIf="isReferenceItemType"
+										 [referenceItemTypeUid]="assetTypeModel.uid"
+										 [typeName]="assetTypeModel.Name"
+										 [isSidePanel]="true">
+					</d3s-reference-items>
 				</ng-container>
 			</ng-container>
 		</div>

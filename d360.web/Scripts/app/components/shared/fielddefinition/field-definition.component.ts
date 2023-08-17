@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from '@angular/core';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -29,7 +29,7 @@ import { AssetDetailClickType, LinkClickInterceptor } from '../../../services/hr
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
+export class FieldDefinitionComponent extends BaseComponent implements OnChanges, OnDestroy {
 	@Input() title: string = $localize`Fields`;
 
 	@Input() showTitle = true;
@@ -340,19 +340,23 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			position++;
 			const menuItems = [];
 			menuItems.push({ title: $localize`View Information`, action: 'info' });
-			menuItems.push({ title: $localize`Edit`, action: 'edit' });
+			if (this.showEditButton) {
+				menuItems.push({ title: $localize`Edit`, action: 'edit' });
+			}
 
 			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
 
 			if (this.fieldDisplayModel.length > 1) {
-				if (keyFieldsCount === 1 && item.IsPartOfKey) {
-					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`You cannot delete this field. There must be at least one key field defined.` });
-				}
-				else if (isDiagramAssetPage && ['Name', 'StepNo', 'GovernanceRole'].indexOf(item.Name) > -1) {
-					menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Default fields cannot be deleted.` });
-				}
-				else {
-					menuItems.push({ title: $localize`Delete`, action: 'delete' });
+				if (this.showDeleteButton) {
+					if (keyFieldsCount === 1 && item.IsPartOfKey) {
+						menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`You cannot delete this field. There must be at least one key field defined.` });
+					}
+					else if (isDiagramAssetPage && ['Name', 'StepNo', 'GovernanceRole'].indexOf(item.Name) > -1) {
+						menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Default fields cannot be deleted.` });
+					}
+					else {
+						menuItems.push({ title: $localize`Delete`, action: 'delete' });
+					}
 				}
 
 				let positionDisabled = false;
