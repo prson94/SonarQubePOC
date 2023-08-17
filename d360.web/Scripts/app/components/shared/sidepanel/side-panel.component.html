@@ -1,86 +1,84 @@
-﻿<div *ngIf="expanded === false">
-    <div class="side-panel-container">
-        <button *ngFor="let b of visibleButtons"
-                igButton
-                [disabled]="b.disabled"
-                [icon]="b.icon"
-                (click)="clickButton(b)"
-                [tooltip]="getButtonTooltip(b)"
-                [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                class="ig-button-secondary side-panel-button">
-        </button>
-    </div>
+﻿<div *ngIf="expanded === false" class="collapsed-panel">
+	<button *ngFor="let b of visibleButtons"
+			igButton
+			[disabled]="b.disabled"
+			[icon]="b.icon"
+			(click)="clickButton(b)"
+			[tooltip]="getButtonTooltip(b)"
+			[igDataCy]="'Sidebar_' + getButtonTooltip(b)"
+			class="ig-button-secondary side-panel-button {{visibleButtons.length === 1 ? 'single-button':''}}">
+	</button>
 </div>
-<div *ngIf="expanded === true" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
-    <div>
-        <div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
-            <div class="panel-header">
-                <span class="header-label">{{panelLabel}}</span>
-                <div class="side-panel-button-container">
-                    <ng-container *ngIf="panelMenu.length > 0">
-                        <ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
-                        <button igButton icon="fa-ellipsis-v"
+<div *ngIf="expanded === true" class="expanded-panel" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
+	<div>
+		<div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
+			<div class="panel-header">
+				<span class="header-label">{{panelLabel}}</span>
+				<div class="side-panel-button-container">
+					<ng-container *ngIf="panelMenu.length > 0">
+						<ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
+						<button igButton icon="fa-ellipsis-v"
 								(click)="panelkebab.toggle($event)"
 								class="ig-button-secondary side-panel-button">
 						</button>
-                        <div class="side-panel-button-spacer"></div>
-                    </ng-container>
-                    <ng-container *ngIf="buttonCount > 1">
-                        <button *ngFor="let b of visibleButtons"
-                                igButton
-                                [icon]="b.icon"
-                                (click)="clickButton(b)"
-                                [tooltip]="getButtonTooltip(b)"
-                                [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                                class="ig-button-secondary side-panel-button"
-                                [class.selected]="selectedPanel === b.key"
-                                [disabled]="b.disabled">
-                        </button>
-                        <div class="side-panel-button-spacer"></div>
-                    </ng-container>
-                    <button igButton
-                            [icon]="closeIcon"
-                            (click)="collapseSidePanel()"
-                            i18n-tooltip
-                            tooltip="Hide Side Panel"
-                            [igDataCy]="'Sidebar_Hide'"
-                            class="ig-button-secondary side-panel-button">
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="side-panel-content" [style.height]="height">
-            <ng-content></ng-content>
-            <ng-container *ngIf="(expanded && selectedItem == null && panelButton?.needsSelection && !multipleItemsSelected && selectedPanel !== 'filters') || showEmptyOverlay">
-                <div class="side-panel-empty-overlay">
-                    <div class="content">
-                        <div class="icon-holder">
-                            <i [class]="'fa ' + panelButton?.icon"></i>
-                        </div>
-                        <span>{{panelButton?.nothingSelectedMessage}}</span>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-container *ngIf="expanded && selectedItem != null && !panelApplies">
-                <div class="side-panel-empty-overlay">
-                    <div class="content">
-                        <div class="icon-holder">
-                            <i [class]="'fa ' + panelButton?.icon"></i>
-                        </div>
-                        <span>{{panelButton?.notApplicableMessage}}</span>
-                    </div>
-                </div>
-            </ng-container>
-            <ng-container *ngIf="expanded && panelButton?.needsSelection && multipleItemsSelected">
-                <div class="side-panel-empty-overlay">
-                    <div class="content">
-                        <div class="icon-holder">
-                            <i [class]="'fa ' + panelButton?.icon"></i>
-                        </div>
-                        <span>{{panelButton?.multipleSelectedMessage}}</span>
-                    </div>
-                </div>
-            </ng-container>
-        </div>
-    </div>
+						<div class="side-panel-button-spacer"></div>
+					</ng-container>
+					<ng-container *ngIf="buttonCount > 1">
+						<button *ngFor="let b of visibleButtons"
+								igButton
+								[icon]="b.icon"
+								(click)="clickButton(b)"
+								[tooltip]="getButtonTooltip(b)"
+								[igDataCy]="'Sidebar_' + getButtonTooltip(b)"
+								class="ig-button-secondary side-panel-button"
+								[class.selected]="selectedPanel === b.key"
+								[disabled]="b.disabled">
+						</button>
+						<div class="side-panel-button-spacer"></div>
+					</ng-container>
+					<button igButton
+							[icon]="closeIcon"
+							(click)="collapseSidePanel()"
+							i18n-tooltip
+							tooltip="Hide Side Panel"
+							[igDataCy]="'Sidebar_Hide'"
+							class="ig-button-secondary side-panel-button">
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="side-panel-content" [style.height]="height">
+			<ng-content></ng-content>
+			<ng-container *ngIf="(expanded && selectedItem == null && panelButton?.needsSelection && !multipleItemsSelected && selectedPanel !== 'filters') || showEmptyOverlay">
+				<div class="side-panel-empty-overlay">
+					<div class="content">
+						<div class="icon-holder">
+							<i [class]="'fa ' + panelButton?.icon"></i>
+						</div>
+						<span>{{panelButton?.nothingSelectedMessage}}</span>
+					</div>
+				</div>
+			</ng-container>
+			<ng-container *ngIf="expanded && selectedItem != null && !panelApplies">
+				<div class="side-panel-empty-overlay">
+					<div class="content">
+						<div class="icon-holder">
+							<i [class]="'fa ' + panelButton?.icon"></i>
+						</div>
+						<span>{{panelButton?.notApplicableMessage}}</span>
+					</div>
+				</div>
+			</ng-container>
+			<ng-container *ngIf="expanded && panelButton?.needsSelection && multipleItemsSelected">
+				<div class="side-panel-empty-overlay">
+					<div class="content">
+						<div class="icon-holder">
+							<i [class]="'fa ' + panelButton?.icon"></i>
+						</div>
+						<span>{{panelButton?.multipleSelectedMessage}}</span>
+					</div>
+				</div>
+			</ng-container>
+		</div>
+	</div>
 </div>
