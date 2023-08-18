@@ -3566,7 +3566,7 @@ namespace d360.web.Controllers.Services
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.StepNotFound);
 			}
-			return GetWorkflowVersionStepDetail(itemStepId).Result;
+			return await GetWorkflowVersionStepDetail(itemStepId);
 		}
 
 		[Route("step/detail/{itemStepId:long}"), HttpGet]
