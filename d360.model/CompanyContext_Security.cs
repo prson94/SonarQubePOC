@@ -1080,7 +1080,7 @@ where	EG.Success is null
 				}
 
 				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-				//QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 				results.AddRange(
 								Query<GroupResponseResult>(

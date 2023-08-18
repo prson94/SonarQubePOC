@@ -16,7 +16,7 @@ namespace igx.functions.consumption
 {
 	public class PostExecutionJobProcessor
 	{
-		TelemetryClient Telemetry;
+		readonly TelemetryClient Telemetry;
 
 		public PostExecutionJobProcessor(TelemetryClient telemetry)
 		{
@@ -52,8 +52,6 @@ namespace igx.functions.consumption
 		[ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
 		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "AzureWebJobsQueueStorageAccount")] string message, ILogger log, ExecutionContext context)
         {
-			//var metric = Telemetry.GetMetric("PostExecution");
-
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
 			Telemetry.Context.User.AccountId = $"{request.CompanyID}";
@@ -77,12 +75,12 @@ namespace igx.functions.consumption
 						case PostExecutionQueueMessageAction.History:
 							string insertStatement = "insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)";
 							string insertFieldStatement = "insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)";
-							Func<string, string, string> maxVersionSql = (string objectColumn, string objectIdColumn) =>
+							Func<string, string, string> maxVersionSql = (objectColumn, objectIdColumn) =>
 							{
 								return $"cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = {objectColumn} and ObjectID = {objectIdColumn}) mv";
 							};
 
-							Func<string, string, string, string> previousValueCrossApplySql = (string objectColumn, string objectIdColumn, string fieldNameColumn) => {
+							Func<string, string, string, string> previousValueCrossApplySql = (objectColumn, objectIdColumn, fieldNameColumn) => {
 								return $@"(select top 1
 		ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, i_p.FieldTypeID) ORDER BY i_p.[AuditId] DESC) as RowNum,
 		[Value]
@@ -469,6 +467,9 @@ from	api.ExecutionLog a
 		outer apply {previousValueCrossApplySql("'Resource'", "p.ObjectId", "f.FieldName")} pv
 where	pv.Value is null or (f.FieldValue <> pv.Value);";
 									break;
+								default:
+									commandText = "";
+									break;
 							}
 							break;
 						case PostExecutionQueueMessageAction.Indexing:
@@ -549,82 +550,85 @@ insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
 							switch (execution.Action)
 							{
 								case ApiExecutionAction.DeleteAssets:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostAssets:
-									commandText = "";// @"api.ExecutionAsset";
+									commandText = "";// @"Table api.ExecutionAsset";
 									break;
 								case ApiExecutionAction.PutAssets:
-									commandText = "";// @"api.ExecutionAsset";
+									commandText = "";// @"Table api.ExecutionAsset";
 									break;
 								case ApiExecutionAction.DeleteRelationships:
-									commandText = "";// @"api.ExecutionDeletedRelationship";
+									commandText = "";// @"Table api.ExecutionDeletedRelationship";
 									break;
 								case ApiExecutionAction.PostRelationships:
-									commandText = "";// @"api.ExecutionRelationship";
+									commandText = "";// @"Table api.ExecutionRelationship";
 									break;
 								case ApiExecutionAction.PutRelationships:
-									commandText = "";// @"api.ExecutionRelationship";
+									commandText = "";// @"Table api.ExecutionRelationship";
 									break;
 								case ApiExecutionAction.DeleteAssetTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostAssetTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutAssetTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostCrossReferences:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostResponsibilityOverride:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteFieldTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.UpsertUsers:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PatchCatalog:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteGroups:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostGroups:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutGroups:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostResponsibilityTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutResponsibilityTypes:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteUsers:
-									commandText = "";// @"";
+									commandText = "";
+									break;
+								default:
+									commandText = "";
 									break;
 							}
 							break;
@@ -632,51 +636,57 @@ insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
 							switch (execution.Action)
 							{
 								case ApiExecutionAction.DeleteAssets:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostAssets:
-									commandText = "";// @"api.ExecutionAsset";
+									commandText = "";// @"Table api.ExecutionAsset";
 									break;
 								case ApiExecutionAction.PutAssets:
-									commandText = "";// @"api.ExecutionAsset";
+									commandText = "";// @"Table api.ExecutionAsset";
 									break;
 								case ApiExecutionAction.DeleteRelationships:
-									commandText = "";// @"api.ExecutionDeletedRelationship";
+									commandText = "";// @"Table api.ExecutionDeletedRelationship";
 									break;
 								case ApiExecutionAction.PostRelationships:
-									commandText = "";// @"api.ExecutionRelationship";
+									commandText = "";// @"Table api.ExecutionRelationship";
 									break;
 								case ApiExecutionAction.PutRelationships:
-									commandText = "";// @"api.ExecutionRelationship";
+									commandText = "";// @"Table api.ExecutionRelationship";
 									break;
 								case ApiExecutionAction.PostDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteDataProfile:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PostResponsibilityOverride:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PatchCatalog:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteGroups:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.DeleteDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
 									break;
 								case ApiExecutionAction.PutDataQualityResults:
-									commandText = "";// @"api.ExecutionDeletedAsset";
+									commandText = "";// @"Table api.ExecutionDeletedAsset";
+									break;
+								default:
+									commandText = "";
 									break;
 							}
+							break;
+						default:
+							commandText = "";
 							break;
 					}
 

@@ -369,13 +369,12 @@ namespace igx.jobs.apiexecutionprocessor
             {
 				int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
 				int maxRetryCount = 20;
-				int retryCount = maxRetryCount;
 				if (!dbExecutionItem.RetryCount.HasValue)
 				{
 					dbExecutionItem.RetryCount = 0;
 				}
 				dbExecutionItem.RetryCount += 1;
-				retryCount = dbExecutionItem.RetryCount.Value;
+				int retryCount = dbExecutionItem.RetryCount.Value;
 				company.Update(dbExecutionItem);
 
 				if (retryCount < maxRetryCount)
@@ -385,7 +384,7 @@ namespace igx.jobs.apiexecutionprocessor
 				}
 				else 
 				{
-					CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() {
+					CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string> {
 						{ "ExecutionID", info.ExecutionID.ToString() },
 						{ "StorageFolder", info.StorageFolder },
 						{ "RequestFileName", info.RequestFileName },
