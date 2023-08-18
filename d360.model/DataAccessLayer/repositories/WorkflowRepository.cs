@@ -379,13 +379,17 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
-		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemUid)
+		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
-			dbArgs.Add("workflowItemUid", workflowItemUid);
+			dbArgs.Add("workflowItemStepUid", workflowItemStepUid);
 
 			var sql = @"
+				declare @workflowItemUid uniqueidentifier = (select top 1 wi.UID from workflow.Item wi
+				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
+				where wis.UID = @workflowItemStepUid)
+
 				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
 				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
 				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
@@ -393,7 +397,8 @@ namespace d360.model.DataAccessLayer
 				select 
 				case when @doesExists is not null then 1 else 0 end as [exists], 
 				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
-				case when @hasAccess is not null then 1 else 0 end as [hasAccess]";
+				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
+				@workflowItemUid as workflowItemUid";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
 		}
@@ -1061,7 +1066,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
 				new DefaultFilter("displayPath", "AssignmentList.assetPath", SqlFieldType.Text),
 				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text),
-				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text)
+				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
+				new DefaultFilter("objectType", "AssignmentList.objectType", SqlFieldType.Text)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1265,7 +1271,8 @@ namespace d360.model.DataAccessLayer
 								WA.workflowName,
 								WA.initiator,
 								WA.initiatorUid,		
-								ADV.DisplayValue as assetDisplayValue,
+								coalesce(ADV.DisplayValue,AT_ACT.Name) as assetDisplayValue,
+								ObjectType.Type as objectType,
 								WA.StartedOn,
 								WA.CompletedOn,
 								WA.[Status],
@@ -1288,6 +1295,7 @@ namespace d360.model.DataAccessLayer
 							WA.initiator,
 							WA.initiatorUid,		
 							ADV.DisplayValue as assetDisplayValue,
+							ObjectType.Type as objectType,
 							WA.StartedOn,
 							WA.CompletedOn,
 							WA.[Status],
@@ -1304,12 +1312,37 @@ namespace d360.model.DataAccessLayer
 							WA.Version
 							";
 
+			var relationshipSelects = $@"
+							WA.workflowItemUid, 
+							WA.workflowUid, 
+							WA.workflowName,
+							WA.initiator,
+							WA.initiatorUid,		
+							id.Name as assetDisplayValue,
+							ObjectType.Type as objectType,
+							WA.StartedOn,
+							WA.CompletedOn,
+							WA.[Status],
+							null as assetTypeUid,
+							null as actionTypeUid,
+							null as assetUid,							
+							null as assetPath,
+							AssignedUsers.value as assigneesJson,
+							null as actionUid, 
+							IOT.initiatingObjectType,
+							null as initiatingObjectTypeName,
+							WA.VersionId,
+							WA.VersionUid,
+							WA.Version
+							";
+
 			var actionJoins = $@"FROM 
 							assignments WA
 							INNER JOIN 
 							Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
 							INNER JOIN 
 							IssueType IT on I.IssueTypeID = IT.ID
+							left join AssetType AT_ACT on WA.Object = 'Issue' and AT_ACT.Id = I.AssetTypeId
 							LEFT JOIN 
 							Asset A on WA.Object = 'Issue' and A.ID = I.AssetID
 							LEFT JOIN 
@@ -1319,21 +1352,40 @@ namespace d360.model.DataAccessLayer
 							LEFT JOIN 
 							AssetDisplayValue ADV on A.id = ADV.AssetID
 							OUTER APPLY (select 'Action' as initiatingObjectType)IOT
+							outer apply (select case when A.Id is not null then 'Asset' else 'Asset Type' end as [Type])ObjectType(Type)
 							{assigneesSql}
 						{string.Join("\n", fieldJoins.GetStatements())}
 						{whereConditions}";
 
 			var assetJoins = $@"FROM
 								assignments WA
-								INNER JOIN 
+								LEFT JOIN 
 								Asset A on WA.Object=A.object and WA.ObjectID= A.objectID and WA.Object <> 'Issue'
-								INNER JOIN 
+								LEFT JOIN 
 								AssetPath AP on A.ID=AP.ID
-								INNER JOIN 
+								LEFT JOIN 
 								AssetType AST on AST.ID = A.AssetTypeID
-								INNER JOIN 
+								LEFT JOIN 
 								AssetDisplayValue ADV on A.id = ADV.AssetID
 								OUTER APPLY (select {classSQL})IOT
+								outer apply (select 'Asset' as [Type])ObjectType(Type)
+								{assigneesSql}
+								outer apply (
+									select 
+										null as uid  										
+								) as IT
+								{string.Join("\n", fieldJoins.GetStatements())}
+								{whereConditions}
+								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
+
+			var relationshipJoins = $@"FROM assignments WA
+								INNER JOIN 
+								[Intersect] I on WA.Object= 'Intersect' and WA.ObjectID=  I.ID 
+								left join asset a on a.ID = -1
+							    left join AssetType AST on AST.ID = -1	
+								INNER JOIN IntersectDetail ID ON ID.ID = I.ID
+								OUTER APPLY (select 'Relationship' as initiatingObjectType)IOT
+								outer apply (select 'Relationship' as [Type])ObjectType(Type)
 								{assigneesSql}
 								outer apply (
 									select 
@@ -1348,7 +1400,11 @@ namespace d360.model.DataAccessLayer
 						union
 						SELECT
 							{assetSelects}
-							{assetJoins}";
+							{assetJoins}
+						union 
+						SELECT 
+							{relationshipSelects}
+							{relationshipJoins}";
 
 			string outerOrderBySql = orderBySql.Replace("AssignedUsers.value", "assigneesJson");
 			var sql = $@"
@@ -1795,7 +1851,7 @@ namespace d360.model.DataAccessLayer
 						, wvs.name as Step
 						,wvs.Id as StepId
 						,count(1) as Total
-						,string_agg(CAST(wia.Id as nvarchar(40)),',') as WorkflowAssignments
+						,string_agg(CAST(wia.Id as nvarchar(max)),',') as WorkflowAssignments
 						from
 							[workflow].[type] wt
 							inner join [workflow].[version] wv on (wt.id = wv.typeid)

@@ -319,7 +319,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				drop table if exists #tempruleresults;
 
 				create table #tempassetid (id [bigint] IDENTITY(1,1) NOT NULL, assetid [bigint]);
+				create clustered index cix_tempassetid on #tempassetid (assetid);
+
 				create table #tempruleresults ([Uid] uniqueidentifier);
+				create clustered index cix_tempruleresults on #tempruleresults (Uid);
 
 				insert into #tempassetid (assetid)
 					select  a.ID
@@ -329,9 +332,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								from    api.ExecutionDeletedAsset S 
 								where   s.Uid = A.Uid 
 										and {querySuffix}
-							);
-
-				create nonclustered index cix_tempassetid on #tempassetid (assetid, id);
+							)
+				option(recompile);
 
 				insert into #tempruleresults
 					select	R.Uid
@@ -340,8 +342,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							dbo.AssetResult R on A.uid = R.OwningAssetUid
 					where	A.Id in (select assetid from #tempassetid);
 
-				create clustered index cix_tempruleresults on #tempruleresults (Uid);
-
 				select @totalcount = count(id) from #tempassetid;
 				while (@runcount <= @totalcount)
 				begin
@@ -349,13 +349,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					set @enruncount = @runcount + @batchsize;
 
 					delete  a
-					from    Asset a
-					where   exists (
-								select  1
-								from    #tempassetid S
-								where   S.assetid = a.ID
-										and S.id between @struncount and @enruncount
-							);					
+					from  Asset a
+					inner join #tempassetid S on S.assetid = a.ID and S.id between @struncount and @enruncount
+					option(recompile);
 
 					set @runcount = @enruncount;
 				end;
@@ -393,6 +389,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									drop table if exists #tempintersect;
 									create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int); 
+									create Clustered index [cix_tempintersect] on #tempintersect(IntersectID);
 
 									if(@predicateType = 1)
 									begin
@@ -412,8 +409,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									from [Intersect] T 
 									where exists (select 1 from #tempexecdelass S where S.AssetID = T.ObjectAssetID);
 
-									create nonclustered index [cix_tempintersect] on #tempintersect(IntersectID, id);
-
 									delete T
 									from #tempintersect T
 									where T.ID > (select min(t1.ID)
@@ -429,12 +424,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 										delete  T
 										from    [Intersect] T
-										where   exists (
-													select  1
-													from    #tempintersect S
-													where   S.IntersectID = T.ID
-															and S.id between @struncount and @enruncount
-												);
+										inner join #tempintersect S on S.IntersectID = T.ID and S.id between @struncount and @enruncount
+										option(recompile);
 
 										set @runcount = @enruncount;
 									end;
@@ -489,6 +480,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									drop table if exists #tempfieldid;
 
 									create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, fieldid [bigint]);
+									create clustered index [cix_tempfieldid] on #tempfieldid (fieldid);
 
 									insert into #tempfieldid (fieldid)
 									select T.ID
@@ -498,8 +490,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix}
 									);
 
-									create nonclustered index [cix_tempfieldid] on #tempfieldid (fieldid, id);
-
+									
 									select @totalcount = count(id) from #tempfieldid;
 									while (@runcount <= @totalcount)
 									begin
@@ -508,12 +499,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 										delete T
 										from Field T
-										where exists (
-											select 1
-											from #tempfieldid S
-											where S.FieldID = T.ID
-											and S.id between @struncount and @enruncount
-										);
+										inner join #tempfieldid S on S.FieldID = T.ID and S.id between @struncount and @enruncount
+										option(recompile);
 
 										set @runcount = @enruncount;
 									end;

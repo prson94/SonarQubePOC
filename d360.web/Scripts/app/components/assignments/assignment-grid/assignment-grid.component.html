@@ -9,10 +9,9 @@
 		</div>
 		<div class="grid-action-buttons">
 			<div>
-				<div
-					pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-					tooltipPosition="left"
-					tooltipStyleClass="ig-tooltip">
+				<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					 tooltipPosition="left"
+					 tooltipStyleClass="ig-tooltip">
 					<button igButton
 							class="ig-button-secondary"
 							[disabled]="!canExportRecords() || isExportInProgress"
@@ -30,7 +29,7 @@
 				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<advanced-filtering [loadIdentifier]="getStorageKey()"
+		<advanced-filtering [loadIdentifier]="storageKey"
 							[fieldsObserver]="filterFields$"
 							*ngIf="areTypesLoaded"
 							(onLoad)="onFiltersLoaded()"
@@ -60,7 +59,7 @@
 				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
 				 [selection]="assignments"
 				 (selectionChange)="gridSelectionChange($event)"
-				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+				 (onPage)="setRowsPerPage($event)">
 			<ng-template pTemplate="header">
 				<tr>
 					<ng-container *ngIf="actionFormFields.length === 0">
@@ -73,30 +72,38 @@
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
 					</th>
+					<th [pSortableColumn]="'objectType'">
+						<ng-container i18n>Object Type</ng-container>
+						<d3s-sortIcon [field]="'objectType'"></d3s-sortIcon>
+					</th>
 					<ng-container *ngFor="let field of actionFormFields">
-						<th>
+						<th class="action-type-other-column"
+							[class.action-type-boolean-column]="Object.keys(field.Type)?.[0] === 'Boolean'"
+							[class.action-type-date-column]="Object.keys(field.Type)?.[0] === 'Date'"
+							[class.action-type-date-time-column]="Object.keys(field.Type)?.[0] === 'DateTime'"
+							[class.action-type-number-column]="Object.keys(field.Type)?.[0] === 'Number' || Object.keys(field.Type)?.[0] === 'Decimal'">
 							<ng-container i18n>{{ field.FriendlyName }}</ng-container>
 						</th>
 					</ng-container>
 					<ng-container *ngIf="!isRequestsFlow">
-						<th [pSortableColumn]="'initiator'">
+						<th [pSortableColumn]="'initiator'" class="initiator-column">
 							<ng-container i18n>Initiator</ng-container>
 							<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'StartedOn'">
+					<th [pSortableColumn]="'StartedOn'" class="initiated-column">
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'assigneesJson'">
+					<th [pSortableColumn]="'assigneesJson'" class="assignee-column">
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
-					<th *ngIf="assetUid || assetTypeUid">
+					<th *ngIf="assetUid || assetTypeUid" class="days-open-column">
 						<ng-container i18n>Days Open</ng-container>
 						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Status'">
+					<th [pSortableColumn]="'Status'" class="status-column">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
 					</th>
@@ -108,7 +115,8 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td>{{item.workflowName}}</td>
 					</ng-container>
-					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
+					<td>{{item.assetDisplayValue ?? '---'}}</td>
+					<td>{{item.objectType ?? '---'}}</td>
 					<ng-container *ngFor="let field of actionFormFields">
 						<td>
 							<ng-container [ngSwitch]="Object.keys(field.Type)?.[0]">
@@ -117,18 +125,17 @@
 										 [innerHTML]="item[field.Name] | safeHtml"></div>
 								</div>
 								<div *ngSwitchCase="'Link'">
-									<div class="ig-value"><a
-										[href]="item[field.Name]?.split('|')?.[1]">
-										{{ item[field.Name]?.split('|')?.[0] }}</a>
+									<div class="ig-value">
+										<a [href]="item[field.Name]?.split('|')?.[1]">
+											{{ item[field.Name]?.split('|')?.[0] }}
+										</a>
 									</div>
 								</div>
 								<div *ngSwitchCase="'DateTime'">
-									<div
-										class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
+									<div class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
 								</div>
 								<div *ngSwitchCase="'Date'">
-									<div
-										class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
+									<div class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
 								</div>
 								<div *ngSwitchCase="'Lookup'">
 									<div class="ig-value"> {{ item[field.Name] }} </div>
@@ -159,8 +166,10 @@
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
 						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
-							others </span>
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length">
+							+ {{ (item.allAssignees.length - item.filteredAssignees.length) }}
+							others
+						</span>
 					</td>
 					<td *ngIf="assetUid || assetTypeUid">
 						{{item.daysOpen}}
@@ -168,7 +177,7 @@
 					<td>
 						<span>{{item.Status}}</span>
 					</td>
-					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools"
+					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools assignment-row-menu-column"
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>
@@ -212,8 +221,27 @@
 			Are you sure you want to delete
 			<span *ngIf="assignments.length === 1"> this assignment?</span>
 			<span *ngIf="assignments.length > 1"> these assignments?</span>
-			<br/>
+			<br />
 			Deleted assignments <b>cannot be retrieved</b>.
 		</p>
 	</div>
 </d3s-delete-form>
+
+<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose()"></d3s-complete-assignment>
+
+<d3s-modal [title]="errorModalTitle"
+		   additionalClasses="modal-dyn-editor large-dialog"
+		   (onClose)="modalVisible=false"
+		   [isVisible]="modalVisible">
+	<div prompt>
+		<div class="content">
+			<div class="row">
+				{{errorModalMessage}}
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<div class="grow"></div>
+		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel" (click)="modalVisible=false"></button>&nbsp;&nbsp;
+	</div>
+</d3s-modal>

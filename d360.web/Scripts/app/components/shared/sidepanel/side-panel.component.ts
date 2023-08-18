@@ -47,8 +47,8 @@ export class SidePanelComponent extends BaseComponent {
 
     public panelMenu: PopupMenuItem[] = [];
 
-    readonly minWidth = '400px';
-    readonly maxWidth = '400px';
+    @Input() minWidth = '400px';
+    @Input() maxWidth = '400px';
 
 	constructor(
 		private sidePanelService: SidePanelService,

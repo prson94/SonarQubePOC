@@ -238,8 +238,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             menu.ShouldDisplay = (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement));
                             break;
                         case '#Reference':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+							menu.NavigationItems = [];
+							menu.ngUrl = this.featureFlagService.variation<boolean>(FeatureFlags.ReferenceListV2Flag) ? SiteUrlHelpers.SITE_URL_REFERENCE_V2_ROOT : SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
                             break;
 						case '#Assignments':
 							menu.NavigationItems = [];

@@ -1,0 +1,88 @@
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { TableModule } from 'primeng/table';
+
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { CalendarModule } from 'primeng/calendar';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { SharedModule } from 'primeng/api';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from "primeng/tooltip";
+
+import { CoreModule } from '../core.module';
+import { TilesModule } from '../tiles/tiles.module';
+import { SharedDeleteFormModule } from '../delete.form';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SharedFormMessageModule } from '../form-message.part';
+import { SimpleAccordionModule } from '../simple-accordion.part';
+
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { SidePanelModule } from '../sidepanel/side-panel.module';
+import { AngularSplitModule } from 'angular-split';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
+import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { SharedAssetEditorsModule } from '../asseteditors/shared-asset-editor.module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { AssetEditorModule } from '../asset-editor/asset-editor.module';
+
+import { ReferenceItemsComponent } from './reference-items.component';
+
+@NgModule({
+	imports: [
+		CommonModule,
+		FormsModule,
+
+		//d3s
+		CoreModule,
+		SharedDeleteFormModule,
+		SharedFormMessageModule,
+		SharedGridPagingInfoModule,
+		TilesModule,
+		SimpleAccordionModule,
+
+		//prime
+		AutoCompleteModule,
+		CalendarModule,
+		ButtonModule,
+		CheckboxModule,
+		DropdownModule,
+		InputTextModule,
+		InputTextareaModule,
+		EditorModule,
+		MultiSelectModule,
+		SharedModule,
+		TableModule,
+		TooltipModule,
+		RadioButtonModule,
+		SidePanelModule,
+		AngularSplitModule,
+		SearchFieldModule,
+		AdvancedFiltersModule,
+		PopupMenuModule,
+		SiteModalModule,
+		SharedAssetEditorsModule,
+		SharedDynamicGridEditorModule,
+		AssetDetailModule,
+		AssetEditorModule,
+	],
+	declarations: [
+		ReferenceItemsComponent
+	],
+	exports: [
+		ReferenceItemsComponent
+	],
+	providers: [
+
+	]
+})
+export class ReferenceItemsModule { }

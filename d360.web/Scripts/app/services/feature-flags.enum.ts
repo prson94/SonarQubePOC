@@ -7,5 +7,6 @@ export enum FeatureFlags {
 
 	//temp flags
 	AssignmentsFlag = "GovernAssignmentsTemp20230815",
-	RelationshipCardinalityTempFlag = "GovernRelationshipCardinalityTemp20230901"
+	RelationshipCardinalityTempFlag = "GovernRelationshipCardinalityTemp20230901",
+	ReferenceListV2Flag = "GovernReferenceTemp20230901"
 }

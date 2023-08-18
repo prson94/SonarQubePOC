@@ -1,4 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	Input,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild
+} from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import {
@@ -7,7 +18,7 @@ import {
 	SingleAssignment,
 	WorkflowFormField,
 	WorkflowFormFieldType,
-    WorkflowFormResponse
+	WorkflowFormResponse
 } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { forkJoin, Observable, Subscription } from 'rxjs';
@@ -15,7 +26,9 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
 import { AssignmentService } from '../assignment.service';
+import { ResourcesService } from '../../../services/resources.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
+import { JsonResult } from '../../../models/jsonresult.model';
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -24,6 +37,7 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
+	@Input() onlyAdminReassignMode: boolean = false;
 
 	isModalVisible: boolean = false;
 	loading: boolean = false;
@@ -33,7 +47,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowItemUid: string;
 	workflowName: string;
 	stepUid: string;
-	sidePanelStorageKey: string = 'CompleteAssignment_' + this.settingsService.CurrentResourceID;
+	sidePanelStorageKey: string =
+		'CompleteAssignment_' + this.settingsService.CurrentResourceID;
 	sidePanel: string = 'asset-details';
 	formTitle: string = '';
 	formDescription: string = '';
@@ -46,15 +61,25 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
 
-	@Output() onModalClose = new EventEmitter<{ isBack: boolean }>();
+	@Output() onModalClose = new EventEmitter<{ isBack: boolean, isCompleteForm: boolean }>();
 
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	isLoading: boolean = false;
+	radioSelectionValue: string;
+	assets = [];
+	userData = [];
+	tableRadioSelection;
 	@ViewChild('workflowForm') public workflowForm: NgForm;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 
 	multiSubmitionItems: SingleAssignment[] = [];
 	isBulkRespond: boolean = false;
+	allowReassignObject: boolean = false;
+	allowReassignResource: boolean = false;
+	clearOtherAssignments: boolean = false;
+	sendFormEmails: boolean = true;
+
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 
@@ -62,7 +87,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		private workflowService: WorkflowService,
 		private linkClickInterceptor: LinkClickInterceptor,
 		private assignmentService: AssignmentService,
-		private cdRef: ChangeDetectorRef
+		private cdRef: ChangeDetectorRef,
+		private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -71,7 +97,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isAssignmentProgressSelected = false;
 	}
 
-	ngOnDestroy() {
+	ngOnDestroy(): void {
 		if (this.loadSub) {
 			this.loadSub.unsubscribe();
 		}
@@ -81,6 +107,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.discardForm = message;
 	}
 
+
 	openModal(details: {
 		workflowItemUid: string,
 		stepUid: string,
@@ -88,6 +115,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		items?: SingleAssignment[]
 	}): void {
 		if (details) {
+			this.multiSubmitionItems = [];
+			this.isBulkRespond = false;
+			if (this.onlyAdminReassignMode) {
+				this.radioSelectionValue = 'reassignUser';
+			}
+			else {
+				this.radioSelectionValue = 'completeForm';
+			}
+
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
 
@@ -119,6 +155,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = res.ObjectName;
 								this.assetId = res.ObjectID;
 							}
+							this.allowReassignObject = res.AllowReassignObject;
+							this.allowReassignResource = res.AllowReassignResource;
+
+							if (this.allowReassignObject) {
+								this.loadWorkflowReassignmentAssets();
+							}
+							if (this.allowReassignResource) {
+								this.loadAllUsersData();
+							}
 							this.assignmentService.setFormValidators.next();
 						}
 
@@ -136,10 +181,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.cdRef.markForCheck();
 					});
 		}
-		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
-			this.sidePanelOpen = true;
-		});
+		this.linkInterceptorSubscription = this.linkClickInterceptor
+			.getEvents()
+			.subscribe((ev) => {
+				this.linkClickInterceptor.handleEvent(
+					this.sidePanelSwitcherComponent,
+					ev
+				);
+				this.sidePanelOpen = true;
+			});
 		this.isModalVisible = true;
 		this.cdRef.markForCheck();
 	}
@@ -162,35 +212,65 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.workflowForm.reset();
-		this.onModalClose.emit({ isBack: true });
+		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
 	}
 
-	onCloseClick(): void{
-		this.onModalClose.emit({ isBack: false });
+	onCloseClick(): void {
+		this.onModalClose.emit({ isBack: false, isCompleteForm: true });
 	}
 
 	onFormSubmit(): void {
-		this.prepareValuesForSubmit();
-
+		const isCompleteForm: boolean = this.radioSelectionValue === 'completeForm';
 		if (this.isMultiSubmition) {
-			const obs: Observable<WorkflowFormResponse>[] = [];
-			this.multiSubmitionItems.forEach((item) => {
-				obs.push(this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields));
-			});
+			const obs: Observable<WorkflowFormResponse | JsonResult>[] = [];
+			let isBack: boolean = false;
+
+			if (this.radioSelectionValue === 'completeForm') {
+				this.prepareValuesForSubmit();
+				this.multiSubmitionItems.forEach((item) => {
+					obs.push(this.workflowService.submitWorkflowFormByUid(item.WorkflowItemUid, item.ItemStepUid, this.formFields));
+				});
+
+			} else if (this.radioSelectionValue === 'reassignUser') {
+				isBack = true;
+				this.multiSubmitionItems.forEach((item) => {
+					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails));
+				});
+			} else if (this.radioSelectionValue === 'changeAsset') {
+				this.multiSubmitionItems.forEach((item) => {
+					isBack = true;
+					obs.push(this.workflowService.reassignWorkflowObjectByUid(item.WorkflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, item.ItemStepUid));
+				});
+			}
 
 			forkJoin(obs).subscribe(() => {
 				this.closeModal();
 				this.modal.closePopUp();
-				this.onModalClose.emit({ isBack: false });
+				this.onModalClose.emit({ isBack, isCompleteForm });
 			});
-		}
-		else {
+		} else {
 			//save form values with stepUid and itemUid
-			this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
-				this.closeModal();
-				this.modal.closePopUp();
-				this.onModalClose.emit({ isBack: false });
-			});
+			if (this.radioSelectionValue === 'completeForm') {
+				this.prepareValuesForSubmit();
+				this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
+					this.closeModal();
+					this.modal.closePopUp();
+					this.onModalClose.emit({ isBack: false, isCompleteForm });
+				});
+			} else if (this.radioSelectionValue === 'reassignUser') {
+				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails).subscribe((): void => {
+					this.closeModal();
+					this.modal.closePopUp();
+					this.onModalClose.emit({ isBack: false, isCompleteForm });
+				});
+			} else if (this.radioSelectionValue === 'changeAsset') {
+				this.workflowService.reassignWorkflowObjectByUid(this.workflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, this.stepUid)
+					.subscribe(() => {
+						this.closeModal();
+						this.modal.closePopUp();
+						this.onModalClose.emit({ isBack: false, isCompleteForm });
+					});
+			}
 		}
 	}
 
@@ -201,42 +281,54 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	closeModal(): void {
 		this.isModalVisible = false;
+		this.radioSelectionValue = '';
 		this.linkInterceptorSubscription?.unsubscribe();
 		this.cdRef.markForCheck();
 	}
 
-	onClickResource(event: MouseEvent): void {
-		if (this.request?.Action) {
-			this.linkClickInterceptor.sendEvent(event, {
-				ResourceUid: this.request.Action.CreatedBy
-			}, 'users/' + this.request.Action.CreatedBy);
-		}
+	onClickResource(event: MouseEvent, resourceId: number): void {
+		this.linkClickInterceptor.sendEvent(
+			event,
+			{
+				ResourceID: resourceId
+			},
+			'users/' + resourceId
+		);
 	}
 
-	onClickAsset(event: MouseEvent): void {
+	onClickAsset(event: MouseEvent, assetId: number): void {
 		if (this.assetId) {
-			this.linkClickInterceptor.sendEvent(event, {
-				AssetId: this.assetId
-			}, 'asset/' + this.assetId);
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					AssetId: assetId
+				},
+				'asset/' + assetId
+			);
 		}
 	}
 
 	showRequestSidePanel(event: MouseEvent): void {
 		if (this.request) {
-			this.linkClickInterceptor.sendEvent(event, {
-				workflowActionUid: this.request.Action.Uid,
-				itemStepUid: this.stepUid,
-				workflowItemUid: this.workflowItemUid
-			}, '');
+			this.linkClickInterceptor.sendEvent(
+				event,
+				{
+					workflowActionUid: this.request.Action.Uid,
+					itemStepUid: this.stepUid,
+					workflowItemUid: this.workflowItemUid
+				},
+				''
+			);
 		}
 	}
 
 	prepareValuesForSubmit(): void {
 		this.formFields.forEach((x, i) => {
 			if (x.FieldType === WorkflowFormFieldType.Link) {
-
-				const name = this.workflowForm.form.controls[`inputName_${i}`].value;
-				const url = this.workflowForm.form.controls[`inputUrl_${i}`].value;
+				const name =
+					this.workflowForm.form.controls[`inputName_${i}`].value;
+				const url =
+					this.workflowForm.form.controls[`inputUrl_${i}`].value;
 				x.Value =
 					name.length + url.length === 0 ? '' : name + '|' + url;
 			} else if (Array.isArray(x.Value)) {
@@ -248,4 +340,22 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	get isMultiSubmition(): boolean {
 		return this.multiSubmitionItems.length > 1;
 	}
+
+	loadWorkflowReassignmentAssets(): void {
+		this.workflowService
+			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
+			.subscribe((result) => {
+				this.assets = result;
+				this.cdRef.markForCheck();
+			});
+	}
+
+	loadAllUsersData(): void {
+		this.resourceService.getResources(false).subscribe((res) => {
+			this.userData = res;
+			this.cdRef.markForCheck();
+		});
+	}
+
+	protected readonly Number = Number;
 }

@@ -16,7 +16,7 @@ import { assetTypeConfigurationRoutes } from './asset-type-configuration.routes'
 import { AssetTypeListHeaderComponent } from './list/asset-type-list-header.component';
 import { ConfigurationAssetTypeEditorPageComponent } from './edit/configuration-asset-type-editor-page.component';
 import { SharedAssetTypeEditorModule } from '../../shared/assettypeeditor/shared-asset-type-editor.module';
-import { ConfigurationAssetTypeDeletePageComponent } from './delete/configuration-asset-type-delete-page.component';
+import { ConfigurationAssetTypeDeletePageComponentModule } from './delete/configuration-asset-type-delete-page.module';
 import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 import { ConfigurationAssetTypeFieldsPageComponent } from './tabs/fields/configuration-asset-type-fields-page.component';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
@@ -103,7 +103,8 @@ import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/confi
 		IgMessageBoxModule,
 		AssetPreviewModule,
 		TooltipModule,
-		AdminRelationshipsModule
+		AdminRelationshipsModule,
+		ConfigurationAssetTypeDeletePageComponentModule
     ],
     declarations: [
         ConfigurationAssetTypeListPageComponent,
@@ -111,7 +112,6 @@ import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/confi
         AssetTypeListSidePanelWrapperComponent,
 		AssetTypeListHeaderComponent,
         ConfigurationAssetTypeEditorPageComponent,
-        ConfigurationAssetTypeDeletePageComponent,
         ConfigurationAssetTypeFieldsPageComponent,
         ConfigurationAssetTypeHeaderComponent,
         ConfigurationAssetTypeTabsComponent,

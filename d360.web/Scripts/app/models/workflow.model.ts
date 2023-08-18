@@ -846,6 +846,7 @@ export class WorkflowAssignmentItem {
 	actionUid: string;
 	actionTypeUid: string;
 	assetDisplayValue: string;
+	objectType: string;
 	assetPath: string;
 	assetTypeUid: string;
 	assetUid: string;

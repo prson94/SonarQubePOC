@@ -23,18 +23,18 @@
 				[igDataCy]="item.title" [pTooltip]="getTabTooltip(item)" tooltipStyleClass="ig-tooltip"
 				(click)="itemClicked(item);" class="tab" tooltipPosition="top"
 				title="{{getTitle(item)}}">{{item.title}}
-				<span *ngIf="statistics?.CommentCount && item.title === 'Comments'"
+				<span *ngIf="statistics?.CommentCount && item.tag === 'Comments'"
 					class="d3s-icon small-icon primary">
 					{{statistics?.CommentCount}}
 				</span>
-				<span *ngIf="assignmentCount && item.title === 'Assignments'" class="d3s-icon small-icon primary">
+				<span *ngIf="assignmentCount && item.tag === 'Assignments'" class="d3s-icon small-icon primary">
 					{{assignmentCount}}
 				</span>
-				<span *ngIf="!(item.count== null || item.count== undefined ) && item.title === 'Assets'"
+				<span *ngIf="!(item.count== null || item.count== undefined ) && (item.tag === 'Assets' || item.tag === 'items')"
 					class="d3s-icon small-icon primary">
 					{{item.count}}
 				</span>
-				<span *ngIf="statistics?.IssueCount && item.title === 'Actions'"
+				<span *ngIf="statistics?.IssueCount && item.tag === 'Actions'"
 					[ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}"
 					class="d3s-icon small-icon">
 					{{statistics?.IssueCount}}

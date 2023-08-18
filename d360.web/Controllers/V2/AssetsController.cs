@@ -2056,8 +2056,9 @@ namespace d360.web.Controllers.V2
 					AssetTypeClass.Model,
 					AssetTypeClass.Policy,
 					AssetTypeClass.Rule,
-				AssetTypeClass.Diagram,
-				AssetTypeClass.Group
+					AssetTypeClass.Diagram,
+					AssetTypeClass.Group,
+					AssetTypeClass.Reference
 				};
 
 				List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();

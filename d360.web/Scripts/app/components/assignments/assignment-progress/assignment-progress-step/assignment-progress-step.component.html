@@ -1,5 +1,6 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="assignment-progress-step" [class.selected]="selected" [hidden]="isLoading" role="button"
+	 [class.assignment-progress-step-with-button]="isCompleteAssignmentVisible"
 	 tabindex="0" (click)="toggleStepDetails($event)">
 	<div class="row">
 		<div class="col s1">
@@ -17,7 +18,7 @@
 	</div>
 </div>
 <button igButton type="button"
-		*ngIf="showCompleteAssignment && !assignmentItemStep.CompletedOn && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser"
+		*ngIf="isCompleteAssignmentVisible"
 		class="ig-button-primary complete-assignment"
 		(click)="completeAssignmentClick()" i18n
 >Awaiting your answer&nbsp;&nbsp;<b>Complete the Assignment</b><span class="fa fa-pencil"></span>

@@ -2,8 +2,9 @@ import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitte
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import * as DOMPurify from "dompurify";
 import { SelectItem } from "primeng/api";
-import { forkJoin, Subscription } from "rxjs";
-import { AssetType, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
+import { forkJoin, Subscription, of } from "rxjs";
+import { AssetType, AssetTypeApiModel, AssetTypeClass, Hierarchy, IconStyle } from "../../../../models/asset.model";
+import { AssetTypeAncestry } from "../../../../models/fields.model";
 import { Predicate } from "../../../../models/predicate.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
@@ -43,6 +44,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	hierarchyPredicatesSelectItem: SelectItem[] = [];
 
 	flowObjectTypes: SelectItem[] = [];
+	parentSelectItem: SelectItem[] = [];
 
 	@ViewChild('modal', { static: false }) modal: D3SModal;
 	@ViewChild('form', { static: false }) formElement: ElementRef;
@@ -100,7 +102,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				});
 			}
 
-			this.hierarchyPredicates = results[2];
+			this.hierarchyPredicates = results[2] as Predicate[];
 			this.hierarchyPredicatesSelectItem = [];
 			this.hierarchyPredicates.forEach((p) => {
 				this.hierarchyPredicatesSelectItem.push({ value: p.Uid, title: p.Inverse, label: p.Inverse });
@@ -136,6 +138,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			name: [null, { validators: [Validators.required] }],
 			displayFormat: [null, { validators: [Validators.required] }],
 			description: [null],
+			notes: [null],
 			isDescriptionEnabled: [false],
 			descriptionButtonName: [null],
 			isDescriptionCollapsedByDefault: [true],
@@ -148,11 +151,23 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			autoDisplayParent: [null],
 			canEditParent: [null],
 			flowObjectType: [null],
-			maxDepth: [null]
+			maxDepth: [null],
+			referenceParentUid: [null]
 		});
 
-		if (this.assetTypeClass !== AssetTypeClass.DiagramAsset) {
+		if (this.assetTypeClass !== AssetTypeClass.DiagramAsset && !this.isReferenceItemTypeForm) {
 			this.assetTypeForm.controls["isDefaultReadAccessEnabled"].setValidators([Validators.required]);
+		}
+
+		if (this.isReferenceItemTypeForm) {
+			this.assetTypeForm.get('predicateUid').valueChanges.subscribe((val) => {
+				if (val) {
+					this.assetTypeForm.controls['referenceParentUid'].setValidators([Validators.required]);
+				} else {
+					this.assetTypeForm.controls['referenceParentUid'].clearValidators();
+				}
+				this.assetTypeForm.controls['referenceParentUid'].updateValueAndValidity();
+			});
 		}
 
 		this.setDefaultFormValues();
@@ -163,7 +178,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 			return;
 		}
 		this.assetTypeForm.reset();
-		this.assetTypeForm.controls["displayFormat"].setValue('{Name}');
+		this.assetTypeForm.controls["displayFormat"].setValue(this.isReferenceItemTypeForm ? '{Code}' : '{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
 		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
@@ -285,6 +300,9 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				case AssetTypeClass.DiagramAsset:
 					this.subTitle = $localize`Diagram Assets`;
 					break;
+				case AssetTypeClass.Reference:
+					this.subTitle = $localize`Reference Lists`;
+					break;
 				default:
 					this.subTitle = `unset`;
 			}
@@ -294,8 +312,33 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.subTitle = this.parentTypeName;
 			}
 
+			if (this.isReferenceItemTypeForm) {
+				this.title = $localize`Add Reference List`;
+				this.fieldTokens = [
+					{
+						"title": "Code"
+					}
+				];
+			}
+
 			this.setDefaultFormValues();
 		}
+
+		if (this.isReferenceItemTypeForm && this.isModalVisible) {
+			forkJoin(
+				this.assetTypeService.getAssetTypesByClass(this.assetTypeClass),
+				this.uid ? this.fieldsService.getAssetTypeAncestry(this.uid) : of([])
+			).subscribe((results) => {
+				const ancestorUids = (results[1] as AssetTypeAncestry[]).map((m) => m.Uid);
+				const opts: SelectItem[] = (results[0] as AssetTypeApiModel[])
+					.filter((f) => ancestorUids.indexOf(f.uid) === -1)
+					.map((m) => { return {value: m.uid, label: m.Name}; })
+					.sort((a, b) => a.label.localeCompare(b.label));
+
+				this.parentSelectItem = opts;
+			});
+		}
+
 	}
 
 	updateDisplayFormat($event) {
@@ -310,6 +353,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		model.Name = this.assetTypeForm.get("name").value;
 		model.DisplayFormat = this.assetTypeForm.get("displayFormat").value;
 		model.Description = this.assetTypeForm.get("description").value;
+		model.Notes = this.assetTypeForm.get("notes").value;
 		model.IsDescriptionEnabled = this.assetTypeForm.get("isDescriptionEnabled").value;
 		model.DescriptionButtonName = this.assetTypeForm.get("descriptionButtonName").value;
 		model.IsDefaultReadAccessEnabled = this.assetTypeForm.get("isDefaultReadAccessEnabled").value;
@@ -345,6 +389,15 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 		if (this.isDiagramAssetTypeForm) {
 			model.FlowObjectType = this.assetTypeForm.get("flowObjectType").value;
+		}
+
+		if (this.isReferenceItemTypeForm) {
+			const predicateUid = this.assetTypeForm.get("predicateUid").value;
+			if (predicateUid) {
+				model.Hierarchy = new Hierarchy();
+				model.Hierarchy.PredicateUid = predicateUid;
+				model.ParentUid = this.assetTypeForm.get("referenceParentUid").value;
+			}
 		}
 
 		model.SynonymAllocations = [];
@@ -400,12 +453,19 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		return this.savingInProgress || this.assetTypeForm.invalid || (this.uid && !this.isEditFormUpdated);
 	}
 
+	get formErrors() {
+		return this.assetTypeForm.errors;
+	}
+
 	get saveButtonLabel(): string {
 		if (this.uid) {
 			return $localize`Save Changes`;
 		}
 		else if (this.parentUid) {
 			return $localize`Add Child Asset Type`;
+		}
+		else if (this.isReferenceItemTypeForm) {
+			return $localize`Add Reference List`;
 		}
 		else {
 			return $localize`Add Asset Type`;
@@ -485,12 +545,16 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		return this.assetTypeClass === AssetTypeClass.DiagramAsset;
 	}
 
+	get isReferenceItemTypeForm() {
+		return this.assetTypeClass === AssetTypeClass.Reference;
+	}
+
 	get showStylesPropertyGroup() {
-		return !this.isDiagramAssetTypeForm;
+		return !this.isDiagramAssetTypeForm && !this.isReferenceItemTypeForm;
 	}
 
 	get showSynonymPropertyGroup() {
-		return !this.isDiagramAssetTypeForm && this.assetTypeClass !== AssetTypeClass.Rule;
+		return !this.isDiagramAssetTypeForm && this.assetTypeClass !== AssetTypeClass.Rule && !this.isReferenceItemTypeForm;
 	}
 
 	onIsDescriptionEnabledChange($event: boolean) {

@@ -18,6 +18,7 @@ import { CompleteAssignmentComponent } from '../complete-assignment/complete-ass
 })
 export class UserAssignmentsComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() userUid: string;
+	@Input() isAdminPage: boolean = false;
 	loadSub: Subscription;
 
 	totalRecords: number;
@@ -29,22 +30,26 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
 
-	initialWorkflowItemUid: string = '';
-
+	urlWorkflowTypeUid: string = '';
+	urlWorkflowStepUid: string = '';
+	urlWorkflowVersion: number = 0;
+	onlyAdminReassignMode: boolean = false;
 	constructor(public settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private route: ActivatedRoute,
 		private changeDetectorRef: ChangeDetectorRef) {
 		super(settingsService);
-		this.initialWorkflowItemUid = '';
+		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
 		this.workflowService.assignmentCompletedSubject.subscribe(() => {
 			this.loadUserAssignments();
 		});
 
 		this.route.queryParams
-			.subscribe((params: { initialWorkflowItemUid: string }) => {
-				if (params.initialWorkflowItemUid) {
-					this.initialWorkflowItemUid = params.initialWorkflowItemUid.toLowerCase();
+			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid?: string, version: number }) => {
+				if (params.workflowTypeUid) {
+					this.urlWorkflowTypeUid = (params.workflowTypeUid ?? "").toLowerCase();
+					this.urlWorkflowStepUid = (params.workflowItemStepUid ?? "").toLowerCase();
+					this.urlWorkflowVersion = +(params.version ?? 0);
 				}
 			});
 	}
@@ -66,6 +71,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	}
 
 	loadUserAssignments() {
+		if (!this.isMe && this.isAdminPage) {
+			this.onlyAdminReassignMode = true;
+		}
+
 		if (this.loadSub) {
 			this.loadSub.unsubscribe();
 		}
@@ -85,34 +94,64 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 						}
 					});
 
-					if (this.initialWorkflowItemUid) {
-						this.workflowService.getWorkflowStateForUser(this.initialWorkflowItemUid)
+					if (this.urlWorkflowStepUid) {
+						this.workflowService.getWorkflowStateForUser(this.urlWorkflowStepUid)
 							.subscribe((res) => {
 								this.handleWorkflowItemLoad(res);
-
+								this.isLoading = false;
+								this.changeDetectorRef.markForCheck();
 							});
 					}
-
-					this.isLoading = false;
-					this.changeDetectorRef.markForCheck();
+					else if (this.urlWorkflowTypeUid) {
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null });
+						this.isLoading = false;
+						this.changeDetectorRef.markForCheck();
+					}
+					else {
+						this.isLoading = false;
+						this.changeDetectorRef.markForCheck();
+					}
 				});
 	}
 
-	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; }) {
-		if (!res.hasAccess) {
-			//to be implemented in another JIRA
-        }
-        else if (res.exists && res.hasAccess && !res.isCompleted) {
-            const item = this.assignments.find((x) => x.AssociatedItems.some((ai) => ai.WorkflowItemUid.toLowerCase() === this.initialWorkflowItemUid));
-            this.onItemClick(null, item);
-        }
-        else if (!res.exists) {
-			//to be implemented in another JIRA
-        }
-        else if (res.isCompleted) {
-			//to be implemented in another JIRA
-        }
-    }
+	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string }) {
+		// check if there is exiting step in assignments
+		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
+		if (assignmentItem) {
+			this.onItemClick(null, assignmentItem);
+		}
+		else {
+			// check if there is exiting workflow type + version combination to open form
+			assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
+			if (assignmentItem) {
+				this.onItemClick(null, assignmentItem);
+			}
+			else {
+				this.handleNoAssignments(res);
+			}
+		}
+	}
+
+	modalVisible: boolean = false;
+	errorModalTitle: string;
+	errorModalMessage: string;
+	private handleNoAssignments(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string; }) {
+		if (!res.exists) {
+			this.errorModalTitle = $localize`Assignment Not Found`;
+			this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
+			this.modalVisible = true;
+		}
+		else if (res.isCompleted) {
+			this.errorModalTitle = $localize`Assignment Completed`;
+			this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
+			this.modalVisible = true;
+		}
+		else if (!res.hasAccess) {
+			this.errorModalTitle = $localize`You Cannot View the Assignment`;
+			this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
+			this.modalVisible = true;
+		}
+	}
 
 	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
 		if ($event) {
@@ -148,9 +187,13 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 	}
 
-	onCompleteAssignmentModalClose(event: { isBack: boolean }) {
+	onCompleteAssignmentModalClose(event: { isBack: boolean, isCompleteForm: boolean }) {
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
 		}
+		else if (!event.isCompleteForm) {
+			this.multiAssignComponent.removeSelected();
+		}
+		this.loadUserAssignments();
 	}
 }
