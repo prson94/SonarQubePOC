@@ -7,6 +7,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { RouterModule } from '@angular/router';
 import { AssignmentsModule } from '../assignments.module';
 import { AssignmentsMultiPickerModule } from '../assignment-multi-picker/assignment-multi-picker.module';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 
 @NgModule({
 	declarations: [
@@ -19,7 +20,8 @@ import { AssignmentsMultiPickerModule } from '../assignment-multi-picker/assignm
 		IgBadgeModule,
 		RouterModule,
 		AssignmentsModule,
-		AssignmentsMultiPickerModule
+		AssignmentsMultiPickerModule,
+		SiteModalModule
 	],
 	exports: [
 		UserAssignmentsComponent

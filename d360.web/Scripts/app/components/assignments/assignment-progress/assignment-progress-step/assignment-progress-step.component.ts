@@ -95,6 +95,10 @@ export class AssignmentProgressStepComponent implements OnInit {
 		});
 	}
 
+	get isCompleteAssignmentVisible(): boolean {
+		return this.showCompleteAssignment && !this.assignmentItemStep.CompletedOn && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser;
+	}
+
 	private getTimeSpan(startDateMilliseconds: number, endDateMilliseconds: number = Date.now()): string {
 		const totalMilliseconds: number = endDateMilliseconds - startDateMilliseconds;
 		const minutes: number = Math.floor(Math.abs(totalMilliseconds) / (60 * 1000));

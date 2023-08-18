@@ -24,7 +24,7 @@
 						<ng-container *ngIf="onlyAdminReassignMode"><span i18n>Reassign</span></ng-container>
 						<ng-container *ngIf="!onlyAdminReassignMode">{{ modalTitle }}</ng-container>
 
-						<span class="title-emp" *ngIf="isBulkRespond && !onlyAdminReassignMode" i18n>Bulk Respond</span>
+						<span class="title-emp" *ngIf="isBulkRespond && !onlyAdminReassignMode && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
 						<span class="modal-buttons" *ngIf="!isBulkRespond && !onlyAdminReassignMode">
 							<button igButton
 									[ngClass]="
