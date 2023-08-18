@@ -149,7 +149,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 			p.ID,
 			'Group', 
 			p.ObjectName, 
-			'This group has been {actionText.ToLower()}.' 
+			'This group has been {actionText.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.' 
 	from	api.ExecutionLog l
 			cross apply openjson(l.Payload) with (ID int, ItemNumber int, ObjectName nvarchar(250), Description nvarchar(max), IsActiveDirectoryGroup bit, PrimaryOwnerResourceID int, SecondaryOwnerResourceID int) p 
 			{maxVersionSql("'Group'", "p.ID")}
@@ -207,7 +207,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			p.ObjectId,
 			p.TypeName, 
 			p.ObjectName, 
-			'This asset has been {actionText.ToLower()}.' 
+			'This asset has been {actionText.ToLower(System.Globalization.CultureInfo.InvariantCulture)}.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id and l.SubTask is null
 			cross apply openjson(l.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p 

@@ -164,7 +164,6 @@ namespace igx.jobs.apiexecutionprocessor
 						Action markExecutionAsProcessing = () => {
 							dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
 							company.Connection.ExecuteAsync("update api.Execution set ProcessingStartedOn = @ProcessingStartedOn where Id = @Id", new { dbExecutionItem.ProcessingStartedOn, dbExecutionItem.Id });
-							//company.Update(dbExecutionItem);
 						};
 
 						Action markExecutionAsComplete = () =>
