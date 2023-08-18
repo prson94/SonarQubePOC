@@ -72,35 +72,39 @@
 					<th [pSortableColumn]="'assetDisplayValue'" class="associated-with-column" *ngIf="!assetUid">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'assetDisplayValue'"></d3s-sortIcon>
-					</th>					
+					</th>
 					<th [pSortableColumn]="'objectType'">
 						<ng-container i18n>Object Type</ng-container>
 						<d3s-sortIcon [field]="'objectType'"></d3s-sortIcon>
 					</th>
 					<ng-container *ngFor="let field of actionFormFields">
-						<th>
+						<th class="action-type-other-column"
+							[class.action-type-boolean-column]="Object.keys(field.Type)?.[0] === 'Boolean'"
+							[class.action-type-date-column]="Object.keys(field.Type)?.[0] === 'Date'"
+							[class.action-type-date-time-column]="Object.keys(field.Type)?.[0] === 'DateTime'"
+							[class.action-type-number-column]="Object.keys(field.Type)?.[0] === 'Number' || Object.keys(field.Type)?.[0] === 'Decimal'">
 							<ng-container i18n>{{ field.FriendlyName }}</ng-container>
 						</th>
 					</ng-container>
 					<ng-container *ngIf="!isRequestsFlow">
-						<th [pSortableColumn]="'initiator'">
+						<th [pSortableColumn]="'initiator'" class="initiator-column">
 							<ng-container i18n>Initiator</ng-container>
 							<d3s-sortIcon [field]="'initiator'"></d3s-sortIcon>
 						</th>
 					</ng-container>
-					<th [pSortableColumn]="'StartedOn'">
+					<th [pSortableColumn]="'StartedOn'" class="initiated-column">
 						<ng-container i18n>Initiated</ng-container>
 						<d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'assigneesJson'">
+					<th [pSortableColumn]="'assigneesJson'" class="assignee-column">
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
-					<th *ngIf="assetUid || assetTypeUid">
+					<th *ngIf="assetUid || assetTypeUid" class="days-open-column">
 						<ng-container i18n>Days Open</ng-container>
 						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Status'">
+					<th [pSortableColumn]="'Status'" class="status-column">
 						<ng-container i18n>Status</ng-container>
 						<d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
 					</th>
