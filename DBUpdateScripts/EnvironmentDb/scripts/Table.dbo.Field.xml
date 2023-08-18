@@ -36,9 +36,14 @@ END
   </sql>
  </changeSet>
 
- <changeSet author="Pappas" id="Indices.dbo.Field-v1" runInTransaction="false">
+ <changeSet author="Pappas" id="Indices.dbo.Field-v1.1" runInTransaction="false">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
+	IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
+	BEGIN
+		DROP FULLTEXT INDEX ON [dbo].[Field]
+	END
+
 	if not exists (select * from sys.indexes where name = 'UQ_Field_ID')
 	begin
 		create unique nonclustered index [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
