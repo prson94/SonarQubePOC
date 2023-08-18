@@ -348,6 +348,9 @@ namespace igx.jobs.apiexecutionprocessor
 									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
 								};
 								break;
+							default:
+								resultsSql = "";
+								break;
 						}
 
 						if (!string.IsNullOrEmpty(resultsSql))
