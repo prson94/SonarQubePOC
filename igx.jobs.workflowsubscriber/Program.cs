@@ -6,8 +6,10 @@ using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.model;
+using LaunchDarkly.Sdk.Server;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
@@ -39,8 +41,15 @@ namespace igx.jobs.workflowsubscriber
                 .AddFiles();
             });
 
+			builder.ConfigureServices(services =>
+			{
+				services.AddSingleton<LaunchDarkly.Sdk.Server.LdClient>(x =>
+				{
+					return ActivatorUtilities.CreateInstance<LaunchDarkly.Sdk.Server.LdClient>(x, Config.GetValue<string>("LaunchDarklySdkKey"));
+				});
+			});
 
-            using (var host = builder.Build())
+			using (var host = builder.Build())
             {
                 await host.RunAsync();
             }
@@ -49,10 +58,16 @@ namespace igx.jobs.workflowsubscriber
 
     public class WorkflowSubscriber
     {
-        const string functionName = "Workflow_Subscriber";
+		readonly LaunchDarkly.Sdk.Server.LdClient LdClient;
+		const string functionName = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
-        public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, TextWriter log)
+		public WorkflowSubscriber(LaunchDarkly.Sdk.Server.LdClient ldc)
+		{
+			this.LdClient = ldc;
+		}
+
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, TextWriter log)
         {
             string messageString;
             EventInfo info;
@@ -96,8 +111,10 @@ namespace igx.jobs.workflowsubscriber
 
             try
             {
-                //check if this event already has a open workflow instance
-                if (info.WorkflowItemID <= 0)
+				company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
+
+				//check if this event already has a open workflow instance
+				if (info.WorkflowItemID <= 0)
                 {
                     log.WriteLine($"Debug - New [{info.Action}] event received.");
                     CoreFunction.AITrackEvent(functionName, "WorkflowSubscriber starting new workflow instance", new Dictionary<string, string> { { "CompanyID", info.CompanyID.ToString() }, { "Action", info.Action.ToString() } });

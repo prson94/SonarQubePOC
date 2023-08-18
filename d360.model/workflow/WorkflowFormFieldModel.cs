@@ -1,4 +1,6 @@
-﻿namespace d360.model.workflow
+﻿using System;
+
+namespace d360.model.workflow
 {
     public class WorkflowFormFieldModel
     {
@@ -25,4 +27,17 @@
 
         public bool SendFormEmail { get; set; }
     }
+
+	public class UsersOutstandingWorkflows
+	{
+		public string Name { get; set; }
+		public int Id { get; set; }
+		public int Version { get; set; }
+		public string Step { get; set; }
+		public int StepId { get; set; }
+		public int Total { get; set; }
+		public int New { get; set; }
+		public Guid WorkflowTypeUid { get; set; }
+		public Guid? WorkflowItemStepUid { get; set; }
+	}
 }

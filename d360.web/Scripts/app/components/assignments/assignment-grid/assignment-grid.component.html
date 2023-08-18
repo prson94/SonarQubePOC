@@ -9,10 +9,9 @@
 		</div>
 		<div class="grid-action-buttons">
 			<div>
-				<div
-					pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-					tooltipPosition="left"
-					tooltipStyleClass="ig-tooltip">
+				<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					 tooltipPosition="left"
+					 tooltipStyleClass="ig-tooltip">
 					<button igButton
 							class="ig-button-secondary"
 							[disabled]="!canExportRecords() || isExportInProgress"
@@ -126,18 +125,17 @@
 										 [innerHTML]="item[field.Name] | safeHtml"></div>
 								</div>
 								<div *ngSwitchCase="'Link'">
-									<div class="ig-value"><a
-										[href]="item[field.Name]?.split('|')?.[1]">
-										{{ item[field.Name]?.split('|')?.[0] }}</a>
+									<div class="ig-value">
+										<a [href]="item[field.Name]?.split('|')?.[1]">
+											{{ item[field.Name]?.split('|')?.[0] }}
+										</a>
 									</div>
 								</div>
 								<div *ngSwitchCase="'DateTime'">
-									<div
-										class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
+									<div class="ig-value"> {{ item[field.Name] | date:'short' }} </div>
 								</div>
 								<div *ngSwitchCase="'Date'">
-									<div
-										class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
+									<div class="ig-value"> {{ item[field.Name] | date:'shortDate' }} </div>
 								</div>
 								<div *ngSwitchCase="'Lookup'">
 									<div class="ig-value"> {{ item[field.Name] }} </div>
@@ -168,8 +166,10 @@
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>
 						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
 							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length"> + {{ (item.allAssignees.length - item.filteredAssignees.length) }}
-							others </span>
+							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length">
+							+ {{ (item.allAssignees.length - item.filteredAssignees.length) }}
+							others
+						</span>
 					</td>
 					<td *ngIf="assetUid || assetTypeUid">
 						{{item.daysOpen}}
@@ -221,8 +221,27 @@
 			Are you sure you want to delete
 			<span *ngIf="assignments.length === 1"> this assignment?</span>
 			<span *ngIf="assignments.length > 1"> these assignments?</span>
-			<br/>
+			<br />
 			Deleted assignments <b>cannot be retrieved</b>.
 		</p>
 	</div>
 </d3s-delete-form>
+
+<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose()"></d3s-complete-assignment>
+
+<d3s-modal [title]="errorModalTitle"
+		   additionalClasses="modal-dyn-editor large-dialog"
+		   (onClose)="modalVisible=false"
+		   [isVisible]="modalVisible">
+	<div prompt>
+		<div class="content">
+			<div class="row">
+				{{errorModalMessage}}
+			</div>
+		</div>
+	</div>
+	<div class="action-bar">
+		<div class="grow"></div>
+		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel" (click)="modalVisible=false"></button>&nbsp;&nbsp;
+	</div>
+</d3s-modal>

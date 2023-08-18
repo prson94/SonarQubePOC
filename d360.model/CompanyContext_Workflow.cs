@@ -22,7 +22,7 @@ using d360.core.queue;
 using d360.model.workflow;
 
 using Dapper;
-
+using DocumentFormat.OpenXml.Drawing.Diagrams;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 
@@ -72,7 +72,7 @@ namespace d360.model
 		Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false);
 
 		Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
-		
+
 		/// <summary>
 		/// Evaulate a given workflow transition,  if we succeed we need to add new events for the 
 		/// step we are transitioning to with the step id
@@ -83,7 +83,7 @@ namespace d360.model
 		Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
 
 		Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
-		
+
 		/// <summary>
 		/// Evaluate a given workflow step, if we succeed we need to add a new event for the transitions that follow
 		/// if a complete step we just mark it as done.
@@ -143,8 +143,8 @@ namespace d360.model
 			TelemetryClient.TrackTrace($"Executing - [workflow].[changeItemState] {item.Step.Version.TypeID}, {item.Step.ID}, {item.ItemID} ");
 
 			Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
-		}	
-		
+		}
+
 		private void CompleteItemAssignments(long itemID)
 		{
 			IQueryable<WorkflowItemAssignment> itemAssignments = WorkflowItemAssignments.Where(x => x.ItemID == itemID);
@@ -155,19 +155,19 @@ namespace d360.model
 			}
 
 			SaveChanges();
-		}		
-		
+		}
+
 		private void DeleteIntersects(long assetId, int intersectTypeId, bool isSubject)
 		{
 			var targetColumn = isSubject ? "SubjectAssetID" : "ObjectAssetID";
-			
+
 			string sql = @$"drop table if exists #deletedIntersects;
 							create table #deletedIntersects (uid uniqueidentifier);
 							delete from [intersect] output deleted.uid into #deletedIntersects where {targetColumn} = @assetId and intersecttypeid = @intersectTypeId";
 
 			Database.Connection.Execute(sql, new { assetId, intersectTypeId });
 		}
-		
+
 		private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
 		{
 			if (objectInfo.Object == SystemObjects.Intersect)
@@ -179,11 +179,11 @@ namespace d360.model
 				Delete(objectInfo.Object, objectInfo.ObjectID);
 			}
 		}
-		
+
 		private bool DoesWorkflowApply(EventObjectInfo objectInfo, WorkflowEventRegistration registration)
 		{
 			string workflowName = "";
-			
+
 			if (registration.Type != null)
 			{
 				workflowName = registration.Type.Name;
@@ -195,7 +195,7 @@ namespace d360.model
 			int issueObjectId = -1;
 
 			core.entities.Workflow.Type workflowType = WorkflowTypes.Where(x => x.ID == registration.TypeID).FirstOrDefault();
-			
+
 			if (workflowType.State != State.Active)
 			{
 				return false;
@@ -215,7 +215,7 @@ namespace d360.model
 				}
 
 				AssetType issueAssetType = AssetTypes.Where(x => x.ID == issueDetail.AssetTypeID).FirstOrDefault();
-				if(issueAssetType != null)
+				if (issueAssetType != null)
 				{
 					issueObjectType = issueAssetType.Object;
 					issueObjectId = issueAssetType.ObjectID;
@@ -233,7 +233,7 @@ namespace d360.model
 
 			return true;
 		}
-		
+
 		private void ExecuteProc(EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
 		{
 			if (settings.StoredProcedureID <= 0)
@@ -258,8 +258,8 @@ namespace d360.model
 
 				Database.Connection.Execute($"{procInfo.Procedure} @obj,@objectId", new { obj = objectInfo.Object.ToString(), objectId = objectInfo.ObjectID });
 			}
-		}	
-		
+		}
+
 		private IEnumerable<string> GetFieldValueFromFormResponse(WorkflowFieldUpdateSettings item, long itemId)
 		{
 			IQueryable<WorkflowItemStep> formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
@@ -278,7 +278,7 @@ namespace d360.model
 				yield return (string)el.Attribute("value");
 			}
 		}
-		
+
 		private string GetDisplayDateTimeValue(string type, string FormattedValue)
 		{
 			DateTime dateValue;
@@ -329,8 +329,8 @@ namespace d360.model
 			}
 
 			return fieldValue;
-		}	
-		
+		}
+
 		private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
 		{
 			IQueryable<WorkflowItemStep> formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.FormStepID && x.Step.ActivityType == WorkflowActivityType.Form);
@@ -358,10 +358,11 @@ namespace d360.model
 			return "";
 		}
 
-		private async Task<IEnumerable<dynamic>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
+		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
-			return await Database.Connection.QueryAsync<dynamic>(@"
+			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
 					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
+					into #results
 					from(
 					select 
 					wt.name as Name
@@ -402,7 +403,13 @@ namespace d360.model
 					group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
 					) as Sub on
 					wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
-					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc", new { r = resourceId, newOffset });
+
+					select wfm.*, wt.uid as WorkflowTypeUid, wis.UID as WorkflowItemStepUid from #results wfm
+					inner join workflow.Type wt on wt.ID = wfm.Id
+					left join workflow.[ItemStep] wis on wfm.Total = 1 and wis.StepID = wfm.StepId
+					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc
+
+					drop table if exists #results", new { r = resourceId, newOffset });
 		}
 
 		private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
@@ -420,7 +427,7 @@ namespace d360.model
 																where
 																		WI.CompletedOn is null and WVS.StepType = 2 and WVS.ActivityType = 3 and GRAA.State = 1");
 		}
-		
+
 		private int GetWorkflowAdminGroup()
 		{
 
@@ -431,12 +438,12 @@ namespace d360.model
 
 			return defaultWorkflowUserGroup;
 		}
-		
+
 		private async Task<string> GetWorkflowAssignedResponsibility(int typeId, int stepId, long itemId)
 		{
 			return await Database.Connection.QueryFirstOrDefaultAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, stepId, itemId });
 		}
-		
+
 		/// <summary>
 		/// Gets the active workflow item step based on a given ID.
 		/// </summary>
@@ -457,13 +464,13 @@ namespace d360.model
 			}
 
 			return itemStep;
-		}	
-		
+		}
+
 		private bool GetWorkflowResponsibilityHasUsers(int typeID, int stepID, long itemID)
 		{
 			return Query<GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID }).Any();
 		}
-		
+
 		private async Task ParseHttpResponseAsync(WorkflowItemStep item, WorkflowItemStepSettingModel settings)
 		{
 			if (settings == null)
@@ -482,7 +489,7 @@ namespace d360.model
 			int.TryParse(responseSettings.InputStepId, out stepId);
 
 			WorkflowItemStep requestStep = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == item.ItemID);
-			
+
 			if (requestStep == null)
 			{
 				throw new ArgumentNullException(nameof(requestStep), $"ERROR - INVALID HTTP RESPONSE STEP MISSING REQUEST STEP.");
@@ -571,7 +578,7 @@ namespace d360.model
 				TelemetryClient.TrackTrace($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
 			}
 		}
-		
+
 		private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
 		{
 			if (!string.IsNullOrEmpty(item.Fields))
@@ -625,8 +632,8 @@ namespace d360.model
 			}
 
 			await SaveChangesAsync();
-		}		
-		
+		}
+
 		private void SaveItemAssignments(IEnumerable<GlobalReportingResource> users, long itemId, long itemStepId)
 		{
 			foreach (GlobalReportingResource user in users)
@@ -648,7 +655,7 @@ namespace d360.model
 
 			SaveChanges();
 		}
-		
+
 		private void SaveItemStepEmailedUsers(WorkflowItemStep item, List<string> emailedUsers)
 		{
 
@@ -670,8 +677,8 @@ namespace d360.model
 				item.Settings = root.ToString();
 				SaveChanges();
 			}
-		}	
-		
+		}
+
 		private async Task SendAggregateWorkflowEmail(WorkflowEventRegistrationSettingsModel settings)
 		{
 			settings.EmailMessageTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.EmailMessageTemplate}";
@@ -801,14 +808,14 @@ namespace d360.model
 					{
 						Message = $"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]"
 					};
-					
+
 					TelemetryClient.TrackException(telemetry);
 				}
 
 				await SaveHttpResponseResultsAsync(item, requestSettings, response);
 			}
 		}
-		
+
 		private async Task<bool> SendWorkflowEmail(WorkflowItemStep item, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
 		{
 			List<string> emailedUsers = new List<string>();
@@ -951,12 +958,12 @@ namespace d360.model
 				if (settings.RecipientGroup == Guid.Empty)
 				{
 					TelemetryClient.TrackEvent("ERROR - NO GROUP SPECIFIED FOR THE GROUP EMAIL TASK.");
-					
+
 					return true;
 				}
 
 				int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
-				
+
 				if (recipientGroup <= 0)
 				{
 					TelemetryClient.TrackEvent("ERROR - INVALID GROUP FOR THE GROUP EMAIL TASK.");
@@ -988,7 +995,7 @@ namespace d360.model
 
 			return true;
 		}
-		
+
 		private async Task<bool> ShouldWaitForResponsibilityRuleToRun(WorkflowItemStep item, WorkflowItemStepSettingModel itemStep, long itemStepID, EventInfo eventInfo)
 		{
 			const int MAX_RETRIES = 3;
@@ -1054,7 +1061,7 @@ namespace d360.model
 							await SaveChangesAsync();
 
 							TelemetryClient.TrackTrace($"DEBUG DELAYING EXECUTION OF STEP {duration} MINUTE(S) UNTIL RESPONSIBILITY RULE HAS RUN (ATTEMPT {retries} OF {MAX_RETRIES})");
-							
+
 							return true;
 						}
 					}
@@ -1063,7 +1070,7 @@ namespace d360.model
 
 			return false;
 		}
-		
+
 		private async Task StartTransitions(List<WorkflowVersionStepTransition> transitions, long itemID, EventObjectInfo objectInfo)
 		{
 			List<EventInfo> events = new List<EventInfo>();
@@ -1085,7 +1092,7 @@ namespace d360.model
 			//add topic messages for the transitions
 			await QueueSource.CreateTopicMessagesAsync(events);
 		}
-		
+
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
 		{
 			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
@@ -1095,7 +1102,7 @@ namespace d360.model
 			bool isAssetEdited = false;
 			//check if the field exists
 			Field field = null;
-			if(objectType == SystemObjects.Issue.ToString())
+			if (objectType == SystemObjects.Issue.ToString())
 			{
 				field = Fields.Where(x => x.IssueID == objectId && x.FieldTypeID == fieldType.ID).FirstOrDefault();
 			}
@@ -1204,7 +1211,7 @@ namespace d360.model
 
 				//remove the field from db if field value is null or empty 
 				if (string.IsNullOrEmpty(updateValue))
-				{					
+				{
 					await Database.Connection.ExecuteAsync($"delete from Field where FieldTypeID = @fieldTypeID and {idSQL}"
 					, new
 					{
@@ -1228,8 +1235,8 @@ namespace d360.model
 					});
 				}
 			}
-		}		
-		
+		}
+
 		private async Task UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
 		{
 			if (!settings.FieldUpdateSettings.Any())
@@ -1272,7 +1279,7 @@ namespace d360.model
 					//delete the value
 					string sql = "delete field where fieldtypeid = @fieldTypeId";
 					var parameters = new DynamicParameters(new { fieldTypeId = item.FieldID });
-					if(item.ObjectType == "Issue" || item.ObjectType == "Intersect")
+					if (item.ObjectType == "Issue" || item.ObjectType == "Intersect")
 					{
 						sql += $" and {item.ObjectType}ID = @id";
 						parameters.Add("id", objectId);
@@ -1316,16 +1323,16 @@ namespace d360.model
 				{
 					string val = "";
 					string[] fieldData = item.FormField.Split('|');
-					
+
 					if (fieldData.Count() == 2)
 					{
 						int fieldTypeId = int.Parse(fieldData[1]);
 						Field actionField = Fields.FirstOrDefault(x => x.IssueID == objectInfo.ObjectID && x.FieldTypeID == fieldTypeId);
-						
+
 						if (actionField != null)
 						{
 							FieldType actionFieldType = FieldTypes.FirstOrDefault(x => x.IssueTypeID == issue.IssueTypeID && x.ID == actionField.FieldTypeID);
-							
+
 							if (actionFieldType.Type == "Lookup" || actionFieldType.Type == "Link")
 							{
 								val = actionField?.Value;
@@ -1377,8 +1384,8 @@ namespace d360.model
 						 ResourceID = CurrentResourceID,
 						 op = "Updated"
 					 });
-		}		
-		
+		}
+
 		private void UpdateItemRelationship(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
 		{
 			if (!settings.RelationshipUpdateSettings.Any())
@@ -1482,7 +1489,7 @@ namespace d360.model
 							var otherAsset = Assets.FirstOrDefault(a => a.Object == (Object ?? "").Replace("Type", "") && a.ObjectID == ObjectID);
 
 							if (otherAsset != null)
-							{ 
+							{
 								if (isSubject)
 								{
 									intersect.SubjectAssetID = asset.ID;
@@ -1498,7 +1505,7 @@ namespace d360.model
 								if (!Intersects.Any(x => x.IntersectTypeID == intersectTypeId && x.SubjectAssetID == intersect.SubjectAssetID && x.ObjectAssetID == intersect.ObjectAssetID))
 								{
 									Add(intersect);
-								}							
+								}
 							}
 
 						}
@@ -1506,7 +1513,7 @@ namespace d360.model
 				}
 			}
 		}
-		
+
 		#endregion
 
 		#region Method
@@ -1564,7 +1571,7 @@ namespace d360.model
 
 			return issue;
 		}
-		
+
 
 		public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
 		{
@@ -1594,7 +1601,7 @@ namespace d360.model
 					else if (stepSettings.RecipientType == EmailTaskRecipientType.Group)
 					{
 						Asset group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
-						
+
 						if (group != null)
 						{
 							isResourceReassignment = false;
@@ -1613,7 +1620,7 @@ namespace d360.model
 					foreach (XElement elem in fieldElement.Elements("Reassigned"))
 					{
 						DateTime reassignTime = DateTime.Parse(elem.Attribute("reassignOn").Value);
-						
+
 						if (date < reassignTime)
 						{
 							date = reassignTime;
@@ -1666,7 +1673,7 @@ namespace d360.model
 
 					currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && !removeResourceIds.Contains(x.ResourceObjectID)).ToList();
 					List<WorkflowItemAssignment> resourceAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && removeResourceIds.Contains(x.ResourceObjectID)).ToList();
-					
+
 					if (resourceAssignments.Any())
 					{
 						WorkflowItemAssignments.RemoveRange(resourceAssignments);
@@ -1734,7 +1741,7 @@ namespace d360.model
 
 			await SaveChangesAsync();
 		}
-		
+
 		public void CompleteItemStepAssignments(long itemStepID)
 		{
 			IQueryable<WorkflowItemAssignment> itemAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStepID);
@@ -1745,8 +1752,8 @@ namespace d360.model
 			}
 
 			SaveChanges();
-		}	
-		
+		}
+
 		public async Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false)
 		{
 			//check if the current item meets the criteria if any for this workflow.
@@ -2030,7 +2037,7 @@ namespace d360.model
 					TelemetryClient.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
 					transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, objectInfo.ChangedFieldIds, issueObject?.Object ?? "", issueObject?.ObjectID ?? -1);
 					TelemetryClient.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
-					
+
 					break;
 				case TransitionType.Timer:
 					//check if this timer transtion has a condition if so evaluate it
@@ -2126,7 +2133,7 @@ namespace d360.model
 				await QueueSource.CreateTopicMessageAsync(startEvent);
 			}
 		}
-		
+
 		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
 		{
 			bool isStepCompleted = false;
@@ -2347,7 +2354,7 @@ namespace d360.model
 
 			return true;
 		}
-		
+
 		public string GenerateFormResponsesEmailContent(long itemId)
 		{
 			IQueryable<WorkflowItemStep> formResponses = WorkflowItemSteps.Where(x => x.ItemID == itemId && x.Step.ActivityType == WorkflowActivityType.Form).Include(x => x.Step);
@@ -2436,8 +2443,8 @@ namespace d360.model
 			}
 
 			return sb.ToString();
-		}		
-		
+		}
+
 		public string GetOutputFieldValue(int stepId, long itemId, string fieldId)
 		{
 			WorkflowItemStep step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemId);
@@ -2464,15 +2471,15 @@ namespace d360.model
 			}
 
 			return "";
-		}	
-		
+		}
+
 		public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnFollowers(int typeID, int stepID, long itemID)
 		{
 			IEnumerable<GlobalReportingResource> users = Query<GlobalReportingResource>("[utility].[GetOwnersForWFFollowers] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
 			return users;
-		}	
-		
+		}
+
 		public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId)
 		{
 			// a default workflow group has been defined for when there are no memebers in the resonponsibilities
@@ -2489,7 +2496,7 @@ namespace d360.model
 					inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
 					where rg.groupid= @groupId and R.[State] = 1", new { groupId });
 		}
-		
+
 		public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true)
 		{
 			IEnumerable<GlobalReportingResource> users = Query<GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
@@ -2527,8 +2534,8 @@ namespace d360.model
 			}
 
 			return users;
-		}		
-		
+		}
+
 		public async Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo)
 		{
 			// mark step as completed
@@ -2548,7 +2555,7 @@ namespace d360.model
 
 			return transitions.Count;
 		}
-		
+
 		public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
 		{
 			return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson, lookupFieldsPassedByValue);
@@ -2718,7 +2725,7 @@ namespace d360.model
 
 				result = result.Replace("[ACTION_DETAILS]", issueInfo.ToString());
 			}
-			
+
 
 			if (result.Contains("[WORKFLOW_INITIATOR_UID]") || result.Contains("[WORKFLOW_INITIATOR_EMAIL]") || result.Contains("[WORKFLOW_INITIATOR]"))
 			{
@@ -2876,7 +2883,7 @@ namespace d360.model
 					if (fieldId > 0)
 					{
 						//logic still uses objectId and in case of asset we needs to fetch assetid
-						var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x=> x.ID).FirstOrDefault();
+						var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x => x.ID).FirstOrDefault();
 						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
 
 						//If there is no field and type is Issue, this might be asset field
@@ -2886,7 +2893,7 @@ namespace d360.model
 							if (issue?.AssetID != null)
 							{
 								fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-							}							
+							}
 						}
 
 						if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
@@ -2919,7 +2926,7 @@ namespace d360.model
 						if (fieldRecord != null)
 						{
 							FieldType fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
-							
+
 							if (fieldType != null)
 							{
 								DateTime dateValue;
@@ -3345,7 +3352,7 @@ namespace d360.model
 
 			return result;
 		}
-		
+
 		public void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId)
 		{
 			List<EventInfo> events = new List<EventInfo>
@@ -3367,8 +3374,8 @@ namespace d360.model
 			};
 
 			QueueSource.CreateTopicMessages(events);
-		}	
-		
+		}
+
 		public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
 		{
 			List<SettingInfo> companySettings = GetSettings();
@@ -3383,7 +3390,7 @@ namespace d360.model
 				return;
 			}
 
-			// 0.5 determine how many days ago last digest was sent
+			//0.5 determine how many days ago last digest was sent
 			int newDelta = 0;
 			int previousDayOfWeek;
 			do
@@ -3434,8 +3441,7 @@ namespace d360.model
 				// 3 get oustanding assignments
 				foreach (dynamic user in users)
 				{
-					dynamic workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
-
+					IEnumerable<UsersOutstandingWorkflows> workflows = await GetUsersOutstandingWorkflows(user.ID, newDelta);
 
 					StringBuilder sb = new StringBuilder();
 					string subject = string.Empty;
@@ -3444,7 +3450,7 @@ namespace d360.model
 					//build email content
 					// email summary
 					sb.Append("<span style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif;color:#0000;'>Please find listed below the outstanding workflow items assigned to you:</span>");
-					
+
 					// email details
 					if (environmentLevel != EnvironmentLevel.Production)
 					{
@@ -3458,7 +3464,7 @@ namespace d360.model
 					sb.Append(tblHeader);
 					int i = 0;
 					int totalNew = 0;
-					foreach (dynamic item in workflows)
+					foreach (UsersOutstandingWorkflows item in workflows)
 					{
 						if (i % 2 == 0)
 						{
@@ -3469,7 +3475,23 @@ namespace d360.model
 							sb.Append(tblTRWhite);
 						}
 
-						string url = $"{rootUrl}/workflow/workflowlistnew/{item.Id}/{item.Version}/{item.StepId}/1";
+						string url = "";
+
+						if (this.FeatureFlags_TEMP_ASSIGNMENTS)
+						{
+							if (item.WorkflowItemStepUid.HasValue)
+							{
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							}
+							else
+							{
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&version={item.Version}";
+							}
+						}
+						else
+						{
+							url = $"{rootUrl}/workflow/workflowlistnew/{item.Id}/{item.Version}/{item.StepId}/1";
+						}
 						sb.Append($"<td style='text-align: left;padding-left:5px;'><a style='font-size:12px;font-family: Trebuchet MS, Arial, Helvetica, sans - serif;'  href='{url}'>{item.Name}</a></td>");
 						sb.Append($"<td style='text-align: center'>{span}{item.Version}</span></td>");
 						sb.Append($"<td style='text-align: left'>{span}{item.Step}</span></td>");
@@ -3489,14 +3511,21 @@ namespace d360.model
 
 					sb.Append("</tbody></table>");
 
-					sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					if (FeatureFlags_TEMP_ASSIGNMENTS)
+					{
+						sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/assignments' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					}
+					else
+					{
+						sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/home' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");
+					}
 
 					subject = $"{environment}{totalNew} new workflow items require your attention";
 
 					dynamic emailAddress = user.Email;
 
 					string emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family: Trebuchet MS, Arial, Helvetica, sans-serif;\">{sb.ToString()}</body></html>";
-					
+
 					//send email
 					await Mail.SendMessage(subject, emailAddress, "", emailBase, true, fromEmail, fromName);
 				}
@@ -3579,7 +3608,7 @@ namespace d360.model
 				if (settings.RecipientGroup == Guid.Empty)
 				{
 					TelemetryClient.TrackEvent("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
-					
+
 					return true;
 				}
 
@@ -3587,7 +3616,7 @@ namespace d360.model
 				if (recipientGroup <= 0)
 				{
 					TelemetryClient.TrackEvent("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
-					
+
 					return true;
 				}
 
@@ -3596,6 +3625,49 @@ namespace d360.model
 
 			string prefix = Community.GetPrimaryUrlPrefix();
 			string url = $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
+
+			if (FeatureFlags_TEMP_ASSIGNMENTS)
+			{
+				var dbArgs = new DynamicParameters();
+				dbArgs.Add("itemId", itemId);
+				dbArgs.Add("itemStepId", itemStepID);
+
+				string sql = @$"
+					select uid from workflow.Item where id = @itemId
+
+					select uid from workflow.ItemStep where id = @itemStepId
+
+					select case when i.AssetID is not null then 'Asset' else 'AssetType' end as [Type],
+					coalesce(a.uid, atp.uid) as uid
+					from workflow.Item wi
+					inner join Issue I on i.ID = wi.ObjectID 
+					left join Asset a on a.id = i.AssetID
+					left join AssetType atp on atp.ID = i.AssetTypeID
+					where wi.object = 'Issue' and wi.id = @itemId
+					union
+					select 'Relationship', null from workflow.Item wi where wi.ID = @itemId and wi.Object = 'Intersect'
+					union
+					select 'Asset', a.uid from workflow.Item wi 
+					inner join Asset A on A.Object = WI.Object AND a.ObjectID = wi.ObjectID
+					where wi.ID = @itemId and wi.Object <> 'Intersect' and wi.Object <> 'Issue'";
+				var urlData = await QueryMultipleAsync(sql, dbArgs);
+
+				var itemUid = urlData.Read<Guid>().First();
+				var itemStepUid = urlData.Read<Guid>().First();
+				var objectData = urlData.Read<dynamic>().First();
+
+				string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
+				url = $"https://{prefix}.data3sixty.com/assignments";
+				if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
+				{
+					url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
+				}
+				else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
+				{
+					url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
+				}
+				url += queryParamPart;
+			}
 
 			string initiatedBy = "(unknown)";
 
@@ -3675,8 +3747,8 @@ namespace d360.model
 			SaveItemAssignments(users, itemId, itemStepID);
 
 			return true;
-		}		
-		
+		}
+
 		public void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null)
 		{
 			List<EventInfo> events = new List<EventInfo>();
