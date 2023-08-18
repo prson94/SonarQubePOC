@@ -7,7 +7,7 @@
                 (click)="clickButton(b)"
                 [tooltip]="getButtonTooltip(b)"
                 [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                class="ig-button-secondary side-panel-button">
+                class="ig-button-secondary side-panel-button ig-button-group">
         </button>
     </div>
 </div>
@@ -26,17 +26,19 @@
                         <div class="side-panel-button-spacer"></div>
                     </ng-container>
                     <ng-container *ngIf="buttonCount > 1">
-                        <button *ngFor="let b of visibleButtons"
-                                igButton
-                                [icon]="b.icon"
-                                (click)="clickButton(b)"
-                                [tooltip]="getButtonTooltip(b)"
-                                [igDataCy]="'Sidebar_' + getButtonTooltip(b)"
-                                class="ig-button-secondary side-panel-button"
-                                [class.selected]="selectedPanel === b.key"
-                                [disabled]="b.disabled">
-                        </button>
-                        <div class="side-panel-button-spacer"></div>
+						<span class="ig-buttons-group">
+							<button *ngFor="let b of visibleButtons"
+									igButton
+									[icon]="b.icon"
+									(click)="clickButton(b)"
+									[tooltip]="getButtonTooltip(b)"
+									[igDataCy]="'Sidebar_' + getButtonTooltip(b)"
+									class="ig-button-secondary side-panel-button ig-button-group"
+									[class.selected]="selectedPanel === b.key"
+									[disabled]="b.disabled">
+							</button>
+						</span>
+						<div class="side-panel-button-spacer"></div>
                     </ng-container>
                     <button igButton
                             [icon]="closeIcon"
