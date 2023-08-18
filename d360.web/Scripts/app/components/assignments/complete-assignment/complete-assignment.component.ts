@@ -115,6 +115,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		items?: SingleAssignment[]
 	}): void {
 		if (details) {
+			this.multiSubmitionItems = [];
+			this.isBulkRespond = false;
 			if (this.onlyAdminReassignMode) {
 				this.radioSelectionValue = 'reassignUser';
 			}
