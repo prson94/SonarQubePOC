@@ -30,7 +30,7 @@
 				(click)="selectAll()" i18n-label
 				label="Select All"
 				[disabled]="items.length < 1"></button>
-		<advanced-filtering [loadIdentifier]="getStorageKey()"
+		<advanced-filtering [loadIdentifier]="storageKey"
 							[fieldsObserver]="filterFields$"
 							*ngIf="areTypesLoaded"
 							(onLoad)="onFiltersLoaded()"
@@ -60,7 +60,7 @@
 				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
 				 [selection]="assignments"
 				 (selectionChange)="gridSelectionChange($event)"
-				 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
+				 (onPage)="setRowsPerPage($event)">
 			<ng-template pTemplate="header">
 				<tr>
 					<ng-container *ngIf="actionFormFields.length === 0">
@@ -173,7 +173,7 @@
 					<td>
 						<span>{{item.Status}}</span>
 					</td>
-					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools"
+					<td *ngIf="isAdmin && !isRequestsFlow" class="asset-grid-tools assignment-row-menu-column"
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>
