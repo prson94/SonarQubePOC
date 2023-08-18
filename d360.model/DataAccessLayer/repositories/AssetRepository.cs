@@ -3596,14 +3596,14 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assetTypes, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
+		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
 		{
 			CompanyContext.Add(execution);
 
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutAssets);
 			}
 			catch (Exception ex)
@@ -3628,12 +3628,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return await CreateApiBatchJob(executionInfo, execution, assets, StorageProvider, QueueSource).ConfigureAwait(false);
 		}
 
-		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false)
+		public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
 		{
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue, useTempTablesForField: useTempTablesForField);
+				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostAssets);
 			}
 			catch (Exception ex)

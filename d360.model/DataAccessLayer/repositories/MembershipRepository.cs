@@ -191,7 +191,6 @@ namespace d360.model.DataAccessLayer
 
 		public WorkHttpStatus DeleteResources(ApiExecution execution, IEnumerable<UserApiDeleteModel> resources)
 		{
-
 			try
 			{
 				List<UserApiDeleteModel> models = new List<UserApiDeleteModel>();
@@ -228,25 +227,26 @@ namespace d360.model.DataAccessLayer
 					CompanyContext.Update(model.Resource);
 					CommunityContext.Update(model.CompanyResource);
 
-					CompanyContext.Query<int>($@"insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-						select	distinct
-								'Resource', 
-								res.ResourceId,
-								SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-								@r, 
-								getutcdate(), 
-								'Deleted', 
-								'Resource', 
-								res.ResourceId,
-								'Resource', 
-								SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-								'This user has been removed.'
-						from reporting.Global_Resource res
-						where res.resourceid = @resourceId", new
-					{
-						r = CompanyContext.CurrentResourceID,
-						resourceId = model.Resource.ResourceID
-					}).ToList();
+					CompanyContext.Query<int>($@"
+insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID]) values ('ObjectIndex', 'D', 'Resource', @resourceId);
+
+insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	select	distinct
+			'Resource', 
+			res.ResourceId,
+			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			@r, 
+			getutcdate(), 
+			'Deleted', 
+			'Resource', 
+			res.ResourceId,
+			'Resource', 
+			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
+			'This user has been removed.'
+	from	reporting.Global_Resource res
+	where	res.resourceid = @resourceId", 
+						new { r = CompanyContext.CurrentResourceID, resourceId = model.Resource.ResourceID }
+					).ToList();
 				}
 
 				execution.Processed = resources.Count();
@@ -693,23 +693,20 @@ namespace d360.model.DataAccessLayer
 				try
 				{
 					await CompanyContext.Connection.ExecuteAsync(@"
-						drop table if exists #UserFields;
-						create table #UserFields
-						(
-							ExecutionID uniqueidentifier not null,
-							ItemNumber int not null,
-							FieldName nvarchar(250),
-							FieldValue nvarchar(max),
-							FieldTypeID int,
-							LookupValue nvarchar(max)
-						);
+drop table if exists #UserFields;
+create table #UserFields
+(
+	ExecutionID uniqueidentifier not null,
+	ItemNumber int not null,
+	FieldName nvarchar(250),
+	FieldValue nvarchar(max),
+	FieldTypeID int,
+	LookupValue nvarchar(max)
+);", 
+						transaction: trans
+					);
 
-						", transaction: trans);
-
-					SqlBulkCopy bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans)
-					{
-						DestinationTableName = "api.ExecutionUser"
-					};
+					var bulkCopy = CompanyContext.Connection.CreateBulkCopy("api.ExecutionUser", 1000, 1200, trans);
 
 					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
 					bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
@@ -732,10 +729,8 @@ namespace d360.model.DataAccessLayer
 
 					await bulkCopy.WriteToServerAsync(userTable);
 
-					bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans)
-					{
-						DestinationTableName = "#UserFields"
-					};
+					
+					bulkCopy = CompanyContext.Connection.CreateBulkCopy("#UserFields", 1000, 1200, trans);
 
 					bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
 					bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -749,58 +744,60 @@ namespace d360.model.DataAccessLayer
 					#region Populate table values
 
 					await CompanyContext.Connection.ExecuteAsync(@"
-						update  U
-						set     U.ResourceID = G.ResourceID
-						from    api.ExecutionUser U
-								inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
-						where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;						
-						", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
+update  U
+set     U.ResourceID = G.ResourceID
+from    api.ExecutionUser U
+		inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
+where   U.ExecutionID = @executionID and U.Success is null and U.IsNew = 0;",
+						new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans
+					);
 
 					#endregion
 
 					#region Validation
+
 					if (!IsChangePasswordReqeust)
 					{
 						await CompanyContext.Connection.ExecuteAsync(@"
-						update  U
-						set     U.Success = 0,
-								U.Message = U.Message + 'Resource for this uid not found. '
-						from    api.ExecutionUser U
-						where   U.Success is null and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
+update  U
+set     U.Success = 0,
+		U.Message = U.Message + 'Resource for this uid not found. '
+from    api.ExecutionUser U
+where   U.Success is null and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
 
-						update  U
-						set     U.Success = 0,
-								U.Message = U.Message + 'One or more field values supplied is missing a field type. '
-						from    api.ExecutionUser U
-								cross apply (
-									select  count(*) as MissingCount 
-									from    #UserFields F 
-									where   F.ItemNumber = U.ItemNumber 
-											and F.ExecutionID = U.ExecutionID
-											and F.FieldTypeID is null
-								) C
-						where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
+update  U
+set     U.Success = 0,
+		U.Message = U.Message + 'One or more field values supplied is missing a field type. '
+from    api.ExecutionUser U
+		cross apply (
+			select  count(*) as MissingCount 
+			from    #UserFields F 
+			where   F.ItemNumber = U.ItemNumber 
+					and F.ExecutionID = U.ExecutionID
+					and F.FieldTypeID is null
+		) C
+where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
 
-						update  U
-						set     U.Success = 0,
-								U.Message = U.Message + 'Missing required fields. '
-						from    api.ExecutionUser U
-								cross apply (
-									select  count(*) as MissingCount
-									from    FieldType F
-									where   F.Object = 'ResourceType' 
-											and F.ObjectID = @ResourceTypeID and F.IsRequired = 1
-											and not exists (
-												select  1 
-												from    #UserFields R 
-												where   R.ItemNumber = U.ItemNumber 
-														and R.ExecutionID = U.ExecutionID 
-														and R.FieldTypeID = F.ID
-											)
-								) C
-						where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
-
-						", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
+update  U
+set     U.Success = 0,
+		U.Message = U.Message + 'Missing required fields. '
+from    api.ExecutionUser U
+		cross apply (
+			select  count(*) as MissingCount
+			from    FieldType F
+			where   F.Object = 'ResourceType' 
+					and F.ObjectID = @ResourceTypeID and F.IsRequired = 1
+					and not exists (
+						select  1 
+						from    #UserFields R 
+						where   R.ItemNumber = U.ItemNumber 
+								and R.ExecutionID = U.ExecutionID 
+								and R.FieldTypeID = F.ID
+					)
+		) C
+where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;", 
+							new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans
+						);
 
 						if (lookupFieldsPassedByValue)
 						{
@@ -813,37 +810,40 @@ namespace d360.model.DataAccessLayer
 
 						//validate lookup fields
 						await CompanyContext.Connection.ExecuteAsync(@"
-						update  U
-						set     U.Success = 0,
-								U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
-						from    api.ExecutionUser U
-						inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
-						inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
-						where U.ExecutionID = @executionID and F.LookupValue is null and F.FieldValue is not null
-						", new { executionID }, transaction: trans);
+update  U
+set     U.Success = 0,
+		U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
+from    api.ExecutionUser U
+inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
+inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+where U.ExecutionID = @executionID and F.LookupValue is null and F.FieldValue is not null",
+							new { executionID }, transaction: trans
+						);
 
 						await CompanyContext.Connection.ExecuteAsync(@"
-						insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
-						select  ExecutionID,
-						ItemNumber,
-						FieldName,
-						FieldValue,
-						FieldTypeID,
-						LookupValue,
-						null as Ignore
-						from #UserFields
-						", transaction: trans);
+insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+	select  ExecutionID,
+			ItemNumber,
+			FieldName,
+			FieldValue,
+			FieldTypeID,
+			LookupValue,
+			null as Ignore
+	from	#UserFields",
+							transaction: trans
+						);
 					}
 
 					validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>(@"
-						select ItemNumber, 
-						uid, 
-						ExecutionItemUid, 
-						Message, 
-						coalesce(Success, cast(1 as bit)) as Success 
-						from api.ExecutionUser 
-						where ExecutionID = @executionID", new { executionID }, transaction: trans))
-						.ToList();
+select	ItemNumber, 
+		uid, 
+		ExecutionItemUid, 
+		Message, 
+		coalesce(Success, cast(1 as bit)) as Success 
+from	api.ExecutionUser 
+where	ExecutionID = @executionID", 
+						new { executionID }, transaction: trans)
+					).ToList();
 
 					#endregion
 
@@ -872,7 +872,8 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var result in validationResults)
 			{
-
+				var userAssetType = CompanyContext.AssetTypes.SingleOrDefault(o => o.Class == AssetTypeClass.User);
+				
 				if (result.Success == true)
 				{
 					var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
@@ -1031,6 +1032,7 @@ namespace d360.model.DataAccessLayer
 							}
 
 							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+							Asset userAsset = null;
 
 							if (globalResource != null)
 							{
@@ -1042,6 +1044,14 @@ namespace d360.model.DataAccessLayer
 								globalResource.UpdatedOn = DateTime.UtcNow;
 
 								CompanyContext.Update(globalResource);
+
+								userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == user.ResourceID);
+								if (userAsset != null)
+								{
+									userAsset.UpdatedBy = CompanyContext.CurrentResourceID;
+									userAsset.UpdatedOn = DateTime.UtcNow;
+									CompanyContext.Update(userAsset);
+								}
 							}
 							else
 							{
@@ -1059,6 +1069,20 @@ namespace d360.model.DataAccessLayer
 								};
 
 								CompanyContext.Add(globalResource);
+
+								if (userAssetType != null)
+								{ 
+									userAsset = new Asset {
+										AssetTypeID = userAssetType.ID,
+										Object = "Resource",
+										ObjectID = (int)user.ResourceID,
+										State = State.Active,
+										UpdatedBy = CompanyContext.CurrentResourceID,
+										UpdatedOn = DateTime.UtcNow,
+										uid = (Guid)user.uid
+									};
+									CompanyContext.Add(userAsset);								
+								}
 							}
 						}
 					}
@@ -1076,10 +1100,7 @@ namespace d360.model.DataAccessLayer
 
 			#region Merge Fields
 
-			if (CompanyContext.Connection.State == ConnectionState.Closed)
-			{
-				await CompanyContext.Connection.OpenAsync();
-			}
+			await CompanyContext.Connection.OpenIfClosed();
 
 			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
 			{
@@ -1094,8 +1115,7 @@ namespace d360.model.DataAccessLayer
 							[uid] uniqueidentifier null,
 							Success bit null,
 							Message nvarchar(max)
-						);
-						", transaction: trans);
+						);", transaction: trans);
 
 					var resultsTable = new DataTable();
 
@@ -1140,34 +1160,35 @@ namespace d360.model.DataAccessLayer
 					await bulkCopy.WriteToServerAsync(resultsTable);
 
 					await CompanyContext.Connection.ExecuteAsync(@"
-						update U
-						set U.ObjectID = GR.ResourceID,
-							U.ResourceID = GR.ResourceID,
-							U.Uid = GR.Uid
-						from api.ExecutionUser U
-						inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.ObjectID = 0
-						inner join reporting.Global_resource GR on GR.uid = R.uid
+update	U
+set		U.ObjectID = GR.ResourceID,
+		U.ResourceID = GR.ResourceID,
+		U.Uid = GR.Uid
+from	api.ExecutionUser U
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.ObjectID = 0
+		inner join reporting.Global_resource GR on GR.uid = R.uid
 
-						update U
-						set U.AssetId = A.Id
-						from api.ExecutionUser U
-						inner join Asset A on (A.Uid = U.Uid)
-						inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.AssetId is null
-						inner join reporting.Global_resource GR on GR.uid = R.uid
+update	U
+set		U.AssetId = A.Id
+from	api.ExecutionUser U
+		inner join Asset A on (A.Uid = U.Uid)
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.AssetId is null
+		inner join reporting.Global_resource GR on GR.uid = R.uid
 
-						update U
-						set U.AssetId = A.Id
-						from api.ExecutionUser U
-						inner join Asset A on (A.Object = U.Object and A.ObjectId = U.ObjectId)
-						inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.AssetId is null
-						inner join reporting.Global_resource GR on GR.uid = R.uid
+update	U
+		set U.AssetId = A.Id
+from	api.ExecutionUser U
+		inner join Asset A on (A.Object = U.Object and A.ObjectId = U.ObjectId)
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.AssetId is null
+		inner join reporting.Global_resource GR on GR.uid = R.uid
 
-						update U
-						set U.Success = 0,
-							U.Message = R.Message
-						from api.ExecutionUser U
-						inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and R.Success = 0
-						", transaction: trans);
+update	U
+set		U.Success = 0,
+		U.Message = R.Message
+from	api.ExecutionUser U
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and R.Success = 0", 
+						transaction: trans
+					);
 
 					if (!IsChangePasswordReqeust)
 					{
@@ -1176,11 +1197,11 @@ namespace d360.model.DataAccessLayer
 						if (isInsert == true)
 						{
 							var UserUpdateCountResult = (await CompanyContext.Connection.QueryAsync<int>(@"
-								select count(1) 
-								from api.ExecutionUser U
-								inner join #UserResults R 
-								on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0
-								", new { executionID }, transaction: trans));
+select	count(1) 
+from	api.ExecutionUser U
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.IsNew = 0", 
+								new { executionID }, transaction: trans)
+							);
 							var UserUpdateCount = UserUpdateCountResult.First();
 
 							if (UserUpdateCount > 0)
@@ -1193,16 +1214,32 @@ namespace d360.model.DataAccessLayer
 
 						if (hasRelationshipFieldTypes)
 						{
-							CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+							CompanyContext.ImportRelationships(execution, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
 						}
 
 						await CompanyContext.Connection.ExecuteAsync(@"
-								update	U
-								set U.Success = 1
-								from api.ExecutionUser U
-								inner join #UserResults R 
-								on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null", 
-								new { executionID }, transaction: trans);
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	@Id,
+			(select U.ResourceID as ObjectId,
+					U.AssetId,
+					U.ItemNumber,
+					U.FirstName,
+					U.LastName, 
+					U.Username,
+					U.IsAdministrator,
+					coalesce(U.FirstName + ' ' + U.LastName, U.Username) as ObjectName,
+					@isInsert as IsNew
+			for json path
+			) as Payload
+	from	api.ExecutionUser U
+			inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null;
+
+update	U
+set		U.Success = 1
+from	api.ExecutionUser U
+		inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.Success is null", 
+							new { executionID, execution.Id, isInsert }, transaction: trans
+						);
 					}
 
 					trans.Commit();
@@ -1223,125 +1260,39 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
-			{
-				try
-				{
-					string oldValuesSQL = "";
-					string logMessage = "Created";
-					if (!isInsert)
-					{
-						logMessage = "Updated";
-						oldValuesSQL = @"update  ar
-							set ar.OldValue = fa.Value
-							from #auditRecords ar
-							inner join reporting.Global_Resource gr on gr.uid = ar.uid
-							outer apply (select top 1 ID from reporting.Global_Audit where Object = 'Resource' and ObjectId = gr.resourceid and Action in ('Created','Updated') order by id desc)Audit(ID)
-							left join reporting.Global_FieldAudit fa on fa.auditid = audit.id and fa.fieldname = ar.fieldname";
-					}
-
-					await CompanyContext.Connection.ExecuteAsync($@"
-							drop table if exists #auditRecords
-							create table #auditRecords (uid uniqueidentifier, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
-
-							;with cte as (select ex.*, gr.uid as resourceUid from api.executionuser ex
-							inner join reporting.Global_Resource gr on gr.resourceid = ex.ResourceID
-							where ex.executionid = @executionid and (ex.success <> 0 or ex.success is null))
-							insert into #auditRecords
-							select cte.resourceUid, 'Email','', cte.Username from cte
-							union 
-							select cte.resourceUid, 'First Name','', cte.FirstName from cte
-							union
-							select cte.resourceUid, 'Last Name', '',cte.lastName from cte
-							union
-							select cte.resourceUid, 'Is Administrator', '',try_cast( cte.IsAdministrator as nvarchar(255)) from cte
-
-							insert into #auditRecords
-							select gr.uid, ef.FieldName,'', ef.fieldvalue from api.executionuser ex
-							inner join reporting.Global_Resource gr on gr.resourceid = ex.ResourceID
-							left join api.executionfield ef on ef.executionid = ex.executionid and ef.itemnumber = ex.ItemNumber
-							where ex.executionid = @executionid and (ex.success <> 0 or ex.success is null)
-							
-							{oldValuesSQL}
-
-							declare @audit table (auditId int)
-							insert into reporting.Global_Audit
-							OUTPUT INSERTED.ID
-							INTO @audit
-							select distinct 'Resource', gr.ResourceId, SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250), @currentresourceid, GETUTCDATE(), '{logMessage}', 'Resource', gr.ResourceId, 'Resource', SUBSTRING(gr.FirstName + ' ' + gr.LastName,0,250),'Resource {logMessage}' from #auditRecords ar
-							inner join reporting.Global_Resource gr on gr.uid = ar.uid
-
-							insert into reporting.global_fieldaudit
-							select a.auditid,0, ar.fieldname, 1,ar.newvalue, ar.oldvalue from @audit a
-							inner join reporting.Global_Audit ga on ga.id = a.auditid
-							inner join reporting.Global_Resource gr on gr.ResourceId = ga.ObjectID
-							inner join #auditRecords ar on gr.uid = ar.uid
-							where isnull(ar.newvalue,'') <> isnull(ar.oldvalue,'')
-							order by ar.uid
-
-							insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-							select 'ObjectIndex', 'U', 'Resource', ResourceID, getdate(), AssetID
-							from api.ExecutionUser 
-							where ExecutionID = @executionid
-							and Success is null
-							and AssetID is not null",
-							new { executionID, CompanyContext.CurrentResourceID },
-							transaction: trans);
-
-					trans.Commit();
-				}
-				catch (Exception ex)
-				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-					}
-					catch
-					{
-					}
-					CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
-					throw ex;
-				}
-			}
-
 			#endregion
 
+			//Asset Display Value logic
 			await CompanyContext.Connection.ExecuteAsync(@$"
-						MERGE	dbo.AssetDisplayValue as ADV
-						USING	(
-							SELECT
-								eu.AssetId,
-								DisplayValue.DisplayValue,
-								CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2) as DisplayValueHash,
-								SUBSTRING(DisplayValue.DisplayValue, 1, 250) as DisplayValuePrefix
-							from api.ExecutionUser EU 
-							cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue
-							where  EU.ExecutionID = @executionID
-							and EU.AssetId is not null
-						) as S
-						ON		(ADV.AssetID = S.AssetID)
-						WHEN	matched THEN
-						UPDATE	SET
-							ADV.DisplayValue = s.DisplayValue,
-							ADV.DisplayValueHash = s.DisplayValueHash,
-							ADV.DisplayValuePrefix = s.DisplayValuePrefix
-						WHEN not matched by target THEN
-						INSERT	([AssetID], [DisplayValue], DisplayValueHash, DisplayValuePrefix, [UpdatedOn])
-						VALUES	(S.[AssetID], S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());
+MERGE	AssetDisplayValue as ADV
+USING	(
+		SELECT	eu.AssetId,
+				DisplayValue.DisplayValue,
+				CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2) as DisplayValueHash,
+				SUBSTRING(DisplayValue.DisplayValue, 1, 250) as DisplayValuePrefix
+		from	api.ExecutionUser EU 
+				cross apply GetAssetDisplayValueById(EU.AssetId) DisplayValue
+		where	EU.ExecutionID = @executionID
+				and EU.AssetId is not null
+		) as S
+ON		(ADV.AssetID = S.AssetID)
+WHEN	matched THEN
+		UPDATE	SET
+				ADV.DisplayValue = s.DisplayValue,
+				ADV.DisplayValueHash = s.DisplayValueHash,
+				ADV.DisplayValuePrefix = s.DisplayValuePrefix
+WHEN	not matched by target THEN
+		INSERT	([AssetID], [DisplayValue], DisplayValueHash, DisplayValuePrefix, [UpdatedOn])
+		VALUES	(S.[AssetID], S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());
 
-						exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
-							new
-							{
-								executionID = execution.ExecutionID,
-								@class = (int)AssetTypeClass.User,
-								begin = 0,
-								end = itemNumber
-							});
+exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
+				new { executionID = execution.ExecutionID, @class = (int)AssetTypeClass.User, begin = 0, end = itemNumber }
+			);
 
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.UpsertUsers);
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			return results;
 		}
@@ -1378,7 +1329,7 @@ namespace d360.model.DataAccessLayer
 
 			try
 			{
-				results = CompanyContext.UpdateGroups(execution, groups);
+				results = CompanyContext.UpsertGroups(execution, groups);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutGroups);
 			}
 			catch (Exception ex)
@@ -1395,7 +1346,7 @@ namespace d360.model.DataAccessLayer
 
 			try
 			{
-				results = CompanyContext.UpdateGroups(execution, groups);
+				results = CompanyContext.UpsertGroups(execution, groups);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostGroups);
 			}
 			catch (Exception ex)

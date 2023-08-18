@@ -163,7 +163,8 @@ namespace igx.jobs.apiexecutionprocessor
 
 						Action markExecutionAsProcessing = () => {
 							dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
-							company.Update(dbExecutionItem);
+							company.Connection.ExecuteAsync("update api.Execution set ProcessingStartedOn = @ProcessingStartedOn where Id = @Id", new { dbExecutionItem.ProcessingStartedOn, dbExecutionItem.Id });
+							//company.Update(dbExecutionItem);
 						};
 
 						Action markExecutionAsComplete = () =>
@@ -218,7 +219,7 @@ namespace igx.jobs.apiexecutionprocessor
 								assetTypeActionLogic = async (at) =>
 								{
 									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
-									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, useTempTableForFields: false);
+									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(postAssetsFields.AssetTypeUid);
@@ -228,7 +229,7 @@ namespace igx.jobs.apiexecutionprocessor
 								assetTypeActionLogic = async (at) =>
 								{
 									var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
-									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, useTempTableForFields: false);
+									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(putAssetsFields.AssetTypeUid);
@@ -342,6 +343,8 @@ namespace igx.jobs.apiexecutionprocessor
 								resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
 								markExecutionAsComplete = () =>
 								{
+									queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
 									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
 								};
 								break;

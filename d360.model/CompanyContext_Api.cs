@@ -58,7 +58,7 @@ namespace d360.model
 
 		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
 		
-		void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
+		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
 		List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
 
@@ -127,30 +127,6 @@ namespace d360.model
 									inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup' and T.ExecutionID = @executionID",
                                     new { executionID }, commandTimeout: timeout, transaction: trans);
         }
-
-		private void CreateWorkareaTempTables(bool useTempTableForFields, SqlTransaction trans)
-		{
-			if (useTempTableForFields)
-			{
-				ApiExecutionFieldTable = "#ExecutionField";
-				//create a ExecutionFields temp table version
-				Connection.Execute($@"
-									drop table if exists #ExecutionField;
-		
-									create table #ExecutionField (
-											[ExecutionID] [uniqueidentifier] NOT NULL,
-											[ItemNumber] [int] NOT NULL,
-											[FieldName] [nvarchar](250) NOT NULL,
-											[FieldValue] [nvarchar](max) NULL,
-											[FieldTypeID] [int] NULL,
-											[LookupValue] [nvarchar](max) NULL,
-											[Ignore] [bit] NULL,
-									);
-
-									CREATE NONCLUSTERED INDEX IX_TempExecutionField ON #ExecutionField ( ExecutionID ASC, ItemNumber ASC, FieldName ASC );
-								", transaction: trans);
-			}
-		}
 
 		private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
@@ -2389,7 +2365,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
             return models;
         }
 
-		public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
+		/// <summary>
+		/// This method is primarily used when adding assets that have relationship fields on them, where the edit form allows for add/deletes to relationships.
+		/// </summary>
+		public void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
@@ -2575,7 +2554,24 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				select I.[uid]
 				from IIDs I
 				left join #Relationships R on R.ID = I.Id
-				where R.ID is null ;	
+				where R.ID is null;	
+
+				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+					select	@Id,
+							(select i.ID,
+									A.Object, 
+									A.ObjectId,
+									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+									TName.[Name] as TypeName,
+									'D' as [Action],
+							for json path
+							) as Payload,
+							'R'
+					from	#DeletedRelationships o
+							inner join [Intersect] i on i.Uid = o.uid
+							inner join Asset a on (a.Id = i.SubjectAssetID or a.Id = i.ObjectAssetID)
+							left join AssetDisplayValue d on d.AssetID = a.Id
+							cross apply dbo.getIntersectTypeNames(i.IntersectTypeID) TName;
 
 				delete	i
 				from	[Intersect] I 
@@ -2599,11 +2595,27 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID
 					where	R.ID is null;
 
-					select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
-					union all
-					select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships";
+				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+					select	@Id,
+							(select o.ID,
+									A.Object, 
+									A.ObjectId,
+									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+									TName.[Name] as TypeName,
+									'A' as [Action],
+							for json path
+							) as Payload,
+							'R'
+					from	#Relationships o
+							inner join Asset a on (a.Id = o.SubjectAssetID or a.Id = o.ObjectAssetID)
+							left join AssetDisplayValue d on d.AssetID = a.Id
+							cross apply dbo.getIntersectTypeNames(o.IntersectTypeID) TName;
 
-            Connection.Query<DatabaseBulkRelationshipResult>(sql, new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+				select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
+				union all
+				select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships";
+
+            Connection.Query<DatabaseBulkRelationshipResult>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
 		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
@@ -3377,14 +3389,17 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									#region Execution Log
 
-									string logSql = @"
+
+
+									string logSql = $@"
 insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	e.Id,
-			(select o.IntersectId,
-					A.Object, 
-					A.ObjectId,
-					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-					TName.[Name] as TypeName,
+			(select I.Subject as Object, 
+					I.SubjectId as ObjectId,
+					I.SubjectName as ObjectName,
+					o.IntersectId as ActionObjectId,
+					I.ObjectNameas ActionObjectName,
+					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as ActionObjectTypeName,
 					o.IsNew
 			for json path
 			) as Payload
@@ -3393,10 +3408,25 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				and e.ExecutionID = @ExecutionID 
 				and o.ItemNumber between @beginItemNumber and @endItemNumber 
 				and o.Success is null
-			inner join Asset a on (a.Id = o.SubjectAssetID or a.Id = o.ObjectAssetID)
-			left join AssetDisplayValue d on d.AssetID = a.Id
-			inner join [Intersect] I on I.ID = o.IntersectID
-			cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName";
+			inner join IntersectDetail I on I.ID = o.IntersectID;
+
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select I.Object, 
+					I.ObjectId,
+					I.ObjectName,
+					o.IntersectId as ActionObjectId,
+					I.SubjectName as ActionObjectName,
+					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as ActionObjectTypeName,
+					o.IsNew
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
+				and e.ExecutionID = @ExecutionID 
+				and o.ItemNumber between @beginItemNumber and @endItemNumber 
+				and o.Success is null
+			inner join IntersectDetail I on I.ID = o.IntersectID;";
 
 									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
@@ -3890,7 +3920,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								select 
 										F.FieldTypeID as [FieldTypeID]                                        
 										,F.LookupValue as [Value]
-										,F.FieldValue as [FormattedValue]
+										,utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.LookupValue, FT.AllowMultipleValues) as [FormattedValue]
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
 										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}

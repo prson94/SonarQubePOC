@@ -1748,6 +1748,7 @@ where	Id = @Id
 			
 			return !string.IsNullOrEmpty(result.FirstOrDefault());
 		}
+		
 		public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution)
 		{
 			companyContext.Add(execution);
@@ -1816,6 +1817,7 @@ where	Id = @Id
 
 			return results;
 		}
+		
 		public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
 		{
 			var apiTimeout = ApiTimeout;

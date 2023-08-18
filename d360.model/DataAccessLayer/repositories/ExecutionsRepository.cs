@@ -470,7 +470,7 @@ namespace d360.model.DataAccessLayer
 			var executionProcessingInfoFields = CompanyContext.ApiExecutions.Single(x => x.Id == executionId).Fields ?? "{}";
 			var executionProcessingInfo = JsonConvert.DeserializeObject<ApiExecutionFields_PatchExecution>(executionProcessingInfoFields);
 
-			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 8)
+			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 6)
 			{
 				try
 				{
@@ -551,13 +551,6 @@ namespace d360.model.DataAccessLayer
 					{
 						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'P', resourceId, date }, commandTimeout: 7200);
 						executionProcessingInfo.LastCompletedStepNumber = 6;
-					}
-
-					// Cleanup and wrap-up of run.
-					if (executionProcessingInfo.LastCompletedStepNumber < 7)
-					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'E', resourceId, date }, commandTimeout: 7200);
-						executionProcessingInfo.LastCompletedStepNumber = 7;
 					}
 				}
 				catch (Exception ex)

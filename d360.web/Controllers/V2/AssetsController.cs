@@ -1596,7 +1596,6 @@ namespace d360.web.Controllers.V2
 		/// <param name="assetTypeUid">The unique identifier of the asset type.</param>
 		/// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
 		/// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
-		/// <param name="useTempTablesForFieldValues">Optional query string parameter that allows you to specify false to preserve field values in a static table usually for troubleshooting.  The default value for this is true.</param>
 		/// <param name="assets">The payload of your request.</param>        
 		/// <returns>An HTTP status code and message.</returns>
 		[
@@ -1614,7 +1613,6 @@ namespace d360.web.Controllers.V2
 			List<AssetInsert> assets,
 			bool triggersWorkflow = true,
 			bool lookupFieldsPassedByValue = false,
-			bool useTempTablesForFieldValues = true,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Assets.PostBulkAssetsAsync => ";
@@ -1655,7 +1653,7 @@ namespace d360.web.Controllers.V2
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PostAssets);
 				ExecutionsRepository.UpsertExecution(execution);
-				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
+				var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -1689,7 +1687,6 @@ namespace d360.web.Controllers.V2
 		/// <param name="assetTypeUid">The unique identifier of the asset type.</param>
 		/// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
 		/// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
-		/// <param name="useTempTablesForFieldValues">Optional query string parameter that allows you to specify false to preserve field values in a static table usually for troubleshooting.  The default value for this is true.</param>
 		/// <param name="assets">The payload of your request.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
@@ -1707,7 +1704,6 @@ namespace d360.web.Controllers.V2
 			List<AssetUpdate> assets,
 			bool triggersWorkflow = true,
 			bool lookupFieldsPassedByValue = false,
-			bool useTempTablesForFieldValues = true,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Assets.PutAssetsAsync => ";
@@ -1741,7 +1737,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
-				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
+				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}

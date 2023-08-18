@@ -61,7 +61,7 @@ namespace d360.model
 
 		Guid GetAssetUid(int objectId, SystemObjects assetType);
 
-		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool useTempTablesForField = false);
+		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
 
 		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
 
@@ -823,7 +823,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
             return wildcardValue(escapeForSQLLike(filter), isContains);
         }
 
-		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool useTempTableForFields = false)
+		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportAssets";
@@ -1117,9 +1117,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					{
 						try
 						{
-							// if needed create temp tables for data
-							CreateWorkareaTempTables(useTempTableForFields, transaction);
-
 							addMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
 
 							sw.Restart();
@@ -1167,7 +1164,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								}
 							}
 
-							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, (useTempTableForFields ? SqlBulkCopyOptions.TableLock : SqlBulkCopyOptions.Default), transaction))
+							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
 							{
 								// fields
 								bulkCopy.BatchSize = SqlBulkBatchSize;
@@ -1706,7 +1703,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (hasRelationshipFieldTypes)
 									{
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
-										ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
@@ -1888,7 +1885,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					Connection.Close();
 
 					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					//QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					if (sendWorkflowEvents)
 					{
