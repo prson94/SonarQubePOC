@@ -1,5 +1,5 @@
 ﻿<div *ngIf="expanded === false">
-    <div class="side-panel-container">
+    <div class="side-panel-container collapsed-panel">
         <button *ngFor="let b of visibleButtons"
                 igButton
                 [disabled]="b.disabled"
@@ -11,7 +11,7 @@
         </button>
     </div>
 </div>
-<div *ngIf="expanded === true" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
+<div *ngIf="expanded === true" class="expanded-panel" [style.min-width]="setMinMaxWidth ? minWidth : null" [style.max-width]="setMinMaxWidth ? maxWidth : null">
     <div>
         <div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
             <div class="panel-header">

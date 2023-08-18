@@ -24,8 +24,8 @@ export class AssignmentsMultiPickerComponent {
 	stepUid: string;
 	sidePanelStorageKey: string = 'MultiAssignments_Component';
 	sidePanel: string = 'asset-details';
-
-	selectedForInfoPanel: { assetId: number, type: string, workflowItemUid: string, assignmentItemStepUid: string };
+	version: number;
+	selectedForInfoPanel: { assetUid: string, type: string, workflowItemUid: string, Version: number };
 
 	assignments: SingleAssignment[] = [];
 	selected: SingleAssignment[] = [];
@@ -43,8 +43,8 @@ export class AssignmentsMultiPickerComponent {
 		private hrefService: LinkClickInterceptor
 	) {
 		this.hrefService.getEvents().subscribe((res) => {
-			this.sidePanel = 'step-details';
-			this.selectedForInfoPanel = { type: res.objectType, assetId: res.objectId, workflowItemUid: null, assignmentItemStepUid: null };
+			this.sidePanel = 'asset-details';
+			this.selectedForInfoPanel = { type: res.objectType, assetUid: res.uid, workflowItemUid: null, Version: null };
 		});
 	}
 
@@ -53,9 +53,12 @@ export class AssignmentsMultiPickerComponent {
 		this.isLoading = true;
 		this.assignments = assignments;
 		this.workflowTypeName = workflowTypeName;
+		this.sidePanel = 'asset-details';
+		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: null, Version: null };
 		this.cdRef.detectChanges();
 
 		this.workflowService.getAssignmentStepDetail(this.assignments[0].ItemStepUid).subscribe((res) => {
+			this.version = res.Version;
 			if (res.Fields.form) {
 				this.formTitle = res.Fields.form['@title'];
 				this.formDescription = res.Fields.form['@description'];
@@ -91,7 +94,7 @@ export class AssignmentsMultiPickerComponent {
 
 	openAssetSidePanel(item: SingleAssignment) {
 		this.sidePanel = 'step-details';
-		this.selectedForInfoPanel = { type: null, assetId: null, workflowItemUid: item.WorkflowItemUid, assignmentItemStepUid: item.ItemStepUid };
+		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: item.WorkflowItemUid, Version: this.version };
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.markForCheck();
 	}
