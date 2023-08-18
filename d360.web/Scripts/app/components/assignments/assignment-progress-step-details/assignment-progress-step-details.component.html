@@ -91,7 +91,7 @@
 							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
 								<a context-link
 								   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
-								<span *ngIf="!last">,</span>
+								<span *ngIf="!last">, </span>
 							</ng-container>
 						</div>
 					</ng-container>
