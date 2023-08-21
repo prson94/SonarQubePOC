@@ -2563,7 +2563,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									A.ObjectId,
 									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
 									TName.[Name] as TypeName,
-									'D' as [Action],
+									'D' as [Action]
 							for json path
 							) as Payload,
 							'R'
@@ -2602,7 +2602,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									A.ObjectId,
 									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
 									TName.[Name] as TypeName,
-									'A' as [Action],
+									'A' as [Action]
 							for json path
 							) as Payload,
 							'R'
