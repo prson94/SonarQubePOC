@@ -358,5 +358,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		});
 	}
 
+	changeActionPreference(): void {
+		this.tableRadioSelection = undefined
+	}
+
 	protected readonly Number = Number;
 }

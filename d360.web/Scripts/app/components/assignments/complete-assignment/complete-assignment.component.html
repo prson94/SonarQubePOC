@@ -40,17 +40,17 @@
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue" (ngModelChange)="changeActionPreference()">
 								</p-radioButton>
 							</div>
 							<div class="radio-button" *ngIf="allowReassignResource">
 								<p-radioButton igRadioButton value="reassignUser" label="Reassign"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue" (ngModelChange)="changeActionPreference()">
 								</p-radioButton>
 							</div>
 							<div class="radio-button" *ngIf="allowReassignObject">
 								<p-radioButton igRadioButton value="changeAsset" label="Change the Associated Asset"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue" (ngModelChange)="changeActionPreference()">
 								</p-radioButton>
 							</div>
 							<div class="govern-hr"></div>
@@ -283,7 +283,7 @@
 						igButton
 						(click)="onFormSubmit()"
 						[attr.data-cy]="'CompleteAssignment_Button_Submit'"
-						[disabled]="radioSelectionValue === 'completeForm' && !workflowForm?.valid"
+						[disabled]="(radioSelectionValue === 'completeForm' && !workflowForm?.valid) || !tableRadioSelection"
 						i18n-label
 						label="Submit">
 				</button>
