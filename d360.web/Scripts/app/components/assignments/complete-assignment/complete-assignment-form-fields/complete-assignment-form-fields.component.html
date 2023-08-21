@@ -56,52 +56,70 @@
 			required="{{field.Required}}"
 		></p-calendar>
 		<div *ngSwitchCase="fieldType.List">
-			<select
+			<p-dropdown
 				*ngIf="!field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				style="height: auto; width: 100%"
+				[options]="field.Values"
+				[style]="{'width':'100%'}"
+				appendTo="body"
+				baseZIndex="20000"
 				[(ngModel)]="field.Value"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
+				[filter]="true"
+				filterBy="Text"
+				placeholder="Select {{field.Label}}"
 			>
-				<option></option>
-				<option *ngFor="let opt of field.Values" [value]="opt.Value">
-					{{ opt.Text }}
-				</option>
-			</select>
+				<ng-template pTemplate="item" let-item>
+					{{ item.Text }}
+				</ng-template>
+				<ng-template pTemplate="selectedItem" let-item>
+					{{ item.Text }}
+				</ng-template>
+			</p-dropdown>
 			<p-multiSelect
 				*ngIf="field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				[(ngModel)]="field.Value"
+				appendTo="body"
+				baseZIndex="20000"
 				[options]="field.Values | dropdownItemToSelectItemPipe"
-				[style]="{ width: '100%' }"
-				selectedItemsLabel="{0} items selected"
-				ngDefaultControl
-				required="{{field.Required}}"
-			></p-multiSelect>
+				[(ngModel)]="field.Value"
+				[style]="{'width':'100%'}"
+				[panelStyle]="{'width':'100%'}"
+				required="{{ field.Required }}">
+			</p-multiSelect>
 		</div>
 		<div *ngSwitchCase="fieldType.RelationshipType">
-			<select
+			<p-dropdown
 				*ngIf="!field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				style="height: auto; width: 100%"
+				[options]="field.Values"
+				[style]="{'width':'100%'}"
+				appendTo="body"
+				baseZIndex="20000"
 				[(ngModel)]="field.Value"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
+				[filter]="true"
+				filterBy="Text"
+				placeholder="Select {{field.Label}}"
 			>
-				<option></option>
-				<option *ngFor="let opt of field.Values" [value]="opt.Value">
-					{{ opt.Text }}
-				</option>
-			</select>
+				<ng-template pTemplate="item" let-item>
+					{{ item.Text }}
+				</ng-template>
+				<ng-template pTemplate="selectedItem" let-item>
+					{{ item.Text }}
+				</ng-template>
+			</p-dropdown>
 			<p-multiSelect
 				*ngIf="field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				[(ngModel)]="field.Value"
+				appendTo="body"
+				baseZIndex="20000"
 				[options]="field.Values | dropdownItemToSelectItemPipe"
-				[style]="{ width: '100%' }"
-				selectedItemsLabel="{0} items selected"
-				ngDefaultControl
-				required="{{field.Required}}"
-			></p-multiSelect>
+				[(ngModel)]="field.Value"
+				[style]="{'width':'100%'}"
+				[panelStyle]="{'width':'100%'}"
+				required="{{ field.Required }}">
+			</p-multiSelect>
 		</div>
 		<div *ngSwitchCase="fieldType.Link">
 			<input
