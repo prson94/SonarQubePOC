@@ -84,11 +84,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	private loadSub: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
-		private workflowService: WorkflowService,
-		private linkClickInterceptor: LinkClickInterceptor,
-		private assignmentService: AssignmentService,
-		private cdRef: ChangeDetectorRef,
-		private resourceService: ResourcesService
+				private workflowService: WorkflowService,
+				private linkClickInterceptor: LinkClickInterceptor,
+				private assignmentService: AssignmentService,
+				private cdRef: ChangeDetectorRef,
+				private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -119,8 +119,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.isBulkRespond = false;
 			if (this.onlyAdminReassignMode) {
 				this.radioSelectionValue = 'reassignUser';
-			}
-			else {
+			} else {
 				this.radioSelectionValue = 'completeForm';
 			}
 
@@ -212,7 +211,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.workflowForm.reset();
-		this.closeModal()
+		this.closeModal();
 		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
 	}
 
@@ -356,10 +355,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.userData = res;
 			this.cdRef.markForCheck();
 		});
-	}
-
-	changeActionPreference(): void {
-		this.tableRadioSelection = undefined
 	}
 
 	protected readonly Number = Number;
