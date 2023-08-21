@@ -2558,20 +2558,33 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 					select	@Id,
-							(select i.ID,
-									A.Object, 
-									A.ObjectId,
-									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-									TName.[Name] as TypeName,
+							(select i.Object, 
+									i.ObjectId,
+									i.ObjectName,
+									i.ID as ActionObjectId,
+									i.Name as ActionObjectName,
+									i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
 									'D' as [Action]
 							for json path
 							) as Payload,
 							'R'
 					from	#DeletedRelationships o
-							inner join [Intersect] i on i.Uid = o.uid
-							inner join Asset a on (a.Id = i.SubjectAssetID or a.Id = i.ObjectAssetID)
-							left join AssetDisplayValue d on d.AssetID = a.Id
-							cross apply dbo.getIntersectTypeNames(i.IntersectTypeID) TName;
+							inner join IntersectDetail i on i.Uid = o.uid;
+
+				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+					select	@Id,
+							(select i.Subject as Object, 
+									i.SubjectId as ObjectId,
+									i.SubjectName as ObjectName,
+									i.ID as ActionObjectId,
+									i.Name as ActionObjectName,
+									i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
+									'D' as [Action]
+							for json path
+							) as Payload,
+							'R'
+					from	#DeletedRelationships o
+							inner join IntersectDetail i on i.Uid = o.uid;
 
 				delete	i
 				from	[Intersect] I 
@@ -2595,21 +2608,36 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID
 					where	R.ID is null;
 
+
 				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 					select	@Id,
-							(select o.ID,
-									A.Object, 
-									A.ObjectId,
-									SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
-									TName.[Name] as TypeName,
+							(select i.Object, 
+									i.ObjectId,
+									i.ObjectName,
+									i.ID as ActionObjectId,
+									i.Name as ActionObjectName,
+									i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
 									'A' as [Action]
 							for json path
 							) as Payload,
 							'R'
 					from	#Relationships o
-							inner join Asset a on (a.Id = o.SubjectAssetID or a.Id = o.ObjectAssetID)
-							left join AssetDisplayValue d on d.AssetID = a.Id
-							cross apply dbo.getIntersectTypeNames(o.IntersectTypeID) TName;
+							inner join IntersectDetail i on i.Uid = o.uid;
+
+				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+					select	@Id,
+							(select i.Subject as Object, 
+									i.SubjectId as ObjectId,
+									i.SubjectName as ObjectName,
+									i.ID as ActionObjectId,
+									i.Name as ActionObjectName,
+									i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
+									'A' as [Action]
+							for json path
+							) as Payload,
+							'R'
+					from	#Relationships o
+							inner join IntersectDetail i on i.Uid = o.uid;
 
 				select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
 				union all
@@ -3417,16 +3445,14 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									#region Execution Log
 
-
-
 									string logSql = $@"
 insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	e.Id,
 			(select I.Subject as Object, 
 					I.SubjectId as ObjectId,
 					I.SubjectName as ObjectName,
-					o.IntersectId as ActionObjectId,
-					I.ObjectNameas ActionObjectName,
+					I.Id as ActionObjectId,
+					I.ObjectName as ActionObjectName,
 					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as ActionObjectTypeName,
 					o.IsNew
 			for json path
@@ -3443,7 +3469,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			(select I.Object, 
 					I.ObjectId,
 					I.ObjectName,
-					o.IntersectId as ActionObjectId,
+					I.Id as ActionObjectId,
 					I.SubjectName as ActionObjectName,
 					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as ActionObjectTypeName,
 					o.IsNew

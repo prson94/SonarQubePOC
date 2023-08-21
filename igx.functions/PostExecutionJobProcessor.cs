@@ -219,17 +219,24 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	tt.ID as AuditID,
 			coalesce(f.FieldTypeID, 0),
 			f.FieldName,
-			f.FieldValue,
+			coalesce(fv.FormattedValue, f.FieldValue),
 			pv.[Value] as PreviousValue
 	from	api.ExecutionLog a
 			cross apply openjson(a.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
 			inner join @tbl tt on tt.Object = p.Object and tt.ObjectID = p.ObjectID
 			inner join api.Execution e on e.Id = a.ExecutionId and e.Id = @Id and a.SubTask is null
-			inner join api.ExecutionField f on f.ExecutionID = e.ExecutionID and f.ItemNumber = p.ItemNumber
+			inner join api.ExecutionField f on f.ExecutionID = e.ExecutionID and f.ItemNumber = p.ItemNumber and f.FieldTypeID not in (select ID from FieldType where ID = f.FieldTypeID and [Type] in ('Relationship'))
+			outer apply (
+						select	utility.GetFormattedFieldLookupValueWithMultiple([Type], LookupDisplayFormat, LookupObjectType, LookupObjectID, f.LookupValue, AllowMultipleValues) as FormattedValue
+						from	FieldType
+						where	ID = f.FieldTypeID
+								and [Type] = 'Lookup'
+								and ISNUMERIC(f.LookupValue) = 1
+						) fv
 			outer apply {previousValueCrossApplySql("p.Object", "p.ObjectId", "f.FieldName")} pv
-	where	pv.Value is null or (coalesce(f.LookupValue, f.FieldValue) <> pv.Value);";
+	where	pv.Value is null or (coalesce(fv.FormattedValue, f.FieldValue) <> pv.Value);";
 
-									// Record the relationship chanegs via any relation fields on the assets above.
+									// Record the relationship changes via any relation fields on the assets above.
 									commandText += $@"
 {insertStatement}
 	select	p.Object, 
@@ -238,15 +245,24 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			@r, 
 			@dt, 
 			mv.[Version],
-			iif(p.[Action] = 'D', 'Deleted', 'Created'), 
+			case p.[Action]
+				when 'D' then 'Deleted'
+				when 'U' then 'Updated'
+				else 'Created'
+			end, 
 			'Intersect',
-			p.IntersectId,
-			p.TypeName, 
-			'Relationship', 
-			'This relationship has been ' + iif(p.[Action] = 'D', 'removed', 'created') + '.' 
+			p.ActionObjectId,
+			p.ActionObjectTypeName, 
+			coalesce(p.ActionObjectName, 'Relationship'), 
+			'This relationship has been ' + 
+			case p.[Action]
+				when 'D' then 'deleted'
+				when 'U' then 'updated'
+				else 'created'
+			end	 + '.' 
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id
-			cross apply openjson(l.Payload) with (IntersectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250), [Action] char(1)) p 
+			cross apply openjson(l.Payload) with (ActionObjectId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectName nvarchar(max), ActionObjectTypeName nvarchar(250), [Action] char(1)) p 
 			{maxVersionSql("p.Object", "p.ObjectId")}
 	where	l.SubTask = 'R';";
 
@@ -282,7 +298,7 @@ SET		F.FormattedValue = FT.FormattedValue
 from	Field F
 		inner join #formattedValues FT on FT.FieldTypeID = F.FieldTypeID and F.[Value] = FT.ObjectId;";
 
-									// Gett the list of asset/field combinations we updated above to record history for them.
+									// Get the list of asset/field combinations we updated above to record history for them.
 									commandText += $@"
 select	F.AssetID,
 		A.Object,
@@ -493,7 +509,7 @@ insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
 									actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
 									commandText = $@"
 insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-	select	'ObjectIndex', '{actionText}', p.Object, p.ObjectId, @dt, p.AssetId
+	select	'ObjectIndex', '{actionText}', p.Object, p.ObjectId, @dt, coalesce(p.AssetId, 0)
 	from	api.ExecutionLog l
 			cross apply openjson(l.Payload) with (AssetId bigint, Object varchar(50), ObjectId int) p
 	where	l.ExecutionId = @Id;";
