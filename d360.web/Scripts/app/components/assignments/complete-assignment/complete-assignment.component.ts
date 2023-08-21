@@ -212,6 +212,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.workflowForm.reset();
+		this.closeModal()
 		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
 	}
 

@@ -1,19 +1,7 @@
 <d3s-modal #modal
 		   [showTitle]="false"
 		   [isVisible]="isModalVisible"
-		   [showActionBar]="true"
-		   [confirmButtonLabel]="'Submit'"
-		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
-		   [secondaryButtonDisabled]="radioSelectionValue === 'completeForm' && !workflowForm?.valid"
-		   [discardForm]="discardForm"
-		   (onClose)="discardForm ? discardFormFunc() : closeModal()"
-		   (onConfirm)="onFormSubmit()"
-		   [closePopupOnConfirm]="false"
-		   [showBack]="isBulkRespond"
-		   (onBack)="onBack()"
-		   (onCloseClick)="onCloseClick()"
-		   i18n-backButtonLabel
-		   backButtonLabel="Back to Assignment Selection"
+		   [showActionBar]="false"
 		   [additionalClasses]="'xlarge-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
@@ -273,6 +261,32 @@
 					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
 					</d3s-assignment-information>
 				</div>
+			</div>
+			<div class="action-bar">
+				<button class="left ig-button-secondary"
+						igButton
+						type="button"
+						(click)="discardForm ? discardFormFunc() : closeModal();onCloseClick()"
+						[attr.data-cy]="'CompleteAssignment_Button_Cancel'"
+						i18n-label
+						label="{{discardForm ? 'Discard Form' : 'Close'}}">
+				</button>
+				<span class="grow"></span>
+				<button *ngIf="isBulkRespond" class="right ig-button-secondary"
+						igButton style="margin-right:8px"
+						(click)="onBack()"
+						[attr.data-cy]="'CompleteAssignment_Button_Back'"
+						i18n-label
+						label="Back to Assignment Selection">
+				</button>
+				<button class="right ig-button-primary"
+						igButton
+						(click)="onFormSubmit()"
+						[attr.data-cy]="'CompleteAssignment_Button_Submit'"
+						[disabled]="radioSelectionValue === 'completeForm' && !workflowForm?.valid"
+						i18n-label
+						label="Submit">
+				</button>
 			</div>
 		</div>
 		<div class="side-panel">
