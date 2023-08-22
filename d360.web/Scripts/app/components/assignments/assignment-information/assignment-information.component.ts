@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
 
@@ -38,7 +38,8 @@ export class AssignmentInformationComponent {
 		return this._workflowItemUid;
 	}
 
-	constructor(private workflowService: WorkflowService) {
+	constructor(private workflowService: WorkflowService,
+		private cdRef: ChangeDetectorRef) {
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {
@@ -47,6 +48,7 @@ export class AssignmentInformationComponent {
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.isAssignmentItemLoading = false;
 			this.assignmentItem = response;
+			this.cdRef.markForCheck();
 		});
 	}
 
@@ -66,6 +68,7 @@ export class AssignmentInformationComponent {
 							this.workflowStepDetail = response;
 							this.isWorkflowStepDetailLoading = false;
 						});
+						this.cdRef.markForCheck();
 						break;
 					}
 				}

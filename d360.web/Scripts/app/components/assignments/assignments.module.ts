@@ -166,7 +166,8 @@ import { AssignmentAssetListComponent } from './assignment-asset-list/assignment
 	exports: [
 		AssignmentListComponent,
 		AssignmentProgressStepDetailsComponent,
-		CompleteAssignmentComponent
+		CompleteAssignmentComponent,
+		AssignmentInformationComponent
 	],
 	imports: [
 		AdvancedFiltersModule,

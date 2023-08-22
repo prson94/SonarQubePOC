@@ -379,13 +379,17 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
-		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemUid)
+		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
-			dbArgs.Add("workflowItemUid", workflowItemUid);
+			dbArgs.Add("workflowItemStepUid", workflowItemStepUid);
 
 			var sql = @"
+				declare @workflowItemUid uniqueidentifier = (select top 1 wi.UID from workflow.Item wi
+				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
+				where wis.UID = @workflowItemStepUid)
+
 				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
 				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
 				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
@@ -393,7 +397,8 @@ namespace d360.model.DataAccessLayer
 				select 
 				case when @doesExists is not null then 1 else 0 end as [exists], 
 				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
-				case when @hasAccess is not null then 1 else 0 end as [hasAccess]";
+				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
+				@workflowItemUid as workflowItemUid";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
 		}

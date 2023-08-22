@@ -756,13 +756,13 @@ namespace d360.web.Controllers.V2
 		/// <returns></returns>
 		[
 			HttpGet,
-			Route("assignments/{workflowItemUid}/state"),
+			Route("assignments/{workflowItemStepUid}/state"),
 			SwaggerProduces("application/json"),
 			ApiExplorerSettings(IgnoreApi = false)
 		]
-		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemUid)
+		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
-			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemUid));
+			return Ok(await workflowRepository.GetAssignmentStateForCurrentUser(workflowItemStepUid));
 		}
 
 		/// <summary>

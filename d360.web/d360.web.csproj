@@ -25,7 +25,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>
+	<IISExpressSSLPort>
     </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
@@ -1128,7 +1128,6 @@
     </Compile>
     <Compile Include="Models\Attributes\NonNullableParametersAttribute.cs" />
     <Compile Include="Models\ClientErrorModel.cs" />
-    <Compile Include="Models\ClientUserModel.cs" />
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\FeatureFlagUser.cs" />
