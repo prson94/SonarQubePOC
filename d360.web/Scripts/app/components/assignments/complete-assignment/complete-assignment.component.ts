@@ -31,6 +31,8 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { JsonResult } from '../../../models/jsonresult.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 
+/*global $localize*/
+
 @Component({
 	selector: 'd3s-complete-assignment',
 	templateUrl: './complete-assignment.component.html',
