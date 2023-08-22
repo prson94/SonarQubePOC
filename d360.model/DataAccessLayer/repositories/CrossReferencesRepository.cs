@@ -111,7 +111,8 @@ namespace d360.model.DataAccessLayer
             {
                 await CompanyContext.ImportCrossReferencesAsync(execution, models);
 				results = await CompanyContext.GetExecutionCrossReferenceResultsAsync(execution.ExecutionID);
-            }
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostCrossReferences);
+			}
             catch (Exception ex)
             {
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
@@ -171,7 +172,6 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.PostCrossReferences,
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
@@ -209,8 +209,7 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = execution.ExecutionID,
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.PostCrossReferences
-
+                Action = execution.Action
             };
 
             try

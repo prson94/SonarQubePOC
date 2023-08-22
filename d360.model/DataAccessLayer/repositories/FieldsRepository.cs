@@ -2300,9 +2300,8 @@ namespace d360.model.DataAccessLayer
 			{
 				CompanyID = Company.CurrentCompanyID,
 				CompanyDomainPrefix = Company.CurrentCompanyDomain,
-				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.DeleteFieldTypes
+				ExecutionID = execution.ExecutionID,
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, null, StorageProvider, QueueSource).ConfigureAwait(false);

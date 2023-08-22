@@ -32,19 +32,19 @@ namespace d360.model.DataAccessLayer
         
         dynamic GetFieldTypes(Guid assetTypeUid);
 
-        List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false);
+        List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
         
         Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
         
-        List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForField = false);
+        List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
         Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
         
-        List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true);
+        List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true);
         
         Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
         
-        Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true);
+        Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true);
         
         Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
         
@@ -86,7 +86,7 @@ namespace d360.model.DataAccessLayer
        
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         
-        List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
+        List<DatabaseBulkAssetTypeResult> DeleteAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
         
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
         

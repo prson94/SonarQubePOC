@@ -64,7 +64,7 @@ namespace igx.jobs.bulkloadprocessor
 
 
 				var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);
-				if (execution != null && execution.Method == BulkMethodName)
+				if (execution != null && (execution.Action == d360.core.queue.ApiExecutionAction.PostAssets || execution.Action == d360.core.queue.ApiExecutionAction.PutAssets))
 				{
 					var load = company.Loads.FirstOrDefault(l => l.PutExecutionID == info.ExecutionID || l.PostExecutionID == info.ExecutionID);
 

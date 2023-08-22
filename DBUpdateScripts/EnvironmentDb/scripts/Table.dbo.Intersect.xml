@@ -137,131 +137,22 @@ end
 	</rollback>
   </changeSet>
 
+ <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterDelete-v2">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterDelete]
+  </sql>
+ </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Intersect-Columns-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'Subject')
-begin
-	alter table [dbo].[Intersect] drop column Subject;
-end
+ <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterInsert-v4">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterInsert]
+  </sql>
+ </changeSet>
 
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'SubjectID')
-begin
-	alter table [dbo].[Intersect] drop column SubjectID;
-end
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'Object')
-begin
-	alter table [dbo].[Intersect] drop column Object;
-end
-
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'ObjectID')
-begin
-	alter table [dbo].[Intersect] drop column ObjectID;
-end
-]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-  
-  
-  <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterDelete]
-   ON  [dbo].[Intersect] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	declare @ot varchar(50) = 'Intersect'
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select	'ObjectIndex',
-				'D', 
-				@ot, 
-				ID
-		from	deleted;
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="vlova" id="Table.dbo.Intersect-Intersect_AfterInsert-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterInsert]
-	ON [dbo].[Intersect]
-	FOR INSERT
-AS
-BEGIN
-	SET NOCOUNT ON;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		select 'Add', [queue].WriteIndexXml('', A.Object, A.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
-		left outer join [dbo].[Asset] A on I.SubjectAssetID = A.ID
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		select 'Add', [queue].WriteIndexXml('', A.Object, A.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
-		left outer join [dbo].[Asset] A on I.ObjectAssetID = A.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="vlova" id="Table.dbo.Intersect-Intersect_AfterUpdate-v3">
-    <comment>GOV-11623</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterUpdate]
-	ON [dbo].[Intersect]
-	FOR UPDATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		select 'Update', [queue].WriteIndexXml('', A.Object, A.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
-		left outer join [dbo].[Asset] A on I.SubjectAssetID = A.ID
-
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-		select 'Update', [queue].WriteIndexXml('', A.Object, A.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
-		left outer join [dbo].[Asset] A on I.ObjectAssetID = A.ID
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterUpdate-v4">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterUpdate]
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
