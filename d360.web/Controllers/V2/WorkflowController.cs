@@ -420,7 +420,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = false)
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetWorkflowAssignments(CancellationToken cancellationToken)
 		{
@@ -589,7 +589,7 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowItemDetails)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow item details failed.", typeof(WorkflowItemDetails)),
-			ApiExplorerSettings(IgnoreApi = false)
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetWorkflowItemDetails(Guid workflowItemUid)
 		{
