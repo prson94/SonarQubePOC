@@ -2068,6 +2068,7 @@ from	processexpandeddata ped
 			if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
 			{
 				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+				value = GetEscapedFilterString(value);
 
 				if (!string.IsNullOrEmpty(value))
 				{
@@ -2076,8 +2077,9 @@ from	processexpandeddata ped
 						switch (f.SqlFieldType)
 						{
 							case SqlFieldType.Text:
+								var textvalue = value + "%";
 								wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
-								dbs.Add($"@S_{f.ApiName}", value + "%");
+								dbs.Add($"@S_{f.ApiName}", textvalue.Replace("%%", "%"));
 								break;
 							case SqlFieldType.Boolean:
 								bool filterBool;

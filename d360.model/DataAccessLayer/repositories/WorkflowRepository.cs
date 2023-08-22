@@ -386,17 +386,22 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("workflowItemStepUid", workflowItemStepUid);
 
 			var sql = @"
-				declare @workflowItemUid uniqueidentifier = (select top 1 wi.UID from workflow.Item wi
-				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
-				where wis.UID = @workflowItemStepUid)
+				declare @workflowItemUid uniqueidentifier,
+				@CompletedOn datetime,
+				@id bigint;
 
-				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
-				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
-				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
+				select top 1 @workflowItemUid = wi.UID,
+				@CompletedOn = wi.CompletedOn,
+				@id = wi.ID
+				from workflow.Item wi
+				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
+				where wis.UID = @workflowItemStepUid;
+
+				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @ID and wia.ResourceObjectID = @resourceId);
 
 				select 
-				case when @doesExists is not null then 1 else 0 end as [exists], 
-				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
+				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
+				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
 				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
 				@workflowItemUid as workflowItemUid";
 
@@ -1259,12 +1264,14 @@ namespace d360.model.DataAccessLayer
 										,V.ID AS VersionId
 										,V.uid AS VersionUid
 										,V.Version as Version
+									into #tempassignments
 									FROM workflow.Type T
-															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
-															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
-															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
-															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
-															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
+									INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
+									inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
+									INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+									inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
+									inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id
+									option (recompile)";
 
 			var actionSelects = $@"WA.workflowItemUid, 
 								WA.workflowUid, 
@@ -1337,7 +1344,7 @@ namespace d360.model.DataAccessLayer
 							";
 
 			var actionJoins = $@"FROM 
-							assignments WA
+							#tempassignments WA
 							INNER JOIN 
 							Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
 							INNER JOIN 
@@ -1358,7 +1365,7 @@ namespace d360.model.DataAccessLayer
 						{whereConditions}";
 
 			var assetJoins = $@"FROM
-								assignments WA
+								#tempassignments WA
 								LEFT JOIN 
 								Asset A on WA.Object=A.object and WA.ObjectID= A.objectID and WA.Object <> 'Issue'
 								LEFT JOIN 
@@ -1378,7 +1385,7 @@ namespace d360.model.DataAccessLayer
 								{whereConditions}
 								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
 
-			var relationshipJoins = $@"FROM assignments WA
+			var relationshipJoins = $@"FROM #tempassignments WA
 								INNER JOIN 
 								[Intersect] I on WA.Object= 'Intersect' and WA.ObjectID=  I.ID 
 								left join asset a on a.ID = -1
@@ -1397,64 +1404,74 @@ namespace d360.model.DataAccessLayer
 			var assigmentsSQL = $@"SELECT
 							{actionSelects}
 							{actionJoins}
-						union
+						union all
 						SELECT
 							{assetSelects}
 							{assetJoins}
-						union 
+						union all
 						SELECT 
 							{relationshipSelects}
 							{relationshipJoins}";
 
 			string outerOrderBySql = orderBySql.Replace("AssignedUsers.value", "assigneesJson");
-			var sql = $@"
-						with assignments as (
-								{coreSelects}
-							)
-						select * from 
+
+			var basesql = $@"
+						drop table if exists #tempassignments;
+						drop table if exists #tempfinal;
+						{coreSelects}
+						
+						select AssignmentList.* 
+						into #tempfinal
+						from 
 						(
-							
 							{assigmentsSQL}
 						) AssignmentList
+						option (recompile);
+						";
+
+			var sql = $@"
+						select * from #tempfinal AssignmentList
 						{outerOrderBySql}
 						{offset}";
 
-			var countSQL = $@"							
-							with assignments as (
-									{coreSelects}
-							)
-							SELECT 
-								count(1)
-							from
-							(									
-								{assigmentsSQL}
-							) AssignmentList";
+			var countSQL = $@"
+							SELECT count(1)
+							from #tempfinal AssignmentList";
 
 			if (hasActionFilter)
 			{
-				sql = $@"
-						with assignments as (
-							{coreSelects}
-						)
-						SELECT
+				basesql = $@"
+						drop table if exists #tempassignments;
+						drop table if exists #tempfinal;
+						{coreSelects}
+						
+						select IDENTITY(INT,1,1) AS _rowseq, 
 						{actionSelects}
+						into #tempfinal
 						{actionJoins}
 						{orderBySql}
+						option (recompile);
+						";
+
+				sql = $@"
+						SELECT *
+						from #tempfinal
+						order by _rowseq
 						{offset}";
 
 				countSQL = $@"
-							with assignments as (
-								{coreSelects}
-								)
-								SELECT
-								COUNT(1)
-								{actionJoins}
+							SELECT COUNT(1) from #tempfinal;
 							";
 			}
 
+			var droptemptable = $@"
+				drop table if exists #tempassignments;
+				drop table if exists #tempfinal;
+			";
+
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
 
-			var multiSQL = $"{sql}; {countSQL}";
+			var multiSQL = $" {basesql} {sql}; {countSQL} {droptemptable}";
 
 			using (var multi = await CompanyContext.Database.Connection.QueryMultipleAsync(
 				  new CommandDefinition(multiSQL,
@@ -1531,9 +1548,23 @@ namespace d360.model.DataAccessLayer
 						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
 						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
 						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object = A.object and WI.ObjectID = A.objectID) or (WI.Object = 'Issue' and A.Id = I.AssetId)
+						outer apply (select aat.uid,aat.AssetTypeID,aat.ID
+									from Asset aat
+									where WI.Object <> 'Issue' and WI.Object = aat.object and WI.ObjectID = aat.objectID
+									union all
+									select ait.uid ,ait.AssetTypeID,ait.ID
+									from Asset ait
+									where trim(WI.Object) = 'Issue' and ait.Id = I.AssetId
+									) A
 						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
-						left join workflow.EventRegistration WER on T.ID = WER.TypeID and (WER.AssetTypeID = AST.ID or WER.IssueTypeID = iT.ID)
+						outer apply (select WERAT.ChangeType 
+									 from workflow.EventRegistration WERAT
+									 where WERAT.TypeID = T.ID and WERAT.AssetTypeID = AST.ID
+									 union all
+									 select WERIT.ChangeType 
+									 from workflow.EventRegistration WERIT
+									 where WERIT.TypeID = T.ID and WERIT.IssueTypeID = IT.ID
+									 ) WER
 						LEFT JOIN AssetPath AP on A.ID=AP.ID
 						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
 						where WI.UID = @workflowItemUid";
