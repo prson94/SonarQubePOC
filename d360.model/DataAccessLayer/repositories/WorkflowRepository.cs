@@ -1190,9 +1190,17 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ WA.[StartedOn] AS datetime)");
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"StartedOn");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "asc");
-			var orderBySql = $" order by cast({orderColumn} as nvarchar(850)) {orderDirection} ";
+			var orderBySql = "";
+			if (orderColumn.ToLowerInvariant().In("startedon", "completedon"))
+			{
+				orderBySql = $" order by TRY_CAST(+ WA.[{orderColumn}] AS datetime) {orderDirection} ";
+			}
+			else
+			{
+				orderBySql = $" order by cast({orderColumn} as nvarchar(850)) {orderDirection} ";
+			}
 
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
 			int pageSize = CompanyContext.ParsePageSize(queryParams);
