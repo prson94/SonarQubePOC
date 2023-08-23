@@ -123,6 +123,7 @@ namespace igx.functions.databasetaskprocessor
                             select  T.* 
                             from    [queue].[Task] T
                                     inner join @IDs S on S.ID = T.ID
+                            order by T.[Date]
                             ";
 
                         List<QueueTask> queueItems = null;
