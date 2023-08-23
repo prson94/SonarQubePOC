@@ -133,6 +133,13 @@
 											</td>
 										</tr>
 									</ng-template>
+									<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+										<d3s-grid-selection-info [includeSelectLinks]="false"
+																 [afterPagingInfo]="false"
+																 [model]="assignments"
+																 [selection]="selected">
+										</d3s-grid-selection-info>
+									</ng-template>
 								</p-table>
 							</div>
 						</div>
