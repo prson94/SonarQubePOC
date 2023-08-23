@@ -19,6 +19,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -589,12 +590,13 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, string applicationId = null)
+        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, string applicationId = null, ApiExecutionAction action = ApiExecutionAction.Miscellaneous)
         {
             var execution = new ApiExecution
             {
                 ExecutionID = Guid.NewGuid(),
                 StartedOn = DateTime.UtcNow,
+				Action = action,
                 Route = Request?.RequestUri?.LocalPath,
                 Method = Request?.Method?.Method,
                 ResourceID = Company.CurrentResourceID,

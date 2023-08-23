@@ -1,5 +1,5 @@
 ﻿using igx.functions.consumption.TelemetryInitializers;
-
+using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +12,9 @@ namespace igx.functions.consumption
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.Services.AddSingleton<ITelemetryInitializer, ExceptionToResponseCodeInitializer>();
+			builder.Services.AddSingleton<TelemetryClient>();
+			builder.Services.AddSingleton<ITelemetryInitializer, ExceptionToResponseCodeInitializer>();
+			builder.Services.AddSingleton<ITelemetryInitializer, InjectCustomPropertiesInitializer>();
         }
-    }
+	}
 }

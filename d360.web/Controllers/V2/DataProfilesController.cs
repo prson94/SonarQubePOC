@@ -425,7 +425,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
             }
 
-            var execution = getApiExecution(models.Count);
+            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
             var results = await DataProfiles.UpsertAsync(models, execution, true);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
@@ -465,7 +465,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.DataProfileRecordsLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString(), MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
             }
 
-            var execution = getApiExecution(models.Count);
+            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PutDataProfile);
             var results = await DataProfiles.UpsertAsync(models, execution, false);
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
@@ -491,7 +491,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
         {
-            var execution = getApiExecution(1);
+            var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
             if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
             {
 				return await sendConflictNotAccessible();
@@ -561,7 +561,7 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 
 			var prefix = "DataProfiles.PostDataProfiles => ";
-			var execution = getApiExecution(1);
+			var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
 
 			try
 			{
@@ -698,7 +698,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            var execution = getApiExecution(models.Count);
+            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
             ApiExecutionInfo executionInfo = await DataProfiles.PostBatchDataProfiles(models, execution);
 			return await sendExecutionProcessingResponse(executionInfo);
         }
@@ -734,7 +734,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            var execution = getApiExecution(models.Count);
+            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostDataProfile);
             ApiExecutionInfo executionInfo = await DataProfiles.PutBatchDataProfiles(models, execution);
 			return await sendExecutionProcessingResponse(executionInfo);
         }
@@ -761,7 +761,7 @@ namespace d360.web.Controllers.V2
 				return await sendConflictNotAccessible();
 			}
 
-			var execution = getApiExecution(models.Count);
+			var execution = getApiExecution(models.Count, action: ApiExecutionAction.DeleteDataProfile);
             ApiExecutionInfo executionInfo = await DataProfiles.DeleteBatchDataProfiles(models, execution);
 			return await sendExecutionProcessingResponse(executionInfo);
         }

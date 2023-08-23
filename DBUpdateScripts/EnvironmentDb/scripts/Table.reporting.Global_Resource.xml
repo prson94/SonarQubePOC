@@ -5,11 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.reporting.Global_Resource-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+  <changeSet author="Pappas" id="Table.reporting.Global_Resource-v1.0">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Global_Resource')
 BEGIN
@@ -29,217 +26,39 @@ BEGIN
 END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterDelete-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterDelete]
-	ON [reporting].[Global_Resource]
-	FOR DELETE
-AS
+ <changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterDelete-v2">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterDelete]
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v7">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterUpsert]
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Indices.reporting.Global_Resource-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ReportingGlobalResource_Uid')
 BEGIN
-	SET NOCOUNT ON;
-
-	delete Asset
-	where Object = 'Resource' and ObjectID in (select ResourceID from deleted);
+	CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v6">
-  <comment>GOV-18610</comment>  
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
-	ON [reporting].[Global_Resource]
-	FOR INSERT, UPDATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-			merge	dbo.Asset as T
-			using	(
-					SELECT	T.ID as AssetTypeID, 
-							1 as [State], 
-							O.ResourceID as SourceID, 
-							'Resource' as Object, 
-							O.ResourceID as ObjectID,
-							O.[uid]
-					FROM	inserted O
-							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
-					) as S
-			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
-			when	matched then
-			update	set
-					T.[uid] = S.[uid],
-					T.UpdatedOn = getutcdate(),
-					T.UpdatedBy = 0
-			when not matched by target then
-			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
-			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
-			
-		
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT 'ObjectIndex', 
-				'D',
-				A.Object, 
-				A.ObjectID,
-				A.ID
-		FROM inserted O INNER JOIN [dbo].[Asset] A
-		ON O.ResourceID = A.ObjectID AND 'Resource' = A.Object
-		WHERE O.State <> 1;
-END
-		]]>
-    </sql>
-	<rollback>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
-	ON [reporting].[Global_Resource]
-	FOR INSERT, UPDATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-			merge	dbo.Asset as T
-			using	(
-					SELECT	T.ID as AssetTypeID, 
-							1 as [State], 
-							O.ResourceID as SourceID, 
-							'Resource' as Object, 
-							O.ResourceID as ObjectID,
-							O.[uid]
-					FROM	inserted O
-							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
-					) as S
-			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
-			when	matched then
-			update	set
-					T.[uid] = S.[uid],
-					T.UpdatedOn = getutcdate(),
-					T.UpdatedBy = 0
-			when not matched by target then
-			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
-			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
-			
-		merge	graph.AssetNode as T
-		using	(
-				SELECT A.ID, O.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, O.[State], coalesce(O.UpdatedOn, getutcdate()) as UpdatedOn
-				FROM	inserted O
-				INNER JOIN Asset A ON A.uid = O.uid
-				INNER JOIN AssetType AT on a.AssetTypeID = AT.ID
-				) S
-		on		(T.ID = S.ID)
-		when	matched then
-		update	set
-					T.[uid] = S.[uid],
-					T.UpdatedOn = S.UpdatedOn,
-					T.State = S.State
-		when not matched by target then
-		INSERT	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-		values	(S.ID, S.[Uid], S.AssetTypeID, S. AssetTypeUid, S.State, S.UpdatedOn);
-			
-		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT 'ObjectIndex', 
-				'D',
-				A.Object, 
-				A.ObjectID,
-				A.ID
-		FROM inserted O INNER JOIN [dbo].[Asset] A
-		ON O.ResourceID = A.ObjectID AND 'Resource' = A.Object
-		WHERE O.State <> 1;
-END
-		]]>
-    </sql>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Table.reporting.Global_Resource-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
-		]]>
-    </sql>
-	<rollback>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-
-		]]>
-    </sql>
-	</rollback>
-  </changeSet>
-
-   <changeSet author="Puneet Gupta" id="Index.reporting.Global_Resource-v1">
-   <comment>GOV-16460</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_CreatedOn')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Reporting_Global_Resource_CreatedOn] ON [reporting].[Global_Resource] ([CreatedOn])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_CreatedOn')
-BEGIN
-	DROP INDEX [IX_Reporting_Global_Resource_CreatedOn] ON [reporting].[Global_Resource]
-END
-		]]>
-	</rollback>
-	</changeSet> 
 
-   <changeSet author="Puneet Gupta" id="Index.reporting.Global_Resource-v2">
-   <comment>GOV-16678</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_Email')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Reporting_Global_Resource_Email] ON [reporting].[Global_Resource] ([Email])
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_Reporting_Global_Resource_Email')
-BEGIN
-	DROP INDEX [IX_Reporting_Global_Resource_Email] ON [reporting].[Global_Resource]
-END
-		]]>
-	</rollback>
+]]>
+  </sql>
+ </changeSet>
 
-	</changeSet> 
 </databaseChangeLog>

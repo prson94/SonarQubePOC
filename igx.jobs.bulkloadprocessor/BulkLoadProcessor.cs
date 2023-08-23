@@ -61,6 +61,7 @@ namespace igx.jobs.bulkloadprocessor
 				var relationshipRepository = new RelationshipRepository(community, company, queue, storage);
 
 				#endregion
+				
 				try
 				{
 					var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);
@@ -438,8 +439,6 @@ namespace igx.jobs.bulkloadprocessor
 				throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
 			}
 
-			List<AssetEventInfo> assetEvents = new List<AssetEventInfo>();
-
 			using (var trans = company.BeginTransaction())
 			{
 				try
@@ -507,21 +506,6 @@ when not matched then
 insert	(AssetTypeID, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
 values	(G.AssetTypeID, 'Group', G.ID, G.UpdatedOn, G.UpdatedBy, G.UpdatedOn, G.UpdatedBy);", transaction: trans);
 
-					var results = company.Query<Guid>(@"
-select a.uid
-from asset a
-inner join #GroupInsertResult I on a.[object] = 'Group' and I.ID = a.ObjectID", transaction: trans);
-
-					foreach (var result in results)
-					{
-						assetEvents.Add(new AssetEventInfo
-						{
-							CompanyID = companyID,
-							Uid = result,
-							Type = AssetEventType.Node
-						});
-					}
-
 					company.Execute(@"
 update	T
 set		T.GroupID = S.ID,
@@ -543,7 +527,6 @@ set		Status = 0,
 		StatusMessage = 'No user found with this email address. '
 where	UserID is null;", transaction: trans);
 
-
 					company.Execute($@"
 merge       AssetDisplayValue as T
 using       (
@@ -560,8 +543,7 @@ using       (
 on          ( T.AssetID = S.ID )
 when		not matched by target then
 insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
-values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());"
-, transaction: trans);
+values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());", transaction: trans);
 
 					company.Execute(@"
 merge into	[ResourceGroup] as T
@@ -627,21 +609,9 @@ from	LoadItem T
 				}
 				catch
 				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-						throw;
-					}
-					catch 
-					{ 
-						//do nothing
-					}
+					trans.Rollback();
 				}
 			}
-			SendAssetGraphEvents(assetEvents);
 		}
 
 		private static void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
@@ -662,8 +632,6 @@ from	LoadItem T
 			{
 				throw new Exception($"Bulk load data does not contain the correct number of columns in LoadColumn table.  Load ID [{loadId}]");
 			}
-
-			List<AssetEventInfo> assetEvents = new List<AssetEventInfo>();
 
 			var usersToLoad = company.Query<CommunityUserAddModel>(@"
 select	I.LoadID,
@@ -720,7 +688,7 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
 
 			#region Process in Community database.
 
-			using (var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION))
+			using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
 			{
 				community.Open();
 				using (var trans = community.BeginTransaction())
@@ -802,7 +770,8 @@ set		Success = 0,
         Message = Message + 'User does not have a valid last name; '
 where   [LastName] is null or [LastName] = '';", transaction: trans);
 
-						string inclause = String.Join(",", CompanyResourceState.Active.GetList().Select(s => "'" + s.Name + "'"));
+						string inclause = string.Join(",", CompanyResourceState.Active.GetList().Select(s => "'" + s.Name + "'"));
+						
 						community.Execute(@"update	#Users
 set		Success = 0,
         Message = Message + 'User does not have a valid status; '
@@ -903,18 +872,7 @@ where	T.Success = 1", transaction: trans);
 					}
 					catch
 					{
-						try
-						{
-							if (trans != null)
-							{
-								trans.Rollback();
-							}
-							throw;
-						}
-						catch 
-						{ 
-							//do nothing
-						}
+						trans.Rollback();
 					}
 				}
 			}
@@ -1030,19 +988,6 @@ when not matched by target then
     insert  ([uid], ResourceID, LastName, FirstName, Email, [State], IsAdministrator)
     values  (S.[uid], S.ResourceID, S.LastName, S.FirstName, S.Email, S.[State], 0);", transaction: trans);
 
-					var results = company.Query<Guid>("select uid from #Users where	Success = 1", transaction: trans);
-
-					foreach (var result in results)
-					{
-						assetEvents.Add(new AssetEventInfo
-						{
-							CompanyID = companyID,
-							Uid = result,
-							Type = AssetEventType.Node
-						});
-					}
-
-
 					company.Execute(@"exec [bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId }, transaction: trans);
 
 					company.Execute(@"
@@ -1093,18 +1038,9 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 				}
 				catch
 				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-						throw;
-					}
-					catch { }
+					trans.Rollback();
 				}
 			}
-			SendAssetGraphEvents(assetEvents);
 
 			#endregion
 		}
@@ -1441,28 +1377,6 @@ where LI.LoadID = @loadId"
 			{
 				CoreFunction.AITrackException(functionName, ex, company.CurrentCompanyID);
 			}
-		}
-
-		static void executeWithTry(SqlConnection companyConnection, string sql, int companyID, int timeout = 1200)
-		{
-			try
-			{
-				companyConnection.Execute(sql, null, null, timeout);
-			}
-			catch (Exception ex)
-			{
-				CoreFunction.AITrackException(functionName, ex, companyID);
-			}
-		}
-
-		private static void SendAssetGraphEvents(IEnumerable<AssetEventInfo> events, bool delayedDelivery = false)
-		{
-			if (events.Any())
-			{
-				var queue = new AzureQueueSource();
-				queue.CreateTopicMessages(Config.GetValue<string>("AssetBusTopicName"), events.ToList(), delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
-			}
-
 		}
 	}
 }

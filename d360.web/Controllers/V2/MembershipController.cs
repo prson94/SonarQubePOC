@@ -18,6 +18,7 @@ using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Views;
 using d360.core.enums;
+using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
@@ -979,7 +980,7 @@ namespace d360.web.Controllers.V2
 					});
 				}
 
-				var execution = getApiExecution(users.Count);
+				var execution = getApiExecution(users.Count, action: ApiExecutionAction.DeleteUsers);
 				var result = membershipRepository.DeleteResources(execution, resources);
 
 				if (result.StatusCode != HttpStatusCode.OK)
@@ -1049,7 +1050,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var execution = getApiExecution(users.Count);
+				var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 				var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
 				
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
@@ -1109,7 +1110,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
 			}
 
-			var execution = getApiExecution(users.Count);
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 
 			UserUpsertModel model = new UserUpsertModel
 			{
@@ -1224,7 +1225,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var execution = getApiExecution(users.Count);
+				var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 				var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust).ConfigureAwait(false);
 				
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
@@ -1289,7 +1290,7 @@ namespace d360.web.Controllers.V2
 
 			users.ForEach(u => u.IsNew = false);
 
-			var execution = getApiExecution(users.Count);
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
 
 			UserUpsertModel model = new UserUpsertModel
 			{
@@ -1521,7 +1522,7 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
 			}
 
-			var execution = getApiExecution(groups.Count);
+			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.DeleteGroups);
 			var result = membershipRepository.DeleteGroups(execution, groups);
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
@@ -1582,7 +1583,7 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
 			}
 
-			var execution = getApiExecution(groups.Count);
+			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
 			var result = membershipRepository.UpdateGroups(execution, groups);
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -1628,7 +1629,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var execution = getApiExecution(groups.Count);
+			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PostGroups);
 			var result = membershipRepository.AddGroups(execution, groups);
 			Company.CreateOrUpdateTypeDisplayValuesAsync(1, SystemObjects.GroupType.ToString());
 

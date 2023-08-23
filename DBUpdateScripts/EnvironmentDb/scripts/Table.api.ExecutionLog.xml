@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.api.ExecutionLog-v1.02">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionLog')
+BEGIN
+	CREATE TABLE [api].[ExecutionLog](
+		Id bigint identity not null,
+		[ExecutionId] int not null,
+		Payload nvarchar(max) not null,
+		SubTask char(1) null,
+		CONSTRAINT [PK_ApiExecutionLog] PRIMARY KEY CLUSTERED ( Id asc )
+	)
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.api.ExecutionLog.Indices-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionLog_ExecutionId')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionLog_ExecutionId] ON [api].[ExecutionLog] ( [ExecutionId] DESC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

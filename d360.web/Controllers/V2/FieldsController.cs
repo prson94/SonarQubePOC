@@ -14,6 +14,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using d360.model;
@@ -567,7 +568,11 @@ namespace d360.web.Controllers.V2
 				throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
 			}
 
-			var execution = getApiExecution(fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete });
+			var execution = getApiExecution(
+				fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, 
+				new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete },
+				action: ApiExecutionAction.DeleteFieldTypes
+			);
 
 			var executionInfo = await FieldsRepository.BatchDeleteFields(execution);
 			return await sendExecutionProcessingResponse(executionInfo);

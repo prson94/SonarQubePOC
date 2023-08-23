@@ -10,6 +10,7 @@ using System.Web.Http.Description;
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
+using d360.core.queue;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
@@ -458,7 +459,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
-			var execution = getApiExecution(totalCount);
+			var execution = getApiExecution(totalCount, action: ApiExecutionAction.Miscellaneous);
 
 			if (sourceAsset != null)
 			{

@@ -3643,8 +3643,6 @@ namespace d360.model
 				}
 			}
 
-			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetResult");
-
 			#region Scoring
 
 			List<Guid> ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
