@@ -321,13 +321,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}, {
 			Name: 'assignee',
 			FriendlyName: $localize`Assignee`,
-			Type: lookupFieldTypePrimaryFilter,
+			Type: this.assetTypeUid || this.assetUid ? new FieldType('Lookup') : lookupFieldTypePrimaryFilter,
 			Category: '',
 			ValueLoader: this.getFilteredAssignees
 		}, {
 			Name: 'Status',
 			FriendlyName: $localize`Status`,
-			Type: lookupFieldTypePrimaryFilter,
+			Type: this.assetTypeUid || this.assetUid ? new FieldType('Lookup') : lookupFieldTypePrimaryFilter,
 			Category: '',
 			ValueLoader: this.getFilteredStatuses
 		});
