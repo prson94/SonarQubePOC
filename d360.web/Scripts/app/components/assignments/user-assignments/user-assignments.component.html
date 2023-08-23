@@ -35,7 +35,7 @@
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'AssociatedWith'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Count'">
+					<th [pSortableColumn]="'Count'" class="count-column">
 						<ng-container i18n>Count</ng-container>
 						<d3s-sortIcon [field]="'Count'"></d3s-sortIcon>
 					</th>
@@ -56,7 +56,7 @@
 					</td>
 					<td>{{item.StepName}}</td>
 					<td>{{item.AssociatedWith ?? '---'}}</td>
-					<td>
+					<td class="count-column">
 						<ig-badge [text]="item.Count"></ig-badge>
 					</td>
 				</tr>
