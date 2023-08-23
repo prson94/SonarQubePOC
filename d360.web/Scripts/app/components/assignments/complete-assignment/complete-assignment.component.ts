@@ -29,6 +29,9 @@ import { AssignmentService } from '../assignment.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { JsonResult } from '../../../models/jsonresult.model';
+import { SidePanelButton } from '../../../models/side-panel.model';
+
+/*global $localize*/
 
 @Component({
 	selector: 'd3s-complete-assignment',
@@ -60,6 +63,19 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	discardForm: boolean;
 	workflowTypeUid: string;
 	workflowTypeVersion: number;
+	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
+		label: $localize`Information`,
+		tooltip: $localize`Information`,
+		disabledTooltip: null,
+		nothingSelectedMessage: $localize`Select an item to display its information`,
+		notApplicableMessage: $localize`Information data is not available for the selected item`,
+		multipleSelectedMessage: $localize`Select a single item to display it’s information`,
+		key: 'information',
+		icon: 'fa-info-circle',
+		disabled: false,
+		visible: true,
+		needsSelection: true
+	})];
 
 	@Output() onModalClose = new EventEmitter<{ isBack: boolean, isCompleteForm: boolean }>();
 
@@ -84,11 +100,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	private loadSub: Subscription;
 
 	constructor(protected settingsService: CompanySettingsService,
-		private workflowService: WorkflowService,
-		private linkClickInterceptor: LinkClickInterceptor,
-		private assignmentService: AssignmentService,
-		private cdRef: ChangeDetectorRef,
-		private resourceService: ResourcesService
+				private workflowService: WorkflowService,
+				private linkClickInterceptor: LinkClickInterceptor,
+				private assignmentService: AssignmentService,
+				private cdRef: ChangeDetectorRef,
+				private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -111,7 +127,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	openModal(details: {
 		workflowItemUid: string,
 		stepUid: string,
-		assetId: number,
+		assetId?: number,
 		items?: SingleAssignment[]
 	}): void {
 		if (details) {
@@ -119,8 +135,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.isBulkRespond = false;
 			if (this.onlyAdminReassignMode) {
 				this.radioSelectionValue = 'reassignUser';
-			}
-			else {
+			} else {
 				this.radioSelectionValue = 'completeForm';
 			}
 
@@ -355,6 +370,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.userData = res;
 			this.cdRef.markForCheck();
 		});
+	}
+
+	setPanelHeader(event: string): void {
+		this.sidePanelButtons[0].label = event;
+		this.sidePanelButtons[0].tooltip = event;
+		this.cdRef.markForCheck();
 	}
 
 	protected readonly Number = Number;

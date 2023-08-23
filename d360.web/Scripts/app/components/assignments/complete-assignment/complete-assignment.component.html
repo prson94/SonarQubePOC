@@ -270,16 +270,17 @@
 											 [showCompleteAssignment]="false"
 											 [workflowTypeVersion]="workflowTypeVersion"
 											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
+					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid"
+												[workflowTypeVersion]="workflowTypeVersion">
 					</d3s-assignment-information>
 				</div>
 			</div>
 		</div>
 		<div class="side-panel">
-			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" hasDetail="true"
-						height="calc(100vh - 220px)">
+			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
+						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
 				<ng-container>
-					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false"
+					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false" [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>

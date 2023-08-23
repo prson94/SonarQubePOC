@@ -29,7 +29,7 @@
 						height="calc(100vh - 220px)">
 				<ng-container *ngIf="sidePanelOpen">
 					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
-									 [objectID]="selectedForInfoPanel?.assetUid"
+									 [objectUID]="selectedForInfoPanel?.assetUid"
 									 [objectType]="selectedForInfoPanel?.type"
 									 [useAccordion]="true"
 									 [shouldBePadded]="false"
@@ -38,7 +38,8 @@
 									 [spacerHeight]="'16px'"
 									 [tooltipAlign]="'left'"
 									 [isSidePanel]="false"
-									 [hideLinks]="true"
+									 [hasEditLink]="false"
+									 [hasOpenLink]="false"
 									 [hasAddRelationshipsPermissions]="false"
 									 [hasModifyRelationshipsPermissions]="false"
 									 [hasDeleteRelationshipsPermissions]="false"
