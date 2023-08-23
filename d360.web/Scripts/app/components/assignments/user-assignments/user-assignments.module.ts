@@ -8,21 +8,23 @@ import { RouterModule } from '@angular/router';
 import { AssignmentsModule } from '../assignments.module';
 import { AssignmentsMultiPickerModule } from '../assignment-multi-picker/assignment-multi-picker.module';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 
 @NgModule({
 	declarations: [
 		UserAssignmentsComponent
 	],
-	imports: [
-		CommonModule,
-		TableModule,
-		CoreModule,
-		IgBadgeModule,
-		RouterModule,
-		AssignmentsModule,
-		AssignmentsMultiPickerModule,
-		SiteModalModule
-	],
+    imports: [
+        CommonModule,
+        TableModule,
+        CoreModule,
+        IgBadgeModule,
+        RouterModule,
+        AssignmentsModule,
+        AssignmentsMultiPickerModule,
+        SiteModalModule,
+        SharedGridPagingInfoModule
+    ],
 	exports: [
 		UserAssignmentsComponent
 	]
