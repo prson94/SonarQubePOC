@@ -99,9 +99,9 @@
 						<ng-container i18n>Assignee</ng-container>
 						<d3s-sortIcon [field]="'assigneesJson'"></d3s-sortIcon>
 					</th>
-					<th *ngIf="assetUid || assetTypeUid" class="days-open-column">
+					<th *ngIf="assetUid || assetTypeUid" class="days-open-column" [pSortableColumn]="'DaysOpen'">
 						<ng-container i18n>Days Open</ng-container>
-						<d3s-sortIcon [field]="'daysOpen'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'DaysOpen'"></d3s-sortIcon>
 					</th>
 					<th [pSortableColumn]="'Status'" class="status-column">
 						<ng-container i18n>Status</ng-container>
@@ -172,7 +172,7 @@
 						</span>
 					</td>
 					<td *ngIf="assetUid || assetTypeUid">
-						{{item.daysOpen}}
+						{{item.DaysOpen}}
 					</td>
 					<td>
 						<span>{{item.Status}}</span>

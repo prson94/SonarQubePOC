@@ -1067,7 +1067,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("displayPath", "AssignmentList.assetPath", SqlFieldType.Text),
 				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
-				new DefaultFilter("objectType", "AssignmentList.objectType", SqlFieldType.Text)
+				new DefaultFilter("objectType", "AssignmentList.objectType", SqlFieldType.Text),
+				new DefaultFilter("daysOpen", "AssignmentList.daysOpen", SqlFieldType.Date)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1259,6 +1260,7 @@ namespace d360.model.DataAccessLayer
 										,V.ID AS VersionId
 										,V.uid AS VersionUid
 										,V.Version as Version
+										,DATEDIFF(day, WI.StartedOn, GETDATE()) as DaysOpen
 									FROM workflow.Type T
 															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
@@ -1266,74 +1268,50 @@ namespace d360.model.DataAccessLayer
 															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
 															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
 
-			var actionSelects = $@"WA.workflowItemUid, 
+			var commonselects = $@"WA.workflowItemUid, 
 								WA.workflowUid, 
 								WA.workflowName,
 								WA.initiator,
-								WA.initiatorUid,		
-								coalesce(ADV.DisplayValue,AT_ACT.Name) as assetDisplayValue,
+								WA.initiatorUid,
 								ObjectType.Type as objectType,
 								WA.StartedOn,
 								WA.CompletedOn,
 								WA.[Status],
+								AssignedUsers.value as assigneesJson,
+								IOT.initiatingObjectType,
+								WA.VersionId,
+								WA.VersionUid,
+								WA.Version,
+								WA.DaysOpen,";
+			
+			var actionSelects = $@"{commonselects}	
+								coalesce(ADV.DisplayValue,AT_ACT.Name) as assetDisplayValue,							
 								AST.uid as assetTypeUid,
 								IT.uid as actionTypeUid,
 								A.uid as assetUid,
 								AP.DisplayPath as assetPath,
-								AssignedUsers.value as assigneesJson,
 								I.uid as actionUid,
-								IOT.initiatingObjectType,
-								IT.Name as initiatingObjectTypeName,
-								WA.VersionId,
-								WA.VersionUid,
-								WA.Version
+								IT.Name as initiatingObjectTypeName
 							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
-			var assetSelects = $@"WA.workflowItemUid, 
-							WA.workflowUid, 
-							WA.workflowName,
-							WA.initiator,
-							WA.initiatorUid,		
-							ADV.DisplayValue as assetDisplayValue,
-							ObjectType.Type as objectType,
-							WA.StartedOn,
-							WA.CompletedOn,
-							WA.[Status],
+			var assetSelects = $@"{commonselects}	
+							ADV.DisplayValue as assetDisplayValue,						
 							AST.uid as assetTypeUid,
 							null as actionTypeUid,
 							A.uid as assetUid,							
 							AP.DisplayPath as assetPath,
-							AssignedUsers.value as assigneesJson,
 							null as actionUid, 
-							IOT.initiatingObjectType,
-							AST.Name as initiatingObjectTypeName,
-							WA.VersionId,
-							WA.VersionUid,
-							WA.Version
+							AST.Name as initiatingObjectTypeName
 							";
 
-			var relationshipSelects = $@"
-							WA.workflowItemUid, 
-							WA.workflowUid, 
-							WA.workflowName,
-							WA.initiator,
-							WA.initiatorUid,		
+			var relationshipSelects = $@"{commonselects}
 							id.Name as assetDisplayValue,
-							ObjectType.Type as objectType,
-							WA.StartedOn,
-							WA.CompletedOn,
-							WA.[Status],
 							null as assetTypeUid,
 							null as actionTypeUid,
 							null as assetUid,							
 							null as assetPath,
-							AssignedUsers.value as assigneesJson,
 							null as actionUid, 
-							IOT.initiatingObjectType,
-							null as initiatingObjectTypeName,
-							WA.VersionId,
-							WA.VersionUid,
-							WA.Version
+							null as initiatingObjectTypeName
 							";
 
 			var actionJoins = $@"FROM 

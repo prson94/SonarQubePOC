@@ -530,13 +530,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private createDisplayColumnData() {
 		this.setDisplayAssignees();
-		this.setDaysOpen();
-	}
-
-	private setDaysOpen(): void {
-		for (const workflowAssignmentGridItem of this.items) {
-			workflowAssignmentGridItem.daysOpen = Math.floor((Date.now() - Date.parse(workflowAssignmentGridItem.StartedOn)) / (60 * (60 * 1000) * 24));
-		}
 	}
 
 	private getExportFileName(): string {
