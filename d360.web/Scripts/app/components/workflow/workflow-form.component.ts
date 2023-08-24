@@ -186,7 +186,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
 	private close() {
-		this.router.navigate([SiteUrlHelpers.SITE_URL_MONITOR_ROOT]);
+		this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
     }
 
     private reassign() {
