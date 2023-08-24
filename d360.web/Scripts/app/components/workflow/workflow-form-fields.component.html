@@ -13,7 +13,7 @@
         <span *ngSwitchCase="fieldType.Boolean">
             <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="true" label="Yes"></p-radioButton>&nbsp;&nbsp;
             <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="false" label="No"></p-radioButton>
-            <span *ngIf="!fieldValue">
+            <span *ngIf="!field.Value">
                 <span *ngIf="field.Required"
                       class="error">
                     &nbsp;&nbsp;&nbsp;* <ng-container i18n>This field is required</ng-container>
