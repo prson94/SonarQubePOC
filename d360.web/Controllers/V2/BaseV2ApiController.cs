@@ -1028,7 +1028,7 @@ namespace d360.web.Controllers.V2
 				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}"
 			};
 
-			message.Response.Content = new StringContent(JsonConvert.SerializeObject(content), encoding: System.Text.Encoding.UTF8, "application/json");
+			message.Response.Content = new StringContent(JsonConvert.SerializeObject(content), encoding: Encoding.UTF8, "application/json");
 			return await Task.FromResult<IHttpActionResult>(message);
 		}
 	}

@@ -203,14 +203,13 @@ namespace d360.model
 					}, timeout: timeout)).FirstOrDefault();
 		}		
 		
-		internal ApiExecution getPromoteApiExecution(Load load, int total)
+		internal ApiExecution getPromoteApiExecution(Load load, int total, ApiExecutionAction action)
 		{
 			ApiExecution execution = new ApiExecution
 			{
 				ExecutionID = Guid.NewGuid(),
 				StartedOn = DateTime.UtcNow,
-				Route = null,
-				Method = "BULK",
+				Action = action,
 				ResourceID = load.UpdatedBy ?? 0,
 				Total = total,
 				Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
@@ -985,15 +984,14 @@ inner join AssetPath P on P.ID = A.ID
 
 			if (putAssets.Any())
 			{
-				ApiExecution execution = getPromoteApiExecution(load, putAssets.Count);
+				ApiExecution execution = getPromoteApiExecution(load, putAssets.Count, ApiExecutionAction.PutAssets);
 				ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
 				load.PutExecutionID = executionInfo.ExecutionID;
-
 			}
 
 			if (postAssets.Any())
 			{
-				ApiExecution execution = getPromoteApiExecution(load, postAssets.Count);
+				ApiExecution execution = getPromoteApiExecution(load, postAssets.Count, ApiExecutionAction.PostAssets);
 				ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
 				load.PostExecutionID = executionInfo.ExecutionID;
 			}

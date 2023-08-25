@@ -496,13 +496,12 @@ namespace d360.model
 				{
 					existingFields = Filter<Field>(i => i.IntersectID == firstField.IntersectID).ToList();
 				}
-				else 
+				else
 				{
 					existingFields = Filter<Field>(i => i.AssetID == firstField.AssetID).ToList();
 				}
-				
 
-				List<int> existingFieldTypeIDs = existingFields.Select(i => i.FieldTypeID).ToList(); 
+				List<int> existingFieldTypeIDs = existingFields.Select(i => i.FieldTypeID).ToList();
 				items.ForEach(item =>
 				{
 					item.UpdatedBy = CurrentResourceID;
@@ -522,7 +521,7 @@ namespace d360.model
 				});
 
 				try
-				{					
+				{
 					existingFields.ForEach(item =>
 					{
 						//DELETE
@@ -534,10 +533,37 @@ namespace d360.model
 				}
 				catch
 				{
-					// surpress exceptions
+					// suppress exceptions
 				}
 
 				SaveChanges();
+
+				bool idPopulated = false;
+				var sql = $@"
+update	F
+set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.[Value], FT.AllowMultipleValues)
+from	Field F
+		inner join FieldType FT on FT.ID = F.FieldTypeID and F.[Value] is not null and FT.Type = 'Lookup'";
+				if (firstField.IssueID > 0)
+				{
+					idPopulated = true;
+					sql += $" and F.IssueID = {firstField.IssueID}";
+				}
+				else if (firstField.IntersectID > 0)
+				{
+					idPopulated = true;
+					sql += $" and F.IntersectID = {firstField.IntersectID}";
+				}
+				else
+				{
+					idPopulated = true;
+					sql += $" and F.AssetID = {firstField.AssetID}";
+				}
+
+				if (idPopulated)
+				{
+					Connection.Execute(sql);
+				}
 			}
 		}
 

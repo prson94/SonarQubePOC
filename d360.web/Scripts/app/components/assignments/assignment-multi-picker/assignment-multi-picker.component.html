@@ -29,7 +29,7 @@
 						height="calc(100vh - 220px)">
 				<ng-container *ngIf="sidePanelOpen">
 					<ig-asset-detail *ngIf="sidePanel === 'asset-details'"
-									 [objectID]="selectedForInfoPanel?.assetUid"
+									 [objectUID]="selectedForInfoPanel?.assetUid"
 									 [objectType]="selectedForInfoPanel?.type"
 									 [useAccordion]="true"
 									 [shouldBePadded]="false"
@@ -38,7 +38,8 @@
 									 [spacerHeight]="'16px'"
 									 [tooltipAlign]="'left'"
 									 [isSidePanel]="false"
-									 [hideLinks]="true"
+									 [hasEditLink]="false"
+									 [hasOpenLink]="false"
 									 [hasAddRelationshipsPermissions]="false"
 									 [hasModifyRelationshipsPermissions]="false"
 									 [hasDeleteRelationshipsPermissions]="false"
@@ -132,6 +133,13 @@
 												<button igButton class="{{(selectedForInfoPanel?.workflowItemUid === item.WorkflowItemUid ? 'ig-button-primary' : '')}}" icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
 											</td>
 										</tr>
+									</ng-template>
+									<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+										<d3s-grid-selection-info [includeSelectLinks]="false"
+																 [afterPagingInfo]="false"
+																 [model]="assignments"
+																 [selection]="selected">
+										</d3s-grid-selection-info>
 									</ng-template>
 								</p-table>
 							</div>

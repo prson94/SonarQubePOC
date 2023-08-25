@@ -5,52 +5,52 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.api.Execution-v8">
+ <changeSet author="Pappas" id="Table.api.Execution-v9">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'Execution')
 BEGIN
 	CREATE TABLE [api].[Execution](
-		[ExecutionID] [uniqueidentifier] NOT NULL,
-		[ResourceID] [int] NOT NULL,
-		[Total] [int] NOT NULL,
-		[Processed] [int] NOT NULL,
-		[Error] [int] NOT NULL,
-		[StartedOn] [datetime] NOT NULL,
-		[CompletedOn] [datetime] NULL,
-		[Fields] [nvarchar](2500) NULL,
-		[ErrorMessage] [nvarchar](max) NULL,
-		[Method] [varchar](7) NULL,
-		[Route] [varchar](250) NULL,
-		[ProcessingStartedOn] [datetime] NULL,		
+		Id int identity not null,
+		[ExecutionID] uniqueidentifier not null,
+		[ResourceID] int not null,
+		[Total] int not null,
+		[Processed] int not null,
+		[Error] int not null,
+		[StartedOn] datetime not null,
+		[ProcessingStartedOn] datetime null,
+		[CompletedOn] datetime null,
+		[Fields] nvarchar(2500) null,
+		[RetryCount] int null,
+		[ErrorMessage] nvarchar(2500) null,
+		[Action] int null,
+		[Method] varchar(7) null,
+		[Route] varchar(250) null,
+		[State] int CONSTRAINT [DF_Execution_State] DEFAULT (1) not null,
+		ApplicationID nvarchar(200) null,
 		CONSTRAINT [PK_ApiExecution] PRIMARY KEY NONCLUSTERED ( [ExecutionID] DESC )
 	)
 END
 
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'State')
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'MarkedForProcessing')
 BEGIN
-    alter table api.Execution add [State] int NOT NULL CONSTRAINT [DF_Execution_State]  DEFAULT ((1))
-END
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'MarkedForProcessing')
-BEGIN
-    alter table api.Execution add [MarkedForProcessing] bit NOT NULL CONSTRAINT [DF_Execution_MarkedForProcessing]  DEFAULT ((0))
-END
-
-IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'ErrorMessage')
-BEGIN
-	update [api].[Execution] set [ErrorMessage] = left(ErrorMessage, 2000);
-	alter table api.Execution alter column [ErrorMessage] nvarchar(2500);
-END
-
-IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'ApplicationID')
-BEGIN
-    alter table api.Execution add [ApplicationID] nvarchar(200)
+	alter table api.Execution drop constraint [DF_Execution_MarkedForProcessing]
+    alter table api.Execution drop column [MarkedForProcessing]
 END
 
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Id')
 BEGIN
     alter table api.Execution add Id int identity not null
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'RetryCount')
+BEGIN
+    alter table api.Execution add [RetryCount] int null
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[api].[Execution]') AND name = 'Action')
+BEGIN
+	alter table api.Execution add [Action] int null;
 END
 		]]>
   </sql>

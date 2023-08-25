@@ -145,19 +145,19 @@
 								<div class="search-field">
 									<ig-search-field mode="Keypress"
 													 [debounce]="600"
-													 (onSearch)="dt.filterGlobal($event.target.value,'contains')">
+													 (onSearch)="dt.filterGlobal($event,'contains')">
 									</ig-search-field>
 								</div>
 
 								<p-table #dt [value]="userData" [rows]="5" [paginator]="true"
-										 [globalFilterFields]="['text']" [pageLinks]="3"
+										 [globalFilterFields]="['FullName']" [pageLinks]="3"
 										 [(selection)]="tableRadioSelection">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 40px"></th>
-											<th [pSortableColumn]="'text'">
+											<th [pSortableColumn]="'FullName'">
 												<ng-container i18n>Name</ng-container>
-												<d3s-sortIcon [field]="'text'"></d3s-sortIcon>
+												<d3s-sortIcon [field]="'FullName'"></d3s-sortIcon>
 											</th>
 											<th style="width: 50px"></th>
 										</tr>
@@ -267,7 +267,8 @@
 											 [showCompleteAssignment]="false"
 											 [workflowTypeVersion]="workflowTypeVersion"
 											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
+					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid"
+												[workflowTypeVersion]="workflowTypeVersion">
 					</d3s-assignment-information>
 				</div>
 			</div>
@@ -299,10 +300,10 @@
 			</div>
 		</div>
 		<div class="side-panel">
-			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" hasDetail="true"
-						height="calc(100vh - 220px)">
+			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
+						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
 				<ng-container>
-					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false"
+					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false" [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>

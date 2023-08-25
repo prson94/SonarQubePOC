@@ -2215,6 +2215,7 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
+				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostDataQualityResults);
 			}
 			catch (Exception ex)
 			{
@@ -2500,6 +2501,7 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
+				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutDataQualityResults);
 			}
 			catch (Exception ex)
 			{
@@ -2515,15 +2517,13 @@ namespace d360.model.DataAccessLayer
 			{
 				CompanyID = Company.CurrentCompanyID,
 				CompanyDomainPrefix = Company.CurrentCompanyDomain,
-				ExecutionID = Guid.NewGuid(),
+				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PostDataQualityResults,
 				SendWorkflowEvents = sendWorkflowEvents
 			};
 
 			// Save to storage container.
 			await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
-
 
 			// Save to the database.
 			execution.ExecutionID = executionInfo.ExecutionID;

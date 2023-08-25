@@ -321,13 +321,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}, {
 			Name: 'assignee',
 			FriendlyName: $localize`Assignee`,
-			Type: lookupFieldTypePrimaryFilter,
+			Type: this.assetTypeUid || this.assetUid ? new FieldType('Lookup') : lookupFieldTypePrimaryFilter,
 			Category: '',
 			ValueLoader: this.getFilteredAssignees
 		}, {
 			Name: 'Status',
 			FriendlyName: $localize`Status`,
-			Type: lookupFieldTypePrimaryFilter,
+			Type: this.assetTypeUid || this.assetUid ? new FieldType('Lookup') : lookupFieldTypePrimaryFilter,
 			Category: '',
 			ValueLoader: this.getFilteredStatuses
 		});
@@ -530,13 +530,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private createDisplayColumnData() {
 		this.setDisplayAssignees();
-		this.setDaysOpen();
-	}
-
-	private setDaysOpen(): void {
-		for (const workflowAssignmentGridItem of this.items) {
-			workflowAssignmentGridItem.daysOpen = Math.floor((Date.now() - Date.parse(workflowAssignmentGridItem.StartedOn)) / (60 * (60 * 1000) * 24));
-		}
 	}
 
 	private getExportFileName(): string {

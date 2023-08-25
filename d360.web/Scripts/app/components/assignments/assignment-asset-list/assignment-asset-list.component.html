@@ -1,6 +1,5 @@
-
 <div class="assignment-asset-list">
-	<ig-property-group i18n-title title="Associated Assets ({{items.length}})" [showHeaderLine]="false">
+	<ig-property-group i18n-title title="Associated Assets ({{items.length}})" [expanded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<div class="asset-item" *ngFor="let item of items">
 				<a href="#" (click)="assetSelected($event, item)" *ngIf="item.ObjectType === 'Asset'">{{item.Name}} <span class="light-text">({{item.AssetTypeName}})</span></a>
