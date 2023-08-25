@@ -61,7 +61,7 @@ namespace d360.model
 
 		Guid GetAssetUid(int objectId, SystemObjects assetType);
 
-		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTablesForField = false);
+		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
 
 		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
 
@@ -170,29 +170,24 @@ namespace d360.model
 
 			#region De-index queue / Audit
 
-			Connection.Execute($@"
-								INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-									select	distinct 
-											'ObjectIndex', 'D',	S.Object, S.ObjectID, S.AssetID 
-									from    api.ExecutionDeletedAsset S
-									where   {querySuffix} and S.Object is not null and S.ObjectID is not null;
+			string logSql = $@"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select S.AssetId,
+					A.Object, 
+					A.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					T.[Name] as TypeName
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionDeletedAsset S on S.ExecutionID = e.ExecutionID 
+			inner join Asset a on a.ID = S.AssetId
+			inner join AssetType T on T.ID = A.AssetTypeID
+			left join AssetDisplayValue d on d.AssetID = a.Id
+	where	{querySuffix} and S.Object is not null and S.ObjectID is not null";
 
-								insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
-									select	distinct
-											O.Object, 
-											O.ObjectID,
-											SUBSTRING(O.DisplayValue,1,250), 
-											@r, 
-											@dt, 
-											'Deleted', 
-											O.Object, 
-											O.ObjectID, 
-											O.TypeName, 
-											SUBSTRING(O.DisplayValue,1,250), 
-											'This asset has been removed.' 
-									from	AssetDetail O
-											inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
-			new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+			Connection.Execute(logSql, new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 			addMeasurement(metrics, $"De-index queue / Audit>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
 
@@ -815,7 +810,7 @@ namespace d360.model
             return wildcardValue(escapeForSQLLike(filter), isContains);
         }
 
-		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTableForFields = false)
+		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportAssets";
@@ -1109,9 +1104,6 @@ namespace d360.model
 					{
 						try
 						{
-							// if needed create temp tables for data
-							CreateWorkareaTempTables(useTempTableForFields, transaction);
-
 							addMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
 
 							sw.Restart();
@@ -1159,7 +1151,7 @@ namespace d360.model
 								}
 							}
 
-							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, (useTempTableForFields ? SqlBulkCopyOptions.TableLock : SqlBulkCopyOptions.Default), transaction))
+							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
 							{
 								// fields
 								bulkCopy.BatchSize = SqlBulkBatchSize;
@@ -1698,7 +1690,7 @@ namespace d360.model
 									if (hasRelationshipFieldTypes)
 									{
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
-										ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										ImportRelationships(execution, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
 										addMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
@@ -1747,6 +1739,7 @@ namespace d360.model
 									}
 
 									addMeasurement(metrics, $"CheckKeyHashes >> {currentLoop} > Begin", sw.ElapsedMilliseconds, ++step);
+									
 									#region Generate proposed key hash and compare against existing data.
 									var invalidHashState = Connection.Query<dynamic>(@"
 										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
@@ -1781,7 +1774,35 @@ namespace d360.model
 
 									#endregion
 
+									#region Execution Log
+
+									string logSql = @"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select o.AssetId,
+					o.ItemNumber,
+					a.Object, 
+					a.ObjectId,
+					SUBSTRING(coalesce(d.DisplayValue, '-Unknown-'), 1, 250) as ObjectName,
+					t.[Name] as TypeName,
+					o.IsNew
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionAsset o on o.ExecutionID = e.ExecutionID 
+				and e.ExecutionID = @ExecutionID 
+				and o.ItemNumber between @beginItemNumber and @endItemNumber 
+				and o.Success is null
+			inner join Asset a on a.Id = o.AssetID
+			inner join AssetType t on t.ID = a.AssetTypeID
+			left join AssetDisplayValue d on d.AssetID = a.Id";
+
+									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+									#endregion
+
 									sw.Restart();
+									
 									// Update success flag.
 									Connection.Execute(
 										$@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
@@ -1850,6 +1871,9 @@ namespace d360.model
 
 					Connection.Close();
 
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+
 					if (sendWorkflowEvents)
 					{
 						sw.Restart();
@@ -1860,9 +1884,7 @@ namespace d360.model
 
 					try
 					{
-						CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAsset");
 						SendBatchApiCompletedEvent(execution);
-
 						addMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
 					}
 					catch
@@ -2461,8 +2483,10 @@ where	T.ExecutionID = @ExecutionID
 							endItemNumber += loopSize;
 						}
 
-						CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAsset");
 						Connection.Close();
+
+						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 						if (sendWorkflowEvents)
 						{
@@ -2617,8 +2641,6 @@ where	T.ExecutionID = @ExecutionID
 					sw.Restart();
 				}
 			}
-
-			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeletedAssetType");
 
 			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 

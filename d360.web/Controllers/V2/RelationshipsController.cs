@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(predicates.Count);
+				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.Miscellaneous);
 
 				List<PredicateDeleteResult> results = RelationshipRepository.DeletePredicates(predicates, execution);
 				
@@ -236,7 +236,7 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				var execution = getApiExecution(predicates.Count);
+				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.Miscellaneous);
 				List<PredicateUpsertResult> results = RelationshipRepository.UpsertPredicates(predicates, execution);
 				
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
@@ -856,7 +856,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(relationshiptypes.Count);
+				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
 				var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
 				Company.CreateRollupPathChangedExecution();
 
@@ -912,7 +912,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(relationshiptypes.Count);
+				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
 				var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
 				Company.CreateRollupPathChangedExecution();
 
@@ -969,7 +969,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(relationshiptypes.Count);
+				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
 				var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
 				Company.CreateRollupPathChangedExecution();
 
@@ -1250,7 +1250,7 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(
 				relationships.Count,
 				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-				applicationId: applicationId);
+				applicationId: applicationId, ApiExecutionAction.PostRelationships);
 
 			Company.Add(execution);
 
@@ -1258,6 +1258,7 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
+				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 			}
 			catch (Exception ex)
 			{
@@ -1326,7 +1327,7 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(
 				relationships.Count,
 				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-				applicationId: applicationId);
+				applicationId: applicationId, ApiExecutionAction.PutRelationships);
 
 			Company.Add(execution);
 
@@ -1334,12 +1335,7 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				results = Company.PutRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutRelationships);
 			}
 			catch (Exception ex)
 			{
@@ -1400,7 +1396,7 @@ namespace d360.web.Controllers.V2
 				var execution = getApiExecution(
 					relationships.Count,
 					new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId);
+					applicationId: applicationId, ApiExecutionAction.PostRelationships);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
@@ -1466,7 +1462,7 @@ namespace d360.web.Controllers.V2
 				var execution = getApiExecution(
 					relationships.Count,
 					new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId);
+					applicationId: applicationId, ApiExecutionAction.PutRelationships);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPutRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
@@ -1612,7 +1608,7 @@ namespace d360.web.Controllers.V2
 				var execution = getApiExecution(
 					relationships.Count,
 					new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
-					applicationId: applicationId);
+					applicationId: applicationId, ApiExecutionAction.DeleteRelationships);
 
 				ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
 				return await sendExecutionProcessingResponse(executionInfo);
@@ -1690,7 +1686,7 @@ namespace d360.web.Controllers.V2
 			var execution = getApiExecution(
 				relationships.Count,
 				new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
-				applicationId: applicationId);
+				applicationId: applicationId, ApiExecutionAction.DeleteRelationships);
 
 			Company.Add(execution);
 

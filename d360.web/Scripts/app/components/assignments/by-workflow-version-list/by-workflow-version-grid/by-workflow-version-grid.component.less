@@ -1,3 +1,16 @@
 .asset-grid-wrapper {
   padding: 0 6px;
 }
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}

@@ -5,25 +5,24 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Field-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.Field-v2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
 BEGIN
-	CREATE TABLE [dbo].[Field](
-		[AssetID] [bigint] NULL,
-		[ObjectType] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
-		[FieldTypeID] [int] NOT NULL,
-		[Value] [nvarchar](max) NULL,
-		[FormattedValue] [nvarchar](max) NULL,
-		[UpdatedBy] [int] CONSTRAINT [DF_Field_UpdatedBy] DEFAULT (0) NOT NULL,
-		[ID] [bigint] IDENTITY(1,1) NOT NULL,
-		[UpdatedOn] [datetime] CONSTRAINT [DF_Field_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
-		CONSTRAINT [PK_Field] PRIMARY KEY NONCLUSTERED ( [ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC )
+	create table [dbo].[Field](
+		[ID] bigint identity not null,
+		AssetID bigint sparse,
+		IntersectID int sparse,
+		IssueID int sparse,
+		FieldTypeID int not null,
+		ObjectType varchar(50) null,
+		ObjectID int null,
+		[Value] nvarchar(max) null,
+		FormattedValue nvarchar(max) null,
+		UpdatedBy int constraint [DF_Field_UpdatedBy] default(0) not null,
+		UpdatedOn datetime constraint [DF_Field_UpdatedOn] default(getutcdate()) not null,
+		constraint PK_Field primary key clustered ( [ID] ASC )
 	)
 END
 
@@ -33,951 +32,81 @@ BEGIN
 	ALTER TABLE [dbo].[Field] CHECK CONSTRAINT [FK_Field_FieldType]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Field')
-BEGIN
-	CREATE CLUSTERED INDEX [CIX_Field] ON [dbo].[Field] ( [ObjectType] ASC, [ObjectID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Field_ID')
-BEGIN
-	CREATE UNIQUE NONCLUSTERED INDEX [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_AssetID_Include')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([ObjectType],[ObjectID])
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([FormattedValue],[Value])
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_date')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([UpdatedOn])
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_ObjectID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Field_ObjectID] ON [dbo].[Field] ( [ObjectID] ASC )
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="PuneetGupta" id="Table.dbo.Field-FullText-v3" runInTransaction="false">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
-BEGIN
-	DROP FULLTEXT INDEX ON [dbo].[Field]
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet> 
-
-	<changeSet author="Quinlivan/Pappas/TDuric/PuneetGupta" id="Table.dbo.Field-v5" runInTransaction="false">
-		<sql dbms="mssql"
-				endDelimiter="\nGO"
-				splitStatements="true"
-				stripComments="false">
-			<![CDATA[
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
-			BEGIN
-				if exists (select * from sys.indexes where Name = 'PK_Field' and type_desc = 'NONCLUSTERED')
-				begin
-					ALTER TABLE [dbo].[Field] DROP CONSTRAINT IF EXISTS [PK_Field]
-				end
-
-				DROP INDEX IF EXISTS [CIX_Field] ON [dbo].[Field] WITH ( ONLINE = OFF )				
-				DROP INDEX IF EXISTS [IX_Field_FieldTypeID] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_ObjectID] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_AssetID_Include] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_AssetIDFieldTypeID_Include] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_IntersectIDFieldTypeId] ON [dbo].[Field]
-				DROP INDEX IF EXISTS [IX_Field_IssueIDFieldTypeId] ON [dbo].[Field]
-
-				set nocount on;
-				declare @includes table (name varchar(250))
-				insert into @includes values ('Value'), ('FormattedValue')
-				declare @count int = 0
-				select	@count = count(1)
-				from	sys.indexes ix 
-						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
-						inner join sys.tables tab on ix.object_id = tab.object_id 
-						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
-				where	ix.name = 'IX_Field_FieldTypeIDAssetID_Include'
-						and tab.name = 'Field'
-						and ixc.is_included_column = 1
-				if (@count <> 1)
-				begin
-					DROP INDEX IF EXISTS [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field]
-				end
-
-				delete 	@includes where name = 'FormattedValue'
-				set 	@count = 0
-				select	@count = count(1)
-				from	sys.indexes ix 
-						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
-						inner join sys.tables tab on ix.object_id = tab.object_id 
-						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
-				where	ix.name = 'IX_Field_FieldTypeIdIntersectID'
-						and tab.name = 'Field'
-						and ixc.is_included_column = 1
-				if (@count <> 1)
-				begin
-					DROP INDEX IF EXISTS [IX_Field_FieldTypeIdIntersectID] ON [dbo].[Field]
-				end
-
-				set 	@count = 0
-				select	@count = count(1)
-				from	sys.indexes ix 
-						inner join sys.index_columns ixc on ix.object_id = ixc.object_id and ix.index_id = ixc.index_id
-						inner join sys.tables tab on ix.object_id = tab.object_id 
-						inner join @includes I on I.name = COL_NAME(ix.object_id, ixc.column_id)
-				where	ix.name = 'IX_Field_FieldTypeIdIssueID'
-						and tab.name = 'Field'
-						and ixc.is_included_column = 1
-				if (@count <> 1)
-				begin
-					DROP INDEX IF EXISTS [IX_Field_FieldTypeIdIssueID] ON [dbo].[Field]
-				end
-				
-				alter table Field alter column [ObjectType] varchar(50) null
-				alter table Field alter column [ObjectID] int null		
-
-				if not exists (select * from sys.Columns where object_id = object_id('Field') and Name = 'AssetID' and is_sparse = 1)
-				begin
-					alter table Field alter column AssetID bigint SPARSE
-				end
-
-				IF NOT EXISTS 
-				(
-					SELECT *
-					FROM INFORMATION_SCHEMA.COLUMNS
-					WHERE table_name = 'Field'
-					AND column_name = 'IntersectID'
-				) 
-				BEGIN
-					alter table Field add IntersectID int SPARSE
-				END
-				
-				IF NOT EXISTS 
-				(
-					SELECT *
-					FROM INFORMATION_SCHEMA.COLUMNS
-					WHERE table_name = 'Field'
-					AND column_name = 'IssueID'
-				)
-				BEGIN
-					alter table Field add IssueID int SPARSE
-				END				
-								
-				if not exists (select * from sys.indexes where Name = 'PK_Field' and type_desc = 'CLUSTERED')
-				begin
-					ALTER TABLE [dbo].[Field] ADD CONSTRAINT [PK_Field] PRIMARY KEY CLUSTERED  ( [ID] ASC ) ON [PRIMARY]
-				end
-
-				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeID_Include_Ids')
-				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
-				end
-
-				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIDAssetID_Include')
-				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field] ([FieldTypeID] ASC, [AssetID] ASC ) INCLUDE([FormattedValue])
-				end
-				
-				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIntersectID')
-				begin
-					create index [IX_Field_FieldTypeIdIntersectID] on [dbo].[Field](FieldTypeID, IntersectID)
-				end
-
-				if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIssueID')
-				begin
-					create index [IX_Field_FieldTypeIdIssueID] on [dbo].[Field](FieldTypeID, IssueID)
-				end
-				
-				if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID')
-				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_AssetID] ON [dbo].[Field] ([AssetID] ASC)
-				end
-				
-				if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectID')
-				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_IntersectID] ON [dbo].[Field] ([IntersectID] ASC)
-				end
-
-				if not exists (select * from sys.indexes where Name = 'IX_Field_IssueID')
-				begin
-					CREATE NONCLUSTERED INDEX [IX_Field_IssueID] ON [dbo].[Field] ([IssueID] ASC)
-				end
-			END
-			]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet> 
- 
-  <changeSet author="PuneetGupta" id="Index.dbo.Field-Drop-v1">
-   <comment>GOV-20274</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF EXISTS (select * from sys.indexes where name = 'IX_FieldTypeIdAssetID_Include')
-BEGIN
-	DROP INDEX [IX_FieldTypeIdAssetID_Include] ON [dbo].[field]
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet> 
-  
-    <changeSet author=" PuneetGupta" id="Table.dbo.Field-Field_AfterUpsert-v19">
-    <comment>GOV-28254</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
-	ON [dbo].[Field]
-	FOR INSERT, UPDATE
-AS
-	SET NOCOUNT ON;
-
-	-- formatted value logic only needs to run in cases where value is not null
-	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
-	begin
-
-		if exists (select 1 from inserted where AssetID IS NOT NULL)
-			begin
-				UPDATE	T
-				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-
-		if exists (select 1 from inserted where IntersectID IS NOT NULL)
-			begin
-				UPDATE	T
-				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-
-		if exists (select 1 from inserted where IssueID IS NOT NULL)
-			begin
-				UPDATE	T
-				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-
-		drop table if exists #insertedFields;
-		create table #insertedFields (ObjectType varchar(250), ObjectID int);
-		create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
-
-		drop table if exists #distinctFieldTypeIDs;
-		create table #distinctFieldTypeIDs (ID int);
-		create clustered index IX_distinctFieldTypeIDs ON #distinctFieldTypeIDs (ID);
-		
-
-		insert into #distinctFieldTypeIDs
-		select distinct I.FieldTypeID
-		from inserted i
-		where exists (select 1 from deleted d where d.id = i.id);
-		
-		
-		insert into #insertedFields
-		select distinct
-			replace(AT.[Object],'Type',''),
-			AT.ObjectID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID
-		inner join assettype AT on AT.ID = FT.AssetTypeID and FT.AssetTypeID is not Null
-		union
-		select 'Intersect',
-			FT.IntersectTypeID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID and FT.IntersectTypeID is not Null
-		union
-		select 'Issue',
-			FT.IssueTypeID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID and FT.IssueTypeID is not Null;
-		
-		drop table if exists #lookupFieldTypes
-		select distinct FT.ID 
-		into #lookupFieldTypes
-		from #insertedFields SF
-		inner join FieldType FT on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID
-
-		if exists(
-			select top 1 1 from #lookupFieldTypes
-			)
-		begin
-		
-			UPDATE	TF
-			SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
-			from	Field TF
-					inner join #lookupFieldTypes LFT ON LFT.ID = TF.FieldTypeID
-					inner join FieldType FT on FT.ID = TF.FieldTypeID
-					where TF.[Value] is not null;
-		end
-	end
-
-	--------------------------------------------
-   	-- audit field value changes													
-	--------------------------------------------
-
-	drop table if exists #tempInserted;
-	drop table if exists #tempDeleted;
-
-	select distinct AssetID, IntersectID, ID, UpdatedBy, cast('Add' as nvarchar(20)) ActionName
-	into #tempInserted
-	from inserted;
-
-	create clustered index cx_tempInserted on #tempInserted(AssetID,ID);
-	
-	select distinct AssetID, IntersectID
-	into #tempDeleted
-	from DELETED;
-	
-	declare @resourceId int = null;
-	
-
-
-	if exists (select 1 from #tempInserted where AssetID is not null)
-	begin
-	
-		if (select count(distinct updatedby) from #tempInserted where AssetID is not null) > 1
-		begin
-			set @resourceid = 0
-		end
-	
-		drop table if exists #tempInsertedAsset;
-
-		select t.AssetID,
-		Max(t.ActionName) ActionName,
-		max(t.UpdatedBy) UpdatedBy
-		into #tempInsertedAsset
-		from #tempInserted t
-		where t.AssetID is not null
-		group by t.AssetID; 
-		
-		drop table if exists #tempFieldAssetID;
-
-		select t.AssetID
-		into #tempFieldAssetID
-		from #tempInsertedAsset t
-		inner join Field F on F.AssetID = t.AssetID
-		where F.AssetID is not null
-		and not exists(select 1 from #tempInserted  ti where ti.assetid = F.assetid and ti.id = F.id)
-		group by t.AssetID;
-		
-		update t
-		set t.ActionName = 'Update'
-		from #tempInsertedAsset t
-		inner join #tempFieldAssetID tf on t.AssetID = tf.AssetID 
-		where t.AssetID is not null; 
-		
-		
-		update t
-		set t.ActionName = 'Update'
-		from #tempInsertedAsset t
-		inner join #tempDeleted F on t.AssetID = F.AssetID 
-		where t.AssetID is not null; 
-		
-		select F.AssetID,
-			   F.FieldTypeID,
-			   FT.FriendlyName,
-			   f.FormattedValue
-		into #TempFieldData
-		from #tempInsertedAsset I
-		inner join Field F on f.AssetID = I.AssetID
-		inner join fieldtype ft on f.fieldtypeid = ft.id 
-		
-		create clustered index ci_TempFieldData on #TempFieldData(AssetID);
-
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	I.ActionName, 
-				a.Object, 
-				coalesce(a.ObjectID,0),
-				(
-					select 	I2.ActionName as Action,
-						a.Object as ActionObject,
-						a.ObjectID as ActionObjectID,
-							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
-						(
-						select	f.FieldTypeID,
-									f.FriendlyName as [Name], 
-								f.FormattedValue as [Value] 
-							from	#TempFieldData f 
-							where	f.AssetID = I.AssetID 
-						for json path
-						) as Fields
-					from #tempInsertedAsset I2 
-					where I2.AssetID = I.AssetID
-					group by I2.AssetID, I2.ActionName, coalesce(@resourceId, i2.UpdatedBy, 0)
-				for json path, WITHOUT_ARRAY_WRAPPER
-				) as [Custom],
-					coalesce(I.AssetID,0) as [AssetID]
-		from	
-				#tempInsertedAsset I 
-			inner join asset a on a.ID = i.AssetID
-			inner join AssetType Att on Att.ID = A.AssetTypeID
-		where Att.Class != 12 and I.[AssetID] Is not null;
-
-			-- remove temporary tables
-			drop table if exists #tempInsertedAsset;
-			drop table if exists #TempFieldData;
-			drop table if exists #tempFieldAssetID;
-			
-	end
-
-	-- handle relationships both sides need audit entries
-	if exists(select 1 from #tempInserted i where i.[IntersectID] is not null)
-	begin
-
-		if (select count(distinct updatedby) from #tempInserted where IntersectID is not null) > 1
-	begin
-			set @resourceid = 0
-		end
-	
-		drop table if exists #tempInsertedIntersect;
-
-		select t.IntersectID,
-		Max(t.ActionName) ActionName,
-		max(t.UpdatedBy) UpdatedBy
-		into #tempInsertedIntersect
-		from #tempInserted t
-		where t.IntersectID is not null
-		group by t.IntersectID; 
-		
-
-		drop table if exists #tempFieldIntersectID;
-		
-		select t.IntersectID
-		into #tempFieldIntersectID
-		from #tempInsertedIntersect t
-		inner join Field F on F.IntersectID = t.IntersectID
-		where F.IntersectID is not null
-		and not exists(select 1 from #tempInserted  ti where ti.IntersectID = F.IntersectID and ti.id = F.id)
-		group by t.IntersectID;
-
-		update t
-		set t.ActionName = 'Update'
-		from #tempInsertedIntersect t
-		inner join #tempFieldIntersectID tf on t.IntersectID = tf.IntersectID 
-		where t.IntersectID is not null; 
-
-		update t
-		set t.ActionName = 'Update'
-		from #tempInsertedIntersect t
-		inner join #tempDeleted F on t.IntersectID = F.IntersectID 
-		where t.IntersectID is not null; 
-				
-	
-	    drop table if exists #tempinterdata;
-		
-		with rsdata as (
-		select i.IntersectID,inter.ObjectAssetID,inter.SubjectAssetID, i.ActionName, i.UpdatedBy
-		from #tempInsertedIntersect i
-		inner join [intersect] inter on(i.IntersectID = inter.ID)
-		where i.[IntersectID] is not null)
-		select distinct a.*
-		into #tempinterdata
-		from 
-		(
-		select IntersectID, ActionName, UpdatedBy, SubjectAssetID AssetID
-		from rsdata
-		union all
-		select IntersectID, ActionName, UpdatedBy, ObjectAssetID AssetID
-		from rsdata) a;
-		
-		create clustered index idx_tempinterdata on #tempinterdata(IntersectID,AssetID)
-		
-		drop table if exists #TempFieldDataIntersect;
-		
-		select F.IntersectID,
-			   F.FieldTypeID,
-			   FT.FriendlyName,
-			   f.FormattedValue
-		into #TempFieldDataIntersect
-		from #tempInsertedIntersect I
-		inner join Field F on f.IntersectID = I.IntersectID 
-		inner join fieldtype ft on f.fieldtypeid = ft.id ;
-			
-		
-		create clustered index ci_TempFieldDataIntersect on #TempFieldDataIntersect(IntersectID);
-		
-		-- object side of relationship
-		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	i.ActionName, 
-					'Intersect', 
-					i.IntersectID ID,
-					(
-					select 	i2.ActionName as Action,
-							a.Object as ActionObject,
-							a.ObjectID as ActionObjectID,
-							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
-							(
-							select	f.FieldTypeID,
-									f.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-							from	#TempFieldDataIntersect f 
-							where	f.IntersectID = i2.IntersectID
-							for json path
-							) as Fields
-					from #tempinterdata i2 
-					where i2.IntersectID = i.IntersectID
-					group by i2.IntersectID,i2.ActionName, coalesce(@resourceId, i2.UpdatedBy, 0)
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as [Custom],
-					coalesce(a.ID,0) as [AssetID]
-			from	#tempinterdata i 
-					inner join asset a on(a.ID = i.AssetID);
-
-		drop table if exists #tempInsertedIntersect;
-		drop table if exists #TempFieldDataIntersect;
-		drop table if exists #tempinterdata;
-		drop table if exists #tempFieldIntersectID;
-
-	end
-	drop table if exists #tempInserted;
-	drop table if exists #tempDeleted;
 ]]>
-    </sql>
-	<rollback>
-		<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
-	ON [dbo].[Field]
-	FOR INSERT, UPDATE
-AS
-	SET NOCOUNT ON;
+  </sql>
+ </changeSet>
 
-	-- formatted value logic only needs to run in cases where value is not null
-	if exists( select 1 from inserted where [value] is not null or [formattedvalue] is not null)
-	begin
-
-		if exists (select 1 from inserted where AssetID IS NOT NULL)
-			begin
-		UPDATE	T
-		SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-		FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.AssetID IS NOT NULL AND F.AssetID = T.AssetID) 
-				INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-		
-		if exists (select 1 from inserted where IntersectID IS NOT NULL)
-			begin
-				UPDATE	T
-				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IntersectID IS NOT NULL AND F.IntersectID = T.IntersectID) 
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-
-		if exists (select 1 from inserted where IssueID IS NOT NULL)
-			begin
-				UPDATE	T
-				SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
-				FROM	Field T 
-						inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.[Value] is not null and (F.IssueID IS NOT NULL AND F.IssueID = T.IssueID)
-						INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
-			end
-
-		drop table if exists #insertedFields;
-		create table #insertedFields (ObjectType varchar(250), ObjectID int);
-		create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
-
-		drop table if exists #distinctFieldTypeIDs;
-		create table #distinctFieldTypeIDs (ID int);
-		create clustered index IX_distinctFieldTypeIDs ON #distinctFieldTypeIDs (ID);
-		
-
-		insert into #distinctFieldTypeIDs
-		select distinct I.FieldTypeID
-		from inserted i
-		where exists (select 1 from deleted d where d.id = i.id);
-
-
-		insert into #insertedFields
-		select distinct
-			replace(AT.[Object],'Type',''),
-			AT.ObjectID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID
-		inner join assettype AT on AT.ID = FT.AssetTypeID and FT.AssetTypeID is not Null
-		union
-		select 'Intersect',
-			FT.IntersectTypeID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID and FT.IntersectTypeID is not Null
-		union
-		select 'Issue',
-			FT.IssueTypeID
-		from #distinctFieldTypeIDs i
-		inner join FieldType FT on FT.ID = i.ID and FT.IssueTypeID is not Null;
-		
-		drop table if exists #lookupFieldTypes
-		select distinct FT.ID 
-		into #lookupFieldTypes
-		from #insertedFields SF
-		inner join FieldType FT on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID
-
-		if exists(
-			select top 1 1 from #lookupFieldTypes
-			)
-		begin
-		
-			UPDATE	TF
-			SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
-			from	Field TF
-					inner join #lookupFieldTypes LFT ON LFT.ID = TF.FieldTypeID
-					inner join FieldType FT on FT.ID = TF.FieldTypeID
-					where TF.[Value] is not null;
-		end
-	end
-
-	--------------------------------------------
-   	-- audit field value changes													
-	--------------------------------------------
-	Declare @ActionName varchar(20)  = 'Add';
-	IF EXISTS(SELECT * FROM DELETED)
+ <changeSet author="Pappas" id="Indices.dbo.Field-v1.1" runInTransaction="false">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+	IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
 	BEGIN
-		-- this is an update statement 
-		set @ActionName = 'Update';
+		DROP FULLTEXT INDEX ON [dbo].[Field]
 	END
 
-
-
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-		select	distinct
-				@ActionName, 
-				a.Object, 
-				coalesce(a.ObjectID,0),
-				(
-				select 	@ActionName as Action,
-						a.Object as ActionObject,
-						a.ObjectID as ActionObjectID,
-						coalesce(i2.UpdatedBy, 0) as ResourceID,
-						(
-						select	f.FieldTypeID,
-								ft.FriendlyName as [Name], 
-								f.FormattedValue as [Value] 
-						from	field f 
-								inner join fieldtype ft on f.fieldtypeid = ft.id 
-						where	f.AssetID = i.AssetID 
-						for json path
-						) as Fields
-				from inserted i2 
-				where i2.AssetID = i.AssetID
-				group by AssetID, UpdatedBy
-				for json path, WITHOUT_ARRAY_WRAPPER
-				) as [Custom],
-				coalesce(i.AssetID,0) as [AssetID]
-		from	
-			inserted i 
-			inner join asset a on a.ID = i.AssetID
-			inner join AssetType Att on Att.ID = A.AssetTypeID
-		where Att.Class != 12 and I.[AssetID] Is not null;
-
-
-	-- handle relationships both sides need audit entries
-	if exists(select 1 from inserted i where i.[IntersectID] is not null)
+	if not exists (select * from sys.indexes where name = 'UQ_Field_ID')
 	begin
+		create unique nonclustered index [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include')
+	begin
+		create nonclustered index [IX_Field_FieldTypeID_Include] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([FormattedValue],[Value])
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_date')
+	begin
+		create nonclustered index [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([UpdatedOn])
+	end
+
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeID_Include_Ids')
+	begin
+		create nonclustered index [IX_Field_FieldTypeID_Include_Ids] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([AssetID],[IntersectID],[IssueID])
+	end
+
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIDAssetID_Include')
+	begin
+		create nonclustered index [IX_Field_FieldTypeIDAssetID_Include] ON [dbo].[Field] ([FieldTypeID] ASC, [AssetID] ASC ) INCLUDE([FormattedValue])
+	end
 	
-	    drop table if exists #tempinterdata;
-		
-		with rsdata as (
-		select IntersectID,inter.ObjectAssetID,inter.SubjectAssetID
-			from	inserted i 
-		inner join [intersect] inter on(i.IntersectID = inter.ID)
-		where i.[IntersectID] is not null)
-		select distinct a.*
-		into #tempinterdata
-		from 
-		(
-		select IntersectID, SubjectAssetID AssetID
-		from rsdata
-		union all
-		select IntersectID, ObjectAssetID AssetID
-		from rsdata) a;
-		
-		create index idx_tempinterdata on #tempinterdata(IntersectID,AssetID)
-		
-		
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIntersectID')
+	begin
+		create index [IX_Field_FieldTypeIdIntersectID] on [dbo].[Field](FieldTypeID, IntersectID)
+	end
 
-		-- object side of relationship
-		INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-			select	@ActionName, 
-					'Intersect', 
-					i.IntersectID ID,
-					(
-					select 	@ActionName as Action,
-							a.Object as ActionObject,
-							a.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							(
-							select	f.FieldTypeID,
-									ft.FriendlyName as [Name], 
-									f.FormattedValue as [Value] 
-							from	field f 
-									inner join fieldtype ft on f.fieldtypeid = ft.id 
-							where	f.IntersectID = i.IntersectID
-							for json path
-							) as Fields
-					from inserted i2 
-					where i2.IntersectID = i.IntersectID
-					group by ObjectType, ObjectID, UpdatedBy
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as [Custom],
-					coalesce(a.ID,0) as [AssetID]
-			from	#tempinterdata i 
-					inner join asset a on(a.ID = i.AssetID);
+	if not exists (select * from sys.indexes where Name = 'IX_Field_FieldTypeIdIssueID')
+	begin
+		create index [IX_Field_FieldTypeIdIssueID] on [dbo].[Field](FieldTypeID, IssueID)
+	end
+	
+	if not exists (select * from sys.indexes where Name = 'IX_Field_AssetID')
+	begin
+		create nonclustered index [IX_Field_AssetID] ON [dbo].[Field] ([AssetID] ASC)
+	end
+	
+	if not exists (select * from sys.indexes where Name = 'IX_Field_IntersectID')
+	begin
+		create nonclustered index [IX_Field_IntersectID] ON [dbo].[Field] ([IntersectID] ASC)
+	end
 
+	if not exists (select * from sys.indexes where Name = 'IX_Field_IssueID')
+	begin
+		create nonclustered index [IX_Field_IssueID] ON [dbo].[Field] ([IssueID] ASC)
 	end
 ]]>
-	</rollback>
-  </changeSet>
+  </sql>
+ </changeSet> 
+
+ <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterUpsert-v20">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [dbo].[Field_AfterUpsert]
+  </sql>
+ </changeSet>
   
-  <changeSet author="PuneetGupta" id="Table.dbo.Field-Field_AfterDelete-v6">
-    <comment>GOV-20131,GOV-18447</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-	  
-CREATE OR ALTER TRIGGER [dbo].[Field_AfterDelete]
-   ON  [dbo].[Field]
-   AFTER DELETE
-AS 
-BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-	
-	drop table if exists #tempdeleted;
-	drop table if exists #tempdeletedUQ;
-	drop table if exists #tempdeletedUQFields;
+ <changeSet author="Pappas" id="Table.dbo.Field-Field_AfterDelete-v7">
+  <sql dbms="mssql">
+   DROP TRIGGER IF EXISTS [dbo].[Field_AfterDelete]  
+  </sql>
+ </changeSet>
 
-	select 	fieldtypeid,
-			AssetID,
-			IntersectID,
-			IssueID,
-			UpdatedBy
-	into #tempdeleted 
-	from deleted;
-
-	create index idx_tempdeleted on #tempdeleted(fieldtypeid) INCLUDE([AssetID],[IntersectID],[IssueID]);
-
-	select distinct
-			AssetID,
-			IntersectID,
-			IssueID
-	into #tempdeletedUQ
-	from #tempdeleted;
-
-	select distinct
-			fieldtypeid,
-			AssetID,
-			IntersectID,
-			IssueID,
-			UpdatedBy
-	into #tempdeletedUQFields
-	from #tempdeleted;
-
-	create index idx_tempdeletedUQFields on #tempdeletedUQFields(fieldtypeid) INCLUDE([AssetID],[IntersectID],[IssueID]);;
-
-	declare @resourceId int = null
-
-	if (select count(distinct updatedby) from #tempdeletedUQFields) > 1
-	begin
-		set @resourceid = 0
-	end
-
-    -- audit field delete Asset
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	'Delete', 
-						A.Object, 
-						A.ObjectID,
-						(select 	
-							'Delete' as Action,
-							A.Object as ActionObject,
-							A.ObjectID as ActionObjectID,
-							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									d3.FieldTypeID,
-									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
-									'' as [Value]
-								from #tempdeleted d3 
-									left join fieldtype ft on d3.fieldtypeid = ft.id 
-								where d3.AssetID = d.AssetID
-								   for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							#tempdeletedUQFields i2 							
-						where i2.AssetID = d.AssetID
-						group by AssetID, coalesce(@resourceId, i2.UpdatedBy, 0)
-						for xml path('fields'))
-						,
-						coalesce(d.AssetID,0) as [AssetID]
-				from 
-				#tempdeletedUQ d
-				inner join asset A on d.AssetID=A.ID;		
-				
-	-- audit field delete intersect
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	'Delete', 
-						'Intersect', 
-						I.ID,
-						(select 	
-							'Delete' as Action,
-							'Intersect' ActionObject, 
-							I.ID ActionObjectID,
-							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									d3.FieldTypeID,
-									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
-									'' as [Value]
-								from #tempdeleted d3 
-									left join fieldtype ft on d3.fieldtypeid = ft.id 
-								where d3.intersectID = d.intersectID
-								   for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							#tempdeletedUQFields i2 							
-						where i2.intersectID = d.intersectID
-						group by intersectID, coalesce(@resourceId, i2.UpdatedBy, 0)
-						for xml path('fields'))
-						,
-						coalesce(d.AssetID,0) as [AssetID]
-				from 
-				#tempdeletedUQ d
-				inner join [Intersect] I on d.IntersectID=I.ID;
-				
-	-- audit field delete issue
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	'Delete', 
-						'Issue',
-						I.ID,
-						(select 	
-							'Delete' as Action,
-							'Issue' ActionObject, 
-							I.ID ActionObjectID,
-							coalesce(@resourceId, i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									d3.FieldTypeID,
-									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
-									'' as [Value]
-								from #tempdeleted d3 
-									left join fieldtype ft on d3.fieldtypeid = ft.id 
-								where d3.IssueID = d.IssueID
-								   for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							#tempdeletedUQFields i2 							
-						where i2.IssueID = d.IssueID
-						group by IssueID, coalesce(@resourceId, i2.UpdatedBy, 0)
-						for xml path('fields'))
-						,
-						coalesce(d.AssetID,0) as [AssetID]
-				from 
-				#tempdeletedUQ d
-				inner join issue I on d.IssueID=I.ID;
-END
-	  
-	  ]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[Field_AfterDelete]
-   ON  [dbo].[Field]
-   AFTER DELETE
-AS 
-BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-
-    -- audit field delete
-	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
-				select	distinct 'Delete', 
-						d.ObjectType, 
-						d.ObjectID,
-						(select 	
-							'Delete' as Action,
-							i2.ObjectType as ActionObject,
-							i2.ObjectID as ActionObjectID,
-							coalesce(i2.UpdatedBy, 0) as ResourceID,
-							  (
-								select 
-								(select 
-									d3.FieldTypeID,
-									coalesce(ft.FriendlyName, '<deleted field type>') as [Name], 
-									'' as [Value]
-								from deleted d3 
-									left join fieldtype ft on d3.fieldtypeid = ft.id 
-								where d3.ObjectID = d.ObjectID
-								   for xml path('Field'), TYPE
-								)
-								for xml path('FieldInfo'), TYPE
-								)
-						from 
-							deleted i2 
-						where i2.ObjectID = d.ObjectID and i2.ObjectType = d.ObjectType
-						group by ObjectType, ObjectID, UpdatedBy
-						for xml path('fields'))
-						,
-						coalesce(d.AssetID,0) as [AssetID]
-				from deleted d;		
-END	  
-	  ]]>
-    </rollback>
-  </changeSet>
 </databaseChangeLog>

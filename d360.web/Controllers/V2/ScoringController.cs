@@ -13,6 +13,7 @@ using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
@@ -652,7 +653,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var execution = getApiExecution(model.Count);
+				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
 			}
 			catch (Exception ex)
@@ -700,7 +701,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var execution = getApiExecution(model.Count);
+				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
 			}
 			catch (Exception ex)
@@ -761,7 +762,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var execution = getApiExecution(model.Count);
+				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 
 				return ResponseMessage(
 					Request.CreateResponse(
@@ -818,9 +819,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-
-
-				var execution = getApiExecution(model.Count);
+				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
 
 				return ResponseMessage(
 					Request.CreateResponse(

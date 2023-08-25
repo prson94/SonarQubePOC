@@ -482,11 +482,7 @@ namespace d360.model.DataAccessLayer
 			{
 				await CompanyContext.UpsertDataProfilesAsync(DataProfileUpsertModels, execution, isInsert);
 				results = await CompanyContext.GetExecutionDataProfileResultsAsync(execution.ExecutionID);
-
-				execution.Processed = results.Count; 
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, isInsert ? ApiExecutionAction.PostDataProfile : ApiExecutionAction.PutDataProfile);
 			}
 			catch (Exception ex)
 			{
@@ -513,11 +509,7 @@ namespace d360.model.DataAccessLayer
 			{
 				await CompanyContext.DeleteDataProfilesAsync(models, execution);
 				results = await CompanyContext.GetExecutionDeleteDataProfileResultsAsync(execution.ExecutionID);
-				
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				CompanyContext.Update(execution);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteDataProfile);
 			}
 			catch (Exception ex)
 			{
@@ -534,8 +526,7 @@ namespace d360.model.DataAccessLayer
 				CompanyID = CompanyContext.CurrentCompanyID,
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PostDataProfile,
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
@@ -548,8 +539,7 @@ namespace d360.model.DataAccessLayer
 				CompanyID = CompanyContext.CurrentCompanyID,
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PutDataProfile,
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
@@ -562,8 +552,7 @@ namespace d360.model.DataAccessLayer
 				CompanyID = CompanyContext.CurrentCompanyID,
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
-				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.DeleteDataProfile,
+				ResourceID = execution.ResourceID
 			};
 
 			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);

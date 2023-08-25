@@ -45,6 +45,8 @@ import { PortalsModule } from '../portals/portals.module';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { DirectivesModule } from "../../../directives/directives.module";
 import { TabsModule } from '../tabs/tabs.module';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../../services/feature-flags.enum';
 
 @Component({
 	standalone: true,
@@ -116,7 +118,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     dataClassification: string;
     showDataClassification: boolean = false;
     assetActionWidth: number = 0;
-    assignmentCount: number;
+	assignmentCount: number;
+	assignmentFeatureFlag: boolean = false;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -130,7 +133,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private workflowService: WorkflowService,
         protected settingsService: CompanySettingsService,
         private router: Router,
-        private route: ActivatedRoute
+		private route: ActivatedRoute,
+		private featureFlagService?: LaunchDarklyService
     ) {
         router.events
             .pipe(
@@ -164,7 +168,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             this.isScoringScreen = false;
                         }
                     }
-                });
+				});
+
+		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
     }
 
     ngOnInit(): void {
@@ -278,8 +284,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             } else {
-                if(this.currentObject?.hasWorkFlow) {
-                  this.loadAssetTypeAssignmentCount();
+				if (this.currentObject?.hasWorkFlow && this.assignmentFeatureFlag) {
+                  this.loadAssetTypeAssignmentCount(); 
                 }
                 this.showStatus = false;
                 this.showDataClassification = false;

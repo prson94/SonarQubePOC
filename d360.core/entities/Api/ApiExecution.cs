@@ -6,6 +6,7 @@ using System.Net;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
@@ -52,9 +53,12 @@ namespace d360.core.entities
         public DateTime? ProcessingStartedOn { get; set; }
 
         [DataMember]
-        public bool MarkedForProcessing { get; set; } = false;
+        public int? RetryCount { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public ApiExecutionAction Action { get; set; }
+
+		[DataMember]
         public State State { get; set; } = State.Active;
 
         [DataMember]

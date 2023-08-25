@@ -689,7 +689,7 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(errorMessage);
 			}
 
-			var execution = getApiExecution(responsibilityTypes.Count);
+			var execution = getApiExecution(responsibilityTypes.Count, action: ApiExecutionAction.PostResponsibilityTypes);
 
 			var upserts = new List<ResponsibilityTypeUpsertModel>();
 			upserts = responsibilityTypes.ConvertAll(x => new ResponsibilityTypeUpsertModel()
@@ -817,7 +817,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			var execution = getApiExecution(responsibilityTypes.Count);
+			var execution = getApiExecution(responsibilityTypes.Count, action: ApiExecutionAction.PutResponsibilityTypes);
 
 			List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(responsibilityTypes, execution);
 			return Ok(results);
@@ -969,7 +969,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> BulkAddResponsibilitiesOverride(List<BulkResponsibilityOverridePostModel> models)
         {
-			var execution = getApiExecution(models.Count);
+			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostResponsibilityOverride);
 			ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
 
 			var result = new ApiExecutionRecievedResponse
@@ -1126,7 +1126,7 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(errorMessage);
 			}
 
-			var execution = getApiExecution(responsibilityRules.Count);
+			var execution = getApiExecution(responsibilityRules.Count, action: ApiExecutionAction.Miscellaneous);
 
 			var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
@@ -1182,7 +1182,7 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(ResponsibilityApiMessages.InvalidResponsibilityUid);
 			}
 
-			var execution = getApiExecution(responsibilityRules.Count);
+			var execution = getApiExecution(responsibilityRules.Count, action: ApiExecutionAction.Miscellaneous);
 			var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
 			return Ok(results);

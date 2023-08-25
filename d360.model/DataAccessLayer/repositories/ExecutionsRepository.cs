@@ -41,9 +41,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var execution = new ApiExecution
 			{
-				Method = "PATCH",
 				ResourceID = CompanyContext.CurrentResourceID,
-				Route = "api/v2/executions",
+				Action = ApiExecutionAction.PatchCatalog,
 				Total = 0,
 				StartedOn = DateTime.UtcNow,
 			};
@@ -54,7 +53,6 @@ namespace d360.model.DataAccessLayer
 				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				ResourceID = execution.ResourceID,
-				Action = ApiExecutionAction.PatchCatalog,
 				SendWorkflowEvents = true
 			};
 
@@ -472,7 +470,7 @@ namespace d360.model.DataAccessLayer
 			var executionProcessingInfoFields = CompanyContext.ApiExecutions.Single(x => x.Id == executionId).Fields ?? "{}";
 			var executionProcessingInfo = JsonConvert.DeserializeObject<ApiExecutionFields_PatchExecution>(executionProcessingInfoFields);
 
-			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 8)
+			while (executionProcessingInfo.RetryCount < 10 && executionProcessingInfo.LastCompletedStepNumber < 6)
 			{
 				try
 				{
@@ -527,46 +525,32 @@ namespace d360.model.DataAccessLayer
 						executionProcessingInfo.LastCompletedStepNumber = 2;
 					}
 
-					// Start run.
+					// Non-delete of assets.
 					if (executionProcessingInfo.LastCompletedStepNumber < 3)
 					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'B', resourceId, date }, commandTimeout: 7200);
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'A', resourceId, date }, commandTimeout: 7200);
 						executionProcessingInfo.LastCompletedStepNumber = 3;
 					}
 
-					// Non-delete of assets.
+					// Relations.
 					if (executionProcessingInfo.LastCompletedStepNumber < 4)
 					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'A', resourceId, date }, commandTimeout: 7200);
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'R', resourceId, date }, commandTimeout: 7200);
 						executionProcessingInfo.LastCompletedStepNumber = 4;
 					}
 
-					// Relations.
+					// Delete, if any, of assets
 					if (executionProcessingInfo.LastCompletedStepNumber < 5)
 					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'R', resourceId, date }, commandTimeout: 7200);
+						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, commandTimeout: 7200);
 						executionProcessingInfo.LastCompletedStepNumber = 5;
 					}
 
-					// Delete, if any, of assets
+					// Path/display value processing.
 					if (executionProcessingInfo.LastCompletedStepNumber < 6)
 					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'D', resourceId, date }, commandTimeout: 7200);
-						executionProcessingInfo.LastCompletedStepNumber = 6;
-					}
-
-					// Path/display value processing.
-					if (executionProcessingInfo.LastCompletedStepNumber < 7)
-					{
 						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'P', resourceId, date }, commandTimeout: 7200);
-						executionProcessingInfo.LastCompletedStepNumber = 7;
-					}
-
-					// Cleanup and wrap-up of run.
-					if (executionProcessingInfo.LastCompletedStepNumber < 8)
-					{
-						await CompanyContext.Connection.ExecuteAsync("exec PatchCatalog @executionId, @step, @resourceId, @date", new { executionId, step = 'E', resourceId, date }, commandTimeout: 7200);
-						executionProcessingInfo.LastCompletedStepNumber = 8;
+						executionProcessingInfo.LastCompletedStepNumber = 6;
 					}
 				}
 				catch (Exception ex)
@@ -591,6 +575,25 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 			} // while
+		}
+
+		public void UpsertExecution(ApiExecution execution)
+		{
+			if (execution.ExecutionID == Guid.Empty)
+			{
+				execution.ExecutionID = Guid.NewGuid();
+			}
+
+			if (execution.Id == 0)
+			{
+				// Insert
+				CompanyContext.Add(execution);
+			}
+			else
+			{
+				// Update
+				CompanyContext.Update(execution);
+			}
 		}
 	}
 }

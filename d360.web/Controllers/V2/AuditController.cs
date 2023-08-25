@@ -12,6 +12,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers.filters;
 using d360.web.Filters;
@@ -224,23 +225,23 @@ namespace d360.web.Controllers.V2
 
 				List<DefaultFilter> fieldList = new List<DefaultFilter>
 				{
-					new DefaultFilter("uid", "A.uid", SqlFieldType.Guid),
-					new DefaultFilter("name", "A.name", SqlFieldType.Text),
-					new DefaultFilter("resourceUid", "A.resourceUid", SqlFieldType.Guid),
-					new DefaultFilter("resourceName", "A.resourceName", SqlFieldType.Text),
-					new DefaultFilter("date", "A.date", SqlFieldType.DateTime),
-					new DefaultFilter("action", "A.action", SqlFieldType.Text),
-					new DefaultFilter("actionAssetUid", "A.actionAssetUid", SqlFieldType.Guid),
-					new DefaultFilter("actionAssetTypeUid", "A.actionAssetTypeUid", SqlFieldType.Guid),
-					new DefaultFilter("actionObject", "A.actionObject", SqlFieldType.Text),
-					new DefaultFilter("actionObjectTypeName", "A.actionObjectTypeName", SqlFieldType.Text),
-					new DefaultFilter("actionObjectName", "A.actionObjectName", SqlFieldType.Text),
-					new DefaultFilter("actionDescription", "A.actionDescription", SqlFieldType.Text),
-					new DefaultFilter("field", "A.field", SqlFieldType.Text),
-					new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
-					new DefaultFilter("class", "A.class", SqlFieldType.Number),
-					new DefaultFilter("version", "isnull(A.version,0)", SqlFieldType.Number),
-					new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
+					new DefaultFilter("uid", "uid", SqlFieldType.Guid),
+					new DefaultFilter("name", "name", SqlFieldType.Text),
+					new DefaultFilter("resourceUid", "resourceUid", SqlFieldType.Guid),
+					new DefaultFilter("resourceName", "resourceName", SqlFieldType.Text),
+					new DefaultFilter("date", "date", SqlFieldType.DateTime),
+					new DefaultFilter("action", "action", SqlFieldType.Text),
+					new DefaultFilter("actionAssetUid", "actionAssetUid", SqlFieldType.Guid),
+					new DefaultFilter("actionAssetTypeUid", "actionAssetTypeUid", SqlFieldType.Guid),
+					new DefaultFilter("actionObject", "actionObject", SqlFieldType.Text),
+					new DefaultFilter("actionObjectTypeName", "actionObjectTypeName", SqlFieldType.Text),
+					new DefaultFilter("actionObjectName", "actionObjectName", SqlFieldType.Text),
+					new DefaultFilter("actionDescription", "actionDescription", SqlFieldType.Text),
+					new DefaultFilter("field", "field", SqlFieldType.Text),
+					new DefaultFilter("newValue", "newValue", SqlFieldType.Text),
+					new DefaultFilter("class", "class", SqlFieldType.Number),
+					new DefaultFilter("version", "[version])", SqlFieldType.Number),
+					new DefaultFilter("previousValue", "previousValue", SqlFieldType.Text)
 				};
 
 				var orderColumn = Company.ParseOrderColumn(queryParams, fieldList, "Date");
@@ -274,80 +275,27 @@ namespace d360.web.Controllers.V2
 				}
 
 				Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
-				
+
+				var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
+
+				if (assetType != null && assetType.Class == AssetTypeClass.Reference)
+				{
+					dbArgs.Add("uid", assetUid);
+					whereStatements.Add("(uid = @uid or actionAssetTypeUid = @uid)");
+				}
+				else 
+				{
+					dbArgs.Add("uid", assetUid);
+					whereStatements.Add("uid = @uid");				
+				}
+
 				if (advFilterArgs != null && advFilterStatements != null)
 				{
 					dbArgs.AddDynamicParams(advFilterArgs);
 					whereStatements.AddRange(advFilterStatements);
 				}
 
-				bool isAssetType = false;
-				AssetType assetType = null;
-
-				if (
-					!Company.Any<Asset>(i => i.uid == assetUid) &&
-					!Company.Any<Tag>(i => i.uid == assetUid) &&
-					!Company.Any<IssueType>(i => i.uid == assetUid) &&
-					!Company.Any<IntersectType>(i => i.uid == assetUid) &&
-					!Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
-					!Company.Any<Report>(i => i.uid == assetUid) &&
-					!Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
-					!Company.Any<Predicate>(i => i.UID == assetUid) &&
-					!Company.Any<Semantic>(i => i.Uid == assetUid) &&
-					!Company.Any<Theme>(i => i.Uid == assetUid)
-					)
-				{
-					assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
-					
-					if (assetType == null)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.UIDNotFoundObjectAndObjectType)).ConfigureAwait(false);
-					}
-
-					isAssetType = true;
-				}
-
-				string baseSql = "";
-				string TempTableSql = "";
-
-				if (isAssetType)
-				{
-					switch (assetType.Object)
-					{
-						case "ResourceType":
-							baseSql = GetBaseAuditQueryObject(SystemObjects.Resource, false);
-							break;
-						case "GroupType":
-							baseSql = GetBaseAuditQueryObject(SystemObjects.Group, false);
-							break;
-						case "MetricAllocation":
-							baseSql = GetBaseAuditQueryObject(SystemObjects.MetricAllocation, false);
-							break;
-						case "Predicate":
-							baseSql = GetBaseAuditQueryObject(SystemObjects.Predicate, false);
-							break;
-						default:
-							baseSql = GetBaseAuditQueryForAssetTypeUid(assetType?.Class == AssetTypeClass.Reference);
-							break;
-					}
-				}
-				else
-				{
-					TempTableSql = GetBaseAuditQueryForUid();
-					baseSql = $@"
-								select uid, name, resourceUid, resourceName,
-									[date], action, actionAssetUid, actionAssetTypeUid,
-									ActionObject, actionObjectTypeName, actionObjectName,
-									actionDescription, Field, NewValue, Class,
-									[Version], PreviousValue, FieldType
-								from #finaldata
-								";
-				}
-
-				dbArgs.Add("uid", assetUid);
-
 				string whereSql = "";
-
 				if (whereStatements.Any())
 				{
 					whereSql = $" where {string.Join(" and ", whereStatements)}";
@@ -357,40 +305,43 @@ namespace d360.web.Controllers.V2
 				int pageSize = Company.ParsePageSize(queryParams);
 				string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
 
-				var countSql = $@"select count(1) from #tempAuditData A {whereSql}";
+				string baseQuery = @"
+select 	uid,
+		name,
+		resourceUid,
+		resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '') as resourceName,
+		[date],
+		[action],
+		actionAssetUid,
+		actionAssetTypeUid,
+		ActionObject,
+		actionObjectTypeName,
+		actionObjectName,
+		actionDescription,
+		Field,
+		coalesce(NewValue, '---') as NewValue,
+		[Class],
+		[Version],
+		iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue
+from	AuditView";
 
-				var sql = $@"
-							drop table if exists #tempselect;
-							select * 
-							into #tempselect
-							from #tempAuditData A {whereSql}
-							{orderBySql} 
-							{offsetSql}
-							
-							update t
-							set newvalue = case when newvalue is null then '---' else newvalue end,
-								PreviousValue =  case when PreviousValue is null and action !='Created' then '---' else PreviousValue end
-							from #tempselect t
+				string sql = "";
 
-							select *
-							from #tempselect A
-							{orderBySql} 
-							";
+				if (isStreamResponse)
+				{
+					sql = $"{baseQuery}";
+				}
+				else
+				{
+					sql = $@"
+select count(1) from AuditView {whereSql};
 
-				var getAllQuery = $@"
-				{TempTableSql}
-				drop table if exists #tempAuditData;
-
-				select *
-				into #tempAuditData
-				from ({baseSql}) a;
-
-				{(isStreamResponse ? " " : countSql)}
-
-				{sql}
-				";
-
-				var multiQuery = await Company.QueryMultipleAsync(getAllQuery, dbArgs, ApiTimeout);
+{baseQuery}
+{whereSql}
+{orderBySql} 
+{offsetSql};";
+				}
+				var multiQuery = await Company.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
 
 				int? count = null;
 
@@ -1114,7 +1065,7 @@ namespace d360.web.Controllers.V2
 			return querySql;
 		}
 
-		private string GetBaseAuditQueryObject(SystemObjects systemObject, bool includeTypeAudits)
+		private string                                                                                                                                                                                                 GetBaseAuditQueryObject(SystemObjects systemObject, bool includeTypeAudits)
 		{
 			string objectTypeName = systemObject.ToString() + "Type";
 			string querySql = $@"select
@@ -1139,9 +1090,7 @@ namespace d360.web.Controllers.V2
 				AT.Class as Class,
 				fa.[Version] as 'Version',
 				fa.PreviousValue
-			from reporting.global_audit ga
-			left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
-			inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+			from AuditView ga
 			left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
 			left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
 			left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID            
