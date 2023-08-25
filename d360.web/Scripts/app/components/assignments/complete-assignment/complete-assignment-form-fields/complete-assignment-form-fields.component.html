@@ -5,19 +5,20 @@
 			igInput
 			[name]="'input_' + indx"
 			*ngSwitchCase="fieldType.Text"
-			style="width: 100%"
+			style="width: 100%; margin-bottom: 1em"
+			igSize="full"
 			type="text"
 			[(ngModel)]="field.Value"
-			required="{{field.Required}}"
+			required="{{ field.Required }}"
 		/>
-		<span *ngSwitchCase="fieldType.Boolean">
+		<span *ngSwitchCase="fieldType.Boolean" style="margin-bottom: 1em">
 			<p-radioButton
 				igRadioButton
 				[name]="'input_' + indx"
 				[(ngModel)]="field.Value"
 				value="true"
 				label="Yes"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
 			></p-radioButton>
 			&nbsp;&nbsp;
 			<p-radioButton
@@ -26,7 +27,7 @@
 				[(ngModel)]="field.Value"
 				value="false"
 				label="No"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
 			></p-radioButton>
 		</span>
 
@@ -34,18 +35,20 @@
 			igInput
 			*ngSwitchCase="fieldType.Integer"
 			[name]="'input_' + indx"
-			style="width: 100%"
+			igSize="full"
+			style="width: 100%; margin-bottom: 1em"
 			type="number"
 			[(ngModel)]="field.Value"
-			required="{{field.Required}}"
+			required="{{ field.Required }}"
 		/>
 		<textarea
 			igTextArea
+			igSize="full"
 			*ngSwitchCase="fieldType.TextArea"
 			[name]="'input_' + indx"
-			style="width: 100%"
+			style="width: 100%; margin-bottom: 1em"
 			[(ngModel)]="field.Value"
-			required="{{field.Required}}"
+			required="{{ field.Required }}"
 		></textarea>
 		<p-calendar
 			*ngSwitchCase="fieldType.Date"
@@ -53,54 +56,79 @@
 			[name]="'input_' + indx"
 			appendTo="body"
 			baseZIndex="20000"
-			required="{{field.Required}}"
+			[style]="{'marginBottom': '1em'}"
+			required="{{ field.Required }}"
 		></p-calendar>
 		<div *ngSwitchCase="fieldType.List">
-			<select
+			<p-dropdown
 				*ngIf="!field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				style="height: auto; width: 100%"
+				[options]="field.Values"
+				[style]="{'width':'100%', 'marginBottom': '1em'}"
+				appendTo="body"
+				baseZIndex="20000"
 				[(ngModel)]="field.Value"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
+				[filter]="true"
+				filterBy="Text"
+				placeholder="Select {{field.Label}}"
 			>
-				<option></option>
-				<option *ngFor="let opt of field.Values" [value]="opt.Value">
-					{{ opt.Text }}
-				</option>
-			</select>
+				<ng-template pTemplate="item" let-item>
+					{{ item.Text }}
+				</ng-template>
+				<ng-template pTemplate="selectedItem" let-item>
+					{{ item.Text }}
+				</ng-template>
+			</p-dropdown>
+
 			<p-multiSelect
 				*ngIf="field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				[(ngModel)]="field.Value"
+				appendTo="body"
+				baseZIndex="20000"
 				[options]="field.Values | dropdownItemToSelectItemPipe"
-				[style]="{ width: '100%' }"
-				selectedItemsLabel="{0} items selected"
-				ngDefaultControl
-				required="{{field.Required}}"
-			></p-multiSelect>
+				[(ngModel)]="field.Value"
+				[style]="{'width':'100%', 'marginBottom': '1em'}"
+				[panelStyle]="{'width':'100%'}"
+				required="{{ field.Required }}"
+				display="chip"
+			>
+			</p-multiSelect>
 		</div>
 		<div *ngSwitchCase="fieldType.RelationshipType">
-			<select
+			<p-dropdown
 				*ngIf="!field.AllowMultipleValues"
 				[name]="'input_' + indx"
-				style="height: auto; width: 100%"
+				[options]="field.Values"
+				[style]="{'width':'100%', 'marginBottom': '1em'}"
+				appendTo="body"
+				baseZIndex="20000"
 				[(ngModel)]="field.Value"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
+				[filter]="true"
+				filterBy="Text"
+				placeholder="Select {{field.Label}}"
 			>
-				<option></option>
-				<option *ngFor="let opt of field.Values" [value]="opt.Value">
-					{{ opt.Text }}
-				</option>
-			</select>
+				<ng-template pTemplate="item" let-item>
+					{{ item.Text }}
+				</ng-template>
+				<ng-template pTemplate="selectedItem" let-item>
+					{{ item.Text }}
+				</ng-template>
+			</p-dropdown>
+
 			<p-multiSelect
 				*ngIf="field.AllowMultipleValues"
+				appendTo="body"
+				baseZIndex="20000"
 				[name]="'input_' + indx"
 				[(ngModel)]="field.Value"
-				[options]="field.Values | dropdownItemToSelectItemPipe"
-				[style]="{ width: '100%' }"
+				[options]="field.Values"
+				[style]="{ width: '100%', 'marginBottom': '1em' }"
 				selectedItemsLabel="{0} items selected"
 				ngDefaultControl
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
+				display="chip"
 			></p-multiSelect>
 		</div>
 		<div *ngSwitchCase="fieldType.Link">
@@ -108,32 +136,32 @@
 				igInput
 				[name]="'inputName_' + indx"
 				ngModel
-				style="width: 100%"
+				style="width: 100%; margin-bottom: 1em"
 				type="text"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
 			/>
 			<div i18n>(Link Name)</div>
 			<input
 				igInput
 				[name]="'inputUrl_' + indx"
 				ngModel
-				style="width: 100%"
+				style="width: 100%; margin-bottom: 1em"
 				type="text"
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
 			/>
-			<div i18n>
+			<div i18n style="margin-bottom: 1em">
 				(Link Url: Your Url should start with a protocol prefix. For
 				example 'http://' or 'https://')
 			</div>
 		</div>
-		<div *ngSwitchCase="fieldType.HTML">
+		<div *ngSwitchCase="fieldType.HTML" style="margin-bottom: 1em">
 			<p-editor
 				[name]="'input_' + indx"
 				[(ngModel)]="field.Value"
 				[style]="{ height: '150px' }"
 				ngDefaultControl
 				#ed
-				required="{{field.Required}}"
+				required="{{ field.Required }}"
 			>
 				<header style="padding-bottom: 0px !important">
 					<span class="ql-formats">

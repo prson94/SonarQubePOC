@@ -1,4 +1,14 @@
-import { ChangeDetectorRef, ChangeDetectionStrategy, Component, EventEmitter, Output, ViewEncapsulation, ElementRef, ViewChild, Input } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	ElementRef,
+	EventEmitter,
+	Input,
+	Output,
+	ViewChild,
+	ViewEncapsulation
+} from '@angular/core';
 import { Table } from 'primeng/table';
 import { SingleAssignment } from '../../../models/workflow.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
@@ -16,6 +26,7 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 export class AssignmentsMultiPickerComponent {
 	@Output() onAssignmentSelection = new EventEmitter<SingleAssignment[]>();
 	@Input() onlyAdminReassignMode: boolean = false;
+	@Output() onModalClose: EventEmitter<void> = new EventEmitter<void>();
 
 	workflowTypeName: string;
 
@@ -44,7 +55,12 @@ export class AssignmentsMultiPickerComponent {
 	) {
 		this.hrefService.getEvents().subscribe((res) => {
 			this.sidePanel = 'asset-details';
-			this.selectedForInfoPanel = { type: res.objectType, assetUid: res.uid, workflowItemUid: null, Version: null };
+			this.selectedForInfoPanel = {
+				type: res.objectType,
+				assetUid: res.uid,
+				workflowItemUid: null,
+				Version: null
+			};
 		});
 	}
 
@@ -72,6 +88,7 @@ export class AssignmentsMultiPickerComponent {
 	public closeDialog() {
 		this.isModalVisible = false;
 		this.selected = [];
+		this.onModalClose.emit();
 		this.cdRef.markForCheck();
 	}
 
@@ -94,7 +111,12 @@ export class AssignmentsMultiPickerComponent {
 
 	openAssetSidePanel(item: SingleAssignment) {
 		this.sidePanel = 'step-details';
-		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: item.WorkflowItemUid, Version: this.version };
+		this.selectedForInfoPanel = {
+			type: null,
+			assetUid: null,
+			workflowItemUid: item.WorkflowItemUid,
+			Version: this.version
+		};
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.markForCheck();
 	}
@@ -117,8 +139,7 @@ export class AssignmentsMultiPickerComponent {
 				if (this.selected.filter((x) => x.WorkflowItemUid === item.WorkflowItemUid).length > 0) {
 					this.selected = this.selected.filter((x) => x.WorkflowItemUid !== item.WorkflowItemUid);
 					this.triggerRerenderOfSelection();
-				}
-				else {
+				} else {
 					this.selected.push(item);
 					this.triggerRerenderOfSelection();
 				}
@@ -156,7 +177,7 @@ export class AssignmentsMultiPickerComponent {
 		// ignore casting to any error, EventTarget class to do not expose public member nodeName which is used in this code
 		// eslint-disable-next-line
 		const target = (<any>(event.target));
-		if (element && target.nodeName !== "P-TABLECHECKBOX") {
+		if (element && target.nodeName !== 'P-TABLECHECKBOX') {
 			this.selected = [];
 			this.selected.push(item);
 			this.triggerRerenderOfSelection();
@@ -165,13 +186,11 @@ export class AssignmentsMultiPickerComponent {
 			if (this.selected.filter((x) => x.WorkflowItemUid === item.WorkflowItemUid).length > 0) {
 				this.selected = this.selected.filter((x) => x.WorkflowItemUid !== item.WorkflowItemUid);
 				this.triggerRerenderOfSelection();
-			}
-			else {
+			} else {
 				this.selected.push(item);
 				this.triggerRerenderOfSelection();
 			}
 			this.lastSelectedElement = item;
 		}
 	}
-
 }

@@ -42,7 +42,7 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() onlyAdminReassignMode: boolean = false;
 
-	isModalVisible: boolean = false;
+	isModalAvailable: boolean = false;
 	loading: boolean = false;
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
@@ -95,6 +95,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	allowReassignResource: boolean = false;
 	clearOtherAssignments: boolean = false;
 	sendFormEmails: boolean = true;
+	hideDialog: boolean = false;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
@@ -133,19 +134,23 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		if (details) {
 			this.multiSubmitionItems = [];
 			this.isBulkRespond = false;
-			if (this.onlyAdminReassignMode) {
-				this.radioSelectionValue = 'reassignUser';
-			} else {
-				this.radioSelectionValue = 'completeForm';
-			}
-
-			this.stepUid = details.stepUid;
-			this.workflowItemUid = details.workflowItemUid;
-
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
 			}
+			if (this.isModalAvailable) {
+				this.hideDialog = false;
+				return;
+			}
+			if (this.onlyAdminReassignMode) {
+				this.radioSelectionValue = 'reassignUser';
+			} else {
+				this.radioSelectionValue = 'completeForm';
+
+			}
+			this.stepUid = details.stepUid;
+
+			this.workflowItemUid = details.workflowItemUid;
 
 			this.isLoading = true;
 			if (this.loadSub) {
@@ -205,7 +210,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				);
 				this.sidePanelOpen = true;
 			});
-		this.isModalVisible = true;
+		this.isModalAvailable = true;
 		this.cdRef.markForCheck();
 	}
 
@@ -226,7 +231,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onBack(): void {
-		this.workflowForm.reset();
+		this.hideDialog = true;
 		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
 	}
 
@@ -295,7 +300,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	closeModal(): void {
-		this.isModalVisible = false;
+		this.isModalAvailable = false;
+		this.hideDialog = false;
 		this.radioSelectionValue = '';
 		this.linkInterceptorSubscription?.unsubscribe();
 		this.cdRef.markForCheck();
