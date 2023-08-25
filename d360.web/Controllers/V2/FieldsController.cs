@@ -2586,8 +2586,12 @@ namespace d360.web.Controllers.V2
 
 				if (fieldType.Type == "Relationship")
 				{
+					bool hideData3SixtyUsers = HideData3SixtyUsers();
+					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+
 					var sql = $@"
-								declare @targetassettypeid int
+								declare @targetassettypeid int,
+								@isresource bit = 0;
 
 								select  
 								@targetassettypeid = 
@@ -2598,7 +2602,39 @@ namespace d360.web.Controllers.V2
 								inner join [IntersectType] IT on IT.ID = ft.LookupObjectID
 								where ft.id = @fieldtypeid
 
-								if @targetassettypeid = 0
+								select @isresource = 1
+								from AssetType att
+								where att.id = @targetassettypeid and att.object = 'ResourceType' and att.ObjectID = 1;
+
+								if @isresource = 1
+									begin
+										declare @assetTypeId1 int = @targetassettypeid;
+										drop table if exists #tempresourceids;
+										select R.ResourceID
+										into #tempresourceids
+										from reporting.Global_resource R
+										where R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")};
+										create nonclustered index ix_tempresourceids on #tempresourceids(ResourceID);
+										";
+						sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
+										select 
+											ObjectId as value,
+										{(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
+										from Asset A
+										inner join #tempresourceids R on R.ResourceID = A.ObjectID
+										{(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}									 
+										where a.AssetTypeID = @assetTypeId1 {whereQuery}
+										order by {(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "node.displaypath")} 
+										{pagingQuery}
+										OPTION(RECOMPILE);";
+						sql += $@"
+										select count(1) from Asset A
+										inner join #tempresourceids R on R.ResourceID = A.ObjectID
+										 {(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}
+										where a.AssetTypeID = @assetTypeId1 {whereQuery}
+										OPTION(RECOMPILE);
+									end
+								else if @targetassettypeid = 0
 								begin";
 					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0" : $@"
 									select AT.ObjectID as value, AT.Name as text 
