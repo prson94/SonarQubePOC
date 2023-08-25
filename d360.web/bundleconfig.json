@@ -4,8 +4,7 @@
     "inputFiles": [
       "Content/styles/Root.css",
       "Content/styles/ContentFormatting.css",
-      "Content/styles/angular.css",
-      "Content/styles/selectlistinfoitem.css"
+      "Content/styles/angular.css"
     ]
   },
   {
