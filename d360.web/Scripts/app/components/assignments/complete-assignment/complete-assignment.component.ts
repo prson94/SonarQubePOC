@@ -145,7 +145,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			this.selectedAssignment=details.selectedAssignment
+			this.selectedAssignment=details.selectedAssignment;
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
@@ -299,11 +299,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
 				.subscribe((res) => {
 					this.isLoading = false;
-				const matchedAssignment=res.find(ele=>
+				const matchedAssignment=res.find((ele) =>
 					ele.WorkflowTypeUid=== this.selectedAssignment.WorkflowTypeUid && ele.Version===this.selectedAssignment.Version
-				)	
+				);	
 					this.onModalClose.emit({ isBack: matchedAssignment.Count> 0 ? true : false, isCompleteForm });					
-				})
+				});
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.isLoading = true;

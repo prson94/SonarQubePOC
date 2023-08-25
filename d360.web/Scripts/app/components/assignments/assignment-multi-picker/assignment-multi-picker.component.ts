@@ -70,7 +70,7 @@ export class AssignmentsMultiPickerComponent {
 		this.assignments = assignments;
 		this.workflowTypeName = workflowTypeName;
 		this.sidePanel = 'asset-details';
-		this.selectedAssignment=item
+		this.selectedAssignment=item;
 		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: null, Version: null };
 		this.cdRef.detectChanges();
 

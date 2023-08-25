@@ -157,7 +157,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			$event.preventDefault();
 			$event.stopPropagation();
 		}
-		this.selectedAssignment=item
+		this.selectedAssignment=item;
 		if (item.AssociatedItems.length > 1) {
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
