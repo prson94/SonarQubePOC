@@ -2,7 +2,7 @@
 		   [showTitle]="false"
 		   [isVisible]="isModalVisible"
 		   [additionalClasses]="'large-dialog'"
-		   (onClose)="isModalVisible = false">
+		   (onClose)="closeDialog()">
 	<div class="modal-with-side-panel multi-assignment-selector">
 		<div class="modal-dialog-main-panel">
 			<div *ngIf="isLoading" style="width:100%; text-align:center;">
@@ -12,7 +12,7 @@
 			<ng-container *ngIf="!isLoading">
 				<ng-container *ngTemplateOutlet="assignmentsPicker;"></ng-container>
 				<div class="action-bar">
-					<button igButton class="ig-button-secondary" (click)="isModalVisible = false" i18n>Close</button>
+					<button igButton class="ig-button-secondary" (click)="closeDialog()" i18n>Close</button>
 					<span class="grow"></span>
 					<button *ngIf="!onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Complete Assignments > </button>
 					<button *ngIf="onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Reassign > </button>

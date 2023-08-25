@@ -72,9 +72,11 @@
 	</div>
 </div>
 
-<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)" [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
+<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"
+						 [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
 
-<d3s-assignments-multi-picker #multiAssignComponent (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
+<d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"
+							  (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
 
 <d3s-modal [title]="errorModalTitle"
 		   additionalClasses="modal-dyn-editor large-dialog"
@@ -89,6 +91,7 @@
 	</div>
 	<div class="action-bar">
 		<div class="grow"></div>
-		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel" (click)="modalVisible=false"></button>&nbsp;&nbsp;
+		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel"
+				(click)="modalVisible=false"></button>&nbsp;&nbsp;
 	</div>
 </d3s-modal>

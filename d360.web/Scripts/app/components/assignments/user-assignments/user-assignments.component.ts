@@ -196,4 +196,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.loadUserAssignments();
 	}
+
+	onAssignmentMultiPickerClose(): void {
+		this.completeAssignmentComponent?.closeModal();
+	}
 }

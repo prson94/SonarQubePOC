@@ -1,8 +1,9 @@
 <d3s-modal #modal
 		   [showTitle]="false"
-		   [isVisible]="isModalVisible"
+		   [isVisible]="isModalAvailable"
 		   [showActionBar]="false"
-		   [additionalClasses]="'xlarge-dialog'">
+		   [hidden]="hideDialog"
+		   [additionalClasses]="'large-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
@@ -286,7 +287,9 @@
 						igButton style="margin-right:8px"
 						(click)="onBack()"
 						[attr.data-cy]="'CompleteAssignment_Button_Back'"
+						tooltip="Information in the form will be saved"
 						i18n-label
+						i18n-tooltip
 						label="Back to Assignment Selection">
 				</button>
 				<button class="right ig-button-primary"
