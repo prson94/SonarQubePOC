@@ -9,9 +9,10 @@
 		</div>
 		<div class="grid-action-buttons">
 			<div>
-				<div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-					 tooltipPosition="left"
-					 tooltipStyleClass="ig-tooltip">
+				<div
+					pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+					tooltipPosition="left"
+					tooltipStyleClass="ig-tooltip">
 					<button igButton
 							class="ig-button-secondary"
 							[disabled]="!canExportRecords() || isExportInProgress"
@@ -163,13 +164,11 @@
 						<span>{{item.StartedOn | date: 'shortDate'}}</span>
 					</td>
 					<td>
-						<span>{{ item.filteredAssignees?.join(', ') }}</span>
-						<span class="more-assignee-count" [pTooltip]="item.allAssignees?.join('\n')"
-							  tooltipStyleClass="ig-tooltip" i18n
-							  *ngIf="item.allAssignees?.length > item.filteredAssignees?.length">
-							+ {{ (item.allAssignees.length - item.filteredAssignees.length) }}
-							others
-						</span>
+						<span>{{ item.filteredAssignees?.join(', ') }}</span>&nbsp;<ig-badge
+						[pTooltip]="item.allAssignees?.join('\n')"
+						tooltipStyleClass="ig-tooltip" i18n
+						text="+ {{ (item.allAssignees.length - item.filteredAssignees.length) }} others"
+						*ngIf="item.allAssignees?.length > item.filteredAssignees?.length"></ig-badge>
 					</td>
 					<td *ngIf="assetUid || assetTypeUid">
 						{{item.DaysOpen}}
@@ -221,13 +220,14 @@
 			Are you sure you want to delete
 			<span *ngIf="assignments.length === 1"> this assignment?</span>
 			<span *ngIf="assignments.length > 1"> these assignments?</span>
-			<br />
+			<br/>
 			Deleted assignments <b>cannot be retrieved</b>.
 		</p>
 	</div>
 </d3s-delete-form>
 
-<d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose()"></d3s-complete-assignment>
+<d3s-complete-assignment #completeAssignmentComponent
+						 (onModalClose)="onCompleteAssignmentModalClose()"></d3s-complete-assignment>
 
 <d3s-modal [title]="errorModalTitle"
 		   additionalClasses="modal-dyn-editor large-dialog"
@@ -242,6 +242,7 @@
 	</div>
 	<div class="action-bar">
 		<div class="grow"></div>
-		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel" (click)="modalVisible=false"></button>&nbsp;&nbsp;
+		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel"
+				(click)="modalVisible=false"></button>&nbsp;&nbsp;
 	</div>
 </d3s-modal>

@@ -23,15 +23,15 @@
 				 [rowsPerPageOptions]="defaultPagingOptions">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'WorkflowName'">
+					<th [pSortableColumn]="'WorkflowName'" class="workflow-name-column">
 						<ng-container i18n>Workflow Name</ng-container>
 						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'StepName'">
+					<th [pSortableColumn]="'StepName'" class="step-name-column">
 						<ng-container i18n>Step</ng-container>
 						<d3s-sortIcon [field]="'StepName'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'AssociatedWith'">
+					<th [pSortableColumn]="'AssociatedWith'" class="associated-with-column">
 						<ng-container i18n>Associated with</ng-container>
 						<d3s-sortIcon [field]="'AssociatedWith'"></d3s-sortIcon>
 					</th>
