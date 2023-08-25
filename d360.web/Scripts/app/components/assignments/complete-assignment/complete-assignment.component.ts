@@ -30,6 +30,7 @@ import { ResourcesService } from '../../../services/resources.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { JsonResult } from '../../../models/jsonresult.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
+import { AppConstants } from '../../../static/constants';
 
 /*global $localize*/
 
@@ -96,9 +97,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	clearOtherAssignments: boolean = false;
 	sendFormEmails: boolean = true;
 	hideDialog: boolean = false;
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
+	rowsPerPage: number = 10;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
+	private storageKey: string = 'completeAssignmentRowsPerPage';
 
 	constructor(protected settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
@@ -112,6 +116,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
+		this.loadRowsPerPage();
 	}
 
 	ngOnDestroy(): void {
@@ -382,6 +387,17 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.sidePanelButtons[0].label = event;
 		this.sidePanelButtons[0].tooltip = event;
 		this.cdRef.markForCheck();
+	}
+
+	loadRowsPerPage(): void {
+		this.rowsPerPage = Number(localStorage.getItem(this.storageKey)) || 10;
+	}
+
+	setRowsPerPage(event): void {
+		if (event?.rows) {
+			localStorage.setItem(this.storageKey, event.rows);
+			this.rowsPerPage = event?.rows;
+		}
 	}
 
 	protected readonly Number = Number;
