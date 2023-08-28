@@ -10,7 +10,7 @@ import {
 	ViewEncapsulation
 } from '@angular/core';
 import { Table } from 'primeng/table';
-import { SingleAssignment } from '../../../models/workflow.model';
+import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -43,7 +43,7 @@ export class AssignmentsMultiPickerComponent {
 	isLoading: boolean = false;
 	formTitle: string = '';
 	formDescription: string = '';
-
+	selectedAssignment:WorkflowUserGroupedAssignments
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('modal', { static: false }) modelEl: D3SModal;
 
@@ -64,12 +64,13 @@ export class AssignmentsMultiPickerComponent {
 		});
 	}
 
-	public openModal(assignments: SingleAssignment[], workflowTypeName: string) {
+	public openModal(assignments: SingleAssignment[], workflowTypeName: string,item?:WorkflowUserGroupedAssignments) {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;
 		this.workflowTypeName = workflowTypeName;
 		this.sidePanel = 'asset-details';
+		this.selectedAssignment=item;
 		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: null, Version: null };
 		this.cdRef.detectChanges();
 
