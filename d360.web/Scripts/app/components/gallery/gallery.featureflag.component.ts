@@ -39,6 +39,7 @@ export class GalleryFeatureflagComponent implements OnInit {
 					value: allFlags[`${key}`]
 				});
 				return obj;
-			}, []);
+			}, [])
+			.sort((a: FeatureFlag, b: FeatureFlag) => a.flag.localeCompare(b.flag));
 	}
 }
