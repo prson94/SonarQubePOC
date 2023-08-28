@@ -854,7 +854,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
 		}
-		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup', 'Relationship'];
+		const excludeTypes: string[] = ['ComputedRelationshipReferenceList', 'ComputedRelationshipLookup'];
 		if (excludeTypes.indexOf(field.FieldTypeValue) > -1) {
 			return false;
 		}
