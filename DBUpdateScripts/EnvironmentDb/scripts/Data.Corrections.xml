@@ -911,38 +911,4 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	</sql>
   </changeSet>
 
- <changeSet author="Pappas" id="Data.Corrections.GOV-28646">
-  <comment>GOV-28646 - Clean up the action data for relationships on audit records</comment>	
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-update	T
-set		T.ActionObjectName = S.NewActionObjectName,
-		T.ActionObjectTypeName = S.NewActionObjectTypeName
-from	reporting.Global_Audit T
-		inner join (
-			select	a.Id as AuditId,
-					i.SubjectName as NewActionObjectName,
-					i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as NewActionObjectTypeName
-			from	reporting.Global_Audit a
-					inner join IntersectDetail i on i.ID = a.ActionObjectID and i.Object = a.Object and i.ObjectID = a.ObjectID
-			where	a.ActionObject = 'Intersect'
-		) S on S.AuditId = T.Id
-GO
-
-update	T
-set		T.ActionObjectName = S.NewActionObjectName,
-		T.ActionObjectTypeName = S.NewActionObjectTypeName
-from	reporting.Global_Audit T
-		inner join (
-			select	a.Id as AuditId,
-					i.ObjectName as NewActionObjectName,
-					i.ObjectTypeName + ' (' + i.PredicateName + ')' as NewActionObjectTypeName
-			from	reporting.Global_Audit a
-					inner join IntersectDetail i on i.ID = a.ActionObjectID and i.Subject = a.Object and i.SubjectID = a.ObjectID
-			where	a.ActionObject = 'Intersect'
-		) S on S.AuditId = T.Id
-]]>
-  </sql>
- </changeSet>
-
 </databaseChangeLog>
