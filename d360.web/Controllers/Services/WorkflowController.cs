@@ -4205,22 +4205,24 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("ReassignWorkflowResource/bulk")]
-		public async Task<HttpResponseMessage> BulkReassignFormByUid(BulkWorkflowReassignModel model)
+		public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
 		{
-			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
+			if (model == null || ((model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1) && (model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)))
 			{
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
-			model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+			if (model.ItemStepUIDs.Count >= 1)
+			{
+				model.ItemStepIDs = Company.WorkflowItemSteps.Where(wis => model.ItemStepUIDs.Contains(wis.UID.Value)).Select(s => s.ID).ToList();
+			}
 
-			var response = await BulkReassignForm(model);
+			var response = await BulkReassignFormByItemStepId(model);
 
 			return response;
 		}
 
-		[Route("ReassignWorkflowResource/bulk")]
-		public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
+		public async Task<HttpResponseMessage> BulkReassignFormByItemStepId(BulkWorkflowReassignModel model)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{

@@ -82,7 +82,7 @@
 							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
 								<a context-link
 								   (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
-								<span *ngIf="!last">,</span>
+								<span *ngIf="!last">, </span>
 							</ng-container>
 						</div>
 						<div>

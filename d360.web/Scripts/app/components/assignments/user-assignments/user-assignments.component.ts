@@ -25,7 +25,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
 	assignments: WorkflowUserGroupedAssignments[];
-
+	selectedAssignment:WorkflowUserGroupedAssignments
 	isMe: boolean = false;
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
@@ -84,7 +84,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				.subscribe((res) => {
 					this.assignments = res;
 					this.totalRecords = +res.length;
-
 					this.assignments.forEach((item) => {
 						if (item.AssociatedItems.length > 1) {
 							item.AssociatedWith = $localize`${item.AssociatedItems.length} Assets`;
@@ -158,7 +157,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			$event.preventDefault();
 			$event.stopPropagation();
 		}
-
+		this.selectedAssignment=item;
 		if (item.AssociatedItems.length > 1) {
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
@@ -183,7 +182,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			workflowItemUid: mainItem.WorkflowItemUid,
 			stepUid: mainItem.ItemStepUid,
 			assetId: mainItem.AssetId,
-			items: selectedItems
+			items: selectedItems,
+			selectedAssignment:this.selectedAssignment
 		});
 	}
 
@@ -195,5 +195,9 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.multiAssignComponent.removeSelected();
 		}
 		this.loadUserAssignments();
+	}
+
+	onAssignmentMultiPickerClose(): void {
+		this.completeAssignmentComponent?.closeModal();
 	}
 }

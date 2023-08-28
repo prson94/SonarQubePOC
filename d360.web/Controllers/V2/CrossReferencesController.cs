@@ -243,7 +243,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var execution = getApiExecution(models.Count);
+                var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostCrossReferences);
                 var results = await CrossReferencesRepository.PostBulkCrossReferenceAsync(models, execution);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
@@ -516,7 +516,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
             }
 
-            var execution = getApiExecution(crossReferences.Count);
+            var execution = getApiExecution(crossReferences.Count, action: ApiExecutionAction.PostCrossReferences);
 
             ApiExecutionInfo executionInfo = await CrossReferencesRepository.PostBatchCrossReference(crossReferences, execution);
 			return await sendExecutionProcessingResponse(executionInfo);

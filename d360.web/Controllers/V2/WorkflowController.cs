@@ -547,7 +547,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = false)
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetWorkflowAssignmentsGrouped(Guid resourceUid)
 		{
@@ -716,7 +716,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the type parameter on the request is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that an asset/asset type was not found for the given uid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = false)
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetAssignmentCount(string type, Guid uid)
 		{
@@ -758,7 +758,7 @@ namespace d360.web.Controllers.V2
 			HttpGet,
 			Route("assignments/{workflowItemStepUid}/state"),
 			SwaggerProduces("application/json"),
-			ApiExplorerSettings(IgnoreApi = false)
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> AssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{

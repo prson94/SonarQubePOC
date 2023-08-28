@@ -11,15 +11,15 @@
 </div>
 <div class="details-container">
 	<div>
-		<ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
+		<ng-container *ngIf="_sidePanelTab === 'dataprofile' && selection?.HasProfiling">
 			<data-profile [dataProfile]="dataProfile" [assetData]="selection"></data-profile>
 		</ng-container>
-		<ng-container *ngIf="sidePanelTab === 'detail'">
+		<ng-container *ngIf="_sidePanelTab === 'detail'">
 			<ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
 							 #assetDetail
-							 [objectUID]="selectedAsset ? selectedAsset.uid : selection?.AssetUid"
-							 [objectID]="selectedAsset && selectedAsset.id ? selectedAsset.id : null"
-							 [objectType]="selectedAsset ? selectedAsset.type : 'Artifact'"
+							 [objectUID]="_selectedAsset ? _selectedAsset.uid : selection?.AssetUid"
+							 [objectID]="_selectedAsset && _selectedAsset.id ? _selectedAsset.id : null"
+							 [objectType]="_selectedAsset ? _selectedAsset.type : 'Artifact'"
 							 [useAccordion]="true"
 							 [shouldBePadded]="false"
 							 [showHeader]="true"
@@ -27,7 +27,8 @@
 							 [spacerHeight]="'16px'"
 							 [tooltipAlign]="'left'"
 							 [isSidePanel]="true"
-							 [hasEditLink]="true"
+							 [hasEditLink]="false"
+							 [hasOpenLink]="outsideModal"
 							 [hasAddRelationshipsPermissions]="false"
 							 [hasModifyRelationshipsPermissions]="false"
 							 [hasDeleteRelationshipsPermissions]="false"
@@ -45,35 +46,35 @@
 			</ng-container>
 		</ng-container>
 		<ng-container
-			*ngIf="sidePanelTab === AssetDetailClickType.WorkflowStep && selectedAsset?.workflowItemUid && selectedAsset?.itemStepUid">
-			<d3s-assignment-progress-step-details [showCompleteAssignment]="selectedAsset.showCompleteAssignment"
-												  [workflowItemUId]="selectedAsset.workflowItemUid"
+			*ngIf="_sidePanelTab === AssetDetailClickType.WorkflowStep && _selectedAsset?.workflowItemUid && _selectedAsset?.itemStepUid">
+			<d3s-assignment-progress-step-details [showCompleteAssignment]="_selectedAsset.showCompleteAssignment"
+												  [workflowItemUId]="_selectedAsset.workflowItemUid"
 												  (completeAssignment)="completeAssignmentComponent.openModal($event)"
-												  [itemStepUid]="selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
+												  [itemStepUid]="_selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
 			<d3s-complete-assignment #completeAssignmentComponent></d3s-complete-assignment>
 		</ng-container>
 		<ng-container
-			*ngIf="sidePanelTab === AssetDetailClickType.WorkflowRequestInformation && selectedAsset && selectedAsset.workflowItemUid
-				&& selectedAsset.itemStepUid && selectedAsset.workflowActionUid">
+			*ngIf="_sidePanelTab === AssetDetailClickType.WorkflowRequestInformation && _selectedAsset && _selectedAsset.workflowItemUid
+				&& _selectedAsset.itemStepUid && _selectedAsset.workflowActionUid">
 			<d3s-assignment-information-request [showSubmittedByData]="true"
-												[workflowActionUid]="selectedAsset.workflowActionUid"
-												[stepUid]="selectedAsset.itemStepUid"
-												[workflowItemUid]="selectedAsset.workflowItemUid">
+												[workflowActionUid]="_selectedAsset.workflowActionUid"
+												[stepUid]="_selectedAsset.itemStepUid"
+												[workflowItemUid]="_selectedAsset.workflowItemUid">
 			</d3s-assignment-information-request>
 		</ng-container>
 		<ng-container
-			*ngIf="sidePanelTab==AssetDetailClickType.WorkflowTypeInformation && selectedAsset?.workflowTypeUid && selectedAsset?.workflowTypeVersion">
+			*ngIf="_sidePanelTab==AssetDetailClickType.WorkflowTypeInformation && _selectedAsset?.workflowTypeUid && _selectedAsset?.workflowTypeVersion">
 			<d3s-workflow-information [shouldBePadded]="true"
 									  [showHeaderLine]="false"
 									  [isSidePanel]="true"
 									  [interceptLinkClick]="true"
-									  [workflowTypeUid]="selectedAsset.workflowTypeUid"
-									  [workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-workflow-information>
+									  [workflowTypeUid]="_selectedAsset.workflowTypeUid"
+									  [workflowTypeVersion]="_selectedAsset.workflowTypeVersion"></d3s-workflow-information>
 		</ng-container>
 		<ng-container
-			*ngIf="sidePanelTab==AssetDetailClickType.WorkflowItemInformation && selectedAsset?.workflowItemUid && selectedAsset?.workflowTypeVersion">
-			<d3s-assignment-information [workflowItemUid]="selectedAsset.workflowItemUid"
-										[workflowTypeVersion]="selectedAsset.workflowTypeVersion"></d3s-assignment-information>
+			*ngIf="_sidePanelTab==AssetDetailClickType.WorkflowItemInformation && _selectedAsset?.workflowItemUid && _selectedAsset?.workflowTypeVersion">
+			<d3s-assignment-information [workflowItemUid]="_selectedAsset.workflowItemUid"
+										[workflowTypeVersion]="_selectedAsset.workflowTypeVersion"></d3s-assignment-information>
 		</ng-container>
 	</div>
 </div>

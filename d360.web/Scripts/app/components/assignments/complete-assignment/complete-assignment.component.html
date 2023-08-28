@@ -1,20 +1,9 @@
 <d3s-modal #modal
 		   [showTitle]="false"
-		   [isVisible]="isModalVisible"
-		   [showActionBar]="true"
-		   [confirmButtonLabel]="'Submit'"
-		   [cancelButtonLabel]="discardForm ? 'Discard Form' : 'Close'"
-		   [secondaryButtonDisabled]="radioSelectionValue === 'completeForm' && !workflowForm?.valid"
-		   [discardForm]="discardForm"
-		   (onClose)="discardForm ? discardFormFunc() : closeModal()"
-		   (onConfirm)="onFormSubmit()"
-		   [closePopupOnConfirm]="false"
-		   [showBack]="isBulkRespond"
-		   (onBack)="onBack()"
-		   (onCloseClick)="onCloseClick()"
-		   i18n-backButtonLabel
-		   backButtonLabel="Back to Assignment Selection"
-		   [additionalClasses]="'xlarge-dialog'">
+		   [isVisible]="isModalAvailable"
+		   [showActionBar]="false"
+		   [hidden]="hideDialog"
+		   [additionalClasses]="'large-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
@@ -24,7 +13,8 @@
 						<ng-container *ngIf="onlyAdminReassignMode"><span i18n>Reassign</span></ng-container>
 						<ng-container *ngIf="!onlyAdminReassignMode">{{ modalTitle }}</ng-container>
 
-						<span class="title-emp" *ngIf="isBulkRespond && !onlyAdminReassignMode && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
+						<span class="title-emp"
+							  *ngIf="isBulkRespond && !onlyAdminReassignMode && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
 						<span class="modal-buttons" *ngIf="!isBulkRespond && !onlyAdminReassignMode">
 							<button igButton
 									[ngClass]="
@@ -43,32 +33,38 @@
 					</div>
 				</div>
 				<div>
-					{{workflowName}}<span i18n> on </span> <a (click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
+					{{workflowName}}<span i18n> on </span> <a
+					(click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
 				</div>
 				<div [hidden]="isAssignmentProgressSelected"
 					 class="scrollable-content details-container">
 					<div class="asset-detail">
-						<div class="d-flex column" *ngIf="(allowReassignObject || allowReassignResource) && !onlyAdminReassignMode">
+						<div class="d-flex column"
+							 *ngIf="(allowReassignObject || allowReassignResource) && !onlyAdminReassignMode">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue"
+											   (ngModelChange)="tableRadioSelection = undefined">
 								</p-radioButton>
 							</div>
 							<div class="radio-button" *ngIf="allowReassignResource">
 								<p-radioButton igRadioButton value="reassignUser" label="Reassign"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue"
+											   (ngModelChange)="tableRadioSelection = undefined">
 								</p-radioButton>
 							</div>
 							<div class="radio-button" *ngIf="allowReassignObject">
 								<p-radioButton igRadioButton value="changeAsset" label="Change the Associated Asset"
-											   [(ngModel)]="radioSelectionValue">
+											   [(ngModel)]="radioSelectionValue"
+											   (ngModelChange)="tableRadioSelection = undefined">
 								</p-radioButton>
 							</div>
 							<div class="govern-hr"></div>
 						</div>
 						<div class="asset-detail-tabs">
-							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title title="Information" [showHeaderLine]="false"
+							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title
+											   title="Information" [showHeaderLine]="false"
 											   [shouldBePadded]="false">
 								<div readonly>
 									<ng-container>
@@ -87,9 +83,11 @@
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<ig-property-group *ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title title="Request"
-											   [shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
-											   [sideTemplate]="requestSidePanel">
+							<ig-property-group
+								*ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title
+								title="Request"
+								[shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
+								[sideTemplate]="requestSidePanel">
 								<ng-template #requestSidePanel>
 									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>
 										Open in side
@@ -148,19 +146,19 @@
 								<div class="search-field">
 									<ig-search-field mode="Keypress"
 													 [debounce]="600"
-													 (onSearch)="dt.filterGlobal($event.target.value,'contains')">
+													 (onSearch)="dt.filterGlobal($event,'contains')">
 									</ig-search-field>
 								</div>
 
 								<p-table #dt [value]="userData" [rows]="5" [paginator]="true"
-										 [globalFilterFields]="['text']" [pageLinks]="3"
+										 [globalFilterFields]="['FullName']" [pageLinks]="3"
 										 [(selection)]="tableRadioSelection">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 40px"></th>
-											<th [pSortableColumn]="'text'">
+											<th [pSortableColumn]="'FullName'">
 												<ng-container i18n>Name</ng-container>
-												<d3s-sortIcon [field]="'text'"></d3s-sortIcon>
+												<d3s-sortIcon [field]="'FullName'"></d3s-sortIcon>
 											</th>
 											<th style="width: 50px"></th>
 										</tr>
@@ -227,7 +225,7 @@
 											$event.target.value,
 											'contains'
 										)
-									" i18n-placeholder placeholder="Search" class="grid-simple-filter" />
+									" i18n-placeholder placeholder="Search" class="grid-simple-filter"/>
 								<p-table #dt [value]="assets" [rows]="5" [paginator]="true"
 										 [globalFilterFields]="['Name']" [pageLinks]="3"
 										 [(selection)]="tableRadioSelection">
@@ -270,16 +268,45 @@
 											 [showCompleteAssignment]="false"
 											 [workflowTypeVersion]="workflowTypeVersion"
 											 (stepClickChange)="stepClickChanged($event)"></d3s-assignment-progress>
-					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid">
+					<d3s-assignment-information [showCompleteAssignment]="false" [workflowItemUid]="workflowItemUid"
+												[workflowTypeVersion]="workflowTypeVersion">
 					</d3s-assignment-information>
 				</div>
 			</div>
+			<div class="action-bar">
+				<button class="left ig-button-secondary"
+						igButton
+						type="button"
+						(click)="discardForm ? discardFormFunc() : closeModal();onCloseClick()"
+						[attr.data-cy]="'CompleteAssignment_Button_Cancel'"
+						i18n-label
+						label="{{discardForm ? 'Discard Form' : 'Close'}}">
+				</button>
+				<span class="grow"></span>
+				<button *ngIf="isBulkRespond" class="right ig-button-secondary"
+						igButton style="margin-right:8px"
+						(click)="onBack()"
+						[attr.data-cy]="'CompleteAssignment_Button_Back'"
+						tooltip="Information in the form will be saved"
+						i18n-label
+						i18n-tooltip
+						label="Back to Assignment Selection">
+				</button>
+				<button class="right ig-button-primary"
+						igButton
+						(click)="onFormSubmit()"
+						[attr.data-cy]="'CompleteAssignment_Button_Submit'"
+						[disabled]="(radioSelectionValue === 'completeForm' && !workflowForm?.valid) || !tableRadioSelection"
+						i18n-label
+						label="Submit">
+				</button>
+			</div>
 		</div>
 		<div class="side-panel">
-			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" hasDetail="true"
-						height="calc(100vh - 220px)">
+			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
+						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
 				<ng-container>
-					<d3s-side-panel-switcher [hidden]="!sidePanelOpen" [showPanelHeader]="false"
+					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false" [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
 			</side-panel>

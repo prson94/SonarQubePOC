@@ -1072,7 +1072,8 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("displayPath", "assetPath", SqlFieldType.Text),
 				new DefaultFilter("workflowName", "workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
-				new DefaultFilter("objectType", "ObjectType.Type", SqlFieldType.Text)
+				new DefaultFilter("objectType", "ObjectType.Type", SqlFieldType.Text),
+				new DefaultFilter("daysOpen", "daysOpen", SqlFieldType.Date)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1277,6 +1278,7 @@ namespace d360.model.DataAccessLayer
 										,V.ID AS VersionId
 										,V.uid AS VersionUid
 										,V.Version as Version										
+										,DATEDIFF(day, WI.StartedOn, GETDATE()) as DaysOpen
 										,-1 as AssetId
 										,cast(null as nvarchar(max)) as RelationshipName
 									into #assignments
@@ -1286,7 +1288,6 @@ namespace d360.model.DataAccessLayer
 															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
 															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
 															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
-
 
 			var coreSelects = $@"
 				WA.workflowItemUid, 
@@ -1309,7 +1310,8 @@ namespace d360.model.DataAccessLayer
 				IT.Name as initiatingObjectTypeName,
 				WA.VersionId,
 				WA.VersionUid,
-				WA.Version
+				WA.Version,
+				WA.DaysOpen
 				{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
 			var coreJoins = $@"

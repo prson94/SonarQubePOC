@@ -20,7 +20,7 @@ namespace d360.web.Controllers
 		[Route("FollowingByResourceByType"), NonNullableParameters]
 		public JsonNetResult GetFollowingByResourceByType(int resourceID, string type, int id)
 		{
-			var query = Company.Query<dynamic>(@"select A.Object ObjectType, f.AssetID ObjectID, f.Name, f.ID, f.Url, f.CurrentScore, OpenEventCount
+			var query = Company.Query<dynamic>(@"select A.Object ObjectType, A.ObjectID ObjectID, A.UID, f.Name, f.ID, f.Url, f.CurrentScore, OpenEventCount
 												from FollowDetail f
 												inner join Asset a on f.Assetid = a.id
 												where f.ResourceID = @r and f.AssetTypeID = @i and f.AssetId is not null", new { r = resourceID, i = id });

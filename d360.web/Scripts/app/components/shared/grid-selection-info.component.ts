@@ -7,21 +7,23 @@ import { CompanySettingsService } from '../../services/settings.service';
     selector: 'd3s-grid-selection-info',
     template: ` 
 <div style="position: relative">
-    <div style="position: absolute; top: -54px; left: 0; font-weight: normal; padding-top: 5px; float:left; display:inline; width: 300px; z-index: 10; text-align: left;">
+    <div [class.after-paging-info]="afterPagingInfo" style="font-weight: normal; padding-top: 5px; float:left; display:inline; width: 300px; z-index: 10; text-align: left;">
             <ng-container *ngIf="includeSelectLinks">
                 <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectAllClick.emit()">Select All</a> | <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectNoneClick.emit()">Select None</a> &nbsp;&nbsp;&nbsp;
             </ng-container>
-            <ng-container i18n i18n>{{selectedItems}} of {{totalItems}} items selected</ng-container>
+            <ng-container i18n>{{selectedItems}} of {{totalItems}} items selected</ng-container>
     </div>
 </div>
         `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+	styles: ['.after-paging-info { position: absolute; top: -54px; left: 0; }']
 })
 
 export class GridSelectionInfoComponent extends BaseComponent {
     @Input() includeSelectLinks = true;
     @Input() model: any[] = [];
     @Input() selection: any[] = [];
+	@Input() afterPagingInfo: boolean = true;
     @Output() onSelectAllClick = new EventEmitter();
     @Output() onSelectNoneClick = new EventEmitter();
 

@@ -6,9 +6,39 @@
     opacity: 0.6;
   }
 
-  .user-assignments-header{
+  .user-assignments-header {
     display: flex;
     justify-content: space-between;
     padding-bottom: 16px;
   }
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
+.count-column {
+  text-align: end;
+  width: 10%;
+}
+
+.workflow-name-column {
+  width: 30%;
+}
+
+.step-name-column {
+  width: 30%;
+}
+
+.associated-with-column {
+  width: 30%;
 }

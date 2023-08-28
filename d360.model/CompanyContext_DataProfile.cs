@@ -677,8 +677,6 @@ namespace d360.model
 				addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
 				addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 			}
-
-			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionDeleteAssetDataProfile");
 			Connection.CloseIfOpened();
 		}
 
@@ -1685,8 +1683,6 @@ namespace d360.model
 					}
 				}
 			}
-
-			CompleteApiExecutionAndGetCounts(execution.ExecutionID, "ExecutionAssetDataProfile");
 
 			var profileUidsQuery = await Connection.QueryAsync<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
 			var profileUids = profileUidsQuery.ToList(); 

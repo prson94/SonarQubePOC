@@ -8,7 +8,7 @@ import { TableModule } from 'primeng/table';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { AssignmentsModule } from '../assignments.module';
 import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
-
+import { SharedGridSelectionInfoModule } from '../../shared/grid-selection-info.component';
 
 
 @NgModule({
@@ -19,14 +19,16 @@ import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module
 		AssignmentsMultiPickerComponent
 	],
 	imports: [
-		CommonModule,
-		SiteModalModule,
-		CoreModule,
 		AssetDetailModule,
-		SidePanelModule,
-		TableModule,
+		AssignmentsModule,
+		CommonModule,
+		CoreModule,
 		PropertyGroupModule,
-		AssignmentsModule
+		SharedGridSelectionInfoModule,
+		SidePanelModule,
+		SiteModalModule,
+		TableModule
 	]
 })
-export class AssignmentsMultiPickerModule { }
+export class AssignmentsMultiPickerModule {
+}
