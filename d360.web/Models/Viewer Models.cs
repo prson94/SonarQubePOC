@@ -65,6 +65,8 @@ namespace d360.web.Models
 
         public string ResourceEmail { get; set; }
 
+		public CompanyResourceState ResourceState { get; set; }
+
 		public string Url { get; set; }
     }
 

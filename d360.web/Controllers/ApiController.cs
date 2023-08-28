@@ -4457,6 +4457,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 
 						model.ResourceFirstName = resource.FirstName;
 						model.ResourceEmail = resource.Email;
+						model.ResourceState = resource.State;
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{

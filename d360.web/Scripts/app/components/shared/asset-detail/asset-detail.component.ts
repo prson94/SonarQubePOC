@@ -210,7 +210,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                                 this.userGroups = res.items;
                             });
 
-                        this.hideLinks = !this.isAdmin;
+	                    this.hideLinks = !this.isAdmin || +this.model.ResourceState === 2;
                     }
 
                     if (this.objectType === 'Group' && updateTab) {
