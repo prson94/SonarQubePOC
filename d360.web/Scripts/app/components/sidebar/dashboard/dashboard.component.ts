@@ -9,6 +9,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	selector: 'd3s-dashboard',
@@ -36,11 +37,13 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		private titleAndTabsService: TitleAndTabsService,
 		secondaryNavService: SecondaryNavService,
 		breadcrumbService: HeaderBreadcrumbService,
-		protected settingsService: CompanySettingsService
+		protected settingsService: CompanySettingsService,
+		launchDarklyService: LaunchDarklyService
 	) {
 		super(settingsService);
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = breadcrumbService;
+		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {
