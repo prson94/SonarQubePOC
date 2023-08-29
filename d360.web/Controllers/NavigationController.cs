@@ -213,7 +213,7 @@ namespace d360.web.Controllers
 		[HttpGet, Route("GetSiteNavItems")]
 		public JsonNetResult GetSiteNavItems()
 		{
-			var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
+			var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);			
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
@@ -244,6 +244,15 @@ namespace d360.web.Controllers
 			if (!allowSemantics)
 			{
 				data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
+			}
+
+			if (!Ld.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, GetSdkFeatureFlagUser(), false))
+			{
+				data.RemoveAll(x => x.Name == "#Assignments" || x.Name == "#Requests");
+			}
+			else
+			{
+				data.RemoveAll(x => x.Name == "#Monitor");
 			}
 
 			//if db Titles are still defaults ones than load translation for them
