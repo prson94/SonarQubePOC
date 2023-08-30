@@ -559,7 +559,7 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
 			}
 
-			var isValidGroup = await membershipRepository.GetGroups(kvpGroupUid);
+			var validGroups = await membershipRepository.GetGroups(kvpGroupUid);
 			List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
 			if (!Company.CurrentResourceIsAdmin)
@@ -567,7 +567,7 @@ namespace d360.web.Controllers.V2
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
 			}
 
-			if (isValidGroup.Total == 0)
+			if (validGroups.Total != 1)
 			{
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.GroupUidNotExists));
 			}
@@ -618,13 +618,14 @@ namespace d360.web.Controllers.V2
 				foreach (var m in resourceGroups)
 				{
 					Company.Add(m);
-					Company.Query<int>(@"
-					insert into reporting.Global_Audit
-					select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.'
-					from [group] g 
-					inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
-					where g.id = @groupid
-					", new { m.GroupID, m.ResourceID, Company.CurrentResourceID }).FirstOrDefault();
+					Company.Connection.Execute(@"insert into reporting.Global_Audit
+						select	distinct 
+								'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member added', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] added to the group.', mv.[Version]
+						from	[group] g 
+								inner join reporting.Global_Resource gr on gr.ResourceID = @resourceId
+								cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
+						where	g.id = @groupid", 
+						new { m.GroupID, m.ResourceID, Company.CurrentResourceID });
 				}
 			}
 			catch (Exception ex)
@@ -912,12 +913,24 @@ namespace d360.web.Controllers.V2
 
 				Company.Query<int>(@"
 					insert into reporting.Global_Audit
-					select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member removed', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.'
-					from [group] g 
-					inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
-					inner join reporting.Global_Resource gr on gr.uid = @resourceUid
-					where a.uid = @groupUid
-					", new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
+					select	distinct 
+							'Group', 
+							g.id, 
+							G.Name, 
+							@currentresourceid, 
+							GETUTCDATE(), 
+							'Member removed', 
+							'Group', 
+							g.ID, 
+							'Group', 
+							G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.',
+							mv.[Version]
+					from	[group] g 
+							inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
+							inner join reporting.Global_Resource gr on gr.uid = @resourceUid
+							cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Group' and ObjectID = g.ID) mv
+					where	a.uid = @groupUid", 
+					new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
 
 				if (res > 0)
 				{
