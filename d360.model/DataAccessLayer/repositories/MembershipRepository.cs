@@ -230,7 +230,7 @@ namespace d360.model.DataAccessLayer
 					CompanyContext.Query<int>($@"
 insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID]) values ('ObjectIndex', 'D', 'Resource', @resourceId);
 
-insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 	select	distinct
 			'Resource', 
 			res.ResourceId,
@@ -242,8 +242,10 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 			res.ResourceId,
 			'Resource', 
 			SUBSTRING(res.FirstName + ' ' +res.LastName,1,250),
-			'This user has been removed.'
+			'This user has been removed.',
+			mv.[Version]
 	from	reporting.Global_Resource res
+			cross apply (select coalesce(max([Version]),0)+1 as [Version] from reporting.Global_Audit where Object = 'Resource' and ObjectID = res.ResourceID) mv
 	where	res.resourceid = @resourceId", 
 						new { r = CompanyContext.CurrentResourceID, resourceId = model.Resource.ResourceID }
 					).ToList();
@@ -870,15 +872,16 @@ where	ExecutionID = @executionID",
 
 			#region Upsert records
 
-			foreach (var result in validationResults)
+			for (int i = 0; i < validationResults.Count; i++)
 			{
+				var validationResult = validationResults[i];
 				var userAssetType = CompanyContext.AssetTypes.SingleOrDefault(o => o.Class == AssetTypeClass.User);
 				
-				if (result.Success == true)
+				if (validationResult.Success == true)
 				{
-					var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
+					var upsertUser = users.SingleOrDefault(u => u.ItemNumber == (int)validationResult.ItemNumber);
 
-					if (user != null)
+					if (upsertUser != null)
 					{
 						if (!IsChangePasswordReqeust)
 						{
@@ -889,92 +892,92 @@ where	ExecutionID = @executionID",
 							   isInsert,
 							   fieldTypes,
 							   requiredFieldNames,
-							   user.Fields,
+							   upsertUser.Fields,
 							   executionID,
-							   user.ItemNumber,
+							   upsertUser.ItemNumber,
 							   null,
 							   out bool success,
 							   out string message);
 
 							if (success == false)
 							{
-								result.Success = false;
-								result.Message += message;
+								validationResult.Success = false;
+								validationResult.Message += message;
 
-								results.Add(result);
+								results.Add(validationResult);
 
 								continue;
 							}
 						}
 
 						//add resource
-						if (!user.ResourceID.HasValue)
+						if (!upsertUser.ResourceID.HasValue)
 						{
-							if (string.IsNullOrEmpty(user.Password))
+							if (string.IsNullOrEmpty(upsertUser.Password))
 							{
-								user.Password = PasswordHelper.CreateRandomPassword();
+								upsertUser.Password = PasswordHelper.CreateRandomPassword();
 							}
 
 							var resource = new Resource()
 							{
-								FirstName = user.FirstName,
-								LastName = user.LastName,
-								Email = user.Username,
-								Username = user.Username,
-								Password = PasswordHelper.HashPassword(user.Password)
+								FirstName = upsertUser.FirstName,
+								LastName = upsertUser.LastName,
+								Email = upsertUser.Username,
+								Username = upsertUser.Username,
+								Password = PasswordHelper.HashPassword(upsertUser.Password)
 							};
 
 							CommunityContext.Add(resource);
 
-							user.ResourceID = resource.ID;
-							user.uid = resource.Uid;
-							result.uid = resource.Uid;
+							upsertUser.ResourceID = resource.ID;
+							upsertUser.uid = resource.Uid;
+							validationResult.uid = resource.Uid;
 						}
 						else
 						{
-							var resource = CommunityContext.Resources.FirstOrDefault(r => r.ID == (int)user.ResourceID);
+							var resource = CommunityContext.Resources.FirstOrDefault(r => r.ID == (int)upsertUser.ResourceID);
 							if (resource != null)
 							{
-								resource.FirstName = user.FirstName;
-								resource.LastName = user.LastName;
+								resource.FirstName = upsertUser.FirstName;
+								resource.LastName = upsertUser.LastName;
 
-								if (string.Compare(user.Username, resource.Username, true) != 0)
+								if (string.Compare(upsertUser.Username, resource.Username, true) != 0)
 								{
 									//disallow changing the email/username if the current user is not an admin
 									if (CompanyContext.CurrentResourceIsAdmin == false)
 									{
-										result.Success = false;
-										result.uid = user.uid;
-										result.Message += "Non-administrator users cannot update the email address / username. ";
-										results.Add(result);
+										validationResult.Success = false;
+										validationResult.uid = upsertUser.uid;
+										validationResult.Message += "Non-administrator users cannot update the email address / username. ";
+										results.Add(validationResult);
 
 										continue;
 									}
 
 									//check if the resource already exists in community
-									var existing = CommunityContext.Filter<Resource>(i => i.Email == user.Username && i.Uid != user.uid).FirstOrDefault();
+									var existing = CommunityContext.Filter<Resource>(i => i.Email == upsertUser.Username && i.Uid != upsertUser.uid).FirstOrDefault();
 
 									if (existing != null)
 									{
-										result.Success = false;
-										result.uid = user.uid;
-										result.Message += "Cannot update the user because the specified email address / username is already in use. ";
-										results.Add(result);
+										validationResult.Success = false;
+										validationResult.uid = upsertUser.uid;
+										validationResult.Message += "Cannot update the user because the specified email address / username is already in use. ";
+										results.Add(validationResult);
 
 										continue;
 									}
 
-									resource.Email = user.Username;
-									resource.Username = user.Username;
+									resource.Email = upsertUser.Username;
+									resource.Username = upsertUser.Username;
 								}
 
-								if (!string.IsNullOrEmpty(user.Password))
+								if (!string.IsNullOrEmpty(upsertUser.Password))
 								{
-									resource.Password = PasswordHelper.HashPassword(user.Password);
+									resource.Password = PasswordHelper.HashPassword(upsertUser.Password);
 								}
 
-								user.uid = resource.Uid;
-								result.uid = user.uid;
+								upsertUser.uid = resource.Uid;
+								validationResult.uid = upsertUser.uid;
 								resource.UpdatedOn = DateTime.UtcNow;
 								CommunityContext.Update(resource);
 							}
@@ -984,25 +987,25 @@ where	ExecutionID = @executionID",
 						{
 							CompanyResource companyResource;
 
-							if (user.CompanyResourceState.HasValue)
+							if (upsertUser.CompanyResourceState.HasValue)
 							{
-								companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
+								companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == upsertUser.ResourceID);
 
 								if (companyResource != null)
 								{
 									//disallow changing the admin flag if the current user is not an admin
-									if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator != companyResource.IsAdministrator)
+									if (CompanyContext.CurrentResourceIsAdmin == false && upsertUser.IsAdministrator != companyResource.IsAdministrator)
 									{
-										result.Success = false;
-										result.uid = user.uid;
-										result.Message += "Non-administrator users cannot update the administrator flag. ";
-										results.Add(result);
+										validationResult.Success = false;
+										validationResult.uid = upsertUser.uid;
+										validationResult.Message += "Non-administrator users cannot update the administrator flag. ";
+										results.Add(validationResult);
 
 										continue;
 									}
 
-									companyResource.IsAdministrator = user.IsAdministrator;
-									companyResource.State = user.State ?? companyResource.State;
+									companyResource.IsAdministrator = upsertUser.IsAdministrator;
+									companyResource.State = upsertUser.State ?? companyResource.State;
 
 									CommunityContext.Update(companyResource);
 								}
@@ -1010,42 +1013,42 @@ where	ExecutionID = @executionID",
 							else
 							{
 								//disallow creating admin users if the current user is not an admin
-								if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator == true)
+								if (CompanyContext.CurrentResourceIsAdmin == false && upsertUser.IsAdministrator == true)
 								{
-									result.Success = false;
-									result.uid = user.uid;
-									result.Message += "Non-administrator users cannot update the administrator flag. ";
-									results.Add(result);
+									validationResult.Success = false;
+									validationResult.uid = upsertUser.uid;
+									validationResult.Message += "Non-administrator users cannot update the administrator flag. ";
+									results.Add(validationResult);
 
 									continue;
 								}
 
 								companyResource = new CompanyResource()
 								{
-									ResourceID = (int)user.ResourceID,
+									ResourceID = (int)upsertUser.ResourceID,
 									CompanyID = CompanyContext.CurrentCompanyID,
 									State = CompanyResourceState.Active,
-									IsAdministrator = user.IsAdministrator
+									IsAdministrator = upsertUser.IsAdministrator
 								};
 
 								CommunityContext.Add(companyResource);
 							}
 
-							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+							var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == upsertUser.ResourceID);
 							Asset userAsset = null;
 
 							if (globalResource != null)
 							{
-								globalResource.FirstName = user.FirstName;
-								globalResource.LastName = user.LastName;
-								globalResource.Email = user.Username;
-								globalResource.IsAdministrator = user.IsAdministrator;
-								globalResource.State = user.State ?? companyResource.State;
+								globalResource.FirstName = upsertUser.FirstName;
+								globalResource.LastName = upsertUser.LastName;
+								globalResource.Email = upsertUser.Username;
+								globalResource.IsAdministrator = upsertUser.IsAdministrator;
+								globalResource.State = upsertUser.State ?? companyResource.State;
 								globalResource.UpdatedOn = DateTime.UtcNow;
 
 								CompanyContext.Update(globalResource);
 
-								userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == user.ResourceID);
+								userAsset = CompanyContext.Assets.SingleOrDefault(o => o.Object == "Resource" && o.ObjectID == upsertUser.ResourceID);
 								if (userAsset != null)
 								{
 									userAsset.UpdatedBy = CompanyContext.CurrentResourceID;
@@ -1057,43 +1060,37 @@ where	ExecutionID = @executionID",
 							{
 								globalResource = new GlobalReportingResource
 								{
-									IsAdministrator = user.IsAdministrator,
-									ResourceID = (int)user.ResourceID,
-									Email = user.Username,
-									FirstName = user.FirstName,
-									LastName = user.LastName,
-									State = user.State ?? companyResource.State,
+									IsAdministrator = upsertUser.IsAdministrator,
+									ResourceID = (int)upsertUser.ResourceID,
+									Email = upsertUser.Username,
+									FirstName = upsertUser.FirstName,
+									LastName = upsertUser.LastName,
+									State = upsertUser.State ?? companyResource.State,
 									UpdatedOn = DateTime.UtcNow,
-									Uid = (Guid)user.uid,
+									Uid = (Guid)upsertUser.uid,
 									CreatedOn = DateTime.UtcNow
 								};
 
 								CompanyContext.Add(globalResource);
 
 								if (userAssetType != null)
-								{ 
-									userAsset = new Asset {
-										AssetTypeID = userAssetType.ID,
-										Object = "Resource",
-										ObjectID = (int)user.ResourceID,
-										State = State.Active,
-										UpdatedBy = CompanyContext.CurrentResourceID,
-										UpdatedOn = DateTime.UtcNow,
-										uid = (Guid)user.uid
-									};
-									CompanyContext.Add(userAsset);								
+								{
+									CompanyContext.Connection.Execute(
+										"insert into Asset (AssetTypeID, State, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @Dt, @CurrentResourceID, @Dt, @CurrentResourceID, @uid)",
+										new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, CompanyContext.CurrentResourceID, uid = (Guid)upsertUser.uid }
+									);
 								}
 							}
 						}
 					}
 				}
 
-				if (result.Success)
+				if (validationResult.Success)
 				{
-					result.Message = null;
+					validationResult.Message = null;
 				}
 
-				results.Add(result);
+				results.Add(validationResult);
 			}
 
 			#endregion
