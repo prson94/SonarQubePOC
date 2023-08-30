@@ -322,7 +322,8 @@ select 	uid,
 		coalesce(NewValue, '---') as NewValue,
 		[Class],
 		[Version],
-		iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue
+		iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue,
+		fieldType
 from	AuditView";
 
 				string sql = "";
