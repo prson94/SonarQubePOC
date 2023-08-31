@@ -159,6 +159,8 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     }
 
     menuItemClicked($event, type) {
+		$event.stopPropagation();
+		this.removeElement();
         const event = new MouseEvent('click', { bubbles: true });
         event['from-context-method'] = type;
         this.el.nativeElement.dispatchEvent(event);
