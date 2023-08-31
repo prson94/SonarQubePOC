@@ -5,13 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-v10.1">
-    <comment></comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.AssetType-v10.2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetType')
 BEGIN
 	CREATE TABLE [dbo].[AssetType](
@@ -35,6 +31,9 @@ BEGIN
 		[AutoDisplayParent] [bit] constraint DF_AssetType_AutoDisplayParent default(0) NOT NULL,
 		[FlowObjectType] int null,
 		CanEditParent bit constraint DF_AssetType_CanEditParent default(1) not null, 
+		IsDescriptionEnabled bit constraint [DF_AssetType_IsDescriptionEnabled] default(1) not null,
+		IsDescriptionVisibleByDefault bit constraint [DF_AssetType_IsDescriptionVisibleByDefault] default(0) not null,
+		DescriptionButtonName varchar(50) null,
 		DefaultPermissions int constraint DF_AssetType_DefaultPermissions default(1) not null,
 		SourceID nvarchar(500) null,
 		CONSTRAINT [PK_AssetType] PRIMARY KEY CLUSTERED ( [ID] ASC ),
@@ -48,13 +47,13 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		BEGIN
 			insert into AssetType (
 				Name, Description, [Class], DisplayFormat, [State]
-				, [Hierarchical], [HierarchyPredicateID], [HierarchyIntersectTypeID], [HierarchyMaximumDepth]
+				, [HierarchyMaximumDepth]
 				, [Object], [ObjectID]
 				, [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy]
 				, [Notes], [uid])
 			values (
 				'MetricAllocation','A Metric Allocation',16, '{Name}', 1
-				, 0, NULL, NULL, 0
+				, 0
 				, 'MetricAllocation', 1
 				, GETDATE(), 0, GETDATE(), 0
 				, NULL, '00000001-0000-0000-0000-B00000000013')
@@ -66,13 +65,13 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		BEGIN
 			insert into AssetType (
 				Name, Description, [Class], DisplayFormat, [State]
-				, [Hierarchical], [HierarchyPredicateID], [HierarchyIntersectTypeID], [HierarchyMaximumDepth]
+				, [HierarchyMaximumDepth]
 				, [Object], [ObjectID]
 				, [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy]
 				, [Notes], [uid])
 			values (
 				'Predicate','A Predicate',17,'{Name}',1
-				, 0, NULL, NULL, 0
+				, 0
 				, 'Predicate', 1
 				, GETDATE(), 0, GETDATE(), 0
 				, NULL, '00000001-0000-0000-0000-B00000000014')
@@ -116,17 +115,13 @@ IF NOT EXISTS (SELECT * FROM [dbo].[AssetType]
 		begin
 			alter table AssetType drop column HierarchyIntersectTypeID
 		end
-	  ]]>
-    </sql>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetType-Indices-v2.1">
-    <comment></comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.dbo.AssetType-Indices-v2.2">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Uid_ObjectID')
 BEGIN
 	CREATE NONCLUSTERED INDEX IX_AssetType_Uid_ObjectID ON [dbo].[AssetType] ([uid], [objectid])
@@ -141,16 +136,13 @@ IF NOT EXISTS (select * from sys.indexes where name = 'UQ_AssetType_SourceID')
 BEGIN
 	CREATE UNIQUE INDEX UQ_AssetType_SourceID ON dbo.AssetType(SourceID) where SourceID is not null;
 END
-		]]>
-    </sql>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2.1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[AssetType_AfterInsert]
    ON  [dbo].[AssetType] 
    AFTER INSERT
@@ -159,21 +151,13 @@ AS
 	
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Add', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(CreatedBy, 0)), [Object], ObjectID from inserted;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
   
-  <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterUpdate-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterUpdate-v2.1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[AssetType_AfterUpdate]
    ON  [dbo].[AssetType] 
    AFTER UPDATE
@@ -182,66 +166,8 @@ AS
 	
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(UpdatedBy, 0)), [Object], ObjectID from inserted;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Drop_Misnamed_Defaults-v1">
-	<comment>GOV-19431</comment>
-	<sql dbms="mssql"
-		endDelimiter=";"
-		splitStatements="false">
-		<![CDATA[
-			DECLARE @sql NVARCHAR(250);
-			DECLARE @cur CURSOR;
-			
-			SET @cur = CURSOR FOR 
-			select 'ALTER TABLE AssetType DROP CONSTRAINT ' + c.name as script from sys.default_constraints c 
-			inner join sys.objects t on t.object_id = c.parent_object_id and t.name = 'AssetType' 
-			inner join sys.columns f on f.column_id = c.parent_column_id and f.name in ('IsDescriptionEnabled', 'IsDescriptionVisibleByDefault')
-
-			OPEN @cur
-			FETCH NEXT FROM @cur INTO @sql
-
-			WHILE @@FETCH_STATUS = 0
-			BEGIN
-				EXEC sp_executesql @sql
-				FETCH NEXT FROM @cur INTO @sql 
-			END; 
-
-			CLOSE @cur;
-			DEALLOCATE @cur;
-		]]>
-	</sql>
-  </changeSet>
-  
-  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionEnabled_Default-v1">
-	<preConditions onFail="MARK_RAN">
-		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionEnabled" />
-	</preConditions>
-	<comment>GOV-19431</comment>
-	<sql dbms="mssql">
-	<![CDATA[
-		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionEnabled DEFAULT 1 FOR IsDescriptionEnabled;
-	]]>
-	</sql>
-  </changeSet>
-  
-  <changeSet author="ALadchenko" id="Table.dbo.AssetType_Add_Missed_IsDescriptionVisibleByDefault_Default-v1">
-	<preConditions onFail="MARK_RAN">
-		<columnExists tableName="AssetType" schemaName="dbo" columnName="IsDescriptionVisibleByDefault" />
-	</preConditions>
-	<comment>GOV-19431</comment>
-	<sql dbms="mssql">
-	<![CDATA[
-		ALTER TABLE dbo.AssetType ADD CONSTRAINT DF_AssetType_IsDescriptionVisibleByDefault DEFAULT 0 FOR IsDescriptionVisibleByDefault;
-	]]>
-	</sql>
-  </changeSet>
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>

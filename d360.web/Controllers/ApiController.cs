@@ -2797,9 +2797,15 @@ namespace d360.web.Controllers
 					else
 					{
 						var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
-
-						SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
-						return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+						if (asset != null)
+						{
+							SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+							return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+						}
+						else 
+						{
+							return null;
+						}
 					}
 			}
 		}
@@ -4457,6 +4463,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 
 						model.ResourceFirstName = resource.FirstName;
 						model.ResourceEmail = resource.Email;
+						model.ResourceState = resource.State;
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
