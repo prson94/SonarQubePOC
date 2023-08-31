@@ -3076,19 +3076,13 @@ namespace d360.model
 		public decimal? GetPreviousAssetScore(long assetId, ScoreType type)
 		{
 			string sql = $@"
-							select      top 1
-										cast(S.Value * 100 as decimal(18,1)) as 'Score'                            
+							select     cast(S.Value * 100 as decimal(18,1)) as 'Score'                            
 							from        Asset A                            
 										inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
 										inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
-										cross apply (
-											select top 1 EffectiveDate from Asset AP
-											inner join metrics.Score SA on SA.AssetUid = AP.[uid] and SA.EffectiveDate <= getutcdate()
-											inner join metrics.Allocation ALP on ALP.Uid = SA.AllocationUid and ALP.ScoreType = @type and (ALP.OverrideName is null or ALP.OverrideName = '')
-											where AP.ID = @assetId
-										) P
-							where       A.ID = @assetId and S.EffectiveDate < P.EffectiveDate
-							order by    S.EffectiveDate desc";
+							where       A.ID = @assetId
+							order by    S.EffectiveDate desc
+							OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY";
 
 			return Query<decimal?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
 		}

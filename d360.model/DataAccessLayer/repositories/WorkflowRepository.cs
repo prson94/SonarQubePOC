@@ -386,17 +386,22 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("workflowItemStepUid", workflowItemStepUid);
 
 			var sql = @"
-				declare @workflowItemUid uniqueidentifier = (select top 1 wi.UID from workflow.Item wi
-				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
-				where wis.UID = @workflowItemStepUid)
+				declare @workflowItemUid uniqueidentifier,
+				@CompletedOn datetime,
+				@id bigint;
 
-				declare @doesExists int = (select top 1 ID from workflow.Item where UID = @workflowItemUid)
-				declare @isCompleted int = (select top 1 ID from workflow.Item where UID = @workflowItemUid and CompletedOn is not null)
-				declare @hasAccess int = (select top 1 wi.ID from workflow.Item wi inner join workflow.ItemAssignment wia on wia.ItemID  = wi.ID and wia.ResourceObjectID = @resourceId where wi.UID = @workflowItemUid)
+				select top 1 @workflowItemUid = wi.UID,
+				@CompletedOn = wi.CompletedOn,
+				@id = wi.ID
+				from workflow.Item wi
+				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
+				where wis.UID = @workflowItemStepUid;
+
+				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @ID and wia.ResourceObjectID = @resourceId);
 
 				select 
-				case when @doesExists is not null then 1 else 0 end as [exists], 
-				case when @isCompleted is not null then 1 else 0 end as [isCompleted], 
+				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
+				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
 				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
 				@workflowItemUid as workflowItemUid";
 
@@ -1059,16 +1064,16 @@ namespace d360.model.DataAccessLayer
 
 			var orderFieldOptions = new List<DefaultFilter>
 			{
-				new DefaultFilter("initiator", "AssignmentList.initiator", SqlFieldType.Text),
-				new DefaultFilter("assetDisplayValue", "AssignmentList.assetDisplayValue", SqlFieldType.Text),
-				new DefaultFilter("startedOn", "AssignmentList.StartedOn", SqlFieldType.DateTime),
-				new DefaultFilter("completedOn", "AssignmentList.CompletedOn", SqlFieldType.DateTime),
-				new DefaultFilter("status", "AssignmentList.Status", SqlFieldType.Text),
-				new DefaultFilter("displayPath", "AssignmentList.assetPath", SqlFieldType.Text),
-				new DefaultFilter("workflowName", "AssignmentList.workflowName", SqlFieldType.Text),
+				new DefaultFilter("initiator", "initiator", SqlFieldType.Text),
+				new DefaultFilter("assetDisplayValue", "assetDisplayValue", SqlFieldType.Text),
+				new DefaultFilter("startedOn", "StartedOn", SqlFieldType.DateTime),
+				new DefaultFilter("completedOn", "CompletedOn", SqlFieldType.DateTime),
+				new DefaultFilter("status", "Status", SqlFieldType.Text),
+				new DefaultFilter("displayPath", "assetPath", SqlFieldType.Text),
+				new DefaultFilter("workflowName", "workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
-				new DefaultFilter("objectType", "AssignmentList.objectType", SqlFieldType.Text),
-				new DefaultFilter("daysOpen", "AssignmentList.daysOpen", SqlFieldType.Date)
+				new DefaultFilter("objectType", "ObjectType.Type", SqlFieldType.Text),
+				new DefaultFilter("daysOpen", "daysOpen", SqlFieldType.Date)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1186,9 +1191,17 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"TRY_CAST(+ {(hasActionFilter ? "WA" : "AssignmentList")}.[StartedOn] AS datetime)");
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, (hasActionFilter ? queryFieldOptions : orderFieldOptions), $"StartedOn");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "asc");
-			var orderBySql = $" order by {orderColumn} {orderDirection} ";
+			var orderBySql = "";
+			if (orderColumn.ToLowerInvariant().In("startedon", "completedon"))
+			{
+				orderBySql = $" order by TRY_CAST(+ WA.[{orderColumn}] AS datetime) {orderDirection} ";
+			}
+			else
+			{
+				orderBySql = $" order by cast({orderColumn} as nvarchar(850)) {orderDirection} ";
+			}
 
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
 			int pageSize = CompanyContext.ParsePageSize(queryParams);
@@ -1220,9 +1233,11 @@ namespace d360.model.DataAccessLayer
 				classCaseStatements.Add($"when AST.class = {(int)assetClass.ID} then '{assetClass.Name}'");
 			}
 
-			var classSQL = $@"CASE {string.Join(Environment.NewLine, classCaseStatements)}
-								else 'Unknown'
-								END as initiatingObjectType";
+			var classSQL = $@"CASE 	when wa.RelationshipName is not null then 'Relationship'
+									when WA.Object = 'Issue' then 'Action'
+									{string.Join(Environment.NewLine, classCaseStatements)}
+									else 'Unknown'
+							  END as initiatingObjectType";
 
 			var assigneesSql = $@"OUTER APPLY
 							(
@@ -1241,7 +1256,10 @@ namespace d360.model.DataAccessLayer
 								) as value
 							) AssignedUsers";
 
-			var coreSelects = $@"select 
+			var coreSelectsTempTable = $@"
+									drop table if exists #assignments
+	
+									select 
 										WI.uid as workflowItemUid, 
 										T.uid as workflowUid, 
 										T.Name as workflowName,
@@ -1259,8 +1277,11 @@ namespace d360.model.DataAccessLayer
 										,WIS.ID as workflowItemStepID
 										,V.ID AS VersionId
 										,V.uid AS VersionUid
-										,V.Version as Version
+										,V.Version as Version										
 										,DATEDIFF(day, WI.StartedOn, GETDATE()) as DaysOpen
+										,-1 as AssetId
+										,cast(null as nvarchar(max)) as RelationshipName
+									into #assignments
 									FROM workflow.Type T
 															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
@@ -1268,171 +1289,88 @@ namespace d360.model.DataAccessLayer
 															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
 															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
 
-			var commonselects = $@"WA.workflowItemUid, 
-								WA.workflowUid, 
-								WA.workflowName,
-								WA.initiator,
-								WA.initiatorUid,
-								ObjectType.Type as objectType,
-								WA.StartedOn,
-								WA.CompletedOn,
-								WA.[Status],
-								AssignedUsers.value as assigneesJson,
-								IOT.initiatingObjectType,
-								WA.VersionId,
-								WA.VersionUid,
-								WA.Version,
-								WA.DaysOpen,";
-			
-			var actionSelects = $@"{commonselects}	
-								coalesce(ADV.DisplayValue,AT_ACT.Name) as assetDisplayValue,							
-								AST.uid as assetTypeUid,
-								IT.uid as actionTypeUid,
-								A.uid as assetUid,
-								AP.DisplayPath as assetPath,
-								I.uid as actionUid,
-								IT.Name as initiatingObjectTypeName
-							{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
+			var coreSelects = $@"
+				WA.workflowItemUid, 
+				WA.workflowUid, 
+				WA.workflowName,
+				WA.initiator,
+				WA.initiatorUid,		
+				coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, '(unknown)') as assetDisplayValue,
+				ObjectType.Type as objectType,
+				WA.StartedOn,
+				WA.CompletedOn,
+				WA.[Status],
+				AST.uid as assetTypeUid,
+				IT.uid as actionTypeUid,
+				A.uid as assetUid,
+				AP.DisplayPath as assetPath,
+				AssignedUsers.value as assigneesJson,
+				I.uid as actionUid,
+				IOT.initiatingObjectType,
+				IT.Name as initiatingObjectTypeName,
+				WA.VersionId,
+				WA.VersionUid,
+				WA.Version,
+				WA.DaysOpen
+				{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
-			var assetSelects = $@"{commonselects}	
-							ADV.DisplayValue as assetDisplayValue,						
-							AST.uid as assetTypeUid,
-							null as actionTypeUid,
-							A.uid as assetUid,							
-							AP.DisplayPath as assetPath,
-							null as actionUid, 
-							AST.Name as initiatingObjectTypeName
-							";
+			var coreJoins = $@"
+					left join Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
+					left join IssueType IT on I.IssueTypeID = IT.ID
+					left join AssetType AT_ACT on WA.Object = 'Issue' and AT_ACT.Id = I.AssetTypeId
+					left join Asset A on a.ID = WA.AssetId
+					left join AssetPath AP on A.ID=AP.ID
+					left join AssetType AST on AST.ID = A.AssetTypeID						
+					left join AssetDisplayValue ADV on A.id = ADV.AssetID
+					outer apply (select {classSQL})IOT
+					outer apply (
+						select case when WA.Object = 'Intersect' then 'Relationship'
+							when A.Id is not null then 'Asset' else 'Asset Type' end as [Type])ObjectType(Type)
+					{assigneesSql}";
 
-			var relationshipSelects = $@"{commonselects}
-							id.Name as assetDisplayValue,
-							null as assetTypeUid,
-							null as actionTypeUid,
-							null as assetUid,							
-							null as assetPath,
-							null as actionUid, 
-							null as initiatingObjectTypeName
-							";
 
-			var actionJoins = $@"FROM 
-							assignments WA
-							INNER JOIN 
-							Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
-							INNER JOIN 
-							IssueType IT on I.IssueTypeID = IT.ID
-							left join AssetType AT_ACT on WA.Object = 'Issue' and AT_ACT.Id = I.AssetTypeId
-							LEFT JOIN 
-							Asset A on WA.Object = 'Issue' and A.ID = I.AssetID
-							LEFT JOIN 
-							AssetPath AP on A.ID=AP.ID
-							LEFT JOIN 
-							AssetType AST on AST.ID = A.AssetTypeID						
-							LEFT JOIN 
-							AssetDisplayValue ADV on A.id = ADV.AssetID
-							OUTER APPLY (select 'Action' as initiatingObjectType)IOT
-							outer apply (select case when A.Id is not null then 'Asset' else 'Asset Type' end as [Type])ObjectType(Type)
-							{assigneesSql}
-						{string.Join("\n", fieldJoins.GetStatements())}
-						{whereConditions}";
+			var multiSQL = @$"
+					{coreSelectsTempTable}
 
-			var assetJoins = $@"FROM
-								assignments WA
-								LEFT JOIN 
-								Asset A on WA.Object=A.object and WA.ObjectID= A.objectID and WA.Object <> 'Issue'
-								LEFT JOIN 
-								AssetPath AP on A.ID=AP.ID
-								LEFT JOIN 
-								AssetType AST on AST.ID = A.AssetTypeID
-								LEFT JOIN 
-								AssetDisplayValue ADV on A.id = ADV.AssetID
-								OUTER APPLY (select {classSQL})IOT
-								outer apply (select 'Asset' as [Type])ObjectType(Type)
-								{assigneesSql}
-								outer apply (
-									select 
-										null as uid  										
-								) as IT
-								{string.Join("\n", fieldJoins.GetStatements())}
-								{whereConditions}
-								{(whereConditions.Any() ? "and" : "where")} WA.Object <> 'Issue'";
+					update WA
+					set WA.AssetId = a.ID
+					FROM #assignments WA
+					inner join Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
+					inner join Asset a on A.ID = I.AssetID 
 
-			var relationshipJoins = $@"FROM assignments WA
-								INNER JOIN 
-								[Intersect] I on WA.Object= 'Intersect' and WA.ObjectID=  I.ID 
-								left join asset a on a.ID = -1
-							    left join AssetType AST on AST.ID = -1	
-								INNER JOIN IntersectDetail ID ON ID.ID = I.ID
-								OUTER APPLY (select 'Relationship' as initiatingObjectType)IOT
-								outer apply (select 'Relationship' as [Type])ObjectType(Type)
-								{assigneesSql}
-								outer apply (
-									select 
-										null as uid  										
-								) as IT
-								{string.Join("\n", fieldJoins.GetStatements())}
-								{whereConditions}";
+					update WA
+					set WA.AssetId = a.ID
+					FROM #assignments WA
+					inner join Asset a on WA.Object=A.object and WA.ObjectID= A.objectID 
+					where WA.Object <> 'Issue' and WA.Object <> 'Intersect'
 
-			var assigmentsSQL = $@"SELECT
-							{actionSelects}
-							{actionJoins}
-						union
-						SELECT
-							{assetSelects}
-							{assetJoins}
-						union 
-						SELECT 
-							{relationshipSelects}
-							{relationshipJoins}";
+					update WA
+					set wa.RelationshipName = cast(ID.Name as nvarchar(max))
+					FROM #assignments WA
+					inner join [Intersect] I on I.ID = WA.ObjectID
+					left join IntersectDetail ID ON ID.ID = I.ID
+					where WA.Object = 'Intersect'
 
-			string outerOrderBySql = orderBySql.Replace("AssignedUsers.value", "assigneesJson");
-			var sql = $@"
-						with assignments as (
-								{coreSelects}
-							)
-						select * from 
-						(
-							
-							{assigmentsSQL}
-						) AssignmentList
-						{outerOrderBySql}
-						{offset}";
+					SELECT
+					{coreSelects}
+					FROM 
+					#assignments WA
+					{coreJoins}
+					{string.Join("\n", fieldJoins.GetStatements())}
+					{whereConditions}
+					{orderBySql}
+					{offset}
 
-			var countSQL = $@"							
-							with assignments as (
-									{coreSelects}
-							)
-							SELECT 
-								count(1)
-							from
-							(									
-								{assigmentsSQL}
-							) AssignmentList";
+				SELECT
+					count(1)				
+					FROM 
+					#assignments WA
+					{coreJoins}
+					{string.Join("\n", fieldJoins.GetStatements())}				
+					{whereConditions}";
 
-			if (hasActionFilter)
-			{
-				sql = $@"
-						with assignments as (
-							{coreSelects}
-						)
-						SELECT
-						{actionSelects}
-						{actionJoins}
-						{orderBySql}
-						{offset}";
-
-				countSQL = $@"
-							with assignments as (
-								{coreSelects}
-								)
-								SELECT
-								COUNT(1)
-								{actionJoins}
-							";
-			}
 
 			WorkflowAssignmentApiModel assignments = new WorkflowAssignmentApiModel();
-
-			var multiSQL = $"{sql}; {countSQL}";
 
 			using (var multi = await CompanyContext.Database.Connection.QueryMultipleAsync(
 				  new CommandDefinition(multiSQL,
@@ -1509,9 +1447,23 @@ namespace d360.model.DataAccessLayer
 						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
 						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
 						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						LEFT JOIN Asset A on (WI.Object <> 'Issue' and WI.Object = A.object and WI.ObjectID = A.objectID) or (WI.Object = 'Issue' and A.Id = I.AssetId)
+						outer apply (select aat.uid,aat.AssetTypeID,aat.ID
+									from Asset aat
+									where WI.Object <> 'Issue' and WI.Object = aat.object and WI.ObjectID = aat.objectID
+									union all
+									select ait.uid ,ait.AssetTypeID,ait.ID
+									from Asset ait
+									where trim(WI.Object) = 'Issue' and ait.Id = I.AssetId
+									) A
 						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
-						left join workflow.EventRegistration WER on T.ID = WER.TypeID and (WER.AssetTypeID = AST.ID or WER.IssueTypeID = iT.ID)
+						outer apply (select WERAT.ChangeType 
+									 from workflow.EventRegistration WERAT
+									 where WERAT.TypeID = T.ID and WERAT.AssetTypeID = AST.ID
+									 union all
+									 select WERIT.ChangeType 
+									 from workflow.EventRegistration WERIT
+									 where WERIT.TypeID = T.ID and WERIT.IssueTypeID = IT.ID
+									 ) WER
 						LEFT JOIN AssetPath AP on A.ID=AP.ID
 						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
 						where WI.UID = @workflowItemUid";
