@@ -868,7 +868,7 @@ export class WorkflowService extends BaseObservableService {
 
 	private getSimpleFilterParam(simpleFilter: string): string {
 		if (simpleFilter) {
-			return `&_simpleFilter=${simpleFilter}`;
+			return `&_simpleFilter=*${simpleFilter}`;
 		} else {
 			return '';
 		}
