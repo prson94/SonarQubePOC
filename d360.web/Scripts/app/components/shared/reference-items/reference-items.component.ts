@@ -384,4 +384,9 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.showEditor = false;
 		this.load();
 	}
+
+	openAddForm() {
+		this.selectedItem = null;
+		this.showEditor = true;
+	}
 }
