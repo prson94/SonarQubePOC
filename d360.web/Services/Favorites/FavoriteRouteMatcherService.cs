@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 
 using d360.core;
 using d360.core.entities.Membership;
@@ -221,7 +222,7 @@ namespace d360.web.Services.Favorites
             {
                 routePattern = routePattern.Replace(
                     $":{parameterName}",
-                    $@"(?<{parameterName}>[\w\d\-]+?)");
+                    $@"(?<{parameterName}>[\w\d\-{(parameterName == "query" ? "%" : "")}]+?)");
             }
 
             return new Regex(routePattern, RegexOptions.IgnoreCase);
@@ -488,7 +489,7 @@ namespace d360.web.Services.Favorites
             {
                 RoutePattern = "search?query=:query",
                 PageType = FavoritePageType.SearchResultsPage,
-                GetName = (_, p) => $"“{p["query"]}”",
+                GetName = (_, p) => $"“{HttpUtility.UrlDecode(p["query"])}”",
             },
 
             //Semantic Types
