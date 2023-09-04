@@ -294,21 +294,13 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.onModalClose.emit({ isBack: false, isCompleteForm });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
 				this.isLoading = true;
 				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
-				.subscribe((res) => {
-					this.isLoading = false;
-				const matchedAssignment=res.find((ele) =>
-					ele.WorkflowTypeUid=== this.selectedAssignment.WorkflowTypeUid && ele.Version===this.selectedAssignment.Version
-				);	
-					this.onModalClose.emit({ isBack: matchedAssignment.Count> 0 ? true : false, isCompleteForm });					
-				});
+
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.isLoading = true;
@@ -316,10 +308,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
-						this.isLoading = false;
-						this.onModalClose.emit({ isBack: false, isCompleteForm });
 					});
 			}
+			
+			// Common function to close the modal
+			this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
+			.subscribe((res) => {
+				this.isLoading = false;
+				const matchedAssignment=res.find((ele) =>
+					ele.WorkflowTypeUid=== this.selectedAssignment.WorkflowTypeUid && ele.Version===this.selectedAssignment.Version
+				);	
+					this.onModalClose.emit({ isBack: matchedAssignment.Count> 0 ? true : false, isCompleteForm });					
+			});
 		}
 	}
 
