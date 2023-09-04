@@ -1697,7 +1697,13 @@ a.breadcrumb {
     display: table-row;
     float: none;
     background-color: var(--navbarBackColor);
-    color: var(--calculatedBackTextColor);
+    color: var(--calculatedNavbarTextColor);
+
+    .mini-menu-line {
+      a {
+        color: var(--calculatedNavbarTextColor);
+      }
+    }
 
     &.label {
       cursor: default;
@@ -1706,7 +1712,14 @@ a.breadcrumb {
     }
 
     &:hover, &.hover {
-      background-color: var(--navbarBackColorSelectedHover);
+      background: var(--navbarBackColorSelectedHover);
+      color: var(--calculatedNavbarSelectedTextColor);
+
+      .mini-menu-line {
+        a {
+          color: var(--calculatedNavbarSelectedTextColor);
+        }
+      }
     }
 
     &:active, &.active {

@@ -76,7 +76,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.isMenuActive = false;
     }
 
-    public activeMenu$ = new Subject();
+	public activeMenu$ = new Subject();
+	private calculatedNavbarTextColor: string;
 
     constructor(
         private authenticationService: AuthenticationService,
@@ -87,7 +88,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private route: ActivatedRoute,
         private featureFlagService: LaunchDarklyService
     ) {
-        super(settingsService);
+		super(settingsService);
+		this.calculatedNavbarTextColor = getComputedStyle(document.documentElement).getPropertyValue('--calculatedNavbarTextColor');
     }
 
     ngAfterContentInit(): void {
@@ -265,6 +267,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 							break;
 						case '#DataCatalog':
 							menu.ngUrl = `/dataCatalog`;
+							if (this.calculatedNavbarTextColor === "white") {
+								menu.Icon = 'gov-data-catalog-icon-white';
+							}
 							break;
                         default:
                             //is it a custom menu?
