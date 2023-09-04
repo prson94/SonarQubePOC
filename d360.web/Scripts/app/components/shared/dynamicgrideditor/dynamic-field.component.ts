@@ -31,7 +31,8 @@ import * as DOMPurify from 'dompurify';
 
 @Component({
     selector: 'd3s-dynamic-field',
-    templateUrl: './dynamic-field.component.html',
+	templateUrl: './dynamic-field.component.html',
+	styleUrls: ["./dynamic-field.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, TagService, AssetService]
 })
