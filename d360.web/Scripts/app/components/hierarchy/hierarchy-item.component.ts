@@ -22,6 +22,7 @@ import { IOutputData } from 'angular-split';
 import { AssetService } from '../../services/asset.service';
 import { ArtifactService } from '../../services/artifacts.service';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	selector: 'd3s-hierarchy-item',
@@ -74,12 +75,14 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
 		private linkClickInterceptor: LinkClickInterceptor,
+		launchDarklyService: LaunchDarklyService
 	) {
 		super(settingsService);
 
 		this.webAnalyticsService = webAnalyticsService;
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
+		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {

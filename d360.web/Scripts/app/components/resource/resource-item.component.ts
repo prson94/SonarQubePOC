@@ -74,7 +74,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
-
+		this.launchDarklyService = featureFlagService;
 		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
     }
 
