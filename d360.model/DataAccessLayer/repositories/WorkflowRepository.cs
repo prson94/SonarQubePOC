@@ -15,7 +15,6 @@ using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
-using Microsoft.Azure.Amqp.Transaction;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using FieldType = d360.core.entities.FieldType;
