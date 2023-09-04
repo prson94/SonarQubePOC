@@ -28,6 +28,7 @@ export class AssignmentsMultiPickerComponent {
 	@Input() onlyAdminReassignMode: boolean = false;
 	@Output() onModalClose: EventEmitter<void> = new EventEmitter<void>();
 
+	assignmentAssetTypeName: string = null;
 	workflowTypeName: string;
 
 	isModalVisible: boolean = false;
@@ -68,6 +69,10 @@ export class AssignmentsMultiPickerComponent {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;
+
+		const uniqueTypeNames = Array.from(new Set(this.assignments.map(x => x.AssetTypePath)));
+		this.assignmentAssetTypeName = uniqueTypeNames.length === 1 ? uniqueTypeNames[0] : null;
+
 		this.workflowTypeName = workflowTypeName;
 		this.sidePanel = 'asset-details';
 		this.selectedAssignment=item;

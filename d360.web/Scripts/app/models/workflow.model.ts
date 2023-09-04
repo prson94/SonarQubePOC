@@ -1012,6 +1012,7 @@ export class SingleAssignment {
 	ItemStepUid: string;
 	Name: string;
 	AssetTypeName: string;
+	AssetTypePath: string;
 	AssetId: number;
 	AssetUid: string;
 	InitiatedOn: Date;

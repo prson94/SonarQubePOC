@@ -79,6 +79,9 @@
 				<ig-property-group i18n-title title="Assignments" [showHeaderLine]="false" [shouldBePadded]="false">
 					<div readonly>
 						<div class="row">
+							<div class="associated-type-name" *ngIf="assignmentAssetTypeName" i18n>
+								<b>Associated Asset Type</b>: {{assignmentAssetTypeName}}
+							</div>
 
 							<div class="table-wrapper">
 								<p-table #dt
@@ -87,7 +90,7 @@
 										 [value]="assignments"
 										 [metaKeySelection]="true"
 										 [scrollable]="true"
-										 [scrollHeight]="'calc(100vh - 410px)'"
+										 [scrollHeight]="assignmentAssetTypeName ? 'calc(100vh - 458px)' : 'calc(100vh - 410px)'"
 										 [(selection)]="selected"
 										 [sortOrder]="-1">
 									<ng-template pTemplate="header">
