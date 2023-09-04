@@ -76,6 +76,7 @@
 						 [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
 
 <d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"
+							  [onlyAdminReassignMode]="onlyAdminReassignMode"
 							  (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
 
 <d3s-modal [title]="errorModalTitle"
