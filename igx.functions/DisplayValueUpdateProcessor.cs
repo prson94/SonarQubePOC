@@ -80,16 +80,17 @@ namespace igx.functions.consumption
                         {
                             await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
                         }
-                        catch
-                        {
+						catch (Exception ex)
+						{
+							CoreFunction.AITrackException(functionName, ex, updateInfo.CompanyID);
                             throw;
                         }
                         finally
                         {
                             await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                         }
-                    }
-                }
+					}
+				}
             }
             catch (Exception ex)
             {

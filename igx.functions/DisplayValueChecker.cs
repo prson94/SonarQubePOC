@@ -75,7 +75,7 @@ namespace igx.functions.consumption
 							{
 								try
 								{
-									companyContext.Connection.Execute("CheckDisplayValues", commandTimeout: 600, commandType: System.Data.CommandType.StoredProcedure);
+									companyContext.Connection.Execute("CheckDisplayValues", commandTimeout: 2400, commandType: System.Data.CommandType.StoredProcedure);
 								}
 								catch (Exception ex)
 								{
@@ -85,7 +85,11 @@ namespace igx.functions.consumption
 								{
 									await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
 								}
-							}						
+							}
+							else
+							{
+								CoreFunction.AITrackTrace(functionName, $"UpdateRebuildJobStatus message: ${rs.Message}", null, c.CompanyID);
+							}
 						}
                     }
                     catch (Exception ex)
