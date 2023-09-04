@@ -3626,7 +3626,8 @@ namespace d360.web.Controllers.Services
 			inner join workflow.[type] t on t.id = v.typeid
 			inner join workflow.eventregistration e on e.TypeID = v.TypeID
 			left join AssetType ta on ta.[Object] = e.[Object] and ta.ObjectID = e.ObjectID
-			where si.ID = @itemStepId";
+			where si.ID = @itemStepId
+			option (recompile)";
 
 			var detail = Company.Query<WorkflowStepDetail>(sql, new { itemStepId }).FirstOrDefault();
 

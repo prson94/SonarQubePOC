@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.reporting.Global_Audit-v2">
+ <changeSet author="Pappas" id="Table.reporting.Global_Audit-v2.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Global_Audit')
@@ -17,7 +17,7 @@ BEGIN
 		[ObjectName] [nvarchar](250) not null,
 		[ResourceID] [int] not null,
 		[Date] [datetime] not null,
-		[Version] int not null,
+		[Version] int constraint [DF_ReportingGlobalAudit_Version] default(1) not null,
 		[Action] [varchar](15) not null,
 		[ActionObject] [varchar](50) not null,
 		[ActionObjectID] [int] not null,
@@ -35,23 +35,18 @@ END
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME = 'Global_Audit' and COLUMN_NAME = 'Version')
 begin
-	alter table reporting.Global_Audit add [Version] int null;
+	alter table reporting.Global_Audit add [Version] int constraint [DF_ReportingGlobalAudit_Version] default(1) not null;
+end
+GO
+
+if not exists (select 1 from [sys].[default_constraints] where name = 'DF_ReportingGlobalAudit_Version')
+begin
+	alter table reporting.Global_Audit add constraint [DF_ReportingGlobalAudit_Version] default(1) for [Version]
 end
 GO
 
 if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME = 'Global_Audit' and COLUMN_NAME = 'Version')
 begin
-	update 	T
-	set		T.[Version] = S.[Version]
-	from	reporting.Global_Audit T
-			inner join 	(
-						select	ROW_NUMBER() OVER (PARTITION BY Object, ObjectID ORDER BY [Date] ASC) as [Version],
-								Id,
-								Object, 
-								ObjectID
-						from	reporting.Global_Audit
-						) S on S.Id = T.Id;
-
 	alter table reporting.Global_Audit alter column [Version] int not null;
 end
 ]]>
