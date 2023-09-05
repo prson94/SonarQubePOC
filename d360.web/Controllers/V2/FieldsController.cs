@@ -2545,6 +2545,12 @@ namespace d360.web.Controllers.V2
 						items = items.Prepend(new DDLSelectItem { text = "- Root -", value = Guid.Empty.ToString() }).ToList();
 					}
 
+					//if there are more items than UI expects it will cause lazy load to retrigger again and again causing browser crash
+					if (items.Count > take)
+					{
+						items = items.Take(take ?? 20).ToList();
+					}
+
 					var data = new
 					{
 						items,
