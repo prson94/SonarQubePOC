@@ -84,6 +84,7 @@ namespace d360.model.DataAccessLayer
 							[Date] datetime,
 							[Action] varchar(15),
 							AuditId bigint null,
+							[Version] int,
 							index ix_OTitems(Qualifier)
 						)
 
@@ -91,7 +92,6 @@ namespace d360.model.DataAccessLayer
 							Qualifier nvarchar(200),
 							EffectiveDate datetime,
 							FieldName varchar(250),
-							[Version] int,
 							[Value] nvarchar(max),
 							[PreviousValue] nvarchar(max),
 							AuditId bigint null
@@ -100,9 +100,8 @@ namespace d360.model.DataAccessLayer
 						declare @QualifierAuditID table
 						(
 							Qualifier nvarchar(200),
-							FieldName nvarchar(250),
 							MaxVersion int,
-							index ix_OTQualifierAuditID(Qualifier,FieldName)
+							index ix_OTQualifierAuditID(Qualifier)
 							);
 
 						insert into @items
@@ -118,6 +117,7 @@ namespace d360.model.DataAccessLayer
 											else'Updated' end											
 										else 'Removed'
 									end,
+									null,
 									null
 							from	Semantic 
 							where	TransactionId = @transactionId
@@ -198,11 +198,30 @@ namespace d360.model.DataAccessLayer
 
 						declare @ids table (AuditId bigint, Qualifier nvarchar(200))
 
+						;with rs as (select distinct t.Qualifier,S.Id SemanticID
+									from @items t
+									inner join Semantic S on t.Qualifier = S.Qualifier)
+						insert into @QualifierAuditID
+						select rs.Qualifier,max(A.[Version]) as [MaxVersion]
+						from rs
+						inner join [reporting].[Global_Audit] A on A.Object = 'Semantic'  and A.ObjectID = rs.SemanticID
+						group by rs.Qualifier;
+
+						update	T
+						set		T.Version = S.[MaxVersion] + 1
+						from	@items T
+								cross apply (
+									select	coalesce(A.MaxVersion,0) as [MaxVersion]
+									from	@QualifierAuditID A
+									where   A.Qualifier = T.Qualifier
+								) S
+
+
 						insert into [reporting].[Global_Audit] (
 							Object, ObjectID, ObjectName, 
 							ResourceID, Date, Action, 
 							ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, 
-							ActionDescription)
+							ActionDescription,Version)
 						output inserted.ID, inserted.ObjectName into @ids
 						select	Object, ObjectID, Qualifier, 
 								ResourceID, Date, Case Action when 'Disabled' then 'Updated' else Action end,
@@ -213,7 +232,7 @@ namespace d360.model.DataAccessLayer
 											case when Action = 'Disabled' then 'disabled' 
 											else 'updated' end
 										else 'removed'
-									end + '.'
+									end + '.', coalesce(Version,1)
 						from @items
 
 						update	T
@@ -226,27 +245,8 @@ namespace d360.model.DataAccessLayer
 						from	@fields T
 								inner join @items S on S.Qualifier = T.Qualifier
 
-						;with rs as (select distinct t.Qualifier,S.Id SemanticID
-									from @items t
-									inner join Semantic S on t.Qualifier = S.Qualifier)
-						insert into @QualifierAuditID
-						select rs.Qualifier,F.FieldName,max(F.[Version]) as [MaxVersion]
-						from rs
-						inner join [reporting].[Global_Audit] A on A.Object = 'Semantic'  and A.ObjectID = rs.SemanticID
-						inner join [reporting].[Global_FieldAudit] F on F.AuditID =  A.ID
-						group by rs.Qualifier,F.FieldName;
-
-						update	T
-						set		T.Version = S.[MaxVersion] + 1
-						from	@fields T
-								cross apply (
-									select	coalesce(A.MaxVersion,0) as [MaxVersion]
-									from	@QualifierAuditID A
-									where   A.Qualifier = T.Qualifier and A.FieldName = T.FieldName
-								) S
-
-						insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Version, Value, PreviousValue)
-							select AuditID, 0, FieldName, coalesce(Version, 1), Value, PreviousValue from @fields", new { transactionId, action });
+						insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Value, PreviousValue)
+							select AuditID, 0, FieldName, Value, PreviousValue from @fields", new { transactionId, action });
 		}
 
 		private List<Semantic> findLatestExistingSemantics(List<string> qualifiers, int expectedCount)
