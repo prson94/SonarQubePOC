@@ -903,13 +903,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				table.Columns.Add("IntersectTypeUid", typeof(Guid));
 				table.Columns.Add("IntersectTypeID", typeof(int));
 
-				DataTable errorTable = new DataTable();
-				errorTable.Columns.Add("ExecutionID", typeof(Guid));
-				errorTable.Columns.Add("ItemNumber", typeof(int));
-				errorTable.Columns.Add("ExecutionItemUid", typeof(Guid));
-				errorTable.Columns.Add("Uid", typeof(Guid));
-				errorTable.Columns.Add("Message", typeof(string));
-
 				DataTable fieldTable = new DataTable();
 
 				fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -1006,81 +999,67 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								}
 							}
 
-							if (success)
+							// Add to api.ExecutionAsset.
+							importFields.Add(i, model.Fields.Keys.ToList());
+							fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
+
+							DataRow row = table.NewRow();
+
+							row["ExecutionID"] = execution.ExecutionID;
+							row["ItemNumber"] = i;
+
+							if (model.ExecutionItemUid.HasValue)
 							{
-								importFields.Add(i, model.Fields.Keys.ToList());
-								fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
-
-								DataRow row = table.NewRow();
-
-								row["ExecutionID"] = execution.ExecutionID;
-								row["ItemNumber"] = i;
-
-								if (model.ExecutionItemUid.HasValue)
-								{
-									row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
-								}
-
-								if (model.Uid != Guid.Empty)
-								{
-									row["Uid"] = model.Uid;
-								}
-
-								if (!string.IsNullOrEmpty(model.SourceID) && !string.IsNullOrWhiteSpace(model.SourceID))
-								{
-									if (model.SourceID.Length > 500)
-									{
-										row["SourceID"] = model.SourceID.Substring(0, 500);
-									}
-									else
-									{
-										row["SourceID"] = model.SourceID;
-									}
-								}
-
-								if (model.ParentUid.HasValue)
-								{
-									row["ParentUid"] = model.ParentUid;
-								}
-
-								row["ObjectType"] = at.Object;
-								row["ObjectTypeID"] = at.ObjectID;
-
-								if (parentAssetTypeId.HasValue)
-								{
-									row["ParentAssetTypeID"] = parentAssetTypeId.Value;
-								}
-
-								if (intersectTypeUid.HasValue)
-								{
-									row["IntersectTypeUid"] = intersectTypeUid.Value;
-								}
-
-								if (intersectTypeID.HasValue)
-								{
-									row["IntersectTypeID"] = intersectTypeID.Value;
-								}
-
-								table.Rows.Add(row);
+								row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
 							}
-							else
+
+							if (model.Uid != Guid.Empty)
 							{
-								DataRow errorRow = errorTable.NewRow();
-								errorRow["ExecutionID"] = execution.ExecutionID;
-								errorRow["ItemNumber"] = i;
-
-								if (model.ExecutionItemUid.HasValue)
-								{
-									errorRow["ExecutionItemUid"] = model.ExecutionItemUid.Value;
-								}
-
-								errorRow["Uid"] = model.Uid;
-								errorRow["Message"] = errorMessage;
-
-								errorTable.Rows.Add(errorRow);
-
-								results.Add(new DatabaseBulkAssetResult { IsNew = false, ItemNumber = i, ExecutionItemUid = model.ExecutionItemUid, Message = errorMessage, Success = false });
+								row["Uid"] = model.Uid;
 							}
+
+							if (!string.IsNullOrEmpty(model.SourceID) && !string.IsNullOrWhiteSpace(model.SourceID))
+							{
+								if (model.SourceID.Length > 500)
+								{
+									row["SourceID"] = model.SourceID.Substring(0, 500);
+								}
+								else
+								{
+									row["SourceID"] = model.SourceID;
+								}
+							}
+
+							if (model.ParentUid.HasValue)
+							{
+								row["ParentUid"] = model.ParentUid;
+							}
+
+							row["ObjectType"] = at.Object;
+							row["ObjectTypeID"] = at.ObjectID;
+
+							if (parentAssetTypeId.HasValue)
+							{
+								row["ParentAssetTypeID"] = parentAssetTypeId.Value;
+							}
+
+							if (intersectTypeUid.HasValue)
+							{
+								row["IntersectTypeUid"] = intersectTypeUid.Value;
+							}
+
+							if (intersectTypeID.HasValue)
+							{
+								row["IntersectTypeID"] = intersectTypeID.Value;
+							}
+
+							if (!success)
+							{
+								row["Message"] = errorMessage;
+								row["Success"] = false;
+							}
+
+							table.Rows.Add(row);
 						}
 
 						i++;
@@ -1122,7 +1101,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
 								bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
 								bulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-
+								
+								bulkCopy.ColumnMappings.Add("Message", "Message");
+								bulkCopy.ColumnMappings.Add("Success", "Success");
+								
 								bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
 								bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
 
@@ -1130,25 +1112,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
 
 								bulkCopy.WriteToServer(table);
-							}
-
-							if (errorTable.Rows.Count > 0)
-							{
-								using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
-								{
-									// asset errors
-									bulkCopy.BatchSize = SqlBulkBatchSize;
-									bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-									bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
-
-									bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-									bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-									bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-									bulkCopy.ColumnMappings.Add("Uid", "Uid");
-									bulkCopy.ColumnMappings.Add("Message", "Message");
-
-									bulkCopy.WriteToServer(errorTable);
-								}
 							}
 
 							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
