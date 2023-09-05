@@ -5,7 +5,7 @@
     <div *ngIf="!isLoading">
         <ng-container *ngIf="showHeader">
             <div class="asset-detail-user-image" *ngIf="objectType === 'Resource' && objectUID">
-                <img class="resource-image" [src]="'/api/v2/membership/users/' + objectUID + '/image?size=70'" />
+                <d3s-user-avatar [class]="'resource-image'" [resourceUid]="objectUID" [size]="75"></d3s-user-avatar>
             </div>
             <div class="asset-detail-header">
                 <div class="right d3s-score-container" style="display: block">

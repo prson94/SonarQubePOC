@@ -1210,6 +1210,10 @@
     <Content Include="Content\images\PreciselyLogo.png" />
     <Content Include="Content\images\precisely_p_228.png" />
     <Content Include="Content\images\related-assets-icon.svg" />
+    <Content Include="Content\images\user25.png" />
+    <Content Include="Content\images\user35.png" />
+    <Content Include="Content\images\user70.png" />
+    <Content Include="Content\images\user200.png" />
     <Content Include="Content\primeicons\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\primeicons.css" />
     <Content Include="Content\primeicons\primeicons.min.css">

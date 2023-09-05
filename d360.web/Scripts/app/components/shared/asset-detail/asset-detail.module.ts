@@ -27,6 +27,7 @@ import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { SharedAssignmentsModule } from "../assignments/shared-assignments.module";
 import { GroupMembersModule } from '../group/group-members.module';
+import { UserAvatarModule } from '../small-widgets/user-avatar/user-avatar.module';
 
 
 @NgModule({
@@ -53,7 +54,8 @@ import { GroupMembersModule } from '../group/group-members.module';
         DynamicFieldNameModule,
         PortalsModule,
         SharedAssignmentsModule,
-        GroupMembersModule
+		GroupMembersModule,
+		UserAvatarModule
     ],
     declarations: [
         AssetDetailFieldComponent,
