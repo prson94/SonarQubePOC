@@ -629,7 +629,7 @@ namespace d360.web.Controllers.V2
 				document.SetCellValue(rowNumber, index++, (string)row.SortByAscending);
 				document.SetCellValue(rowNumber, index++, (string)row.Filter);
 				document.SetCellValue(rowNumber, index++, (row.RelationshipTypeUID ?? "").ToString());
-				document.SetCellValue(rowNumber, index++, (int)row.RelationshipTypeId);
+				document.SetCellValue(rowNumber, index++, row.RelationshipTypeId == null ? -1 : (int)row.RelationshipTypeId);
 
 			}
 			#endregion
