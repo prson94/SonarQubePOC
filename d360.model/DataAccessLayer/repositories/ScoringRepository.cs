@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
+using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 
@@ -17,12 +19,12 @@ namespace d360.model.DataAccessLayer
 {
 	public class ScoringRepository : BaseRepository, IScoringRepository
 	{
-		private readonly ICompanyContext companyContext;
+		internal IQueueSource QueueSource;
 
-		public ScoringRepository(ICompanyContext companyContext)
+		public ScoringRepository(ICompanyContext companyContext, IQueueSource queueSource)
 			: base(companyContext)
 		{
-			this.companyContext = companyContext;
+			QueueSource = queueSource;
 		}
 
 		public List<AssetTypeClass> AllowedClassesForScoreType()
@@ -278,7 +280,7 @@ namespace d360.model.DataAccessLayer
 						{sqlOrderClause}
 						";
 
-			List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs, ApiTimeout).ToList();
+			List<AllocationApiGetModel> allocations = CompanyContext.Query<AllocationApiGetModel>(sql, dbArgs, ApiTimeout).ToList();
 			return allocations;
 		}
 
@@ -287,12 +289,12 @@ namespace d360.model.DataAccessLayer
 			if (alloc != null)
 			{
 				alloc.State = State.Active;
-				alloc.UpdatedBy = companyContext.CurrentResourceID;
+				alloc.UpdatedBy = CompanyContext.CurrentResourceID;
 				alloc.IsExternallyCalculated = model.isExternallyCalculated;
 				alloc.UpdatedOn = DateTime.UtcNow;
 				alloc.LowerThreshold = model.lowerThreshold.Value;
 				alloc.UpperThreshold = model.upperThreshold.Value;
-				companyContext.SaveChanges();
+				CompanyContext.SaveChanges();
 			}
 			else
 			{
@@ -301,14 +303,59 @@ namespace d360.model.DataAccessLayer
 					AssetTypeUid = model.assetTypeUid,
 					ScoreType = model.scoreType
 				};
-				alloc.CreatedBy = alloc.UpdatedBy = companyContext.CurrentResourceID;
+				alloc.CreatedBy = alloc.UpdatedBy = CompanyContext.CurrentResourceID;
 				alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
 				alloc.IsExternallyCalculated = model.isExternallyCalculated;
 				alloc.LowerThreshold = model.lowerThreshold.Value;
 				alloc.UpperThreshold = model.upperThreshold.Value;
-				companyContext.MetricAllocations.Add(alloc);
-				companyContext.SaveChanges();
+				CompanyContext.MetricAllocations.Add(alloc);
+				CompanyContext.SaveChanges();
 			}
+
+			#region Execution Log
+
+			string logSql = $@"
+declare @executionUid uniqueidentifier = newid(),
+		@id int,
+		@d datetime = getutcdate();
+insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [State], [Action])
+values (@executionUid, @CurrentResourceID, 1, 1, 0, @d, @d, @d, 4, @action)
+
+select @id = Id from api.Execution where ExecutionID = @executionUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	@id,
+			(select Id,
+					@CalculationMethod as CalculationMethod,
+					@ScoreType as ScoreType,
+					iif(IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
+					LowerThreshold,
+					UpperThreshold,
+					cast(1 as bit) as IsNew
+			for json path
+			) as Payload
+	from	metrics.Allocation
+	where	Uid = @Uid;
+
+select @id";
+			
+			var executionId = CompanyContext.Query<int>(logSql, 
+				new { 
+					alloc.Uid, 
+					CompanyContext.CurrentResourceID, 
+					action = (int)ApiExecutionAction.PostScoreAllocation, 
+					CalculationMethod = alloc.CalculationMethod.ToString(),
+					ScoreType = alloc.ScoreType.ToString()
+				}).Single();
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { 
+				Action = PostExecutionQueueMessageAction.History, 
+				CompanyID = CompanyContext.CurrentCompanyID, 
+				ExecutionId = executionId
+			});
+
+			#endregion
+
 
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@uid", alloc.Uid);
@@ -328,7 +375,7 @@ namespace d360.model.DataAccessLayer
 							cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
 						where AL.uid = @uid";
 
-			AllocationApiGetModel allocation = companyContext.Query<AllocationApiGetModel>(sql, dbArgs).FirstOrDefault();
+			AllocationApiGetModel allocation = CompanyContext.Query<AllocationApiGetModel>(sql, dbArgs).FirstOrDefault();
 			
 			return allocation;
 		}
@@ -337,12 +384,58 @@ namespace d360.model.DataAccessLayer
 		{
 			alloc.AssetTypeUid = model.assetTypeUid;
 			alloc.ScoreType = model.scoreType;
-			alloc.UpdatedBy = companyContext.CurrentResourceID;
+			alloc.UpdatedBy = CompanyContext.CurrentResourceID;
 			alloc.IsExternallyCalculated = model.isExternallyCalculated;
 			alloc.LowerThreshold = model.lowerThreshold.Value;
 			alloc.UpperThreshold = model.upperThreshold.Value;
 			alloc.UpdatedOn = DateTime.UtcNow;
-			companyContext.SaveChanges();
+			CompanyContext.SaveChanges();
+
+			#region Execution Log
+
+			string logSql = $@"
+declare @executionUid uniqueidentifier = newid(),
+		@id int,
+		@d datetime = getutcdate();
+insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [State], [Action])
+values (@executionUid, @CurrentResourceID, 1, 1, 0, @d, @d, @d, 4, @action)
+
+select @id = Id from api.Execution where ExecutionID = @executionUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	@id,
+			(select Id,
+					@CalculationMethod as CalculationMethod,
+					@ScoreType as ScoreType,
+					iif(IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
+					LowerThreshold,
+					UpperThreshold,
+					cast(0 as bit) as IsNew
+			for json path
+			) as Payload
+	from	metrics.Allocation
+	where	Uid = @Uid;
+
+select @id";
+
+			var executionId = CompanyContext.Query<int>(logSql,
+				new
+				{
+					alloc.Uid,
+					CompanyContext.CurrentResourceID,
+					action = (int)ApiExecutionAction.PutScoreAllocation,
+					CalculationMethod = alloc.CalculationMethod.ToString(),
+					ScoreType = alloc.ScoreType.ToString()
+				}).Single();
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			{
+				Action = PostExecutionQueueMessageAction.History,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ExecutionId = executionId
+			});
+
+			#endregion
 
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("@uid", alloc.Uid);
@@ -362,37 +455,75 @@ namespace d360.model.DataAccessLayer
 							cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
 						where AL.uid = @uid";
 
-			AllocationApiGetModel allocation = companyContext.Query<AllocationApiGetModel>(sql, dbArgs).FirstOrDefault();
+			AllocationApiGetModel allocation = CompanyContext.Query<AllocationApiGetModel>(sql, dbArgs).FirstOrDefault();
 
 			return allocation;
 		}
 
 		public void DeleteAllocation(MetricAllocation alloc)
 		{
-			alloc.UpdatedBy = companyContext.CurrentResourceID;
+			alloc.UpdatedBy = CompanyContext.CurrentResourceID;
 			alloc.UpdatedOn = DateTime.UtcNow;
 			alloc.State = State.Deleted;
-			companyContext.SaveChanges();
+			CompanyContext.SaveChanges();
+
+			#region Execution Log
+
+			string logSql = $@"
+declare @executionUid uniqueidentifier = newid(),
+		@id int,
+		@d datetime = getutcdate();
+insert into api.Execution (ExecutionID, ResourceID, Total, Processed, [Error], StartedOn, ProcessingStartedOn, CompletedOn, [State], [Action])
+values (@executionUid, @CurrentResourceID, 1, 1, 0, @d, @d, @d, 4, @action)
+
+select @id = Id from api.Execution where ExecutionID = @executionUid;
+
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	@id,
+			(select Id
+			for json path
+			) as Payload
+	from	metrics.Allocation
+	where	Uid = @Uid;
+
+select @id";
+
+			var executionId = CompanyContext.Query<int>(logSql,
+				new
+				{
+					alloc.Uid,
+					CompanyContext.CurrentResourceID,
+					action = (int)ApiExecutionAction.DeleteScoreAllocation
+				}).Single();
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			{
+				Action = PostExecutionQueueMessageAction.History,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ExecutionId = executionId
+			});
+
+			#endregion
 		}
 
 		public bool HasActiveMeasures(MetricAllocation alloc)
 		{
-			return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AllocationUid == alloc.Uid);
+			return CompanyContext.MetricAssets.Any(x => x.State == State.Active && x.AllocationUid == alloc.Uid);
 		}
 
 		public bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model)
 		{
-			return companyContext.MetricAllocations.Any(x => x.Uid != allocationUid && x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
+			return CompanyContext.MetricAllocations.Any(x => x.Uid != allocationUid && x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
 		}
 
 		public MetricAllocation GetAllocationByUid(Guid allocationUid)
 		{
-			return companyContext.GetByUid<MetricAllocation>(allocationUid);
+			return CompanyContext.GetByUid<MetricAllocation>(allocationUid);
 		}
 
 		public MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model)
 		{
-			return companyContext.MetricAllocations.FirstOrDefault(x => x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
+			return CompanyContext.MetricAllocations.FirstOrDefault(x => x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
 		}
 
 		public async Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType)
@@ -414,28 +545,28 @@ namespace d360.model.DataAccessLayer
 								and
 							not exists (select 1 from [metrics].Allocation a where a.[state] = 1 and a.assettypeuid = att.[uid] and a.scoretype = @scoreType)";
 
-			return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs, ApiTimeout)).ToList();
+			return (await CompanyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs, ApiTimeout)).ToList();
 
 		}
 
 		public List<ExternalScoreResultApiResponseModel> PostExternalResults(MetricAllocation allocation, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution)
 		{
-			return companyContext.BulkExternalResultsImport(model, execution, allocation);
+			return CompanyContext.BulkExternalResultsImport(model, execution, allocation);
 		}
 
 		public List<ExternalScoreResultApiResponseModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution)
 		{
-			return companyContext.BulkExternalResultsImport(model, execution, scoreType);
+			return CompanyContext.BulkExternalResultsImport(model, execution, scoreType);
 		}
 
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			return companyContext.BulkMetricsImport(results, execution, allocation);
+			return CompanyContext.BulkMetricsImport(results, execution, allocation);
 		}
 
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			return companyContext.BulkMetricsImport(results, execution, scoreType);
+			return CompanyContext.BulkMetricsImport(results, execution, scoreType);
 		}
 
 		public async Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -465,7 +596,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("FailCount", "AR.FailCount", SqlFieldType.Number),
 			};
 
-			companyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+			CompanyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
 			if (advFilterArgs != null && advFilterStatements != null)
 			{
 				dbArgs.AddDynamicParams(advFilterArgs);
@@ -474,7 +605,7 @@ namespace d360.model.DataAccessLayer
 
 			var simpleWhere = "";
 
-			companyContext.ParseSimpleFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
+			CompanyContext.ParseSimpleFilterQueryParameter(queryParams, queryFieldOptions, out DynamicParameters simpleFilterArgs, out List<string> simpleFilterStatements);
 			if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
 			{
 				dbArgs.AddDynamicParams(simpleFilterArgs);
@@ -484,16 +615,16 @@ namespace d360.model.DataAccessLayer
 
 			//Add the default query items
 			dbArgs.Add("@scoreItemUid", scoreItemUid);
-			dbArgs.Add("@userId", companyContext.CurrentResourceID);
+			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
 			whereStatements.Insert(0, "I.Uid = @scoreItemUid");
 
-			var orderColumn = companyContext.ParseOrderColumn(queryParams, queryFieldOptions, "OAN.DisplayPath");
-			var orderDirection = companyContext.ParseOrderDirection(queryParams, "desc");
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "OAN.DisplayPath");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
 			var orderBySql = $" order by {orderColumn} {orderDirection} ";
 
-			int pageNum = companyContext.ParsePageNumber(queryParams, 1);
-			int pageSize = companyContext.ParsePageSize(queryParams);
-			string offset = companyContext.ParsePageOffsetSql(pageNum, pageSize);
+			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+			int pageSize = CompanyContext.ParsePageSize(queryParams);
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
 
 			evidenceModel.pageNum = pageNum;
 			evidenceModel.pageSize = pageSize;
@@ -599,7 +730,7 @@ namespace d360.model.DataAccessLayer
 
 			// I've setup 120 seconds timeout as a hot fix for GOV-18554. 
 			// It will be revisited in GOV-18444
-			var evidenceModelRequest = await companyContext.QueryMultipleAsync(sql, dbArgs, 120);
+			var evidenceModelRequest = await CompanyContext.QueryMultipleAsync(sql, dbArgs, 120);
 
 			var scoreItemExists = evidenceModelRequest.Read<bool>().Single();
 			var canReadAsset = evidenceModelRequest.Read<bool>().Single();
@@ -629,7 +760,7 @@ namespace d360.model.DataAccessLayer
 
 		public ScoreExecution GetExecutionById(Guid uid)
 		{
-			return companyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
+			return CompanyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
 		}
 
 		public IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber)
@@ -648,7 +779,7 @@ namespace d360.model.DataAccessLayer
 				pageSize = 200;
 			}
 
-			return companyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize * pageNumber).Take(pageSize);
+			return CompanyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize * pageNumber).Take(pageSize);
 		}
 
 		public List<ScoreExecutionItemViewModel> GetExecutionItems(
@@ -671,7 +802,7 @@ namespace d360.model.DataAccessLayer
 				pageSize = 200;
 			}
 
-			var items = companyContext.Table<ScoreExecutionItem>();
+			var items = CompanyContext.Table<ScoreExecutionItem>();
 
 			if (changeType.HasValue)
 			{

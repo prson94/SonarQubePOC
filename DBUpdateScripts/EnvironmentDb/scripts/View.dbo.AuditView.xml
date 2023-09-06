@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="TDuric" id="View.dbo.AuditView.v4">
+ <changeSet author="Pappas" id="View.dbo.AuditView.v4.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 CREATE OR ALTER VIEW [dbo].[AuditView]
@@ -69,6 +69,8 @@ FROM 	reporting.global_audit ga
 			select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid =uid
 			union
 			select uid, name as DisplayName, Object, ObjectID, Class as AssetTypeClass from dbo.AssetType where uid = uid
+			union
+			select uid, Qualifier as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.Semantic where uid = uid
 		) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = AD.uid
 ]]>
   </sql>

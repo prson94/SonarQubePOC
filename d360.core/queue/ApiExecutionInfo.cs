@@ -32,6 +32,14 @@ namespace d360.core.queue
 		PutResponsibilityTypes = 23,
 		PutDataQualityResults = 24,
 		DeleteUsers = 25,
+		UpsertPredicates = 26,
+		DeletePredicates = 27,
+		PostScoreAllocation = 28,
+		PutScoreAllocation = 29,
+		DeleteScoreAllocation = 30,
+		PostSemantic = 31,
+		PutSemantic = 32,
+		DeleteSemantic = 33,
 
 		Miscellaneous = 100
 	}
