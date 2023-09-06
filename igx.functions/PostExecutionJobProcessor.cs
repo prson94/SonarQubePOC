@@ -187,8 +187,7 @@ from	reporting.Global_FieldAudit i_p
 									{ "RequestAction", $"{request.Action}" },
 									{ "ExecutionAction", $"{execution.Action}" }
 								});
-							//throw;
-						}						
+						}
 					}				
 				}
 				companyConnection.CloseIfOpened();
@@ -799,7 +798,7 @@ insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
 	select	'ObjectIndex', '{actionText}', p.Object, p.ObjectId, @dt, coalesce(p.AssetId, 0)
 	from	api.ExecutionLog l
 			cross apply openjson(l.Payload) with (AssetId bigint, Object varchar(50), ObjectId int) p
-	where	l.ExecutionId = @Id;"; ;
+	where	l.ExecutionId = @Id;";
 		}
 
 		string indexUpsertGroups(string actionText)
