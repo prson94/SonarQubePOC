@@ -290,7 +290,7 @@
 						igButton
 						(click)="onFormSubmit()"
 						[attr.data-cy]="'CompleteAssignment_Button_Submit'"
-						[disabled]="(radioSelectionValue === 'completeForm' && !workflowForm?.valid) || !tableRadioSelection"
+						[disabled]="(radioSelectionValue === 'completeForm' && !workflowForm?.valid) || (radioSelectionValue !== 'completeForm' && !tableRadioSelection)"
 						i18n-label
 						label="Submit">
 				</button>
