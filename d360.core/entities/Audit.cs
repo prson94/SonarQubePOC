@@ -44,6 +44,8 @@ namespace d360.core.entities
         [DataMember]
         public string ActionDescription { get; set; }
 
+        [DataMember]
+        public int Version { get; set; }
 
         [IgnoreDataMember, ForeignKey("ResourceID")]
         public virtual GlobalReportingResource Resource { get; set; }
