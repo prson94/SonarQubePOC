@@ -322,7 +322,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 },
                     (error) => {
                         if (error.status === 404) {
-                            this.tagService.saveTag(event)
+                            const tagType = new TagType();
+                            tagType.Value = event.Value;
+                            tagType.uid = event.uid;
+                            
+                            this.tagService.saveTag(tagType)
                                 .subscribe((result) => {
                                     let msg: string = '';
                                     if (event.uid == null) {
