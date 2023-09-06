@@ -17,6 +17,7 @@ import { AutoCompleteModule } from "primeng/autocomplete";
 import { ResourcesService } from "../../../services/resources.service";
 import { CommentFormComponent } from "./comment-form.component";
 import { DirectivesModule } from "../../../directives/directives.module";
+import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.module";
 
 
 @NgModule({
@@ -34,7 +35,8 @@ import { DirectivesModule } from "../../../directives/directives.module";
         //d3s
 		CoreModule,
 		PipesModule,
-        DirectivesModule
+		DirectivesModule,
+		UserAvatarModule
 
     ],
     declarations: [

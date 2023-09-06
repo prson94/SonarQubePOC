@@ -156,12 +156,4 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         }
         return tag.TextPath;
     }
-
-    private getCommentUrl(comment: CommentDetail) {
-        if (!comment.CreatedByUid) {
-            return "";
-        }
-
-        return `/api/v2/membership/users/${comment.CreatedByUid}/image?size=35`;
-    }
 }

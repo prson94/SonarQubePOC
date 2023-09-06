@@ -39,6 +39,7 @@ import { ResourceApiKeyModule } from './api-key/resource-api.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { UserAssignmentsModule } from '../assignments/user-assignments/user-assignments.module';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
+import { UserAvatarModule } from "../shared/small-widgets/user-avatar/user-avatar.module";
 
 @NgModule({
     declarations: [
@@ -82,7 +83,8 @@ import { SharedAssignmentsModule } from '../shared/assignments/shared-assignment
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         ResourceApiKeyModule,
-        SiteModalModule
+		SiteModalModule,
+		UserAvatarModule
     ],
     exports: [
         ResourceFollowingTile,

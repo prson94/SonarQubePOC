@@ -37,6 +37,7 @@ import { IgMessageBoxModule } from '../controls/message-box/message-box.module';
 import { DropdownModule } from 'primeng/dropdown';
 import { UseBreadcrumbsComponent } from './use-breadcrumbs.component';
 import { RaiseIssueModule } from '../../admin/actions/raise-action/raise-issue.module';
+import { UserAvatarModule } from "../small-widgets/user-avatar/user-avatar.module";
 
 
 @NgModule({
@@ -64,7 +65,8 @@ import { RaiseIssueModule } from '../../admin/actions/raise-action/raise-issue.m
 
 		TooltipModule,
 		IgMessageBoxModule,
-		RaiseIssueModule
+		RaiseIssueModule,
+		UserAvatarModule
     ],
     declarations: [
         HeaderActionsComponent,
