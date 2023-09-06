@@ -12090,7 +12090,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="780929205181690437" datatype="html">
-        <source>Responsibilities</source><target>Verantwortungen</target>
+        <source>Responsibilities</source>
+		<target>Verantwortlichkeiten</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assignments/by-workflow-version-list/step-information/step-information-form/step-information-form.component.ts</context>
           <context context-type="linenumber">88</context>
