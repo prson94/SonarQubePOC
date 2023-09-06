@@ -72,42 +72,40 @@ namespace d360.model.DataAccessLayer
                 Object = "Theme",
                 ObjectID = current.ID,
                 ObjectName = current.Name,
-                ResourceID = current.UpdatedBy
+                ResourceID = current.UpdatedBy,
+                Version = 0
             };
 
-            audit.AuditFields.Add(new AuditField { FieldName = "Name", PreviousValue = ((previous != null) ? previous.Name : null), Value = current.Name, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "IsCurrent", PreviousValue = ((previous != null) ? (previous.IsCurrent ? "Yes" : "No") : null), Value = (current.IsCurrent ? "Yes" : "No"), FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "HeaderLogoExtension", PreviousValue = ((previous != null) ? previous.HeaderLogoExtension : null), Value = current.HeaderLogoExtension, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "HomePageBackgroundExtension", PreviousValue = ((previous != null) ? previous.HomePageBackgroundExtension : null), Value = current.HomePageBackgroundExtension, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "BrowserIconExtension", PreviousValue = ((previous != null) ? previous.BrowserIconExtension : null), Value = current.BrowserIconExtension, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "BackColor", PreviousValue = ((previous != null) ? previous.BackColor : null), Value = current.BackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "BreadcrumbLinkColor", PreviousValue = ((previous != null) ? previous.BreadcrumbLinkColor : null), Value = current.BreadcrumbLinkColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "ButtonBackColor", PreviousValue = ((previous != null) ? previous.ButtonBackColor : null), Value = current.ButtonBackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "PrimaryButtonBackColor", PreviousValue = ((previous != null) ? previous.PrimaryButtonBackColor : null), Value = current.PrimaryButtonBackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "HeaderBackColor", PreviousValue = ((previous != null) ? previous.HeaderBackColor : null), Value = current.HeaderBackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackColor", PreviousValue = ((previous != null) ? previous.NavBarBackColor : null), Value = current.NavBarBackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackSelectedColor", PreviousValue = ((previous != null) ? previous.NavBarBackSelectedColor : null), Value = current.NavBarBackSelectedColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "TabLinkColor", PreviousValue = ((previous != null) ? previous.TabLinkColor : null), Value = current.TabLinkColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "TableHeaderBackColor", PreviousValue = ((previous != null) ? previous.TableHeaderBackColor : null), Value = current.TableHeaderBackColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "TableRowBackSelectedColor", PreviousValue = ((previous != null) ? previous.TableRowBackSelectedColor : null), Value = current.TableRowBackSelectedColor, FieldTypeID = 0, Version = 0 });
-            audit.AuditFields.Add(new AuditField { FieldName = "CustomCss", PreviousValue = ((previous != null) ? previous.CustomCss : null), Value = current.CustomCss, FieldTypeID = 0, Version = 0 });
+            audit.AuditFields.Add(new AuditField { FieldName = "Name", PreviousValue = ((previous != null) ? previous.Name : null), Value = current.Name, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "IsCurrent", PreviousValue = ((previous != null) ? (previous.IsCurrent ? "Yes" : "No") : null), Value = (current.IsCurrent ? "Yes" : "No"), FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "HeaderLogoExtension", PreviousValue = ((previous != null) ? previous.HeaderLogoExtension : null), Value = current.HeaderLogoExtension, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "HomePageBackgroundExtension", PreviousValue = ((previous != null) ? previous.HomePageBackgroundExtension : null), Value = current.HomePageBackgroundExtension, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "BrowserIconExtension", PreviousValue = ((previous != null) ? previous.BrowserIconExtension : null), Value = current.BrowserIconExtension, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "BackColor", PreviousValue = ((previous != null) ? previous.BackColor : null), Value = current.BackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "BreadcrumbLinkColor", PreviousValue = ((previous != null) ? previous.BreadcrumbLinkColor : null), Value = current.BreadcrumbLinkColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "ButtonBackColor", PreviousValue = ((previous != null) ? previous.ButtonBackColor : null), Value = current.ButtonBackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "PrimaryButtonBackColor", PreviousValue = ((previous != null) ? previous.PrimaryButtonBackColor : null), Value = current.PrimaryButtonBackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "HeaderBackColor", PreviousValue = ((previous != null) ? previous.HeaderBackColor : null), Value = current.HeaderBackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackColor", PreviousValue = ((previous != null) ? previous.NavBarBackColor : null), Value = current.NavBarBackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "NavBarBackSelectedColor", PreviousValue = ((previous != null) ? previous.NavBarBackSelectedColor : null), Value = current.NavBarBackSelectedColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "TabLinkColor", PreviousValue = ((previous != null) ? previous.TabLinkColor : null), Value = current.TabLinkColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "TableHeaderBackColor", PreviousValue = ((previous != null) ? previous.TableHeaderBackColor : null), Value = current.TableHeaderBackColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "TableRowBackSelectedColor", PreviousValue = ((previous != null) ? previous.TableRowBackSelectedColor : null), Value = current.TableRowBackSelectedColor, FieldTypeID = 0});
+            audit.AuditFields.Add(new AuditField { FieldName = "CustomCss", PreviousValue = ((previous != null) ? previous.CustomCss : null), Value = current.CustomCss, FieldTypeID = 0});
 
             CompanyContext.Add(audit);
 
             CompanyContext.Connection.Execute(@"
 												update	T
-												set		T.Version = S.[Count] + 1
-												from	[reporting].[Global_FieldAudit] T
-														inner join [reporting].[Global_Audit] TA on TA.ID = T.AuditID
-														cross apply (
-															select	count(1) as [Count]
-															from	[reporting].[Global_FieldAudit] F
-																	inner join [reporting].[Global_Audit] A on A.ID = F.AuditID 
-																	and A.Object = TA.Object 
-																	and A.ObjectID = TA.ObjectID
-																	and F.FieldName = T.FieldName
+												set		T.Version = coalesce(S.[maxversion],0) + 1
+												from	[reporting].[Global_Audit] T
+												outer apply (
+															select	max(version) as [maxversion]
+															from	[reporting].[Global_Audit] A  
+															where A.Object = T.Object 
+															and A.ObjectID = T.ObjectID
 														) S
-												where   T.AuditID = @ID and T.[Version] = 0", new { audit.ID });
+												where   T.ID = @ID and T.[Version] = 0", new { audit.ID });
         }
 
         private void addStorageFile(Guid uid, string fileSuffix, byte[] content, string extension)

@@ -16,9 +16,6 @@ namespace d360.core.entities
         [DataMember, Key, Column(Order = 3)]
         public string FieldName { get; set; }
 
-        [DataMember, Key, Column(Order = 4)]
-        public int Version { get; set; }
-
         [DataMember]
         public string Value { get; set; }
 
