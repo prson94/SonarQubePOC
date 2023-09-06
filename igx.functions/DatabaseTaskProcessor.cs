@@ -17,11 +17,11 @@ using System.Data;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System.Data.Entity;
-using Microsoft.Azure.ServiceBus;
+
 using System.Text;
 using d360.extensions.mail;
 using d360.core.resources;
+using Azure.Messaging.ServiceBus;
 
 namespace igx.functions.databasetaskprocessor
 {
@@ -74,7 +74,7 @@ namespace igx.functions.databasetaskprocessor
         }
 
         [FunctionName("DatabaseTaskProcessor")]
-        public async Task RunProcessor([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask")] Message brokeredMessage, Microsoft.Azure.WebJobs.ExecutionContext context)
+        public async Task RunProcessor([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask")] ServiceBusReceivedMessage brokeredMessage, Microsoft.Azure.WebJobs.ExecutionContext context)
         {
             try
             {

@@ -41,7 +41,7 @@
 
 		"EventServiceBus": "Endpoint=sb://gov-int-events.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=2fR7nULjArv1/KKaqKSast5OoLAXL6NXUIt0ecMKztk=",
 		"EventBusTopicEnabled": "true",
-		"EventBusTopicName": "workflow-local",
+		"EventBusTopicName": "gov-int-event",
 		"AssetBusTopicName": "asset-local",
 
 		"DBExecuteQueryTimeout": "10800",
