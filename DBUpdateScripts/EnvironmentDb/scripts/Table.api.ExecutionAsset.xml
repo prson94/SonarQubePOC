@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.api.ExecutionAsset-v4">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Table.api.ExecutionAsset-v5">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAsset')
 BEGIN
 	CREATE TABLE [api].[ExecutionAsset](
@@ -32,7 +29,7 @@ BEGIN
 		[ParentObjectTypeID] [int] NULL,
 		[IntersectTypeUid] [uniqueidentifier] NULL,
 		[IntersectTypeID] [int] NULL,
-		[Message] [nvarchar](2500) NULL,
+		[Message] [nvarchar](max) NULL,
 		[Success] [bit] NULL,
 		[IsNew] [bit] NULL,
 		CONSTRAINT [PK_ApiExecutionAsset] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC )
@@ -53,16 +50,15 @@ if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'Execu
 begin
 	alter table api.ExecutionAsset add SourceID nvarchar(500) null
 end
-		]]>
-    </sql>
-  </changeSet>
 
-  <changeSet author="Pappas" id="Table.api.ExecutionAsset.Indices-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+alter table [api].[ExecutionAsset] alter column [Message] nvarchar(max) null;
+		]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Table.api.ExecutionAsset.Indices-v4">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Asset')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionAsset_Asset] ON [api].[ExecutionAsset] ( [ExecutionID] DESC, [AssetID] ASC ) INCLUDE([ItemNumber])
@@ -92,13 +88,8 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Uid'
 BEGIN
 	create nonclustered index IX_ApiExecutionAsset_Uid on api.ExecutionAsset (Uid asc)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+]]>
+ </sql>
+</changeSet>
 
 </databaseChangeLog>
