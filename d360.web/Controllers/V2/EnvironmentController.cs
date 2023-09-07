@@ -950,7 +950,14 @@ select	r.uid as ResourceUid,
 		sid.Uid as SemanticUid,
 		tid.Uid as TagUid,
 		sidebar.Value as Sidebar,
-		tab.Value as Tab
+		tab.Value as Tab,
+		case when stat.AssetId is not null and aid.uid is null then 'Asset not found. It may have been removed.'
+			when stat.AssetTypeId is not null and atid.uid is null then 'Asset Type not found. It may have been removed.'
+			when stat.DashboardId is not null and did.uid is null then 'Dashboard not found. It may have been removed.'
+			when stat.IssueId is not null and iid.uid is null then 'Action not found. It may have been removed.'
+			when stat.SemanticId is not null and sid.uid is null then 'Semantic not found. It may have been removed.'
+			when stat.TagId is not null and tid.uid is null then 'Tag not found. It may have been removed.'
+		end as [Message]
 {tableSql}
 {whereClause}
 {orderBySql}
