@@ -20,6 +20,9 @@ namespace d360.web.Models.Usage
 		[JsonProperty("timestamp")]
 		public DateTime Timestamp { get; set; }
 
+		[JsonProperty("message")]
+		public string message { get; set; }
+
 
 		/// <summary>
 		/// Deprecated property. Defer to Timestamp property instead.
