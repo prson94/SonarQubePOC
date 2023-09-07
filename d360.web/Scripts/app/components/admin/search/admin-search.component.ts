@@ -131,7 +131,7 @@ export class AdminSearchComponent extends AdminBaseComponent {
 						elem.Menu = this.getKebabMenuItems(this.indexableHash[this.getIndexableStatusId(s)]);
                     }
                 });
-				this.isGlobalSelectDisabled = this.indexableNodes.every((node) => !this.canRebuildNode(node));
+				this.isGlobalSelectDisabled = this.indexableNodes.some((node) => !this.canRebuildNode(node));
 				this.selectedIndexes = [];
                 this.isUpdating = false;
             });
