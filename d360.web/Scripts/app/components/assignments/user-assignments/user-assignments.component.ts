@@ -175,16 +175,26 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (selectedItems.length === 0) {
 			return;
 		}
+		else if (selectedItems.length === 1) {
+			const assignment = selectedItems[0];
 
-		const mainItem = selectedItems[0];
+			this.completeAssignmentComponent.openModal({
+				workflowItemUid: assignment.WorkflowItemUid,
+				stepUid: assignment.ItemStepUid,
+				assetId: assignment.AssetId
+			});
+		}
+		else {
+			const mainItem = selectedItems[0];
 
-		this.completeAssignmentComponent.openModal({
-			workflowItemUid: mainItem.WorkflowItemUid,
-			stepUid: mainItem.ItemStepUid,
-			assetId: mainItem.AssetId,
-			items: selectedItems,
-			selectedAssignment:this.selectedAssignment
-		});
+			this.completeAssignmentComponent.openModal({
+				workflowItemUid: mainItem.WorkflowItemUid,
+				stepUid: mainItem.ItemStepUid,
+				assetId: mainItem.AssetId,
+				items: selectedItems,
+				selectedAssignment: this.selectedAssignment
+			});
+		}
 	}
 
 	onCompleteAssignmentModalClose(event: { isBack: boolean, isCompleteForm: boolean }) {
