@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
 				}
 
-				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.Miscellaneous);
+				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.DeletePredicates);
 
 				List<PredicateDeleteResult> results = RelationshipRepository.DeletePredicates(predicates, execution);
 				
@@ -236,7 +236,7 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.Miscellaneous);
+				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.UpsertPredicates);
 				List<PredicateUpsertResult> results = RelationshipRepository.UpsertPredicates(predicates, execution);
 				
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);

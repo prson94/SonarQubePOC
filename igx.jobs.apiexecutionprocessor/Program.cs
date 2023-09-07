@@ -35,7 +35,6 @@ namespace igx.jobs.apiexecutionprocessor
                 c.AddAzureStorage(s =>
                 {
                     s.VisibilityTimeout = TimeSpan.FromHours(6);
-                    s.BatchSize = 2;
                 });
             });
 

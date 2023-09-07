@@ -4873,6 +4873,22 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											$"delete Predicate where Uid in (select P.Uid from api.ExecutionDeletedPredicate P where {querySuffix})",
 											new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+										#region Execution Log
+
+										string logSql = $@"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select P.PredicateID as Id,
+					P.Name
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionDeletedPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}";
+
+										Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+										#endregion
+
 										Connection.Execute(
 											$"update P set P.Success = 1 from api.ExecutionDeletedPredicate P where	{querySuffix} and P.PredicateID is not null;",
 											new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -4914,6 +4930,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							beginItemNumber += loopSize;
 							endItemNumber += loopSize;
 						}
+
+						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 						Connection.Close();
 					}
@@ -5272,7 +5290,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									string insertSQL = $@"
 										drop table if exists #mergeResultTable
-										create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+										create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier, [Action] varchar(10)) 
 
 										update	api.ExecutionPredicate 
 										set		Success = 0,
@@ -5325,7 +5343,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										when not matched then
 											insert (Uid, Name, Inverse, Type, IsSystem,CreatedBy,UpdatedBy)
 											values (S.Uid, S.Name,S.Inverse, S.Type, 0, {CurrentResourceID},{CurrentResourceID})
-										output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+										output inserted.ID, inserted.Uid, S.ExecutionItemUid, $action into #mergeResultTable;
 
 										update EP
 										set EP.PredicateID = Res.PredicateId,
@@ -5336,6 +5354,25 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									Connection.Execute(insertSQL,
 											new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
+
+									#region Execution Log
+
+									string logSql = $@"
+insert into api.ExecutionLog (ExecutionId, [Payload])
+	select	e.Id,
+			(select P.PredicateID as Id,
+					P.Name,
+					P.Inverse,
+					cast(iif(Res.[Action] = 'Insert', 1, 0) as bit) as IsNew
+			for json path
+			) as Payload
+	from	api.Execution e
+			inner join api.ExecutionPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}
+			inner join #mergeResultTable Res on Res.ExecutionItemUid = P.ExecutionItemUid";
+
+									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+									#endregion
 
 									Connection.Execute(
 										$"update P set P.Success = 1 from api.ExecutionPredicate P where {querySuffix} and P.PredicateID is not null;",
@@ -5378,6 +5415,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						beginItemNumber += loopSize;
 						endItemNumber += loopSize;
 					}
+
+					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					Connection.Close();
 				}
