@@ -4869,28 +4869,20 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								{
 									try
 									{
-										Connection.Execute(
-											$"delete Predicate where Uid in (select P.Uid from api.ExecutionDeletedPredicate P where {querySuffix})",
-											new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-										#region Execution Log
-
-										string logSql = $@"
+										Connection.Execute($@"
 insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	e.Id,
-			(select P.PredicateID as Id,
-					P.Name
+			(select pr.Id,
+					pr.Name
 			for json path
 			) as Payload
 	from	api.Execution e
-			inner join api.ExecutionDeletedPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}";
+			inner join api.ExecutionDeletedPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}
+			inner join [Predicate] pr on pr.Uid = P.Uid;
 
-										Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+delete Predicate where Uid in (select P.Uid from api.ExecutionDeletedPredicate P where {querySuffix})
 
-										#endregion
-
-										Connection.Execute(
-											$"update P set P.Success = 1 from api.ExecutionDeletedPredicate P where	{querySuffix} and P.PredicateID is not null;",
+update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuffix} and P.PredicateID is not null;",
 											new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 										trans.Commit();
