@@ -2094,7 +2094,6 @@ from	processexpandeddata ped
 			if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
 			{
 				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
-				value = GetEscapedFilterString(value);
 
 				if (!string.IsNullOrEmpty(value))
 				{
@@ -2103,7 +2102,8 @@ from	processexpandeddata ped
 						switch (f.SqlFieldType)
 						{
 							case SqlFieldType.Text:
-								var textvalue = value + "%";
+								var escapedValue = GetEscapedFilterString(value);
+								var textvalue = escapedValue + "%";
 								wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
 								dbs.Add($"@S_{f.ApiName}", textvalue.Replace("%%", "%"));
 								break;
@@ -2119,7 +2119,9 @@ from	processexpandeddata ped
 							case SqlFieldType.DateTime:
 								DateTime filterDate;
 
-								if (DateTime.TryParse(value, out filterDate))
+								//parsing date time with Z will convert date time as local time which will not match with db utc-0 value
+								string dateValue = value.Replace("Z", "").Replace("z","");
+								if (DateTime.TryParse(dateValue, out filterDate))
 								{
 									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
 									dbs.Add($"@S_{f.ApiName}", filterDate);
