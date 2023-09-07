@@ -10,7 +10,6 @@
 		"AzureWebJobs.IndexMaintainance.Disabled": true,
 		"AzureWebJobs.PostExecutionJobProcessor.Disabled": false,
 		"AzureWebJobs.ResourceCache_Generate.Disabled": true,
-		"AzureWebJobs.Workflow_Subscriber.Disabled": true,
 
 		"APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=cf5453f2-5c66-4357-bb20-1a736cf2885b;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/",
 		"APPINSIGHTS_INSTRUMENTATIONKEY": "cf5453f2-5c66-4357-bb20-1a736cf2885b",
