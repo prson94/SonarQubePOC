@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using Azure.Messaging.ServiceBus;
+using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
 using d360.extensions.caching;
@@ -27,7 +28,7 @@ namespace igx.functions.consumption
         private CoreFunction CoreFunction;
 
         [FunctionName(functionName)]
-        public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, TextWriter log, ExecutionContext context)
+        public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]ServiceBusReceivedMessage brokeredMessage, TextWriter log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
                    .SetBasePath(context.FunctionAppDirectory)
