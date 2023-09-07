@@ -131,6 +131,10 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 			this.sidePanelMultiSelectButtons[0].tooltip = $localize`${this.selectedWorkflowItems?.length} Assignments Selected`;
 			this.sidePanelTab = 'delete';
 			this.sidePanelService.setSidePanelState({ expanded: true });
+		} else {
+			if (this.sidePanelTab === 'delete') {
+				this.sidePanelTab = 'information';
+			}				
 		}
 	}
 
