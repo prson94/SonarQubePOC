@@ -1049,15 +1049,15 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("initiator", "WA.initiator", SqlFieldType.Text),
 				new DefaultFilter("workflowItemUid", "WA.workflowItemUid", SqlFieldType.Guid),
 				new DefaultFilter("workflowUid", "WA.workflowUid", SqlFieldType.Guid),
-				new DefaultFilter("workflowName", "WA.workflowName", SqlFieldType.Text),
-				new DefaultFilter("assetDisplayValue", "ADV.DisplayValue", SqlFieldType.Text),
+				new DefaultFilter("workflowName", "WA.workflowName", SqlFieldType.Text),				
+				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "WA.StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "WA.CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "WA.Status", SqlFieldType.Text),
 				new DefaultFilter("assetTypeUid", "ast.uid", SqlFieldType.Guid),
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
-				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
+				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),				
 				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid),
 				new DefaultFilter("initiatingobjecttype", "IOT.initiatingObjectType", SqlFieldType.Text)
 			};
@@ -1065,7 +1065,7 @@ namespace d360.model.DataAccessLayer
 			var orderFieldOptions = new List<DefaultFilter>
 			{
 				new DefaultFilter("initiator", "initiator", SqlFieldType.Text),
-				new DefaultFilter("assetDisplayValue", "assetDisplayValue", SqlFieldType.Text),
+				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "Status", SqlFieldType.Text),
@@ -1073,7 +1073,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("workflowName", "workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
 				new DefaultFilter("objectType", "ObjectType.Type", SqlFieldType.Text),
-				new DefaultFilter("daysOpen", "daysOpen", SqlFieldType.Date)
+				new DefaultFilter("daysOpen", "daysOpen", SqlFieldType.Number)
 			};
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_initiatoruid"))
@@ -1197,6 +1197,10 @@ namespace d360.model.DataAccessLayer
 			if (orderColumn.ToLowerInvariant().In("startedon", "completedon"))
 			{
 				orderBySql = $" order by TRY_CAST(+ WA.[{orderColumn}] AS datetime) {orderDirection} ";
+			}
+			else if (orderColumn.ToLowerInvariant().In("daysopen"))
+			{
+				orderBySql = $" order by {orderColumn} {orderDirection} ";
 			}
 			else
 			{
