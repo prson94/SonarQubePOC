@@ -5350,29 +5350,22 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											EP.uid = Res.PredicateUid
 										from api.ExecutionPredicate EP
 												inner join #mergeResultTable Res on Res.ExecutionItemUid = EP.ExecutionItemUid
-										where EP.ExecutionID = @ExecutionID";
+										where EP.ExecutionID = @ExecutionID;
+
+										insert into api.ExecutionLog (ExecutionId, [Payload])
+											select	e.Id,
+													(select P.PredicateID as Id,
+															P.Name,
+															P.Inverse,
+															cast(iif(Res.[Action] = 'Insert', 1, 0) as bit) as IsNew
+													for json path
+													) as Payload
+											from	api.Execution e
+													inner join api.ExecutionPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}
+													inner join #mergeResultTable Res on Res.ExecutionItemUid = P.ExecutionItemUid;";
 
 									Connection.Execute(insertSQL,
 											new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
-
-									#region Execution Log
-
-									string logSql = $@"
-insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	e.Id,
-			(select P.PredicateID as Id,
-					P.Name,
-					P.Inverse,
-					cast(iif(Res.[Action] = 'Insert', 1, 0) as bit) as IsNew
-			for json path
-			) as Payload
-	from	api.Execution e
-			inner join api.ExecutionPredicate P on P.ExecutionID = e.ExecutionID and {querySuffix}
-			inner join #mergeResultTable Res on Res.ExecutionItemUid = P.ExecutionItemUid";
-
-									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-									#endregion
 
 									Connection.Execute(
 										$"update P set P.Success = 1 from api.ExecutionPredicate P where {querySuffix} and P.PredicateID is not null;",
