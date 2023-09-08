@@ -1050,7 +1050,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("workflowItemUid", "WA.workflowItemUid", SqlFieldType.Guid),
 				new DefaultFilter("workflowUid", "WA.workflowUid", SqlFieldType.Guid),
 				new DefaultFilter("workflowName", "WA.workflowName", SqlFieldType.Text),				
-				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, 'unknown')", SqlFieldType.Text),
+				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AST.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "WA.StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "WA.CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "WA.Status", SqlFieldType.Text),
@@ -1065,7 +1065,7 @@ namespace d360.model.DataAccessLayer
 			var orderFieldOptions = new List<DefaultFilter>
 			{
 				new DefaultFilter("initiator", "initiator", SqlFieldType.Text),
-				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, 'unknown')", SqlFieldType.Text),
+				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AST.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "Status", SqlFieldType.Text),
@@ -1284,6 +1284,7 @@ namespace d360.model.DataAccessLayer
 										,V.Version as Version										
 										,DATEDIFF(day, WI.StartedOn, GETDATE()) as DaysOpen
 										,-1 as AssetId
+										,-1 as AssetTypeId
 										,cast(null as nvarchar(max)) as RelationshipName
 									into #assignments
 									FROM workflow.Type T
@@ -1299,7 +1300,7 @@ namespace d360.model.DataAccessLayer
 				WA.workflowName,
 				WA.initiator,
 				WA.initiatorUid,		
-				coalesce(wa.RelationshipName,ADV.DisplayValue,AT_ACT.Name, '(unknown)') as assetDisplayValue,
+				coalesce(wa.RelationshipName,ADV.DisplayValue,AST.Name, 'unknown') as assetDisplayValue,
 				ObjectType.Type as objectType,
 				WA.StartedOn,
 				WA.CompletedOn,
@@ -1311,7 +1312,7 @@ namespace d360.model.DataAccessLayer
 				AssignedUsers.value as assigneesJson,
 				I.uid as actionUid,
 				IOT.initiatingObjectType,
-				IT.Name as initiatingObjectTypeName,
+				coalesce(IT.Name, AST.Name) as initiatingObjectTypeName,
 				WA.VersionId,
 				WA.VersionUid,
 				WA.Version,
@@ -1321,10 +1322,9 @@ namespace d360.model.DataAccessLayer
 			var coreJoins = $@"
 					left join Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
 					left join IssueType IT on I.IssueTypeID = IT.ID
-					left join AssetType AT_ACT on WA.Object = 'Issue' and AT_ACT.Id = I.AssetTypeId
+					left join AssetType AST on AST.Id = WA.AssetTypeId
 					left join Asset A on a.ID = WA.AssetId
-					left join AssetPath AP on A.ID=AP.ID
-					left join AssetType AST on AST.ID = A.AssetTypeID						
+					left join AssetPath AP on A.ID=AP.ID					
 					left join AssetDisplayValue ADV on A.id = ADV.AssetID
 					outer apply (select {classSQL})IOT
 					outer apply (
@@ -1337,13 +1337,13 @@ namespace d360.model.DataAccessLayer
 					{coreSelectsTempTable}
 
 					update WA
-					set WA.AssetId = a.ID
+					set WA.AssetId = a.ID, WA.AssetTypeId = A.AssetTypeID
 					FROM #assignments WA
 					inner join Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID
 					inner join Asset a on A.ID = I.AssetID 
 
 					update WA
-					set WA.AssetId = a.ID
+					set WA.AssetId = a.ID, WA.AssetTypeId = A.AssetTypeID
 					FROM #assignments WA
 					inner join Asset a on WA.Object=A.object and WA.ObjectID= A.objectID 
 					where WA.Object <> 'Issue' and WA.Object <> 'Intersect'

@@ -277,7 +277,7 @@
     <value>Type Name</value>
   </data>
   <data name="WorkflowMonitor_Url" xml:space="preserve">
-    <value>Url</value>
+    <value>URL</value>
   </data>
   <data name="WorkflowMonitor_WorkflowInstanceUID" xml:space="preserve">
     <value>Workflow Instance UID</value>
