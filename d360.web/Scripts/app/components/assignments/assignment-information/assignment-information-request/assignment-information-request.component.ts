@@ -80,7 +80,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	}
 
 
-	isJsonStructure(actionItem: any): boolean {
+	isJsonStructure(actionItem: string): boolean {
 		try {
 			JSON.parse(actionItem);
 			return true;
