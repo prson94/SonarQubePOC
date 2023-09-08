@@ -95,11 +95,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				}
 			});
 		this.currentResourceUid = this.settingsService.CurrentResourceUid;
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
 		this.loadData();
 	}
 
 	ngOnInit(): void {
-		this.isAdmin = this.authenticationService.isAdmin;
+		//this.isAdmin = this.authenticationService.isAdmin;
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
 	}

@@ -69,10 +69,11 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		private headerBreadcrumbService: HeaderBreadcrumbService,
 		private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
 	}
 
 	ngOnInit(): void {
-		this.isAdmin = this.authenticationService.isAdmin;
+		//this.isAdmin = this.authenticationService.isAdmin;
 		if (this.router.url === '/requests') {
 			this.flowContext = 'Request';
 			this.isRequestsFlow = true;
