@@ -422,6 +422,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		params._listColorsAsJSON = true;
 		params._includeProfilingCheck = true;
 		params.usecachedfilters = true;
+		params._uiRequest = true;
 
 		if (this.gridSortData.sortField && this.getFieldAPINameByOldName(this.gridSortData.sortField) !== null) {
 			params._order = this.getFieldAPINameByOldName(this.gridSortData.sortField);
@@ -533,55 +534,60 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 		this.assetSearchSub = this.assetService.getAssets(this.assetTypeApiModel.uid, params, true)
 			.subscribe((res) => {
 				this._oldParamsJSON = params.countUpdateFilters();
+				if (res) {
+					this.items = res.items;
+					const hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
+					let isRowSelected = false;
 
-				this.items = res.items;
-				const hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
-				let isRowSelected = false;
+					this.items.forEach((item) => {
 
-				this.items.forEach((item) => {
+						item[this.menuKey] = [
+							{ title: $localize`View Information` },
+							{ title: $localize`Open` },
+							{ title: $localize`Open in New Tab` },
+						];
 
-					item[this.menuKey] = [
-						{ title: $localize`View Information` },
-						{ title: $localize`Open` },
-						{ title: $localize`Open in New Tab` },
-					];
+						if (item.Permissions.ModifyAsset) {
+							item[this.menuKey].push({ title: $localize`Edit` });
+						}
 
-					if (item.Permissions.ModifyAsset) {
-						item[this.menuKey].push({ title: $localize`Edit` });
-					}
+						if (item.Permissions.DeleteAsset) {
+							item[this.menuKey].push({ title: $localize`Delete` });
+						}
 
-					if (item.Permissions.DeleteAsset) {
-						item[this.menuKey].push({ title: $localize`Delete` });
-					}
+						if (hasScoring) {
+							this.scoreAllocations.forEach((s) => {
+								item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
+							});
+						}
 
-					if (hasScoring) {
-						this.scoreAllocations.forEach((s) => {
-							item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
-						});
-					}
+						if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
+							if (item.AssetId === this.selected.AssetId) {
+								this.selectRow(item, true);
+								isRowSelected = true;
+							}
+						}
 
-					if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
-						if (item.AssetId === this.selected.AssetId) {
-							this.selectRow(item, true);
-							isRowSelected = true;
+					});
+
+					if (!this.showEditor && autoSelect && (!edit || !isRowSelected)) {
+						if (this.items && this.items.length > 0) {
+							this.selectRow(this.items[0]);
+						} else {
+							this.selectRow(null);
 						}
 					}
 
-				});
-
-				if (!this.showEditor && autoSelect && (!edit || !isRowSelected)) {
-					if (this.items && this.items.length > 0) {
-						this.selectRow(this.items[0]);
-					} else {
-						this.selectRow(null);
+					if (params._includeTotal) {
+						this.totalRecords = res.total;
+					}
+					if (this.initialTotalRecords == null) {
+						this.initialTotalRecords = res.total;
 					}
 				}
-
-				if (params._includeTotal) {
-					this.totalRecords = res.total;
-				}
-				if (this.initialTotalRecords == null) {
-					this.initialTotalRecords = res.total;
+				else {
+					this.items = [];
+					this.totalRecords = 0;
 				}
 				this.isLoading = false;
 				this.isLoadingChange.emit(false);

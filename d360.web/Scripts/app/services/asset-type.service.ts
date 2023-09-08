@@ -110,10 +110,14 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    GetAssetTypeByUid(uid: string): Observable<AssetTypeApiModel & ErrorResponse> {
+    GetAssetTypeByUid(uid: string, IsUICheckAssetTypeUid: boolean = false): Observable<AssetTypeApiModel & ErrorResponse> {
+        let strUICheckAssetTypeUid = 'false';
+        if (IsUICheckAssetTypeUid) {
+            strUICheckAssetTypeUid = 'true';
+        }
         return this
             .http
-			.get(`api/v2/assets/types?assetTypeUid=${uid}&includeSynonymAllocation=true&includeUpdatedAndCreatedFields=true&includedashboardflag=true&includeCustomExportTemplatesFlag=true&IncludeHasV2Workflows=true&includeLegacyData=true&_includeParent=true`)
+            .get(`api/v2/assets/types?assetTypeUid=${uid}&includeSynonymAllocation=true&includeUpdatedAndCreatedFields=true&includedashboardflag=true&includeCustomExportTemplatesFlag=true&IncludeHasV2Workflows=true&includeLegacyData=true&_includeParent=true&IsUICheckAssetTypeUid=${strUICheckAssetTypeUid}`)
             .pipe(
                 map((response) => { return <AssetTypeApiModel>response[0]; }),
                 catchError((err) => this.handleError(err))

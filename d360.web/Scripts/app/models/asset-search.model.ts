@@ -93,8 +93,9 @@ export class V2ApiFilters {
     _listColorsAsJSON: boolean;
     _isHierachyItem: boolean;
     _includeProfilingCheck: boolean;
-	_includeTotal: boolean;
-	usecachedfilters: boolean;
+    _includeTotal: boolean;
+    usecachedfilters: boolean;
+    _uiRequest: boolean;
 
 	public countUpdateFilters(): any{
 		return JSON.stringify({

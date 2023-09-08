@@ -897,7 +897,11 @@ namespace d360.web.Controllers.V2
 				//if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
 				if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))//(await Company.HasAssetTypeReadPermission(assetType.ID)))
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
+					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_uirequest").Value;
+					bool.TryParse(value, out bool isuiRequest);
+
+					HttpStatusCode httpStatusCode = isuiRequest ? HttpStatusCode.BadRequest : HttpStatusCode.Forbidden;
+					return await Task.FromResult(errorMessageResponse(httpStatusCode, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
 				}
 
 				if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
