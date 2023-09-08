@@ -18,49 +18,64 @@
 			<label class="ig-label" i18n>{{ fieldTypeModelField.FriendlyName }}</label>
 			<ng-container [ngSwitch]="Object.keys(fieldTypeModelField.Type)?.[0]">
 				<div *ngSwitchCase="'Html'">
-					<div class="ig-value"
-						 [innerHTML]="actionItems[fieldTypeModelField.Name] | safeHtml"></div>
+					<div class="ig-value">
+						<span *ngIf="actionItems[fieldTypeModelField.Name]"
+							  [innerHTML]="(actionItems[fieldTypeModelField.Name] | safeHtml)"></span>
+						<span *ngIf="!actionItems[fieldTypeModelField.Name]">---</span></div>
 				</div>
 				<div *ngSwitchCase="'Link'">
-					<div class="ig-value"><a
-						[href]="actionItems[fieldTypeModelField.Name]?.split('|')?.[1]">
+					<div class="ig-value"><a *ngIf="actionItems[fieldTypeModelField.Name]"
+											 [href]="actionItems[fieldTypeModelField.Name]?.split('|')?.[1]">
 						{{ actionItems[fieldTypeModelField.Name]?.split('|')?.[0] }}</a>
+						<span *ngIf="!actionItems[fieldTypeModelField.Name]">---</span>
 					</div>
 				</div>
 				<div *ngSwitchCase="'DateTime'">
 					<div
-						class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'short' ?? '---' }} </div>
+						class="ig-value"> {{ (actionItems[fieldTypeModelField.Name] | date:'short') ?? '---' }} </div>
 				</div>
 				<div *ngSwitchCase="'Date'">
 					<div
-						class="ig-value"> {{ actionItems[fieldTypeModelField.Name] | date:'shortDate' ?? '---' }} </div>
+						class="ig-value"> {{ (actionItems[fieldTypeModelField.Name] | date:'shortDate') ?? '---' }} </div>
 				</div>
 				<div *ngSwitchCase="'Lookup'">
 					<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class !== 'Reference'">
 						{{ actionItems[fieldTypeModelField.Name] ?? '---' }}
 					</div>
-					<div class="ig-value" *ngIf="fieldTypeModelField.Type.Lookup.List.Class === 'Reference'">
-						<ul *ngIf="actionItems[fieldTypeModelField.Name]">
-							<li *ngFor="let listItem of JSON.parse(actionItems[fieldTypeModelField.Name])">
+					<div class="ig-value"
+						 *ngIf="fieldTypeModelField.Type.Lookup.List.Class === 'Reference'">
+						<ng-container *ngIf="!actionItems[fieldTypeModelField.Name]; else hasValue">---
+						</ng-container>
+						<ng-template #hasValue>
+							<ul *ngIf="isJsonStructure(actionItems[fieldTypeModelField.Name]); else notJsonStructure">
+								<li *ngFor="let listItem of JSON.parse(actionItems[fieldTypeModelField.Name])">
 										<span class="ref-list-color">
 											<span *ngIf="listItem.color" class="ig-colorfield-swatch"
 												  [ngStyle]="{'background-color': listItem.color}"></span>
 											<span>{{listItem.name}}</span>
 										</span>
-							</li>
-						</ul>
+								</li>
+							</ul>
+						</ng-template>
+						<ng-template #notJsonStructure>
+							<ul>
+								<li *ngFor="let listItem of actionItems[fieldTypeModelField.Name].split(',')">
+									<span>{{listItem}}</span>
+								</li>
+							</ul>
+						</ng-template>
 					</div>
 				</div>
 				<div *ngSwitchCase="'Boolean'">
 					<div class="ig-value">
-						<ng-container *ngIf="actionItems[fieldTypeModelField.Name] === true">
+						<div *ngIf="actionItems[fieldTypeModelField.Name] === true">
 							<i class="fa fa-check-circle enabled ig-bool" title="True"></i>
 							<ng-container i18n>True</ng-container>
-						</ng-container>
-						<ng-template *ngIf="actionItems[fieldTypeModelField.Name] === false">
+						</div>
+						<div *ngIf="actionItems[fieldTypeModelField.Name] === false">
 							<i class="fa fa-times-circle disabled ig-bool" title="False"></i>
 							<ng-container i18n>False</ng-container>
-						</ng-template>
+						</div>
 					</div>
 				</div>
 				<div *ngSwitchDefault>
