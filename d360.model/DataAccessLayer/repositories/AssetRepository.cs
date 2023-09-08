@@ -73,6 +73,7 @@ namespace d360.model.DataAccessLayer
 			string condition = string.Empty;
 			string extraJoins = string.Empty;
 			var extraColumns = string.Empty;
+			bool IsUICheckAssetTypeUid = false;
 
 			if (Class.HasValue)
 			{
@@ -84,6 +85,11 @@ namespace d360.model.DataAccessLayer
 			List<string> whereStatements = new List<string>();
 			if (queryParams != null)
 			{
+				if (queryParams.Any(q => q.Key.ToLower() == "isuicheckassettypeuid"))
+				{
+					var ShowErrorIfNotFoundString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "isuicheckassettypeuid").Value;
+					bool chkbool = bool.TryParse(ShowErrorIfNotFoundString, out IsUICheckAssetTypeUid);
+				}
 				if (queryParams.Any(q => q.Key.ToLower() == "useastransformation"))
 				{
 					var useAsTransformationString = queryParams.FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
@@ -288,7 +294,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 			}
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (!CompanyContext.CurrentResourceIsAdmin && !IsUICheckAssetTypeUid)
 			{
 				extraJoins += $"outer apply (select max(case when ua.PermissionsBitMask & {(int)Permission.ReadAsset} = 0 then 0 else 1 end) as hasRead from UserAssetPermissions(@userId,a.id) ua where ua.AssetTypeID = a.id and ua.AssetID = 0) UserP";
 				condition += " and (UserP.hasRead is null or UserP.hasRead != 0)";
