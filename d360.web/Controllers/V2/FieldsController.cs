@@ -1118,8 +1118,8 @@ namespace d360.web.Controllers.V2
 					break;
 				case SystemObjects.Resource:
 				case SystemObjects.ResourceType:
-					list.Add("First Name", "FirstName");
-					list.Add("Last Name", "LastName");
+					list.Add("FirstName", "FirstName");
+					list.Add("LastName", "LastName");
 					list.Add("Email", "Email");
 					break;
 				case SystemObjects.TaxonomyType:
