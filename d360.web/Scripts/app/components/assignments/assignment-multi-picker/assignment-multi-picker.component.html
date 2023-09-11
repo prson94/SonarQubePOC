@@ -14,8 +14,12 @@
 				<div class="action-bar">
 					<button igButton class="ig-button-secondary" (click)="closeDialog()" i18n>Close</button>
 					<span class="grow"></span>
-					<button *ngIf="!onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Complete Assignments > </button>
-					<button *ngIf="onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()" [disabled]="selected.length === 0" i18n>Reassign > </button>
+					<button *ngIf="!onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()"
+							[disabled]="selected.length === 0" i18n>Complete Assignments >
+					</button>
+					<button *ngIf="onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()"
+							[disabled]="selected.length === 0" i18n>Reassign >
+					</button>
 				</div>
 			</ng-container>
 		</div>
@@ -63,7 +67,8 @@
 		</div>
 		<div class="asset-detail">
 			<div class="asset-detail-tabs">
-				<ig-property-group i18n-title title="Assignment Information" [showHeaderLine]="false" [shouldBePadded]="false">
+				<ig-property-group i18n-title title="Assignment Information" [showHeaderLine]="false"
+								   [shouldBePadded]="false">
 					<div readonly>
 						<div class="row">
 
@@ -85,6 +90,12 @@
 										 [tableStyle]="{'min-width': 'max-content'}"
 										 loadingIcon="fa fa-spinner"
 										 [value]="assignments"
+										 [pageLinks]="3"
+										 [paginator]="true"
+										 [rows]="rowsPerPage"
+										 [totalRecords]="assignments.length"
+										 [rowsPerPageOptions]="defaultPagingOptions"
+										 (onPage)="setRowsPerPage($event)"
 										 [metaKeySelection]="true"
 										 [scrollable]="true"
 										 [scrollHeight]="'calc(100vh - 410px)'"
@@ -130,13 +141,17 @@
 											<td (click)="selectSingleItem($event,item,el);"> {{item.InitiatedBy}}</td>
 											<td (click)="selectSingleItem($event,item,el);">{{item.InitiatedOn  | date:'shortDate'}}</td>
 											<td class="info-panel-button">
-												<button igButton class="{{(selectedForInfoPanel?.workflowItemUid === item.WorkflowItemUid ? 'ig-button-primary' : '')}}" icon="fa-info-circle" (click)="openAssetSidePanel(item)"></button>
+												<button igButton
+														class="{{(selectedForInfoPanel?.workflowItemUid === item.WorkflowItemUid ? 'ig-button-primary' : '')}}"
+														icon="fa-info-circle"
+														(click)="openAssetSidePanel(item)"></button>
 											</td>
 										</tr>
 									</ng-template>
 									<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 										<d3s-grid-selection-info [includeSelectLinks]="false"
-																 [afterPagingInfo]="false"
 																 [model]="assignments"
 																 [selection]="selected">
 										</d3s-grid-selection-info>

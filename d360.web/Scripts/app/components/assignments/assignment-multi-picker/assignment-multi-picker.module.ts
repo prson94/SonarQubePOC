@@ -9,6 +9,7 @@ import { PropertyGroupModule } from '../../shared/controls/property-group/proper
 import { AssignmentsModule } from '../assignments.module';
 import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 import { SharedGridSelectionInfoModule } from '../../shared/grid-selection-info.component';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 
 
 @NgModule({
@@ -27,7 +28,8 @@ import { SharedGridSelectionInfoModule } from '../../shared/grid-selection-info.
 		SharedGridSelectionInfoModule,
 		SidePanelModule,
 		SiteModalModule,
-		TableModule
+		TableModule,
+		SharedGridPagingInfoModule
 	]
 })
 export class AssignmentsMultiPickerModule {
