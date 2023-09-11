@@ -885,7 +885,7 @@ namespace d360.web.Controllers.Services
 
 			if (string.IsNullOrEmpty(xml))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, WorkflowApiMessages.WofkFlowXMLNull);
+				return Request.CreateResponse<dynamic>(HttpStatusCode.OK, null);
 			}
 
 			var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");

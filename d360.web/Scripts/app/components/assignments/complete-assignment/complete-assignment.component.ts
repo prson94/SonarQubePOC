@@ -97,21 +97,23 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	allowReassignResource: boolean = false;
 	clearOtherAssignments: boolean = false;
 	sendFormEmails: boolean = true;
-	selectedAssignment:WorkflowUserGroupedAssignments
+	selectedAssignment: WorkflowUserGroupedAssignments
 	hideDialog: boolean = false;
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	rowsPerPage: number = 10;
+
+	hasForm: boolean;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 	private storageKey: string = 'completeAssignmentRowsPerPage';
 
 	constructor(protected settingsService: CompanySettingsService,
-				private workflowService: WorkflowService,
-				private linkClickInterceptor: LinkClickInterceptor,
-				private assignmentService: AssignmentService,
-				private cdRef: ChangeDetectorRef,
-				private resourceService: ResourcesService
+		private workflowService: WorkflowService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		private assignmentService: AssignmentService,
+		private cdRef: ChangeDetectorRef,
+		private resourceService: ResourcesService
 	) {
 		super(settingsService);
 	}
@@ -137,7 +139,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		stepUid: string,
 		assetId?: number,
 		items?: SingleAssignment[]
-		selectedAssignment?:WorkflowUserGroupedAssignments
+		selectedAssignment?: WorkflowUserGroupedAssignments,
+		showAssignmentProgress?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
@@ -150,7 +153,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
-			this.selectedAssignment=details.selectedAssignment;
+			this.selectedAssignment = details.selectedAssignment;
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
@@ -179,7 +182,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowService.getAssignmentsByVersion(1, 1, null, null, null, null, this.workflowItemUid),
 					this.workflowService.getAssignmentItem(this.workflowItemUid))
 					.subscribe((results) => {
+						this.hasForm = false;
 						if (results[0]) {
+							this.hasForm = true;
 							const res = results[0];
 							this.formTitle = res.Title;
 							this.formDescription = res.Description;
@@ -217,6 +222,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.isLoading = false;
 						this.cdRef.markForCheck();
 					});
+
+			if (details.showAssignmentProgress) {
+				this.showAssignmentProgress()
+			}
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor
 			.getEvents()
@@ -310,16 +319,16 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.modal.closePopUp();
 					});
 			}
-			
+
 			// Common function to close the modal
 			this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
-			.subscribe((res) => {
-				this.isLoading = false;
-				const matchedAssignment=res.find((ele) =>
-					ele.WorkflowTypeUid=== this.selectedAssignment.WorkflowTypeUid && ele.Version===this.selectedAssignment.Version
-				);	
-					this.onModalClose.emit({ isBack: matchedAssignment.Count> 0 ? true : false, isCompleteForm });					
-			});
+				.subscribe((res) => {
+					this.isLoading = false;
+					const matchedAssignment = res.find((ele) =>
+						ele.WorkflowTypeUid === this.selectedAssignment.WorkflowTypeUid && ele.Version === this.selectedAssignment.Version
+					);
+					this.onModalClose.emit({ isBack: matchedAssignment.Count > 0 ? true : false, isCompleteForm });
+				});
 		}
 	}
 

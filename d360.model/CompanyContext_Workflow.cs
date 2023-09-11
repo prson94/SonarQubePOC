@@ -846,7 +846,7 @@ namespace d360.model
 					where wi.ID = @itemid", new { itemid = item.ItemID, stepId = item.StepID }))
 					.FirstOrDefault();
 
-				url = $"https://{prefix}.data3sixty.com/{urlPart}";
+				url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
 			}
 
 			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);

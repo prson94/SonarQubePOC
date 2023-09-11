@@ -25,7 +25,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
 	assignments: WorkflowUserGroupedAssignments[];
-	selectedAssignment:WorkflowUserGroupedAssignments
+	selectedAssignment: WorkflowUserGroupedAssignments
 	isMe: boolean = false;
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
@@ -102,7 +102,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 							});
 					}
 					else if (this.urlWorkflowTypeUid) {
-						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null });
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0 });
 						this.isLoading = false;
 						this.changeDetectorRef.markForCheck();
 					}
@@ -159,7 +159,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			$event.preventDefault();
 			$event.stopPropagation();
 		}
-		this.selectedAssignment=item;
+		this.selectedAssignment = item;
 		if (item.AssociatedItems.length > 1) {
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}

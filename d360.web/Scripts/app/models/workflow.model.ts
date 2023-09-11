@@ -1035,4 +1035,5 @@ export class WorkflowStateForUser {
 	isCompleted: boolean;
 	workflowItemUid: string;
 	workflowName: string;
+	assignmentCount: number;
 }

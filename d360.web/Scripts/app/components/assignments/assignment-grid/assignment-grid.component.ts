@@ -26,6 +26,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute } from '@angular/router';
+import { Param } from '../../../enums/param.enum';
 
 /*global $localize*/
 
@@ -74,6 +75,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	emptyGridMessage: string;
 	loadDataSub: Subscription;
 	urlLoadAssignment: string;
+	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
@@ -89,10 +91,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		super(settingsService);
 		this.urlLoadAssignment = null;
 		this.route.queryParams
-			.subscribe((params: { loadAssignment: string }) => {
+			.subscribe((params: { loadAssignment: string, details: string }) => {
+				this.urlShowDetails = false;
 				if (params.loadAssignment) {
 					this.urlLoadAssignment = (params.loadAssignment ?? "").toLowerCase();
 				}
+				if (params.details && params.details === "true") {
+					this.urlShowDetails = true;
+				}
+
 			});
 		this.currentResourceUid = this.settingsService.CurrentResourceUid;
 		this.loadData();
@@ -134,8 +141,20 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.workflowService.getWorkflowStateForUser(stepUid)
 			.subscribe((res) => {
 				this.errorSubTitle = res.workflowName;
+				const hasAccess =
+					res.hasAccess
+					|| this.isAdmin
+					|| (res.assignmentCount === 0 && this.urlShowDetails);
 
-				if (!res.exists) {
+				if (this.urlShowDetails && hasAccess) {
+					this.completeAssignmentComponent.openModal({
+						workflowItemUid: itemUid,
+						stepUid,
+						assetId: 0,
+						showAssignmentProgress: true
+					});
+				}
+				else if (!res.exists) {
 					this.errorModalTitle = $localize`Assignment Not Found`;
 					this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
 					this.modalVisible = true;
@@ -145,7 +164,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
 					this.modalVisible = true;
 				}
-				else if (!res.hasAccess) {
+				else if (!hasAccess) {
 					this.errorModalTitle = $localize`You Cannot View the Assignment`;
 					this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 					this.modalVisible = true;
