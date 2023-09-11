@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.api.ValidateCatalogItemProperty-v1">
+  <changeSet author="Pappas" id="Function.api.ValidateCatalogItemProperty-v2">
    <comment></comment>
    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -25,7 +25,7 @@ begin
 	declare @success bit = null,
 			@message nvarchar(max) = '';
 
-	if @type in ('Color', 'Path', 'ComplexRelationLookup', 'OwnershipLookup', 'Relation', 'FieldFromRelationship', 'RefListRelationship', 'JSON', 'JsonElement', 'Tag', 'Score', 'Counter')
+	if @type in ('Color', 'Path', 'ComplexRelationLookup', 'OwnershipLookup', 'Relation', 'FieldFromRelationship', 'RefListRelationship', 'JsonElement', 'Tag', 'Score', 'Counter')
 	begin
 		set @success = 0;
 		set @message = @message + @name + ' is not a supported field type ['+@type+'] for this API. ';
@@ -86,6 +86,12 @@ begin
 					set @message = @message + @name + ' is greater than maximum value. ';
 				end
 			end
+		end
+
+		if @type = 'JSON' and ISJSON(@value) = 0 and @value is not null
+		begin
+			set @success = 0;
+			set @message = @message + @name + ' is not valid. ';
 		end
 
 		if @type = 'Lookup' and @valueId is null and @value is not null
