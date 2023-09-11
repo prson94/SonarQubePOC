@@ -388,7 +388,8 @@ namespace d360.model.DataAccessLayer
 			var sql = @"
 				declare @workflowItemUid uniqueidentifier,
 				@CompletedOn datetime,
-				@id bigint;
+				@id bigint,
+				@Name nvarchar(max);
 
 				select top 1 @workflowItemUid = wi.UID,
 				@CompletedOn = wi.CompletedOn,
@@ -399,10 +400,16 @@ namespace d360.model.DataAccessLayer
 
 				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @ID and wia.ResourceObjectID = @resourceId);
 
+				select @Name = wt.Name from workflow.Item wi
+				inner join workflow.Version wv on wv.ID = wi.VersionID
+				inner join workflow.Type wt on wt.ID = wv.TypeID
+				where wi.uid = @workflowItemUid
+
 				select 
 				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
 				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
 				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
+				@Name as [workflowName],
 				@workflowItemUid as workflowItemUid";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();

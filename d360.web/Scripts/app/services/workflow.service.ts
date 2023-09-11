@@ -30,7 +30,7 @@ import {
 	WorkflowTypeItem,
 	WorkflowTypeModel,
 	WorkflowVersion,
-	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails, WorkflowUserGroupedAssignments
+	WorkflowStepDetail, WorkflowFormField, WorkflowFormResponse, WorkflowDetails, WorkflowUserGroupedAssignments, WorkflowStateForUser
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { MessagesObservableService } from './messages-observable.service';
@@ -823,7 +823,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 
-	getWorkflowStateForUser(workflowItemUid: string): Observable<{ exists: boolean, hasAccess: boolean, isCompleted: boolean, workflowItemUid:string }> {
+	getWorkflowStateForUser(workflowItemUid: string): Observable<WorkflowStateForUser> {
 		return this.http.get(`api/v2/workflow/assignments/${workflowItemUid}/state`)
 			.pipe(
 				map((response) => response),

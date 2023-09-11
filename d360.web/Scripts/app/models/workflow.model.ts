@@ -1028,3 +1028,11 @@ export class WorkflowUserGroupedAssignments {
 	AssociatedItems: SingleAssignment[];
 	AssociatedWith: string;
 }
+
+export class WorkflowStateForUser {
+	exists: boolean;
+	hasAccess: boolean;
+	isCompleted: boolean;
+	workflowItemUid: string;
+	workflowName: string;
+}

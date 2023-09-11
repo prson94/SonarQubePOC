@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { SingleAssignment, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -102,7 +102,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 							});
 					}
 					else if (this.urlWorkflowTypeUid) {
-						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null });
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null });
 						this.isLoading = false;
 						this.changeDetectorRef.markForCheck();
 					}
@@ -113,7 +113,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				});
 	}
 
-	private handleWorkflowItemLoad(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string }) {
+	private handleWorkflowItemLoad(res: WorkflowStateForUser) {
 		// check if there is exiting step in assignments
 		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
 		if (assignmentItem) {
@@ -133,8 +133,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 
 	modalVisible: boolean = false;
 	errorModalTitle: string;
+	errorSubTitle: string;
 	errorModalMessage: string;
-	private handleNoAssignments(res: { exists: boolean; hasAccess: boolean; isCompleted: boolean; workflowItemUid: string; }) {
+	private handleNoAssignments(res: WorkflowStateForUser) {
+		this.errorSubTitle = res.workflowName;
 		if (!res.exists) {
 			this.errorModalTitle = $localize`Assignment Not Found`;
 			this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;

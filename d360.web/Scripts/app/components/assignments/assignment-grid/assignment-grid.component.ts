@@ -126,12 +126,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	modalVisible: boolean = false;
 	errorModalTitle: string;
 	errorModalMessage: string;
+	errorSubTitle: string;
 	private loadAssignmentFromUrl() {
         const params = this.urlLoadAssignment.split('|');
         const itemUid = params[0];
         const stepUid = params[1];
         this.workflowService.getWorkflowStateForUser(stepUid)
 			.subscribe((res) => {
+				this.errorSubTitle = res.workflowName;
+
 				if (!res.exists) {
 					this.errorModalTitle = $localize`Assignment Not Found`;
 					this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;

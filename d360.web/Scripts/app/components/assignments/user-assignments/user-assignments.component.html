@@ -80,7 +80,8 @@
 							  (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
 
 <d3s-modal [title]="errorModalTitle"
-		   additionalClasses="modal-dyn-editor large-dialog"
+		   additionalClasses="modal-dyn-editor medium-dialog"
+		   [subtitle]="errorSubTitle"
 		   (onClose)="modalVisible=false"
 		   [isVisible]="modalVisible">
 	<div prompt>
