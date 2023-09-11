@@ -76,16 +76,16 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlLoadAssignment: string;
 	areTypesLoaded: boolean = false;
 
-	@ViewChild('completeAssignmentComponent', { static:true }) completeAssignmentComponent: CompleteAssignmentComponent;
+	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
-				private workflowService: WorkflowService,
-				private route: ActivatedRoute,
-				private changeDetectorRef: ChangeDetectorRef,
-				protected settingsService: CompanySettingsService,
-				private fieldsService: FieldsObservableService,
-				private authenticationService: AuthenticationService) {
+		private workflowService: WorkflowService,
+		private route: ActivatedRoute,
+		private changeDetectorRef: ChangeDetectorRef,
+		protected settingsService: CompanySettingsService,
+		private fieldsService: FieldsObservableService,
+		private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
 		this.route.queryParams
@@ -128,10 +128,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	errorModalMessage: string;
 	errorSubTitle: string;
 	private loadAssignmentFromUrl() {
-        const params = this.urlLoadAssignment.split('|');
-        const itemUid = params[0];
-        const stepUid = params[1];
-        this.workflowService.getWorkflowStateForUser(stepUid)
+		const params = this.urlLoadAssignment.split('|');
+		const itemUid = params[0];
+		const stepUid = params[1];
+		this.workflowService.getWorkflowStateForUser(stepUid)
 			.subscribe((res) => {
 				this.errorSubTitle = res.workflowName;
 
@@ -157,10 +157,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						assetId: 0
 					});
 				}
-                this.isLoading = false;
-                this.changeDetectorRef.markForCheck();
-            });
-    }
+				this.isLoading = false;
+				this.changeDetectorRef.markForCheck();
+			});
+	}
 
 	canExportRecords() {
 		return this.totalRecords <= this.maxExportRows;

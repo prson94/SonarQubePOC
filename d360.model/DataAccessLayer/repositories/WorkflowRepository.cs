@@ -405,12 +405,15 @@ namespace d360.model.DataAccessLayer
 				inner join workflow.Type wt on wt.ID = wv.TypeID
 				where wi.uid = @workflowItemUid
 
+				declare @assignmentCount int = (select count(*) from workflow.ItemAssignment wia where wia.ItemID  = @ID)
+
 				select 
 				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
 				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
 				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
+				@workflowItemUid as workflowItemUid,
 				@Name as [workflowName],
-				@workflowItemUid as workflowItemUid";
+				@assignmentCount as assignmentCount";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
 		}
