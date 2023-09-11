@@ -73,7 +73,6 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	}
 
 	ngOnInit(): void {
-		//this.isAdmin = this.authenticationService.isAdmin;
 		if (this.router.url === '/requests') {
 			this.flowContext = 'Request';
 			this.isRequestsFlow = true;

@@ -99,8 +99,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	ngOnInit(): void {
-		//this.isAdmin = this.authenticationService.isAdmin;
+	ngOnInit(): void {		
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
 	}
