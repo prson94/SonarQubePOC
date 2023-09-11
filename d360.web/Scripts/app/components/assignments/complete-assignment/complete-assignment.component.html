@@ -152,7 +152,7 @@
 								<p-table #dt [value]="userData" [rows]="rowsPerPage" [paginator]="true"
 										 [globalFilterFields]="['FullName']" [pageLinks]="3"
 										 [rowsPerPageOptions]="defaultPagingOptions" (onPage)="setRowsPerPage($event)"
-										 [(selection)]="tableRadioSelection">
+										 [(selection)]="tableRadioSelection" paginatorDropdownAppendTo="body">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 40px"></th>
@@ -183,7 +183,6 @@
 															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
 									</ng-template>
 								</p-table>
-
 
 								<div *ngIf="onlyAdminReassignMode" class="checkbox-selector">
 									<p-checkbox igCheckbox
@@ -223,7 +222,7 @@
 								<p-table #dt [value]="assets" [rows]="rowsPerPage" [paginator]="true"
 										 [globalFilterFields]="['Name']" [pageLinks]="3"
 										 [rowsPerPageOptions]="defaultPagingOptions" (onPage)="setRowsPerPage($event)"
-										 [(selection)]="tableRadioSelection">
+										 [(selection)]="tableRadioSelection" paginatorDropdownAppendTo="body">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
@@ -271,7 +270,7 @@
 				<button class="left ig-button-secondary"
 						igButton
 						type="button"
-						(click)="discardForm ? discardFormFunc() : closeModal();onCloseClick()"
+						(click)="discardForm ? discardFormFunc() : onCloseClick()"
 						[attr.data-cy]="'CompleteAssignment_Button_Cancel'"
 						i18n-label
 						label="{{discardForm ? 'Discard Form' : 'Close'}}">

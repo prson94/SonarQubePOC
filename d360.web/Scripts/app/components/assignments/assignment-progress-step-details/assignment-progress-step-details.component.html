@@ -67,34 +67,36 @@
 				</div>
 				<div class="row">
 					<label class="ig-label" i18n>Status</label>
-					<div i18n class="ig-value">{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
-					<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form"
-								  class="row">
-						<div>
-							<ng-container i18n>Completed forms</ng-container>
-							:
-							<ng-container>{{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}
-								/{{step.ItemFields['@TotalResources']}}</ng-container>
-						</div>
-						<div *ngIf="step.ItemFields['@NumberOfResponses']">
-							<ng-container i18n>Completed by</ng-container>
-							:
-							<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
-								<a context-link
-								   (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
-								<span *ngIf="!last">, </span>
-							</ng-container>
-						</div>
-						<div>
-							<ng-container i18n>Awaiting forms from</ng-container>
-							:
-							<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
-								<a context-link
-								   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
-								<span *ngIf="!last">, </span>
-							</ng-container>
-						</div>
-					</ng-container>
+					<div class="ig-value">
+						<div i18n>{{ step.CompletedOn ? 'Closed' : 'Pending' }}</div>
+						<ng-container *ngIf="!step.CompletedOn && step.ActivityType === WorkflowActivityType.Form"
+									  class="row">
+							<div>
+								<ng-container i18n>Completed forms</ng-container>
+								:
+								<ng-container>{{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}
+									/{{step.ItemFields['@TotalResources']}}</ng-container>
+							</div>
+							<div *ngIf="step.ItemFields['@NumberOfResponses']">
+								<ng-container i18n>Completed by</ng-container>
+								:
+								<ng-container *ngFor="let completed of step.ItemFields?.form; let last = last">
+									<a context-link
+									   (click)="onClickResource($event, completed['@ResourceID'])">{{completed['resourceName']}}</a>
+									<span *ngIf="!last">, </span>
+								</ng-container>
+							</div>
+							<div>
+								<ng-container i18n>Awaiting forms from</ng-container>
+								:
+								<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
+									<a context-link
+									   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
+									<span *ngIf="!last">, </span>
+								</ng-container>
+							</div>
+						</ng-container>
+					</div>
 				</div>
 				<div class="row">
 					<label class="ig-label" i18n>Started</label>

@@ -253,6 +253,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onCloseClick(): void {
+		this.closeModal();
 		this.onModalClose.emit({ isBack: false, isCompleteForm: true });
 	}
 
