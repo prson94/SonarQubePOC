@@ -3,6 +3,7 @@
 		   [isVisible]="isModalAvailable"
 		   [showActionBar]="false"
 		   [hidden]="hideDialog"
+		   [zIndex]="'20001 !important'"
 		   [additionalClasses]="'large-dialog'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
