@@ -36,6 +36,7 @@ import { mergeMap } from "rxjs/operators";
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
+	styleUrls: ['./asset-detail.component.less'],
     providers: [ObjectDetailService, AssetService, ProcessService],
     host: {
         "(document:click)": "clickedOutside($event)",
