@@ -1069,7 +1069,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("startedOn", "StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "CompletedOn", SqlFieldType.DateTime),
 				new DefaultFilter("status", "Status", SqlFieldType.Text),
-				new DefaultFilter("displayPath", "assetPath", SqlFieldType.Text),
+				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
 				new DefaultFilter("workflowName", "workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
 				new DefaultFilter("objectType", "ObjectType.Type", SqlFieldType.Text),
