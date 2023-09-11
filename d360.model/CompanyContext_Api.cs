@@ -608,8 +608,8 @@ namespace d360.model
 																	STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
 														from		{targetTable} A
 																	inner join FieldType FT on {(isIntersect ? $"FT.IntersectTypeID = @objID" : "FT.AssetTypeID= @assetTypeId")}
-																								and FT.[Type] = 'Lookup'
-																	inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+																	and FT.[Type] = 'Lookup'
+																	inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or (FT.IsRequired = 1 and F.FieldValue != ''))
 														where       A.ExecutionID = @executionID
 														group by	A.ExecutionID, A.ItemNumber
 														) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
