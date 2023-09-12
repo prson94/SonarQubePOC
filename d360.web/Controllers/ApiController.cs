@@ -113,8 +113,10 @@ namespace d360.web.Controllers
 					case "Boolean":
 						fieldType = defaulttype;
 						break;
-					case "Html":
 					case "Link":
+						fieldType = "Link";
+						break;
+					case "Html":
 						fieldType = "html";
 						break;
 				}
