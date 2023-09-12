@@ -25,7 +25,7 @@ const routes: Routes = [
 			{ path: ":uid/relationships", component: ReferenceItemTypeRelationshipsComponent },
 			{ path: ":uid/owners", component: ReferenceItemTypeResponsibilitiesComponent },
 			{ path: ":uid/assignments", component: ReferenceItemTypeAssignmentsComponent, canActivate: [FeatureFlagGuard] },
-			{ path: ":uid/workflow", component: ReferenceItemTypeWorkflowComponent }
+			{ path: ":uid/workflow", component: ReferenceItemTypeWorkflowComponent,canActivate: [FeatureFlagGuard] }
 		]
 	}
 ];
