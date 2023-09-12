@@ -61,9 +61,9 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 				isVisible: () => this.isAdmin || this.typePermission.ReadRelationships,
 			},
 			{
-				url: `${baseUrl}/workflow`,
-				title: $localize`Workflow`,
-				tag: "monitor",
+				url: `${baseUrl}/assignments`,
+				title: $localize`Assignments`,
+				tag: "Assignments",
 				isVisible: () => true,
 			},
 			{

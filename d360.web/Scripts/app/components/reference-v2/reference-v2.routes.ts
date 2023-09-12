@@ -8,7 +8,7 @@ import { ReferenceItemTypeFieldsComponent } from './tabs/fields/reference-item-t
 import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-log.component';
 import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
 import { ReferenceItemTypeResponsibilitiesComponent } from './tabs/responsibilities/reference-item-type-responsibilities.component';
-import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
+import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/reference-item-type-assignments.component';
 
 const routes: Routes = [
 	{
@@ -22,7 +22,7 @@ const routes: Routes = [
 			{ path: ":uid/log", component: ReferenceItemTypeLogComponent },
 			{ path: ":uid/relationships", component: ReferenceItemTypeRelationshipsComponent },
 			{ path: ":uid/owners", component: ReferenceItemTypeResponsibilitiesComponent },
-			{ path: ":uid/workflow", component: ReferenceItemTypeWorkflowComponent }
+			{ path: ":uid/assignments", component: ReferenceItemTypeAssignmentsComponent }
 		]
 	}
 ];
