@@ -50,7 +50,7 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 			},
 			{
 				url: `${baseUrl}/owners`,
-				title: $localize`Responsibilies`,
+				title: $localize`Responsibilities`,
 				tag: "owners",
 				isVisible: () => this.isAdmin || this.typePermission.ReadResponsibilities,
 			},

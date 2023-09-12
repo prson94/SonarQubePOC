@@ -50,18 +50,18 @@
   &:active:not(:disabled), &.ig-state-active {
     background: @ig-grey-t3;
   }
-  
+
   &.ig-button-margin {
     margin-right: 4px;
   }
 
   &.ig-button-fill-span {
     span {
-          font-size: 13px;
-          height: 32px;
-          width: 32px;
-          display: block;
-          line-height: 32px;
+      font-size: 13px;
+      height: 32px;
+      width: 32px;
+      display: block;
+      line-height: 32px;
     }
   }
 
@@ -183,6 +183,14 @@
 
       &.vertical {
         border-radius: @ig-field-border-radius @ig-field-border-radius 0 0;
+      }
+    }
+
+    &:not(:last-child) {
+      margin-right: 0;
+
+      &.vertical {
+        margin-bottom: 0;
       }
     }
 
@@ -351,7 +359,7 @@
 
   &.button-theme-1 {
     background: transparent;
-  
+
     &.highlighted {
       background: @ig-purple-t2;
     }
@@ -387,12 +395,11 @@
     &:active:not(:disabled), &.ig-state-active {
       background: linear-gradient(@ig-toolbar-overlay-active, @ig-toolbar-overlay-active), var(--primaryButtonBackColor);
     }
-    
+
     &.ig-state-loading {
       background: @ig-grey-t5;
     }
   }
-
 }
 
 .ig-button-spinner {

@@ -32,10 +32,6 @@ namespace igx.jobs.apiexecutionprocessor
             builder.ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices();
-                c.AddAzureStorage(s =>
-                {
-                    s.VisibilityTimeout = TimeSpan.FromHours(6);
-                });
             });
 
             using (var host = builder.Build())
@@ -162,7 +158,9 @@ namespace igx.jobs.apiexecutionprocessor
 
 						Action markExecutionAsProcessing = () => {
 							dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
-							company.Connection.ExecuteAsync("update api.Execution set ProcessingStartedOn = @ProcessingStartedOn where Id = @Id", new { dbExecutionItem.ProcessingStartedOn, dbExecutionItem.Id });
+							company.Connection.ExecuteAsync(
+								"update api.Execution set ProcessingStartedOn = @ProcessingStartedOn, ErrorMessage = null where Id = @Id", 
+								new { dbExecutionItem.ProcessingStartedOn, dbExecutionItem.Id });
 						};
 
 						Action markExecutionAsComplete = () =>

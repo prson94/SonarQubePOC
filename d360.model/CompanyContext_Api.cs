@@ -608,8 +608,8 @@ namespace d360.model
 																	STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
 														from		{targetTable} A
 																	inner join FieldType FT on {(isIntersect ? $"FT.IntersectTypeID = @objID" : "FT.AssetTypeID= @assetTypeId")}
-																								and FT.[Type] = 'Lookup'
-																	inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+																	and FT.[Type] = 'Lookup'
+																	inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or (FT.IsRequired = 1 and F.FieldValue != ''))
 														where       A.ExecutionID = @executionID
 														group by	A.ExecutionID, A.ItemNumber
 														) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
@@ -3968,6 +3968,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										and (F.Ignore = 0 or F.Ignore is null)
 										and FT.Type != 'Relationship'
 										and FT.Type != 'Counter'
+										and FT.Type != 'Lookup'
 										and FieldValue is not null";
 
             string lookupFieldValuesSql = $@"
@@ -4001,8 +4002,19 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						{fieldValuesSql}
 					"
                     , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-            }
-            else
+
+				if (hasLookupFieldTypes)
+				{
+					// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					Connection.Execute($@"
+						INSERT INTO 
+						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])                         
+						{lookupFieldValuesSql};",
+					new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+				}
+
+			}
+			else
             {
 				var fieldIdSQL = $" and F.AssetID = {IdSqlSyntax}";
 
@@ -4061,7 +4073,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								) as S 
 					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS or T.Value is null then
-					update set T.Value = S.Value, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
+					update set T.Value = S.Value, T.FormattedValue = S.FormattedValue,
+					T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()
 					when		not matched by target then
 					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
 					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);",

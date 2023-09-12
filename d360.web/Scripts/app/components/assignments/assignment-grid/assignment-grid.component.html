@@ -166,7 +166,7 @@
 					<td>
 						<span>{{ item.filteredAssignees?.join(', ') }}</span>&nbsp;<ig-badge
 						[pTooltip]="item.allAssignees?.join('\n')"
-						tooltipStyleClass="ig-tooltip" i18n
+						tooltipStyleClass="ig-tooltip" i18n class="no-border"
 						text="+ {{ (item.allAssignees.length - item.filteredAssignees.length) }} others"
 						*ngIf="item.allAssignees?.length > item.filteredAssignees?.length"></ig-badge>
 					</td>

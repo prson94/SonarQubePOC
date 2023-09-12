@@ -538,7 +538,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Url.
+        ///   Looks up a localized string similar to URL.
         /// </summary>
         public static string WorkflowMonitor_Url {
             get {

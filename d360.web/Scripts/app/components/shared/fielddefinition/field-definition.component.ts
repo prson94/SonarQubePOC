@@ -345,11 +345,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 			}
 
 			const isDiagramAssetPage = this.assetTypeClass === AssetTypeClass.DiagramAsset;
+			const isReferenceListTypePage = this.assetTypeClass === AssetTypeClass.Reference;
 
 			if (this.fieldDisplayModel.length > 1) {
 				if (this.showDeleteButton) {
 					if (keyFieldsCount === 1 && item.IsPartOfKey) {
-						menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`You cannot delete this field. There must be at least one key field defined.` });
+						const tooltip = isReferenceListTypePage ? $localize`The default "Code" field cannot be deleted.` : $localize`You cannot delete this field. There must be at least one key field defined.`
+						menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: tooltip });
 					}
 					else if (isDiagramAssetPage && ['Name', 'StepNo', 'GovernanceRole'].indexOf(item.Name) > -1) {
 						menuItems.push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Default fields cannot be deleted.` });

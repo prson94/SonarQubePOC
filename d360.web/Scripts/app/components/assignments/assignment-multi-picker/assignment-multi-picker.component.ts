@@ -15,6 +15,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
+import { AppConstants } from '../../../static/constants';
 
 @Component({
 	selector: 'd3s-assignments-multi-picker',
@@ -38,14 +39,17 @@ export class AssignmentsMultiPickerComponent {
 	version: number;
 	selectedForInfoPanel: { assetUid: string, type: string, workflowItemUid: string, Version: number };
 
+	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
+	rowsPerPage: number = 10;
 	assignments: SingleAssignment[] = [];
 	selected: SingleAssignment[] = [];
 	isLoading: boolean = false;
 	formTitle: string = '';
 	formDescription: string = '';
-	selectedAssignment:WorkflowUserGroupedAssignments
+	selectedAssignment: WorkflowUserGroupedAssignments;
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('modal', { static: false }) modelEl: D3SModal;
+	private storageKey: string = 'assignmentMultiPickerRowsPerPage';
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
@@ -62,6 +66,7 @@ export class AssignmentsMultiPickerComponent {
 				Version: null
 			};
 		});
+		this.loadRowsPerPage();
 	}
 
 	public openModal(assignments: SingleAssignment[], workflowTypeName: string,item?:WorkflowUserGroupedAssignments) {
@@ -105,6 +110,17 @@ export class AssignmentsMultiPickerComponent {
 		this.cdRef.markForCheck();
 	}
 
+	loadRowsPerPage(): void {
+		this.rowsPerPage = Number(localStorage.getItem(this.storageKey)) || 10;
+	}
+
+	setRowsPerPage(event): void {
+		if (event?.rows) {
+			localStorage.setItem(this.storageKey, event.rows);
+			this.rowsPerPage = event?.rows;
+		}
+	}
+
 	confirm() {
 		this.onAssignmentSelection.emit(this.selected);
 		this.modelEl.hide();
@@ -121,7 +137,6 @@ export class AssignmentsMultiPickerComponent {
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.markForCheck();
 	}
-
 
 	private lastSelectedElement: SingleAssignment;
 

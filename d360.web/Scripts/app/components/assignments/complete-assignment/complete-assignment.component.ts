@@ -262,6 +262,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onCloseClick(): void {
+		this.closeModal();
 		this.onModalClose.emit({ isBack: false, isCompleteForm: true });
 	}
 
@@ -290,9 +291,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			}
 			this.isLoading = true;
 			forkJoin(obs).subscribe(() => {
+				this.onModalClose.emit({ isBack, isCompleteForm });
 				this.closeModal();
 				this.modal.closePopUp();
-				this.onModalClose.emit({ isBack, isCompleteForm });
 				this.isLoading = false;
 			});
 		} else {
@@ -324,10 +325,16 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
 				.subscribe((res) => {
 					this.isLoading = false;
+
 					const matchedAssignment = res.find((ele) =>
-						ele.WorkflowTypeUid === this.selectedAssignment.WorkflowTypeUid && ele.Version === this.selectedAssignment.Version
+						ele.WorkflowTypeUid === this.selectedAssignment?.WorkflowTypeUid && ele.Version === this.selectedAssignment?.Version
 					);
-					this.onModalClose.emit({ isBack: matchedAssignment.Count > 0 ? true : false, isCompleteForm });
+
+					let count = 0;
+					if (matchedAssignment) {
+						count = matchedAssignment.Count;
+					}
+					this.onModalClose.emit({ isBack: count > 0 ? true : false, isCompleteForm });
 				});
 		}
 	}

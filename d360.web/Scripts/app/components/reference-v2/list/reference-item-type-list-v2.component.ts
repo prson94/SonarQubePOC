@@ -10,7 +10,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { IOutputData } from "angular-split";
 import { Subscription } from "rxjs";
 import { AssetDetailClickType, LinkClickInterceptor } from "../../../services/href-click-service";
@@ -104,7 +104,6 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 
 	ngOnInit() {
 		this.setBrowserTitle(this.titleService, this.pageTitle);
-		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 		this.load();
 		this.setRowsPerPage();
 		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage, this.title);
@@ -120,39 +119,40 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 
 	private load() {
 		this.isLoading = true;
-		this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
-		this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
-			.subscribe((data) => {
-				const result = data.map((x) => (x as unknown) as AssetTypeApiModel);
-				this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
-				if (this.referenceTypes.length > 0) {
-					if (this.initialSelectedListUid?.length > 0) {
-						const index = this.referenceTypes.findIndex((x) => x.uid === this.initialSelectedListUid);
-						this.initialSelectedListUid = '';
-						if (index >= 0 && index < this.referenceTypes.length) {
-							// eslint-disable-next-line
-							this.selected = this.referenceTypes[index];
+		forkJoin(
+			this.loadPermissions(this.permissionsService, "ReferenceItemType", 0),
+			this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
+		).subscribe(([, data]) => {
+			const result = data.map((x) => (x as unknown) as AssetTypeApiModel);
+			this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
+			if (this.referenceTypes.length > 0) {
+				if (this.initialSelectedListUid?.length > 0) {
+					const index = this.referenceTypes.findIndex((x) => x.uid === this.initialSelectedListUid);
+					this.initialSelectedListUid = '';
+					if (index >= 0 && index < this.referenceTypes.length) {
+						// eslint-disable-next-line
+						this.selected = this.referenceTypes[index];
 
-							const page = Math.floor(index / 10);
-							if (this.table) {
-								this.table.first = page * 10;
-							}
-						}
-						else {
-							this.selected = this.referenceTypes[0];
+						const page = Math.floor(index / 10);
+						if (this.table) {
+							this.table.first = page * 10;
 						}
 					}
 					else {
 						this.selected = this.referenceTypes[0];
 					}
-					this.onSelect();
 				}
-				this.referenceTypes.forEach((i) => {
-					this.listItemTransform(i);
-				});
-
-				this.isLoading = false;
+				else {
+					this.selected = this.referenceTypes[0];
+				}
+				this.onSelect();
+			}
+			this.referenceTypes.forEach((i) => {
+				this.listItemTransform(i);
 			});
+
+			this.isLoading = false;
+		});
 	}
 
 	listItemTransform(type: AssetTypeApiModel) {
@@ -248,7 +248,17 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 	onEditFormClose() {
 		this.isModalVisible = false;
 	}
-	onEditSaveFinished() {
+
+	onEditSaveFinished($event) {
+		if ($event.type === 'error') {
+			this.messagesService.showError($event.title, $event.Message);
+		} else {
+			this.messagesService.showInfoMessage(
+				$localize`Success`,
+				$event.Message
+			);
+		}
+
 		this.load();
 	}
 

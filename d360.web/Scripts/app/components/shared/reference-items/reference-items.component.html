@@ -165,10 +165,11 @@
                   *ngIf="showEditor"
                   [objectType]="'ReferenceItem'"
                   [title]="referenceItemTitle"
+                  [assetTypePath]="typeName"
                   [selection]="editorSelected"
                   [rowID]="rowID"
                   [objectTypeUid]="referenceItemTypeUid"
-                  (saveClick)="saveItem()"
+                  (saveClick)="saveItem($event)"
                   [showAsModal]="true"
                   [isV2API]="true"
                   (closeClick)="showEditor=false"></asset-editor>
