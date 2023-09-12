@@ -4,13 +4,11 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
@@ -24,18 +22,10 @@ using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-
 using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using DocumentFormat.OpenXml.Office2016.Excel;
-using DocumentFormat.OpenXml.Vml;
 using Microsoft.Web.Http;
-
 using Newtonsoft.Json;
-
 using Resources;
-
 using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
