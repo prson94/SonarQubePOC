@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ using d360.web.Services;
 
 using Dapper;
 using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Vml;
 using Microsoft.Web.Http;
@@ -826,6 +828,21 @@ namespace d360.web.Controllers.V2
 				if (AssetTypeUid != null && @class == AssetTypeClass.User)
 				{
 					dataTypeOptions = dataTypeOptions.Where(x => x.value != "ComplexRelationLookup").ToList();
+				}
+
+				if (@class == AssetTypeClass.Reference)
+				{
+					dataTypeOptions = dataTypeOptions
+						.Where(x => x.value != DataType.FieldFromRelationship.ToString())
+						.Where(x=> x.value != DataType.JSON.ToString())
+						.Where(x=> x.value != DataType.JsonElement.ToString())
+						.Where(x=> x.value != DataType.OwnershipLookup.ToString())
+						.Where(x=> x.value != DataType.RefListRelationship.ToString())
+						.Where(x=> x.value != DataType.ComplexRelationLookup.ToString())
+						.Where(x=> x.value != DataType.Relationship.ToString())
+						.Where(x=> x.value != DataType.Score.ToString())
+						.Where(x=> x.value != DataType.Tag.ToString())
+						.ToList();
 				}
 
 				var jsonFieldType = new Dictionary<string, string> {
