@@ -36,6 +36,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	isLoading = false;
 	savingInProgress = false;
+	showReferenceParent = false;
 	defaultColors: SelectItem[] = [];
 	defaultColorItem: SelectItem = { label: $localize`Custom`, value: 'Custom', title: 'Custom' };
 
@@ -55,6 +56,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 	eventTooltip = $localize`An event is represented by a circle and is something that "happens" during the course of a business process. These events affect the flow of the process and usually have a cause (trigger) or an impact (result).`;
 	gatewayTooltip = $localize`A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.`;
 	activityTooltip = $localize`An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are Task and Sub-Process.`;
+	displayValueTooltip = $localize`The value of this field token is used to reference the asset throughout the application, for example when you open an asset details page, the value of this field token is displayed in the breadcrumb.`;
+	referenceDisplayValueTooltip = $localize`The value of this field token is used to hold the reference list items.`;
 
 	private isEditFormUpdated: boolean = false;
 	private changeFormSub: Subscription;
@@ -191,6 +194,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["predicateUid"].setValue(selected.value);
 			}
 		}
+		this.showReferenceParent = false;
 	}
 
 	updateForm() {
@@ -222,6 +226,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.assetTypeForm.controls["name"].setValue(assetType.Name);
 				this.assetTypeForm.controls["displayFormat"].setValue(assetType.DisplayFormat);
 				this.assetTypeForm.controls["description"].setValue(assetType.Description);
+				this.assetTypeForm.controls["notes"].setValue(assetType.Notes);
 				this.assetTypeForm.controls["isDescriptionEnabled"].setValue(assetType.IsDescriptionEnabled);
 				this.assetTypeForm.controls["descriptionButtonName"].setValue(assetType.DescriptionButtonName);
 				this.assetTypeForm.controls["isDefaultReadAccessEnabled"].setValue(assetType.IsDefaultReadAccessEnabled);
@@ -256,7 +261,12 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				this.assetTypeForm.controls["predicateUid"].setValue(predicateUid);
 
-				this.title = $localize`Edit Asset Type`;
+				if (this.isReferenceItemTypeForm) {
+					this.showReferenceParent = predicateUid !== null;
+					this.assetTypeForm.controls["referenceParentUid"].setValue(assetType.ParentUid);
+				}
+
+				this.title = (this.isReferenceItemTypeForm) ? $localize`Edit Reference List`  : $localize`Edit Asset Type`;
 				this.subTitle = assetType.Name;
 
 				if (assetType.SynonymAllocations && assetType.SynonymAllocations.length > 0) {
@@ -330,6 +340,8 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 				this.uid ? this.fieldsService.getAssetTypeAncestry(this.uid) : of([])
 			).subscribe((results) => {
 				const ancestorUids = (results[1] as AssetTypeAncestry[]).map((m) => m.Uid);
+				//Remove direct ancestor from ancestorUids to allow parent in paretSelectItems
+				ancestorUids.splice(-2, 1);
 				const opts: SelectItem[] = (results[0] as AssetTypeApiModel[])
 					.filter((f) => ancestorUids.indexOf(f.uid) === -1)
 					.map((m) => { return {value: m.uid, label: m.Name}; })
@@ -434,6 +446,17 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		const selectedValue = this.defaultColors.find((x) => x.value === $event);
 		if (selectedValue.label !== 'Custom') {
 			this.assetTypeForm.controls["backgroundColor"].setValue(selectedValue.title);
+		}
+	}
+
+	onPredicateSelect($event) {
+		if (this.assetTypeForm.get('predicateUid').value) {
+			this.showReferenceParent = true;
+			setTimeout(() => {
+				this.assetTypeForm.controls["referenceParentUid"].setValue(null);
+			}, 100);
+		} else {
+			this.showReferenceParent = false;
 		}
 	}
 

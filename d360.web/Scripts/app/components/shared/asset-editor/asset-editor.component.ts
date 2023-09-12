@@ -368,7 +368,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		this.isLoading = true;
 
 		//if we are editing an asset we should fetch its full path
-		if (id && id.toString().length === 36) {
+		if (id && id.toString().length === 36 && this.objectType !== "ReferenceItem") {
 			this.assetTypePath = "";
 			this.assetService.getAssetPath(id).subscribe((res) => {
 				if (res && res[0] && res[0].DisplayPath) {

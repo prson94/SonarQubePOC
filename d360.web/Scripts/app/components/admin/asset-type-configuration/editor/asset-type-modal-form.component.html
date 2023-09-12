@@ -44,7 +44,7 @@
 										<label for="displayFormat" class="ig-label" i18n>Display Format</label>
 										<span class="field-tooltip fa fa-question-circle"
 											  i18n-pTooltip
-											  pTooltip="The value of this field token is used to reference the asset throughout the application, for example when you open an asset details page, the value of this field token is displayed in the breadcrumb"
+											  pTooltip="{{isReferenceItemTypeForm ? referenceDisplayValueTooltip : displayValueTooltip}}"
 											  tooltipPosition="top"
 											  tooltipStyleClass="ig-tooltip"></span>
 									</div>
@@ -79,11 +79,12 @@
 												tabindex="30"
 												igSize="full"
 												[appendTo]="'body'"
+												(onChange)="onPredicateSelect($event)"
 												[options]="hierarchyPredicatesSelectItem"></p-dropdown>
 
 								</div>
 
-								<div class="field-col" *ngIf="isReferenceItemTypeForm &&  assetTypeForm.get('predicateUid').value">
+								<div class="field-col" *ngIf="isReferenceItemTypeForm && showReferenceParent">
 									<label for="referenceParentUid" class="ig-label" i18n>Parent</label>
 									<p-dropdown name="referenceParentUid"
 												formControlName="referenceParentUid"
