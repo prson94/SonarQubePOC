@@ -449,7 +449,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		}
 	}
 
-	onPredicateSelect($event) {
+	onPredicateSelect() {
 		if (this.assetTypeForm.get('predicateUid').value) {
 			this.showReferenceParent = true;
 			setTimeout(() => {

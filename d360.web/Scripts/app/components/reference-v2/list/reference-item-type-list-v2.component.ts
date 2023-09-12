@@ -122,7 +122,7 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 		forkJoin(
 			this.loadPermissions(this.permissionsService, "ReferenceItemType", 0),
 			this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
-		).subscribe(([perm, data]) => {
+		).subscribe(([, data]) => {
 			const result = data.map((x) => (x as unknown) as AssetTypeApiModel);
 			this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
 			if (this.referenceTypes.length > 0) {
