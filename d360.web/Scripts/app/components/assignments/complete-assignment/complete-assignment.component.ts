@@ -102,6 +102,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	rowsPerPage: number = 10;
 
+	hasForm: boolean;
+
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 	private storageKey: string = 'completeAssignmentRowsPerPage';
@@ -137,7 +139,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		stepUid: string,
 		assetId?: number,
 		items?: SingleAssignment[]
-		selectedAssignment?: WorkflowUserGroupedAssignments
+		selectedAssignment?: WorkflowUserGroupedAssignments,
+		showAssignmentProgress?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
@@ -179,7 +182,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowService.getAssignmentsByVersion(1, 1, null, null, null, null, this.workflowItemUid),
 					this.workflowService.getAssignmentItem(this.workflowItemUid))
 					.subscribe((results) => {
+						this.hasForm = false;
 						if (results[0]) {
+							this.hasForm = true;
 							const res = results[0];
 							this.formTitle = res.Title;
 							this.formDescription = res.Description;
@@ -217,6 +222,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						this.isLoading = false;
 						this.cdRef.markForCheck();
 					});
+
+			if (details.showAssignmentProgress) {
+				this.showAssignmentProgress()
+			}
 		}
 		this.linkInterceptorSubscription = this.linkClickInterceptor
 			.getEvents()

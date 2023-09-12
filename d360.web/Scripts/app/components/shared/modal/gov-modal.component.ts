@@ -52,7 +52,7 @@ export class D3SModal implements OnChanges, AfterViewInit, OnDestroy {
 	@Output() onConfirm = new EventEmitter();
 
 	@ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
-	zIndex: string = "20000 !important";
+	@Input() zIndex: string = "20000 !important";
 
 	private display: boolean = false;
 

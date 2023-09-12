@@ -230,7 +230,8 @@
 						 (onModalClose)="onCompleteAssignmentModalClose()"></d3s-complete-assignment>
 
 <d3s-modal [title]="errorModalTitle"
-		   additionalClasses="modal-dyn-editor large-dialog"
+		   [subtitle]="errorSubTitle"
+		   additionalClasses="modal-dyn-editor medium-dialog"
 		   (onClose)="modalVisible=false"
 		   [isVisible]="modalVisible">
 	<div prompt>

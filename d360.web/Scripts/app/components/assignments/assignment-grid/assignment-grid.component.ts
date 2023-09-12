@@ -74,25 +74,31 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	emptyGridMessage: string;
 	loadDataSub: Subscription;
 	urlLoadAssignment: string;
+	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 
-	@ViewChild('completeAssignmentComponent', { static:true }) completeAssignmentComponent: CompleteAssignmentComponent;
+	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
-				private workflowService: WorkflowService,
-				private route: ActivatedRoute,
-				private changeDetectorRef: ChangeDetectorRef,
-				protected settingsService: CompanySettingsService,
-				private fieldsService: FieldsObservableService,
-				private authenticationService: AuthenticationService) {
+		private workflowService: WorkflowService,
+		private route: ActivatedRoute,
+		private changeDetectorRef: ChangeDetectorRef,
+		protected settingsService: CompanySettingsService,
+		private fieldsService: FieldsObservableService,
+		private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
 		this.route.queryParams
-			.subscribe((params: { loadAssignment: string }) => {
+			.subscribe((params: { loadAssignment: string, details: string }) => {
+				this.urlShowDetails = false;
 				if (params.loadAssignment) {
 					this.urlLoadAssignment = (params.loadAssignment ?? "").toLowerCase();
 				}
+				if (params.details && params.details === "true") {
+					this.urlShowDetails = true;
+				}
+
 			});
 		this.currentResourceUid = this.settingsService.CurrentResourceUid;
 		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
@@ -126,13 +132,28 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	modalVisible: boolean = false;
 	errorModalTitle: string;
 	errorModalMessage: string;
+	errorSubTitle: string;
 	private loadAssignmentFromUrl() {
-        const params = this.urlLoadAssignment.split('|');
-        const itemUid = params[0];
-        const stepUid = params[1];
-        this.workflowService.getWorkflowStateForUser(stepUid)
+		const params = this.urlLoadAssignment.split('|');
+		const itemUid = params[0];
+		const stepUid = params[1];
+		this.workflowService.getWorkflowStateForUser(stepUid)
 			.subscribe((res) => {
-				if (!res.exists) {
+				this.errorSubTitle = res.workflowName;
+				const hasAccess =
+					res.hasAccess
+					|| this.isAdmin
+					|| (res.assignmentCount === 0 && this.urlShowDetails);
+
+				if (this.urlShowDetails && hasAccess) {
+					this.completeAssignmentComponent.openModal({
+						workflowItemUid: itemUid,
+						stepUid,
+						assetId: 0,
+						showAssignmentProgress: true
+					});
+				}
+				else if (!res.exists) {
 					this.errorModalTitle = $localize`Assignment Not Found`;
 					this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
 					this.modalVisible = true;
@@ -142,7 +163,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
 					this.modalVisible = true;
 				}
-				else if (!res.hasAccess) {
+				else if (!hasAccess) {
 					this.errorModalTitle = $localize`You Cannot View the Assignment`;
 					this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 					this.modalVisible = true;
@@ -154,10 +175,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						assetId: 0
 					});
 				}
-                this.isLoading = false;
-                this.changeDetectorRef.markForCheck();
-            });
-    }
+				this.isLoading = false;
+				this.changeDetectorRef.markForCheck();
+			});
+	}
 
 	canExportRecords() {
 		return this.totalRecords <= this.maxExportRows;
