@@ -1183,19 +1183,24 @@ namespace d360.model
 						(@assetID is not null and AssetID = @assetID) or 
 						(@IntersectID is not null and IntersectID = @IntersectID) or 
 						(@issueid is not null and IssueID = @issueid)))
+
+					declare @formattedValue nvarchar(max) = (select 
+						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
+					    from FieldType ft where ft.ID = @fieldTypeID)
 					
 					if @fieldId > 0
 					begin
 						update Field
 							set Value = @value,
+							FormattedValue = @formattedValue,
 							UpdatedBy = @updatedBy,
 							UpdatedOn = GETUTCDATE()
 						where ID = @fieldId
 					end
 					else
 					begin
-						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], IssueID, IntersectID, UpdatedBy) 
-						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @IssueID, @IntersectID, @updatedBy)
+						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy) 
+						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @formattedValue, @IssueID, @IntersectID, @updatedBy)
 					end"
 					, dbargs);
 			}
@@ -1241,7 +1246,12 @@ namespace d360.model
 				}
 				else //update
 				{
-					await Database.Connection.ExecuteAsync($"update Field set [Value] = @value, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL}"
+					await Database.Connection.ExecuteAsync($@"
+						declare @formattedValue nvarchar(max) = (select 
+						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
+					    from FieldType ft where ft.ID = @fieldTypeID)
+
+						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL}"
 					, new
 					{
 						value = updateValue,
