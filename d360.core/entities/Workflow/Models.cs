@@ -677,6 +677,7 @@ namespace d360.core.entities.Workflow
 
 		public string Name { get; set; }
 		public string AssetTypeName { get; set; }
+		public string AssetTypePath { get; set; }
 
 		public long? AssetId { get; set; }
 

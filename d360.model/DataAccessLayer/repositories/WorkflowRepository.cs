@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1775,11 +1776,21 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid)
 		{
-			string sql = @"
+			StringBuilder classQuery = new StringBuilder();
+
+			classQuery.AppendLine("declare @classNames table(id int, name nvarchar(max))");
+			foreach(var item in AssetTypeClass.BusinessAsset.GetAsList())
+			{
+				classQuery.AppendLine($"insert into @classNames values({(int)item.ID},'{item.Name}')");
+			}
+
+			string sql = $@"
 						declare @resourceId int;
 						select @resourceId = ResourceID from reporting.Global_Resource where uid = @resourceUid;
 
-						with user_ass as(select
+						{classQuery.ToString()}
+
+						;with user_ass as(select
 						 wt.name as Name
 						,wt.uid as uid
 						,wv.[version]
@@ -1811,6 +1822,7 @@ namespace d360.model.DataAccessLayer
 							wi.UID as WorkflowItemUid, 
 							ObjectData.Name,
 							ObjectData.AssetTypeName,
+							ObjectData.AssetTypePath,
 							wis.UID as ItemStepUid,
 							ObjectData.AssetId, 
 							ObjectData.AssetUid, 
@@ -1823,19 +1835,24 @@ namespace d360.model.DataAccessLayer
 						left join [asset] crAsset on crAsset.Object = 'Resource' and crAsset.ObjectId = wis.StartedBy
 						left join AssetDisplayValue adv on adv.AssetID = crAsset.ID
 						outer apply (
-							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset Type' else 'Asset' end as ObjectType, at.Name as AssetTypeName from [Issue] I 
+							 select top 1 coalesce(adv.DisplayValue, at.name,'---'), a.ID as AssetId, a.uid as AssetUid, case when a.id is null then 'Asset Type' else 'Asset' end as ObjectType, at.Name as AssetTypeName, CONCAT(csname.Name, ' > ', atpath.Path) as AssetTypePath  from [Issue] I 
 							 left join [Asset] a on a.ID = I.AssetID
 							 left join [AssetDisplayValue] adv on adv.AssetID = a.ID
 							 left join [AssetType] at on at.ID = I.AssetTypeID
+							 outer apply GetAssetTypeTextPathById(AT.ID,'>')atpath
+							 outer apply (select top 1 name from @classNames where id = at.Class)csname 
 							 where I.ID = wi.ObjectID AND wi.Object = 'Issue'
 							 union 
-							 select top 1 ID.[Name], null as AssetId, null as AssetUid, 'Relationship', null as AssetTypeName from [IntersectDetail] ID
+							 select top 1 ID.[Name], null as AssetId, null as AssetUid, 'Relationship', null as AssetTypeName, null as AssetTypePath from [IntersectDetail] ID
 							 where ID.ID = wi.ObjectID AND wi.Object = 'Intersect'
 							  union 
-							 select top 1 adv.DisplayValue, A.ID AS AssetId, a.uid as AssetUid,'Asset', null as AssetTypeName from [asset] A
+							 select top 1 adv.DisplayValue, A.ID AS AssetId, a.uid as AssetUid,'Asset', AT.Name as AssetTypeName, CONCAT(csname.Name, ' > ', atpath.Path) as AssetTypePath  from [asset] A
 							  left join [AssetDisplayValue] adv on adv.AssetID = a.ID
+						      left join [AssetType] AT on at.ID = a.AssetTypeID
+							  outer apply GetAssetTypeTextPathById(AT.ID,'>')atpath
+							  outer apply (select top 1 name from @classNames where id = at.Class)csname 
 						 where A.ObjectID = wi.ObjectID AND A.Object = wi.Object AND wi.Object <> 'Intersect' AND wi.Object <> 'Issue'
-						)ObjectData(Name, AssetId, AssetUid, ObjectType, AssetTypeName)
+						)ObjectData(Name, AssetId, AssetUid, ObjectType, AssetTypeName, AssetTypePath)
 						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
 						)AssociatedWith(json)
 						order by ua.Name";
