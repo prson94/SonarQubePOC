@@ -23,6 +23,7 @@ import { SidePanelService } from "../../../services/side-panel.service";
 import { PermissionsService } from '../../../services/permissions.service';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { AssetEditorComponent } from '../asset-editor/asset-editor.component';
 
 /*global $localize*/
 
@@ -96,19 +97,17 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	deleteName: string = null;
 
 	@ViewChild('dt', { static: false }) table: Table;
+	@ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
 	private loadParams = {
 		_loadPermissionDetails: true, _includeParent: true, _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true, _onlyListableFields: true, _includeOwnershipLookup: true, };
 
-	add() {
-		this.selected = null;
-		this.showEditor = true;
-	}
-
 	exportMessage: string = '';
 	isExportInProgress: boolean = false;
 	private title: string = 'Items';
-	referenceItemTitle: string = $localize`Reference Item`;
+	private editReferenceItem = $localize`Edit Reference Item`;
+	private addReferenceItem = $localize`Add Reference Item`;
+	referenceItemTitle: string = "";
 
 	ngOnInit() {
 		this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
@@ -248,7 +247,10 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	listItemTransform(item: unknown) {
 		//set menu items
 		const menuItems = [];
-		menuItems.push({ "action": "edit" , "title": $localize`Edit`, "disabled": !this.hasModifyAssetPermissions() });
+		if (!this.isSidePanel) {
+			menuItems.push({ "action": "view", "title": $localize`View Information` });
+		}
+		menuItems.push({ "action": "edit", "title": $localize`Edit`, "disabled": !this.hasModifyAssetPermissions() });
 		menuItems.push({ "action": "delete", "title": $localize`Delete`, "disabled": !this.hasDeleteAssetPermissions() });
 		item[this.menuKey] = menuItems;
 	}
@@ -257,10 +259,14 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.selectedItem = item;
 
 		switch ($event.action) {
+			case "view":
+				this.expandPanel();
+				break;
 			case "edit":
 				if (item) {
 					this.editorSelected = item;
 				}
+				this.referenceItemTitle = this.editReferenceItem;
 				this.showEditor = true;
 				break;
 			case "delete":
@@ -380,13 +386,23 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.selectedItem = item;
 	}
 
-	saveItem() {
+	saveItem($event) {
 		this.showEditor = false;
+		if ($event && $event.addAnother) {
+			this.openAddForm();
+		}
 		this.load();
 	}
 
 	openAddForm() {
 		this.selectedItem = null;
+		this.editorSelected = null;
+		this.referenceItemTitle = this.addReferenceItem;
 		this.showEditor = true;
+		//reload dynamic editor if it already exists to trigger change detection
+		if (this.dynamicEditor) {
+			this.dynamicEditor.load();
+		}
+
 	}
 }

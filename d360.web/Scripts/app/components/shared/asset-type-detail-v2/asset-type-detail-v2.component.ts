@@ -114,6 +114,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						this.fillCategories(this.assetTypeModel);
 						this.loadState();
 						if (this.isReferenceItemType) {
+							this.tab = "items";
 							this.getItemCount();
 						}
 						this.isLoading = false;
@@ -210,7 +211,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 
 		this.fillParentRelationshipCategories(assetTypeModel);
 
-		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset) {
+		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset && assetTypeModel.Class.ID !== AssetTypeClass.Reference) {
 			this.addFieldsToCategory($localize`General`, [
 				{
 					name: $localize`Description`,
@@ -240,9 +241,7 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						}]
 				);
 			}
-		}
 
-		if (assetTypeModel.Class.ID !== AssetTypeClass.DiagramAsset && assetTypeModel.Class.ID !== AssetTypeClass.Reference) {
 			this.addFieldsToCategory($localize`Security`, [
 				{
 					name: $localize`Default Read Access`,
@@ -251,6 +250,20 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 					tooltip: $localize`If enabled, users without any responsibilities will see this asset type by default.`
 				}
 			]);
+		} else if (assetTypeModel.Class.ID === AssetTypeClass.Reference) {
+			this.addFieldsToCategory($localize`General`, [
+				{
+					name: $localize`Description`,
+					type: AssetTypeDetailFieldType.HTML,
+					value: assetTypeModel.Description
+				},
+				{
+					name: $localize`Source Notes`,
+					type: AssetTypeDetailFieldType.HTML,
+					value: assetTypeModel.Notes
+				}
+			]);
+
 		}
 
 		const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === assetTypeModel?.IconStyle?.BackColor.toLowerCase());
@@ -325,6 +338,22 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						value: assetTypeModel.HierarchyMaximumDepth
 					}
 				]);
+				break;
+			case AssetTypeClass.Reference:
+				if (assetTypeModel.PredicateInverse) {
+					this.addFieldsToCategory($localize`General`, [
+						{
+							name: 'Predicate to Parent',
+							type: AssetTypeDetailFieldType.TEXT,
+							value: assetTypeModel.PredicateInverse
+						},
+						{
+							name: 'Parent',
+							type: AssetTypeDetailFieldType.TEXT,
+							value: assetTypeModel.Path.split(" / ").splice(-2, 1)
+						}
+					]);
+				}
 				break;
 		}
 	}
