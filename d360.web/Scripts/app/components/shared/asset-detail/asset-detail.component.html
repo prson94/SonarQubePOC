@@ -146,7 +146,8 @@
                                              [debounce]="600"
                                              [IsFlexApply]="true"
                                              (onSearch)="dt1.filterGlobal($event, 'contains')"
-                                             [infoTooltip]="simpleSearchTooltipHTML">
+                                             [infoTooltip]="simpleSearchTooltipHTML"
+											 class="search-field">
                             </ig-search-field>
                         </div>
                         <p-table #dt1
