@@ -1287,12 +1287,13 @@ namespace d360.model.DataAccessLayer
 										,-1 as AssetTypeId
 										,cast(null as nvarchar(max)) as RelationshipName
 									into #assignments
-									FROM workflow.Type T
-															INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
-															inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
-															INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
-															inner JOIN workflow.ItemStep WIS on WI.ID = WIS.ItemID	
-															inner JOIN workflow.VersionStep VS on VS.ActivityType = 3 and vs.VersionID = V.ID and wis.StepID=vs.id";
+									FROM 
+										workflow.Type T
+										INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
+										inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
+										INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+										inner join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID
+									";
 
 			var coreSelects = $@"
 				WA.workflowItemUid, 
