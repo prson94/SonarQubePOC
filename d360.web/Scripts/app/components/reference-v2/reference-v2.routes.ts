@@ -9,6 +9,8 @@ import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-lo
 import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
 import { ReferenceItemTypeResponsibilitiesComponent } from './tabs/responsibilities/reference-item-type-responsibilities.component';
 import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/reference-item-type-assignments.component';
+import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
+import { FeatureFlagGuard } from '../../guards/feature-flag.guard';
 
 const routes: Routes = [
 	{
@@ -22,7 +24,8 @@ const routes: Routes = [
 			{ path: ":uid/log", component: ReferenceItemTypeLogComponent },
 			{ path: ":uid/relationships", component: ReferenceItemTypeRelationshipsComponent },
 			{ path: ":uid/owners", component: ReferenceItemTypeResponsibilitiesComponent },
-			{ path: ":uid/assignments", component: ReferenceItemTypeAssignmentsComponent }
+			{ path: ":uid/assignments", component: ReferenceItemTypeAssignmentsComponent, canActivate: [FeatureFlagGuard] },
+			{ path: ":uid/workflow", component: ReferenceItemTypeWorkflowComponent }
 		]
 	}
 ];

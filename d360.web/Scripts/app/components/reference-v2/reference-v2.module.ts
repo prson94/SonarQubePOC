@@ -58,6 +58,7 @@ import { DirectivesModule } from '../../directives/directives.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 import { AssignmentsModule } from '../assignments/assignments.module';
 import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/reference-item-type-assignments.component';
+import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
 
 @NgModule({
 	imports: [
@@ -121,6 +122,7 @@ import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/refere
 		ReferenceItemTypeResponsibilitiesComponent,
 		ReferenceItemTypeHeaderComponent,
 		ReferenceItemTypeAssignmentsComponent,
+		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeTabsComponent,
 	],
 	exports: [
@@ -133,6 +135,7 @@ import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/refere
 		ReferenceItemTypeRelationshipsComponent,
 		ReferenceItemTypeResponsibilitiesComponent,
 		ReferenceItemTypeAssignmentsComponent,
+		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeHeaderComponent,
 		ReferenceItemTypeTabsComponent,
 	],
