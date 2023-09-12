@@ -15,6 +15,7 @@ import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	selector: 'd3s-rule-item',
@@ -47,12 +48,14 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
 		private linkClickInterceptor: LinkClickInterceptor,
+		launchDarklyService: LaunchDarklyService
 	) {
 		super(settingsService);
 
 		this.webAnalyticsService = webAnalyticsService;
 		this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
+		this.launchDarklyService = launchDarklyService;
 	}
 
 	ngOnInit() {
