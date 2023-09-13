@@ -1111,7 +1111,7 @@ namespace d360.model
 			await QueueSource.CreateTopicMessagesAsync(events);
 		}
 
-		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, Asset asset = null)
+		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, AssetType assetType, Asset asset = null)
 		{
 			//wait a moment in case there are multiple workflow steps that are trying to update/create same field
 			//https://jira.syncsort.com/browse/GOV-20872
@@ -1263,6 +1263,24 @@ namespace d360.model
 					});
 				}
 			}
+
+			//if field type is part of asset type display format we should update assets display value
+			if (assetType != null && field.AssetID != null && assetType.DisplayFormat.ToLowerInvariant().Contains(fieldType.Name.ToLowerInvariant()))
+			{
+				await Database.Connection.ExecuteAsync($@"
+						UPDATE ADV
+						SET ADV.DisplayValue = DisplayValue.DisplayValue,
+							ADV.DisplayValueHash = CONVERT(NVARCHAR(32), HashBytes('SHA1', DisplayValue.DisplayValue), 2),
+							ADV.DisplayValuePrefix = SUBSTRING(DisplayValue.DisplayValue, 1, 250)
+						from AssetDisplayValue ADV
+						cross apply GetAssetDisplayValueById(ADV.AssetID) DisplayValue
+						where ADV.AssetID = @assetId"
+					, new
+					{
+						assetId = field.AssetID
+					});
+			}
+			
 		}
 
 		private async Task UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
@@ -1324,12 +1342,12 @@ namespace d360.model
 				else if (item.CurrentDate)
 				{
 					string val = DateTime.UtcNow.Date.ToShortDateString();
-					await UpdateField(objectId, objectType, fieldType, item, val, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 				}
 				else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
 				{
 					string val = item.Value;
-					await UpdateField(objectId, objectType, fieldType, item, val, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 				}
 				//if the value is a form value get it
 				else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
@@ -1343,7 +1361,7 @@ namespace d360.model
 						{
 							val = tempDate.Date.ToShortDateString();
 						}
-						await UpdateField(objectId, objectType, fieldType, item, val, asset);
+						await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 					}
 				}
 				//Get the value from action form (Issue)
@@ -1378,12 +1396,12 @@ namespace d360.model
 						}
 					}
 
-					await UpdateField(objectId, objectType, fieldType, item, val, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 				}
 				else if (item.UseOutputValue)
 				{
 					string val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
-					await UpdateField(objectId, objectType, fieldType, item, val, asset);
+					await UpdateField(objectId, objectType, fieldType, item, val, assetType, asset);
 				}
 			}
 
