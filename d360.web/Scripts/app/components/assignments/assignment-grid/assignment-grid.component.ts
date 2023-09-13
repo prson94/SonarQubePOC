@@ -163,7 +163,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
 					this.modalVisible = true;
 				}
-				else if (!hasAccess) {
+				else if (!res.hasAccess) {
 					this.errorModalTitle = $localize`You Cannot View the Assignment`;
 					this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 					this.modalVisible = true;
