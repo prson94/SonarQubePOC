@@ -28,6 +28,12 @@ export class FeatureFlagGuard implements CanActivate {
 			}
 		}
 
+		if (state.url.endsWith('/workflow')) {
+			if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+			}
+		}
+
 		if (state.url.startsWith('/reference')) {
 			if (!this.featureFlagService.variation<boolean>(FeatureFlags.ReferenceListV2Flag)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
