@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from "@angular/core";
+import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 import { Subscription } from "rxjs";
 import { AssetService } from '../../../../services/asset.service';
 import { AuthenticationService } from '../../../../services/authentication.service';
+import { FeatureFlags } from "../../../../services/feature-flags.enum";
 import { Permissions, PermissionsService } from '../../../../services/permissions.service';
 import { Tab } from "../../../shared/tabs/tabs.models";
 
@@ -25,7 +27,8 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 		private cdRef: ChangeDetectorRef,
 		private assetService: AssetService,
 		private authenticationService: AuthenticationService,
-		private permissionsService: PermissionsService
+		private permissionsService: PermissionsService,
+		private launchDarklyService:LaunchDarklyService
 	) { }
 
 	get tabs(): Tab[] {
@@ -60,12 +63,7 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 				tag: "relationship",
 				isVisible: () => this.isAdmin || this.typePermission.ReadRelationships,
 			},
-			{
-				url: `${baseUrl}/workflow`,
-				title: $localize`Workflow`,
-				tag: "monitor",
-				isVisible: () => true,
-			},
+			this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag) ? this.assignmentTab(baseUrl): this.workflowTab(baseUrl),
 			{
 				url: `${baseUrl}/log`,
 				title: $localize`Change Log`,
@@ -73,6 +71,24 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 				isVisible: () => true,
 			}
 		];
+	}
+
+	workflowTab(baseUrl:string){
+		return({
+			url: `${baseUrl}/workflow`,
+			title: $localize`Workflow`,
+			tag: "monitor",
+			isVisible: () => true,
+		})
+	}
+
+	assignmentTab(baseUrl:string){
+		return ({
+			url: `${baseUrl}/assignments`,
+			title: $localize`Assignments`,
+			tag: "Assignments",
+			isVisible: () => true,
+		})
 	}
 
 	ngOnInit() {

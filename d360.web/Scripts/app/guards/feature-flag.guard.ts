@@ -16,7 +16,7 @@ export class FeatureFlagGuard implements CanActivate {
 
 	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
 
-		if (state.url.startsWith('/monitor') || state.url.endsWith('/workflowmonitor')) {
+		if (state.url.startsWith('/monitor') || state.url.endsWith('/workflowmonitor') || state.url.endsWith('/workflow')) {
 			if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			}
