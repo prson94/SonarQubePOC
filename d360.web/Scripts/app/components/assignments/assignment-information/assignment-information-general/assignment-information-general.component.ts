@@ -32,12 +32,32 @@ export class AssignmentInformationGeneralComponent {
 		return this._assignmentItem;
 	}
 
+	get AssociatedWithEmpty(): boolean {
+		if (this.assignmentItem?.initiatingObjectType === "Relationship") {
+			return this.assetPathTextPart.length === 0 ? true : false;
+		}
+		else {
+			let assetpath = this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
+			return !assetpath ? true : false;
+		}
+	}
+
 	get assetPathLinkPart(): string {
-		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
+		if (this.assignmentItem?.initiatingObjectType === "Relationship") {
+			return '';
+		}
+		else {
+			return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
+		}
 	}
 
 	get assetPathTextPart(): string {
-		return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
+		if (this.assignmentItem?.initiatingObjectType === "Relationship") {
+			return this.assignmentItem?.AssetPath ? this.assignmentItem?.AssetPath : '';
+		}
+		else {
+			return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
+		}
 	}
 
 	constructor(private workflowService: WorkflowService, public linkClickInterceptor: LinkClickInterceptor) {
