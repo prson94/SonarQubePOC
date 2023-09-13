@@ -1265,7 +1265,7 @@ namespace d360.model
 			}
 
 			//if field type is part of asset type display format we should update assets display value
-			if (assetType != null && field.AssetID != null && assetType.DisplayFormat.ToLowerInvariant().Contains(fieldType.Name.ToLowerInvariant()))
+			if (assetType != null && field != null && field.AssetID != null && assetType.DisplayFormat.ToLowerInvariant().Contains(fieldType.Name.ToLowerInvariant()))
 			{
 				await Database.Connection.ExecuteAsync($@"
 						UPDATE ADV
