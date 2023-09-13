@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { AssignmentSelection, SingleAssignment, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
