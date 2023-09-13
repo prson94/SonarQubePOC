@@ -20,6 +20,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	@Input() userUid: string;
 	@Input() isAdminPage: boolean = false;
 	loadSub: Subscription;
+	workflowTypeName: string;
 
 	totalRecords: number;
 	rowsPerPage: number = 10;
@@ -161,6 +162,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.selectedAssignment = item;
 		if (item.AssociatedItems.length > 1) {
+			this.workflowTypeName = item.WorkflowName;
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
 		else {

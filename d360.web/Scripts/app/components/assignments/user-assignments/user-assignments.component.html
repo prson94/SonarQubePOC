@@ -73,6 +73,7 @@
 </div>
 
 <d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"
+						 [workflowName]="workflowTypeName"
 						 [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
 
 <d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"

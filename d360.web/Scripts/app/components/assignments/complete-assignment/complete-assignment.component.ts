@@ -43,6 +43,7 @@ import { AppConstants } from '../../../static/constants';
 })
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() onlyAdminReassignMode: boolean = false;
+	@Input() workflowName: string;
 
 	isModalAvailable: boolean = false;
 	loading: boolean = false;
@@ -50,7 +51,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
 	workflowItemUid: string;
-	workflowName: string;
 	stepUid: string;
 	sidePanelStorageKey: string =
 		'CompleteAssignment_' + this.settingsService.CurrentResourceID;
