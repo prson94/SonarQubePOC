@@ -1,11 +1,10 @@
 <d3s-modal additionalClasses="modal-dyn-editor asset-editor"
-		   title="Delete Asset Type"
+		   [title]="title"
 		   (onClose)="cancel()"
-		   i18n-title
 		   [isVisible]="isModalVisible">
 	<div class="content">
 		<d3s-loading [isLoading]="loadingCounter > 0"></d3s-loading>
-		<span *ngIf="loadingCounter === 0" i18n>Are you sure you want to delete this asset type?</span><br /><br />
+		<span *ngIf="loadingCounter === 0">{{confirm}}</span><br /><br />
 		<p-checkbox *ngIf="loadingCounter === 0 && this.assetsCount > 0"
 					igCheckbox
 					[(ngModel)]="isConfirmed"

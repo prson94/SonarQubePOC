@@ -28,7 +28,6 @@ import { ReferenceItemTypeItemsComponent } from './tabs/items/referrence-item-ty
 import { ReferenceItemTypeLogComponent } from './tabs/log/reference-item-type-log.component';
 import { ReferenceItemTypeRelationshipsComponent } from './tabs/relationships/referemce-item-type-relationships.component';
 import { ReferenceItemTypeResponsibilitiesComponent } from './tabs/responsibilities/reference-item-type-responsibilities.component';
-import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
 
 import { ReferenceItemTypeHeaderComponent } from './tabs/shared/reference-header.component';
 import { ReferenceItemTypeTabsComponent } from './tabs/shared/reference-tabs.component';
@@ -57,6 +56,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { DirectivesModule } from '../../directives/directives.module';
 import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { AssignmentsModule } from '../assignments/assignments.module';
+import { ReferenceItemTypeAssignmentsComponent } from './tabs/assignments/reference-item-type-assignments.component';
+import { ReferenceItemTypeWorkflowComponent } from './tabs/workflow/reference-item-type-workflow.component';
 
 @NgModule({
 	imports: [
@@ -99,7 +101,6 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 		MonitorModule,
 		AssetPreviewModule,
 		ReferenceItemsModule,
-
 		SharedDeleteFormModule,
 		SharedFieldDefinitionModule,
 		SharedDynamicGridEditorModule,
@@ -107,7 +108,8 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 		SharedObjectDetailsModule,
 		SharedAssetTypeEditorModule,
 		TilesModule,
-		SearchFieldModule
+		SearchFieldModule,
+		AssignmentsModule
 	],
 	declarations: [
 		ReferenceV2Component,
@@ -118,8 +120,9 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 		ReferenceItemTypeLogComponent,
 		ReferenceItemTypeRelationshipsComponent,
 		ReferenceItemTypeResponsibilitiesComponent,
-		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeHeaderComponent,
+		ReferenceItemTypeAssignmentsComponent,
+		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeTabsComponent,
 	],
 	exports: [
@@ -131,6 +134,7 @@ import { SearchFieldModule } from '../shared/controls/search-field/search-field.
 		ReferenceItemTypeLogComponent,
 		ReferenceItemTypeRelationshipsComponent,
 		ReferenceItemTypeResponsibilitiesComponent,
+		ReferenceItemTypeAssignmentsComponent,
 		ReferenceItemTypeWorkflowComponent,
 		ReferenceItemTypeHeaderComponent,
 		ReferenceItemTypeTabsComponent,

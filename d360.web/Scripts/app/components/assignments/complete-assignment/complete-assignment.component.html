@@ -4,7 +4,7 @@
 		   [showActionBar]="false"
 		   [hidden]="hideDialog"
 		   [zIndex]="'20001 !important'"
-		   [additionalClasses]="'large-dialog'">
+		   [additionalClasses]="'large-dialog modal-form'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
 	<div *ngIf="!isLoading" class="modal-with-side-panel">
 		<div class="modal-dialog-main-panel">
@@ -297,7 +297,7 @@
 				</button>
 			</div>
 		</div>
-		<div class="side-panel">
+		<div class="side-panel height-auto">
 			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
 						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
 				<ng-container>
