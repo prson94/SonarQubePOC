@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { SingleAssignment, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -20,6 +20,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	@Input() userUid: string;
 	@Input() isAdminPage: boolean = false;
 	loadSub: Subscription;
+	workflowTypeName: string;
 
 	totalRecords: number;
 	rowsPerPage: number = 10;
@@ -161,6 +162,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.selectedAssignment = item;
 		if (item.AssociatedItems.length > 1) {
+			this.workflowTypeName = item.WorkflowName;
 			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
 		}
 		else {
@@ -173,37 +175,40 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 	}
 
-	onAssignmentSelection(selectedItems: SingleAssignment[]) {
-		if (selectedItems.length === 0) {
+	onAssignmentSelection(event: AssignmentSelection) {
+		if (event.selectedItems.length === 0) {
 			return;
 		}
-		else if (selectedItems.length === 1) {
-			const assignment = selectedItems[0];
+		else if (event.selectedItems.length === 1) {
+			const assignment = event.selectedItems[0];
 
 			this.completeAssignmentComponent.openModal({
 				workflowItemUid: assignment.WorkflowItemUid,
 				stepUid: assignment.ItemStepUid,
-				assetId: assignment.AssetId
+				assetId: assignment.AssetId,
+				areAllMultiAssignmentsSelected: event.selectedAll
 			});
 		}
 		else {
-			const mainItem = selectedItems[0];
+			const mainItem = event.selectedItems[0];
 
 			this.completeAssignmentComponent.openModal({
 				workflowItemUid: mainItem.WorkflowItemUid,
 				stepUid: mainItem.ItemStepUid,
 				assetId: mainItem.AssetId,
-				items: selectedItems,
-				selectedAssignment: this.selectedAssignment
+				items: event.selectedItems,
+				selectedAssignment: this.selectedAssignment,
+				areAllMultiAssignmentsSelected: event.selectedAll
 			});
 		}
 	}
 
-	onCompleteAssignmentModalClose(event: { isBack: boolean, isCompleteForm: boolean }) {
+	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }) {
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
 		}
-		else if (!event.isCompleteForm) {
+
+		if (event.removeSelected) {
 			this.multiAssignComponent.removeSelected();
 		}
 		this.loadUserAssignments();

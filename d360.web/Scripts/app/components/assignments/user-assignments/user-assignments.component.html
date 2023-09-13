@@ -73,6 +73,7 @@
 </div>
 
 <d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"
+						 [workflowName]="workflowTypeName"
 						 [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
 
 <d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"
@@ -93,7 +94,7 @@
 	</div>
 	<div class="action-bar">
 		<div class="grow"></div>
-		<button igButton type="button" class="ig-button-secondary" i18n-label label="Cancel"
+		<button igButton type="button" class="ig-button-secondary" i18n-label label="Close"
 				(click)="modalVisible=false"></button>&nbsp;&nbsp;
 	</div>
 </d3s-modal>

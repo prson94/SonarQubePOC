@@ -33,9 +33,11 @@
 						</span>
 					</div>
 				</div>
-				<div>
-					{{workflowName}}<span i18n> on </span> <a
-					(click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
+				<div class="subtitle">
+					{{workflowName}}
+					<ng-container *ngIf="!isBulkRespond && multiSubmitionItems.length <= 1">
+						<span i18n> on </span> <a (click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
+					</ng-container>
 				</div>
 				<div [hidden]="isAssignmentProgressSelected"
 					 class="scrollable-content details-container">
@@ -84,11 +86,10 @@
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<ig-property-group
-								*ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title
-								title="Request"
-								[shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
-								[sideTemplate]="requestSidePanel">
+							<ig-property-group *ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title
+											   title="Request"
+											   [shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
+											   [sideTemplate]="requestSidePanel">
 								<ng-template #requestSidePanel>
 									<a *ngIf="!sidePanelOpen" (click)="showRequestSidePanel($event)" i18n>
 										Open in side
