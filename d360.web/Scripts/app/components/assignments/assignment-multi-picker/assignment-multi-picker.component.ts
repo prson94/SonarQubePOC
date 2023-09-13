@@ -10,7 +10,7 @@ import {
 	ViewEncapsulation
 } from '@angular/core';
 import { Table } from 'primeng/table';
-import { SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentSelection, SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -25,7 +25,7 @@ import { AppConstants } from '../../../static/constants';
 	encapsulation: ViewEncapsulation.None
 })
 export class AssignmentsMultiPickerComponent {
-	@Output() onAssignmentSelection = new EventEmitter<SingleAssignment[]>();
+	@Output() onAssignmentSelection = new EventEmitter<AssignmentSelection>();
 	@Input() onlyAdminReassignMode: boolean = false;
 	@Output() onModalClose: EventEmitter<void> = new EventEmitter<void>();
 
@@ -70,7 +70,7 @@ export class AssignmentsMultiPickerComponent {
 		this.loadRowsPerPage();
 	}
 
-	public openModal(assignments: SingleAssignment[], workflowTypeName: string,item?:WorkflowUserGroupedAssignments) {
+	public openModal(assignments: SingleAssignment[], workflowTypeName: string, item?: WorkflowUserGroupedAssignments) {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;
@@ -80,7 +80,7 @@ export class AssignmentsMultiPickerComponent {
 
 		this.workflowTypeName = workflowTypeName;
 		this.sidePanel = 'asset-details';
-		this.selectedAssignment=item;
+		this.selectedAssignment = item;
 		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: null, Version: null };
 		this.cdRef.detectChanges();
 
@@ -127,7 +127,11 @@ export class AssignmentsMultiPickerComponent {
 	}
 
 	confirm() {
-		this.onAssignmentSelection.emit(this.selected);
+		this.onAssignmentSelection.emit(
+			{
+				selectedItems: this.selected,
+				selectedAll: this.selected.length === this.assignments.length
+			});
 		this.modelEl.hide();
 	}
 

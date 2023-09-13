@@ -79,7 +79,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		needsSelection: true
 	})];
 
-	@Output() onModalClose = new EventEmitter<{ isBack: boolean, isCompleteForm: boolean }>();
+	@Output() onModalClose = new EventEmitter<{ isBack: boolean, removeSelected: boolean }>();
 
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
 	isLoading: boolean = false;
@@ -97,7 +97,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	allowReassignResource: boolean = false;
 	clearOtherAssignments: boolean = false;
 	sendFormEmails: boolean = true;
-	selectedAssignment: WorkflowUserGroupedAssignments
+	selectedAssignment: WorkflowUserGroupedAssignments;
+	areAllMultiAssignmentsSelected: boolean;
+
 	hideDialog: boolean = false;
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	rowsPerPage: number = 10;
@@ -140,7 +142,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		assetId?: number,
 		items?: SingleAssignment[]
 		selectedAssignment?: WorkflowUserGroupedAssignments,
-		showAssignmentProgress?: boolean
+		showAssignmentProgress?: boolean,
+		areAllMultiAssignmentsSelected?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
@@ -154,6 +157,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
 			this.selectedAssignment = details.selectedAssignment;
+			this.areAllMultiAssignmentsSelected = details.areAllMultiAssignmentsSelected ?? true;
+
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
@@ -258,19 +263,18 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.hideDialog = true;
-		this.onModalClose.emit({ isBack: true, isCompleteForm: true });
+		this.onModalClose.emit({ isBack: true, removeSelected: false });
 	}
 
 	onCloseClick(): void {
 		this.closeModal();
-		this.onModalClose.emit({ isBack: false, isCompleteForm: true });
+		this.onModalClose.emit({ isBack: false, removeSelected: false });
 	}
 
 	onFormSubmit(): void {
 		const isCompleteForm: boolean = this.radioSelectionValue === 'completeForm';
 		if (this.isMultiSubmition) {
 			const obs: Observable<WorkflowFormResponse | JsonResult>[] = [];
-			let isBack: boolean = false;
 
 			if (this.radioSelectionValue === 'completeForm') {
 				this.prepareValuesForSubmit();
@@ -279,19 +283,17 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				});
 
 			} else if (this.radioSelectionValue === 'reassignUser') {
-				isBack = true;
 				this.multiSubmitionItems.forEach((item) => {
 					obs.push(this.workflowService.reassignWorkflowResourceByUid(item.ItemStepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails));
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
 				this.multiSubmitionItems.forEach((item) => {
-					isBack = true;
 					obs.push(this.workflowService.reassignWorkflowObjectByUid(item.WorkflowItemUid, this.workflowTypeUid, this.tableRadioSelection.ObjectID, this.tableRadioSelection.Object, item.ItemStepUid));
 				});
 			}
 			this.isLoading = true;
 			forkJoin(obs).subscribe(() => {
-				this.onModalClose.emit({ isBack, isCompleteForm });
+				this.onModalClose.emit({ isBack: this.areAllMultiAssignmentsSelected ? false : true, removeSelected: true });
 				this.closeModal();
 				this.modal.closePopUp();
 				this.isLoading = false;
@@ -321,21 +323,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					});
 			}
 
-			// Common function to close the modal
-			this.workflowService.getUserAssignments(this.settingsService.CurrentResourceUid)
-				.subscribe((res) => {
-					this.isLoading = false;
-
-					const matchedAssignment = res.find((ele) =>
-						ele.WorkflowTypeUid === this.selectedAssignment?.WorkflowTypeUid && ele.Version === this.selectedAssignment?.Version
-					);
-
-					let count = 0;
-					if (matchedAssignment) {
-						count = matchedAssignment.Count;
-					}
-					this.onModalClose.emit({ isBack: count > 0 ? true : false, isCompleteForm });
-				});
+			this.onModalClose.emit({ isBack: this.areAllMultiAssignmentsSelected ? false : true, removeSelected: true });
 		}
 	}
 

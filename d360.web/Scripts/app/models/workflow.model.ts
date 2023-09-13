@@ -1020,6 +1020,11 @@ export class SingleAssignment {
 	ObjectType: string;
 }
 
+export class AssignmentSelection {
+	selectedItems: SingleAssignment[];
+	selectedAll: boolean;
+}
+
 export class WorkflowUserGroupedAssignments {
 	WorkflowName: string;
 	WorkflowTypeUid: string
