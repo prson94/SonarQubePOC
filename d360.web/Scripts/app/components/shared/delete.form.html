@@ -38,7 +38,8 @@
                         Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
                     </p>
                     <p>
-                        <p-checkbox igAutoFocus [(ngModel)]="isConfirmed" [binary]="true" label="{{confirmationText}}"></p-checkbox>
+                        <p-checkbox igAutoFocus [(ngModel)]="isConfirmed" [binary]="true" inputId="conf"></p-checkbox>
+                        <label for="conf" class="p-checkbox-label" style="color:inherit" [innerHTML]="confirmationText"></label>
                     </p>
                 </div>
             </div>

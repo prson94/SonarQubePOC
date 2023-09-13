@@ -24,6 +24,7 @@ import { PermissionsService } from '../../../services/permissions.service';
 import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { AssetEditorComponent } from '../asset-editor/asset-editor.component';
+import { cloneDeep } from "lodash-es";
 
 /*global $localize*/
 
@@ -95,6 +96,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	editorSelected: unknown = null;
 	editorObjectId: number = null;
 	deleteName: string = null;
+	globalFilterFields: string[] = ["Code"];
 
 	@ViewChild('dt', { static: false }) table: Table;
 	@ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
@@ -107,6 +109,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	private title: string = 'Items';
 	private editReferenceItem = $localize`Edit Reference Item`;
 	private addReferenceItem = $localize`Add Reference Item`;
+	deleteReferenceItem = $localize`Delete Reference Item`;
 	referenceItemTitle: string = "";
 
 	ngOnInit() {
@@ -172,6 +175,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		this.gridDefinitionService.getGridDefinition(this.referenceItemTypeUid, 'ReferenceItemType').subscribe(
 			(result) => {
 				this.columns = result.Columns;
+				const flds = result.Columns.map((c) => c.datafield);
+				this.globalFilterFields = result.Fields.filter((f) => flds.includes(f.name)).map((f) => f.apiName ?? f.name);
 				this.fields = result.Fields;
 				this.loadItems();
 			}
@@ -332,10 +337,12 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 
 	private export() {
 		this.isExportInProgress = true;
+		const exportParam = cloneDeep(this.loadParams);
+		exportParam._onlyListableFields = false;
 		this.assetService
 			.downloadAssetsExcel(
 				this.referenceItemTypeUid,
-				this.loadParams,
+				exportParam,
 				this.typeName,
 				() => { this.isExportInProgress = false; }
 			);

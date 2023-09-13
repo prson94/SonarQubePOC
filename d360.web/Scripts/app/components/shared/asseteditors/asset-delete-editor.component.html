@@ -5,6 +5,13 @@
                      method="callback"
                      [prompt]="getPrompt()"
                      [warningMessage]="descendantsMessage"
+                     [confirmationText]="showAsModal ? descendantsMessage : null"
+                     [showAsModal]="showAsModal"
+                     [modalTitle]="modalTitle"
+                     [isModalVisible]="isModalVisible"
                      (onCancel)="onCancel.emit();">
+        <div *ngIf="showAsModal" prompt>
+            {{getPrompt()}}
+        </div>
     </d3s-delete-form>
 </div>
