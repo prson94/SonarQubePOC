@@ -91,7 +91,7 @@
                  [value]="items"
                  [(selection)]="selectedItem"
                  (selectionChange)="selectRow($event)"
-                 [globalFilterFields]="['Code']"
+                 [globalFilterFields]="globalFilterFields"
                  [metaKeySelection]="true"
                  dataKey="AssetUid"
                  [pageLinks]="3"
@@ -176,15 +176,13 @@
 
 </d3s-modal>
 
-<d3s-modal additionalClasses="modal-delete-form medium-dialog"
-           (onClose)="showDelete=false"
-           [showTitle]="false"
-           [isVisible]="showDelete">
-    <d3s-asset-delete-editor *ngIf="showDelete"
-                             [uid]="selectedItem?.AssetUid"
-                             [assetTypeUid]="referenceItemTypeUid"
-                             (onCancel)="showDelete = false"
-                             (onDeleted)="onDeleted()"
-                             [displayValue]="selectedItem?.Code">
-    </d3s-asset-delete-editor>
-</d3s-modal>
+<d3s-asset-delete-editor *ngIf="selectedItem"
+                         [uid]="selectedItem?.AssetUid"
+                         [assetTypeUid]="referenceItemTypeUid"
+                         (onCancel)="showDelete = false"
+                         (onDeleted)="onDeleted()"
+                         [showAsModal]="true"
+                         [modalTitle]="deleteReferenceItem"
+                         [isModalVisible]="showDelete"
+                         [displayValue]="selectedItem?.Code">
+</d3s-asset-delete-editor>

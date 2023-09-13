@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
+import { AssetTypeClass } from "../../../../models/asset.model";
 import { AssetTypeService } from "../../../../services/asset-type.service";
 import { AssetService } from "../../../../services/asset.service";
 import { MessagesObservableService } from "../../../../services/messages-observable.service";
@@ -25,6 +26,13 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent imp
 	isModalVisible: boolean = false;
 	isConfirmed: boolean = false;
 	message: string = "";
+
+	titleAssetType = $localize`Delete Asset Type`;
+	titleReferenceList = $localize`Delete Reference List`;
+	confirmAssetType = $localize`Are you sure you want to delete this asset type?`;
+	confirmReferenceList = $localize`Are you sure you want to delete this reference list?`;
+	title = this.titleAssetType;
+	confirm = this.confirmAssetType;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -64,6 +72,8 @@ export class ConfigurationAssetTypeDeletePageComponent extends BaseComponent imp
 		this.loadingCounter++;
 		try {
 			const assetType = await this.assetTypeService.GetAssetTypeByUid(uid).toPromise();
+			this.title = assetType.Class.ID === AssetTypeClass.Reference ? this.titleReferenceList : this.titleAssetType;
+			this.confirm = assetType.Class.ID === AssetTypeClass.Reference ? this.confirmReferenceList : this.confirmAssetType;
 			if (uid === this.uid) {
 				this.assetType = assetType;
 				this.formatMessage();

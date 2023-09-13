@@ -16,11 +16,15 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     @Input() uid: string;
     @Input() assetTypeUid: string;
 
+	@Input() showAsModal: boolean = false;
+	@Input() modalTitle: string = '';
+	@Input() isModalVisible: boolean = false;
+
     @Output() onCancel = new EventEmitter();
     @Output() onDeleted = new EventEmitter();
 
     theDeleteCallback: Function;
-    descendantsMessage: string = "";
+	descendantsMessage: string = "";
     isFormLoading: boolean = false;
 
     constructor(
@@ -47,7 +51,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
                         if (descendantsCount > 200) {
                             this.descendantsMessage = $localize`${this.descendantsMessage} <br/>For assets with a large number of descendants, greater than 200, it is recommended that the batch API endpoint is used.`;
                         }
-                    }
+					}
                     this.isFormLoading = false;
                     this.changeDetectorRef.markForCheck();
                 }
