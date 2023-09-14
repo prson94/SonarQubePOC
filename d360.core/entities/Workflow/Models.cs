@@ -582,6 +582,8 @@ namespace d360.core.entities.Workflow
 
 		public Guid? ActionUid { get; set; }
 
+		public Guid? RelationshipUid { get; set; }
+
 		public string ChangeType { get; set; }
 
 		public string initiatingObjectType { get; set; }

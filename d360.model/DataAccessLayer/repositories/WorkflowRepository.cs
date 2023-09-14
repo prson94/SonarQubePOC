@@ -1414,7 +1414,7 @@ namespace d360.model.DataAccessLayer
 
 			foreach (ChangeTypeInfo changeType in ChangeType.Add.GetList())
 			{
-				changeTypeStatements.Add($"when WER.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
+				changeTypeStatements.Add($"when TWD.ChangeType = {(int)changeType.ID} then '{changeType.Name}'");
 			}
 
 
@@ -1428,60 +1428,104 @@ namespace d360.model.DataAccessLayer
 
 			foreach (AssetTypeClassInfo assetClass in AssetTypeClass.BusinessAsset.GetAsList())
 			{
-				classCaseStatements.Add($"when class = {(int)assetClass.ID} then '{assetClass.Name}'");
+				classCaseStatements.Add($"when AST.class = {(int)assetClass.ID} then '{assetClass.Name}'");
 			}
 
 
-			var classSQL = $@"CASE when I.ID is not null then 'Action'
+			var classSQL = $@"CASE  when TWD.IssueUid is not null then 'Action'
+									when TWD.IntersectUid is not null then 'Relationship'
 								{string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as InitiatingObjectType";
 
 
 			string sql = $@"
-						 SELECT 
+
+						Drop table if exists #tempWorkFlowDetail;
+						SELECT  WI.ID WorkflowItemID,WI.Object,WI.ObjectID,
+								cast(null as uniqueidentifier) AssetUid,cast(null as int) AssetTypeID,cast(null as Bigint) AssetID,
+								cast(null as int) IssueTypeID,cast(null as uniqueidentifier) IssueUid,
+								cast(null as int) IntersectTypeID,cast(null as uniqueidentifier) IntersectUid,cast(null as nvarchar(max)) RelationshipName,
+								cast(null as int) ChangeType,
+								T.ID TypeID
+						into #tempWorkFlowDetail
+						FROM workflow.Item WI
+						left JOIN workflow.Version V on V.ID=WI.VersionID
+						left JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)
+						where WI.UID = @workflowItemUid;
+
+						if exists(select 1 from #tempWorkFlowDetail where object = 'issue')
+						begin
+							update t
+							set AssetUid = ait.uid,
+							t.AssetTypeID = ait.assettypeid,
+							t.AssetID = ait.id,
+							t.IssueTypeID = I.IssueTypeID,
+							t.ChangeType = WERAT.ChangeType ,
+							t.IssueUid = I.Uid
+							from #tempWorkFlowDetail t
+							inner join Issue I on I.ID = t.ObjectID
+							inner join IssueType IT on I.IssueTypeID = IT.ID
+							inner join Asset ait on ait.Id = I.AssetId
+							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID and WERAT.IssueTypeID = I.IssueTypeID
+							where trim(t.Object) = 'Issue' ;
+						end
+
+						if exists(select 1 from #tempWorkFlowDetail where object = 'intersect')
+						begin
+							update t
+							set t.IntersectTypeID = I.IntersectTypeID,
+							t.IntersectUid = I.uid,
+							t.ChangeType = WERAT.ChangeType,
+							t.RelationshipName = ID.Name
+							from #tempWorkFlowDetail t
+							inner join [Intersect] I on  I.ID = t.ObjectID
+							inner join IntersectType IT on I.IntersectTypeID = IT.ID
+							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID and WERAT.IntersectTypeID = I.IntersectTypeID
+							left join IntersectDetail ID ON ID.ID = I.ID
+							where trim(t.Object) = 'intersect';
+						end
+
+						if exists(select 1 from #tempWorkFlowDetail where object not in ('issue','intersect'))
+						begin
+							update t
+							set AssetUid = aat.uid,
+							t.AssetTypeID = aat.assettypeid,
+							t.AssetID = aat.id,
+							t.ChangeType = WERAT.ChangeType 
+							from #tempWorkFlowDetail t
+							inner join Asset aat on t.Object = aat.object and t.ObjectID = aat.objectID
+							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID and WERAT.AssetTypeID = aat.assettypeid
+							where trim(t.Object) not in ('issue','intersect') ;
+						end
+
+						SELECT 
 							WI.uid as WorkflowItemUid, 
 							T.uid as WorkflowUid, 
-							T.Name as WorkflowName,							
+							T.Name as WorkflowName,
 							GR.FirstName + ' ' + GR.LastName as Initiator,
-							GR.uid as InitiatorUid,																
+							GR.uid as InitiatorUid,
 							WI.StartedOn,
 							WI.CompletedOn,
 							case 
 								when WI.CompletedOn is null 
-									then 'Pending'            
-								else        
+									then 'Pending'
+								else
 									'Complete' end as [Status],
-							A.uid as AssetUid,
-							AP.DisplayPath as AssetPath,
-							I.uid as ActionUid,
+							TWD.AssetUid as AssetUid,
+							coalesce(TWD.RelationshipName,AP.DisplayPath) as AssetPath,
+							TWD.IssueUid as ActionUid,
+							TWD.IntersectUid as RelationshipUid,
 							{changeTypeSQL}
 							{classSQL}
-							FROM workflow.Item WI
+						FROM workflow.Item WI
+						inner join #tempWorkFlowDetail TWD on TWD.WorkflowItemID = WI.ID
 						INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
 						INNER JOIN workflow.Version V on V.ID=WI.VersionID
-						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)											
-						LEFT JOIN Issue I on WI.Object = 'Issue' and I.ID = WI.ObjectID
-						LEFT JOIN IssueType IT on I.IssueTypeID = IT.ID
-						outer apply (select aat.uid,aat.AssetTypeID,aat.ID
-									from Asset aat
-									where WI.Object <> 'Issue' and WI.Object = aat.object and WI.ObjectID = aat.objectID
-									union all
-									select ait.uid ,ait.AssetTypeID,ait.ID
-									from Asset ait
-									where trim(WI.Object) = 'Issue' and ait.Id = I.AssetId
-									) A
-						LEFT JOIN AssetType AST on A.AssetTypeID=AST.ID
-						outer apply (select WERAT.ChangeType 
-									 from workflow.EventRegistration WERAT
-									 where WERAT.TypeID = T.ID and WERAT.AssetTypeID = AST.ID
-									 union all
-									 select WERIT.ChangeType 
-									 from workflow.EventRegistration WERIT
-									 where WERIT.TypeID = T.ID and WERIT.IssueTypeID = IT.ID
-									 ) WER
-						LEFT JOIN AssetPath AP on A.ID=AP.ID
-						LEFT JOIN AssetDisplayValue ADV on A.id = ADV.AssetID
+						INNER JOIN workflow.Type T on V.TypeID = T.ID and T.State in (1,4)
+						LEFT JOIN AssetType AST on AST.ID=TWD.AssetTypeID
+						LEFT JOIN AssetPath AP on TWD.AssetID=AP.ID
+						LEFT JOIN AssetDisplayValue ADV on TWD.AssetID = ADV.AssetID
 						where WI.UID = @workflowItemUid";
 
 			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);
