@@ -1,12 +1,15 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
 import { ControlContainer, NgForm } from '@angular/forms';
 import { AssignmentService } from '../../assignment.service';
 import { unset } from 'lodash-es';
+import { FormHelpers } from '../../../../static/form-helpers';
 
 @Component({
 	selector: 'd3s-complete-assignment-form-fields',
 	templateUrl: './complete-assignment-form-fields.component.html',
+	styleUrls: ['complete-assignment-form-fields.component.less'],
+	encapsulation: ViewEncapsulation.None,
 	viewProviders: [{ provide: ControlContainer, useExisting: NgForm }]
 })
 export class CompleteAssignmentFormFieldsComponent implements OnInit {
@@ -52,6 +55,10 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 				});
 			}
 		});
+	}
+
+	public getLocaleDateString(): string {
+		return FormHelpers.getLocaleDateString();
 	}
 }
 

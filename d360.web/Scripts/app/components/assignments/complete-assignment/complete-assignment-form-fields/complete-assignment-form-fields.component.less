@@ -1,0 +1,22 @@
+.workflow-form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+
+  .field-name {
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+
+  .ig-input-full {
+    margin-bottom: 0;
+  }
+
+  &.required-field {
+    &.empty-field {
+      .p-editor-content{
+        background: #e4f5f8;
+      }
+    }
+  }
+}
