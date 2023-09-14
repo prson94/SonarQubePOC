@@ -37,7 +37,7 @@ export class AssignmentInformationGeneralComponent {
 			return this.assetPathTextPart.length === 0 ? true : false;
 		}
 		else {
-			let assetpath = this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
+			const assetpath = this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
 			return !assetpath ? true : false;
 		}
 	}
