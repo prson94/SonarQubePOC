@@ -440,6 +440,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
 			ft.Operators[0].label = $localize`contains`;
 			ft.Operators[1].label = $localize`does not contain`;
+			if (ft.Name.toLowerCase() === 'assignee') {
+				ft.Operators[0].value = 'Contains';
+				ft.Operators[1].value = 'NotContains';
+			}
 		}
 
 
