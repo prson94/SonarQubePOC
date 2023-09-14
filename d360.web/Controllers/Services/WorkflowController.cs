@@ -594,7 +594,7 @@ namespace d360.web.Controllers.Services
 
 						if (field.AllowMultipleValues)
 						{
-							var values = val.Split(',');
+							var values = field.Values.Select(x => x.Value);
 							displayVal = "";
 							foreach (var v in values)
 							{

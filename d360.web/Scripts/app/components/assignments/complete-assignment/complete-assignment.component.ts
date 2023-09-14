@@ -272,7 +272,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	onFormSubmit(): void {
-		const isCompleteForm: boolean = this.radioSelectionValue === 'completeForm';
 		if (this.isMultiSubmition) {
 			const obs: Observable<WorkflowFormResponse | JsonResult>[] = [];
 

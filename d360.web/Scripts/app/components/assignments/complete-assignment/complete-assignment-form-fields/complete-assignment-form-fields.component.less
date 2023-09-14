@@ -1,0 +1,60 @@
+@import (reference) '../../../../../../Content/styles/_Variables.less';
+
+.workflow-form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+
+  .field-name {
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+
+  .ig-input-full {
+    margin-bottom: 0;
+  }
+
+  &.required-field {
+    &.empty-field {
+      .p-editor-content, .p-multiselect-label-container {
+        background: #e4f5f8;
+      }
+    }
+  }
+
+  .p-multiselect-trigger {
+    margin-top: 4px;
+    margin-right: 4px;
+  }
+
+  .p-multiselect-token {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: @ig-grey-t5;
+    color: @ig-black;
+    border-radius: 4px;
+    margin: 0 2px 2px 0;
+    padding: 0 4px;
+    float: left;
+    height: 24px;
+    max-width: calc(100% - 28px);
+
+    .p-multiselect-token-label,
+    .p-multiselect-token-icon {
+      z-index: 2;
+    }
+
+    .p-multiselect-token-label {
+      position: relative;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .p-multiselect-token-icon {
+      font-size: 13px;
+      margin-left: 8px;
+      padding: 4px;
+    }
+  }
+}

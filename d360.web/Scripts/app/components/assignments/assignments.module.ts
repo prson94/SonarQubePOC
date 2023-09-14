@@ -123,6 +123,10 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { AssignmentAssetListComponent } from './assignment-asset-list/assignment-asset-list.component';
+import { SwitchModule } from '../shared/controls/switch/switch';
+import { IgDateModule } from '../shared/controls/date/date';
+import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 @NgModule({
 	declarations: [
@@ -214,7 +218,11 @@ import { AssignmentAssetListComponent } from './assignment-asset-list/assignment
 		MultiSelectModule,
 		RadioButtonModule,
 		FormFeedbackBadgesModule,
-		WorkflowModule
+		WorkflowModule,
+		SwitchModule,
+		IgDateModule,
+		IgNumberFieldModule,
+		OverlayPanelModule
 	]
 })
 export class AssignmentsModule {
