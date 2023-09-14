@@ -126,6 +126,7 @@ import { AssignmentAssetListComponent } from './assignment-asset-list/assignment
 import { SwitchModule } from '../shared/controls/switch/switch';
 import { IgDateModule } from '../shared/controls/date/date';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 @NgModule({
 	declarations: [
@@ -220,7 +221,8 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
 		WorkflowModule,
 		SwitchModule,
 		IgDateModule,
-		IgNumberFieldModule
+		IgNumberFieldModule,
+		OverlayPanelModule
 	]
 })
 export class AssignmentsModule {

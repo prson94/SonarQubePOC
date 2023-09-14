@@ -63,18 +63,40 @@
 					{{ item.Text }}
 				</ng-template>
 			</p-dropdown>
-
-			<p-multiSelect *ngIf="field.AllowMultipleValues"
-						   [name]="'input_' + indx"
-						   appendTo="body"
-						   baseZIndex="20000"
-						   [options]="field.Values | dropdownItemToSelectItemPipe"
-						   [(ngModel)]="field.Value"
-						   [style]="{'width':'100%'}"
-						   [panelStyle]="{'width':'100%'}"
-						   required="{{ field.Required }}"
-						   display="chip">
-			</p-multiSelect>
+			<div class="d3s-color-picker multi multi-select-lazy-load">
+				<p-multiSelect #dropdown
+							   igSize="full"
+							   styleClass="{{field.Required ? 'value-required' : ''}}"
+							   [inputId]="'input_' + indxd"
+							   [attr.name]="'input_' + indx"
+							   [name]="'input_' + indx"
+							   [options]="field.Values"
+							   [(ngModel)]="field.Value"
+							   [required]="field.Required"
+							   placeholder="{{(field.Required ? 'Value required' : '')}}"
+							   display="chip">
+					<ng-template pTemplate="selectedItems" let-items>
+						<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
+							<div class="p-multiselect-token" *ngFor="let item of items">
+								<span class="p-multiselect-token-label">
+									{{ item.Text }}
+								</span>
+								<span class="p-multiselect-token-icon pi pi-times"
+									  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
+								</span>
+							</div>
+						</ng-container>
+						<ng-template #placeholder>
+							{{(field.Required ? 'Value required' : '')}}
+						</ng-template>
+					</ng-template>
+					<ng-template let-item pTemplate="item">
+						<span class="p-multiselect-token-label">
+							{{ item.Text }}
+						</span>
+					</ng-template>
+				</p-multiSelect>
+			</div>
 		</div>
 		<div *ngSwitchCase="fieldType.RelationshipType">
 			<p-dropdown *ngIf="!field.AllowMultipleValues"
@@ -97,17 +119,41 @@
 				</ng-template>
 			</p-dropdown>
 
-			<p-multiSelect *ngIf="field.AllowMultipleValues"
-						   appendTo="body"
-						   baseZIndex="20000"
-						   [name]="'input_' + indx"
-						   [(ngModel)]="field.Value"
-						   [options]="field.Values"
-						   [style]="{ width: '100%'}"
-						   selectedItemsLabel="{0} items selected"
-						   ngDefaultControl
-						   required="{{ field.Required }}"
-						   display="chip"></p-multiSelect>
+			<div class="d3s-color-picker multi multi-select-lazy-load">
+				<p-multiSelect #dropdown
+							   igSize="full"
+							   styleClass="{{field.Required ? 'value-required' : ''}}"
+							   [inputId]="'input_' + indxd"
+							   [attr.name]="'input_' + indx"
+							   [name]="'input_' + indx"
+							   [options]="field.Values"
+							   [(ngModel)]="field.Value"
+							   [required]="field.Required"
+							   placeholder="{{(field.Required ? 'Value required' : '')}}"
+							   display="chip">
+					<ng-template pTemplate="selectedItems" let-items>
+						<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
+							<div class="p-multiselect-token" *ngFor="let item of items">
+								<span class="p-multiselect-token-label">
+									{{ item.Text }}
+								</span>
+								<span class="p-multiselect-token-icon pi pi-times"
+									  (click)="dropdown.removeChip(item, $event); $event.stopPropagation()">
+								</span>
+							</div>
+						</ng-container>
+						<ng-template #placeholder>
+							{{(field.Required ? 'Value required' : '')}}
+						</ng-template>
+					</ng-template>
+					<ng-template let-item pTemplate="item">
+						<span class="p-multiselect-token-label">
+							{{ item.Text }}
+						</span>
+					</ng-template>
+				</p-multiSelect>
+			</div>
+
 		</div>
 		<div *ngSwitchCase="fieldType.Link">
 			<input igInput
