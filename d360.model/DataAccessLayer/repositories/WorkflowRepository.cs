@@ -1069,7 +1069,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
 				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),				
-				new DefaultFilter("assignee", "GR2.uid", SqlFieldType.Guid),
+				new DefaultFilter("assignee", "AssignedUsers.value", SqlFieldType.Text),
 				new DefaultFilter("initiatingobjecttype", "IOT.initiatingObjectType", SqlFieldType.Text)
 			};
 

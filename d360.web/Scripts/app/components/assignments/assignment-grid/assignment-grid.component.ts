@@ -26,6 +26,8 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute } from '@angular/router';
+import { assign } from 'util';
+import { Operator } from '../../../models/operator.model';
 
 /*global $localize*/
 
@@ -319,6 +321,11 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		const filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = !this.isRequestsFlow;
+
+		const assigneesFilterFieldType: FieldType = new FieldType('Lookup');
+		assigneesFilterFieldType.Lookup.List.AllowMultipleValues = true;
+		assigneesFilterFieldType.Lookup.IsPrimaryFilter = (this.assetTypeUid || this.assetUid) ? false : !this.isRequestsFlow;		
+
 		const filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'workflowName',
 			FriendlyName: $localize`Workflow Name`,
@@ -342,7 +349,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}, {
 			Name: 'assignee',
 			FriendlyName: $localize`Assignee`,
-			Type: this.assetTypeUid || this.assetUid ? new FieldType('Lookup') : lookupFieldTypePrimaryFilter,
+			Type: assigneesFilterFieldType,
 			Category: '',
 			ValueLoader: this.getFilteredAssignees
 		}, {
