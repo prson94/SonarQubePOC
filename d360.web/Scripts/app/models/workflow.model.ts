@@ -281,6 +281,7 @@ export class WorkflowForm {
 	Fields: WorkflowFormField[] = [];
 	Title: string;
 	Description: string;
+	DescriptionRaw: string;
 	IsCompleted: boolean;
 	IsItemDeleted: boolean;
 	IsUserAllowedToComplete: boolean;

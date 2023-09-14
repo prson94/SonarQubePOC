@@ -71,7 +71,7 @@
 											   [shouldBePadded]="false">
 								<div readonly>
 									<ng-container>
-										<div class="row">
+										<div class="row" *ngIf="!isBulkRespond && multiSubmitionItems.length <= 1; else elseBlock">
 											<div class="category-column">
 												<label class="ig-label" i18n>
 													{{
@@ -83,10 +83,25 @@
 													"></div>
 											</div>
 										</div>
+										<ng-template #elseBlock>
+											<div class="row">
+												<div class="category-column">
+													<label class="ig-label" i18n>
+														{{
+													formTitle
+														}}
+													</label>
+													<div class="ig-value" [innerHTML]="
+														formDescriptionRaw
+													"></div>
+												</div>
+											</div>
+										</ng-template>
+
 									</ng-container>
 								</div>
 							</ig-property-group>
-							<ig-property-group *ngIf="request && request.Action && radioSelectionValue === 'completeForm'" i18n-title
+							<ig-property-group *ngIf="request && request.Action && radioSelectionValue === 'completeForm' && (!isBulkRespond && multiSubmitionItems.length <= 1)" i18n-title
 											   title="Request"
 											   [shouldBePadded]="false" [customTemplate]="true" [showHeaderLine]="false"
 											   [sideTemplate]="requestSidePanel">

@@ -57,6 +57,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	sidePanel: string = 'asset-details';
 	formTitle: string = '';
 	formDescription: string = '';
+	formDescriptionRaw: string = '';
 	assetName: string = '';
 	assetId: number;
 	formFields: WorkflowFormField[] = [];
@@ -193,6 +194,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							const res = results[0];
 							this.formTitle = res.Title;
 							this.formDescription = res.Description;
+							this.formDescriptionRaw = res.DescriptionRaw;
 							this.formFields = res.Fields;
 							this.request = res.Request;
 							if (res.IssueObjectID) {

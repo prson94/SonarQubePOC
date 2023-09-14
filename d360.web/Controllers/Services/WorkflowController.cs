@@ -889,6 +889,7 @@ namespace d360.web.Controllers.Services
 			}
 
 			var desc = (string)XElement.Parse(xml).Element("form").Attribute("description");
+			var descRaw = desc;
 			var title = (string)XElement.Parse(xml).Element("form").Attribute("title");
 			bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignResource"), out bool allowReassignResource);
 			bool.TryParse((string)XElement.Parse(xml).Element("form").Attribute("allowReassignObject"), out bool allowReassignObject);
@@ -1148,6 +1149,7 @@ namespace d360.web.Controllers.Services
 				Fields = properties,
 				Title = title ?? "",
 				Description = desc ?? "",
+				DescriptionRaw = descRaw ?? "",
 				IsCompleted = itemStep.CompletedOn.HasValue || isCompletedByCurrentUser,
 				IsItemDeleted = details == null,
 				IsFormInvalid = formError,
