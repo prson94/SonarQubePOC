@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
 import { ControlContainer, NgForm } from '@angular/forms';
 import { AssignmentService } from '../../assignment.service';
