@@ -26,8 +26,6 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute } from '@angular/router';
-import { assign } from 'util';
-import { Operator } from '../../../models/operator.model';
 
 /*global $localize*/
 
