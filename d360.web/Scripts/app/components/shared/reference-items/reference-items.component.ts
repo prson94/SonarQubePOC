@@ -79,13 +79,12 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	columns: GridColumn[] = [];
 	fields: GridField[] = [];
 
-	private selected: ReferenceItemAPIModel;
 	showEditor: boolean = false;
 	showDelete: boolean = false;
 	private sub: Subscription;
 	private getAssetSub: Subscription;
 
-	selectedItem: unknown = null;
+	selectedItem: ReferenceItemAPIModel = null;
 	selectedForInfoPanel: unknown = null;
 	sidePanelOpen: boolean = true;
 	sidePanelStorageKey: string = "";
@@ -147,7 +146,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		if (changes.highlightUid && changes.highlightUid.currentValue !== changes.highlightUid.previousValue && this.highlightUid) {
 			const highlightedAsset = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
 			if (highlightedAsset && highlightedAsset[0]) {
-				this.selected = highlightedAsset[0];
+				this.selectedItem = highlightedAsset[0];
 			}
 			else {
 				this.load();
@@ -216,13 +215,13 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 			this.totalRecords = result.total;
 
 			if (this.items.length > 0) {
-				this.selected = this.items[0];
+				this.selectedItem = this.items[0];
 			}
 
 			if (this.highlightUid) {
 				const highlighted = this.items.filter((a) => (a.AssetUid as string).toLowerCase() === this.highlightUid.toLowerCase());
 				if (highlighted) {
-					this.selected = highlighted[0];
+					this.selectedItem = highlighted[0];
 				}
 
 				setTimeout(() => {
@@ -349,8 +348,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	}
 
 	public onDeleted() {
-		this.items = this.items.filter((x) => x.AssetUid !== this.selected.AssetUid);
-		this.selected = null;
+		this.items = this.items.filter((x) => x.AssetUid !== this.selectedItem.AssetUid);
+		this.selectedItem = null;
 		this.showDelete = false;
 	}
 
@@ -389,14 +388,18 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	selectRow(item: unknown) {
+	selectRow(item: ReferenceItemAPIModel) {
 		this.selectedItem = item;
 	}
 
 	saveItem($event) {
 		this.showEditor = false;
-		if ($event && $event.addAnother) {
-			this.openAddForm();
+		if ($event) {
+			if ($event.addAnother) {
+				this.openAddForm();
+			} else {
+				this.highlightUid = $event.assetUid;
+			}
 		}
 		this.load();
 	}

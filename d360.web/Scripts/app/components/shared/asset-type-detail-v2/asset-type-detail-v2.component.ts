@@ -114,8 +114,10 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 						this.fillCategories(this.assetTypeModel);
 						this.loadState();
 						if (this.isReferenceItemType) {
-							this.tab = "items";
 							this.getItemCount();
+							if (!this.isDetailsPage) {
+								this.tab = "items";
+							}
 						}
 						this.isLoading = false;
 						this.cdRef.markForCheck();
