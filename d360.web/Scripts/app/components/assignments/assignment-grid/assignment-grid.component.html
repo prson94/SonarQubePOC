@@ -180,14 +180,12 @@
 						style="flex: 0 0 30px"
 						alignFrozen="right"
 						pFrozenColumn>
-						<div class="menu-icon">
 							<button igButton
-									type="button"
+									type="button" class="ig-button-dark ig-button ig-button-icon-only"
 									icon="fa-ellipsis-v"
 									(click)="clickMenuIcon(item); menu.toggle($event)"></button>
 							<ig-popup-menu (onSelect)="clickMenuItem($event)"
 										   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
-						</div>
 					</td>
 				</tr>
 			</ng-template>

@@ -1,0 +1,28 @@
+.name-column {
+  width: 182px;
+}
+
+.assignee-column {
+  width: 152px;
+}
+
+.status-column{
+  width: 112px;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
+.no-vertical-padding {
+  padding: 8px 0;
+}
