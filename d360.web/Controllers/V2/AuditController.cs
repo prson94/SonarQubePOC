@@ -207,6 +207,7 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 			int pageSizeLimit = isStreamResponse ? 200000 : 250;
+			bool IsassetUidReferenceTypeID = false;
 
 			var orderBySql = "";
 			var dbArgs = new DynamicParameters();
@@ -276,8 +277,10 @@ namespace d360.web.Controllers.V2
 
 			if (assetType != null && assetType.Class == AssetTypeClass.Reference)
 			{
+				IsassetUidReferenceTypeID = true;
 				dbArgs.Add("uid", assetUid);
-				whereStatements.Add("(uid = @uid or actionAssetTypeUid = @uid)");
+				//whereStatements.Add("(uid = @uid or actionAssetTypeUid = @uid)");
+				whereStatements.Add("<uid> = @uid");
 			}
 			else 
 			{
@@ -300,12 +303,15 @@ namespace d360.web.Controllers.V2
 			int pageNum = Company.ParsePageNumber(queryParams, 1);
 			int pageSize = Company.ParsePageSize(queryParams);
 			string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
+			string sql = "";
 
-			string baseQuery = @"
+			string GetBaseQuery(bool PickFromTemptable = false)
+			{
+				return $@"
 select 	uid,
 	name,
 	resourceUid,
-	resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '') as resourceName,
+	{(!PickFromTemptable ? "resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '')" : "resourceName")}  as resourceName,
 	[date],
 	[action],
 	actionAssetUid,
@@ -315,28 +321,63 @@ select 	uid,
 	actionObjectName,
 	actionDescription,
 	Field,
-	coalesce(NewValue, '---') as NewValue,
+	{(!PickFromTemptable ? "coalesce(NewValue, '---')" : "NewValue")}  as NewValue,
 	[Class],
 	[Version],
-	iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue,
+	{(!PickFromTemptable ? "iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---'))" : "PreviousValue")}  as PreviousValue,
 	fieldType
-from	AuditView";
+from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
+			};
 
-			string sql = "";
-
-			if (isStreamResponse)
+			if (IsassetUidReferenceTypeID)
 			{
-				sql = $"{baseQuery} {whereSql} {orderBySql}";
+				string tempdata = $@"
+				drop table if exists #tempauditdata;
+				select *
+				into #tempauditdata
+				from 
+				(
+				{GetBaseQuery(false)} 
+				{whereSql.Replace("<uid>","uid")}
+				union
+				{GetBaseQuery(false)} 
+				{whereSql.Replace("<uid>", "actionAssetTypeUid")}
+				) a;
+				";
+				if (isStreamResponse)
+				{
+					sql = $@"
+{tempdata} 
+{GetBaseQuery(true)} 
+{orderBySql}
+drop table if exists #tempauditdata;";
+				}
+				else
+				{
+					sql = $@"
+{tempdata}
+select count(1) from #tempauditdata;
+{GetBaseQuery(true)}
+{orderBySql} 
+{offsetSql};
+drop table if exists #tempauditdata;";
+				}
 			}
 			else
 			{
-				sql = $@"
+				if (isStreamResponse)
+				{
+					sql = $@"{GetBaseQuery()} {whereSql} {orderBySql}";
+				}
+				else
+				{
+					sql = $@"
 select count(1) from AuditView {whereSql};
-
-{baseQuery}
+{GetBaseQuery()}
 {whereSql}
 {orderBySql} 
 {offsetSql};";
+				}
 			}
 			var multiQuery = await Company.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
 
