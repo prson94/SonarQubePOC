@@ -432,7 +432,7 @@ namespace d360.web.Controllers.Services
 					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
 				}
 
-				resourceId = resource.ResourceID;								
+				resourceId = resource.ResourceID;
 			}
 
 			return ReassignWorkflowObject(item.ID, type.ID, objectId, objectType, itemStep.ID, resourceId);
@@ -594,7 +594,17 @@ namespace d360.web.Controllers.Services
 
 						if (field.AllowMultipleValues)
 						{
-							var values = field.Values.Select(x => x.Value);
+							List<string> values = new List<string>();
+
+							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS))
+							{
+								//new ui elements return different value object
+								values = field.Values.Select(x => x.Value).ToList();
+							}
+							else
+							{
+								values = val.Split(',').ToList();
+							}
 							displayVal = "";
 							foreach (var v in values)
 							{
@@ -616,6 +626,12 @@ namespace d360.web.Controllers.Services
 						}
 						else
 						{
+							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS))
+							{
+								//new ui elements return different value object
+								val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;
+							}
+
 							if (fieldType != null && int.TryParse(val, out intVal))
 							{
 								var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
