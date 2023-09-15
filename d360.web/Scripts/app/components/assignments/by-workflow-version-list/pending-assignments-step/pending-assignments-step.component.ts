@@ -14,7 +14,8 @@ import { Table } from 'primeng/table';
 
 @Component({
 	selector: 'd3s-pending-assignments-step',
-	templateUrl: './pending-assignments-step.component.html'
+	templateUrl: './pending-assignments-step.component.html',
+	styleUrls: ['./pending-assignments-step.component.less']
 })
 export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
 	@Input() versionStepId: number;

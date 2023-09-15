@@ -51,7 +51,8 @@ declare var window: any;
 @Component({
     selector: 'd3s-workflow-diagram',
     templateUrl: './workflow-diagram.component.html',
-    providers: [
+	styleUrls: ["./workflow-diagram.component.less"],
+	providers: [
         PermissionsService,
         WorkflowService,
         ObjectDetailService,
