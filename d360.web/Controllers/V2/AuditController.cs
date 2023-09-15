@@ -279,7 +279,6 @@ namespace d360.web.Controllers.V2
 			{
 				IsassetUidReferenceTypeID = true;
 				dbArgs.Add("uid", assetUid);
-				//whereStatements.Add("(uid = @uid or actionAssetTypeUid = @uid)");
 				whereStatements.Add("<uid> = @uid");
 			}
 			else 
@@ -327,7 +326,7 @@ select 	uid,
 	{(!PickFromTemptable ? "iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---'))" : "PreviousValue")}  as PreviousValue,
 	fieldType
 from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
-			};
+			}
 
 			if (IsassetUidReferenceTypeID)
 			{
@@ -337,10 +336,10 @@ from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
 				into #tempauditdata
 				from 
 				(
-				{GetBaseQuery(false)} 
+				{GetBaseQuery()} 
 				{whereSql.Replace("<uid>","uid")}
 				union
-				{GetBaseQuery(false)} 
+				{GetBaseQuery()} 
 				{whereSql.Replace("<uid>", "actionAssetTypeUid")}
 				) a;
 				";
