@@ -257,6 +257,9 @@ export class ReferenceItemTypeListV2Component extends BaseComponent implements O
 				$localize`Success`,
 				$event.Message
 			);
+			if ($event.Uid) {
+				this.initialSelectedListUid = $event.Uid;
+			}
 		}
 
 		this.load();
