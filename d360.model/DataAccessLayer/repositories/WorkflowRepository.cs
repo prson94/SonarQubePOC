@@ -1804,6 +1804,19 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var sql = $@"
+						with Assignments as (
+									select 
+										WI.ID,
+										WI.Object,
+										WI.ObjectID,
+										Wi.CompletedOn
+									from 
+										workflow.Item WI
+										inner join 
+										workflow.Version V on WI.VersionID = V.ID
+										inner join
+										workflow.Type T on T.ID = V.TypeID and T.State in (1,4)
+						)
 						select
 							count(*)
 						from
@@ -1811,14 +1824,14 @@ namespace d360.model.DataAccessLayer
 							select 
 								Wi.ID
 							from 
-								workflow.Item WI
+								Assignments WI
 								inner join 
 								Asset A on WI.Object <> 'Issue' and wi.CompletedOn is null and A.[Object] = WI.Object and A.ObjectID = WI.ObjectID and {(type == "asset" ? "A.id=@ID" : "A.assettypeid=@ID")}
 							union
 							select 
 								Wi.ID 
 							from 
-								workflow.Item WI
+								Assignments WI
 								inner join 
 								Issue I on WI.Object = 'Issue' and wi.CompletedOn is null and I.[ID] = WI.ObjectID
 								inner join 
