@@ -63,7 +63,7 @@
 					{{ item.Text }}
 				</ng-template>
 			</p-dropdown>
-			<div class="d3s-color-picker multi multi-select-lazy-load">
+			<div class="d3s-color-picker multi multi-select-lazy-load" *ngIf="field.AllowMultipleValues">
 				<p-multiSelect #dropdown
 							   igSize="full"
 							   styleClass="{{field.Required ? 'value-required' : ''}}"
@@ -119,7 +119,7 @@
 				</ng-template>
 			</p-dropdown>
 
-			<div class="d3s-color-picker multi multi-select-lazy-load">
+			<div class="d3s-color-picker multi multi-select-lazy-load" *ngIf="field.AllowMultipleValues">
 				<p-multiSelect #dropdown
 							   igSize="full"
 							   styleClass="{{field.Required ? 'value-required' : ''}}"
