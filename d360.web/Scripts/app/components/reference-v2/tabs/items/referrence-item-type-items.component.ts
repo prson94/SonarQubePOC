@@ -1,6 +1,7 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { AssetTypeService } from "../../../../services/asset-type.service";
+import { ReferenceItemTypeTabsComponent } from "../shared/reference-tabs.component";
 
 
 @Component({
@@ -10,6 +11,8 @@ import { AssetTypeService } from "../../../../services/asset-type.service";
 export class ReferenceItemTypeItemsComponent implements OnInit {
 	uid: string;
 	name: string;
+
+	@ViewChild("tabs", { static: false }) tabs: ReferenceItemTypeTabsComponent;
 
 	constructor(
 		private route: ActivatedRoute,
@@ -27,5 +30,9 @@ export class ReferenceItemTypeItemsComponent implements OnInit {
 		this.assetTypeService.GetAssetTypeByUid(this.uid).subscribe((res) => {
 			this.name = res.Name;
 		});
+	}
+
+	updateItemCount(count: number) {
+		this.tabs.updateItemCount(count);
 	}
 }

@@ -61,6 +61,7 @@
 					<d3s-reference-items *ngIf="isReferenceItemType"
 										 [referenceItemTypeUid]="assetTypeModel.uid"
 										 [typeName]="assetTypeModel.Name"
+										 (itemCount)="updateItemCount($event)"
 										 [isSidePanel]="true">
 					</d3s-reference-items>
 				</ng-container>

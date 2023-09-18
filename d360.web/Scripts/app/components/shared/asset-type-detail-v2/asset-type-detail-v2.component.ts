@@ -449,6 +449,11 @@ export class AssetTypeDetailV2Component implements OnChanges, OnDestroy {
 		});
 	}
 
+	updateItemCount(count: number) {
+		this.itemCount = count;
+		this.cdRef.markForCheck();
+	}
+
 	clickTab(key: string) {
 		this.tab = key;
 	}
