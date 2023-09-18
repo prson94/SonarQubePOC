@@ -1303,7 +1303,7 @@ namespace d360.model.DataAccessLayer
 										INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 										inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
 										INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
-										inner join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID
+										left join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID
 									";
 
 			var coreSelects = $@"
