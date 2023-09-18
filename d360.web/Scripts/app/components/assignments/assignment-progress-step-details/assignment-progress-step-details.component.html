@@ -89,7 +89,7 @@
 							<div>
 								<ng-container i18n>Awaiting forms from</ng-container>
 								:
-								<ng-container *ngFor="let pending of step.AssignedUsers; let last = last">
+								<ng-container *ngFor="let pending of pendingFormList; let last = last">
 									<a context-link
 									   (click)="onClickResource($event, pending['ResourceID'])">{{pending['FullName']}}</a>
 									<span *ngIf="!last">, </span>
