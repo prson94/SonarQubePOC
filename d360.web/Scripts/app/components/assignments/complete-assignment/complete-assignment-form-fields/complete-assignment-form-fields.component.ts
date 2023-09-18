@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
-import { ControlContainer, NgForm, Validators } from '@angular/forms';
+import { ControlContainer, NgForm } from '@angular/forms';
 import { unset } from 'lodash-es';
 import { FormHelpers } from '../../../../static/form-helpers';
 
