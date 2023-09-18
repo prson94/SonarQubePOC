@@ -307,12 +307,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
 					this.closeModal();
 					this.modal.closePopUp();
+					this.assignmentService.loadAssignments.next()
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
 				this.isLoading = true;
 				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
+					this.assignmentService.loadAssignments.next()
 
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
@@ -321,6 +323,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
+						this.assignmentService.loadAssignments.next()
 					});
 			}
 
