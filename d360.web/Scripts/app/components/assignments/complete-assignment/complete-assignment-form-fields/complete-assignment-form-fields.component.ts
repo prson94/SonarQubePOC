@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
 import { WorkflowFormField, WorkflowFormFieldType } from '../../../../models/workflow.model';
-import { ControlContainer, NgForm } from '@angular/forms';
-import { AssignmentService } from '../../assignment.service';
+import { ControlContainer, NgForm, Validators } from '@angular/forms';
 import { unset } from 'lodash-es';
 import { FormHelpers } from '../../../../static/form-helpers';
 
@@ -20,13 +19,8 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 
 	fieldType = WorkflowFormFieldType;
 
-	constructor(private assignmentService: AssignmentService) {
-	}
-
 	ngOnInit(): void {
-		this.assignmentService.setFormValidators.subscribe(() => {
-			this.setValidators();
-		});
+		this.setValidators();
 		this.handleFormInput();
 	}
 
@@ -48,13 +42,16 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	}
 
 	public setValidators() {
-		this.fields.forEach((x, i) => {
-			if (x.Required) {
-				this.form.form.controls[`input_${i}`]?.setErrors({
-					required: true
-				});
-			}
-		});
+		setTimeout(() => {
+			this.fields.forEach((x, i) => {
+				if (x.Required) {
+					this.form.controls[`input_${i}`]?.setErrors({
+						required: true
+					});
+				}
+			});
+		}, 20);
+
 	}
 
 	public getLocaleDateString(): string {
