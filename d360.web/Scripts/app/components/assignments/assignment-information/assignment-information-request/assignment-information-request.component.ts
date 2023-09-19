@@ -14,7 +14,10 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
 export class AssignmentInformationRequestComponent implements OnInit {
 	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
-	@Input() workflowActionUid: string;
+	@Input() set workflowActionUid(value: string) {
+		this.loadData(value);
+	}
+
 	@Input() workflowItemUid: string;
 	@Input() stepUid: string;
 	@Input() showSubmittedByData: boolean = false;
@@ -29,15 +32,14 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	}
 
 	ngOnInit(): void {
-		this.loadData();
 		if (this.showSubmittedByData) {
 			this.loadFormDetails();
 		}
 	}
 
-	loadData(): void {
+	loadData(workflowActionUid: string): void {
 		this.isLoading = true;
-		this.workflowService.getActions(this.workflowActionUid)
+		this.workflowService.getActions(workflowActionUid)
 			.subscribe((response: Actions) => {
 				if (response?.items?.length > 0) {
 					this.actionItems = response.items[0];
