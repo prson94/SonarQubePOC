@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace d360.model
 {
-	public partial interface ICompanyContext : IBaseContext 
+	public partial interface ICompanyContext : IBaseContext
 	{
 		#region DbSets
 
@@ -71,40 +71,40 @@ namespace d360.model
 	}
 
 	public partial class CompanyContext : BaseContext, ICompanyContext
-    {
-        #region DbSets
+	{
+		#region DbSets
 
-        public DbSet<Asset> Assets { get; set; }
+		public DbSet<Asset> Assets { get; set; }
 
-        public DbSet<AssetDetail> AssetDetails { get; set; }
+		public DbSet<AssetDetail> AssetDetails { get; set; }
 
-        public DbSet<AssetType> AssetTypes { get; set; }
+		public DbSet<AssetType> AssetTypes { get; set; }
 
-        public DbSet<FieldApiModel> FieldApiModels { get; set; }
+		public DbSet<FieldApiModel> FieldApiModels { get; set; }
 
 		#endregion
 
 		#region Utility
 
-        private string escapeForSQLLike(string value, bool isContains = true)
-        {
-            char[] escapeChars = new char[] { '%', '_', '^', '[' };
-            string escapedValue = "";
+		private string escapeForSQLLike(string value, bool isContains = true)
+		{
+			char[] escapeChars = new char[] { '%', '_', '^', '[' };
+			string escapedValue = "";
 
-            foreach (char c in value)
-            {
-                if (escapeChars.Contains(c))
-                {
-                    escapedValue += $"[{c}]";
-                }
-                else
-                {
-                    escapedValue += c;
-                }
-            }
+			foreach (char c in value)
+			{
+				if (escapeChars.Contains(c))
+				{
+					escapedValue += $"[{c}]";
+				}
+				else
+				{
+					escapedValue += c;
+				}
+			}
 
-            return escapedValue;
-        }
+			return escapedValue;
+		}
 
 		private int DeleteAssetsByChunk(ApiExecution execution, int timeout, Dictionary<string, double> metrics, int step, DateTime dt, bool canHaveProcess, Stopwatch sw, PredicateType? predicateType, int beginItemNumber, int endItemNumber, int currentLoop, int retryCount, string querySuffix, SqlTransaction trans)
 		{
@@ -681,50 +681,50 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		}
 
 		private string wildcardValue(string value, bool isContains = true)
-        {
-            value = value.Replace("*", "%").Replace("?", "_");
-            value = isContains ? $"%{value}%" : $"{value}%";
-            
-            return value;
-        }
+		{
+			value = value.Replace("*", "%").Replace("?", "_");
+			value = isContains ? $"%{value}%" : $"{value}%";
+
+			return value;
+		}
 
 		#endregion
 
 		#region Methods
 
-        public string DetermineSqlDataTypeForFieldType(FieldType f)
-        {
-            string sqlDataType = "nvarchar";
+		public string DetermineSqlDataTypeForFieldType(FieldType f)
+		{
+			string sqlDataType = "nvarchar";
 
-            if (f.Type == DataType.JsonElement.ToString())
-            {
-                FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
-                sqlDataType = jsonElementDefinition.DataType;
-                jsonElementDefinition = null;
-            }
-            else if (f.Type == DataType.Boolean.ToString())
-            {
-                sqlDataType = "bit";
-            }
-            else if (f.Type == DataType.Date.ToString())
-            {
-                sqlDataType = "date";
-            }
-            else if (f.Type == DataType.DateTime.ToString())
-            {
-                sqlDataType = "datetime";
-            }
-            else if (f.Type == DataType.Decimal.ToString())
-            {
-                sqlDataType = "decimal";
-            }
-            else if (f.Type == DataType.Number.ToString())
-            {
-                sqlDataType = "int";
-            }
+			if (f.Type == DataType.JsonElement.ToString())
+			{
+				FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
+				sqlDataType = jsonElementDefinition.DataType;
+				jsonElementDefinition = null;
+			}
+			else if (f.Type == DataType.Boolean.ToString())
+			{
+				sqlDataType = "bit";
+			}
+			else if (f.Type == DataType.Date.ToString())
+			{
+				sqlDataType = "date";
+			}
+			else if (f.Type == DataType.DateTime.ToString())
+			{
+				sqlDataType = "datetime";
+			}
+			else if (f.Type == DataType.Decimal.ToString())
+			{
+				sqlDataType = "decimal";
+			}
+			else if (f.Type == DataType.Number.ToString())
+			{
+				sqlDataType = "int";
+			}
 
-            return sqlDataType;
-        }
+			return sqlDataType;
+		}
 
 		public async Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData)
 		{
@@ -806,9 +806,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		}
 
 		public string GetEscapedFilterString(string filter, bool isContains = false)
-        {
-            return wildcardValue(escapeForSQLLike(filter), isContains);
-        }
+		{
+			return wildcardValue(escapeForSQLLike(filter), isContains);
+		}
 
 		public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
 		{
@@ -827,7 +827,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			{
 				enableJsonAttributes = GetSettingValue<bool>(Setting.EnableJsonAttribute);
 			}
-			catch 
+			catch
 			{
 				// Safely ignore. Just assume it is false.
 			}
@@ -1101,10 +1101,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
 								bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
 								bulkCopy.ColumnMappings.Add("SourceID", "SourceID");
-								
+
 								bulkCopy.ColumnMappings.Add("Message", "Message");
 								bulkCopy.ColumnMappings.Add("Success", "Success");
-								
+
 								bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
 								bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
 
@@ -1383,7 +1383,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 											addMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
 									}
-									else 
+									else
 									{
 										string @object = "Artifact";
 
@@ -1702,7 +1702,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									}
 
 									addMeasurement(metrics, $"CheckKeyHashes >> {currentLoop} > Begin", sw.ElapsedMilliseconds, ++step);
-									
+
 									#region Generate proposed key hash and compare against existing data.
 									var invalidHashState = Connection.Query<dynamic>(@"
 										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
@@ -1765,7 +1765,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									#endregion
 
 									sw.Restart();
-									
+
 									// Update success flag.
 									Connection.Execute(
 										$@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
@@ -2437,7 +2437,7 @@ where	T.ExecutionID = @ExecutionID
 
 							results.AddRange(
 								Query<DatabaseBulkAssetResult>(
-									"select ItemNumber, uid, ExecutionItemUid, Message, Success, Object, ObjectID, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber", 
+									"select ItemNumber, uid, ExecutionItemUid, Message, Success, Object, ObjectID, 3 as ChangeType from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
 									new { execution.ExecutionID, beginItemNumber, endItemNumber }
 								)
 							);
@@ -2610,6 +2610,59 @@ where	T.ExecutionID = @ExecutionID
 			return results;
 		}
 
+		private async Task AddAssetAuditRecord(Asset asset, FieldType fieldType, Field oldField)
+		{
+			try
+			{
+				if (asset != null && fieldType != null)
+				{
+					string previousValue = null;
+					if (oldField != null)
+					{
+						previousValue = oldField.FormattedValue ?? oldField.Value;
+					}
+					await Database.Connection.ExecuteAsync($@"
+						declare @displayValue nvarchar(max) = ''
+						declare @assetTypeName nvarchar(max) = ''
+						declare @nextVersion int = (select max(version) + 1 as Version from reporting.Global_Audit ga where ga.Object = @object and ga.ObjectID = @objectId)
+						if @nextVersion is null
+						begin
+						  set @nextVersion = 1
+						end
+
+						declare @value nvarchar(max) = (select top 1 FormattedValue from Field where FieldTypeID = @fieldTypeId and AssetID = @assetId)
+
+						select @displayValue= adv.DisplayValue, @assetTypeName = at.Name from asset a 
+						inner join AssetDisplayValue adv on adv.AssetID = a.ID
+						inner join AssetType at on at.ID = a.AssetTypeID
+						where a.ID = @assetId
+
+						DECLARE @inserted TABLE (id INT);
+						insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
+						output inserted.id into @inserted
+						values (@object, @objectId,@displayValue, 0, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
+
+
+						declare @auditId int = (select top 1 id from @inserted)
+						insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, Value, PreviousValue)
+						values (@auditId, @fieldTypeId, @fieldTypeName, @value, @previousValue)"
+						, new
+						{
+							@object = asset.Object,
+							objectId = asset.ObjectID,
+							assetId = asset.ID,
+							fieldTypeId = fieldType.ID,
+							fieldTypeName = fieldType.Name,
+							previousValue
+						});
+				}
+
+			}
+			catch (Exception)
+			{
+				//if for any reason this failed we do not want whole workflow to stop
+			}
+		}
 		#endregion
 	}
 }

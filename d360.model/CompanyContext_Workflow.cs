@@ -1280,7 +1280,9 @@ namespace d360.model
 						assetId = field.AssetID
 					});
 			}
-			
+
+			//update audit record
+			await AddAssetAuditRecord(asset, fieldType, field);
 		}
 
 		private async Task UpdateItemField(WorkflowItemStep itemStep, EventObjectInfo objectInfo, WorkflowItemStepSettingModel settings)
