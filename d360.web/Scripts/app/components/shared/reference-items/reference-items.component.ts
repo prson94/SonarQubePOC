@@ -2,10 +2,12 @@ import {
 	ChangeDetectorRef,
 	Component,
 	Input,
+	Output,
 	OnChanges,
 	OnDestroy,
 	OnInit,
 	SimpleChanges,
+	EventEmitter,
 	ViewChild
 } from '@angular/core';
 import { BaseComponent } from '../base.component';
@@ -69,6 +71,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 	@Input() isForAssetDetailPage: boolean = false;
 	@Input() highlightUid: string = '';
 	@Input() isSidePanel: boolean = false;
+
+	@Output() itemCount: EventEmitter<number> = new EventEmitter<number>();
 
 	public rowsPerPage: number;
 	private sortField: string;
@@ -238,6 +242,7 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 				this.loadParams.useGraphForParent = false;
 			}
 			this.isLoading = false;
+			this.itemCount.emit(this.totalRecords);
 			this.cdRef.detectChanges();
 		},
 			() => { //err
@@ -349,6 +354,8 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 
 	public onDeleted() {
 		this.items = this.items.filter((x) => x.AssetUid !== this.selectedItem.AssetUid);
+		this.totalRecords = this.items.length;
+		this.itemCount.emit(this.totalRecords);
 		this.selectedItem = null;
 		this.showDelete = false;
 	}

@@ -108,6 +108,11 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 
 	}
 
+	public updateItemCount(count: number): void {
+		this.itemCount = count;
+		this.cdRef.markForCheck();
+	}
+
 	ngOnDestroy() {
 		this.countSubscripton?.unsubscribe();
 		this.permissionSubscription?.unsubscribe();
