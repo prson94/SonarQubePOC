@@ -163,7 +163,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		this.selectedAssignment = item;
 		if (item.AssociatedItems.length > 1) {
 			this.workflowTypeName = item.WorkflowName;
-			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName);
+			this.multiAssignComponent.openModal(item.AssociatedItems, item.WorkflowName, item.WorkflowTypeUid);
 		}
 		else {
 			const assignment = item.AssociatedItems[0];
@@ -206,6 +206,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }) {
 		if (event.isBack === false) {
 			this.multiAssignComponent.closeDialog();
+		} else {
+			this.multiAssignComponent.subscribeSwitcherEvents();
 		}
 
 		if (event.removeSelected) {

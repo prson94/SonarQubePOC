@@ -13,6 +13,7 @@ export enum AssetDetailClickType {
     Tag = 'Tag',
 	Group = 'Group',
 	Field = 'Field',
+	AssignmentProgressInformation = 'AssignmentProgressInformation',
 	WorkflowStep = 'WorkflowStep',
 	WorkflowTypeInformation = 'WorkflowTypeInformation',
 	WorkflowItemInformation = 'WorkflowItemInformation',
@@ -204,33 +205,41 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = data.referenceListTypeUid;
             }
 
-			if(data) {
-				if (data.workflowTypeUid && data.workflowTypeVersion && !(data.selectedNodeModel)) {
-					adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
+			if (data) {
+				if (data.workflowTypeUid && data.workflowItemUid && data.workflowTypeVersion) {
+					adcEv.type = AssetDetailClickType.AssignmentProgressInformation;
 					adcEv.workflowTypeUid = data.workflowTypeUid;
-					adcEv.workflowTypeVersion = data.workflowTypeVersion;
-				} else if (data.workflowItemUid && data.itemStepUid && !(data.workflowActionUid)) {
-					adcEv.type = AssetDetailClickType.WorkflowStep;
 					adcEv.workflowItemUid = data.workflowItemUid;
-					adcEv.itemStepUid = data.itemStepUid;
-					adcEv.showCompleteAssignment = data.showCompleteAssignment;
-				} else if(data.workflowTypeUid && data.workflowTypeVersion && data.selectedNodeModel) {
-					adcEv.type = AssetDetailClickType.WorkflowVersion;
-					adcEv.workflowTypeUid = data.workflowTypeUid;
 					adcEv.workflowTypeVersion = data.workflowTypeVersion;
-					adcEv.selectedNodeModel = data.selectedNodeModel;
+				} else if (data.workflowTypeUid && data.workflowTypeVersion) {
+					if (data.selectedNodeModel) {
+						adcEv.type = AssetDetailClickType.WorkflowVersion;
+						adcEv.workflowTypeUid = data.workflowTypeUid;
+						adcEv.workflowTypeVersion = data.workflowTypeVersion;
+						adcEv.selectedNodeModel = data.selectedNodeModel;
+					} else {
+						adcEv.type = AssetDetailClickType.WorkflowTypeInformation;
+						adcEv.workflowTypeUid = data.workflowTypeUid;
+						adcEv.workflowTypeVersion = data.workflowTypeVersion;
+					}
+				} else if (data.workflowItemUid && data.itemStepUid) {
+					if (data.workflowActionUid) {
+						adcEv.type = AssetDetailClickType.WorkflowRequestInformation;
+						adcEv.workflowItemUid = data.workflowItemUid;
+						adcEv.itemStepUid = data.itemStepUid;
+						adcEv.workflowActionUid = data.workflowActionUid;
+					} else {
+						adcEv.type = AssetDetailClickType.WorkflowStep;
+						adcEv.workflowItemUid = data.workflowItemUid;
+						adcEv.itemStepUid = data.itemStepUid;
+						adcEv.showCompleteAssignment = data.showCompleteAssignment;
+					}
 				} else if (data.workflowItemUid && data.workflowTypeVersion) {
 					adcEv.type = AssetDetailClickType.WorkflowItemInformation;
 					adcEv.workflowItemUid = data.workflowItemUid;
 					adcEv.workflowTypeVersion = data.workflowTypeVersion;
-				} else if(data.workflowItemUid && data.itemStepUid && data.workflowActionUid) {
-					adcEv.type = AssetDetailClickType.WorkflowRequestInformation;
-					adcEv.workflowItemUid = data.workflowItemUid;
-					adcEv.itemStepUid = data.itemStepUid;
-					adcEv.workflowActionUid = data.workflowActionUid;
 				}
 			}
-
 		} else {
             adcEv = null;
         }
@@ -272,6 +281,13 @@ export class LinkClickInterceptor {
 				workflowItemUid: event.workflowItemUid,
 				itemStepUid: event.itemStepUid,
 				workflowActionUid: event.workflowActionUid
+			};
+		} else if(event.type === AssetDetailClickType.AssignmentProgressInformation) {
+			baseComponent.sidePanelTab = AssetDetailClickType.AssignmentProgressInformation;
+			baseComponent.selectedAsset = {
+				workflowItemUid: event.workflowItemUid,
+				workflowTypeVersion: event.workflowTypeVersion,
+				workflowTypeUid: event.workflowTypeUid
 			};
 		} else {
 			//if some other tab is opened in side panel, force opening detail panel

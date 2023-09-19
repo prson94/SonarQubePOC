@@ -164,6 +164,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
 			}
+			this.linkInterceptorSubscription = this.linkClickInterceptor
+				.getEvents()
+				.subscribe((ev) => {
+					this.linkClickInterceptor.handleEvent(
+						this.sidePanelSwitcherComponent,
+						ev
+					);
+					this.sidePanelOpen = true;
+				});
 			if (this.isModalAvailable) {
 				this.hideDialog = false;
 				return;
@@ -234,15 +243,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.showAssignmentProgress()
 			}
 		}
-		this.linkInterceptorSubscription = this.linkClickInterceptor
-			.getEvents()
-			.subscribe((ev) => {
-				this.linkClickInterceptor.handleEvent(
-					this.sidePanelSwitcherComponent,
-					ev
-				);
-				this.sidePanelOpen = true;
-			});
 		this.isModalAvailable = true;
 		this.cdRef.markForCheck();
 	}
@@ -265,6 +265,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 	onBack(): void {
 		this.hideDialog = true;
+		this.linkInterceptorSubscription?.unsubscribe();
 		this.onModalClose.emit({ isBack: true, removeSelected: false });
 	}
 
