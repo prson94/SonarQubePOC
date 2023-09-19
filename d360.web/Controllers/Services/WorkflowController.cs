@@ -3360,11 +3360,11 @@ namespace d360.web.Controllers.Services
 								{
 									if (DateTime.TryParse(displayvalue, out var date))
 									{
-										fieldChange.Value = date.ToShortDateString();
+										fieldValue = date.ToShortDateString();
 									}
 									else
 									{
-										fieldChange.Value = displayvalue;
+										fieldValue = displayvalue;
 									}
 								}
 								else
