@@ -126,7 +126,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 					this.messagesService.showError($localize`Error`, $localize`Rule with Uid could not be found or you do not have permission to view the related rule.`);
 				}
 			},
-				(err) => {
+				() => {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			});
 	}
