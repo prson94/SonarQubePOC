@@ -16,6 +16,7 @@ import {
 	StepType,
 	WorkflowActivityType,
 	WorkflowChangeType,
+	WorkflowStepAssignedUser,
 	WorkflowStepDetail,
 	WorkflowStepReassignment
 } from '../../../models/workflow.model';
@@ -57,6 +58,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 	WorkflowActivityType = WorkflowActivityType;
 	WorkflowChangeType = WorkflowChangeType;
 	helper = WorkflowHelpers;
+	pendingFormList: WorkflowStepAssignedUser[] = [];
 
 
 	constructor(
@@ -105,6 +107,7 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 						}
 						this.bulkReassignments = this.getBulkReassignments(reassignments);
 						this.reassignment = this.getReassignment(reassignments);
+						this.setPendingFormUsers();
 						this.ref.markForCheck();
 					})
 				);
@@ -170,4 +173,19 @@ export class AssignmentProgressStepDetailsComponent extends BaseComponent implem
 			}, 'asset/' + resourceID);
 		}
 	}
+
+	setPendingFormUsers() {
+		this.pendingFormList = [];
+		if (this.step != null) {
+			if (this.step.ItemSettings.hasPendingForms) {
+				if (this.step.AssignedUsers != null) {
+					const completedForms: any[] = this.step.ItemFields.form.map((f) => f['@ResourceID']);
+
+					this.pendingFormList = this.step.AssignedUsers
+						.filter((a) => completedForms.indexOf(a.ResourceID.toString()) === -1);
+				}
+			}
+		}
+	}
+
 }
