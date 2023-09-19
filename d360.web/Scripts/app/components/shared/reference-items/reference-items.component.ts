@@ -328,14 +328,10 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 				delete this.loadParams['_filter'];
 			}
 
-
-
 			this.loadParams._direction = event.sortOrder === 1 ? 'ASC' : 'DESC';
-
 			this.loadParams._pageSize = +event.rows;
 			this.loadParams._pageNum = (+event.first / +event.rows) + 1;
 		}
-
 		this.loadItems();
 	}
 
