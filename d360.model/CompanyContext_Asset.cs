@@ -2660,7 +2660,7 @@ where	T.ExecutionID = @ExecutionID
 			}
 			catch (Exception)
 			{
-
+				//if for any reason this failed we do not want whole workflow to stop
 			}
 		}
 		#endregion
