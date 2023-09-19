@@ -911,4 +911,23 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	</sql>
   </changeSet>
 
+<changeSet author="bquinlivan" id="Data.Corrections.GOV-28899">
+	<comment>GOV-28899 - Migrate permissions on Workflow page to new Assignments page</comment>	
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[
+	insert into SiteNavPermission (SiteNavID, [Object], ObjectID)
+	Select 
+		A.ID, MNP.[Object], MNP.ObjectID
+	from 
+		SiteNav A, 
+		SiteNav M,
+		SiteNavPermission MNP
+	where M.name = '#Monitor' and M.ID=MNP.SiteNavID and A.name = '#Assignments'
+	]]>
+	</sql>
+  </changeSet>
+  
 </databaseChangeLog>
