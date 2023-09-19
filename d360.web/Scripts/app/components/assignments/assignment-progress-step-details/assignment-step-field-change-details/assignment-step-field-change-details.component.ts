@@ -40,10 +40,11 @@ export class AssignmentStepFieldChangeDetailsComponent extends BaseComponent imp
 	}
 
 	getFieldName(item: WorkflowStepFieldChangeDetail): string {
-		if (item.ObjectType !== '' && item.ObjectType !== 'Issue') {
-			return $localize`Asset Field` + '::' + item.FieldName;
+		if (item.ObjectType === 'Issue') {
+			return $localize`Action Field` + '::' + item.FieldName;
 		}
-		return $localize`Action Field` + '::' + item.FieldName;
+
+		return $localize`Asset Field` + '::' + item.FieldName;
 	}
 
 	ngOnInit(): void {
