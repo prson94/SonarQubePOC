@@ -1377,7 +1377,30 @@ from	Field F
 
 			return model;
 		}
-		
+
+		public ObjectDetail GetObjectDetailApplyPermission(SystemObjects type, long id)
+		{
+			string sql = $@"SELECT T.* 
+							FROM utility.ObjectDetail(@type, @id) T
+							inner join AssetType ATT on ATT.ID = T.AssetTypeID
+							where not exists (select 1 from ResponsibilityDetail R
+											where R.PermissionsBitMask & 1 = 0 
+											and R.ResourceID = @rid and ( (R.AssetID = T.AssetID) OR (R.AssetTypeID = T.AssetTypeID and R.AssetID = 0)))
+							and (
+									ATT.DefaultPermissions = 1
+									or
+									(
+										ATT.DefaultPermissions = 0 and (
+											exists (select 1 from reporting.Global_Resource where ResourceID = @rid and IsAdministrator = 1)
+											or exists (select 1 from ResponsibilityDetail R where R.PermissionsBitMask & 1 = 1 and R.ResourceID = @rid and ( (R.AssetID = T.AssetID) OR (R.AssetTypeID = T.AssetTypeID and R.AssetID = 0)))
+										)
+									)
+								)";
+			ObjectDetail model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(sql, new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id, rid = CurrentResourceID });
+
+			return model;
+		}
+
 		public ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId)
 		{
 			ObjectDetail model = null;

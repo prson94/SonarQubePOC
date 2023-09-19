@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -2581,13 +2582,21 @@ namespace d360.web.Controllers
 		public ObjectDetail GetObjectDetail(SystemObjects type, Guid uid)
 		{
 			int id = Company.GetObjectId(uid, type);
-
-			return GetObjectDetail(type, id);
+			var checkPermissionStr = Request.GetQueryString("CheckPermission");
+			if (bool.TryParse(checkPermissionStr, out bool tempbool))
+			{
+				return Company.GetObjectDetailApplyPermission(type, id);
+			}
+			else
+			{
+				return GetObjectDetail(type, id);
+			}
 		}
 
 		[Route("{type}/{id:int}")]
 		public ObjectDetail GetObjectDetail(SystemObjects type, int id)
 		{
+
 			return Company.GetObjectDetail(type.ToString(), id);
 		}
 
