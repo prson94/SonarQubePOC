@@ -3358,7 +3358,14 @@ namespace d360.web.Controllers.Services
 
 								if (fieldtype == "date")
 								{
-									fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+									if (DateTime.TryParse(displayvalue, out var date))
+									{
+										fieldChange.Value = date.ToShortDateString();
+									}
+									else
+									{
+										fieldChange.Value = displayvalue;
+									}
 								}
 								else
 								{
@@ -3392,7 +3399,14 @@ namespace d360.web.Controllers.Services
 
 							if (fieldtype == "date")
 							{
-								fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+								if (DateTime.TryParse(displayvalue, out var date))
+								{
+									fieldChange.Value = date.ToShortDateString();
+								}
+								else
+								{
+									fieldChange.Value = displayvalue;
+								}
 							}
 							else
 							{
