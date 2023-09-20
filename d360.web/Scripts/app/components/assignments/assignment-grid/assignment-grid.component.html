@@ -204,15 +204,12 @@
 				 [showAsModal]="true"
 				 i18n-modalTitle
 				 modalTitle="Delete Assignments"
-				 [modalCssClasses]="'medium-dialog'"
+				 [modalSubtitle] ="modalSubtitle"
+				 [modalCssClasses]="'medium-dialog multiline-subtitle'"
 				 [isModalVisible]="showDeletionModal"
 				 [method]="'callback'"
 				 (onCancel)="showDeletionModal=false;">
-	<div prompt>
-		<span i18n *ngFor="let assignment of assignments">
-			<b>{{ assignment.workflowName }}</b> on {{ assignment.assetDisplayValue ?? '---' }}
-			initiated on {{ assignment.StartedOn | date: 'short' }}
-		</span>
+	<div prompt>		
 		<p i18n>
 			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
 			Are you sure you want to delete
