@@ -48,6 +48,8 @@ import { LocalStorageKey } from "../../enums/localstorage.enum";
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { GridSortData } from '../../services/state.service';
 import { isEmpty } from "lodash-es";
+import { FeatureFlags } from '../../services/feature-flags.enum';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 /*global $localize*/
 
@@ -182,7 +184,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 		private router: Router,
 		private changeDetectorRef: ChangeDetectorRef,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private elRef: ElementRef
+		private elRef: ElementRef,
+		private featureFlagService: LaunchDarklyService
 	) {
 		super(settingsService);
 
@@ -448,7 +451,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 				.subscribe((icon) => {
 					this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
 
-					this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
+					this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, this.assetTypeApiModel.HasV2Workflows, this.assetTypeUid));
 					this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
 					if (this.showDiagram) {
@@ -457,6 +460,24 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
 					if (this.auditSidebar) {
 						this.auditSidebar.url = `/assets/${this.baseAssetTypeUid}/log`;
+					}
+
+					if (this.assetTypeApiModel.HasV2Workflows) {
+						if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Workflow`,
+									'workflowmonitor',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+							);
+						} else {
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Assignments`,
+									'assetTypeAssignments',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/assignments`)
+							);
+						}
 					}
 
 					this.secondaryNavService.showHeader(true);
