@@ -19,7 +19,7 @@
 					{{item['@type']}}
 				</td>
 				<td>
-					<i *ngIf="(item['@required']=='true'|| item['@required']==true || (item['@type']=='boolean')); else elseBlock"
+					<i *ngIf="(item['@required']=='true'|| item['@required']==true); else elseBlock"
 					   class="fa fa-check enabled" title="True"></i>
 					<ng-template #elseBlock><i class="fa fa-times disabled" title="False"></i></ng-template>
 				</td>

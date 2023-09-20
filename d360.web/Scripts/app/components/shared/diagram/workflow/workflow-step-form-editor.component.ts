@@ -266,8 +266,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.usedIn = this.usedFields.filter((u) => u.stepId === this.step.key && u.fieldId === item["@id"]);
 
         const i = this.step.fields.form.field.find((f) => f["@id"] === item["@id"]);
-        this.newField = i;
-        if ((item["@required"] === "true" || item["@required"] === true || (item["@type"] === "boolean"))) {
+		this.newField = i;
+
+		if (item["@required"] === "true" || item["@required"] === true) {
             this.newField["@required"] = true;
         }
         else {
@@ -277,7 +278,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.newField["@oldType"] = this.newField["@type"];
 
         //trigger load of type list
-        this.changeType(this.newField["@type"]);
+		this.changeType(this.newField["@type"]);
 
         this.formMode = FormMode.Editing;
     }
@@ -468,9 +469,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             id = +this.issueObject.split("|")[1];
         }
 
-        if (e === "boolean") {
-            this.newField["@required"] = true;
-        }
         if (e === "relationshipType" && this.intersectTypes == null) {
             this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe((r) => {
