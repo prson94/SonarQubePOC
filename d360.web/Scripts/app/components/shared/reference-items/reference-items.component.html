@@ -97,10 +97,16 @@
                  [pageLinks]="3"
                  [paginator]="true"
                  paginatorDropdownAppendTo="body"
-                 [rows]="rowsPerPage"
+                 [rows]="rowsPerPage || defaultInitialItemsPerPage"
                  [rowsPerPageOptions]="defaultPagingOptions"
                  responsiveLayout="scroll"
                  [tableStyle]="{'min-width': 'max-content'}"
+                 [totalRecords]="totalRecords"
+                 selectionMode="single"
+                 [sortField]="sortField"
+                 [lazy]="true"
+                 (onLazyLoad)="loadAssets($event)"
+                 (onPage)="numberOfRowsByCategoryService.onPage($event, title)"
                  [loading]="isLoading"
                  [loadingIcon]="'fa fa-spinner fa-spin'">
             <ng-template pTemplate="header">
