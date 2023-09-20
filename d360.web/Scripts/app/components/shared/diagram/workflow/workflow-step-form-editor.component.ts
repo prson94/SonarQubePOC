@@ -279,7 +279,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         //trigger load of type list
 		this.changeType(this.newField["@type"]);
-		console.log(this.newField);
 
         this.formMode = FormMode.Editing;
     }
