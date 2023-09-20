@@ -414,73 +414,6 @@ namespace d360.model
 			}
 		}
 
-		public IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID)
-		{
-			Intersect intersect = null;
-			IntersectDetail dtl = null;
-
-			string sSubject = subject.ToString();
-			string sObject = @object.ToString();
-
-			ObjectDetail subjectDetail = GetObjectDetail(subject.ToString(), subjectID);
-			ObjectDetail objectDetail = GetObjectDetail(@object.ToString(), objectID);
-
-			if (subjectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Subject);
-			}
-
-			if (objectDetail == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.Object);
-			}
-
-			IntersectType intersectType = GetById<IntersectType>(intersectTypeID);
-
-			if (intersectType == null)
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-
-			if (
-				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
-				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
-				)
-			{
-				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
-						(i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID) ||
-						(i.Object == sSubject && i.ObjectID == subjectID && i.Subject == sObject && i.SubjectID == objectID)
-					)
-				).SingleOrDefault();
-
-				if (dtl == null)
-				{
-					intersect = new Intersect { IntersectTypeID = intersectType.ID };
-
-					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
-					{
-						intersect.SubjectAssetID = subjectDetail.AssetID;
-						intersect.ObjectAssetID = objectDetail.AssetID;
-					}
-					else
-					{
-						intersect.SubjectAssetID = objectDetail.AssetID;
-						intersect.ObjectAssetID = subjectDetail.AssetID;
-					}
-					Intersects.Add(intersect);
-					SaveChanges();
-
-					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
-				}
-
-				return dtl;
-			}
-			else
-			{
-				throw new NotFoundException(CompanyContextErrors.IntersectType);
-			}
-		}
-
 		public void AddOrUpdateFields(List<Field> items)
 		{
 			if (items.Count > 0)
@@ -817,18 +750,7 @@ from	Field F
 		{
 			return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
 		}	
-		
-		public AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid)
-		{
-			AssetType assetType = Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
-			if (assetType != null)
-			{
-				return GetAssetTypeStyle(assetType.ID);
-			}
-
-			return null;
-		}	
-		
+			
 		public AssetTypeStyle GetAssetTypeStyle(string type, int id)
 		{
 			AssetType assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
@@ -1256,26 +1178,6 @@ from	Field F
 			{
 				return null;
 			}
-		}
-		
-		public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
-		{
-			return Database
-					.Connection
-					.Query<string>(@"
-									declare @type varchar(25),
-											@format nvarchar(250),
-											@lo varchar(25),
-											@loid int
-
-									select  @type = [Type],
-											@format = LookupDisplayFormat,
-											@lo = LookupObjectType,
-											@loid = LookupObjectID
-									from    FieldType 
-									where ID = @fieldTypeID
-
-									select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldValue)", new { fieldTypeID, fieldValue }).First();
 		}
 		
 		public string GetIntersectTypeName(IntersectType intersectType)
@@ -1978,17 +1880,6 @@ from	IntersectType I
 			}
 
 			return result.FirstOrDefault();
-		}
-
-		public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
-		{
-			return Query<int>(@"
-select	count(*) 
-from	processexpandeddata ped
-		inner join IntersectTypeDetail it on it.uid = @intersectTypeUid 
-			and ped.DiagramAssetTypeUid = it.SubjectUid 
-			and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
-			new { intersectTypeUid }).FirstOrDefault() > 0;
 		}
 
 		public bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID)

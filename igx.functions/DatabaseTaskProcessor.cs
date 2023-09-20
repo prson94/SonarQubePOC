@@ -500,6 +500,8 @@ namespace igx.functions.databasetaskprocessor
             }
         }
 
+		#region Utility Methods
+
 		private static void resolveObjectObjectID(QueueTask queueRecord, out string @object, out int objectId)
 		{
 			if(queueRecord.Object == "ResponsibilityTypeRelationOverrideItem" && !string.IsNullOrEmpty(queueRecord.Custom) && queueRecord.Custom.Contains("<ActionObjectID>"))
@@ -512,7 +514,6 @@ namespace igx.functions.databasetaskprocessor
 				objectId = queueRecord.ObjectID;
 			} 
 		}
-
 
 		private static string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
         {
@@ -714,34 +715,9 @@ namespace igx.functions.databasetaskprocessor
 
             return hasWork;
         }
-    }
 
-    public static class ThreadSafeRandom
-    {
-        [ThreadStatic]
-        private static Random Local;
-
-        public static Random ThisThreadsRandom
-        {
-            get { return Local ?? (Local = new Random(unchecked(System.Environment.TickCount * 31 + Thread.CurrentThread.ManagedThreadId))); }
-        }
-    }
-
-    static class MyExtensions
-    {
-        public static void Shuffle<T>(this IList<T> list)
-        {
-            int n = list.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = ThreadSafeRandom.ThisThreadsRandom.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
-    }
+		#endregion
+	}
 
     public class ObjectIndexCollectionModel
     {

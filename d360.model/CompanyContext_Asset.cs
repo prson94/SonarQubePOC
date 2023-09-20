@@ -55,8 +55,6 @@ namespace d360.model
 
 		AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
 
-		AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid);
-
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
 
 		Guid GetAssetUid(int objectId, SystemObjects assetType);
