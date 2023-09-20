@@ -95,7 +95,7 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	clickMenuItem(event: { value: string, action: string, event, data: PopupMenuItem }): void {
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
-			let startedOn = new Date(Date.parse(this.selectedHistoryItem?.StartedOn));
+			const startedOn = new Date(Date.parse(this.selectedHistoryItem?.StartedOn));
 			this.modalSubtitle = `<b>${this.workflowDiagramModel?.Type?.Name}</b> on ${(this.selectedHistoryItem?.Name ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;			
 
 			this.showDeletionModal = true;

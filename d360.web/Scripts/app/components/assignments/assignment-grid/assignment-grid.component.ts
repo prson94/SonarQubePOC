@@ -277,7 +277,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		if (key === $localize`Delete`.toLowerCase()) {
 			this.modalSubtitle = "";
 			this.assignments.forEach((assignment, index) => {
-				let startedOn = new Date(Date.parse(assignment.StartedOn));
+				const startedOn = new Date(Date.parse(assignment.StartedOn));
 				this.modalSubtitle += `<b>${assignment.workflowName}</b> on ${(assignment.assetDisplayValue ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 				if (index !== (this.assignments.length - 1)) {
 					this.modalSubtitle += "<br/>";
