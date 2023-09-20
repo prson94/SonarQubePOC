@@ -162,7 +162,7 @@
                             {{getTypeLabel(item)}}
                         </td>
                         <td>
-                            <i *ngIf="(item['@required']=='true'|| item['@required']==true || (item['@type']=='boolean')); else elseBlock" class="fa fa-check enabled" title="True"></i>
+                            <i *ngIf="item['@required']=='true'|| item['@required']==true; else elseBlock" class="fa fa-check enabled" title="True"></i>
                             <ng-template #elseBlock><i class="fa fa-times disabled" title="False"></i></ng-template>
 
                         </td>
@@ -238,6 +238,7 @@
         <div class="row">
             <div class="col s12">
                 <div class="FieldName">
+                    asdfasdf
                     <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" i18n-label label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
                 </div>
             </div>
