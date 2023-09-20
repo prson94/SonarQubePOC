@@ -11,7 +11,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { DataProfileService } from '../../services/dataprofile.service';
@@ -25,6 +25,8 @@ import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.compon
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
+import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../services/feature-flags.enum';
 
 @Component({
 	selector: 'd3s-rule-list',
@@ -76,6 +78,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
 		private linkClickInterceptor: LinkClickInterceptor,
+		private featureFlagService: LaunchDarklyService
 	) {
 		super(settingsService);
 		this.webAnalyticsService = webAnalyticsService;
@@ -125,8 +128,27 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
 					this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe((icon) => {
 						this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
-						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
+						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, this.assetTypeApiModel.HasV2Workflows, this.ruleType.AssetTypeUID));
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
+
+						if (this.assetTypeApiModel.HasV2Workflows) {
+							if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Workflow`,
+										'workflowmonitor',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
+								);
+							} else {
+								this.secondaryNavService.showItem(
+									new SecondaryNavItem($localize`Assignments`,
+										'assetTypeAssignments',
+										['fa-usb'],
+										`/assets/${this.baseAssetTypeUid}/assignments`)
+								);
+							}
+						}
+
 					});
 					this.secondaryNavService.showHeader(true);
 				});
