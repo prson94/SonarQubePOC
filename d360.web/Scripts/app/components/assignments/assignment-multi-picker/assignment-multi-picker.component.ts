@@ -4,7 +4,7 @@ import {
 	Component,
 	ElementRef,
 	EventEmitter,
-	Input,
+	Input, OnDestroy,
 	Output,
 	ViewChild,
 	ViewEncapsulation
@@ -16,6 +16,9 @@ import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { AppConstants } from '../../../static/constants';
+import { Subscription } from 'rxjs';
+import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
+import { SidePanelButton } from '../../../models/side-panel.model';
 
 @Component({
 	selector: 'd3s-assignments-multi-picker',
@@ -24,7 +27,7 @@ import { AppConstants } from '../../../static/constants';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None
 })
-export class AssignmentsMultiPickerComponent {
+export class AssignmentsMultiPickerComponent implements OnDestroy {
 	@Output() onAssignmentSelection = new EventEmitter<AssignmentSelection>();
 	@Input() onlyAdminReassignMode: boolean = false;
 	@Output() onModalClose: EventEmitter<void> = new EventEmitter<void>();
@@ -36,9 +39,7 @@ export class AssignmentsMultiPickerComponent {
 	sidePanelOpen: boolean = false;
 	stepUid: string;
 	sidePanelStorageKey: string = 'MultiAssignments_Component';
-	sidePanel: string = 'asset-details';
 	version: number;
-	selectedForInfoPanel: { assetUid: string, type: string, workflowItemUid: string, Version: number };
 
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	rowsPerPage: number = 10;
@@ -50,38 +51,46 @@ export class AssignmentsMultiPickerComponent {
 	selectedAssignment: WorkflowUserGroupedAssignments;
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('modal', { static: false }) modelEl: D3SModal;
+	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	sidePanelButtons: SidePanelButton[] = [new SidePanelButton({
+		label: $localize`Information`,
+		tooltip: $localize`Information`,
+		disabledTooltip: null,
+		nothingSelectedMessage: $localize`Select an item to display its information`,
+		notApplicableMessage: $localize`Information data is not available for the selected item`,
+		multipleSelectedMessage: $localize`Select a single item to display it’s information`,
+		key: 'information',
+		icon: 'fa-info-circle',
+		disabled: false,
+		visible: true,
+		needsSelection: true
+	})];
+
 	private storageKey: string = 'assignmentMultiPickerRowsPerPage';
+	private linkInterceptorSubscription: Subscription;
+	private workflowTypeUid: string;
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
 		private sidePanelService: SidePanelService,
 		private workflowService: WorkflowService,
-		private hrefService: LinkClickInterceptor
+		private linkClickInterceptor: LinkClickInterceptor
 	) {
-		this.hrefService.getEvents().subscribe((res) => {
-			this.sidePanel = 'asset-details';
-			this.selectedForInfoPanel = {
-				type: res.objectType,
-				assetUid: res.uid,
-				workflowItemUid: null,
-				Version: null
-			};
-		});
+		this.subscribeSwitcherEvents();
 		this.loadRowsPerPage();
 	}
 
-	public openModal(assignments: SingleAssignment[], workflowTypeName: string, item?: WorkflowUserGroupedAssignments) {
+	public openModal(assignments: SingleAssignment[], workflowTypeName: string, workflowTypeUid: string, item?: WorkflowUserGroupedAssignments) {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;
+		this.workflowTypeUid = workflowTypeUid;
 
 		const uniqueTypeNames = Array.from(new Set(this.assignments.map(x => x.AssetTypePath)));
 		this.assignmentAssetTypeName = uniqueTypeNames.length === 1 ? uniqueTypeNames[0] : null;
 
 		this.workflowTypeName = workflowTypeName;
-		this.sidePanel = 'asset-details';
 		this.selectedAssignment = item;
-		this.selectedForInfoPanel = { type: null, assetUid: null, workflowItemUid: null, Version: null };
 		this.cdRef.detectChanges();
 
 		this.workflowService.getAssignmentStepDetail(this.assignments[0].ItemStepUid).subscribe((res) => {
@@ -132,17 +141,16 @@ export class AssignmentsMultiPickerComponent {
 				selectedItems: this.selected,
 				selectedAll: this.selected.length === this.assignments.length
 			});
+		this.linkInterceptorSubscription?.unsubscribe();
 		this.modelEl.hide();
 	}
 
-	openAssetSidePanel(item: SingleAssignment) {
-		this.sidePanel = 'step-details';
-		this.selectedForInfoPanel = {
-			type: null,
-			assetUid: null,
-			workflowItemUid: item.WorkflowItemUid,
-			Version: this.version
-		};
+	openAssignmentDetails(event: MouseEvent, item: SingleAssignment): void {
+		this.linkClickInterceptor.sendEvent(event, {
+				workflowItemUid: item.WorkflowItemUid,
+				workflowTypeVersion: this.version,
+				workflowTypeUid: this.workflowTypeUid
+			}, null);
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.markForCheck();
 	}
@@ -217,5 +225,26 @@ export class AssignmentsMultiPickerComponent {
 			}
 			this.lastSelectedElement = item;
 		}
+	}
+	setPanelHeader(event: string): void {
+		this.sidePanelButtons[0].label = event;
+		this.sidePanelButtons[0].tooltip = event;
+		this.cdRef.markForCheck();
+	}
+
+	ngOnDestroy(): void {
+		this.linkInterceptorSubscription?.unsubscribe();
+	}
+
+	subscribeSwitcherEvents() {
+		this.linkInterceptorSubscription = this.linkClickInterceptor
+			.getEvents()
+			.subscribe((ev) => {
+				this.linkClickInterceptor.handleEvent(
+					this.sidePanelSwitcherComponent,
+					ev
+				);
+				this.sidePanelOpen = true;
+			});
 	}
 }

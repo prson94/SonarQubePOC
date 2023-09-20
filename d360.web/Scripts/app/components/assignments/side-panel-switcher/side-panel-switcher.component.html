@@ -72,6 +72,16 @@
 									  [workflowTypeVersion]="_selectedAsset.workflowTypeVersion"></d3s-workflow-information>
 		</ng-container>
 		<ng-container
+			*ngIf="_sidePanelTab==AssetDetailClickType.AssignmentProgressInformation && _selectedAsset?.workflowTypeUid && _selectedAsset?.workflowTypeVersion && _selectedAsset?.workflowItemUid">
+			<d3s-assignment-progress [workflowUid]="_selectedAsset.workflowTypeUid"
+									 [workflowTypeVersion]="_selectedAsset.workflowTypeVersion"
+									 [workflowItemUid]="_selectedAsset.workflowItemUid"
+									 [showCompleteAssignment]="false"></d3s-assignment-progress>
+			<d3s-assignment-information [workflowItemUid]="_selectedAsset.workflowItemUid"
+										[workflowTypeVersion]="_selectedAsset.workflowTypeVersion"
+										[showCompleteAssignment]="false"></d3s-assignment-information>
+		</ng-container>
+		<ng-container
 			*ngIf="_sidePanelTab==AssetDetailClickType.WorkflowItemInformation && _selectedAsset?.workflowItemUid && _selectedAsset?.workflowTypeVersion">
 			<d3s-assignment-information [workflowItemUid]="_selectedAsset.workflowItemUid"
 										[workflowTypeVersion]="_selectedAsset.workflowTypeVersion"></d3s-assignment-information>

@@ -73,6 +73,8 @@ export class SidePanelSwitcherComponent {
 				return $localize`Workflow Information`;
 			case AssetDetailClickType.WorkflowItemInformation:
 				return $localize`Assignment Information`;
+			case AssetDetailClickType.AssignmentProgressInformation:
+				return $localize`Assignment Progress and Information`;
 			case 'detail':
 				if (this._selectedAsset?.type === 'Resource') {
 					return $localize`User Information`;
