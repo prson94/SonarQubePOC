@@ -128,8 +128,6 @@ namespace d360.model
         
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
         
-        IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);
-        
         void AddOrUpdateFields(List<Field> items);
 
         void ClearInvalidRelationRuleResults();
@@ -169,8 +167,6 @@ namespace d360.model
 
 		Follow GetFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID);
 
-		string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
-        
         string GetIntersectTypeName(IntersectType intersectType);
         
         List<IntersectTypeOption> GetIntersectTypeOptions(Guid? subjectUid = null, Guid? objectUid = null, Guid? predicateUid = null, List<AssetTypeClass> limitToClasses = null);
@@ -277,8 +273,6 @@ namespace d360.model
         bool LookupFieldHasColorItem(FieldType f);
         
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
-        
-        bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
         
         void CreateEventsForAddedActions(List<Issue> actions);
 

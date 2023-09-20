@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -106,7 +107,7 @@ namespace igx.jobs.apiexecutionprocessor
                     IsAdministrator = false
                 });
 
-            var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
+			var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
             if (resource != null)
             {
                 company.CurrentResourceIsAdmin = resource.IsAdministrator;
@@ -374,7 +375,28 @@ namespace igx.jobs.apiexecutionprocessor
 				}
 				dbExecutionItem.RetryCount += 1;
 				int retryCount = dbExecutionItem.RetryCount.Value;
-				company.Update(dbExecutionItem);
+				
+				try
+				{
+					// We open a new connection here because we can run into issues with the EF context object where the underlying connection object is in an unstable state. 
+					var companyConnectionString = community.GetCompanyConnectionString(true);
+					using (var exceptionConnection = new SqlConnection(companyConnectionString))
+					{
+						if (retryCount >= maxRetryCount)
+						{
+							string errorMessage = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+							dbExecutionItem.ErrorMessage = errorMessage;
+							dbExecutionItem.CompletedOn = DateTime.UtcNow;
+						}
+						await exceptionConnection.OpenAsync();
+						await exceptionConnection.ExecuteAsync("update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn, RetryCount = @RetryCount where ExecutionID = @ExecutionID", dbExecutionItem);
+					}
+				}
+				catch
+				{
+					// Just retry by requeueing at this point.
+				}
+				
 
 				if (retryCount < maxRetryCount)
 				{
@@ -389,7 +411,6 @@ namespace igx.jobs.apiexecutionprocessor
 						{ "RequestFileName", info.RequestFileName },
 						{ "ResponseFileName", info.ResponseFileName }
 					});
-					company.UpdateExecutionWithErrorFromException(dbExecutionItem, ex);
 				}
 
 				return;
