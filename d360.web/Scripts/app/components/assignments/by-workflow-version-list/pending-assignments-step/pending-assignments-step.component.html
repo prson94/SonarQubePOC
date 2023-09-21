@@ -82,15 +82,12 @@
 				 [showAsModal]="true"
 				 i18n-modalTitle
 				 modalTitle="Delete Assignment"
+				 [modalSubtitle]="modalSubtitle"
 				 modalCssClasses="medium-dialog"
 				 [isModalVisible]="showDeletionModal"
 				 method="callback"
 				 (onCancel)="showDeletionModal=false;">
-	<div prompt>
-		<span i18n>
-			<b>{{ workflowDiagramModel?.Type?.Name }}</b> on {{ selectedHistoryItem?.Name ?? '---' }}
-			initiated on {{ selectedHistoryItem?.StartedOn | date: 'short' }}
-		</span>
+	<div prompt>		
 		<p i18n>
 			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
 			Are you sure you want to delete this assignment?<br/>

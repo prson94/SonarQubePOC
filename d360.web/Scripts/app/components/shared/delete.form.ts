@@ -41,7 +41,7 @@ export class DeleteForm implements OnChanges {
     @Input() items: any[];
     @Input() hideDeleteButton: boolean = false;
     @Input() modalCssClasses: string = 'modal-delete-form';
-    @Input() warningMessage: string = "";
+	@Input() warningMessage: string = "";	
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
@@ -49,7 +49,8 @@ export class DeleteForm implements OnChanges {
 
     //Modal
     @Input() showAsModal: boolean = false;
-    @Input() modalTitle: string = '';
+	@Input() modalTitle: string = '';
+	@Input() modalSubtitle: string;
     @Input() isModalVisible: boolean = false;
     private deletingInProgress: boolean = false;
 

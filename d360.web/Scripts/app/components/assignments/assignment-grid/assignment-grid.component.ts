@@ -77,9 +77,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlLoadAssignment: string;
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
+	modalSubtitle: string;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
-	private actionTypeCount: number = 0;
+	private actionTypeCount: number = 0;    
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
 		private workflowService: WorkflowService,
@@ -274,6 +275,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	clickMenuItem(event: { value: string, action: string, event, data: PopupMenuItem }): void {
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
+			this.modalSubtitle = "";
+			this.assignments.forEach((assignment, index) => {
+				const startedOn = new Date(Date.parse(assignment.StartedOn));
+				this.modalSubtitle += `<b>${assignment.workflowName}</b> on ${(assignment.assetDisplayValue ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+				if (index !== (this.assignments.length - 1)) {
+					this.modalSubtitle += "<br/>";
+				}
+			});
+		
 			this.showDeletionModal = true;
 		}
 	}

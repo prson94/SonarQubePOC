@@ -161,7 +161,12 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	deleteAssignments(event: boolean): void {
 		if (event) {
-			this.assignmentGridComponent.showDeletionModal = true;
+			this.assignmentGridComponent.clickMenuItem({
+                value: $localize`Delete`.toLowerCase(),
+                action: '',
+                event: undefined,
+                data: undefined
+            });
 		}
 	}
 
