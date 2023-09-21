@@ -3,6 +3,7 @@
 		<div class="field-name" [innerHtml]="field.Label"></div>
 		<input igInput
 			   [name]="'input_' + indx"
+			   [attr.name]="'input_' + indx"
 			   *ngSwitchCase="fieldType.Text"
 			   style="width: 100%; margin-bottom: 1em"
 			   igSize="full"
@@ -31,12 +32,14 @@
 				  igTextArea
 				  igSize="full"
 				  [name]="'input_' + indx"
+				  [attr.name]="'input_' + indx"
 				  style="width: 100%;"
 				  [(ngModel)]="field.Value"
 				  required="{{ field.Required }}"></textarea>
 
 		<ig-date *ngSwitchCase="fieldType.Date"
 				 [name]="'input_' + indx"
+				 [attr.name]="'input_' + indx"
 				 [(ngModel)]="field.Value"
 				 [dateFormat]="getLocaleDateString()"
 				 [appendTo]="'body'"
@@ -47,6 +50,7 @@
 			<p-dropdown igDropdown
 						*ngIf="!field.AllowMultipleValues"
 						[name]="'input_' + indx"
+						[attr.name]="'input_' + indx"
 						[options]="field.Values"
 						[style]="{'width':'100%'}"
 						appendTo="body"
@@ -102,6 +106,7 @@
 			<p-dropdown *ngIf="!field.AllowMultipleValues"
 						igDropdown
 						[name]="'input_' + indx"
+						[attr.name]="'input_' + indx"
 						[options]="field.Values"
 						[style]="{'width':'100%'}"
 						appendTo="body"
@@ -158,6 +163,7 @@
 		<div *ngSwitchCase="fieldType.Link">
 			<input igInput
 				   [name]="'inputName_' + indx"
+				   [attr.name]="'input_' + indx"
 				   ngModel
 				   style="width: 100%; margin-bottom: 1em"
 				   type="text"
@@ -165,6 +171,7 @@
 			<div i18n>(Link Name)</div>
 			<input igInput
 				   [name]="'inputUrl_' + indx"
+				   [attr.name]="'input_' + indx"
 				   ngModel
 				   style="width: 100%; margin-bottom: 1em"
 				   type="text"
