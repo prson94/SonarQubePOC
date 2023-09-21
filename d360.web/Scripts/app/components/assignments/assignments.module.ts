@@ -167,12 +167,13 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		CompleteAssignmentFormFieldsComponent,
 		AssignmentAssetListComponent
 	],
-	exports: [
-		AssignmentListComponent,
-		AssignmentProgressStepDetailsComponent,
-		CompleteAssignmentComponent,
-		AssignmentInformationComponent
-	],
+    exports: [
+        AssignmentInformationComponent,
+        AssignmentListComponent,
+        AssignmentProgressStepDetailsComponent,
+        CompleteAssignmentComponent,
+        SidePanelSwitcherComponent
+    ],
 	imports: [
 		AdvancedFiltersModule,
 		AngularSplitModule,
