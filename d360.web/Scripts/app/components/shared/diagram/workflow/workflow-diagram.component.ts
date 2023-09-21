@@ -42,7 +42,7 @@ import {
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { concatMap, map, tap } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 
@@ -126,6 +126,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private isValid = true;
     private errors: string[] = [];
+    private changesReplaySubject: ReplaySubject<SimpleChanges> = new ReplaySubject<SimpleChanges>();
+    private changesSubscription: Subscription;
 
     constructor(
         private myElement: ElementRef,
@@ -159,9 +161,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isWindowVisible = true;
             this.HideSqlProcedure = false;
         }
+        this.changesSubscription = this.changesReplaySubject.subscribe((simpleChanges: SimpleChanges): void => {
+            setTimeout(() => this.onSubjectChanges(simpleChanges));
+        });
     }
 
-    public ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges(simpleChanges: SimpleChanges) {
+        this.changesReplaySubject.next(simpleChanges);
+    }
+
+    onSubjectChanges(changes: SimpleChanges) {
         const isModelPassed = changes['model'] != null && changes['model'].currentValue !== changes['model'].previousValue;
         const isVelueReadOnly = changes['readonly'] != null && changes['readonly'].currentValue !== changes['readonly'].previousValue;
         const isIdChanged = changes['id'] != null && changes['id'].currentValue !== changes['id'].previousValue;
@@ -227,6 +236,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             {this.diagram.div = null;}
         if (this.fieldsSub != null)
             {this.fieldsSub.unsubscribe();}
+        this.changesSubscription?.unsubscribe();
     }
 
     //#endregion
