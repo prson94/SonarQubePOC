@@ -60,7 +60,7 @@ namespace igx.functions.consumption
 		string previousValueCrossApplySql(string objectColumn, string objectIdColumn, string fieldNameColumn)
 		{
 			return $@"(select top 1
-		ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, i_p.FieldTypeID) ORDER BY i_p.[AuditId] DESC) as RowNum,
+		ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) ) ORDER BY i_p.[AuditId] DESC) as RowNum,
 		[Value]
 from	reporting.Global_FieldAudit i_p
 		inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = {objectColumn} and i_a.ObjectID = {objectIdColumn} and ( (i_p.FieldTypeID = f.FieldTypeID and f.FieldTypeID <> 0) or (i_p.FieldName = {fieldNameColumn} and f.FieldTypeID = 0))
@@ -350,7 +350,8 @@ from	api.ExecutionCatalogItem l
 		inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id
 		inner join api.ExecutionCatalogItemProperty f on f.ExecutionId = l.ExecutionID and f.SourceId = l.SourceId
 		outer apply {previousValueCrossApplySql("a.Object", "a.ObjectId", "f.Name")} pv
-where	pv.Value is null or ( coalesce(cast(f.ValueId as nvarchar), f.Value) <> pv.Value );";
+where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') != '') 
+			or (coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') <> coalesce(pv.Value,'')));";
 		}
 
 		string historyUpsertAssets(string actionText)
@@ -400,7 +401,8 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 								and ISNUMERIC(f.LookupValue) = 1
 						) fv
 			outer apply {previousValueCrossApplySql("p.Object", "p.ObjectId", "f.FieldName")} pv
-	where	pv.Value is null or (coalesce(fv.FormattedValue, f.FieldValue) <> pv.Value);";
+	where	((coalesce(pv.Value,'') = '' and  coalesce(fv.FormattedValue, f.FieldValue,'') != '') 
+			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'')));";
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
@@ -514,7 +516,8 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	from	#fields f
 			inner join @tbl tt on tt.Object = f.Object and tt.ObjectID = f.ObjectID
 			outer apply {previousValueCrossApplySql("f.Object", "f.ObjectId", "f.FieldName")} pv
-	where	pv.Value is null or f.FieldValue <> pv.Value;";
+	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 
 			return commandText;
 		}
@@ -572,7 +575,8 @@ from	api.ExecutionLog a
 					select 0 as FieldTypeID, 'SecondaryOwnerResourceID' as FieldName, cast(p.SecondaryOwnerResourceID as nvarchar(max)) as FieldValue, cast(null as nvarchar(max)) as LookupValue
 					) f
 		outer apply {previousValueCrossApplySql("'Group'", "p.ID", "f.FieldName")} pv
-where	pv.Value is null or (f.FieldValue <> pv.Value);";
+		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+		or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 		}
 
 		string historyUpsertPredicates()
@@ -613,7 +617,8 @@ from	api.ExecutionLog a
 					select 0 as FieldTypeID, 'Inverse' as FieldName, p.Inverse as FieldValue, cast(null as nvarchar(max)) as LookupValue
 					) f
 		outer apply {previousValueCrossApplySql("'Predicate'", "p.Id", "f.FieldName")} pv
-where	pv.Value is null or (f.FieldValue <> pv.Value);";
+where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 		}
 
 		string historyUpsertRelations()
@@ -684,7 +689,8 @@ from	api.ExecutionLog a
 					select 0 as FieldTypeID, 'UpperThreshold' as FieldName, cast(p.UpperThreshold as nvarchar(50)) as FieldValue, cast(null as nvarchar(max)) as LookupValue					
 					) f
 		outer apply {previousValueCrossApplySql("'MetricAllocation'", "p.Id", "f.FieldName")} pv
-where	pv.Value is null or (f.FieldValue <> pv.Value);";
+where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 		}
 
 		string historyUpsertUsers()
@@ -738,7 +744,8 @@ from	api.ExecutionLog a
 					select 0 as FieldTypeID, 'IsAdministrator' as FieldName, iif(p.IsAdministrator = 1, 'true', 'false') as FieldValue, cast(null as nvarchar(max)) as LookupValue
 					) f
 		outer apply {previousValueCrossApplySql("'Resource'", "p.ObjectId", "f.FieldName")} pv
-where	pv.Value is null or (f.FieldValue <> pv.Value);";
+where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 		}
 
 		#endregion
