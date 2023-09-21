@@ -132,14 +132,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
 
 						if (this.assetTypeApiModel.HasV2Workflows) {
-							if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
-								this.secondaryNavService.showItem(
-									new SecondaryNavItem($localize`Workflow`,
-										'workflowmonitor',
-										['fa-usb'],
-										`/assets/${this.baseAssetTypeUid}/workflowmonitor;isAdminPage=false`)
-								);
-							} else {
+							if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
 								this.secondaryNavService.showItem(
 									new SecondaryNavItem($localize`Assignments`,
 										'assetTypeAssignments',
