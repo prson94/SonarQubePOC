@@ -186,7 +186,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				workflowItemUid: assignment.WorkflowItemUid,
 				stepUid: assignment.ItemStepUid,
 				assetId: assignment.AssetId,
-				areAllMultiAssignmentsSelected: event.selectedAll
+				areAllMultiAssignmentsSelected: event.selectedAll,
+				showBackButton: true
 			});
 		}
 		else {
@@ -198,7 +199,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				assetId: mainItem.AssetId,
 				items: event.selectedItems,
 				selectedAssignment: this.selectedAssignment,
-				areAllMultiAssignmentsSelected: event.selectedAll
+				areAllMultiAssignmentsSelected: event.selectedAll,
+				showBackButton: true
 			});
 		}
 	}

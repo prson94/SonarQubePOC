@@ -293,7 +293,7 @@
 						label="{{discardForm ? 'Discard Form' : 'Close'}}">
 				</button>
 				<span class="grow"></span>
-				<button *ngIf="isBulkRespond" class="right ig-button-secondary"
+				<button *ngIf="showBackButton" class="right ig-button-secondary"
 						igButton style="margin-right:8px"
 						(click)="onBack()"
 						[attr.data-cy]="'CompleteAssignment_Button_Back'"
