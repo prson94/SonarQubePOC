@@ -44,6 +44,7 @@ import { AppConstants } from '../../../static/constants';
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() onlyAdminReassignMode: boolean = false;
 	@Input() workflowName: string;
+	@Input() showBackButton: boolean = false;
 
 	isModalAvailable: boolean = false;
 	loading: boolean = false;
@@ -144,7 +145,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		items?: SingleAssignment[]
 		selectedAssignment?: WorkflowUserGroupedAssignments,
 		showAssignmentProgress?: boolean,
-		areAllMultiAssignmentsSelected?: boolean
+		areAllMultiAssignmentsSelected?: boolean,
+		showBackButton?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
@@ -154,6 +156,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			} else {
 				this.radioSelectionValue = 'completeForm';
 			}
+
+			this.showBackButton = details.showBackButton ?? false
 
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
