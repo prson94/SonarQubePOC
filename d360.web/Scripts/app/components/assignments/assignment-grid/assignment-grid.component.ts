@@ -313,8 +313,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.advancedFilter = $event.filter;
 		const advancedFilterData: AdvancedFilterFieldCondition[] = $event.data;
 		this.assigneeSearchInputList = [];
+		this.singleActionTypeUidSelected = false;
+		this.singleActionTypeUidFilter = undefined;
 		for (const item of advancedFilterData) {
-			if (item.field === 'actionTypeUid') {
+			if (item.field === 'actionTypeUid' && !item.markForDeletion) {
 				this.singleActionTypeUidSelected = item.value?.length === 1;
 				this.singleActionTypeUidFilter = item.value?.[0];
 			}
