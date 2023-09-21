@@ -2385,7 +2385,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					SubjectAssetTypeID int,
 					ObjectAssetID bigint,
 					ObjectAssetTypeID int,
-					SwitchObject bit
+					SwitchObject bit,
+					IsNew bit
 				)
 
 				create index idx_Relationships_id on #Relationships(id);
@@ -2603,7 +2604,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					update	R
 					set		R.ID = I.ID,
-							R.[uid] = I.[uid]
+							R.[uid] = I.[uid],
+							R.[IsNew] = 1
 					from	#Relationships R
 							inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID
 					where	R.ID is null;
@@ -2622,7 +2624,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							) as Payload,
 							'R'
 					from	#Relationships o
-							inner join IntersectDetail i on i.Uid = o.uid;
+							inner join IntersectDetail i on i.Uid = o.uid
+					Where o.IsNew = 1;
 
 				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 					select	@Id,
@@ -2637,7 +2640,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							) as Payload,
 							'R'
 					from	#Relationships o
-							inner join IntersectDetail i on i.Uid = o.uid;
+							inner join IntersectDetail i on i.Uid = o.uid
+					Where o.IsNew = 1;
 
 				select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
 				union all
