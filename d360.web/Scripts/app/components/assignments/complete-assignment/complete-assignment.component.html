@@ -318,7 +318,7 @@
 		</div>
 		<div class="side-panel height-auto">
 			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
-						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
+						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons" [sidePanelButtonClass]="'assignment-side-panel-button-container'">
 				<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
