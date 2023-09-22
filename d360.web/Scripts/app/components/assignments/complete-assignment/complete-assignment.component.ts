@@ -105,8 +105,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	hideDialog: boolean = false;
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
 	rowsPerPage: number = 10;
-
 	hasForm: boolean;
+	isUserDataLoading: boolean = false;
+	isReassignmentAssetsLoading: boolean = false;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
@@ -133,10 +134,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 	}
 
+
 	onFormInput(message): void {
 		this.discardForm = message;
 	}
-
 
 	openModal(details: {
 		workflowItemUid: string,
@@ -223,7 +224,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							if (this.allowReassignObject) {
 								this.loadWorkflowReassignmentAssets();
 							}
-							if (this.allowReassignResource) {
+							if (this.allowReassignResource || this.radioSelectionValue === 'reassignUser') {
 								this.loadAllUsersData();
 							}
 							this.assignmentService.setFormValidators.next();
@@ -405,17 +406,21 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	loadWorkflowReassignmentAssets(): void {
+		this.isReassignmentAssetsLoading = true;
 		this.workflowService
 			.getWorkflowReassignmentAssetsByUid(this.workflowItemUid)
 			.subscribe((result) => {
 				this.assets = result;
+				this.isReassignmentAssetsLoading = false;
 				this.cdRef.markForCheck();
 			});
 	}
 
 	loadAllUsersData(): void {
+		this.isUserDataLoading = true;
 		this.resourceService.getResources(false).subscribe((res) => {
 			this.userData = res;
+			this.isUserDataLoading = false;
 			this.cdRef.markForCheck();
 		});
 	}
@@ -436,6 +441,5 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.rowsPerPage = event?.rows;
 		}
 	}
-
 	protected readonly Number = Number;
 }
