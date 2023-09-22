@@ -167,10 +167,12 @@
 								</div>
 
 								<p-table #dt [value]="userData" [rows]="rowsPerPage" [paginator]="true"
+										 [loadingIcon]="'fa fa-spinner fa-spin'"
+										 [loading]="isUserDataLoading"
 										 [globalFilterFields]="['FullName']" [pageLinks]="3"
 										 [rowsPerPageOptions]="defaultPagingOptions" (onPage)="setRowsPerPage($event)"
 										 [(selection)]="tableRadioSelection" paginatorDropdownAppendTo="body">
-									<ng-template pTemplate="header">
+								<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 40px"></th>
 											<th [pSortableColumn]="'FullName'">
@@ -237,10 +239,12 @@
 									</ig-search-field>
 								</div>
 								<p-table #dt [value]="assets" [rows]="rowsPerPage" [paginator]="true"
+										 [loading]="isReassignmentAssetsLoading"
+										 [loadingIcon]="'fa fa-spinner fa-spin'"
 										 [globalFilterFields]="['Name']" [pageLinks]="3"
 										 [rowsPerPageOptions]="defaultPagingOptions" (onPage)="setRowsPerPage($event)"
 										 [(selection)]="tableRadioSelection" paginatorDropdownAppendTo="body">
-									<ng-template pTemplate="header">
+								<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 4rem"></th>
 											<th [pSortableColumn]="'Name'">
