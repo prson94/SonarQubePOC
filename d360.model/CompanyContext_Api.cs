@@ -2391,6 +2391,20 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 				create index idx_Relationships_id on #Relationships(id);
 
+				drop table if exists #RelationshipsFinal;
+				create table #RelationshipsFinal
+				(
+					ID int,
+					[uid] uniqueidentifier,
+					IntersectTypeID int,
+					SubjectAssetID bigint,
+					SubjectAssetTypeID int,
+					ObjectAssetID bigint,
+					ObjectAssetTypeID int,
+					IsNew bit
+				)
+
+
 				drop table if exists #DeletedRelationships;
 				create table #DeletedRelationships
 				(
@@ -2591,6 +2605,21 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				from	[Intersect] I 
 				where	exists (select 1 from #DeletedRelationships d where d.uid = I.[uid]);
 
+
+				insert into #RelationshipsFinal(ID, [uid], IntersectTypeID,
+					SubjectAssetID, SubjectAssetTypeID,
+					ObjectAssetID, ObjectAssetTypeID,
+					IsNew)
+				select distinct ID , [uid], IntersectTypeID,
+					SubjectAssetID, SubjectAssetTypeID,
+					ObjectAssetID, ObjectAssetTypeID,
+					IsNew
+				from #Relationships
+				where  ID is null;
+
+				drop table if exists #Relationships;
+
+
 				insert into [Intersect] (IntersectTypeID, 
 										SubjectAssetID, SubjectAssetTypeID, 
 										ObjectAssetID, ObjectAssetTypeID, 
@@ -2599,16 +2628,14 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						SubjectAssetID, SubjectAssetTypeID, 
 						ObjectAssetID, ObjectAssetTypeID, 
 						{CurrentResourceID}, {CurrentResourceID}
-					from   #Relationships
-					where  ID is null
+					from   #RelationshipsFinal;
 
-					update	R
-					set		R.ID = I.ID,
-							R.[uid] = I.[uid],
-							R.[IsNew] = 1
-					from	#Relationships R
-							inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID
-					where	R.ID is null;
+				update	R
+				set		R.ID = I.ID,
+						R.[uid] = I.[uid],
+						R.[IsNew] = 1
+				from	#RelationshipsFinal R
+						inner join [Intersect] I on I.SubjectAssetID = R.SubjectAssetID and I.ObjectAssetID = R.ObjectAssetID and I.IntersectTypeID = R.IntersectTypeID;
 
 
 				insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
@@ -2623,7 +2650,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							for json path
 							) as Payload,
 							'R'
-					from	#Relationships o
+					from	#RelationshipsFinal o
 							inner join IntersectDetail i on i.Uid = o.uid
 					Where o.IsNew = 1;
 
@@ -2639,11 +2666,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							for json path
 							) as Payload,
 							'R'
-					from	#Relationships o
+					from	#RelationshipsFinal o
 							inner join IntersectDetail i on i.Uid = o.uid
 					Where o.IsNew = 1;
 
-				select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
+				select [uid], 1 as Success, 'Intersect' as [Object] from #RelationshipsFinal
 				union all
 				select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships";
 
