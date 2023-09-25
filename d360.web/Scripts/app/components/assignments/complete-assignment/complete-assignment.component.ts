@@ -126,6 +126,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 		this.loadRowsPerPage();
+		
 	}
 
 	ngOnDestroy(): void {
