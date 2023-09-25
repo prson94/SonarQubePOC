@@ -662,6 +662,22 @@ namespace d360.web.Controllers
 					{
 						var data = relationLookupHasAnyReader.Read<int>().FirstOrDefault();
 						item.HasAny = data > 0;
+						if (data > 0)
+						{
+							var ftl = fieldTypeLookups.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
+							if (ftl != null)
+							{
+								var definition = ftl.ParseComplexLookupDefinition();
+								if (!string.IsNullOrEmpty(definition.Filters))
+								{
+									var ft = fieldTypes.Where(x => x.ID == item.FieldTypeId && !x.ShowIfEmpty).FirstOrDefault();
+									if (ft != null)
+									{
+										item.NeedsFullCheck = true;
+									}
+								}
+							}
+						}
 					}
 				}
 			}
