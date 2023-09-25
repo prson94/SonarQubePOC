@@ -209,15 +209,19 @@
 				 [isModalVisible]="showDeletionModal"
 				 [method]="'callback'"
 				 (onCancel)="showDeletionModal=false;">
-	<div prompt>		
-		<p i18n>
-			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-			Are you sure you want to delete
-			<span *ngIf="assignments.length === 1"> this assignment?</span>
-			<span *ngIf="assignments.length > 1"> these assignments?</span>
-			<br/>
-			Deleted assignments <b>cannot be retrieved</b>.
-		</p>
+	<div prompt>
+		<div i18n class="row">
+			<div class="col no-padding">
+				<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+			</div>
+			<div class="col no-padding">
+				Are you sure you want to delete
+				<span *ngIf="assignments.length === 1"> this assignment?</span>
+				<span *ngIf="assignments.length > 1"> these assignments?</span>
+				<br/>
+				Deleted assignments <b>cannot be retrieved</b>.
+			</div>
+		</div>
 	</div>
 </d3s-delete-form>
 
