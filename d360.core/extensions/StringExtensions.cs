@@ -53,6 +53,21 @@ namespace d360.core
             return text;
         }
 
+		public static string EscapeForLike(this string text)
+		{
+			var escapeChars = new string[] { "%", "_", "^", "[" };
+			text.CleanForSql();
+			try
+			{
+				foreach (var c in escapeChars)
+				{
+					text.Replace(c, $"[{c}]");
+				}
+			}
+			catch { }
+			return text;
+		}
+
         public static string ReplaceLast(this string Source, string Find, string Replace)
         {
             int place = Source.LastIndexOf(Find);
