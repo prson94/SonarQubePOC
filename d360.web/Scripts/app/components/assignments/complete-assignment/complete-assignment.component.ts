@@ -225,7 +225,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = res.ObjectName;
 								this.assetId = res.ObjectID;
 							}
-							this.allowReassignObject = res.AllowReassignObject || this.isAdmin;
+							this.allowReassignObject = res.AllowReassignObject;
 							this.allowReassignResource = res.AllowReassignResource || this.isAdmin;
 
 							if (this.allowReassignObject) {
