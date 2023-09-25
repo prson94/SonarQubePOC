@@ -19,6 +19,7 @@ import { AppConstants } from '../../../static/constants';
 import { Subscription } from 'rxjs';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { SidePanelButton } from '../../../models/side-panel.model';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
 	selector: 'd3s-assignments-multi-picker',
@@ -29,8 +30,8 @@ import { SidePanelButton } from '../../../models/side-panel.model';
 })
 export class AssignmentsMultiPickerComponent implements OnDestroy {
 	@Output() onAssignmentSelection = new EventEmitter<AssignmentSelection>();
-	@Input() onlyAdminReassignMode: boolean = false;
 	@Output() onModalClose: EventEmitter<void> = new EventEmitter<void>();
+	@Input() isCurrentUser: boolean = false;
 
 	assignmentAssetTypeName: string = null;
 	workflowTypeName: string;
@@ -69,13 +70,16 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	private storageKey: string = 'assignmentMultiPickerRowsPerPage';
 	private linkInterceptorSubscription: Subscription;
 	private workflowTypeUid: string;
+	isAdmin: boolean = false;
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
 		private sidePanelService: SidePanelService,
 		private workflowService: WorkflowService,
-		private linkClickInterceptor: LinkClickInterceptor
+		private linkClickInterceptor: LinkClickInterceptor,
+		private authenticationService: AuthenticationService
 	) {
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
 		this.subscribeSwitcherEvents();
 		this.loadRowsPerPage();
 	}
@@ -95,9 +99,9 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 
 		this.workflowService.getAssignmentStepDetail(this.assignments[0].ItemStepUid).subscribe((res) => {
 			this.version = res.Version;
-			if (res.Fields.form) {
+			if (res.Fields.form) {				
 				this.formTitle = res.Fields.form['@title'];
-				this.formDescription = res.Fields.form['@description'];
+				this.formDescription = res.Fields.form['@description'];				
 			}
 
 			this.cdRef.markForCheck();
@@ -135,11 +139,12 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 		}
 	}
 
-	confirm() {
+	confirm(isReassign: boolean) {
 		this.onAssignmentSelection.emit(
 			{
 				selectedItems: this.selected,
-				selectedAll: this.selected.length === this.assignments.length
+				selectedAll: this.selected.length === this.assignments.length,
+				isReassign: isReassign
 			});
 		this.linkInterceptorSubscription?.unsubscribe();
 		this.modelEl.hide();

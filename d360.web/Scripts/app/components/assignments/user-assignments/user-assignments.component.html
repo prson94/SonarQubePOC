@@ -74,10 +74,10 @@
 
 <d3s-complete-assignment #completeAssignmentComponent (onModalClose)="onCompleteAssignmentModalClose($event)"
 						 [workflowName]="workflowTypeName"
-						 [onlyAdminReassignMode]="onlyAdminReassignMode"></d3s-complete-assignment>
+						 ></d3s-complete-assignment>
 
-<d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"
-							  [onlyAdminReassignMode]="onlyAdminReassignMode"
+<d3s-assignments-multi-picker #multiAssignComponent (onModalClose)="onAssignmentMultiPickerClose()"							  
+							  [isCurrentUser]="isMe"
 							  (onAssignmentSelection)="onAssignmentSelection($event)"></d3s-assignments-multi-picker>
 
 <d3s-modal [title]="errorModalTitle"

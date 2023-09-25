@@ -32,6 +32,7 @@ import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { JsonResult } from '../../../models/jsonresult.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { AppConstants } from '../../../static/constants';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 /*global $localize*/
 
@@ -42,7 +43,6 @@ import { AppConstants } from '../../../static/constants';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CompleteAssignmentComponent extends BaseComponent implements OnInit, OnDestroy {
-	@Input() onlyAdminReassignMode: boolean = false;
 	@Input() workflowName: string;
 	@Input() showBackButton: boolean = false;
 
@@ -112,15 +112,19 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
 	private storageKey: string = 'completeAssignmentRowsPerPage';
+	isReassign: boolean = false;
+	isAdmin: boolean = false;
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private linkClickInterceptor: LinkClickInterceptor,
 		private assignmentService: AssignmentService,
 		private cdRef: ChangeDetectorRef,
-		private resourceService: ResourcesService
+		private resourceService: ResourcesService,
+		private authenticationService: AuthenticationService
 	) {
 		super(settingsService);
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
 	}
 
 	ngOnInit(): void {
@@ -147,12 +151,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		selectedAssignment?: WorkflowUserGroupedAssignments,
 		showAssignmentProgress?: boolean,
 		areAllMultiAssignmentsSelected?: boolean,
-		showBackButton?: boolean
+		showBackButton?: boolean,
+		isReassign?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
 			this.isBulkRespond = false;
-			if (this.onlyAdminReassignMode) {
+			this.isReassign = details.isReassign;
+
+			if (this.isReassign) {
 				this.radioSelectionValue = 'reassignUser';
 			} else {
 				this.radioSelectionValue = 'completeForm';
@@ -182,7 +189,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.hideDialog = false;
 				return;
 			}
-			if (this.onlyAdminReassignMode) {
+			if (this.isReassign) {
 				this.radioSelectionValue = 'reassignUser';
 			} else {
 				this.radioSelectionValue = 'completeForm';
@@ -218,8 +225,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = res.ObjectName;
 								this.assetId = res.ObjectID;
 							}
-							this.allowReassignObject = res.AllowReassignObject;
-							this.allowReassignResource = res.AllowReassignResource;
+							this.allowReassignObject = res.AllowReassignObject || this.isAdmin;
+							this.allowReassignResource = res.AllowReassignResource || this.isAdmin;
 
 							if (this.allowReassignObject) {
 								this.loadWorkflowReassignmentAssets();

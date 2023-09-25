@@ -11,12 +11,12 @@
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
 					<div class="title">
-						<ng-container *ngIf="onlyAdminReassignMode"><span i18n>Reassign</span></ng-container>
-						<ng-container *ngIf="!onlyAdminReassignMode">{{ modalTitle }}</ng-container>
+						<ng-container *ngIf="isReassign"><span i18n>Reassign</span></ng-container>
+						<ng-container *ngIf="!isReassign">{{ modalTitle }}</ng-container>
 
 						<span class="title-emp"
-							  *ngIf="isBulkRespond && !onlyAdminReassignMode && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
-						<span class="modal-buttons" *ngIf="!isBulkRespond && !onlyAdminReassignMode">
+							  *ngIf="isBulkRespond && !isReassign && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
+						<span class="modal-buttons" *ngIf="!isBulkRespond && !isReassign">
 							<button igButton
 									[ngClass]="
 									isAssignmentProgressSelected
@@ -43,7 +43,7 @@
 					 class="scrollable-content details-container">
 					<div class="asset-detail">
 						<div class="d-flex column"
-							 *ngIf="(allowReassignObject || allowReassignResource) && !onlyAdminReassignMode">
+							 *ngIf="((allowReassignObject || allowReassignResource) && !isReassign)">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
 								<p-radioButton igRadioButton value="completeForm" label="Complete the Form"
@@ -203,7 +203,7 @@
 									</ng-template>
 								</p-table>
 
-								<div *ngIf="onlyAdminReassignMode" class="checkbox-selector">
+								<div *ngIf="isReassign || isAdmin" class="checkbox-selector">
 									<p-checkbox igCheckbox
 												[(ngModel)]="sendFormEmails"
 												label="Send form e-mails"

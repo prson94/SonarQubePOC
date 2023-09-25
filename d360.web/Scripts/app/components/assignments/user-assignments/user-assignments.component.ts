@@ -28,6 +28,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	assignments: WorkflowUserGroupedAssignments[];
 	selectedAssignment: WorkflowUserGroupedAssignments
 	isMe: boolean = false;
+	isReassign: boolean = false;
+
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
 
@@ -67,7 +69,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		if (this.userUid.toLowerCase() === this.settingsService.CurrentResourceUid.toLowerCase()) {
 			this.isMe = true;
-		}
+		}		
 		this.loadUserAssignments();
 	}
 
@@ -170,24 +172,27 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.completeAssignmentComponent.openModal({
 				workflowItemUid: assignment.WorkflowItemUid,
 				stepUid: assignment.ItemStepUid,
-				assetId: assignment.AssetId
+				assetId: assignment.AssetId,
+				isReassign: this.isAdminPage && !this.isMe
 			});
 		}
 	}
 
 	onAssignmentSelection(event: AssignmentSelection) {
+		this.isReassign = event?.isReassign ?? false;
 		if (event.selectedItems.length === 0) {
 			return;
 		}
 		else if (event.selectedItems.length === 1) {
 			const assignment = event.selectedItems[0];
-
+			
 			this.completeAssignmentComponent.openModal({
 				workflowItemUid: assignment.WorkflowItemUid,
 				stepUid: assignment.ItemStepUid,
 				assetId: assignment.AssetId,
 				areAllMultiAssignmentsSelected: event.selectedAll,
-				showBackButton: true
+				showBackButton: true,
+				isReassign: (event?.isReassign ?? false)
 			});
 		}
 		else {
@@ -200,7 +205,8 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				items: event.selectedItems,
 				selectedAssignment: this.selectedAssignment,
 				areAllMultiAssignmentsSelected: event.selectedAll,
-				showBackButton: true
+				showBackButton: true,
+				isReassign: (event?.isReassign ?? false)
 			});
 		}
 	}
