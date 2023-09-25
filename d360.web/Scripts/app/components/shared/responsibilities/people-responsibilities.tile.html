@@ -24,6 +24,7 @@
                      [metaKeySelection]="true"
                      [globalFilterFields]="['Responsibility','Resource','Group','Description','OverrideID']"
                      [paginator]="true"
+					 paginatorDropdownAppendTo="body"
                      [rows]="defaultInitialItemsPerPage"
                      [rowsPerPageOptions]="defaultPagingOptions"
                      (sortFunction)="columnSort($event)"
