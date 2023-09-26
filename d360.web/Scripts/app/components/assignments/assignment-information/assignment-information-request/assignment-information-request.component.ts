@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ActionItems, Actions, FormRequest, WorkflowForm } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -21,6 +21,8 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	@Input() workflowItemUid: string;
 	@Input() stepUid: string;
 	@Input() showSubmittedByData: boolean = false;
+	@ViewChild('assetClick') assetClick: ElementRef
+
 	request: FormRequest;
 
 	isLoading: boolean;
@@ -35,6 +37,9 @@ export class AssignmentInformationRequestComponent implements OnInit {
 		if (this.showSubmittedByData) {
 			this.loadFormDetails();
 		}
+		setTimeout(() => {
+			this.assetClick.nativeElement.click();
+			});
 	}
 
 	loadData(workflowActionUid: string): void {
@@ -60,7 +65,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 			.subscribe((res: WorkflowForm) => {
 				this.isLoading = false;
 				if (res) {
-					this.request = res.Request;
+					this.request = res.Request
 				}
 			});
 	}
@@ -73,7 +78,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 		}
 	}
 
-	onClickAsset(event: MouseEvent): void {
+	onClickAsset(event): void {
 		if (this.request?.Action) {
 			this.linkClickInterceptor.sendEvent(event, {
 				AssetUid: this.request.Action.AssociatedAssetUid

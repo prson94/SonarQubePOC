@@ -3,13 +3,11 @@
 	<div *ngIf="showSubmittedByData" class="row">
 		<div class="category-column">
 			<p>
-				Submitted by
+				<span class="heading">Submitted by </span>
 				<a (click)="onClickResource($event)">{{request.Action.CreatedByName}}</a>
 				on
-				{{request.Action.CreatedOn | date: 'short' }}
-			</p>
-			<p>
-				Associated Asset : <a (click)="onClickAsset($event)">{{request.Action.AssociatedAssetPath}}</a>
+				<span class="heading">{{request.Action.CreatedOn | date: 'short' }}</span><br/>
+			<span class="heading">Associated Asset : </span> <a (click)="onClickAsset($event)"  #assetClick>{{request.Action.AssociatedAssetPath}}</a>
 			</p>
 		</div>
 	</div>

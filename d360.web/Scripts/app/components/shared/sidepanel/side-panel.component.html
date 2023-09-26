@@ -16,7 +16,7 @@
         <div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
             <div class="panel-header">
                 <span class="header-label">{{panelLabel}}</span>
-                <div class="side-panel-button-container">
+                <div class="{{sidePanelButtonClass}}">
                     <ng-container *ngIf="panelMenu.length > 0">
                         <ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
                         <button igButton icon="fa-ellipsis-v"
