@@ -14,12 +14,15 @@
 				<div class="action-bar">
 					<button igButton class="ig-button-secondary" (click)="closeDialog()" i18n>Close</button>
 					<span class="grow"></span>
-					<button *ngIf="!onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()"
-							[disabled]="selected.length === 0" i18n>Complete Assignments >
+					<button *ngIf="isAdmin" igButton class="ig-button-primary" style="margin-right:10px;" (click)="confirm(true)"
+							[disabled]="selected.length === 0" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
+							i18n>
+						Reassign >
 					</button>
-					<button *ngIf="onlyAdminReassignMode" igButton class="ig-button-primary" (click)="confirm()"
-							[disabled]="selected.length === 0" i18n>Reassign >
-					</button>
+					<button *ngIf="isCurrentUser" igButton class="ig-button-primary" (click)="confirm(false)"
+							[disabled]="selected.length === 0" i18n>
+						Complete Assignments >
+					</button>					
 				</div>
 			</ng-container>
 		</div>

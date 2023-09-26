@@ -1024,6 +1024,7 @@ export class SingleAssignment {
 export class AssignmentSelection {
 	selectedItems: SingleAssignment[];
 	selectedAll: boolean;
+	isReassign: boolean = false;
 }
 
 export class WorkflowUserGroupedAssignments {
