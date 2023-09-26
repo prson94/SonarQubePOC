@@ -1133,14 +1133,7 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.AddDynamicParams(advFilterArgs);
 						conditions.AddRange(advFilterStatements);
-
-						if (filterValue.Contains("assignee"))
-						{
-							fieldJoins.Add($@"LEFT JOIN											
-											workflow.ItemAssignment IA2 on IA2.ItemStepID = WA.workflowItemStepID and WA.CompletedOn is null											
-											left JOIN
-											reporting.Global_Resource GR2 on IA2.resourceObject = 'Resource' and GR2.ResourceID = IA2.ResourceObjectID", "");
-						}
+						
 
 						if (Regex.Matches(filterValue, "actionTypeUid", RegexOptions.IgnoreCase).Count > 0)
 						{
@@ -1876,7 +1869,7 @@ namespace d360.model.DataAccessLayer
 						wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
 						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id)
 
-						select 
+						select
 						ua.Name as WorkflowName, 
 						ua.Step as StepName, 
 						ua.[Version], 
