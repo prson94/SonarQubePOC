@@ -50,6 +50,8 @@ export class SidePanelComponent extends BaseComponent {
     @Input() minWidth = '400px';
     @Input() maxWidth = '400px';
 
+    @Input() sidePanelButtonClass='side-panel-button-container';
+
 	constructor(
 		private sidePanelService: SidePanelService,
 		private stateService: StateService,

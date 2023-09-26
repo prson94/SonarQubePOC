@@ -23,13 +23,13 @@
 										? ''
 										: 'selected'
 								" [icon]="'fa-file-text'" (click)="showAssignment()"
-									class="ig-button-secondary side-panel-button"></button>
+									class="ig-button-group side-panel-button"></button>
 							<button igButton [icon]="'fa-list-ul'" [ngClass]="
 									isAssignmentProgressSelected
 										? 'selected'
 										: ''
 								" (click)="showAssignmentProgress()"
-									class="ig-button-secondary side-panel-button"></button>
+									class="ig-button-group side-panel-button"></button>
 						</span>
 					</div>
 				</div>
@@ -191,7 +191,7 @@
 												{{ item.FullName }}
 											</td>
 											<td>
-												<button igButton icon="fa-info-circle" class="ig-state-focus"
+												<button igButton icon="fa-info-circle" class="ig-state i-button"
 														(click)="onClickResource($event,item.ResourceID)">
 												</button>
 											</td>
@@ -262,7 +262,7 @@
 												<div class="row-data">
 													{{ item.Name }}
 													<button igButton icon="fa-info-circle"
-															class="ig-state-focus"
+															class="ig-state i-button"
 															(click)="onClickAsset($event, Number(item.ObjectID))"></button>
 												</div>
 											</td>
@@ -318,7 +318,7 @@
 		</div>
 		<div class="side-panel height-auto">
 			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
-						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons">
+						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons" [sidePanelButtonClass]="'assignment-side-panel-button-container'">
 				<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
