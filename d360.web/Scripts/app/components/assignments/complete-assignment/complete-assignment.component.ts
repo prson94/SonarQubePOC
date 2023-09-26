@@ -130,6 +130,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 		this.loadRowsPerPage();
+		this.assignmentService.getAssetDetailsSubject.subscribe(()=>{
+			this.getAssetDetails()
+		})
 	}
 
 	ngOnDestroy(): void {
@@ -257,6 +260,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		}
 		this.isModalAvailable = true;
 		this.cdRef.markForCheck();
+	}
+
+	getAssetDetails(){
+		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((res)=>{
+			this.assetName=res?.AssetPath
+		})
 	}
 
 	showAssignment(): void {

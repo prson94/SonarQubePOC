@@ -20,6 +20,7 @@ import { Subscription } from 'rxjs';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { AssignmentService } from '../assignment.service';
 
 @Component({
 	selector: 'd3s-assignments-multi-picker',
@@ -77,7 +78,8 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 		private sidePanelService: SidePanelService,
 		private workflowService: WorkflowService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private authenticationService: AuthenticationService
+		private authenticationService: AuthenticationService,
+		private assignmentService:AssignmentService
 	) {
 		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
 		this.subscribeSwitcherEvents();
@@ -146,6 +148,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 				selectedAll: this.selected.length === this.assignments.length,
 				isReassign: isReassign
 			});
+		this.assignmentService.getAssetDetailsSubject.next()
 		this.linkInterceptorSubscription?.unsubscribe();
 		this.modelEl.hide();
 	}
