@@ -2982,7 +2982,7 @@ where an.Uid = fam.uid)
 				i++;
 			}
 
-			dbArgs.Add("@phrase", "%" + model.searchPhrase.CleanForSql() + "%");
+			dbArgs.Add("@phrase", "%" + model.searchPhrase.EscapeForLike() + "%");
 
 			if (!string.IsNullOrEmpty(prefilterSql))
 			{
