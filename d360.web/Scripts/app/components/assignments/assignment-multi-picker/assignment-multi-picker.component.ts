@@ -4,7 +4,8 @@ import {
 	Component,
 	ElementRef,
 	EventEmitter,
-	Input, OnDestroy,
+	Input,
+	OnDestroy,
 	Output,
 	ViewChild,
 	ViewEncapsulation
@@ -146,13 +147,13 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	}
 
 	openAssignmentDetails(event: MouseEvent, item: SingleAssignment): void {
-		this.linkClickInterceptor.sendEvent(event, {
-				workflowItemUid: item.WorkflowItemUid,
-				workflowTypeVersion: this.version,
-				workflowTypeUid: this.workflowTypeUid
-			}, null);
 		this.sidePanelService.setSidePanelState({ expanded: true });
-		this.cdRef.markForCheck();
+		this.cdRef.detectChanges();
+		setTimeout(() => this.linkClickInterceptor.sendEvent(event, {
+			workflowItemUid: item.WorkflowItemUid,
+			workflowTypeVersion: this.version,
+			workflowTypeUid: this.workflowTypeUid
+		}, null));
 	}
 
 	private lastSelectedElement: SingleAssignment;
@@ -226,6 +227,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 			this.lastSelectedElement = item;
 		}
 	}
+
 	setPanelHeader(event: string): void {
 		this.sidePanelButtons[0].label = event;
 		this.sidePanelButtons[0].tooltip = event;
