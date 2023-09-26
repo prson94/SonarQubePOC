@@ -1617,6 +1617,7 @@ namespace d360.model.DataAccessLayer
 			var queryFieldOptions = new List<DefaultFilter>
 			{
 				new DefaultFilter("workflowName", "WT.Name", SqlFieldType.Text),
+				new DefaultFilter("workflowUid", "WT.uid", SqlFieldType.Guid),
 				new DefaultFilter("version", "WV.Version", SqlFieldType.Number),
 				new DefaultFilter("status", "(case when awaiting.count = 0 and incomplete.count = 0 then 'finished' when awaiting.count > 0 and incomplete.count > 0 then 'awaiting|incomplete' when awaiting.count > 0 then 'awaiting' when incomplete.count > 0 then 'incomplete' else 'unknown' end)", SqlFieldType.Text)
 			};

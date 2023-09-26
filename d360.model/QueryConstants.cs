@@ -445,7 +445,8 @@ namespace d360.model
 					else
 						''
 					end as [Type],
-					t.State as State
+					t.State as State,
+					t.uid as WorkflowTypeUid
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				left join AssetType D on D.ID = E.AssetTypeID
