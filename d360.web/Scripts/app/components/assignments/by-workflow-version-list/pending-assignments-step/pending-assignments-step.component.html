@@ -63,13 +63,13 @@
 			<td class="asset-grid-tools"
 				alignFrozen="right"
 				pFrozenColumn>
-					<button igButton
-							type="button"
-							class="ig-button-dark ig-button ig-button-icon-only"
-							icon="fa-ellipsis-v"
-							(click)="clickMenuIcon(item);menu.toggle($event)"></button>
-					<ig-popup-menu (onSelect)="clickMenuItem($event)"
-								   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+				<button igButton
+						type="button"
+						class="ig-button-dark ig-button ig-button-icon-only"
+						icon="fa-ellipsis-v"
+						(click)="clickMenuIcon(item);menu.toggle($event)"></button>
+				<ig-popup-menu (onSelect)="clickMenuItem($event)"
+							   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
 			</td>
 		</tr>
 	</ng-template>
@@ -87,11 +87,15 @@
 				 [isModalVisible]="showDeletionModal"
 				 method="callback"
 				 (onCancel)="showDeletionModal=false;">
-	<div prompt>		
-		<p i18n>
-			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-			Are you sure you want to delete this assignment?<br/>
-			Deleted assignments <b>cannot be retrieved</b>.
-		</p>
+	<div prompt>
+		<div i18n class="row">
+			<div class="col no-padding">
+				<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+			</div>
+			<div class="col no-padding">
+				Are you sure you want to delete this assignment?<br/>
+				Deleted assignments <b>cannot be retrieved</b>.
+			</div>
+		</div>
 	</div>
 </d3s-delete-form>

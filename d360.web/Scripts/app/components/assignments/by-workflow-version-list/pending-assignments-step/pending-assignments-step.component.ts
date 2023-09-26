@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { VersionStepHistory, WorkflowActivityType, WorkflowDiagramModel } from '../../../../models/workflow.model';
 import { BaseComponent } from '../../../shared/base.component';
@@ -9,6 +9,7 @@ import { WorkflowMonitorService } from '../../../../services/workflowmonitor.ser
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
 import { AuthenticationService } from '../../../../services/authentication.service';
 import { Table } from 'primeng/table';
+import { Subscription } from 'rxjs';
 
 /*global $localize*/
 
@@ -17,7 +18,7 @@ import { Table } from 'primeng/table';
 	templateUrl: './pending-assignments-step.component.html',
 	styleUrls: ['./pending-assignments-step.component.less']
 })
-export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges {
+export class PendingAssignmentsStepComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
 	@Input() versionStepId: number;
 	@Input() workflowTypeVersion: number;
 	@Input() workflowTypeUid: string;
@@ -32,7 +33,8 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	workflowDiagramModel: WorkflowDiagramModel;
 	simpleFilter: string = '';
 	@ViewChild('pendingAssignments') pendingAssignments: Table;
-    modalSubtitle: string;
+	modalSubtitle: string;
+	private isAdminSubscription: Subscription;
 
 	constructor(
 		protected settingsService: CompanySettingsService,
@@ -46,11 +48,13 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 
 
 	ngOnInit() {
-		if (this.authenticationService.isAdmin) {
-			this.menuItems.push(new PopupMenuItem({
-				title: $localize`Delete`
-			}));
-		}
+		this.isAdminSubscription = this.authenticationService.isAdmin$.subscribe((isAdmin: boolean): void => {
+			if (isAdmin) {
+				this.menuItems.push(new PopupMenuItem({
+					title: $localize`Delete`
+				}));
+			}
+		});
 		this.loadWorkflowVersionStepHistory();
 		this.loadWorkflowDiagram();
 	}
@@ -96,7 +100,10 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		const key = event.value.toLowerCase();
 		if (key === $localize`Delete`.toLowerCase()) {
 			const startedOn = new Date(Date.parse(this.selectedHistoryItem?.StartedOn));
-			this.modalSubtitle = `<b>${this.workflowDiagramModel?.Type?.Name}</b> on ${(this.selectedHistoryItem?.Name ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;			
+			this.modalSubtitle = `<b>${this.workflowDiagramModel?.Type?.Name}</b>&nbsp;on&nbsp;${(this.selectedHistoryItem?.Name ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], {
+				hour: '2-digit',
+				minute: '2-digit'
+			})}`;
 
 			this.showDeletionModal = true;
 		}
@@ -122,6 +129,10 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 		this.linkClickInterceptor.sendEvent(event, {
 			AssetId: item.ObjectID
 		}, item.NgUrl);
+	}
+
+	ngOnDestroy(): void {
+		this.isAdminSubscription?.unsubscribe();
 	}
 
 	private loadWorkflowDiagram() {
