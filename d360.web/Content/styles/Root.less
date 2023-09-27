@@ -18,7 +18,11 @@
 }
 
 a {
-  color: @ig-purple;
+  color: var(--tabLinkColor, @ig-purple);
+
+  &.disabled {
+    color: @ig-black;
+  }
 }
 
 button.link {

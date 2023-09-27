@@ -26,7 +26,7 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
     <IISExpressSSLPort>
-    </IISExpressSSLPort>
+	</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -1980,6 +1980,7 @@
     <Content Include="Content\json\fontawesome4x.json" />
     <Content Include="Content\styles\AssetBrowser.less" />
     <Content Include="Content\json\locale.json" />
+    <Content Include="Content\styles\ang.less" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
     <Content Include="Content\styles\img\alpha-horizontal.png" />

@@ -40,6 +40,14 @@
     "sourceMap": false
   },
   {
+    "outputFile": "Content/styles/ang.css",
+    "inputFile": "Content/styles/ang.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+  {
     "outputFile": "Content/styles/materialize.css",
     "inputFile": "Content/styles/materialize.less",
     "minify": {
