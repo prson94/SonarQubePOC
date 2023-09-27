@@ -53,7 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoreEnumTests\SystemObjectsTests.cs" />
-    <Compile Include="CoreTests\CommunityContextTests.cs" />
     <Compile Include="CoreTests\CompanyConnectionStringHelperTests.cs" />
     <Compile Include="CoreEnumTests\DataTypeTests.cs" />
     <Compile Include="CoreTests\PluralServiceHelperTests.cs" />

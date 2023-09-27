@@ -1,4 +1,13 @@
-﻿using System;
+﻿using AngleSharp.Common;
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.utils.company;
+using Dapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -6,21 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.utils.company;
-
-using Dapper;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using SpreadsheetLight;
-
 namespace igx.UpdateDatabases
 {
-    public partial class MainForm : Form
+	public partial class MainForm : Form
     {
         private List<CompanyWithDatabaseServerSettings> Companies;
 
@@ -35,14 +32,13 @@ namespace igx.UpdateDatabases
         {
             backgroundWorker1.DoWork += BackgroundWorker1_DoWork;
             backgroundWorker1.ProgressChanged += BackgroundWorker1_ProgressChanged;
-            Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-            Companies
-                .OrderBy(i => i.CompanyID)
-                .ToList()
-                .ForEach(c =>
-                {
-                    lbDatabases.Items.Add($"{c.CompanyID} - {c.UrlPrefix}", CheckState.Unchecked);
-                });
+
+			var stages = ConfigurationManager.ConnectionStrings;
+			ddlStage.DisplayMember = "Key";
+			ddlStage.ValueMember = "Value";
+			for (int i = 0; i < stages.Count; i++) {
+				ddlStage.Items.Add(new { Key = stages[i].Name, Value = stages[i].ConnectionString });
+			}
 
             if (SelectOnly)
             {
@@ -60,7 +56,8 @@ namespace igx.UpdateDatabases
             btnRun.Invoke((MethodInvoker)delegate
             {
                 btnRun.Enabled = false;
-            });
+				ddlStage.Enabled = false;
+			});
 
             txtMessages.Invoke((MethodInvoker)delegate
             {
@@ -188,7 +185,8 @@ namespace igx.UpdateDatabases
                             txtMessages.Invoke((MethodInvoker)delegate
                             {
                                 txtMessages.Text += $"SUCCESS: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}";
-                            });
+								txtMessages.ScrollToCaret();
+							});
                         }
                         catch (Exception ex)
                         {
@@ -196,7 +194,8 @@ namespace igx.UpdateDatabases
                             txtMessages.Invoke((MethodInvoker)delegate
                             {
                                 txtMessages.Text += $"ERROR: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}{ex.GetFullExceptionData()}{System.Environment.NewLine}";
-                            });
+								txtMessages.ScrollToCaret();
+							});
                         }
                         finally
                         {
@@ -222,7 +221,8 @@ namespace igx.UpdateDatabases
             btnRun.Invoke((MethodInvoker)delegate
             {
                 btnRun.Enabled = true;
-            });
+				ddlStage.Enabled = true;
+			});
 
             e.Result = true;
         }
@@ -278,5 +278,20 @@ namespace igx.UpdateDatabases
             var chk = chkPreview.CheckState == CheckState.Checked;
             checkRelevantItems(chk, EnvironmentLevel.Nightly);
         }
-    }
+
+		private void ddlStage_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			lbDatabases.Items.Clear();
+
+			var connectingString = ((dynamic)ddlStage.SelectedItem).Value;
+			Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(connectingString);
+			Companies
+				.OrderBy(i => i.CompanyID)
+				.ToList()
+				.ForEach(c =>
+				{
+					lbDatabases.Items.Add($"{c.CompanyID} - {c.UrlPrefix}", CheckState.Unchecked);
+				});
+		}
+	}
 }

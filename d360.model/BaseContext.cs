@@ -97,13 +97,11 @@ namespace d360.model
 
         public BaseContext()
         {
-            SetDefaultEntityFrameworkCommandTimeout();
         }
 
         public BaseContext(string connectionString) : base(connectionString)
         {
             CompanyConnectionString = connectionString;
-            SetDefaultEntityFrameworkCommandTimeout();
         }
 
         #region Generic Repository Methods
@@ -342,24 +340,10 @@ namespace d360.model
             return Set<T>();
         }
 
-        private void SetDefaultEntityFrameworkCommandTimeout()
-        {
-            IObjectContextAdapter adapter = this;
-            if (adapter != null)
-            {
-                adapter.ObjectContext.CommandTimeout = 2 * 60; // 2 minute ef command timeout value in seconds (default is 30 seconds)
-            }
-        }
-
         #region For Deriving company and resource records based on incoming raw values
-
-        #region Keys
-
 
         internal string CACHE_KEY_SSO_MODELS = "Company_SsoModels";
         internal string CACHE_KEY_CONNECTION_STRINGS = "Company_ConnectionStrings";
-
-        #endregion
 
         #endregion
     }

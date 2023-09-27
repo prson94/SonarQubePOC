@@ -46,6 +46,8 @@
             this.chkPreview = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.chkSaveResultsInJson = new System.Windows.Forms.CheckBox();
+            this.ddlStage = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,17 +57,19 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbDatabases.CheckOnClick = true;
             this.lbDatabases.FormattingEnabled = true;
-            this.lbDatabases.Location = new System.Drawing.Point(13, 172);
+            this.lbDatabases.Location = new System.Drawing.Point(26, 452);
+            this.lbDatabases.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.lbDatabases.Name = "lbDatabases";
-            this.lbDatabases.Size = new System.Drawing.Size(198, 304);
+            this.lbDatabases.Size = new System.Drawing.Size(392, 592);
             this.lbDatabases.TabIndex = 0;
             // 
             // chkDevelopment
             // 
             this.chkDevelopment.AutoSize = true;
-            this.chkDevelopment.Location = new System.Drawing.Point(6, 38);
+            this.chkDevelopment.Location = new System.Drawing.Point(12, 73);
+            this.chkDevelopment.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkDevelopment.Name = "chkDevelopment";
-            this.chkDevelopment.Size = new System.Drawing.Size(89, 17);
+            this.chkDevelopment.Size = new System.Drawing.Size(170, 29);
             this.chkDevelopment.TabIndex = 1;
             this.chkDevelopment.Text = "Development";
             this.chkDevelopment.UseVisualStyleBackColor = true;
@@ -74,9 +78,10 @@
             // chkProduction
             // 
             this.chkProduction.AutoSize = true;
-            this.chkProduction.Location = new System.Drawing.Point(6, 81);
+            this.chkProduction.Location = new System.Drawing.Point(12, 156);
+            this.chkProduction.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkProduction.Name = "chkProduction";
-            this.chkProduction.Size = new System.Drawing.Size(77, 17);
+            this.chkProduction.Size = new System.Drawing.Size(147, 29);
             this.chkProduction.TabIndex = 2;
             this.chkProduction.Text = "Production";
             this.chkProduction.UseVisualStyleBackColor = true;
@@ -89,12 +94,13 @@
             this.txtSql.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSql.Location = new System.Drawing.Point(220, 90);
+            this.txtSql.Location = new System.Drawing.Point(440, 173);
+            this.txtSql.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtSql.MaxLength = 100000000;
             this.txtSql.Multiline = true;
             this.txtSql.Name = "txtSql";
             this.txtSql.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtSql.Size = new System.Drawing.Size(739, 172);
+            this.txtSql.Size = new System.Drawing.Size(1474, 444);
             this.txtSql.TabIndex = 3;
             this.txtSql.WordWrap = false;
             // 
@@ -104,9 +110,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(218, 65);
+            this.label1.Location = new System.Drawing.Point(436, 125);
+            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(108, 13);
+            this.label1.Size = new System.Drawing.Size(215, 25);
             this.label1.TabIndex = 4;
             this.label1.Text = "Sql Statement to Run";
             // 
@@ -114,11 +121,12 @@
             // 
             this.txtMessages.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtMessages.Location = new System.Drawing.Point(220, 290);
+            this.txtMessages.Location = new System.Drawing.Point(440, 675);
+            this.txtMessages.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtMessages.Multiline = true;
             this.txtMessages.Name = "txtMessages";
             this.txtMessages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtMessages.Size = new System.Drawing.Size(739, 194);
+            this.txtMessages.Size = new System.Drawing.Size(1474, 369);
             this.txtMessages.TabIndex = 5;
             // 
             // lblMesages
@@ -126,18 +134,20 @@
             this.lblMesages.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblMesages.AutoSize = true;
-            this.lblMesages.Location = new System.Drawing.Point(217, 274);
+            this.lblMesages.Location = new System.Drawing.Point(434, 644);
+            this.lblMesages.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblMesages.Name = "lblMesages";
-            this.lblMesages.Size = new System.Drawing.Size(119, 13);
+            this.lblMesages.Size = new System.Drawing.Size(239, 25);
             this.lblMesages.TabIndex = 6;
             this.lblMesages.Text = "Messages Encountered";
             // 
             // btnRun
             // 
             this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRun.Location = new System.Drawing.Point(883, 28);
+            this.btnRun.Location = new System.Drawing.Point(1766, 54);
+            this.btnRun.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.btnRun.Name = "btnRun";
-            this.btnRun.Size = new System.Drawing.Size(75, 23);
+            this.btnRun.Size = new System.Drawing.Size(150, 44);
             this.btnRun.TabIndex = 7;
             this.btnRun.Text = "Run";
             this.btnRun.UseVisualStyleBackColor = true;
@@ -147,9 +157,10 @@
             // 
             this.lblSqlValidation.AutoSize = true;
             this.lblSqlValidation.ForeColor = System.Drawing.Color.Red;
-            this.lblSqlValidation.Location = new System.Drawing.Point(332, 52);
+            this.lblSqlValidation.Location = new System.Drawing.Point(664, 100);
+            this.lblSqlValidation.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblSqlValidation.Name = "lblSqlValidation";
-            this.lblSqlValidation.Size = new System.Drawing.Size(0, 13);
+            this.lblSqlValidation.Size = new System.Drawing.Size(0, 25);
             this.lblSqlValidation.TabIndex = 8;
             // 
             // backgroundWorker1
@@ -160,17 +171,19 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(342, 268);
+            this.progressBar1.Location = new System.Drawing.Point(684, 632);
+            this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(617, 19);
+            this.progressBar1.Size = new System.Drawing.Size(1234, 37);
             this.progressBar1.TabIndex = 9;
             // 
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnClear.Location = new System.Drawing.Point(802, 28);
+            this.btnClear.Location = new System.Drawing.Point(1604, 54);
+            this.btnClear.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new System.Drawing.Size(75, 23);
+            this.btnClear.Size = new System.Drawing.Size(150, 44);
             this.btnClear.TabIndex = 10;
             this.btnClear.Text = "Clear Sql";
             this.btnClear.UseVisualStyleBackColor = true;
@@ -179,9 +192,10 @@
             // chkUat
             // 
             this.chkUat.AutoSize = true;
-            this.chkUat.Location = new System.Drawing.Point(6, 58);
+            this.chkUat.Location = new System.Drawing.Point(12, 112);
+            this.chkUat.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkUat.Name = "chkUat";
-            this.chkUat.Size = new System.Drawing.Size(48, 17);
+            this.chkUat.Size = new System.Drawing.Size(86, 29);
             this.chkUat.TabIndex = 11;
             this.chkUat.Text = "UAT";
             this.chkUat.UseVisualStyleBackColor = true;
@@ -193,9 +207,11 @@
             this.groupBox1.Controls.Add(this.chkDevelopment);
             this.groupBox1.Controls.Add(this.chkUat);
             this.groupBox1.Controls.Add(this.chkProduction);
-            this.groupBox1.Location = new System.Drawing.Point(11, 52);
+            this.groupBox1.Location = new System.Drawing.Point(26, 236);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(200, 106);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox1.Size = new System.Drawing.Size(392, 204);
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Environments";
@@ -203,9 +219,10 @@
             // chkPreview
             // 
             this.chkPreview.AutoSize = true;
-            this.chkPreview.Location = new System.Drawing.Point(6, 18);
+            this.chkPreview.Location = new System.Drawing.Point(12, 35);
+            this.chkPreview.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkPreview.Name = "chkPreview";
-            this.chkPreview.Size = new System.Drawing.Size(64, 17);
+            this.chkPreview.Size = new System.Drawing.Size(120, 29);
             this.chkPreview.TabIndex = 14;
             this.chkPreview.Text = "Preview";
             this.chkPreview.UseVisualStyleBackColor = true;
@@ -215,28 +232,55 @@
             // 
             this.label2.AutoSize = true;
             this.label2.ForeColor = System.Drawing.Color.Red;
-            this.label2.Location = new System.Drawing.Point(332, 65);
+            this.label2.Location = new System.Drawing.Point(664, 125);
+            this.label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(291, 13);
+            this.label2.Size = new System.Drawing.Size(584, 25);
             this.label2.TabIndex = 13;
             this.label2.Text = "Individual commands MUST be separated by the value: GO;";
             // 
             // chkSaveResultsInJson
             // 
+            this.chkSaveResultsInJson.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkSaveResultsInJson.AutoSize = true;
-            this.chkSaveResultsInJson.Location = new System.Drawing.Point(846, 61);
+            this.chkSaveResultsInJson.Location = new System.Drawing.Point(1692, 117);
+            this.chkSaveResultsInJson.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkSaveResultsInJson.Name = "chkSaveResultsInJson";
-            this.chkSaveResultsInJson.Size = new System.Drawing.Size(112, 17);
+            this.chkSaveResultsInJson.Size = new System.Drawing.Size(221, 29);
             this.chkSaveResultsInJson.TabIndex = 14;
             this.chkSaveResultsInJson.Text = "Save results to file";
             this.chkSaveResultsInJson.UseVisualStyleBackColor = true;
             // 
+            // ddlStage
+            // 
+            this.ddlStage.FormattingEnabled = true;
+            this.ddlStage.Location = new System.Drawing.Point(38, 164);
+            this.ddlStage.Name = "ddlStage";
+            this.ddlStage.Size = new System.Drawing.Size(380, 33);
+            this.ddlStage.TabIndex = 15;
+            this.ddlStage.SelectedIndexChanged += new System.EventHandler(this.ddlStage_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(37, 125);
+            this.label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(148, 25);
+            this.label3.TabIndex = 16;
+            this.label3.Text = "Choose Stage";
+            // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(971, 503);
+            this.ClientSize = new System.Drawing.Size(1942, 1084);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.ddlStage);
             this.Controls.Add(this.chkSaveResultsInJson);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.groupBox1);
@@ -250,6 +294,7 @@
             this.Controls.Add(this.txtSql);
             this.Controls.Add(this.lbDatabases);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "MainForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Govern Database Utility";
@@ -280,6 +325,8 @@
         private System.Windows.Forms.CheckBox chkPreview;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkSaveResultsInJson;
-    }
+		private System.Windows.Forms.ComboBox ddlStage;
+		private System.Windows.Forms.Label label3;
+	}
 }
 
