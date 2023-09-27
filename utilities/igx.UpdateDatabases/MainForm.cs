@@ -56,7 +56,8 @@ namespace igx.UpdateDatabases
             btnRun.Invoke((MethodInvoker)delegate
             {
                 btnRun.Enabled = false;
-            });
+				ddlStage.Enabled = false;
+			});
 
             txtMessages.Invoke((MethodInvoker)delegate
             {
@@ -184,7 +185,8 @@ namespace igx.UpdateDatabases
                             txtMessages.Invoke((MethodInvoker)delegate
                             {
                                 txtMessages.Text += $"SUCCESS: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}";
-                            });
+								txtMessages.ScrollToCaret();
+							});
                         }
                         catch (Exception ex)
                         {
@@ -192,7 +194,8 @@ namespace igx.UpdateDatabases
                             txtMessages.Invoke((MethodInvoker)delegate
                             {
                                 txtMessages.Text += $"ERROR: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}{ex.GetFullExceptionData()}{System.Environment.NewLine}";
-                            });
+								txtMessages.ScrollToCaret();
+							});
                         }
                         finally
                         {
@@ -218,7 +221,8 @@ namespace igx.UpdateDatabases
             btnRun.Invoke((MethodInvoker)delegate
             {
                 btnRun.Enabled = true;
-            });
+				ddlStage.Enabled = true;
+			});
 
             e.Result = true;
         }
@@ -279,7 +283,9 @@ namespace igx.UpdateDatabases
 		{
 			lbDatabases.Items.Clear();
 
-			Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+			//ddlStage.Items[ddlStage.SelectedIndex].
+			var connectingString = ((dynamic)ddlStage.SelectedItem).Value;
+			Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(connectingString);
 			Companies
 				.OrderBy(i => i.CompanyID)
 				.ToList()
@@ -287,6 +293,11 @@ namespace igx.UpdateDatabases
 				{
 					lbDatabases.Items.Add($"{c.CompanyID} - {c.UrlPrefix}", CheckState.Unchecked);
 				});
+		}
+
+		private void label3_Click(object sender, EventArgs e)
+		{
+
 		}
 	}
 }

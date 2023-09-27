@@ -47,6 +47,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.chkSaveResultsInJson = new System.Windows.Forms.CheckBox();
             this.ddlStage = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -56,10 +57,10 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.lbDatabases.CheckOnClick = true;
             this.lbDatabases.FormattingEnabled = true;
-            this.lbDatabases.Location = new System.Drawing.Point(26, 415);
+            this.lbDatabases.Location = new System.Drawing.Point(26, 452);
             this.lbDatabases.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.lbDatabases.Name = "lbDatabases";
-            this.lbDatabases.Size = new System.Drawing.Size(392, 480);
+            this.lbDatabases.Size = new System.Drawing.Size(392, 592);
             this.lbDatabases.TabIndex = 0;
             // 
             // chkDevelopment
@@ -99,7 +100,7 @@
             this.txtSql.Multiline = true;
             this.txtSql.Name = "txtSql";
             this.txtSql.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtSql.Size = new System.Drawing.Size(1474, 327);
+            this.txtSql.Size = new System.Drawing.Size(1474, 444);
             this.txtSql.TabIndex = 3;
             this.txtSql.WordWrap = false;
             // 
@@ -120,7 +121,7 @@
             // 
             this.txtMessages.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtMessages.Location = new System.Drawing.Point(440, 558);
+            this.txtMessages.Location = new System.Drawing.Point(440, 675);
             this.txtMessages.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtMessages.Multiline = true;
             this.txtMessages.Name = "txtMessages";
@@ -133,7 +134,7 @@
             this.lblMesages.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblMesages.AutoSize = true;
-            this.lblMesages.Location = new System.Drawing.Point(434, 527);
+            this.lblMesages.Location = new System.Drawing.Point(434, 644);
             this.lblMesages.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblMesages.Name = "lblMesages";
             this.lblMesages.Size = new System.Drawing.Size(239, 25);
@@ -170,7 +171,7 @@
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(684, 515);
+            this.progressBar1.Location = new System.Drawing.Point(684, 632);
             this.progressBar1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(1234, 37);
@@ -206,7 +207,7 @@
             this.groupBox1.Controls.Add(this.chkDevelopment);
             this.groupBox1.Controls.Add(this.chkUat);
             this.groupBox1.Controls.Add(this.chkProduction);
-            this.groupBox1.Location = new System.Drawing.Point(26, 199);
+            this.groupBox1.Location = new System.Drawing.Point(26, 236);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
@@ -240,6 +241,7 @@
             // 
             // chkSaveResultsInJson
             // 
+            this.chkSaveResultsInJson.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.chkSaveResultsInJson.AutoSize = true;
             this.chkSaveResultsInJson.Location = new System.Drawing.Point(1692, 117);
             this.chkSaveResultsInJson.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
@@ -252,18 +254,33 @@
             // ddlStage
             // 
             this.ddlStage.FormattingEnabled = true;
-            this.ddlStage.Location = new System.Drawing.Point(38, 125);
+            this.ddlStage.Location = new System.Drawing.Point(38, 164);
             this.ddlStage.Name = "ddlStage";
             this.ddlStage.Size = new System.Drawing.Size(380, 33);
             this.ddlStage.TabIndex = 15;
             this.ddlStage.SelectedIndexChanged += new System.EventHandler(this.ddlStage_SelectedIndexChanged);
+            // 
+            // label3
+            // 
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(37, 125);
+            this.label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(148, 25);
+            this.label3.TabIndex = 16;
+            this.label3.Text = "Choose Stage";
+            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(1942, 967);
+            this.ClientSize = new System.Drawing.Size(1942, 1084);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.ddlStage);
             this.Controls.Add(this.chkSaveResultsInJson);
             this.Controls.Add(this.label2);
@@ -310,6 +327,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkSaveResultsInJson;
 		private System.Windows.Forms.ComboBox ddlStage;
+		private System.Windows.Forms.Label label3;
 	}
 }
 

@@ -1,17 +1,14 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using Dapper;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 
-using d360.core;
-using d360.core.entities;
-
-using Dapper;
-
 namespace d360.utils.company
 {
-    public static class CompanyConnectionUtils
+	public static class CompanyConnectionUtils
     {
         public static string GetConnectionString(int id, string server, string username, string password)
         {
