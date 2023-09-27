@@ -18,7 +18,7 @@ namespace igx.UnitTests.CoreTests
         {
             string conString = CompanyConnectionStringHelper.ConnectionString(5, "server.com","user","password");
 
-            string expectedResult = $"server=server.com;Database=D3S_5;User ID=user;Password=password;MultipleActiveResultSets=True;ConnectRetryCount=10;ConnectRetryInterval=10;Connection Timeout=100;";
+            string expectedResult = $"server=server.com;Database=D3S_5;User ID=user;Password=password;MultipleActiveResultSets=True;ConnectRetryCount=4;ConnectRetryInterval=5;Connection Timeout=20;";
 
             Assert.True(conString == expectedResult, "Connection string generated is not expected value");
         }
