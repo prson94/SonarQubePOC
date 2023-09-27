@@ -1107,6 +1107,18 @@ namespace d360.model
 												and  ER.ExecutionID = @ExecutionID 
 												and ER.Success is null;
 
+									update  ER 
+									set     Success = 0,
+											Message = 'Relationship type referenced in Relationship field type marked as ''is listable''. Cardinality may not be changed.' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join IntersectType I on I.Uid = ER.[Uid] 
+												and (
+													(I.SubjectCardinality = 1 and ER.SubjectCardinality <> 1 and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and AssetTypeID = I.ObjectAssetTypeID and [Type] = 'Relationship' and IsListable = 1)) 
+													or (I.ObjectCardinality = 1 and ER.ObjectCardinality <> 1  and I.ID in (select LookupObjectID from FieldType where LookupObjectType = 'IntersectType' and AssetTypeID = I.SubjectAssetTypeID and [Type] = 'Relationship' and IsListable = 1)) 
+													)
+												and  ER.ExecutionID = @ExecutionID 
+												and ER.Success is null;
+
 									Update  T
 									set     SubjectClass = SA.[Class], 
 											SubjectAssetTypeID = CASE WHEN SA.Class = 9 and SA.ObjectID = 0 then 0 else SA.ID end
@@ -1134,6 +1146,21 @@ namespace d360.model
 											and ER.Success is null 
 											and (S.Uid <> ER.SubjectUid or O.Uid <> ER.ObjectUid) 
 											and (ER.SubjectUid is not null or ER.ObjectUid is not null) 
+											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
+
+									update  ER 
+									set     Success = 0,
+											Message = 'Relationship type already has relationships. Cardinality may not be changed from many to one' 
+									from    [api].[ExecutionRelationshipType] ER 
+											inner join IntersectType T on T.Uid = ER.Uid
+											inner join AssetType S on S.ID = T.SubjectAssetTypeID 
+											inner join AssetType O on O.ID = T.ObjectAssetTypeID 
+									where   ER.ExecutionID = @ExecutionID 
+											and ER.Success is null 
+											and (
+												(T.SubjectCardinality <> 1 and ER.SubjectCardinality = 1) OR
+												(T.ObjectCardinality <> 1 and ER.ObjectCardinality = 1) 
+											)
 											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
 				new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 			}

@@ -10,6 +10,7 @@ import { AssignmentsModule } from '../assignments.module';
 import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 import { SharedGridSelectionInfoModule } from '../../shared/grid-selection-info.component';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component'
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.compon
 		SidePanelModule,
 		SiteModalModule,
 		TableModule,
-		SharedGridPagingInfoModule
+		SharedGridPagingInfoModule,
+		SearchFieldModule
 	]
 })
 export class AssignmentsMultiPickerModule {

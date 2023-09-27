@@ -27,6 +27,7 @@ import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.compo
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute } from '@angular/router';
 import { AssignmentService } from '../assignment.service';
+import { State } from '../../../models/asset.model';
 
 /*global $localize*/
 
@@ -339,10 +340,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 		const assigneesFilterFieldType: FieldType = new FieldType('Lookup');
 		assigneesFilterFieldType.Lookup.List.AllowMultipleValues = true;
-		assigneesFilterFieldType.Lookup.IsPrimaryFilter = (this.assetTypeUid || this.assetUid) ? false : !this.isRequestsFlow;		
+		assigneesFilterFieldType.Lookup.IsPrimaryFilter = (this.assetTypeUid || this.assetUid) ? false : !this.isRequestsFlow;	
 
 		const filterFieldList: AdvancedFilterFieldType[] = [{
-			Name: 'workflowName',
+			Name: 'workflowUid',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
 			Category: '',
@@ -455,14 +456,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private getFilteredWorkflowNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getTypes().pipe(
-			map((workflowTypeList: WorkflowTypeModel[]) => {
-				let workflowNameList: string[] = [];
-				for (const workflowType of workflowTypeList) {
-					if (workflowType?.Name && !workflowNameList.includes(workflowType.Name)) {
-						workflowNameList.push(workflowType.Name);
-					}
-				}
-				workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+			map((workflowTypeList: WorkflowTypeModel[]) => { 
+				let workflowNameList: {
+					'name': string,
+					'value': string
+				}[] = workflowTypeList?.map((workflowType: WorkflowTypeModel): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': (workflowType.State === State.InActive ? workflowType.Name + " ( " + $localize`Inactive` + " )" : workflowType.Name), 'value': workflowType.WorkflowTypeUid };
+				}) ?? [];
+				workflowNameList = workflowNameList.filter((s) => s?.name.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
+
 				return {
 					items: workflowNameList,
 					count: workflowNameList.length

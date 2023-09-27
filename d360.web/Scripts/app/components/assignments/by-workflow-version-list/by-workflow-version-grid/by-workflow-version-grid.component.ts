@@ -16,6 +16,7 @@ import {
 	LookupValuesAPIParameters
 } from '../../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../../models/fieldtype-api.model';
+import { State } from '../../../../models/asset.model';
 
 /*global $localize*/
 
@@ -127,7 +128,7 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 		const lookupFieldTypePrimaryFilter: FieldType = new FieldType('Lookup');
 		lookupFieldTypePrimaryFilter.Lookup.IsPrimaryFilter = true;
 		const filterFieldList: AdvancedFilterFieldType[] = [{
-			Name: 'WorkflowName',
+			Name: 'workflowUid',
 			FriendlyName: $localize`Workflow Name`,
 			Type: new FieldType('Lookup'),
 			Category: '',
@@ -160,8 +161,17 @@ export class ByWorkflowVersionGridComponent extends BaseComponent implements OnI
 	private getFilteredWorkflowNames = (lookupValuesAPIParameters: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getTypes().pipe(
 			map((workflowTypeList: WorkflowTypeModel[]) => {
-				let workflowNameList: string[] = workflowTypeList?.map((workflowTypeModel: WorkflowTypeModel) => workflowTypeModel.Name) ?? [];
-				workflowNameList = workflowNameList.filter((s) => s.toLowerCase().indexOf(lookupValuesAPIParameters.filter?.toLowerCase() ?? '') !== -1);
+				let workflowNameList: {
+					'name': string,
+					'value': string
+				}[] = workflowTypeList?.map((workflowType: WorkflowTypeModel): {
+					'name': string,
+					'value': string
+				} => {
+					return { 'name': (workflowType.State === State.InActive ? workflowType.Name + " ( " + $localize`Inactive` + " )" : workflowType.Name), 'value': workflowType.WorkflowTypeUid };
+				}) ?? [];
+				workflowNameList = workflowNameList.filter((s) => s?.name.toLowerCase().indexOf(lookupValuesAPIParameters.filter?.toLowerCase() ?? '') !== -1);
+
 				return {
 					items: workflowNameList,
 					count: workflowNameList.length

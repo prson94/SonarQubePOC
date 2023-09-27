@@ -176,8 +176,10 @@ namespace d360.model
 		ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId);
 
 		ObjectDetail GetObjectDetail(string type, long id);
-        
-        string GetObjectTypePath(string type, long id);
+
+		ObjectDetail GetObjectDetailApplyPermission(SystemObjects type, long id);
+
+		string GetObjectTypePath(string type, long id);
         
         JObject GetPageInformation(Guid assetUid);
         

@@ -72,7 +72,15 @@
 							<div class="associated-type-name" *ngIf="assignmentAssetTypeName" i18n>
 								<b>Associated Asset Type</b>: {{assignmentAssetTypeName}}
 							</div>
-
+							<div class="grid-actions-header column-layout">
+								<div class="grid-actions-header-row">
+									<div class="simple-search">
+										<ig-search-field (onSearch)="dt.filterGlobal($event, 'contains');"
+														 mode="Keypress">
+										</ig-search-field>
+									</div>
+								</div>
+							</div>
 							<div class="table-wrapper">
 								<p-table #dt
 										 [tableStyle]="{'min-width': 'max-content'}"
@@ -89,7 +97,8 @@
 										 [scrollable]="true"
 										 [scrollHeight]="assignmentAssetTypeName ? 'calc(100vh - 491px)' : 'calc(100vh - 443px)'"
 										 [(selection)]="selected"
-										 [sortOrder]="-1">
+										 [sortOrder]="-1"
+										 [globalFilterFields]="['Name','ObjectType','InitiatedBy']">
 									<ng-template pTemplate="header">
 										<tr>
 											<th style="width: 36px;">
@@ -134,6 +143,11 @@
 														icon="fa-info-circle"
 														(click)="openAssignmentDetails($event, item)"></button>
 											</td>
+										</tr>
+									</ng-template>
+									<ng-template pTemplate="emptymessage">
+										<tr class="table-row" style="height:32px">
+											<td colspan="6" i18n>No matching assignments.</td>
 										</tr>
 									</ng-template>
 									<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
