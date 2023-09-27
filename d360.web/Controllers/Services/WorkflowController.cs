@@ -626,7 +626,7 @@ namespace d360.web.Controllers.Services
 						}
 						else
 						{
-							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS))
+							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS) && field.Value != null)
 							{
 								//new ui elements return different value object
 								val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;
