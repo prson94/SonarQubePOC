@@ -21,7 +21,16 @@ export class RulesService extends BaseObservableService {
                 map((response) => <RuleDetail>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	getRuleApplyPremission(assetUid: string): Observable<RuleDetail> {
+		return this.http.get(`api/rule/${assetUid}?CheckPermission=true`)
+			.pipe(
+				map((response) => <RuleDetail>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
 
     getRuleType(uid: string): Observable<RuleType> {
         return this.http.get(`api/ruletypes/${uid}`)

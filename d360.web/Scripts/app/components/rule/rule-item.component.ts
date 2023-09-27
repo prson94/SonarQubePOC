@@ -8,6 +8,8 @@ import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { RuleDetail } from '../../models/rule.model';
 import { StringConstants } from '../../static/string-constants';
+import { finalize } from 'rxjs/operators';
+import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { Subscription } from 'rxjs';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -16,6 +18,7 @@ import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
 	selector: 'd3s-rule-item',
@@ -48,7 +51,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		launchDarklyService: LaunchDarklyService
+		launchDarklyService: LaunchDarklyService,
+		private messagesService: MessagesObservableService
 	) {
 		super(settingsService);
 
@@ -99,19 +103,31 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
 	load() {
-		this.rulesService.getRule(this.assetUid)
-			.subscribe((result) => {
-				this.rule = result;
-
-				this.setBrowserTitle(this.titleService, this.rule.Name);
-				console.log(this.rule);
-				this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
-				this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
-				
-				this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then((p) => {
-					this.buildSecondaryNavigation({ assetUid: this.rule.UID, DisplayValue: this.rule.Name });
-				});
+		this.rulesService.getRuleApplyPremission(this.assetUid).pipe(
+			finalize(() => {
 				this.isLoading = false;
+			})
+			).subscribe((result) => {
+				if (result) {
+					this.rule = result;
+
+					this.setBrowserTitle(this.titleService, this.rule.Name);
+					console.log(this.rule);
+					this.headerBreadcrumbService.setCurrentObjectInfo('Rule', this.rule.ID, null, this.rule.UID);
+					this.setObjectInfo('Rule', this.rule.ID, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
+
+					this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, this.rule.ID).then((p) => {
+						this.buildSecondaryNavigation({ assetUid: this.rule.UID, DisplayValue: this.rule.Name });
+					});
+				}
+				else {
+					this.isLoading = false;
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+					this.messagesService.showError($localize`Error`, $localize`Rule with Uid could not be found or you do not have permission to view the related rule.`);
+				}
+			},
+				() => {
+				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			});
 	}
 
