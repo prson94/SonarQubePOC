@@ -79,6 +79,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	fieldsFromRelation: SelectItem[] = [];
 	referenceListFromRelationshipRelations: SelectItem[] = [];
 	relationshipItems: SelectItem[] = [];
+	cardinalRelationships: SelectItem[] = [];
 
 	public TypeaheadJsonPropertyOptionsForJsonFieldResults: string[] = [];
 
@@ -191,6 +192,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			//lookups
 			if (results[1]) {
 				this.fieldFromRelationshipItems = results[1].Field_FieldFromRelRelationships;
+				this.cardinalRelationships = results[1].Field_CardinalRelationships;
 				this.responsibilityTypes = results[1].FieldResponsibilityTypes;
 				this.fieldTypes = results[1].DataTypes.filter((x) => x.value !== 'System');
 
@@ -1371,10 +1373,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			return $localize`No relationships are currently defined for this asset type`;
 		}
 
-		if (item.value === 'ComputedRelationshipLookup' && (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)) {
+		if (item.value === 'ComputedRelationshipLookup'
+			&& (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)
+			&& (!this.cardinalRelationships || this.cardinalRelationships.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
 		}
-
 		if (item.value === 'Score' && (!this.scoreTypeOptions || this.scoreTypeOptions.length === 0)) {
 			return $localize`No scores are currently defined for this asset type`;
 		}
