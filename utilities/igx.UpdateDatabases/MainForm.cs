@@ -283,7 +283,6 @@ namespace igx.UpdateDatabases
 		{
 			lbDatabases.Items.Clear();
 
-			//ddlStage.Items[ddlStage.SelectedIndex].
 			var connectingString = ((dynamic)ddlStage.SelectedItem).Value;
 			Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(connectingString);
 			Companies
@@ -293,11 +292,6 @@ namespace igx.UpdateDatabases
 				{
 					lbDatabases.Items.Add($"{c.CompanyID} - {c.UrlPrefix}", CheckState.Unchecked);
 				});
-		}
-
-		private void label3_Click(object sender, EventArgs e)
-		{
-
 		}
 	}
 }

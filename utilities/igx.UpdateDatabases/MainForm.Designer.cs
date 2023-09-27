@@ -272,7 +272,6 @@
             this.label3.Size = new System.Drawing.Size(148, 25);
             this.label3.TabIndex = 16;
             this.label3.Text = "Choose Stage";
-            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // MainForm
             // 
