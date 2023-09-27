@@ -11,6 +11,7 @@ using d360.extensions.storage;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -54,7 +55,7 @@ namespace igx.jobs.apiexecutionprocessor
 
     public class ApiJobProcessor
     {
-        const string functionName = "ApiExecution_Process";
+        const string FUNCTION_NAME = "ApiExecution_Process";
 
         const int DEFAULT_MERGE_BLOCK_SIZE = 500;
         const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
@@ -67,8 +68,8 @@ namespace igx.jobs.apiexecutionprocessor
 
         public async Task Run(ApiExecutionInfo info, TextWriter log)
         {
-            CoreFunction.AITrackJobStart(functionName);
-            CoreFunction.AITrackEvent(functionName, $"Starting Batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
+            CoreFunction.AITrackJobStart(FUNCTION_NAME);
+            CoreFunction.AITrackEvent(FUNCTION_NAME, $"Starting Batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
 
             #region Create EF connection
 
@@ -77,8 +78,8 @@ namespace igx.jobs.apiexecutionprocessor
             queue = new AzureQueueSource(); 
             storage = new AzureStorageProvider();
             dummyCachingProvider = new DummyCachingProvider();
-
-            company = JobDbContextCreator.CreateCompanyContext(
+			Console.WriteLine($"Get company context: {DateTime.UtcNow.ToString("hh:mm:ss")}");
+			company = JobDbContextCreator.CreateCompanyContext(
                 new UriSecurityContextProvider
                 {
                     CompanyID = info.CompanyID,
@@ -94,8 +95,8 @@ namespace igx.jobs.apiexecutionprocessor
                 queue,
                 dummyCachingProvider,
                 constants.COMMUNITY_DATABASE_CONNECTION);
-
-            CommunityContext community = new CommunityContext(
+			Console.WriteLine($"Get community context: {DateTime.UtcNow.ToString("hh:mm:ss")}");
+			CommunityContext community = new CommunityContext(
                 constants.COMMUNITY_DATABASE_CONNECTION,
                 dummyCachingProvider,
                 queue,
@@ -106,22 +107,24 @@ namespace igx.jobs.apiexecutionprocessor
                     CompanyPrefix = info.CompanyDomainPrefix,
                     IsAdministrator = false
                 });
-
+			Console.WriteLine($"Get resource: {DateTime.UtcNow.ToString("hh:mm:ss")}");
 			var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
             if (resource != null)
             {
                 company.CurrentResourceIsAdmin = resource.IsAdministrator;
             }
-
-            FieldsRepository fieldsRepository = new FieldsRepository(company, queue, storage);
+			Console.WriteLine($"Get repos: {DateTime.UtcNow.ToString("hh:mm:ss")}");
+			FieldsRepository fieldsRepository = new FieldsRepository(company, queue, storage);
             AssetRepository assetRepository = new AssetRepository(company, queue, storage, community);
-            MembershipRepository membershipRepository = new MembershipRepository(company, community, assetRepository, queue, storage); 
+            MembershipRepository membershipRepository = new MembershipRepository(company, community, assetRepository, queue, storage);
 
-            #endregion
+			#endregion
+			Console.WriteLine($"Get execution: {DateTime.UtcNow.ToString("hh:mm:ss")}");
+			
+			await company.Connection.OpenAsync();			
+			var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
 
-            var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == info.ExecutionID).SingleOrDefault();
-
-            try
+			try
             {
                 if (dbExecutionItem != null)
                 {
@@ -172,7 +175,9 @@ namespace igx.jobs.apiexecutionprocessor
 						Action<string> markExecutionAsErred = (err) => {
 							dbExecutionItem.ErrorMessage = err;
 							dbExecutionItem.CompletedOn = DateTime.UtcNow;
-							company.Update(dbExecutionItem);
+							company.Connection.ExecuteAsync(
+								"update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn where Id = @Id",
+								new { dbExecutionItem.ErrorMessage, dbExecutionItem.CompletedOn, dbExecutionItem.Id });
 						};
 
 						Func<AssetType, Task> assetTypeActionLogic = null;
@@ -215,8 +220,12 @@ namespace igx.jobs.apiexecutionprocessor
                                 var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
 								assetTypeActionLogic = async (at) =>
 								{
+									Console.WriteLine($"BEGIN: Get payload: {DateTime.UtcNow.ToString("hh:mm:ss")}");
 									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
+									Console.WriteLine($"END: Get payload: {DateTime.UtcNow.ToString("hh:mm:ss")}");
+									Console.WriteLine($"BEGIN: ImportAssets: {DateTime.UtcNow.ToString("hh:mm:ss")}");
 									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
+									Console.WriteLine($"END: ImportAssets: {DateTime.UtcNow.ToString("hh:mm:ss")}");
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(postAssetsFields.AssetTypeUid);
@@ -355,14 +364,14 @@ namespace igx.jobs.apiexecutionprocessor
 							var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
 							await storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, results);
 							markExecutionAsComplete();
-							CoreFunction.AITrackJobCompletedNoErrors(functionName);
+							CoreFunction.AITrackJobCompletedNoErrors(FUNCTION_NAME);
 						}
                     }
                 }
                 else
                 {
                     // this is the case where the batch job has been started however no record can be found in the api execution table for the execution id.  Log it
-                    CoreFunction.AITrackEvent(functionName, $"Cannot find [api].[execution] record for batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
+                    CoreFunction.AITrackEvent(FUNCTION_NAME, $"Cannot find [api].[execution] record for batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
                 }
             }
             catch (Exception ex)
@@ -405,7 +414,7 @@ namespace igx.jobs.apiexecutionprocessor
 				}
 				else 
 				{
-					CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string> {
+					CoreFunction.AITrackException(FUNCTION_NAME, ex, info.CompanyID, new Dictionary<string, string> {
 						{ "ExecutionID", info.ExecutionID.ToString() },
 						{ "StorageFolder", info.StorageFolder },
 						{ "RequestFileName", info.RequestFileName },

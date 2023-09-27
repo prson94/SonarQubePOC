@@ -97,13 +97,13 @@ namespace d360.model
 
         public BaseContext()
         {
-            SetDefaultEntityFrameworkCommandTimeout();
+            //SetDefaultEntityFrameworkCommandTimeout();
         }
 
         public BaseContext(string connectionString) : base(connectionString)
         {
             CompanyConnectionString = connectionString;
-            SetDefaultEntityFrameworkCommandTimeout();
+            //SetDefaultEntityFrameworkCommandTimeout();
         }
 
         #region Generic Repository Methods
