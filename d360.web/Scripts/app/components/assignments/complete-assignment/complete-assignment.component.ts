@@ -26,7 +26,6 @@ import { forkJoin, Observable, Subscription } from 'rxjs';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { NgForm } from '@angular/forms';
-import { AssignmentService } from '../assignment.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { D3SModal } from '../../shared/modal/gov-modal.component';
 import { JsonResult } from '../../../models/jsonresult.model';
@@ -118,7 +117,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
 		private linkClickInterceptor: LinkClickInterceptor,
-		private assignmentService: AssignmentService,
 		private cdRef: ChangeDetectorRef,
 		private resourceService: ResourcesService,
 		private authenticationService: AuthenticationService
@@ -130,9 +128,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	ngOnInit(): void {
 		this.isAssignmentProgressSelected = false;
 		this.loadRowsPerPage();
-		this.assignmentService.getAssetDetailsSubject.subscribe(()=>{
-			this.getAssetDetails()
-		})
 	}
 
 	ngOnDestroy(): void {
@@ -188,10 +183,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					);
 					this.sidePanelOpen = true;
 				});
-			if (this.isModalAvailable) {
-				this.hideDialog = false;
-				return;
-			}
 			if (this.isReassign) {
 				this.radioSelectionValue = 'reassignUser';
 			} else {
@@ -237,7 +228,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							if (this.allowReassignResource || this.radioSelectionValue === 'reassignUser') {
 								this.loadAllUsersData();
 							}
-							this.assignmentService.setFormValidators.next();
 						}
 
 						if (results[1]) {
@@ -258,7 +248,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.showAssignmentProgress()
 			}
 		}
-		this.isModalAvailable = true;
+		if (this.isModalAvailable) {
+			this.hideDialog = false;
+		}
+		else{
+			this.isModalAvailable = true;
+		}
 		this.cdRef.markForCheck();
 	}
 
@@ -329,14 +324,14 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.workflowService.submitWorkflowFormByUid(this.workflowItemUid, this.stepUid, this.formFields).subscribe(() => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.assignmentService.loadAssignments.next()
+					this.onModalClose.emit({ isBack: !this.areAllMultiAssignmentsSelected, removeSelected: true });
 				});
 			} else if (this.radioSelectionValue === 'reassignUser') {
 				this.isLoading = true;
 				this.workflowService.reassignWorkflowResourceByUid(this.stepUid, this.tableRadioSelection.Uid, this.clearOtherAssignments, this.sendFormEmails).subscribe((): void => {
 					this.closeModal();
 					this.modal.closePopUp();
-					this.assignmentService.loadAssignments.next()
+					this.onModalClose.emit({ isBack: !this.areAllMultiAssignmentsSelected, removeSelected: true });
 
 				});
 			} else if (this.radioSelectionValue === 'changeAsset') {
@@ -345,11 +340,10 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
-						this.assignmentService.loadAssignments.next()
+						this.onModalClose.emit({ isBack: !this.areAllMultiAssignmentsSelected, removeSelected: true });
 					});
 			}
 
-			this.onModalClose.emit({ isBack: this.areAllMultiAssignmentsSelected ? false : true, removeSelected: true });
 		}
 	}
 
