@@ -156,13 +156,14 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     deleteResponsibilityTypeRelation() {
         this.responsibilityTypeService.deleteResponsibilityTypeAllocation(this.selectedRow.ResponsibilityTypeUid, this.selectedRow.AssetTypeUid)
-            .subscribe((res) => {
-                this.showMessageForResult(this.messagesService, res);
-                if (!res.isError) {
-                    this.isDeleting = false;
+			.subscribe((result) => {
+				const res = result.shift();
+				this.showMessageForApiResponse(this.messagesService, res);
+				if (res.Success) {
                     this.onDelete.emit();
-                    this.load();
                 }
+				this.load();
+				this.isDeleting = false;
             });
     }
 
