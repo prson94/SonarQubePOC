@@ -113,6 +113,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	private storageKey: string = 'completeAssignmentRowsPerPage';
 	isReassign: boolean = false;
 	isAdmin: boolean = false;
+	private receivedFormFields: WorkflowFormField[] = [];
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
@@ -210,7 +211,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							this.formTitle = res.Title;
 							this.formDescription = res.Description;
 							this.formDescriptionRaw = res.DescriptionRaw;
-							this.formFields = res.Fields;
+							this.formFields = this.formFields?.length > 0 ? this.formFields : res.Fields;
+							this.receivedFormFields = structuredClone(res.Fields);
 							this.request = res.Request;
 							if (res.IssueObjectID) {
 								this.assetName = res.IssueObjectName;
@@ -276,6 +278,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	}
 
 	discardFormFunc(): void {
+		this.formFields = structuredClone(this.receivedFormFields);
 		this.workflowForm.reset();
 	}
 
@@ -356,6 +359,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.isModalAvailable = false;
 		this.hideDialog = false;
 		this.radioSelectionValue = '';
+		this.formFields = [];
 		this.linkInterceptorSubscription?.unsubscribe();
 		this.cdRef.markForCheck();
 	}

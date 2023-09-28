@@ -15,7 +15,8 @@
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
 				 (clickOutside)="closeSecondarySidePanel()">
-				<d3s-side-panel-switcher (closeClick)="closeSecondarySidePanel()" #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				<d3s-side-panel-switcher (closeClick)="closeSecondarySidePanel()"
+										 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 			</div>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
@@ -56,4 +57,5 @@
 		</as-split-area>
 	</as-split>
 </div>
-<d3s-complete-assignment *ngIf="!isRequestsFlow" (onModalClose)="onCompleteAssignmentModalClose()" #completeAssignmentComponent></d3s-complete-assignment>
+<d3s-complete-assignment *ngIf="!isRequestsFlow" (onModalClose)="onCompleteAssignmentModalClose()"
+						 #completeAssignmentComponent></d3s-complete-assignment>

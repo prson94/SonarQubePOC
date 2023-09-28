@@ -44,7 +44,7 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 	public setValidators() {
 		setTimeout(() => {
 			this.fields.forEach((x, i) => {
-				if (x.Required) {
+				if (x.Required && x.Value == null) {
 					this.form.controls[`input_${i}`]?.setErrors({
 						required: true
 					});
