@@ -313,7 +313,7 @@ namespace d360.model
 
         public int Execute(string sql, object param = null, IDbTransaction transaction = null, int? commandTimeout = null, CommandType? commandType = null)
         {
-            return ObjectContext.Connection.Execute(sql, param, transaction, commandTimeout, commandType);
+            return Database.Connection.Execute(sql, param, transaction, commandTimeout, commandType);
         }
 
         public List<T> ExecuteQuery<T>(string commandText, List<SqlParameter> parameters)
