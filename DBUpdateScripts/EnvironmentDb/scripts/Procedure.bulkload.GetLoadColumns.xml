@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.bulkload.GetLoadColumns-v22">
+  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v23">
     <comment>GOV-21417</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -199,7 +199,7 @@ begin
 					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
 						select	[uid], 0, DisplayValue, @ParentTypeNameLookupIDIdentifier
 						from	AssetDetail 
-						where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (1, 8) order by DisplayValue;
+						where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (1, 8) order by DisplayValue option(recompile);
 				end
 
 				if @type = 'ReferenceItemType'
@@ -207,7 +207,7 @@ begin
 					insert into @lookups ([Value], FieldTypeID, [Label], LookUpID)
 					select	[uid], 0, DisplayValue, @ParentTypeNameLookupIDIdentifier
 					from	AssetDetail 
-					where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (9) order by DisplayValue;
+					where	AssetTypeID = @parentTypeID and [AssetTypeClass] in (9) order by DisplayValue option(recompile);
 				end
 			end
 		end 
