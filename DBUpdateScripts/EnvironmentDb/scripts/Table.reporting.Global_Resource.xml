@@ -5,9 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.reporting.Global_Resource-v1.0">
-    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-		<![CDATA[
+	<changeSet author="Pappas" id="Table.reporting.Global_Resource-v1.0">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Global_Resource')
 BEGIN
 	CREATE TABLE [reporting].[Global_Resource](
@@ -25,24 +25,68 @@ BEGIN
 	)
 END
 		]]>
-    </sql>
-  </changeSet>
+		</sql>
+	</changeSet>
 
- <changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterDelete-v2">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterDelete]
-  </sql>
- </changeSet>
+	<changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterDelete-v2">
+		<sql dbms="mssql">
+			DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterDelete]
+		</sql>
+	</changeSet>
 
- <changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v7">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterUpsert]
-  </sql>
- </changeSet>
+	<changeSet author="TDuric" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v1_temp">
+		<comment>GOV-29264</comment>
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
+			<![CDATA[
+CREATE OR ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
+	ON [reporting].[Global_Resource]
+	FOR INSERT, UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
 
- <changeSet author="Pappas" id="Indices.reporting.Global_Resource-v1">
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
+			merge	dbo.Asset as T
+			using	(
+					SELECT	T.ID as AssetTypeID, 
+							1 as [State], 
+							O.ResourceID as SourceID, 
+							'Resource' as Object, 
+							O.ResourceID as ObjectID,
+							O.[uid]
+					FROM	inserted O
+							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+					) as S
+			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
+			when	matched then
+			update	set
+					T.[uid] = S.[uid],
+					T.UpdatedOn = getutcdate(),
+					T.UpdatedBy = 0
+			when not matched by target then
+			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
+			
+		
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'D',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted O INNER JOIN [dbo].[Asset] A
+		ON O.ResourceID = A.ObjectID AND 'Resource' = A.Object
+		WHERE O.State <> 1;
+END
+		]]>
+		</sql>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Indices.reporting.Global_Resource-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ReportingGlobalResource_Uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
@@ -58,7 +102,7 @@ BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Reporting_Global_Resource_Email] ON [reporting].[Global_Resource] ([Email])
 END
 ]]>
-  </sql>
- </changeSet>
+		</sql>
+	</changeSet>
 
 </databaseChangeLog>
