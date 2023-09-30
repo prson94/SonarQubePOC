@@ -34,7 +34,7 @@ END
 		</sql>
 	</changeSet>
 
-	<changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v7">
+	<changeSet author="Pappas" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v9">
 		<sql dbms="mssql">
 			DROP TRIGGER IF EXISTS [reporting].[ReportingGlobalResource_AfterUpsert]
 		</sql>
