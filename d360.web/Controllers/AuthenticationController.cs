@@ -2,11 +2,14 @@ using ComponentSpace.SAML2.Assertions;
 using ComponentSpace.SAML2.Profiles.SingleLogout;
 using ComponentSpace.SAML2.Profiles.SSOBrowser;
 using ComponentSpace.SAML2.Protocols;
+using d360.core;
 using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.extensions;
-using d360.extensions.caching;
+using d360.model.DataAccessLayer;
 using d360.web.caching;
 using d360.web.Extensions;
 using d360.web.Models;
@@ -14,7 +17,6 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Newtonsoft.Json;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -45,10 +47,11 @@ namespace d360.web.Controllers
 
 		#region DI
 
+		private readonly IMembershipRepository MembershipRepository;
 		private readonly OidcDiscoveryCache Discovery;
 		private readonly TelemetryClient Telemetry;
 
-        public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery)
+        public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery, IMembershipRepository membershipRepository)
             : base(set)
         {
             Mail = mail;
@@ -57,6 +60,7 @@ namespace d360.web.Controllers
             Telemetry.Context.GlobalProperties["CompanyID"] = Company.CurrentCompanyID.ToString();
 
 			Discovery = discovery;
+			MembershipRepository = membershipRepository;
         }
 
         #endregion
@@ -140,7 +144,7 @@ namespace d360.web.Controllers
             return extras;
         }
 
-        private ActionResult parseUserInfoAndLogin(
+        private async Task<ActionResult> parseUserInfoAndLogin(
             string userName, string firstName, string lastName,
             Dictionary<string,List<string>> groups = null, Dictionary<string, string> customClaims = null,
             string relayState = null,
@@ -240,33 +244,38 @@ namespace d360.web.Controllers
                         };
                         Community.Add(resource);
 
-                        var companyResource = new CompanyResource
-                        {
-                            CompanyID = Community.CurrentCompanyID,
-                            IsAdministrator = isCompanyAdministrator,
-                            ResourceID = resource.ID,
-                            LastLoggedInOn = DateTime.UtcNow,
-                            State = CompanyResourceState.Active
-                        };
-                        Community.Add(companyResource);
+						//if there is no asset record call UpsertUsers method which will update both community and company
+						if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
+						{
+							await HandleNewSSOUser(resource);
+						}
+						else if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
+						{
+							var companyResource = new CompanyResource
+							{
+								CompanyID = Community.CurrentCompanyID,
+								IsAdministrator = isCompanyAdministrator,
+								ResourceID = resource.ID,
+								LastLoggedInOn = DateTime.UtcNow,
+								State = CompanyResourceState.Active
+							};
+							Community.Add(companyResource);
 
-                        if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
-                        {
-                            Company.Add(new GlobalReportingResource
-                            {
-                                LastLoggedInOn = companyResource.LastLoggedInOn,
-                                Email = resource.Email,
-                                FirstName = resource.FirstName,
-                                LastName = resource.LastName,
-                                IsAdministrator = false,
-                                ResourceID = resource.ID,
-                                Uid = resource.Uid,
-                                State = companyResource.State,
-                                CreatedOn = DateTime.UtcNow
-                            });
-                        }
+							Company.Add(new GlobalReportingResource
+							{
+								LastLoggedInOn = companyResource.LastLoggedInOn,
+								Email = resource.Email,
+								FirstName = resource.FirstName,
+								LastName = resource.LastName,
+								IsAdministrator = false,
+								ResourceID = resource.ID,
+								Uid = resource.Uid,
+								State = companyResource.State,
+								CreatedOn = DateTime.UtcNow
+							});
+						}
 
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
+						Telemetry.TrackTrace(new TraceTelemetry { Message = $"Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
                     }
                 }
                 else
@@ -283,32 +292,37 @@ namespace d360.web.Controllers
 
 						if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                         {
-                            companyResource = new CompanyResource
-                            {
-                                CompanyID = Community.CurrentCompanyID,
-                                IsAdministrator = isCompanyAdministrator,
-                                ResourceID = resource.ID,
-                                LastLoggedInOn = DateTime.UtcNow,
-                                State = CompanyResourceState.Active
-                            };
-                            Community.Add(companyResource);
+							//if there is no asset record call UpsertUsers method which will update both community and company
+							if (!Company.Assets.Any(x => x.Object == SystemObjects.Resource.ToString() && x.ObjectID == resource.ID))
+							{
+								await HandleNewSSOUser(resource);
+							}
+							else if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
+							{
+								companyResource = new CompanyResource
+								{
+									CompanyID = Community.CurrentCompanyID,
+									IsAdministrator = isCompanyAdministrator,
+									ResourceID = resource.ID,
+									LastLoggedInOn = DateTime.UtcNow,
+									State = CompanyResourceState.Active
+								};
+								Community.Add(companyResource);
 
-                            if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
-                            {
-                                Company.Add(new GlobalReportingResource
-                                {
-                                    LastLoggedInOn = companyResource.LastLoggedInOn,
-                                    Email = resource.Email,
-                                    FirstName = resource.FirstName,
-                                    LastName = resource.LastName,
-                                    IsAdministrator = false,
-                                    ResourceID = resource.ID,
-                                    Uid = resource.Uid,
-                                    State = companyResource.State,
-                                    CreatedOn = DateTime.UtcNow
-                                });
-                            }
-                        }
+								Company.Add(new GlobalReportingResource
+								{
+									LastLoggedInOn = companyResource.LastLoggedInOn,
+									Email = resource.Email,
+									FirstName = resource.FirstName,
+									LastName = resource.LastName,
+									IsAdministrator = false,
+									ResourceID = resource.ID,
+									Uid = resource.Uid,
+									State = companyResource.State,
+									CreatedOn = DateTime.UtcNow
+								});
+							}
+						}
                         else
                         {
                             resource = null;
@@ -607,7 +621,39 @@ namespace d360.web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest); //If you made this far, then error occurred.
         }
 
-        [AllowAnonymous, Route("sso")]
+		private async Task HandleNewSSOUser(Resource resource)
+		{
+			var execution = new ApiExecution
+			{
+				ExecutionID = Guid.NewGuid(),
+				StartedOn = DateTime.UtcNow,
+				Action = ApiExecutionAction.UpsertUsers,
+				Route = "",
+				Method = "",
+				ResourceID = resource.ID,
+				Total = 1,
+				Fields = "",
+				Error = 0,
+				Processed = 0,
+				ApplicationId = "AllowNewUserLogin"
+			};
+			var users = new List<UserApiInsertModel>
+								{
+									new UserApiInsertModel()
+									{
+										FirstName = resource.FirstName,
+										LastName = resource.LastName,
+										ResourceID = resource.ID,
+										uid = resource.Uid,
+										Username = resource.Email,
+										IsNew = true
+									}
+								};
+
+			var results = await MembershipRepository.UpsertUsers(execution, users, true, true, false);
+		}
+
+		[AllowAnonymous, Route("sso")]
         public async Task<ActionResult> Login()
         {
             if (string.Equals(Request?.Browser?.Browser, "internetexplorer", StringComparison.OrdinalIgnoreCase))
@@ -728,7 +774,7 @@ namespace d360.web.Controllers
         }
 
         [AllowAnonymous, Route("sso/acs"), HttpPost]
-        public ActionResult ParseSamlResponse()
+        public async Task<ActionResult> ParseSamlResponse()
         {
             // Extract the asserted identity from the SAML response.
             // The SAML assertion may be signed or encrypted and signed.
@@ -851,7 +897,7 @@ namespace d360.web.Controllers
                     }
                 };
 
-                return parseUserInfoAndLogin(userName, firstName, lastName, groups, customClaims, relayState, addSamlAssertionToCookie);
+                return await parseUserInfoAndLogin(userName, firstName, lastName, groups, customClaims, relayState, addSamlAssertionToCookie);
             }
             else
             {
@@ -990,7 +1036,7 @@ namespace d360.web.Controllers
                         );
                 };
 
-                return parseUserInfoAndLogin(
+                return await parseUserInfoAndLogin(
 					userAuth.Email, userAuth.FirstName, userAuth.LastName,
 					userAuth.Groups, userAuth.CustomClaims,
                     redirectUrl, addOpenIdTokenToContext);
