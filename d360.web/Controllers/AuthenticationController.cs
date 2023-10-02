@@ -639,7 +639,7 @@ namespace d360.web.Controllers
 			};
 			var users = new List<UserApiInsertModel>
 								{
-									new UserApiInsertModel()
+									new UserApiInsertModel
 									{
 										FirstName = resource.FirstName,
 										LastName = resource.LastName,
@@ -650,7 +650,7 @@ namespace d360.web.Controllers
 									}
 								};
 
-			var results = await MembershipRepository.UpsertUsers(execution, users, true, true, false);
+			await MembershipRepository.UpsertUsers(execution, users, true, true, false);
 		}
 
 		[AllowAnonymous, Route("sso")]
