@@ -150,10 +150,10 @@
 											<td colspan="6" i18n>No matching assignments.</td>
 										</tr>
 									</ng-template>
-									<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+									<ng-template pTemplate="summary">
 										<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
 															  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-										<d3s-grid-selection-info [includeSelectLinks]="false"
+										<d3s-grid-selection-info *ngIf="(dt.totalRecords>0)" [includeSelectLinks]="false"
 																 [model]="assignments"
 																 [selection]="selected">
 										</d3s-grid-selection-info>
