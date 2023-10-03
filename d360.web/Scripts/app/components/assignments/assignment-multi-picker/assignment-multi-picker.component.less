@@ -1,5 +1,4 @@
 .multi-assignment-selector {
-  overflow-y: auto;
   height: 100%;
 
   .header-wrapper {
@@ -48,8 +47,49 @@
   }
 }
 
+.content-without-header {
+  overflow-y: auto;
+  height: calc(100% - 84px);
+}
+
 .assignment-modal-dialog {
   min-height: 256px;
   height: 100%;
 }
 
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 12px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 12px;
+    }
+  }
+}
+
+.checkbox-column {
+  width: 36px;
+}
+
+.associated-with-column {
+  width: 220px;
+}
+
+.object-type-column {
+  width: 128px;
+}
+
+.initiated-by-column {
+  width: 220px;
+}
+
+.initiated-on-column {
+  width: 96px;
+}
+
+.tools-column {
+  width: 40px;
+}

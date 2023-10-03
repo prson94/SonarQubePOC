@@ -14,7 +14,8 @@
 				<div class="action-bar">
 					<button igButton class="ig-button-secondary" (click)="closeDialog()" i18n>Close</button>
 					<span class="grow"></span>
-					<button *ngIf="isAdmin" igButton class="ig-button-primary" style="margin-right:10px;" (click)="confirm(true)"
+					<button *ngIf="isAdmin" igButton class="ig-button-primary" style="margin-right:10px;"
+							(click)="confirm(true)"
 							[disabled]="selected.length === 0" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
 							i18n>
 						Reassign >
@@ -22,7 +23,7 @@
 					<button *ngIf="isCurrentUser" igButton class="ig-button-primary" (click)="confirm(false)"
 							[disabled]="selected.length === 0" i18n>
 						Complete Assignments >
-					</button>					
+					</button>
 				</div>
 			</ng-container>
 		</div>
@@ -50,7 +51,7 @@
 			<div i18n class="title">Select Assignments</div>
 			<div class="subtitle">{{workflowTypeName}}</div>
 		</div>
-		<div class="asset-detail">
+		<div class="asset-detail content-without-header">
 			<div class="asset-detail-tabs">
 				<ig-property-group i18n-title title="Assignment Information" [showHeaderLine]="false"
 								   [shouldBePadded]="false" [expanded]="false">
@@ -100,26 +101,26 @@
 										 [globalFilterFields]="['Name','ObjectType','InitiatedBy']">
 									<ng-template pTemplate="header">
 										<tr>
-											<th style="width: 36px;">
+											<th class="checkbox-column">
 												<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
 											</th>
-											<th [pSortableColumn]="'Name'">
+											<th [pSortableColumn]="'Name'" class="associated-with-column">
 												<ng-container i18n>Associated With</ng-container>
 												<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
 											</th>
-											<th [pSortableColumn]="'ObjectType'">
+											<th [pSortableColumn]="'ObjectType'" class="object-type-column">
 												<ng-container i18n>Object Type</ng-container>
 												<d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon>
 											</th>
-											<th [pSortableColumn]="'InitiatedBy'">
+											<th [pSortableColumn]="'InitiatedBy'" class="initiated-by-column">
 												<ng-container i18n>Initiated By</ng-container>
 												<d3s-sortIcon [field]="'InitiatedBy'"></d3s-sortIcon>
 											</th>
-											<th [pSortableColumn]="'InitiatedOn'">
+											<th [pSortableColumn]="'InitiatedOn'" class="initiated-on-column">
 												<ng-container i18n>Initiated</ng-container>
 												<d3s-sortIcon [field]="'InitiatedOn'"></d3s-sortIcon>
 											</th>
-											<th>
+											<th class="tools-column">
 
 											</th>
 										</tr>
