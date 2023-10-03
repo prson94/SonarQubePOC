@@ -1372,10 +1372,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (item.value === 'Relationship' && (!this.relationshipItems || this.relationshipItems.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
 		}
-
+		
 		if (item.value === 'ComputedRelationshipLookup'
 			&& (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)
-			&& (!this.cardinalRelationships || this.cardinalRelationships.length === 0)) {
+			&& (!this.cardinalRelationships || this.cardinalRelationships.length === 0)
+			&& (!this.relationshipItems || this.relationshipItems.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
 		}
 		if (item.value === 'Score' && (!this.scoreTypeOptions || this.scoreTypeOptions.length === 0)) {
