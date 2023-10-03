@@ -173,6 +173,8 @@ namespace d360.model.DataAccessLayer
 			List<string> fieldsUsedInMainQuery = new List<string>();
 			List<string> filterfieldsUsedInMainQuery = new List<string>();
 
+			List<FieldTypesReferenceListQry> referenceListTempQryList = new List<FieldTypesReferenceListQry>();
+
 			//Helping Query Subjectuid/ObjectUid Paramer
 			string AssetQuery = $@"Select A.Id as AssetId,A.AssetTypeId, 0 IsReference
 									   From Asset A
@@ -285,6 +287,18 @@ namespace d360.model.DataAccessLayer
 						{
 							var IntersectTypeID = fieldTypes.FirstOrDefault().IntersectTypeID;
 							dbArgs.Add("@IntersectTypeID", IntersectTypeID);
+							//Getting sql statement of referernce list LookUp type field
+							string ListQuery = $@"select * 
+								 from (select ft.id FieldTypeID, [dbo].[GetReferenceItemValuesSQL](ft.id,1,1) Query
+								 from FieldType ft
+								 inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
+								 where ft.IntersectTypeID = @IntersectTypeID  and ft.AllowMultipleValues = 1
+								 ) a where query is not null";
+							var referenceListTempQryListasyn = await CompanyContext.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { IntersectTypeID = IntersectTypeID }, ApiTimeout);
+							if (referenceListTempQryList != null)
+							{
+								referenceListTempQryList = referenceListTempQryListasyn.ToList();
+							}
 						}
 
 						fiterIntersectType.Add($@"
@@ -714,7 +728,7 @@ namespace d360.model.DataAccessLayer
 				
 				if (fieldTypes != null && fieldTypes.Count() > 0)
 				{
-					getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect, IsCreateTempTable: true, TempTableScriptList: TempTableScriptList);
+					getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "i.Id", listColorsAsJSON, objectType: SystemObjects.Intersect, IsCreateTempTable: true, TempTableScriptList: TempTableScriptList, referenceListTempQryList: referenceListTempQryList);
 					TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 				}
 

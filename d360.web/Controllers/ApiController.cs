@@ -502,6 +502,8 @@ namespace d360.web.Controllers
 		{
 			var list = new List<DetailReadOnlyRowModel>();
 			var details = Company.GetObjectDetail(type.ToString(), id);
+			string typeidFieldName = "AssetTypeID";
+			int typeidFieldValue;
 
 			if (details != null)
 			{
@@ -511,10 +513,12 @@ namespace d360.web.Controllers
 				switch (type)
 				{
 					case SystemObjects.Intersect:
+						typeidFieldName = "IntersectTypeID";
 						fieldsWithRelationWhere = "where IntersectID = @id";
 						dbArgs.Add("id", id);
 						break;
 					case SystemObjects.Issue:
+						typeidFieldName = "IssueTypeID";
 						fieldsWithRelationWhere = "where IssueID = @id";
 						dbArgs.Add("id", id);
 						break;
@@ -532,14 +536,17 @@ namespace d360.web.Controllers
 				if (type == SystemObjects.IssueType || type == SystemObjects.Issue)
 				{
 					issueTypeID = type == SystemObjects.IssueType ? id : Company.Issues.Where(i => i.ID == id).FirstOrDefault().IssueTypeID;
+					typeidFieldValue = issueTypeID;
 				}
 				else if (type == SystemObjects.Intersect || type == SystemObjects.IntersectType)
 				{
 					intersectTypeID = type == SystemObjects.IntersectType ? id : Company.Intersects.Where(i => i.ID == id).FirstOrDefault().IntersectTypeID;
+					typeidFieldValue = intersectTypeID;
 				}
 				else
 				{
 					assettypeID = Company.Assets.Where(a => a.Object == type.ToString() && a.ObjectID == id).FirstOrDefault().AssetTypeID;
+					typeidFieldValue = assettypeID;
 				}
 
 				IQueryable<FieldType> ftQuery = Company.FieldTypes.Where(x => x.IsDisplayable);
@@ -574,6 +581,45 @@ namespace d360.web.Controllers
 					lookupDataWhereSQL = "where I.ID = @assetId ";
 				}
 
+				string createtemptablewithdata = "";
+				string temptabledata = "";
+				string temptable = "";
+
+				//Getting sql statement of referernce list LookUp type field
+				string ListQuery = $@"select * 
+								 from (select ft.id FieldTypeID, ft.LookupObjectID, [dbo].[GetReferenceItemValuesSQL](ft.id,1,1) Query
+								 from FieldType ft
+								 inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
+								 where ft.{typeidFieldName} = @Typeid and ft.AllowMultipleValues = 1
+								 ) a where query is not null";
+				var referenceListTempQryListasyn = await Company.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { Typeid = typeidFieldValue }, 90);
+				List<FieldTypesReferenceListQry> referenceListTempQryList = new List<FieldTypesReferenceListQry>();
+				if (referenceListTempQryList != null)
+				{
+					referenceListTempQryList = referenceListTempQryListasyn.ToList();
+					if (referenceListTempQryListasyn.Count() > 0)
+					{
+						foreach (var rl in referenceListTempQryListasyn)
+						{
+							temptable = $@"
+										  {rl.Query}
+										  insert into #tempdatalist(id, AssetID)
+										  select rowseq,ID
+										  from #TempLookUpReferenceItem{rl.LookupObjectID.ToString()};
+										  drop table if exists #TempLookUpReferenceItem{rl.LookupObjectID.ToString()}
+										  ";
+
+							temptabledata += temptable;
+						}
+						createtemptablewithdata = $@"
+											 drop table if exists #tempdatalist;
+											 create table #tempdatalist(id int, AssetID bigint);
+											 create clustered index cx_tempdatalist on #tempdatalist(AssetID);
+											 {temptabledata}
+											";
+					}
+				}
+
 				var lookupDataSql = $@"  select ft.id as FieldTypeId, 
 						trim(Val.Value) as Value, 
 						od.AssetId, 
@@ -596,10 +642,12 @@ namespace d360.web.Controllers
 					left join AssetType refType on refType.ID = od.AssetTypeId
 					outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
 					left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
+					{(!string.IsNullOrWhiteSpace(createtemptablewithdata) ? " left join #tempdatalist tl on tl.AssetID = od.AssetID" : "")}
 					{lookupDataWhereSQL}
 					and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
 					and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
-					and Val.Value is not null and Val.value <> '';";
+					and Val.Value is not null and Val.value <> ''
+					{(!string.IsNullOrWhiteSpace(createtemptablewithdata) ? " order by tl.id" : "")};";
 
 				var relationLookupDataSql = $@"
 						select ftl.* from fieldtype ft
@@ -607,7 +655,7 @@ namespace d360.web.Controllers
 						where ft.assettypeid = @AssetTypeID
 						and (ft.type ='ComplexRelationLookup' or ft.type = 'OwnershipLookup');";
 
-				var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
+				var dataReader = await Company.QueryMultipleAsync(createtemptablewithdata + lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 
 				var lookupData = dataReader.Read<LookupDataReadOnlyModel>().ToList();
 				var fieldTypeLookups = dataReader.Read<FieldTypeLookup>().ToList();
