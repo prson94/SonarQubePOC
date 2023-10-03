@@ -184,4 +184,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	ngOnDestroy(): void {
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
+
+	onCompleteAssignmentModalClose() {
+		this.assignmentGridComponent.loadData();
+	}
 }

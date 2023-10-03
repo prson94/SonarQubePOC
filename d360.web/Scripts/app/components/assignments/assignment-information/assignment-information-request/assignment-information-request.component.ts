@@ -21,7 +21,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	@Input() workflowItemUid: string;
 	@Input() stepUid: string;
 	@Input() showSubmittedByData: boolean = false;
-	@ViewChild('assetClick') assetClick: ElementRef
+	@ViewChild('assetClick') assetClick: ElementRef;
 
 	request: FormRequest;
 
@@ -38,8 +38,8 @@ export class AssignmentInformationRequestComponent implements OnInit {
 			this.loadFormDetails();
 		}
 		setTimeout(() => {
-			this.assetClick.nativeElement.click();
-			});
+			this.assetClick?.nativeElement?.click();
+		});
 	}
 
 	loadData(workflowActionUid: string): void {
@@ -65,7 +65,7 @@ export class AssignmentInformationRequestComponent implements OnInit {
 			.subscribe((res: WorkflowForm) => {
 				this.isLoading = false;
 				if (res) {
-					this.request = res.Request
+					this.request = res.Request;
 				}
 			});
 	}

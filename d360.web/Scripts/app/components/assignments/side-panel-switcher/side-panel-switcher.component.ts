@@ -27,6 +27,7 @@ export class SidePanelSwitcherComponent {
 	_sidePanelTab: string;
 	panelHeader: string;
 
+	// being set from href-click-service through base-component
 	set sidePanelTab(value: string) {
 		this._sidePanelTab = value;
 		this.panelHeader = this.getPanelHeader();
@@ -61,7 +62,8 @@ export class SidePanelSwitcherComponent {
 	clear(): void {
 		this.selectedTag = null;
 		this.selectedReferenceItem = null;
-		this._selectedAsset = null;
+		this.sidePanelTab = null;
+		this.selectedAsset = null;
 		this.selection = null;
 	}
 
