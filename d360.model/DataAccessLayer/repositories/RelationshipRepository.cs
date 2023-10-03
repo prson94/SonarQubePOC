@@ -294,7 +294,7 @@ namespace d360.model.DataAccessLayer
 								 inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
 								 where ft.IntersectTypeID = @IntersectTypeID  and ft.AllowMultipleValues = 1
 								 ) a where query is not null";
-							var referenceListTempQryListasyn = await CompanyContext.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { IntersectTypeID = IntersectTypeID }, ApiTimeout);
+							var referenceListTempQryListasyn = await CompanyContext.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { IntersectTypeID }, ApiTimeout);
 							if (referenceListTempQryList != null)
 							{
 								referenceListTempQryList = referenceListTempQryListasyn.ToList();
