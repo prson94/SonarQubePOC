@@ -195,6 +195,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			this.workflowItemUid = details.workflowItemUid;
 
 			this.isLoading = true;
+			this.cdRef.detectChanges();
 			if (this.loadSub) {
 				this.loadSub.unsubscribe();
 			}
