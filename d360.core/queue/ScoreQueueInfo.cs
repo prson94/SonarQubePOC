@@ -27,6 +27,10 @@ namespace d360.core.queue
 
         public ScoreQueueChangeType ChangeType { get; set; }
 
+		public dynamic Payload { get; set; }
+
+		public bool UseUpdatedScoringEngine { get; set; } = false;
+
         [JsonIgnore]
         private string StartedOnDateString { get { return StartedOn.ToString("yyyyMMdd"); } }
 

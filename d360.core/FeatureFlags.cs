@@ -19,6 +19,7 @@
 		#region Temporary Feature Flags
 
 		public static readonly string TEMP_ASSIGNMENTS = "GovernAssignmentsTemp20230815";
+		public static readonly string TEMP_SCORE_ENGINE_UPDATE = "GovernScoringEngineUpdateTemp";
 
 		#endregion
 	}

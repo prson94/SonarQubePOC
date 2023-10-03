@@ -4,6 +4,7 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions.queue;
 using d360.extensions.storage;
+using d360.model;
 using d360.utils.company;
 using Dapper;
 using igx.jobs.scoreprocessor.ChangeTypes;
@@ -11,6 +12,8 @@ using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,56 +22,114 @@ namespace igx.jobs.scoreprocessor
 {
     public static class ScoringQueueProcessor
     {
-        const string functionName = "Scoring_QueueProcessor";
+        const string FUNCTION_NAME = "Scoring_QueueProcessor";
+		
+		static string GetCompanyConnectionString(int companyID)
+		{
+			string connectionString = "";
 
-#if DEBUG
-        //public async static Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, System.Threading.CancellationToken token, TextWriter log)
-        public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
-#else
-        public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
-#endif
+			using (var cnn = new SqlConnection(Environment.GetEnvironmentVariable("CommunityContext")))
+			{
+				if (cnn.State != System.Data.ConnectionState.Open)
+				{
+					cnn.Open();
+				}
 
+				var company = cnn.Query<dynamic>(
+					@"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
+					new { companyID }
+				).FirstOrDefault();
+
+				if (company != null)
+				{
+					connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
+				}
+			}
+
+			return connectionString;
+		}
+
+		public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
-#if DEBUG
-            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.AssetMeasures, CompanyID = 59, StartedOn = DateTime.Parse("2021-07-01"), ExecutionUid = Guid.Parse("572C8380-512F-4361-9E57-EBC758470976") };
-            var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
-#else
-            var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
-#endif
-            try
-            {
-                IScoreProcess process = null;
+			var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 
-                switch (scoreInfo.ChangeType)
-                {
-                    case ScoreQueueChangeType.AssetMeasures:
-                        process = new AssetMeasuresProcess();
-                        break;
-                    case ScoreQueueChangeType.CheckTypeDependencyRemoved:
-                        process = new CheckTypeDependencyRemovedProcess();
-                        break;
-                    case ScoreQueueChangeType.MeasureChanged:
-                        process = new MeasureChangedProcess();
-                        break;
-                    case ScoreQueueChangeType.MeasureRemoved:
-                        process = new MeasureRemovedProcess();
-                        break;
-                    case ScoreQueueChangeType.RollupPathChanged:
-                        process = new RollupPathChangedProcess();
-                        break;
-                    case ScoreQueueChangeType.RuleAssetRemoved:
-                        process = new RuleAssetRemovedProcess();
-                        break;
-                    case ScoreQueueChangeType.WorkflowCheck:
-                        process = new WorkflowCheckProcess();
-                        break;
-                }
+			try
+			{
+				string sql = "";
+				string companyConnectionString = "";
 
-                if (process != null)
-                {
-                    process.Info = scoreInfo;
-                    await process.Run();
-                }
+				IScoreProcess process = null;
+
+				switch (scoreInfo.ChangeType)
+				{
+					case ScoreQueueChangeType.AssetMeasures:
+						process = new AssetMeasuresProcess();
+						break;
+					case ScoreQueueChangeType.CheckTypeDependencyRemoved:
+						process = new CheckTypeDependencyRemovedProcess();
+						break;
+					case ScoreQueueChangeType.MeasureChanged:
+						process = new MeasureChangedProcess();
+						break;
+					case ScoreQueueChangeType.MeasureRemoved:
+						if (scoreInfo.UseUpdatedScoringEngine)
+						{
+							var payload = scoreInfo.Payload as MeasureRemovedModel;
+							sql = @"
+declare @effectiveDate date = getutcdate(),
+		@scoreType int
+
+select	@scoreType = al.ScoreType
+from	metrics.Asset a
+		inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @versionUid
+		inner join metrics.Allocation al on al.Uid = a.AllocationUid
+create table #ids (RowId int identity, AssetUid uniqueidentifier)
+
+insert into #ids
+	select	s.AssetUid
+	from	metrics.ScoreItem i
+			inner join metrics.ScoreItemLink l on l.ScoreItemUid = i.Uid and i.AssetVersionUid = @versionUid
+			inner join metrics.Score s on s.Uid = l.ScoreUid
+
+declare @current int = 1,
+		@max int,
+		@currentAssetUid uniqueidentifier;
+
+select @max = max(RowId) from #ids
+while @current <= @max
+begin
+	select @currentAssetUid = from #ids where RowId = @current
+	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType
+end";
+							companyConnectionString = GetCompanyConnectionString(scoreInfo.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
+							{
+								await companyConnection.OpenIfClosed();
+								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid });
+							}
+							//Execute the SQL.
+						}
+						else 
+						{
+							process = new MeasureRemovedProcess();
+						}
+						break;
+					case ScoreQueueChangeType.RollupPathChanged:
+						process = new RollupPathChangedProcess();
+						break;
+					case ScoreQueueChangeType.RuleAssetRemoved:
+						process = new RuleAssetRemovedProcess();
+						break;
+					case ScoreQueueChangeType.WorkflowCheck:
+						process = new WorkflowCheckProcess();
+						break;
+				}		
+
+				if (process != null)
+				{
+					process.Info = scoreInfo;
+					await process.Run();
+				}
             }
             catch (ArgumentNullException)
             {
@@ -81,7 +142,7 @@ namespace igx.jobs.scoreprocessor
                         { "ChangeType", scoreInfo.ChangeType.ToString() }
                     };
 
-                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                CoreFunction.AITrackException(FUNCTION_NAME, ex, scoreInfo.CompanyID, props);
             }
             catch (ScoresCurrentlyProcessingException)
             {
@@ -109,7 +170,7 @@ namespace igx.jobs.scoreprocessor
                 bool shouldRequeue = true;
                 if (warningOnly)
                 {
-                    CoreFunction.AITrackEvent(functionName, "Rollup Deadlock", props, scoreInfo.CompanyID);
+                    CoreFunction.AITrackEvent(FUNCTION_NAME, "Rollup Deadlock", props, scoreInfo.CompanyID);
                     
                     // Only requeue 1 out of 3 times as there are rapid changes that will put many messages on the queue.
                     Random random = new Random();
@@ -123,7 +184,7 @@ namespace igx.jobs.scoreprocessor
                 }
                 else
                 {
-                    CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+                    CoreFunction.AITrackException(FUNCTION_NAME, ex, scoreInfo.CompanyID, props);
                 }
                 
 
