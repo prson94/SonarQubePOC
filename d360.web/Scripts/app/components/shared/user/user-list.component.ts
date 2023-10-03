@@ -71,8 +71,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     advancedFilter: string = "";
 
     totalRecords: number;
-    rowsPerPage: number = this.defaultInitialItemsPerPage;
     defaultInitialItemsPerPage: number = 10;
+    rowsPerPage: number = this.defaultInitialItemsPerPage;
     private usersSub: ISubscription;
     currentPageNumber: number = 0;
     sortField: string = undefined;
@@ -453,4 +453,9 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     onFiltersLoaded() {
         this.getData();
     }
+
+	onSimpleSearch() {
+		this.currentPageNumber = 0;
+		this.getData();
+	}
 }
