@@ -6,6 +6,7 @@ namespace d360.core.enums
 	{
 		Full = 0,
 		Sample = 1,
-		Filtered = 2
+		Filtered = 2,
+		Failed = 3
 	}
 }
