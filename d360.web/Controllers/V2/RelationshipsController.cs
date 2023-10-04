@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -430,6 +431,9 @@ namespace d360.web.Controllers.V2
 		///     - **Logical Operators**
 		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
 		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///
+		///     - **List of non-listable fields in "_filter" parameter are**
+		///         - State, Object.[Path], Subject.[Path], relationshiptype, predicatetype, assetpath
 		/// </remarks>
 		/// <param name="State">Filter on the state, or status, of a relationship.</param>
 		/// <returns></returns>
