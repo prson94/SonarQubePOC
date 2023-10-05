@@ -55,13 +55,13 @@ namespace d360.core
 
 		public static string EscapeForLike(this string text)
 		{
-			var escapeChars = new string[] { "%", "_", "^", "[" };
+			var escapeChars = new string[] { "[", "%", "_", "^" };
 			text.CleanForSql();
 			try
 			{
 				foreach (var c in escapeChars)
 				{
-					text.Replace(c, $"[{c}]");
+					text = text.Replace(c, $"[{c}]");
 				}
 			}
 			catch { }
