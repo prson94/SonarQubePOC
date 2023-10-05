@@ -207,7 +207,7 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 			int pageSizeLimit = isStreamResponse ? 200000 : 250;
-			bool IsassetUidReferenceTypeID = false;
+			bool IsassetUidReqUnion = false;
 
 			var orderBySql = "";
 			var dbArgs = new DynamicParameters();
@@ -275,9 +275,9 @@ namespace d360.web.Controllers.V2
 
 			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
 
-			if (assetType != null && assetType.Class == AssetTypeClass.Reference)
+			if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User))
 			{
-				IsassetUidReferenceTypeID = true;
+				IsassetUidReqUnion = true;
 				dbArgs.Add("uid", assetUid);
 				whereStatements.Add("<uid> = @uid");
 			}
@@ -328,7 +328,7 @@ select 	uid,
 from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
 			}
 
-			if (IsassetUidReferenceTypeID)
+			if (IsassetUidReqUnion)
 			{
 				string tempdata = $@"
 				drop table if exists #tempauditdata;
