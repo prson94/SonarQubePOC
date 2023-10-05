@@ -1,4 +1,14 @@
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+	AfterViewInit,
+	ChangeDetectorRef,
+	Component,
+	EventEmitter,
+	Input,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild
+} from '@angular/core';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { WorkflowMonitorService } from '../../../services/workflowmonitor.service';
@@ -25,7 +35,7 @@ import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { State } from '../../../models/asset.model';
 
 /*global $localize*/
@@ -80,15 +90,18 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	modalSubtitle: string;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
-	private actionTypeCount: number = 0;    
+	private actionTypeCount: number = 0;
+	private isReferenceListFlow: boolean = false;
 
 	constructor(private wfMonitorService: WorkflowMonitorService,
-		private workflowService: WorkflowService,
-		private route: ActivatedRoute,
-		private changeDetectorRef: ChangeDetectorRef,
-		protected settingsService: CompanySettingsService,
-		private fieldsService: FieldsObservableService,
-		private authenticationService: AuthenticationService) {
+				private workflowService: WorkflowService,
+				private route: ActivatedRoute,
+				private changeDetectorRef: ChangeDetectorRef,
+				protected settingsService: CompanySettingsService,
+				private fieldsService: FieldsObservableService,
+				private authenticationService: AuthenticationService,
+				private router: Router
+	) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
 		this.route.queryParams
@@ -107,7 +120,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		this.loadData();
 	}
 
-	ngOnInit(): void {		
+	ngOnInit(): void {
+		if (this.router.url.startsWith('/reference')) {
+			this.isReferenceListFlow = true;
+		}
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
 	}
@@ -135,6 +151,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	errorModalTitle: string;
 	errorModalMessage: string;
 	errorSubTitle: string;
+
 	private loadAssignmentFromUrl() {
 		const params = this.urlLoadAssignment.split('|');
 		const itemUid = params[0];
@@ -279,7 +296,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 					this.modalSubtitle += "<br/>";
 				}
 			});
-		
+
 			this.showDeletionModal = true;
 		}
 	}
@@ -335,7 +352,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 		const assigneesFilterFieldType: FieldType = new FieldType('Lookup');
 		assigneesFilterFieldType.Lookup.List.AllowMultipleValues = true;
-		assigneesFilterFieldType.Lookup.IsPrimaryFilter = (this.assetTypeUid || this.assetUid) ? false : !this.isRequestsFlow;	
+		assigneesFilterFieldType.Lookup.IsPrimaryFilter = (this.assetTypeUid || this.assetUid) ? false : !this.isRequestsFlow;
 
 		const filterFieldList: AdvancedFilterFieldType[] = [{
 			Name: 'workflowUid',
@@ -371,14 +388,17 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			ValueLoader: this.getFilteredStatuses
 		});
 		if (!this.isRequestsFlow) {
+			if (!this.isReferenceListFlow) {
+				filterFieldList.push(
+					{
+						Name: 'actionTypeUid',
+						FriendlyName: $localize`Action`,
+						Type: this.actionTypeCount > 0 ? lookupFieldTypePrimaryFilter : new FieldType('Lookup'),
+						Category: '',
+						ValueLoader: this.getFilteredActions
+					});
+			}
 			filterFieldList.push(
-				{
-					Name: 'actionTypeUid',
-					FriendlyName: $localize`Action`,
-					Type: this.actionTypeCount > 0 ? lookupFieldTypePrimaryFilter : new FieldType('Lookup'),
-					Category: '',
-					ValueLoader: this.getFilteredActions
-				},
 				{
 					Name: 'CompletedOn',
 					FriendlyName: $localize`Completed`,
