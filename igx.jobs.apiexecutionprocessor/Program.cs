@@ -169,9 +169,10 @@ namespace igx.jobs.apiexecutionprocessor
 
 						Action markExecutionAsProcessing = () => {
 							dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
+							dbExecutionItem.RetryCount = dbExecutionItem.RetryCount.HasValue ? dbExecutionItem.RetryCount.Value+1 : 0;
 							company.Connection.ExecuteAsync(
-								"update api.Execution set ProcessingStartedOn = @ProcessingStartedOn, ErrorMessage = null where Id = @Id", 
-								new { dbExecutionItem.ProcessingStartedOn, dbExecutionItem.Id });
+								"update api.Execution set ProcessingStartedOn = @ProcessingStartedOn, RetryCount = @RetryCount, ErrorMessage = null where Id = @Id", 
+								dbExecutionItem);
 						};
 
 						Action markExecutionAsComplete = () =>
@@ -411,12 +412,6 @@ namespace igx.jobs.apiexecutionprocessor
             {
 				int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
 				int maxRetryCount = 20;
-				if (!dbExecutionItem.RetryCount.HasValue)
-				{
-					dbExecutionItem.RetryCount = 0;
-				}
-				dbExecutionItem.RetryCount += 1;
-				int retryCount = dbExecutionItem.RetryCount.Value;
 				
 				try
 				{
@@ -424,14 +419,14 @@ namespace igx.jobs.apiexecutionprocessor
 					var companyConnectionString = community.GetCompanyConnectionString(true);
 					using (var exceptionConnection = new SqlConnection(companyConnectionString))
 					{
-						if (retryCount >= maxRetryCount)
+						if (dbExecutionItem.RetryCount >= maxRetryCount)
 						{
 							string errorMessage = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 							dbExecutionItem.ErrorMessage = errorMessage;
 							dbExecutionItem.CompletedOn = DateTime.UtcNow;
 						}
 						await exceptionConnection.OpenAsync();
-						await exceptionConnection.ExecuteAsync("update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn, RetryCount = @RetryCount where ExecutionID = @ExecutionID", dbExecutionItem);
+						await exceptionConnection.ExecuteAsync("update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn where ExecutionID = @ExecutionID", dbExecutionItem);
 					}
 				}
 				catch
@@ -440,9 +435,9 @@ namespace igx.jobs.apiexecutionprocessor
 				}
 				
 
-				if (retryCount < maxRetryCount)
+				if (dbExecutionItem.RetryCount < maxRetryCount)
 				{
-					TimeSpan delay = new TimeSpan(0, 0, delaySeconds * retryCount); // Incremental backoff.
+					TimeSpan delay = new TimeSpan(0, 0, delaySeconds * dbExecutionItem.RetryCount.Value); // Incremental backoff.
 					await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);				
 				}
 				else 
