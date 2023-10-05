@@ -1,68 +1,20 @@
-
-using d360.core;
 using d360.core.entities;
-using d360.core.enums;
 using d360.utils.company;
-using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 
 
 namespace igx.jobs
 {
-    public static class ConnectionExtensions
-    {
-        public static void ProcessTask(this SqlConnection company, TextWriter log, string functionName, int companyID, string sql, int timeout = 1400)
-        {
-            bool processStatus = false;
-            var processTask = company.ExecuteAsync(sql, commandTimeout: 1400);
-            processTask.ContinueWith(t =>
-            {
-                string exceptionData = "";
-                if (t.Exception != null)
-                {
-                    exceptionData = t.Exception.GetFullExceptionData();
-                    if (t.Exception.InnerExceptions != null)
-                    {
-                        foreach (var ex in t.Exception.InnerExceptions)
-                        {
-                            exceptionData += ex.GetFullExceptionData();
-                        }
-                    }
-                    CoreFunction.AITrackException(functionName, t.Exception, companyID);
-                }
-
-                if (t.IsCompleted)
-                {
-                    if (t.IsFaulted)
-                    {
-                        CoreFunction.AITrackException(functionName, t.Exception, companyID);
-                    }
-                }
-
-                processStatus = false;
-            });
-
-            while (processStatus && (processTask.Exception == null))
-            {
-                log.WriteLine("Processing scores for company {0}...", companyID);
-                System.Threading.Thread.Sleep(30000);
-            }
-        }
-    }
-
-    public static class CoreFunction
+	public static class CoreFunction
     {
         #region AppInsights
 
