@@ -9,7 +9,7 @@
 			   igSize="full"
 			   type="text"
 			   [(ngModel)]="field.Value"
-			   required="{{ field.Required }}" />
+			   [required]="field?.Required" />
 		<span *ngSwitchCase="fieldType.Boolean">
 			<ig-switch *ngSwitchCase="fieldType.Boolean"
 					   [name]="'input_' + indx"
@@ -25,7 +25,7 @@
 						 [attr.name]="'input_' + indx"
 						 [name]="'input_' + indx"
 						 [(ngModel)]="field.Value"
-						 [required]="field.Required">
+						 [required]="field?.Required">
 		</ig-number-input>
 
 		<textarea *ngSwitchCase="fieldType.TextArea"
@@ -35,7 +35,7 @@
 				  [attr.name]="'input_' + indx"
 				  style="width: 100%;"
 				  [(ngModel)]="field.Value"
-				  required="{{ field.Required }}"></textarea>
+				  [required]="field?.Required"></textarea>
 
 		<ig-date *ngSwitchCase="fieldType.Date"
 				 [name]="'input_' + indx"
@@ -43,7 +43,7 @@
 				 [(ngModel)]="field.Value"
 				 [dateFormat]="getLocaleDateString()"
 				 [appendTo]="'body'"
-				 [required]="field.Required">
+				 [required]="field?.Required">
 		</ig-date>
 
 		<div *ngSwitchCase="fieldType.List">
@@ -56,7 +56,7 @@
 						appendTo="body"
 						baseZIndex="20000"
 						[(ngModel)]="field.Value"
-						[required]="field.Required"
+						[required]="field?.Required"
 						[filter]="true"
 						filterBy="Text"
 						placeholder="Select {{field.Label}}">
@@ -76,7 +76,7 @@
 							   [name]="'input_' + indx"
 							   [options]="field.Values"
 							   [(ngModel)]="field.Value"
-							   [required]="field.Required"
+							   [required]="field?.Required"
 							   placeholder="{{(field.Required ? 'Value required' : '')}}"
 							   display="chip">
 					<ng-template pTemplate="selectedItems" let-items>
@@ -112,7 +112,7 @@
 						appendTo="body"
 						baseZIndex="20000"
 						[(ngModel)]="field.Value"
-						[required]="field.Required"
+						[required]="field?.Required"
 						[filter]="true"
 						filterBy="Text"
 						placeholder="Select {{field.Label}}">
@@ -133,7 +133,7 @@
 							   [name]="'input_' + indx"
 							   [options]="field.Values"
 							   [(ngModel)]="field.Value"
-							   [required]="field.Required"
+							   [required]="field?.Required"
 							   placeholder="{{(field.Required ? 'Value required' : '')}}"
 							   display="chip">
 					<ng-template pTemplate="selectedItems" let-items>
@@ -167,7 +167,7 @@
 				   ngModel
 				   style="width: 100%; margin-bottom: 1em"
 				   type="text"
-				   required="{{ field.Required }}" />
+				   [required]="field?.Required" />
 			<div i18n>(Link Name)</div>
 			<input igInput
 				   [name]="'inputUrl_' + indx"
@@ -175,7 +175,7 @@
 				   ngModel
 				   style="width: 100%; margin-bottom: 1em"
 				   type="text"
-				   required="{{ field.Required }}" />
+				   [required]="field?.Required" />
 			<div i18n style="margin-bottom: 1em">
 				(Link Url: Your Url should start with a protocol prefix. For
 				example 'http://' or 'https://')
@@ -189,7 +189,7 @@
 					  placeholder="{{(field.Required ? 'Value required' : '')}}"
 					  ngDefaultControl
 					  #ed
-					  [required]="field.Required">
+					  [required]="field?.Required">
 				<header style="padding-bottom: 0px !important">
 					<span class="ql-formats">
 						<select class="ql-header">

@@ -21,16 +21,20 @@
 					<label class="ig-label">{{ field?.["@label"] }}</label>
 					<ng-container [ngSwitch]="field?.['@fieldtype']">
 						<ng-container *ngSwitchCase="'date'">
-							{{(field?.['@displayvalue'] == null ? getDate(field?.['@value']) : getDate(field?.['@displayvalue']))}}
+							<span class="ig-value"
+								  *ngIf="field?.['@displayvalue'] || field?.['@value']; else valueUnavailable">{{(field?.['@displayvalue'] == null ? getDate(field?.['@value']) : getDate(field?.['@displayvalue']))}}</span>
 						</ng-container>
 						<ng-container *ngSwitchCase="'html'">
-							<div [innerHtml]="field?.['@value'] | safeHtml"></div>
+							<div class="ig-value" *ngIf="field?.['@value']; else valueUnavailable"
+								 [innerHtml]="field?.['@value'] | safeHtml"></div>
 						</ng-container>
 						<ng-container *ngSwitchCase="'link'">
-							<a href="{{getUrl(field?.['@value'])}}" target="_blank">{{getName(field?.['@value'])}}</a>
+							<a class="ig-value" *ngIf="field?.['@value']; else valueUnavailable"
+							   href="{{getUrl(field?.['@value'])}}" target="_blank">{{getName(field?.['@value'])}}</a>
 						</ng-container>
 						<ng-container *ngSwitchDefault>
-							{{(field?.['@displayvalue'] == null ? field?.['@value'] : field?.['@displayvalue'])}}
+							<span class="ig-value"
+								  *ngIf="field?.['@displayvalue'] || field?.['@value']; else valueUnavailable">{{(field?.['@displayvalue'] == null ? field?.['@value'] : field?.['@displayvalue'])}}</span>
 						</ng-container>
 					</ng-container>
 				</div>
@@ -38,3 +42,6 @@
 		</ng-container>
 	</div>
 </d3s-modal>
+<ng-template #valueUnavailable>
+	<span class="ig-value">---</span>
+</ng-template>

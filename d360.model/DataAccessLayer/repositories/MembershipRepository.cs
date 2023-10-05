@@ -1076,7 +1076,7 @@ where	ExecutionID = @executionID",
 								if (userAssetType != null)
 								{
 									CompanyContext.Connection.Execute(
-										"insert into Asset (AssetTypeID, State, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @Dt, @CurrentResourceID, @Dt, @CurrentResourceID, @uid)",
+										"insert into Asset (AssetTypeID, State, Object, ObjectID, SourceID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Uid) values (@ID, 1, 'Resource', @ResourceID, @ResourceID, @Dt, @CurrentResourceID, @Dt, @CurrentResourceID, @uid)",
 										new { userAssetType.ID, upsertUser.ResourceID, Dt = DateTime.UtcNow, CompanyContext.CurrentResourceID, uid = (Guid)upsertUser.uid }
 									);
 								}

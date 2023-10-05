@@ -1,5 +1,5 @@
 .multi-assignment-selector {
-  overflow-y: auto;
+  height: 100%;
 
   .header-wrapper {
     border-bottom: 1px solid #d7d8dc;
@@ -35,7 +35,7 @@
   }
 
   .side-panel-container {
-    padding: 16px 0 16px 0;
+    padding: 0;
   }
 
   .side-panel-button {
@@ -47,7 +47,54 @@
   }
 }
 
-.assignment-modal-dialog {
-  min-height: 256px;
+.content-without-header {
+  overflow-y: auto;
+  height: calc(100% - 84px);
+  padding-right: 24px;
 }
 
+.content-with-header {
+  padding-right: 0 !important;
+}
+
+.assignment-modal-dialog {
+  min-height: 256px;
+  height: 100%;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 12px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 12px;
+    }
+  }
+}
+
+.checkbox-column {
+  width: 36px;
+}
+
+.associated-with-column {
+  width: 196px;
+}
+
+.object-type-column {
+  width: 128px;
+}
+
+.initiated-by-column {
+  width: 196px;
+}
+
+.initiated-on-column {
+  width: 96px;
+}
+
+.tools-column {
+  width: 40px;
+}

@@ -97,8 +97,8 @@ export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDes
 
     clearValue() {
         this.writeValue('');
-        this.performsearch();
-    }
+		this.valueChanged.next(this.value);
+	}
 
     clicksearch() {
         this.performsearch();

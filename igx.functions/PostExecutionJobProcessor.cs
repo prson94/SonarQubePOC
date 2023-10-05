@@ -718,7 +718,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 
 {insertFieldStatement}
 	select	tt.ID as AuditID,
-			0,
+			f.FieldTypeID,
 			f.FieldName,
 			f.FieldValue,
 			pv.[Value] as PreviousValue

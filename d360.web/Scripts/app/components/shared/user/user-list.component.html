@@ -8,7 +8,7 @@
             <div class="simple-search">
                 <ig-search-field mode="Keypress"
                                  [debounce]="600"
-                                 (onSearch)="getData()"
+                                 (onSearch)="onSimpleSearch()"
                                  [(ngModel)]="simpleFilter">
                 </ig-search-field>
             </div>
@@ -46,6 +46,7 @@
                  loadingIcon="fa fa-spinner"
                  [scrollable]="true"
                  scrollWidth="100%"
+				 [first]="currentPageNumber * rowsPerPage"
                  [lazy]="true"
                  (onLazyLoad)="lazyLoadUsers($event)"
                  [totalRecords]="totalRecords"

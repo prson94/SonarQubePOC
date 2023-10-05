@@ -83,7 +83,10 @@ namespace d360.extensions.storage
         {
             var blob = GetBlob(folderName, fileName);
 
-            using (MemoryStream ms = new MemoryStream())
+			var properties = blob.GetProperties().Value;
+			var size = (int)properties.ContentLength;
+
+			using (MemoryStream ms = new MemoryStream(size))
             {
                 await blob.DownloadToAsync(ms).ConfigureAwait(false);
                 ms.Position = 0;

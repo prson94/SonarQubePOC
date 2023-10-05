@@ -26,7 +26,6 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute } from '@angular/router';
-import { AssignmentService } from '../assignment.service';
 import { State } from '../../../models/asset.model';
 
 /*global $localize*/
@@ -89,8 +88,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		private changeDetectorRef: ChangeDetectorRef,
 		protected settingsService: CompanySettingsService,
 		private fieldsService: FieldsObservableService,
-		private authenticationService: AuthenticationService,
-		private assignmentService:AssignmentService) {
+		private authenticationService: AuthenticationService) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
 		this.route.queryParams
@@ -111,9 +109,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	ngOnInit(): void {		
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
-		this.assignmentService.loadAssignments.subscribe(()=>{
-			this.loadData()
-		})
 		this.loadActionTypeCount();
 	}
 
@@ -211,7 +206,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 	}
 
-	private loadData(): void {
+	loadData(): void {
 		if (!this.currentResourceUid) {
 			return;
 		}
