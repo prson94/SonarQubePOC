@@ -173,6 +173,7 @@ namespace d360.model.DataAccessLayer
 					CompanyID = Company.CurrentCompanyID,
 					ResourceID = Company.CurrentResourceID,
 					ChangeType = ScoreQueueChangeType.MeasureRemoved,
+					UseUpdatedScoringEngine = true,
 					Payload = new MeasureRemovedModel {
 						EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
 						MetricAssetUid = currentAssetVersion.AssetUid,
@@ -1610,7 +1611,8 @@ namespace d360.model.DataAccessLayer
 					{
 						CompanyID = Company.CurrentCompanyID,
 						ResourceID = Company.CurrentResourceID,
-						ChangeType = ScoreQueueChangeType.MeasureRemoved,
+						ChangeType = ScoreQueueChangeType.MeasureChanged,
+						UseUpdatedScoringEngine = true,
 						Payload = new MeasureChangedModel
 						{
 							EffectiveDate = metricAssetVersion.EffectiveDate,
@@ -2250,9 +2252,48 @@ namespace d360.model.DataAccessLayer
 			return (result, "");
 		}
 
-		public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
+		private void processRescoreOnRuleResultChanges(List<DataQualityResponseModel> results)
 		{
-			Company.Add(execution);
+			var resultUids = results
+				.Where(i => i.Success).Select(i => new { Uid = i.Uid.Value })
+				.ToList()
+				.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" });
+
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, Company.GetSdkFeatureFlagUser(), false);
+
+			if (isUpdatedScoring)
+			{
+				var requests = Company.Query<AssetRescoreRequestModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
+				requests.ForEach(request => {
+					request.ScoreType = ScoreType.DataQuality;
+					var info = new ScoreQueueInfo
+					{
+						CompanyID = Company.CurrentCompanyID,
+						ResourceID = Company.CurrentResourceID,
+						ChangeType = ScoreQueueChangeType.RescoreRequest,
+						UseUpdatedScoringEngine = true,
+						Payload = request,
+						StartedOn = DateTime.UtcNow
+					};
+					QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+				});
+			}
+			else
+			{
+				var assetMeasures = Company.Query<AssetMeasureModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
+				if (assetMeasures.Count > 0)
+				{
+					Company.CreateMeasureChangedResultExecution(assetMeasures);
+				}
+			}
+		}
+
+		public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution, bool executionInDb = false)
+		{
+			if (!executionInDb)
+			{
+				Company.Add(execution);
+			}
 
 			List<DataQualityResponseModel> results = null;
 			
@@ -2261,6 +2302,7 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
+				processRescoreOnRuleResultChanges(results);
 				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostDataQualityResults);
 			}
 			catch (Exception ex)
@@ -2547,6 +2589,7 @@ namespace d360.model.DataAccessLayer
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
 				results = Company.UpsertAssetResults(upsert, execution);
+				processRescoreOnRuleResultChanges(results);
 				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutDataQualityResults);
 			}
 			catch (Exception ex)

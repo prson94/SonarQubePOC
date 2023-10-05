@@ -38,7 +38,7 @@ namespace d360.model.DataAccessLayer
         
         DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd, bool includeDuplicateFlag = false, string _filter = "", string _simpeFilter = "");
         
-        List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);
+        List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution, bool executionInDb = false);
         
         List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution);
         

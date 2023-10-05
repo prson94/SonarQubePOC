@@ -8,6 +8,15 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities.Metric
 {
+	public class AssetRescoreRequestModel
+	{
+		public Guid AssetUid { get; set; }
+
+		public DateTime EffectiveDate { get; set; }
+
+		public ScoreType ScoreType { get; set; }
+	}
+
     public class RuleResultChangedRawModel
     {
         public Guid AssetUid { get; set; }

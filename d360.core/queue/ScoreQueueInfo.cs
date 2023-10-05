@@ -13,8 +13,9 @@ namespace d360.core.queue
         RollupPathChanged = 5,
         WorkflowCheck = 6,
         CheckTypeDependencyRemoved = 7,
-        RuleAssetRemoved = 8
-    }
+        RuleAssetRemoved = 8,
+		RescoreRequest = 9
+	}
 
     public class ScoreQueueInfo
     {
@@ -27,7 +28,7 @@ namespace d360.core.queue
 
         public ScoreQueueChangeType ChangeType { get; set; }
 
-		public dynamic Payload { get; set; }
+		public object Payload { get; set; }
 
 		public bool UseUpdatedScoringEngine { get; set; } = false;
 

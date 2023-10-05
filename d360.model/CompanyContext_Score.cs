@@ -3637,17 +3637,6 @@ namespace d360.model
 				}
 			}
 
-			#region Scoring
-
-			List<Guid> ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
-			if (ruleResultUids.Count > 0)
-			{
-				List<AssetMeasureModel> assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-				CreateMeasureChangedResultExecution(assetMeasures);
-			}
-
-			#endregion Scoring
-
 			return results;
 		}	
 		

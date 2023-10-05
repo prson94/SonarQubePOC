@@ -322,20 +322,11 @@ namespace igx.jobs.apiexecutionprocessor
 								resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostDataQualityResults:
-                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
-
-                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, info.SendWorkflowEvents);
-                                postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
-								
+								var sdkKey = CoreFunction.GetConfigValueByKey("LaunchDarklySdkKey");
+								var metricsRepository = new MetricsRepository(company, new LaunchDarkly.Sdk.Server.LdClient(sdkKey), queue, storage);
+								var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
+								metricsRepository.InsertDataQualityResult(postDataQualityResultsRequest, dbExecutionItem, true);
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
-
-								var ruleResultUids = postDataQualityResultsResponse.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
-                                if (ruleResultUids.Count > 0)
-                                {
-                                    var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
-                                    company.CreateMeasureChangedResultExecution(assetMeasures);
-                                }
-
                                 break;
                             case ApiExecutionAction.PostDataProfile:
                                 var postDataProfile = await storage.DeserializeJsonObjectFromBlobAsync<List<DataProfileUpsertModel>>(info.StorageFolder, info.RequestFileName);
