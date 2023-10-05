@@ -40,7 +40,6 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	isModalVisible: boolean = false;
 	sidePanelOpen: boolean = false;
 	stepUid: string;
-	sidePanelStorageKey: string = 'MultiAssignments_Component';
 	version: number;
 
 	defaultPagingOptions: number[] = AppConstants.DEFAULT_PAGING_OPTIONS;
@@ -72,6 +71,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	private linkInterceptorSubscription: Subscription;
 	private workflowTypeUid: string;
 	isAdmin: boolean = false;
+    sidePanelPopulated: boolean = false;
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
@@ -90,6 +90,8 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 		this.isLoading = true;
 		this.assignments = assignments;
 		this.workflowTypeUid = workflowTypeUid;
+		this.sidePanelPopulated = false;
+		this.sidePanelOpen = false;
 
 		const uniqueTypeNames = Array.from(new Set(this.assignments.map(x => x.AssetTypePath)));
 		this.assignmentAssetTypeName = uniqueTypeNames.length === 1 ? uniqueTypeNames[0] : null;
@@ -153,6 +155,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	}
 
 	openAssignmentDetails(event: MouseEvent, item: SingleAssignment): void {
+		this.sidePanelPopulated = true;
 		this.sidePanelService.setSidePanelState({ expanded: true });
 		this.cdRef.detectChanges();
 		setTimeout(() => this.linkClickInterceptor.sendEvent(event, {
