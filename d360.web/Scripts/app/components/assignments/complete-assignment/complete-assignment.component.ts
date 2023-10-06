@@ -254,15 +254,15 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		if (this.isModalAvailable) {
 			this.hideDialog = false;
 		}
-		else{
+		else {
 			this.isModalAvailable = true;
 		}
 		this.cdRef.markForCheck();
 	}
 
-	getAssetDetails(){
-		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((res)=>{
-			this.assetName=res?.AssetPath
+	getAssetDetails() {
+		this.workflowService.getAssignmentItem(this.workflowItemUid).subscribe((res) => {
+			this.assetName = res?.AssetPath
 		})
 	}
 
@@ -275,7 +275,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	showAssignmentProgress(): void {
 		this.isAssignmentProgressSelected = true;
 		this.modalTitle = 'Assignment Progress and Information';
-		this.sidePanelSwitcherComponent.clear();
+		if (this.sidePanelSwitcherComponent) {
+			this.sidePanelSwitcherComponent.clear();
+		}
 	}
 
 	discardFormFunc(): void {
