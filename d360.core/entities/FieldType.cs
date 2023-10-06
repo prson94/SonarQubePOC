@@ -1221,6 +1221,18 @@ namespace d360.core.entities
 		public List<FieldTypeApiViewModel> items { get; set; }
 	}
 
+	public class FieldTypesReferenceListQry
+	{
+		[DataMember]
+		public int FieldTypeID { get; set; }
+
+		[DataMember]
+		public int LookupObjectID { get; set; }
+
+		[DataMember]
+		public string Query { get; set; }
+	}
+
 	public enum FieldTypesApiEditAction
 	{
 		Merge = 1,

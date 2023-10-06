@@ -1,0 +1,151 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetReferenceItemValuesSQL-v1">
+   <comment></comment>
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+Create or alter function [dbo].[GetReferenceItemValuesSQL]
+( 
+ @FieldTypeID int,  
+ @useApiName bit = 0,
+ @applySortOrder int = 1
+)
+returns nvarchar(4000)
+AS  
+BEGIN  
+   
+ declare	@listAssetTypeId int,
+ @objectidstr nvarchar(100);  
+ 
+ select		@listAssetTypeId = att.ID,
+ @objectidstr = cast(att.objectid as nvarchar(100))
+ from FieldType Ft 
+ inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
+ where ft.id = @FieldTypeID;
+  
+ if @listAssetTypeId is null 
+	return null;
+
+
+ declare  @fieldtypes  table(identifier [int] IDENTITY(0,1) NOT NULL, ID int, Name nvarchar(250), SortOrder int, SortByAscending bit, type varchar(25))   
+ declare  @parentTypes table(IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)  
+  
+   
+  if @useApiName = 1  
+  begin  
+   insert into @fieldtypes  
+   select ID, case when [Name] = 'code' then 'CodeSystem' else [Name] end Name, case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId and SortOrder > 0 order by ColumnOrder  
+  end  
+ else  
+  begin  
+   insert into @fieldtypes  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name], case when SortOrder>0 then SortOrder else null end, SortByAscending, Type from fieldtype where AssetTypeID = @listAssetTypeId  and SortOrder > 0 order by ColumnOrder  
+  end  
+  
+ declare @parentLevel int = 0;  
+ declare @currentId int = @listAssetTypeId;   
+   
+ while exists (select 1 from intersecttypedetail where ObjectAssetTypeID = @currentId and predicatetype = 3 and @parentLevel < 20)  
+ begin  
+	declare @_id int,
+			@_subjectName nvarchar(250),
+			@_subjectAssetTypeID int
+
+	select	@_id = ID, 
+			@_subjectName = SubjectName, 
+			@_subjectAssetTypeID = SubjectAssetTypeID
+	from	intersecttypedetail 
+	where	ObjectAssetTypeID = @currentId 
+			and predicatetype = 3;  
+
+	insert into @parentTypes  values (@_id, @_subjectName, @_subjectAssetTypeID, @parentLevel);
+  
+	select @currentId = @_subjectAssetTypeID;  
+    
+	set @parentLevel = @parentLevel +1;  
+ end  
+
+ declare @tsqlSelect nvarchar(max);  
+ declare @tsqlFrom nvarchar(max);  
+ declare @tsqlWhere nvarchar(max);  
+ declare @tsql nvarchar(max);  
+ declare @tsqlSort nvarchar(max) = '';
+  
+ set @tsqlSelect = 'select identity(int,1,1) rowseq, cast(O.ID as bigint) ID,O.Object, O.ObjectID, O.code as Code, CAST(O.Color as nvarchar(max)) as color';  
+ set @tsqlFrom = 'from AssetType AT inner join Asset O on O.AssetTypeID = AT.ID ';  
+ set @tsqlWhere = ' where AT.ID  = ' + cast(@listAssetTypeId as nvarchar(20));  
+  
+ DECLARE @name nvarchar(250);  
+ DECLARE @id int = 0;  
+ DECLARE @intersectTypeId int;  
+ DECLARE @parentName nvarchar(250);  
+ DECLARE @parentListTypeID int = 0;   
+ DECLARE @index int = 0;  
+ DECLARE @previousRelation varchar(200) = 'O.ID';  
+  
+   
+ DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM @parentTypes  
+ OPEN relCur  
+  
+ FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN  
+   
+        SET @tsqlFrom = @tsqlFrom +' outer apply (  
+        select	ID.DisplayValue, I.SubjectAssetID                              
+        from	[PredicateIntersect] I  
+                inner join Asset IA on I.ObjectAssetID = ' + @previousRelation + ' and IA.ID = I.SubjectAssetID and I.PredicateType = 3  
+                inner join AssetType IAT on IAT.ID = IA.AssetTypeID  
+				inner join AssetDisplayValue ID on ID.AssetID = IA.ID
+        ) REL_' + cast(@index as nvarchar(10));  
+  
+  set @previousRelation = 'REL_' + cast(@index as nvarchar(10)) + '.SubjectAssetID';  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+ END  
+  
+ CLOSE relCur      
+ DEALLOCATE relCur  
+  
+ set @index = 0;  
+   
+ DECLARE cur CURSOR FOR SELECT id, name FROM @fieldtypes  
+ OPEN cur  
+  
+ FETCH NEXT FROM cur INTO @id, @name  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN      
+  SET @tsqlFrom = @tsqlFrom + ' left join [Field] f' + cast(@index as nvarchar(10)) + ' on (O.ID = f' + cast(@index as nvarchar(10)) + '.AssetID and f' + cast(@index as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM cur INTO @id, @name  
+ END  
+  
+ CLOSE cur      
+ DEALLOCATE cur  
+  
+ if @applySortOrder = 1
+  Begin
+
+	  SELECT @tsqlSort =  Stuff((Select ', ' + case when t2.Type in ('Counter', 'Decimal', 'Number') then 'CAST(' + 'f'+cast(identifier as nvarchar)+'.FormattedValue' + ' as float)' else 'f'+cast(identifier as nvarchar)+'.FormattedValue' end  + case when SortByAscending=1 then ' asc' else ' Desc' end
+					   FROM @fieldtypes t2
+					   where SortOrder > 0
+					   order by SortOrder asc
+					   FOR XML PATH(''), TYPE
+				).value('.', 'NVARCHAR(MAX)'), 1,2,'')
+	  set @tsqlSort =' order by ' + isnull(@tsqlSort,'o.code');
+
+  end
+  
+ SET @tsql = isnull(@tsqlSelect,' ') + ' into #TempLookUpReferenceItem' + @objectidstr + ' '+ isnull(@tsqlFrom, ' ') + isnull(@tsqlWhere,' ') + isnull(@tsqlSort,' ');  
+ return @tsql;
+END
+]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

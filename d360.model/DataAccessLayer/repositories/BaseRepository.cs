@@ -125,7 +125,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return "";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null, List<FieldTypesReferenceListQry> referenceListTempQryList = null)
 		{
 			List<string> TempTableNameList = new List<string>();
 			
@@ -683,15 +683,46 @@ namespace d360.model.DataAccessLayer.repositories
 						 if (IsCreateTempTable)
 						 {
 							 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
-							 temptableScript = $@" 
+
+							 string temptableqry = "";
+							 if (f.AllowMultipleValues && referenceListTempQryList != null)
+							 {
+								 var temptable = referenceListTempQryList.Where(x => x.FieldTypeID == f.ID).FirstOrDefault();
+								 if (temptable != null)
+								 {
+									 temptableqry = temptable.Query;
+								 }
+							 }
+
+							 if (!string.IsNullOrWhiteSpace(temptableqry))
+							 {
+								 temptableScript = $@" 
+
+								drop table if exists {temptablename};
+								
+								{temptableqry}
+
+								Update T
+								set t.color = COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent')
+								from {temptablename} T
+								cross apply dbo.GetAssetColorJsonByColor(t.color) ACJ
+
+								create clustered index ix_{temptablename} on {temptablename}(object,objectid);
+								";
+							 }
+							 else
+							 {
+								 temptableScript = $@" 
 
 								declare @at_temp_ft_{f.ID} int;
 								select @at_temp_ft_{f.ID} = (Select top 1 ID from AssetType att where att.Object = '{type}' and att.objectid = {f.LookupObjectID})
 
 								drop table if exists {temptablename};
-								select A.ID, A.Object as Object, A.ObjectID as ObjectId, A.Code as Code, CAST(A.Color as nvarchar(max)) as color
+								select identity(int,1,1) rowseq,cast(A.ID as bigint) ID, A.Object as Object, A.ObjectID as ObjectId, A.Code as Code, CAST(A.Color as nvarchar(max)) as color
 								into {temptablename}
-								from Asset A where A.AssetTypeID = @at_temp_ft_{f.ID}
+								from Asset A 
+								where A.AssetTypeID = @at_temp_ft_{f.ID}
+								order by a.code
 								option(recompile);
 
 								Update T
@@ -699,18 +730,21 @@ namespace d360.model.DataAccessLayer.repositories
 								from {temptablename} T
 								cross apply dbo.GetAssetColorJsonByColor(t.color) ACJ
 
-								create index ix_{temptablename} on {temptablename}(object,objectid);
+								create clustered index ix_{temptablename} on {temptablename}(object,objectid);
 
 								";
-							 
+							 }
+
 							 sql = $@"
 								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
 								outer apply(
 								select FormattedValue = 
 								(SELECT COALESCE({displayName}, ACF{tableAlias}.Code) as name,
 								ACF{tableAlias}.color
-								from {temptablename} ACF{tableAlias}								                                						
-								{lookupValueJoinCriteria} FOR JSON PATH),
+								from {temptablename} ACF{tableAlias}
+								{lookupValueJoinCriteria} 
+								order by ACF{tableAlias}.rowseq
+								FOR JSON PATH),
 								[Value] = F{tableAlias}.[Value]
 							){tableAlias}(FormattedValue, [Value]) ";
 
@@ -762,6 +796,54 @@ namespace d360.model.DataAccessLayer.repositories
 								{selectSource} FOR JSON PATH)
 							) defaultColorValue{tableAlias}(color)";
 							 fieldJoins.Add(defaultSql, f.ID.ToString(), simpleFieldJoin);
+						 }
+					 }
+					 else if (f.AllowMultipleValues && IsCreateTempTable && referenceListTempQryList != null)
+					 {
+						 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
+
+						 string temptableqry = "";
+						 if (f.AllowMultipleValues && referenceListTempQryList != null)
+						 {
+							 var temptable = referenceListTempQryList.Where(x => x.FieldTypeID == f.ID).FirstOrDefault();
+							 if (temptable != null)
+							 {
+								 temptableqry = temptable.Query;
+							 }
+						 }
+
+						 if (!string.IsNullOrWhiteSpace(temptableqry))
+						 {
+							 temptableScript = $@" 
+
+							drop table if exists {temptablename};
+		
+							{temptableqry}
+
+							create clustered index ix_{temptablename} on {temptablename}(object,objectid);
+							";
+
+							 var sql = $@"
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
+								outer apply(
+								SELECT string_agg(COALESCE(ADV{tableAlias}.DisplayValue, ACF{tableAlias}.Code),',') within group (order by ACF{tableAlias}.rowseq) as FormattedValue
+								from {temptablename} ACF{tableAlias}
+								inner join AssetDisplayValue ADV{tableAlias} on ADV{tableAlias}.AssetID = ACF{tableAlias}.ID 
+								cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} 
+								where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.ObjectID = try_cast(SPF{tableAlias}.value as int)
+							){tableAlias}(FormattedValue) ";
+
+							 fieldJoins.Add(sql, f.ID.ToString(), simpleFieldJoin);
+
+							 if (!TempTableNameList.Contains(temptablename))
+							 {
+								 TempTableNameList.Add(temptablename);
+								 TempTableScriptList.Add(temptableScript);
+							 }
+						 }
+						 else
+						 {
+							 fieldJoins.Add(simpleFieldJoin, f.ID.ToString());
 						 }
 					 }
 					 else

@@ -557,9 +557,23 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
 			dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
+			//Getting sql statement of referernce list LookUp type field
+			string ListQuery = $@"select * 
+								 from (select ft.id FieldTypeID, [dbo].[GetReferenceItemValuesSQL](ft.id,1,1) Query
+								 from FieldType ft
+								 inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
+								 where ft.AssetTypeid = @AssetTypeid  and ft.AllowMultipleValues = 1
+								 ) a where query is not null";
+			var referenceListTempQryListasyn = await CompanyContext.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { AssetTypeid = assetTypeID }, ApiTimeout);
+			List<FieldTypesReferenceListQry> referenceListTempQryList = new List<FieldTypesReferenceListQry>();
+			if (referenceListTempQryList != null)
+			{
+				referenceListTempQryList = referenceListTempQryListasyn.ToList();
+			}
+
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList, fieldSorts: fieldSorts);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList, fieldSorts: fieldSorts, referenceListTempQryList: referenceListTempQryList);
 			var countJoins = fieldJoins.Clone();
 
 			if (includeProfilingCheck)
@@ -1121,7 +1135,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					var tempJoins = new DynamicQueryJoins();
 					var tempFieldColumns = new DynamicQuerySelects();
 
-					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
+					getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true, referenceListTempQryList: referenceListTempQryList);
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent, allowTempTableFiltering: true);
@@ -1148,7 +1162,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						tempArgs = new DynamicParameters();
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
-						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true);
+						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true, referenceListTempQryList: referenceListTempQryList); 
 						fieldColumns.Merge(tempFieldColumns);
 						fieldJoins.Merge(tempJoins);
 						countJoins.Merge(tempJoins);
