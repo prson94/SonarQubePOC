@@ -268,7 +268,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		else {
 			this.isModalAvailable = true;
 		}
-		this.sidePanelOpen = false;
 
 		this.cdRef.markForCheck();
 	}
