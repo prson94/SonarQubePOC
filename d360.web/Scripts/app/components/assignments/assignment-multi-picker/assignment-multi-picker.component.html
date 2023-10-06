@@ -33,13 +33,14 @@
 						[extraButtons]="sidePanelButtons"
 						minWidth="368px"
 						maxWidth="368px"
+						(expandedChange)="sidePanelExpandedChange($event)"
 						height="calc(100vh - 220px)">
-				<ng-container *ngIf="sidePanelOpen && sidePanelPopulated">
+				<ng-container *ngIf="sidePanelOpen && highlightedAssignment">
 					<d3s-side-panel-switcher [outsideModal]="false" (panelHeaderLabel)="setPanelHeader($event)"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
 				</ng-container>
-				<ng-container *ngIf="sidePanelOpen && !sidePanelPopulated">
+				<ng-container *ngIf="sidePanelOpen && !highlightedAssignment">
 					<div class="empty-overlay">
 						<div class="content">
 							<div class="icon-holder">
@@ -148,7 +149,8 @@
 											<td (click)="selectSingleItem($event,item,el);"> {{item.InitiatedBy}}</td>
 											<td (click)="selectSingleItem($event,item,el);">{{item.InitiatedOn  | date:'shortDate'}}</td>
 											<td class="info-panel-button">
-												<button igButton
+												<button igButton class="ig-button-secondary"
+														[class.ig-state-active]="item === highlightedAssignment"
 														icon="fa-info-circle"
 														(click)="openAssignmentDetails($event, item)"></button>
 											</td>

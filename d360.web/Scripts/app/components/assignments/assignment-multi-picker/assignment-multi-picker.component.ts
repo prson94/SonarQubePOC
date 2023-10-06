@@ -71,7 +71,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	private linkInterceptorSubscription: Subscription;
 	private workflowTypeUid: string;
 	isAdmin: boolean = false;
-    sidePanelPopulated: boolean = false;
+	highlightedAssignment: SingleAssignment;
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
@@ -90,7 +90,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 		this.isLoading = true;
 		this.assignments = assignments;
 		this.workflowTypeUid = workflowTypeUid;
-		this.sidePanelPopulated = false;
+		this.highlightedAssignment = null;
 		this.sidePanelOpen = false;
 
 		const uniqueTypeNames = Array.from(new Set(this.assignments.map(x => x.AssetTypePath)));
@@ -155,14 +155,19 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	}
 
 	openAssignmentDetails(event: MouseEvent, item: SingleAssignment): void {
-		this.sidePanelPopulated = true;
-		this.sidePanelService.setSidePanelState({ expanded: true });
+		if (this.highlightedAssignment === item) {
+			this.highlightedAssignment = null;
+			this.sidePanelService.setSidePanelState({ expanded: false });
+		} else {
+			this.highlightedAssignment = item;
+			this.sidePanelService.setSidePanelState({ expanded: true });
+			setTimeout(() => this.linkClickInterceptor.sendEvent(event, {
+				workflowItemUid: item.WorkflowItemUid,
+				workflowTypeVersion: this.version,
+				workflowTypeUid: this.workflowTypeUid
+			}, null));
+		}
 		this.cdRef.detectChanges();
-		setTimeout(() => this.linkClickInterceptor.sendEvent(event, {
-			workflowItemUid: item.WorkflowItemUid,
-			workflowTypeVersion: this.version,
-			workflowTypeUid: this.workflowTypeUid
-		}, null));
 	}
 
 	private lastSelectedElement: SingleAssignment;
@@ -257,5 +262,11 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 				);
 				this.sidePanelOpen = true;
 			});
+	}
+
+	sidePanelExpandedChange(expanded: boolean): void {
+		if (!expanded) {
+			this.highlightedAssignment = null;
+		}
 	}
 }
