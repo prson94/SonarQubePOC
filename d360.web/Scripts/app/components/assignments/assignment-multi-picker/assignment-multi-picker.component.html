@@ -28,17 +28,26 @@
 			</ng-container>
 		</div>
 		<div class="side-panel">
-			<side-panel [(expanded)]="sidePanelOpen"
-						[storageKey]="sidePanelStorageKey"
+			<side-panel [(expanded)]="sidePanelOpen"						
 						[hasDetail]="false"
 						[extraButtons]="sidePanelButtons"
 						minWidth="368px"
 						maxWidth="368px"
 						height="calc(100vh - 220px)">
-				<ng-container *ngIf="sidePanelOpen">
+				<ng-container *ngIf="sidePanelOpen && sidePanelPopulated">
 					<d3s-side-panel-switcher [outsideModal]="false" (panelHeaderLabel)="setPanelHeader($event)"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				</ng-container>
+				<ng-container *ngIf="sidePanelOpen && !sidePanelPopulated">
+					<div class="empty-overlay">
+						<div class="content">
+							<div class="icon-holder">
+								<i class="fa fa-info-circle"></i>
+							</div>
+							<span i18n>Click an <i class="fa fa-info-circle"></i> icon to display the given assignments progress details</span>
+						</div>
+					</div>
 				</ng-container>
 			</side-panel>
 		</div>
