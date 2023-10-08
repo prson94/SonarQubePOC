@@ -19,8 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -67,14 +65,15 @@ namespace igx.jobs.apiexecutionprocessor
 			CoreFunction.AITrackJobStart(FUNCTION_NAME);
             CoreFunction.AITrackEvent(FUNCTION_NAME, $"Starting Batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
 
-			#region Create EF connection
+			#region Dependency Injection
 
 			//An instance of this class is a thread safe because it's a wrapper for ServiceBusClient which is thread safe.
 			//We don't need to have more than one of these.
 			var queue = new AzureQueueSource();
 			var storage = new AzureStorageProvider();
 			var dummyCachingProvider = new DummyCachingProvider();
-			
+			var sdkKey = CoreFunction.GetConfigValueByKey("LaunchDarklySdkKey");
+			var ldClient = new LaunchDarkly.Sdk.Server.LdClient(sdkKey);
 			var company = JobDbContextCreator.CreateCompanyContext(
                 new UriSecurityContextProvider
                 {
@@ -111,11 +110,12 @@ namespace igx.jobs.apiexecutionprocessor
             }
 
 			FieldsRepository fieldsRepository = new FieldsRepository(company, queue, storage);
-            AssetRepository assetRepository = new AssetRepository(company, queue, storage, community);
+            AssetRepository assetRepository = new AssetRepository(company, queue, storage, community, ldClient);
             MembershipRepository membershipRepository = new MembershipRepository(company, community, assetRepository, queue, storage);
+			RelationshipRepository relationshipRepository = new RelationshipRepository(community, company, queue, storage, ldClient);
 
 			#endregion
-			
+
 			await company.Connection.OpenAsync();			
 			var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
 
@@ -221,8 +221,8 @@ namespace igx.jobs.apiexecutionprocessor
 									log.LogTrace(logEvent, $"Get PostAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 									var postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
 
-									log.LogTrace(logEvent, $"ImportAssets: {DateTime.UtcNow:hh:mm:ss}");
-									company.ImportAssets(dbExecutionItem, at, postAssets, true, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
+									log.LogTrace(logEvent, $"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
+									assetRepository.PostAssets(postAssets, at, dbExecutionItem, true, false);
 									
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
@@ -235,8 +235,8 @@ namespace igx.jobs.apiexecutionprocessor
 									log.LogTrace(logEvent, $"Get PutAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 									var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
 
-									log.LogTrace(logEvent, $"ImportAssets: {DateTime.UtcNow:hh:mm:ss}");
-									company.ImportAssets(dbExecutionItem, at, putAssets, false, dbExecutionTimeout, info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
+									log.LogTrace(logEvent, $"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
+									assetRepository.PutAssets(putAssets, at, dbExecutionItem, true, false);
 									
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
@@ -249,9 +249,8 @@ namespace igx.jobs.apiexecutionprocessor
 									log.LogTrace(logEvent, $"Get DeleteAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 									var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(info.StorageFolder, info.RequestFileName);
 
-									log.LogTrace(logEvent, $"RemoveAssets: {DateTime.UtcNow:hh:mm:ss}");
-									company.RemoveAssets(dbExecutionItem, at, deleteAssets, dbExecutionTimeout, info.SendWorkflowEvents);
-									
+									log.LogTrace(logEvent, $"DeleteAssets: {DateTime.UtcNow:hh:mm:ss}");
+									assetRepository.DeleteAssets(deleteAssets, at, dbExecutionItem, true);
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAsset where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await assetTypeWrapperAction(deleteAssetsFields.AssetTypeUid);
@@ -263,9 +262,8 @@ namespace igx.jobs.apiexecutionprocessor
 									log.LogTrace(logEvent, $"Get PostRelations payload: {DateTime.UtcNow:hh:mm:ss}");
 									var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(info.StorageFolder, info.RequestFileName);
 
-									log.LogTrace(logEvent, $"ImportRelationships: {DateTime.UtcNow:hh:mm:ss}");
-									company.ImportRelationships(dbExecutionItem, it, postRelationships, dbExecutionTimeout, info.SendWorkflowEvents, false);
-									
+									log.LogTrace(logEvent, $"PostRelationships: {DateTime.UtcNow:hh:mm:ss}");
+									relationshipRepository.PostRelationships(it, dbExecutionItem, postRelationships);									
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(postRelationshipsFields.IntersectTypeUid);
@@ -278,8 +276,8 @@ namespace igx.jobs.apiexecutionprocessor
 									var putRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(info.StorageFolder, info.RequestFileName);
 
 									log.LogTrace(logEvent, $"PutRelationships: {DateTime.UtcNow:hh:mm:ss}");
-									company.PutRelationships(dbExecutionItem, it, putRelationships, dbExecutionTimeout, info.SendWorkflowEvents, false);
-									
+									relationshipRepository.PutRelationships(it, dbExecutionItem, putRelationships);
+
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(putRelationshipsFields.IntersectTypeUid);
@@ -292,8 +290,8 @@ namespace igx.jobs.apiexecutionprocessor
 									var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(info.StorageFolder, info.RequestFileName);
 									
 									log.LogTrace(logEvent, $"DeleteRelationships: {DateTime.UtcNow:hh:mm:ss}");
-									company.DeleteRelationships(dbExecutionItem, it, deleteRelationships, dbExecutionTimeout, info.SendWorkflowEvents);
-									
+									relationshipRepository.DeleteRelationships(dbExecutionItem, it, deleteRelationships);
+
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedRelationship where ExecutionID = @executionId order by ItemNumber asc";
 								};
 								await intersectTypeWrapperAction(deleteRelationshipsFields.IntersectTypeUid);
@@ -303,7 +301,7 @@ namespace igx.jobs.apiexecutionprocessor
 								var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(info.StorageFolder, info.RequestFileName);
 
 								log.LogTrace(logEvent, $"RemoveAssetTypes: {DateTime.UtcNow:hh:mm:ss}");
-								company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800, false); //dbExecutionTimeout = 8 hours
+								assetRepository.DeleteAssetTypes(deleteAssetTypes, dbExecutionItem, false);
                                 company.CreateRollupPathChangedExecution();
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 								break;
@@ -313,8 +311,7 @@ namespace igx.jobs.apiexecutionprocessor
 								resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 								break;
                             case ApiExecutionAction.PostDataQualityResults:
-								var sdkKey = CoreFunction.GetConfigValueByKey("LaunchDarklySdkKey");
-								var metricsRepository = new MetricsRepository(company, new LaunchDarkly.Sdk.Server.LdClient(sdkKey), queue, storage);
+								var metricsRepository = new MetricsRepository(company, ldClient, queue, storage);
 								var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(info.StorageFolder, info.RequestFileName);
 								metricsRepository.InsertDataQualityResult(postDataQualityResultsRequest, dbExecutionItem, true);
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionAssetResult where ExecutionID = @executionId order by ItemNumber asc";
@@ -366,6 +363,9 @@ namespace igx.jobs.apiexecutionprocessor
 								{
 									queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
 									queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), new ScoreQueueInfo { 
+										ChangeType = ScoreQueueChangeType.PatchCatalogExecution, CompanyID = info.CompanyID, ExecutionUid = dbExecutionItem.ExecutionID, ResourceID = info.ResourceID, StartedOn = DateTime.UtcNow, UseUpdatedScoringEngine = true
+									});
 									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
 								};
 								break;

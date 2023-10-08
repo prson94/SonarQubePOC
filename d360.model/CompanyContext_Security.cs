@@ -318,30 +318,26 @@ namespace d360.model
 						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
 					}
 
+					// Get impacted assets, for rescoring purposes.
 					sqlToExecute = @"
-									select  A.Uid as AssetUid, 
-											M.AllocationUid,
-											M.Uid as MetricAssetUid,
-											V.Uid as MetricAssetVersionUid
-									from    #changes C 
-										inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
-										inner join AssetType T on T.ID = A.AssetTypeID
-										inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
-										inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-										inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-										inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-										inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-										and ( 
-											(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-											(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-											) 
-										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-										and V.Definition <> '{}'";
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults =
-						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
-
-					results.AddRange(ruleResults);
+select  A.Uid
+from    #changes C 
+		inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
+		inner join AssetType T on T.ID = A.AssetTypeID
+		inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
+		inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+		and ( 
+			(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+			(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+			) 
+		and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+		and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
+		and V.Definition <> '{}'
+group by A.Uid";
+					var assets = Connection.Query<Guid>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction).ToList();
 
 					//drop impacted assets temporary table.
 					sqlToExecute = "drop table if exists #changes";
@@ -368,6 +364,8 @@ namespace d360.model
 					await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 					transaction.Commit();
+
+					CreateRescoreRequests(assets, ScoreType.Governance);    // Trigger a rescore only when you commit the transaction.
 				}
 				catch (Exception ex)
 				{
@@ -442,32 +440,28 @@ namespace d360.model
 									delete;";
 					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
+					// Get impacted assets, for rescoring purposes.
 					sqlToExecute = @"
-							select  A.Uid as AssetUid, 
-									M.AllocationUid,
-									M.Uid as MetricAssetUid,
-									V.Uid as MetricAssetVersionUid
-							from    #changes C 
-									inner join AssetType T on T.ID = C.AssetTypeID 
-									inner join Asset A on A.AssetTypeID = T.ID and C.ActionType in ('DELETE', 'INSERT') 
-									inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
-									inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-									inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-									inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-									inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-										and ( 
-											(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-											(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-											) 
-										and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-										and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-										and V.Definition <> '{}'";
-					IEnumerable<ResponsibilityAssetMeasureProcessedResult> ruleResults =
-						await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction);
+select  A.Uid
+from    #changes C 
+		inner join AssetType T on T.ID = C.AssetTypeID 
+		inner join Asset A on A.AssetTypeID = T.ID 
+		inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
+		inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+			and ( 
+				(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+				(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+				) 
+			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
+			and V.Definition <> '{}'
+group by A.Uid";
+					var assets = Connection.Query<Guid>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction).ToList();
 
-					results.AddRange(ruleResults);
-
-					//drop impacted assets temporary table.
+					// Drop impacted assets temporary table.
 					sqlToExecute = "drop table if exists #changes";
 					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
@@ -491,6 +485,8 @@ namespace d360.model
 					await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
 					transaction.Commit();
+
+					CreateRescoreRequests(assets, ScoreType.Governance); // Trigger a rescore only when you commit the transaction.
 				}
 				catch (Exception ex)
 				{
@@ -2136,8 +2132,6 @@ where	EG.Success is null
 
 			IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesForRerun(ruleID).ConfigureAwait(false);
 
-			List<int> rulesRequiringRun = new List<int>();
-
 			string ruleExceptionMessages = "";
 
 			foreach (ResponsibilityTypeRelationRule rule in rules)
@@ -2160,23 +2154,6 @@ where	EG.Success is null
 					ruleExceptionMessages += ex.Message;
 				}
 			}
-
-			// Send measure results to score engine.
-			DateTime today = DateTime.UtcNow.Date;
-			List<AssetMeasureModel> structuredMeasures = results.GroupBy(m => new { m.AssetUid })
-				.Select(m => new AssetMeasureModel
-				{
-					AssetUid = m.Key.AssetUid,
-					EffectiveDate = today,
-					Measures = m.Select(o => new AssetMeasureChildModel
-					{
-						AllocationUid = o.AllocationUid,
-						MetricAssetUid = o.MetricAssetUid,
-						MetricAssetVersionUid = o.MetricAssetVersionUid
-					}).Distinct().ToList()
-				}).ToList();
-
-			CreateMeasureChangedResultExecution(structuredMeasures);
 
 			if (!string.IsNullOrEmpty(ruleExceptionMessages))
 			{
@@ -2224,23 +2201,6 @@ where	EG.Success is null
 				}
 			}
 
-			// Send measure results to score engine.
-			DateTime today = DateTime.UtcNow.Date;
-			List<AssetMeasureModel> structuredMeasures = results.GroupBy(m => new { m.AssetUid })
-				.Select(m => new AssetMeasureModel
-				{
-					AssetUid = m.Key.AssetUid,
-					EffectiveDate = today,
-					Measures = m.Select(o => new AssetMeasureChildModel
-					{
-						AllocationUid = o.AllocationUid,
-						MetricAssetUid = o.MetricAssetUid,
-						MetricAssetVersionUid = o.MetricAssetVersionUid
-					}).Distinct().ToList()
-				}).ToList();
-
-			CreateMeasureChangedResultExecution(structuredMeasures);
-
 			if (!string.IsNullOrEmpty(ruleExceptionMessages))
 			{
 				throw new ApplicationException(ruleExceptionMessages);
@@ -2271,6 +2231,9 @@ where	EG.Success is null
 			{
 				try
 				{
+					var ruleIds = Query<int>("select ID from ResponsibilityTypeRelationRule where ResponsibilityTypeID = @ResponsibilityTypeID and Object = @ObjectType and ObjectID = @ObjectID", relation).ToList();
+					CreateRescoreRequestsBasedOnResponsibilityRulesRun(ruleIds);
+
 					Database.ExecuteSqlCommand(@"
 												delete	O 
 												from	ResponsibilityTypeRelationOverrideItem O

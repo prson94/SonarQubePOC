@@ -56,7 +56,7 @@ namespace d360.model
 
 		Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);
 
-		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
+		List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool lookupFieldsPassedByValue = false);
 		
 		void ImportRelationships(ApiExecution execution, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false);
 
@@ -2034,17 +2034,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					endItemNumber += loopSize;
 				}
 
-				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-				
 				Connection.Close();
-
-				// Workflow
-				if (sendWorkflowEvents)
-				{
-					SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
-				}
-				// Scoring
-				CreateDeleteRelationshipsExecution(execution.ExecutionID, it.ID);
 			}
 
 			return results;
@@ -2704,7 +2694,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
             Connection.Query<DatabaseBulkRelationshipResult>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
+		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool lookupFieldsPassedByValue = false)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "ImportRelationships";
@@ -2739,9 +2729,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			});
 
 			SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-			//check if trigger workflows is set to true and there are actually no workflows
-			sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(null, rt.ID, null, null);
 
 			var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
 			List<RelationshipInsert> tooLongOwners = import.Where(x => !string.IsNullOrEmpty(x.Owner) && x.Owner.Length > 100).ToList();
@@ -3497,7 +3484,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (relationshipTypeHasFieldTypes)
 									{
 										sw.Restart();
-										fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+										fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, true, timeout);
 										addMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
 									}
 
@@ -3597,22 +3584,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					}
 
 					Connection.Close();
-
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-
+					
 					sw.Restart();
-
-					if (sendWorkflowEvents)
-					{
-						SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
-					}
-
+					SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 					addMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-
-					// Send score recalculation notifications.
-					sw.Restart();
-					CreateImportRelationshipsExecution(execution.ExecutionID, rt.ID, timeout);
-					addMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
 				}
 			}
 			addMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
@@ -4993,8 +4968,6 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 							beginItemNumber += loopSize;
 							endItemNumber += loopSize;
 						}
-
-						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 						Connection.Close();
 					}

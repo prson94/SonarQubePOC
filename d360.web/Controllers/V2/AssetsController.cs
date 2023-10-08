@@ -1741,6 +1741,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.PutAssets);
+				ExecutionsRepository.UpsertExecution(execution);
 				var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -1772,7 +1773,6 @@ namespace d360.web.Controllers.V2
 		/// Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
 		/// </remarks>
 		/// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-		/// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
 		/// <param name="assets">The payload of your request.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
@@ -1787,7 +1787,6 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> DeleteAssetsAsync(
 			Guid assetTypeUid,
 			AssetDeletes assets,
-			bool triggersWorkflow = true,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
 			var prefix = "Assets.DeleteAssetsAsync => ";
@@ -1823,7 +1822,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid }, applicationId: applicationId, ApiExecutionAction.DeleteAssets);
-				List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAssets(assets, assetType, execution, triggersWorkflow);
+				List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAssets(assets, assetType, execution, false);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 			}
@@ -3080,7 +3079,7 @@ namespace d360.web.Controllers.V2
 					new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid }
 				};
 
-				var deleteAssetTypesResults = AssetRepository.DeleteAssetType(deletes, execution, false);
+				var deleteAssetTypesResults = AssetRepository.DeleteAssetTypes(deletes, execution, false);
 				Company.CreateRollupPathChangedExecution(assetTypeId: type.ID);
 
 				return await Task.FromResult<IHttpActionResult>(

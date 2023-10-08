@@ -1,0 +1,94 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.metrics.GatherRuleResults-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function metrics.GatherRuleResults 
+(
+	@assetId bigint,
+	@effectiveDate datetime,
+	@paths varchar(max),
+	@links varchar(max)
+)
+RETURNS @results TABLE 
+(
+	Uid uniqueidentifier,
+	[Path] varchar(max), 
+	PassFraction float
+)
+AS
+BEGIN
+	declare @tblLinks table (IntersectTypeID int, PredicateType int, Position int);
+	insert into @tblLinks
+		select	IntersectTypeID, PredicateType, StartPosition
+		from	openjson(@links) with (IntersectTypeID int, PredicateType int, StartPosition int, EndPosition int);
+
+	declare @currentPosition int = 1,
+			@maxPosition int;
+	select	@maxPosition = max(Position) from @tblLinks;
+
+
+	declare @tbl table ([Path] varchar(max), SubjectAssetId bigint, ObjectAssetId bigint, Position int, CurrentPosition int, Value nvarchar(max));
+
+	while @currentPosition <= @maxPosition
+	begin
+		if @currentPosition = 1
+			begin
+				insert into @tbl (Path, SubjectAssetId, ObjectAssetId, Position, CurrentPosition)
+					select	cast('['+cast(i.SubjectAssetID as varchar(25))+','+cast(i.ObjectAssetID as varchar(25))+']' as varchar(max)) as [Path],
+							i.SubjectAssetID, i.ObjectAssetID,
+							rp.Position, 1 as [CurrentPosition]
+					from	[Intersect] i
+							inner join @tblLinks rp on rp.IntersectTypeID = i.IntersectTypeID 
+								and (
+									(i.SubjectAssetID = @assetId and rp.PredicateType <> 2) 
+									or (i.ObjectAssetID = @assetId and rp.PredicateType = 2)
+								) 
+								and rp.Position = 1
+					where	metrics.RuleFiltering(i.SubjectAssetTypeID , i.SubjectAssetID, @paths) = 1
+					--NOTE: You need to handle both the SUBJECT and OBJECT for filtering. The first position must ALWAYS do both sides.
+			end
+		else
+			begin 
+				insert into @tbl (Path, SubjectAssetId, ObjectAssetId, Position, CurrentPosition)
+					select	cast(
+								JSON_MODIFY( r.[Path], 'append $', iif(rp.PredicateType = 2, i.SubjectAssetID, i.ObjectAssetID) ) 
+								as varchar(max)) as [Path],
+							i.SubjectAssetID, i.ObjectAssetID,
+							rp.Position, r.[CurrentPosition]+1 as [CurrentPosition]
+					from	@tbl r
+							inner join @tblLinks rp on rp.Position = r.CurrentPosition+1
+							inner join [Intersect] i on i.IntersectTypeID = rp.IntersectTypeID and r.ObjectAssetID = iif(rp.PredicateType = 2, i.ObjectAssetID, i.SubjectAssetID)
+					where	metrics.RuleFiltering(iif(rp.PredicateType = 2, i.SubjectAssetTypeID, i.ObjectAssetTypeID) , iif(rp.PredicateType = 2, i.SubjectAssetID, i.ObjectAssetID), @paths) = 1
+			end
+
+		set @currentPosition = @currentPosition + 1
+	end
+
+	insert into @results
+		select	o.Uid,
+				o.[Path], --o.EffectiveDate, o.PassCount, o.FailCount,
+				o.PassFraction
+		from	(
+				select	row_number() over(partition by re.OwningAssetUid, re.EvaluatedAssetUid  order by re.EffectiveDate desc) as RowNum,
+						r.[Path],
+						re.*
+				from	@tbl r
+						inner join dbo.Asset ru on ru.Id = r.SubjectAssetID and r.Position = @maxPosition
+						inner join dbo.Asset ev on ev.Id = r.ObjectAssetID and r.Position = @maxPosition
+						inner join dbo.AssetResult re on re.OwningAssetUid = ru.uid and re.EvaluatedAssetUid = ev.uid and re.EffectiveDate <= @effectiveDate
+				) o 
+		where	o.RowNum = 1
+	
+	RETURN 
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

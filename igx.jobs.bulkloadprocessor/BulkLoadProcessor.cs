@@ -22,6 +22,7 @@ using d360.extensions.storage;
 using d360.core;
 using d360.core.entities.Metric;
 using d360.extensions.mail;
+using LaunchDarkly.Sdk.Server;
 
 namespace igx.jobs.bulkloadprocessor
 {
@@ -54,11 +55,12 @@ namespace igx.jobs.bulkloadprocessor
 				var queue = new AzureQueueSource();
 				var storage = new AzureStorageProvider();
 				var community = new CommunityContext(cache, queue, sec);
-
+				var sdkKey = CoreFunction.GetConfigValueByKey("LaunchDarklySdkKey");
+				var ldClient = new LaunchDarkly.Sdk.Server.LdClient(sdkKey);
 				var company = new CompanyContext(community, cache, queue, mail, sec, true);
-				var assetRepository = new AssetRepository(company, queue, storage, community);
+				var assetRepository = new AssetRepository(company, queue, storage, community, ldClient);
 				var tagRepository = new TagRepository(company, community);
-				var relationshipRepository = new RelationshipRepository(community, company, queue, storage);
+				var relationshipRepository = new RelationshipRepository(community, company, queue, storage, ldClient);
 
 				#endregion
 				

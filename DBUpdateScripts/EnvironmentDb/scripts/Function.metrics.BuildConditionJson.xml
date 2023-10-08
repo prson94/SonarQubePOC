@@ -1,0 +1,93 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.metrics.BuildConditionJson-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function metrics.BuildConditionJson
+(
+	@assetVersionUid uniqueidentifier
+)
+returns nvarchar(max)
+as
+begin
+	declare @conditions nvarchar(max)
+	select @conditions=(
+						select	vc.Uid,
+								vc.MatchType,
+								vc.Position,
+								vc.Threshold,
+								vc.Weight,
+								(
+									select	ci.Uid,
+											ci.ConditionType,
+											ci.Operator,
+											ft.Type,
+											ft.LookupObjectType,
+											ft.LookupObjectID,
+											ft.ID as FieldTypeId,
+											ft.Name as FieldTypeName,
+											it.ID as IntersectTypeId,
+											case 
+												when ci.Operator = 9 then 
+													case 
+														when ft.Type = 'Date' then 
+															(select min(try_cast([Value] as date)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'DateTime' then 
+															(select min(try_cast([Value] as datetime)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'Decimal' then 
+															(select min(try_cast([Value] as decimal)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'Number' then 
+															(select min(try_cast([Value] as bigint)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+													end
+												else null
+											end as StartRangeValue,
+											case 
+												when ci.Operator = 9 then 
+													case 
+														when ft.Type = 'Date' then 
+															(select max(try_cast([Value] as date)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'DateTime' then 
+															(select max(try_cast([Value] as datetime)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'Decimal' then 
+															(select max(try_cast([Value] as decimal)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+														when ft.Type = 'Number' then 
+															(select max(try_cast([Value] as bigint)) from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid)
+													end
+												else null
+											end as EndRangeValue,
+											case 
+												when ci.Operator in (9, 16, 17) then null
+												else (select top 1 [Value] from [metrics].[AssetVersionConditionItemValue] where Uid = ci.Uid) 
+											end as SingleValue,
+											case 
+												when ci.Operator in (16, 17) then -- In, NotIn
+													(
+														select	[Value]
+														from	[metrics].[AssetVersionConditionItemValue] 
+														where	Uid = ci.Uid
+														for json path
+													) 
+												else null 
+											end as [Values]
+									from	[metrics].[AssetVersionConditionItem] ci
+											left join FieldType ft on ft.ID = ci.ConditionFieldTypeID
+											left join IntersectType it on it.ID = ci.ConditionIntersectTypeID
+									where	ci.AssetVersionConditionUid = vc.Uid
+									for json path
+								) as Items
+						from	[metrics].[AssetVersionCondition] vc
+						where	vc.AssetVersionUid = @assetVersionUid
+						for json path
+						)
+	return @conditions
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

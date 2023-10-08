@@ -7,6 +7,7 @@ using d360.model;
 using Dapper;
 using igx.jobs.scoreprocessor.ChangeTypes;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -22,9 +23,10 @@ namespace igx.jobs.scoreprocessor
     {
         const string FUNCTION_NAME = "Scoring_QueueProcessor";
 
-		public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+		public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
         {
 			var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
+			var logEvent = new EventId(scoreInfo.CompanyID, $"Score Processor: {scoreInfo.ChangeType}");
 
 			try
 			{
@@ -48,6 +50,18 @@ namespace igx.jobs.scoreprocessor
 							}
 						}
 						break;
+					case ScoreQueueChangeType.PatchCatalogExecution:
+						if (scoreInfo.UseUpdatedScoringEngine)
+						{
+							sql = getPatchExecutionSql();
+							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
+							{
+								await companyConnection.OpenIfClosed();
+								await companyConnection.ExecuteAsync(sql, new { scoreInfo.ExecutionUid });
+							}
+						}
+						break;
 					case ScoreQueueChangeType.AssetMeasures:
 						process = new AssetMeasuresProcess();
 						break;
@@ -63,7 +77,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid });
+								await companyConnection.ExecuteAsync(sql, new { ExecutionUid = payload.MetricAssetVersionUid });
 							}
 						}
 						else
@@ -92,7 +106,21 @@ namespace igx.jobs.scoreprocessor
 						process = new RollupPathChangedProcess();
 						break;
 					case ScoreQueueChangeType.RuleAssetRemoved:
-						process = new RuleAssetRemovedProcess();
+						if (scoreInfo.UseUpdatedScoringEngine)
+						{ 
+							var payload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(scoreInfo.Payload.ToString());
+							sql = getRuleRemovedSql();
+							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
+							{
+								await companyConnection.OpenIfClosed();
+								await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid });
+							}
+						}
+						else
+						{
+							process = new RuleAssetRemovedProcess();
+						}
 						break;
 					case ScoreQueueChangeType.WorkflowCheck:
 						process = new WorkflowCheckProcess();
@@ -107,11 +135,11 @@ namespace igx.jobs.scoreprocessor
             }
             catch (ArgumentNullException)
             {
-                log.WriteLine($"No score execution record found. Company: {scoreInfo.CompanyID}; Execution: {scoreInfo.ExecutionUid}.");
+                log.LogError(logEvent, $"No score execution record found. Company: {scoreInfo.CompanyID}; Execution: {scoreInfo.ExecutionUid}.");
             }
             catch (InvalidScoreMeasure ex)
             {
-				handleInvalidMeasureError(ex, scoreInfo);
+				handleInvalidMeasureError(ex, scoreInfo, log, logEvent);
             }
             catch (ScoresCurrentlyProcessingException ex)
             {
@@ -119,9 +147,10 @@ namespace igx.jobs.scoreprocessor
             }
             catch (Exception ex)
             {
-				await handleError(ex, scoreInfo);
+				await handleError(ex, scoreInfo, log, logEvent);
             }
         }
+
 
 		static string getCompanyConnectionString(int companyID)
 		{
@@ -154,24 +183,14 @@ namespace igx.jobs.scoreprocessor
 			return connectionString;
 		}
 
-		static string getMeasureChangedSql()
+		static string getCommonTempTable()
+		{
+			return "create table #ids (RowId int identity, AssetUid uniqueidentifier);";
+		}
+
+		static string getCommonLookupSql()
 		{
 			return @"
-declare @effectiveDate date = getutcdate(),
-		@scoreType int
-
-select	@scoreType = al.ScoreType
-from	metrics.Asset a
-		inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @versionUid
-		inner join metrics.Allocation al on al.Uid = a.AllocationUid
-create table #ids (RowId int identity, AssetUid uniqueidentifier)
-
-insert into #ids
-	select	s.AssetUid
-	from	metrics.ScoreItem i
-			inner join metrics.ScoreItemLink l on l.ScoreItemUid = i.Uid and i.AssetVersionUid = @versionUid
-			inner join metrics.Score s on s.Uid = l.ScoreUid
-
 declare @current int = 1,
 		@max int,
 		@currentAssetUid uniqueidentifier;
@@ -184,13 +203,77 @@ begin
 end";
 		}
 
-		static async Task handleError(Exception ex, ScoreQueueInfo scoreInfo)
+		static string getMeasureChangedSql()
 		{
-			var props = new Dictionary<string, string>() {
-						{ "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
-						{ "ChangeType", scoreInfo.ChangeType.ToString() }
-					};
+			return $@"
+declare @effectiveDate date = getutcdate(),
+		@scoreType int;
 
+{getCommonTempTable()}
+
+select	@scoreType = al.ScoreType
+from	metrics.Asset a
+		inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @versionUid
+		inner join metrics.Allocation al on al.Uid = a.AllocationUid;
+
+insert into #ids
+	select	s.AssetUid
+	from	metrics.ScoreItem i
+			inner join metrics.ScoreItemLink l on l.ScoreItemUid = i.Uid and i.AssetVersionUid = @versionUid
+			inner join metrics.Score s on s.Uid = l.ScoreUid;
+
+{getCommonLookupSql()}";
+		}
+
+		static string getPatchExecutionSql()
+		{
+			return $@"
+declare @effectiveDate date = getutcdate(),
+		@scoreType int = 1; 
+
+{getCommonTempTable()}
+
+insert into #ids (AssetUid)
+	select	i.[Uid]
+	from	api.ExecutionCatalogItem i
+			inner join api.Execution e on e.Id = i.ExecutionId and e.ExecutionID = @ExecutionUid and i.[Type] = 'A' and i.Success = 1
+			inner join AssetType t on t.ID = i.TypeId
+			inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = @scoreType; 
+
+{getCommonLookupSql()}";
+		}
+
+		static string getRuleRemovedSql()
+		{
+			return $@"
+declare @effectiveDate date = getutcdate(),
+		@scoreType int = 2;
+
+{getCommonTempTable()}
+
+insert into #ids
+	select	distinct 
+			S.AssetUid
+	from	metrics.ScoreItem I
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+			inner join metrics.Asset A on A.Uid = V.AssetUid
+			inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 2
+			cross apply openjson(I.Evidence) Ev
+			cross apply openjson(Ev.value) Rp 
+			cross apply openjson(Rp.value)  with (Uid nvarchar(max) '$.Uid') as P
+			inner join metrics.ScoreItemLink SIL on SIL.ScoreItemUid = I.Uid
+			inner join metrics.Score S on S.Uid = SIL.ScoreUid
+	where	Evidence <> '{"{}"}' 
+			and Evidence is not null
+			and ISNUMERIC(Ev.[key]) = 1
+			and Rp.[key] = 'RollupPath' 
+			and P.Uid = @assetUid;
+
+{getCommonLookupSql()}";
+		}
+
+		static async Task handleError(Exception ex, ScoreQueueInfo scoreInfo, ILogger log, EventId logEvent)
+		{
 			bool warningOnly = false;
 			if (scoreInfo.ChangeType == ScoreQueueChangeType.RollupPathChanged)
 			{
@@ -204,7 +287,7 @@ end";
 			bool shouldRequeue = true;
 			if (warningOnly)
 			{
-				CoreFunction.AITrackEvent(FUNCTION_NAME, "Rollup Deadlock", props, scoreInfo.CompanyID);
+				log.LogWarning(logEvent, ex, ex.Message);
 
 				// Only requeue 1 out of 3 times as there are rapid changes that will put many messages on the queue.
 				Random random = new Random();
@@ -218,7 +301,7 @@ end";
 			}
 			else
 			{
-				CoreFunction.AITrackException(FUNCTION_NAME, ex, scoreInfo.CompanyID, props);
+				log.LogError(logEvent, ex, ex.Message);
 			}
 
 
@@ -232,14 +315,9 @@ end";
 			}
 		}
 
-		static void handleInvalidMeasureError(InvalidScoreMeasure ex, ScoreQueueInfo scoreInfo)
+		static void handleInvalidMeasureError(InvalidScoreMeasure ex, ScoreQueueInfo scoreInfo, ILogger log, EventId logEvent)
 		{
-			var props = new Dictionary<string, string>() {
-						{ "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
-						{ "ChangeType", scoreInfo.ChangeType.ToString() }
-					};
-
-			CoreFunction.AITrackException(FUNCTION_NAME, ex, scoreInfo.CompanyID, props);
+			log.LogError(logEvent, ex, ex.Message);
 		}
 
 		static async Task handleScoreProcessingError(ScoresCurrentlyProcessingException ex, ScoreQueueInfo scoreInfo)

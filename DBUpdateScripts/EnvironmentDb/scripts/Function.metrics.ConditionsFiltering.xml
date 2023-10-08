@@ -1,0 +1,270 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.metrics.ConditionsFiltering-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function metrics.ConditionsFiltering
+(
+	@assetId bigint,
+	@conditions varchar(max),
+	@matchConditionsOnly bit
+)
+RETURNS 
+@results TABLE 
+(
+	[Include] bit,
+	MatchUid uniqueidentifier,
+	Threshold float,
+	Weight float,
+	OtherMatches varchar(500)
+)
+AS
+BEGIN
+    declare @include bit = 0;
+
+	declare @tConditions table (
+		Uid uniqueidentifier, MatchType int, Position int, Threshold float, Weight float,
+		ConditionType int, Operator int, [Type] varchar(50), LookupObjectType varchar(250), LookupObjectID int, FieldTypeId int, FieldTypeName nvarchar(250), 
+		StartRangeValue nvarchar(max), EndRangeValue nvarchar(max), SingleValue nvarchar(max), [Values] nvarchar(max),
+		Passed bit default(0)
+	);
+	insert into @tConditions
+		select	g.Uid, g.MatchType, g.Position, g.Threshold, g.Weight, i.ConditionType, i.Operator, i.[Type], 
+				i.LookupObjectType, i.LookupObjectID, i.FieldTypeId, i.FieldTypeName, 
+				i.StartRangeValue, i.EndRangeValue, i.SingleValue, i.[Values], 0
+		from	openjson(@conditions) with (
+					Uid uniqueidentifier, 
+					MatchType int, 
+					Position int, 
+					Threshold float, 
+					Weight float, 
+					Items nvarchar(max) as json
+				) g
+				outer apply openjson(g.Items) with (
+					Uid uniqueidentifier, 
+					ConditionType int, 
+					Operator int, 
+					[Type] varchar(50), 
+					LookupObjectType varchar(250), 
+					LookupObjectID int, 
+					FieldTypeId int, 
+					FieldTypeName nvarchar(250), 
+					StartRangeValue nvarchar(max),
+					EndRangeValue nvarchar(max),
+					SingleValue nvarchar(max),
+					[Values] nvarchar(max) as json
+				) i
+
+	if not exists (select 1 from @tConditions)
+	begin
+		-- There are no conditions defined for this measure.
+		insert into @Results ([Include]) values (1)
+	end
+	else
+	begin
+		declare @currentPosition int = 1,
+				@maxPosition int,
+				@matchUid uniqueidentifier,
+				@threshold float, 
+				@weight float,
+				@otherMatches nvarchar(500) = '[]';
+
+		select	@maxPosition = max(Position) from @tConditions;
+
+		while @currentPosition <= @maxPosition
+		begin
+			
+			if exists (select 1 from @tConditions where Type = 'Boolean' and Position = @currentPosition)
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and lower(f.FormattedValue) = lower(c.SingleValue) then 1								-- Equals
+									when c.Operator = 2 and lower(f.FormattedValue) <> lower(c.SingleValue) then 1								-- NotEquals
+									when c.Operator = 18 and lower(f.FormattedValue) in ('true', '1') then 1									-- IsTrue
+									when c.Operator = 19 and (lower(f.FormattedValue) in ('false', '0') or f.FormattedValue is null) then 1		-- IsFalse
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'Date' and Position = @currentPosition)
+			begin 
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and try_cast(f.FormattedValue as date) = try_cast(c.SingleValue as date) then 1		-- Equals
+									when c.Operator = 2 and try_cast(f.FormattedValue as date) <> try_cast(c.SingleValue as date) then 1	-- NotEquals
+									when c.Operator = 9 and try_cast(f.FormattedValue as date) between 
+										try_cast(c.StartRangeValue as date) and try_cast(c.EndRangeValue as date) then 1					-- Between
+									when c.Operator = 12 and try_cast(f.FormattedValue as date) > try_cast(c.SingleValue as date) then 1	-- GreaterThan
+									when c.Operator = 13 and try_cast(f.FormattedValue as date) <= try_cast(c.SingleValue as date) then 1	-- LessThanOrEquals
+									when c.Operator = 14 and try_cast(f.FormattedValue as date) < try_cast(c.SingleValue as date) then 1	-- LessThan
+									when c.Operator = 15 and try_cast(f.FormattedValue as date) >= try_cast(c.SingleValue as date) then 1	-- GreaterThanOrEquals
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'DateTime' and Position = @currentPosition)
+			begin 
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and try_cast(f.FormattedValue as datetime) = try_cast(c.SingleValue as datetime) then 1				-- Equals
+									when c.Operator = 2 and try_cast(f.FormattedValue as datetime) <> try_cast(c.SingleValue as datetime) then 1			-- NotEquals
+									when c.Operator = 9 and try_cast(f.FormattedValue as datetime) between 
+										try_cast(c.StartRangeValue as datetime) and try_cast(c.EndRangeValue as datetime) then 1							-- Between
+									when c.Operator in (8, 12) and try_cast(f.FormattedValue as datetime) > try_cast(c.SingleValue as datetime) then 1		-- GreaterThan
+									when c.Operator in (13, 20) and try_cast(f.FormattedValue as datetime) <= try_cast(c.SingleValue as datetime) then 1	-- LessThanOrEquals
+									when c.Operator in (7, 14) and try_cast(f.FormattedValue as datetime) < try_cast(c.SingleValue as datetime) then 1		-- LessThan
+									when c.Operator in (15, 21) and try_cast(f.FormattedValue as datetime) >= try_cast(c.SingleValue as datetime) then 1	-- GreaterThanOrEquals
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'Decimal' and Position = @currentPosition)
+			begin 
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and try_cast(f.FormattedValue as decimal) = try_cast(c.SingleValue as decimal) then 1		-- Equals
+									when c.Operator = 2 and try_cast(f.FormattedValue as decimal) <> try_cast(c.SingleValue as decimal) then 1		-- NotEquals
+									when c.Operator = 9 and try_cast(f.FormattedValue as decimal) between 
+										try_cast(c.StartRangeValue as decimal) and try_cast(c.EndRangeValue as decimal) then 1						-- Between
+									when c.Operator = 12 and try_cast(f.FormattedValue as decimal) > try_cast(c.SingleValue as decimal) then 1		-- GreaterThan
+									when c.Operator = 13 and try_cast(f.FormattedValue as decimal) <= try_cast(c.SingleValue as decimal) then 1		-- LessThanOrEquals
+									when c.Operator = 14 and try_cast(f.FormattedValue as decimal) < try_cast(c.SingleValue as decimal) then 1		-- LessThan
+									when c.Operator = 15 and try_cast(f.FormattedValue as decimal) >= try_cast(c.SingleValue as decimal) then 1		-- GreaterThanOrEquals
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'Number' and Position = @currentPosition)
+			begin 
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and try_cast(f.FormattedValue as bigint) = try_cast(c.SingleValue as bigint) then 1				-- Equals
+									when c.Operator = 2 and try_cast(f.FormattedValue as bigint) <> try_cast(c.SingleValue as bigint) then 1			-- NotEquals
+									when c.Operator = 9 and try_cast(f.FormattedValue as bigint) between 
+										try_cast(c.StartRangeValue as bigint) and try_cast(c.EndRangeValue as bigint) then 1							-- Between
+									when c.Operator in (8, 12) and try_cast(f.FormattedValue as bigint) > try_cast(c.SingleValue as bigint) then 1		-- GreaterThan
+									when c.Operator in (13, 20) and try_cast(f.FormattedValue as bigint) <= try_cast(c.SingleValue as bigint) then 1	-- LessThanOrEquals
+									when c.Operator in (7, 14) and try_cast(f.FormattedValue as bigint) < try_cast(c.SingleValue as bigint) then 1		-- LessThan
+									when c.Operator in (15, 21) and try_cast(f.FormattedValue as bigint) >= try_cast(c.SingleValue as bigint) then 1	-- GreaterThanOrEquals
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'Text' and Position = @currentPosition)
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 1 and f.FormattedValue = c.SingleValue then 1							-- Equals
+									when c.Operator = 2 and f.FormattedValue <> c.SingleValue then 1						-- NotEquals
+									when c.Operator = 3 and f.FormattedValue like '%' + c.SingleValue + '%' then 1			-- Contains
+									when c.Operator = 4 and f.FormattedValue not like '%' + c.SingleValue + '%' then 1		-- NotContains
+									when c.Operator = 5 and f.FormattedValue like c.SingleValue + '%' then 1				-- StartsWith
+									when c.Operator = 6 and f.FormattedValue like '%' + c.SingleValue then 1				-- EndWith
+									when c.Operator = 10 and f.FormattedValue is not null and f.FormattedValue <> '' then 1	-- Populated
+									when c.Operator = 11 and f.FormattedValue is null then 1								-- NotPopulated		NOTE: WHAT IF FIELD ROW DOES NOT EXIST???
+									when c.Operator = 16 and f.FormattedValue in (
+										select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+									) then 1																				-- In
+									when c.Operator = 17 and f.FormattedValue not in (
+										select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+									) then 1																				-- NotIn
+									else 0
+								end = 1
+			end
+
+			if exists (select 1 from @tConditions where Type = 'Lookup' and Position = @currentPosition)
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId 
+						inner join dbo.AssetType t on t.Object = c.LookupObjectType+'Type' and t.ObjectId = c.LookupObjectID
+						inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = f.Value and
+							case 
+								when c.Operator = 1 and a.Uid = c.SingleValue then 1						-- Equals
+								when c.Operator = 2 and a.Uid <> c.SingleValue then 1						-- NotEquals
+								when c.Operator = 16 and a.Uid in (
+									select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+								) then 1																	-- In
+								when c.Operator = 17 and a.Uid not in (
+									select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+								) then 1																	-- NotIn
+								else 0
+							end = 1
+			end
+
+			-- finally, check if all criteria for the group are matched.
+			if not exists(select 1 from @tConditions where Position = @currentPosition and Passed = 0)
+			begin
+				set @include = 1
+				declare @currentMatchUid uniqueidentifier = null,
+						@currentThreshold float,
+						@currentWeight float;
+
+				select	top 1 
+						@currentMatchUid = Uid,
+						@currentThreshold = Threshold,
+						@currentWeight = Weight
+				from	@tConditions 
+				where	Position = @currentPosition
+
+				if @matchUid is null
+				begin
+					set @matchUid = @currentMatchUid;
+					set @threshold = @currentThreshold
+					set @weight = @currentWeight
+				end
+				else
+				begin
+					set @otherMatches = JSON_MODIFY( @otherMatches, 'append $', cast(@currentMatchUid as varchar(50)) )
+				end
+			end
+
+			set @currentPosition = @currentPosition + 1;
+		end
+
+		-- If this set to 0, then this condition check is just to see if there are overriding weights and/or thresholds.
+		if @matchConditionsOnly = 0
+		begin
+			set @include = 1
+		end
+
+		insert into @results values (@include, @matchUid, @threshold, @weight, @otherMatches)
+	end
+--select * from @results	
+	RETURN 
+END
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

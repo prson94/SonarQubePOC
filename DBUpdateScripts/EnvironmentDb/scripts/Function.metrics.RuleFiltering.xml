@@ -1,0 +1,72 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.metrics.RuleFiltering-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function metrics.RuleFiltering
+(
+	@assetTypeId int,
+	@assetId bigint,
+	@paths varchar(max)
+)
+returns bit
+as
+begin
+    declare @include bit = 1;
+
+	declare @tblFilters table (AssetTypeID int, Position int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max));
+	insert into @tblFilters
+		select	AssetTypeID, Position, FieldTypeID, FieldName, [Type], Operator, Value
+		from	openjson(@paths) with (AssetTypeID int, Position int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max));
+
+	if exists (select 1 from @tblFilters where FieldTypeID is not null and AssetTypeID = @assetTypeId)
+	begin
+		if exists (select 1 from @tblFilters where Type = 'Text' and AssetTypeID = @assetTypeId)
+		begin
+			if exists(
+						select	1
+						from	@tblFilters rf
+								inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId and fd.FormattedValue = rf.Value
+					)
+			begin
+				set @include = 1
+			end
+			else
+			begin
+				set @include = 0
+			end
+		end
+
+		if exists (select 1 from @tblFilters where Type = 'Lookup' and AssetTypeID = @assetTypeId)
+		begin
+			if exists(
+						select	1
+						from	@tblFilters rf
+								inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId
+								inner join dbo.FieldType ft on ft.Id = fd.FieldTypeID and ft.Type = 'Lookup'
+								inner join dbo.AssetType t on t.Object = ft.LookupObjectType+'Type' and t.ObjectId = ft.LookupObjectID
+								inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = fd.Value and rf.Value = a.Uid
+					)
+			begin
+				set @include = 1
+			end
+			else
+			begin
+				set @include = 0
+			end
+		end
+	end
+
+    -- Return the result of the function
+    return @include
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

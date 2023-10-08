@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
@@ -16,40 +9,45 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using d360.utils.excel;
-
 using Dapper;
-
+using LaunchDarkly.Sdk.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using SpreadsheetLight;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
 	public class RelationshipRepository : BaseRepository, IRelationshipRepository
 	{
-		private readonly ICompanyContext companyContext;
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
-		private readonly ICommunityContext communityContext;
+		private readonly ICommunityContext CommunityContext;
+		private readonly LdClient Ld;
 
-		public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+		public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, LdClient ld)
 			: base(companyContext)
 		{
-			this.companyContext = companyContext;
+			Ld = ld;
 			QueueSource = queueSource;
 			Storage = storageProvider;
-			this.communityContext = communityContext;
+			CommunityContext = communityContext;
 		}
 
 		public Intersect GetRelationshipByUID(Guid relationshipUid)
 		{
-			return companyContext.Filter<Intersect>(i => i.uid == relationshipUid).SingleOrDefault();
+			return CompanyContext.Filter<Intersect>(i => i.uid == relationshipUid).SingleOrDefault();
 		}
 
 		public IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid)
 		{
-			return companyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
+			return CompanyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
 		}
 
 		public async Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
@@ -101,7 +99,7 @@ namespace d360.model.DataAccessLayer
 				whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
 			}
 
-			var allPredicates = await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
+			var allPredicates = await CompanyContext.QueryAsync<PredicateApiViewModel>($@"select 
 																			 P.Uid,
 																			 P.Name,
 																			 P.Inverse,
@@ -194,7 +192,7 @@ namespace d360.model.DataAccessLayer
 										where abs(ResourceID) = @ResourceID and ((PermissionsBitMask & @permission) = 0)) a
 										option(recompile)";
 
-			var AddrightCondition = companyContext.Database.Connection.Query<int>(responsibilitySQL, new { ResourceID = companyContext.CurrentResourceID, permission = (int)Permission.ReadRelationships }).FirstOrDefault();
+			var AddrightCondition = CompanyContext.Database.Connection.Query<int>(responsibilitySQL, new { ResourceID = CompanyContext.CurrentResourceID, permission = (int)Permission.ReadRelationships }).FirstOrDefault();
 			//Create Temporary table to store No Read Asset/AssetTypeID
 			if (AddrightCondition == 1)
 			{
@@ -233,7 +231,7 @@ namespace d360.model.DataAccessLayer
 		and not exists(select 1 from dbo.ResponsibilityDetail where AssetID = A.ID and ResourceID = @ResourceID)
 	option(recompile)";
 
-				dbArgs.Add("@CurrentResourceID", companyContext.CurrentResourceID);
+				dbArgs.Add("@CurrentResourceID", CompanyContext.CurrentResourceID);
 				dbArgs.Add("@ReadPremission", (int)Permission.ReadRelationships);
 			}
 
@@ -280,7 +278,7 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
 					{
 						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-						fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on I.ID = F.IntersectTypeID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
+						fieldTypes = CompanyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on I.ID = F.IntersectTypeID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
 						if (fieldTypes != null && fieldTypes.Count() > 0)
 						{
 							var IntersectTypeID = fieldTypes.FirstOrDefault().IntersectTypeID;
@@ -388,7 +386,7 @@ namespace d360.model.DataAccessLayer
 						int SubjAssetTypeID = 0;
 						bool SubjIsReferenceList = false;
 
-						var assetSubj = companyContext.Query<dynamic>(AssetQuery, new { AssetUid = subjectUid }, ApiTimeout).FirstOrDefault();
+						var assetSubj = CompanyContext.Query<dynamic>(AssetQuery, new { AssetUid = subjectUid }, ApiTimeout).FirstOrDefault();
 
 						if (assetSubj != null)
 						{
@@ -460,7 +458,7 @@ namespace d360.model.DataAccessLayer
 						int ObjAssetTypeID = 0;
 						bool ObjIsReferenceList = false;
 
-						var assetObj = companyContext.Query<dynamic>(AssetQuery, new { AssetUid = objectUid }, ApiTimeout).FirstOrDefault();
+						var assetObj = CompanyContext.Query<dynamic>(AssetQuery, new { AssetUid = objectUid }, ApiTimeout).FirstOrDefault();
 
 						if (assetObj != null)
 						{
@@ -527,7 +525,7 @@ namespace d360.model.DataAccessLayer
 					var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUidString, out assetUid))
 					{
-						var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
+						var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 
 						if (asset != null)
 						{
@@ -604,7 +602,7 @@ namespace d360.model.DataAccessLayer
 						else
 						{
 							isFilteredByAssetTypeUID = true;
-							var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
+							var type = CompanyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.ID }).FirstOrDefault();
 							dbArgs.Add("@assetTypeId", type.ID);
 							filteredIntersectAssets = @$"
 
@@ -815,7 +813,7 @@ namespace d360.model.DataAccessLayer
 				{
 					filteringByFields = true;
 					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
-					simpleFilter = companyContext.GetEscapedFilterString(simpleFilter);
+					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
@@ -921,7 +919,7 @@ namespace d360.model.DataAccessLayer
 
 					getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
-					var filterDataProvider = new FilterDataProvider(companyContext);
+					var filterDataProvider = new FilterDataProvider(CompanyContext);
 
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RelationshipCustomFields);
 					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns.GetStatements());
@@ -1204,7 +1202,7 @@ OPTION(RECOMPILE)";
 
 			var getAllQuery = $"{baseSQL} {sql}";
 
-			var models = await companyContext.ExecuteGetRelationshipQuery<JObject>(getAllQuery, cancellationToken.Value, dbArgs, ApiTimeout);
+			var models = await CompanyContext.ExecuteGetRelationshipQuery<JObject>(getAllQuery, cancellationToken.Value, dbArgs, ApiTimeout);
 
 			return models;
 		}
@@ -1230,7 +1228,7 @@ OPTION(RECOMPILE)";
 
 			List<FieldType> fieldTypes = null;
 
-			fieldTypes = companyContext.Query<FieldType>(
+			fieldTypes = CompanyContext.Query<FieldType>(
 				$@"select F.* from FieldType F 
 					inner join IntersectType IT on IT.ID = F.IntersectTypeID
 					inner join [intersect] I on I.IntersectTypeID = IT.ID
@@ -1286,19 +1284,19 @@ OPTION(RECOMPILE)";
 						{whereClause} 
 						for json path, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER";
 
-			var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
+			var models = await CompanyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
 
 			return models;
 		}
 
 		public IQueryable<IntersectType> GetIntersectTypeById(int id)
 		{
-			return companyContext.Filter<IntersectType>(i => i.ID == id);
+			return CompanyContext.Filter<IntersectType>(i => i.ID == id);
 		}
 
 		public IntersectType GetIntersectTypeByUid(Guid intersectTypeUid)
 		{
-			return companyContext.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
+			return CompanyContext.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
 		}
 
 		public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
@@ -1333,12 +1331,12 @@ OPTION(RECOMPILE)";
 					{
 						bool IsReferenceType = false;
 						Guid RefListUid = Guid.Empty;
-						var assetType = companyContext.Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
+						var assetType = CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
 						if (assetType != null)
 						{
 							if (assetType.Class == AssetTypeClass.Reference)
 							{
-								var assetTypeRef = companyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).FirstOrDefault();
+								var assetTypeRef = CompanyContext.Filter<AssetType>(i => i.Class == AssetTypeClass.Reference && i.ObjectID == 0).FirstOrDefault();
 								if (assetTypeRef != null)
 								{
 									RefListUid = assetTypeRef.uid;
@@ -1544,7 +1542,7 @@ from	IntersectType I
 			left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID" : "")}
 		{whereClause} for json path";
 
-			var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
+			var models = await CompanyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
 
 			return models;
 		}
@@ -1553,9 +1551,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = companyContext.CurrentCompanyID,
-				ResourceID = companyContext.CurrentResourceID,
-				CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ResourceID = CompanyContext.CurrentResourceID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.PostRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1565,7 +1563,7 @@ from	IntersectType I
 			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
 
 			execution.ExecutionID = executionInfo.ExecutionID;
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
@@ -1576,9 +1574,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = companyContext.CurrentCompanyID,
-				ResourceID = companyContext.CurrentResourceID,
-				CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ResourceID = CompanyContext.CurrentResourceID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = execution.ExecutionID,
 				SendWorkflowEvents = triggerWorkflow
 			};
@@ -1587,7 +1585,7 @@ from	IntersectType I
 			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
 
 			execution.ExecutionID = executionInfo.ExecutionID;
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
@@ -1596,7 +1594,7 @@ from	IntersectType I
 
 		public IEnumerable<dynamic> GetExportModel(int id)
 		{
-			return companyContext.Query<dynamic>(
+			return CompanyContext.Query<dynamic>(
 				@"select 
 					UID,
 					ID,
@@ -1629,19 +1627,19 @@ from	IntersectType I
 				"select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
 				"i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , i.SubjectUid, i.ObjectUid, " + CteColumnName +
 				" from  intersectdetail as i left join CTE  on CTE.IntersectID =i.id where intersecttypeid=@id ";
-			var models = companyContext.Query<dynamic>(sql, new { id }, ApiTimeout);
+			var models = CompanyContext.Query<dynamic>(sql, new { id }, ApiTimeout);
 
 			return models;
 		}
 
 		public bool AnyExists(Guid uid)
 		{
-			return companyContext.Any<IntersectType>(i => i.uid == uid);
+			return CompanyContext.Any<IntersectType>(i => i.uid == uid);
 		}
 
 		public bool AnyPredicateExists(Guid uid)
 		{
-			return companyContext.Any<Predicate>(i => i.UID == uid);
+			return CompanyContext.Any<Predicate>(i => i.UID == uid);
 		}
 
 		public async Task<List<DatabaseBulkAssetResult>> GetBulkResults(ApiExecutionInfo info)
@@ -1658,10 +1656,41 @@ from	IntersectType I
 			return results;
 		}
 
-		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false)
+		public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600)
 		{
-			var results = companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
-			companyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteRelationships);
+			var results = CompanyContext.DeleteRelationships(execution, intersectType, relationships, timeout);
+			
+			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteRelationships);
+
+			// Send change log request.
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			{ 
+				Action = PostExecutionQueueMessageAction.History, 
+				CompanyID = CompanyContext.CurrentCompanyID, 
+				ExecutionId = execution.Id 
+			});
+
+			// Send workflow request.
+			CompanyContext.SendWorkflowEvents("IntersectType", intersectType.ID, results, ChangeType.Delete);
+
+			// Send scoring request.
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+			if (isUpdatedScoring)
+			{
+				var assets = CompanyContext.Query<Guid>(
+					"select	a.Uid " +
+					"from	api.ExecutionDeletedRelationship r " +
+					"		inner join Asset a on a.Id in (r.SubjectId, r.ObjectId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+					"		inner join AssetType t on t.Id = a.AssetTypeId " +
+					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+
+				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+			}
+			else 
+			{
+				CompanyContext.CreateDeleteRelationshipsExecution(execution.ExecutionID, intersectType.ID);
+			}
+
 			return results;
 		}
 
@@ -1669,9 +1698,9 @@ from	IntersectType I
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = companyContext.CurrentCompanyID,
-				ResourceID = companyContext.CurrentResourceID,
-				CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ResourceID = CompanyContext.CurrentResourceID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = Guid.NewGuid(),
 				Action = ApiExecutionAction.DeleteRelationships,
 				SendWorkflowEvents = triggerWorkflow
@@ -1681,31 +1710,90 @@ from	IntersectType I
 			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
 
 			execution.ExecutionID = executionInfo.ExecutionID;
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
 
 			return executionInfo;
 		}
 
+		public List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool lookupFieldsPassedByValue = false)
+		{
+			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
+			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+
+			// Send scoring request.
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+			if (isUpdatedScoring)
+			{
+				var assets = CompanyContext.Query<Guid>(
+					"select	a.Uid " +
+					"from	api.ExecutionRelationship r " +
+					"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+					"		inner join AssetType t on t.Id = a.AssetTypeId " +
+					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+
+				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+			}
+			else
+			{
+				CompanyContext.CreateImportRelationshipsExecution(execution.ExecutionID, intersectType.ID, 3600);
+			}
+
+			return results;
+		}
+
+		public List<DatabaseBulkRelationshipUpdateResult> PutRelationships(IntersectType intersectType, ApiExecution execution, RelationshipUpdates relations, bool lookupFieldsPassedByValue = false)
+		{
+			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
+			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
+
+			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+
+			// Send scoring request.
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+			if (isUpdatedScoring)
+			{
+				var assets = CompanyContext.Query<Guid>(
+					"select	a.Uid " +
+					"from	api.ExecutionRelationship r " +
+					"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+					"		inner join AssetType t on t.Id = a.AssetTypeId " +
+					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+
+				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+			}
+			else
+			{
+				CompanyContext.CreateImportRelationshipsExecution(execution.ExecutionID, intersectType.ID, 3600);
+			}
+
+			return results;
+		}
+
 		public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)
 		{
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<PredicateDeleteResult> results = null;
 			try
 			{
-				results = companyContext.RemovePredicates(execution, predicates);
-
+				results = CompanyContext.RemovePredicates(execution, predicates);
+				
+				// Send change log request.
+				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1713,22 +1801,22 @@ from	IntersectType I
 
 		public List<PredicateUpsertResult> UpsertPredicates(PredicateUpserts predicates, ApiExecution execution)
 		{
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<PredicateUpsertResult> results = null;
 			try
 			{
-				results = companyContext.UpdatePredicates(execution, predicates);
+				results = CompanyContext.UpdatePredicates(execution, predicates);
 
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1744,29 +1832,29 @@ where	Id = @Id
 			exists (select 1 from IntersectType I inner join [Predicate] P on P.Id = I.PredicateID and P.[Type]  = @type and I.SubjectAssetTypeID = A.ID )
 			or exists (select 1 from IntersectType I inner join [Predicate] P on P.Id = I.PredicateID and P.[Type] = @type and I.ObjectAssetTypeID = A.ID )
 		)";
-			var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type = (int)PredicateType.Transformation });
+			var result = await CompanyContext.QueryAsync<string>(sql, new { id = assetTypeId, type = (int)PredicateType.Transformation });
 			
 			return !string.IsNullOrEmpty(result.FirstOrDefault());
 		}
 		
 		public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution)
 		{
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<RelationshipTypeResult> results = null;
 			try
 			{
-				results = companyContext.ImportRelationshipTypes(execution, relationshipTypes);
+				results = CompanyContext.ImportRelationshipTypes(execution, relationshipTypes);
 
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1774,22 +1862,22 @@ where	Id = @Id
 
 		public List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution)
 		{
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<RelationshipTypeResult> results = null;
 			try
 			{
-				results = companyContext.ImportRelationshipTypes(execution, relationshipTypes);
+				results = CompanyContext.ImportRelationshipTypes(execution, relationshipTypes);
 
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1797,22 +1885,22 @@ where	Id = @Id
 
 		public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution)
 		{
-			companyContext.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<RelationshipTypeResult> results = null;
 			try
 			{
-				results = companyContext.DeleteRelationshipTypes(execution, relationshipTypes);
+				results = CompanyContext.DeleteRelationshipTypes(execution, relationshipTypes);
 
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				companyContext.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				companyContext.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -1978,7 +2066,7 @@ where	Id = @Id
 
 		public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid, int apiTimeout)
 		{
-			return companyContext.Query<dynamic>(
+			return CompanyContext.Query<dynamic>(
 				@"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName, f.ColumnOrder from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
 				 where f.IntersectTypeID = i.ID and IsListable = 1
@@ -1997,7 +2085,7 @@ select	count(1)
 from	[Intersect] i 
 where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
 
-				total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID, owner }, ApiTimeout);
+				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID, owner }, ApiTimeout);
 			}
 
 			var sql = $@"
@@ -2043,7 +2131,7 @@ where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
 							select IntersectUid as RelationshipUid, ObjectUid, SubjectUid, Owner from #TempIntersectInfo 
 						end";
 
-			var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);
+			var results = await CompanyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);
 
 			return new RelationshipUidResult { Total = total, pageSize = pageSize, pageNum = pageNum, Results = results };
 		}

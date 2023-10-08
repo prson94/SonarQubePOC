@@ -1197,7 +1197,6 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
 		/// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid. Uid is optional.</param>
-		/// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
 		/// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
@@ -1212,7 +1211,6 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PostRelationshipsAsync(
 			Guid intersectTypeUid,
 			RelationshipInserts relationships,
-			bool triggerWorkflow = false,
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
@@ -1254,14 +1252,12 @@ namespace d360.web.Controllers.V2
 				relationships.Count,
 				new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
 				applicationId: applicationId, ApiExecutionAction.PostRelationships);
-
 			Company.Add(execution);
 
 			List<DatabaseBulkRelationshipResult> results = null;
 			try
 			{
-				results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
+				results = RelationshipRepository.PostRelationships(intersectType, execution, relationships, lookupFieldsPassedByValue);
 			}
 			catch (Exception ex)
 			{
@@ -1277,7 +1273,6 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
 		/// <param name="relationships">The payload of your request. Must include Uid.</param>
-		/// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
 		/// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
@@ -1294,7 +1289,6 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> PutRelationshipsAsync(
 			Guid intersectTypeUid,
 			RelationshipUpdates relationships,
-			bool triggerWorkflow = false,
 			bool lookupFieldsPassedByValue = false,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
@@ -1337,8 +1331,7 @@ namespace d360.web.Controllers.V2
 			List<DatabaseBulkRelationshipUpdateResult> results = null;
 			try
 			{
-				results = Company.PutRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutRelationships);
+				results = RelationshipRepository.PutRelationships(intersectType, execution, relationships, lookupFieldsPassedByValue);
 			}
 			catch (Exception ex)
 			{
@@ -1631,7 +1624,6 @@ namespace d360.web.Controllers.V2
 		/// </summary>
 		/// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
 		/// <param name="relationships">The list of relationships for deletions.</param>
-		/// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
 		/// <remarks>
 		/// The "types/" prefix in the URI will be removed in a subsequent release. Please use the DELETE endpoint without this prefix.
 		/// </remarks>
@@ -1651,7 +1643,6 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> DeleteRelationships(
 			Guid intersectTypeUid,
 			RelationshipDeletes relationships,
-			bool triggerWorkflow = false,
 			[SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
 		{
 			if (applicationId != null && applicationId.Length > 200)
@@ -1696,13 +1687,7 @@ namespace d360.web.Controllers.V2
 			List<DatabaseBulkRelationshipResult> results = null;
 			try
 			{
-				results = RelationshipRepository.DeleteRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
-
-				// Close execution record.
-				execution.Processed = results.Count;
-				execution.Error = results.Count(i => !i.Success);
-				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				results = RelationshipRepository.DeleteRelationships(execution, intersectType, relationships, 3600);
 			}
 			catch (Exception ex)
 			{

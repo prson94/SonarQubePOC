@@ -14,7 +14,8 @@ namespace d360.core.queue
         WorkflowCheck = 6,
         CheckTypeDependencyRemoved = 7,
         RuleAssetRemoved = 8,
-		RescoreRequest = 9
+		RescoreRequest = 9,
+		PatchCatalogExecution = 10
 	}
 
     public class ScoreQueueInfo

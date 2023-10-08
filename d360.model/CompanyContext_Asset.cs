@@ -61,7 +61,7 @@ namespace d360.model
 
 		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
 
-		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
+		List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
 
 		List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, bool stateChangeOnly = true);
 
@@ -1852,26 +1852,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					{
 						// Should continue on here, and not fail the enire process.
 					}
-
-					#region Send score recalculation notifications.
-
-					if (intersectTypeID.HasValue)
-					{
-						sw.Restart();
-						addMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
-						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
-						addMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
-					}
-
-					if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-					{
-						sw.Restart();
-						addMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
-						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
-						addMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
-					}
-
-					#endregion
 				}
 			}
 
@@ -1882,7 +1862,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			return results;
 		}
 
-		public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
+		public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
 		{
 			Stopwatch swBegin = Stopwatch.StartNew();
 			const string METHOD_NAME = "RemoveAssets";
@@ -1901,7 +1881,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 			//check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
 			Stopwatch sw = Stopwatch.StartNew();
-			sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.ID, null, null, ChangeType.Delete);
 
 			addMeasurement(metrics, "Check for workflows", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
@@ -2445,28 +2424,6 @@ where	T.ExecutionID = @ExecutionID
 						}
 
 						Connection.Close();
-
-						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-						QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-
-						if (sendWorkflowEvents)
-						{
-							SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
-							addMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-							sw.Restart();
-						}
-
-						// Data Quality Scoring - send to engine to determine what scores need to be recalculated.
-						if (at.Class == AssetTypeClass.Rule)
-						{
-							CreateRulesRemovedExecution(execution.ExecutionID, at.ID);
-						}
-
-						// Rescore changes to parents based on the items removed here - possibly children.
-						if (predicateType.HasValue)
-						{
-							CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
-						}
 					}
 				}
 			}
@@ -2572,31 +2529,10 @@ where	T.ExecutionID = @ExecutionID
 
 					Connection.Execute($@"exec api.DeleteAssetTypesByExecution @ExecutionID, @stateChangeOnly", new { execution.ExecutionID, stateChangeOnly }, commandTimeout: timeout);
 
-					results = Connection.Query<DatabaseBulkAssetTypeResult>(
+					results = Query<DatabaseBulkAssetTypeResult>(
 						"select * from api.ExecutionDeletedAssetType where ExecutionID = @ExecutionID",
 						new { execution.ExecutionID }
 						).ToList();
-
-					// Data Quality Scoring - send to engine to determine what scores need to be recalculated.
-					var assetUids = Connection.Query<Guid>(
-						"select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID",
-						new { execution.ExecutionID }
-						).ToList();
-					if (assetUids.Count > 0)
-					{
-						CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
-					}
-
-					// Queue successfully deleted asset types for reindexing
-					results.Where(r => r.Success).ToList().ForEach(r =>
-					{
-						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
-						{
-							CompanyID = CurrentCompanyID,
-							AssetTypeUid = r.uid,
-							Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
-						});
-					});
 
 					addMeasurement(metrics, "Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
 					sw.Restart();
@@ -2661,6 +2597,7 @@ where	T.ExecutionID = @ExecutionID
 				//if for any reason this failed we do not want whole workflow to stop
 			}
 		}
+		
 		#endregion
 	}
 }
