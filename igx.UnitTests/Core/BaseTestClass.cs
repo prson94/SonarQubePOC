@@ -79,9 +79,9 @@ namespace igx.UnitTests
 
 		public LdClient GetLdClient()
 		{
-			var mock = new Mock<LdClient>();
+			var mock = new LdClient("");
 
-			return mock.Object;
+			return mock;
 		}
 
         public ICommunityContext GetCommunity()
