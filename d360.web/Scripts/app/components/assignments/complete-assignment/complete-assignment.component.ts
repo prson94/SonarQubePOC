@@ -32,6 +32,7 @@ import { JsonResult } from '../../../models/jsonresult.model';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { AppConstants } from '../../../static/constants';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { StringHelpers } from '../../../static/string-helpers';
 
 /*global $localize*/
 
@@ -151,7 +152,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		showAssignmentProgress?: boolean,
 		areAllMultiAssignmentsSelected?: boolean,
 		showBackButton?: boolean,
-		isReassign?: boolean
+		isReassign?: boolean,
+		resetSidePanel?: boolean
 	}): void {
 		if (details) {
 			this.multiSubmitionItems = [];
@@ -163,7 +165,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			} else {
 				this.radioSelectionValue = 'completeForm';
 			}
-
 			this.showBackButton = details.showBackButton ?? false
 
 			this.stepUid = details.stepUid;
@@ -194,6 +195,12 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 
 			this.workflowItemUid = details.workflowItemUid;
 
+			if (details.resetSidePanel) {
+				//if we are coming from email link lets keep side panel closed
+				//use random storage key to avoid overwriting user preference for this page
+				this.sidePanelStorageKey = StringHelpers.generateRandomString(20);
+			}
+
 			this.isLoading = true;
 			this.cdRef.detectChanges();
 			if (this.loadSub) {
@@ -206,6 +213,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowService.getAssignmentItem(this.workflowItemUid))
 					.subscribe((results) => {
 						this.hasForm = false;
+
 						if (results[0]) {
 							this.hasForm = true;
 							const res = results[0];
@@ -242,6 +250,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 						}
 						if (results[2]) {
 							this.workflowName = results[2].WorkflowName;
+							if (!this.assetName) {
+								this.assetName = results[2].AssetPath;
+							}
 						}
 						this.isLoading = false;
 						this.cdRef.markForCheck();
@@ -257,6 +268,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		else {
 			this.isModalAvailable = true;
 		}
+
 		this.cdRef.markForCheck();
 	}
 

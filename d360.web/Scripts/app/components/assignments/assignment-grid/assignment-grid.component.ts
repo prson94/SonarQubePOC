@@ -169,7 +169,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 						workflowItemUid: itemUid,
 						stepUid,
 						assetId: 0,
-						showAssignmentProgress: true
+						showAssignmentProgress: true,
+						resetSidePanel: true
 					});
 				}
 				else if (!res.exists) {
