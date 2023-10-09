@@ -69,7 +69,9 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		private headerBreadcrumbService: HeaderBreadcrumbService,
 		private linkClickInterceptor: LinkClickInterceptor) {
 		super(settingsService);
-		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => {
+			this.isAdmin = res;
+		});
 	}
 
 	ngOnInit(): void {
@@ -134,7 +136,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		} else {
 			if (this.sidePanelTab === 'delete') {
 				this.sidePanelTab = 'information';
-			}				
+			}
 		}
 	}
 
@@ -162,11 +164,11 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 	deleteAssignments(event: boolean): void {
 		if (event) {
 			this.assignmentGridComponent.clickMenuItem({
-                value: $localize`Delete`.toLowerCase(),
-                action: '',
-                event: undefined,
-                data: undefined
-            });
+				value: $localize`Delete`.toLowerCase(),
+				action: '',
+				event: undefined,
+				data: undefined
+			});
 		}
 	}
 
@@ -185,7 +187,10 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
-	onCompleteAssignmentModalClose() {
-		this.assignmentGridComponent.loadData();
+	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }) {
+		if (event.removeSelected) {
+			this.assignmentGridComponent.loadData();
+			this.selectedWorkflowItems = [];
+		}
 	}
 }
