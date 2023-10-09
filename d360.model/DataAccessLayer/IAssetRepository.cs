@@ -40,7 +40,7 @@ namespace d360.model.DataAccessLayer
 
         Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
         
-        List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true);
+        List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool executionInDb = false);
         
         Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
         
@@ -86,7 +86,7 @@ namespace d360.model.DataAccessLayer
        
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         
-        List<DatabaseBulkAssetTypeResult> DeleteAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
+        List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
         
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
         

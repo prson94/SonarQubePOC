@@ -59,7 +59,9 @@ namespace d360.core.entities
 
         public string EventTopic { get; set; }
 
-        public string UrlPrefix { get; set; }
+		public string Region { get; set; }
+
+		public string UrlPrefix { get; set; }
 
         public EnvironmentLevel EnvironmentLevel { get; set; }
 

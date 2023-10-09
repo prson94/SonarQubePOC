@@ -75,7 +75,15 @@ namespace igx.UnitTests
 	        return () => task;
         }
 
-        #region Mock Interfaces
+		#region Mock Interfaces
+
+		public LdClient GetLdClient()
+		{
+			var mock = new LdClient("");
+
+			return mock;
+		}
+
         public ICommunityContext GetCommunity()
         {
             var mock = new Mock<ICommunityContext>();
@@ -140,7 +148,7 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.GetSettingValue<int>(Setting.MaxExcelExportRows)).Returns(50000);
 
-            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
 
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
@@ -278,7 +286,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity());
+            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity(), GetLdClient());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
@@ -605,7 +613,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetRelationshipTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
-            mock.Setup(x => x.DeleteRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), 3600, It.IsAny<bool>()))
+            mock.Setup(x => x.DeleteRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), 3600))
                 .Returns(new List<DatabaseBulkRelationshipResult>());
 
             return mock.Object;

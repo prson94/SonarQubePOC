@@ -1,0 +1,259 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure [metrics].[GenerateScore]
+	@assetUid uniqueidentifier,
+	@effectiveDate date,
+	@scoreType int
+as
+begin
+	set nocount on;
+
+	-- Get the allocationUid.
+	declare @allocationUid uniqueidentifier;
+	select	@allocationUid = al.Uid
+	from	dbo.Asset a
+			inner join dbo.AssetType t on t.ID = a.AssetTypeID and a.Uid = @assetUid
+			inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = @scoreType;
+
+	-- Store the value of measures.
+	declare @measures table (
+		ParentVersionUid uniqueidentifier, 
+		VersionUid uniqueidentifier, 
+		MatchUid uniqueidentifier,
+		OtherMatches nvarchar(max),
+		Evidence nvarchar(max),
+		Weight decimal(8,6), 
+		AdjustedWeight decimal(8,6),
+		ContributionWeight decimal(8,6),
+		Value decimal(8,6), 
+		AdjustedValue decimal(8,6),
+		ItemUid uniqueidentifier null,
+		DoesExist bit null
+	);
+
+	if @scoreType = 1
+	begin
+		insert into @measures (	ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches, Evidence )
+			select	ParentVersionUid, VersionUid, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), '{}' 
+			from	metrics.GetGovernanceScore(@assetUid, @effectiveDate)
+	end;
+
+	if @scoreType = 2
+	begin
+		insert into @measures (	ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches, Evidence)
+			select	ParentVersionUid, VersionUid, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), Evidence 
+			from	metrics.GetDataQualityScore(@assetUid, @effectiveDate)
+	end;
+
+	-- Common logic to determine weight rebalancing, within each measure group, or at root.
+	update	m
+	set		m.AdjustedWeight = m.Weight / [level].Total
+	from	@measures m
+			cross apply (
+				select	sum(Weight) as Total 
+				from	@measures 
+				where	(m.ParentVersionUid is not null and ParentVersionUid = m.ParentVersionUid)
+						or (m.ParentVersionUid is null and ParentVersionUid is null)
+			) as [level];
+
+	-- Determine what the contributing weight, to the overall score, could be, by starting at the root, and traversing down through each measure group.
+	-- In the second part of the CTE, you multiply the adjusted weight by the parent group's Contributon weight, as it is only a portion of the parent's contribution.
+	with	h as (
+		select	ParentVersionUid,
+				VersionUid,
+				AdjustedWeight as ContributionWeight
+		from	@measures m
+		where	ParentVersionUid is null
+		union all
+		select	c.ParentVersionUid,
+				c.VersionUid,
+				cast((c.AdjustedWeight * h.ContributionWeight) as decimal(8,6)) as ContributionWeight
+		from	@measures c
+				inner join h on h.VersionUid = c.ParentVersionUid
+	)
+
+	-- Update the calculated contribution weight, and figure out the overall value for the measure, towards the score.
+	update	m
+	set		m.ContributionWeight = h.ContributionWeight,
+			m.AdjustedValue = h.ContributionWeight * m.Value
+	from	@measures m
+			inner join h on h.VersionUid = m.VersionUid;
+
+	-- Common to deal with AdjustedValue on the measure groups, as they do not get a value directly (they are a calculation of the sum of their children)
+	-- HINT: Those records that have a NULL value for AdjustedValue are actually measure groups.
+	declare @groups table (Uid uniqueidentifier, [Level] int);
+	with h as (
+		select	ParentVersionUid,
+				VersionUid,
+				cast(1 as int) as [Level]
+		from	@measures
+		where	ParentVersionUid is null
+				and AdjustedValue is null
+		union all
+		select	c.ParentVersionUid,
+				c.VersionUid,
+				h.[Level] + 1 as [Level]
+		from	@measures c
+				inner join h on h.VersionUid = c.ParentVersionUid and c.AdjustedValue is null
+	)
+	insert into @groups
+		select	VersionUid,
+				[Level]
+		from	h;
+	declare @currentLevel int;
+	select @currentLevel = max([Level]) from @groups;
+
+	-- Loop through each level starting with the bottom level, and work your way up toward the root of the score. 
+	-- This calculates the adjusted value for each group, as we roll up to the root.
+	while @currentLevel >= 1
+	begin
+		update	m
+		set		m.AdjustedValue = t.AdjustedValue
+		from	@measures m
+				inner join @groups g on g.Uid = m.VersionUid and g.[Level] = @currentLevel
+				cross apply (
+					select	sum(AdjustedValue) as AdjustedValue 
+					from	@measures 
+					where	ParentVersionUid = m.VersionUid
+				) t
+
+		set @currentLevel = @currentLevel - 1;
+	end
+
+	-- Get the actual score.
+	declare @Score decimal(8,6);
+	select		@Score = sum(AdjustedValue)
+	from		@measures
+	where		ParentVersionUid is null;
+
+	-- Get the current score for the asset.
+	declare		@CurrentScore decimal(8,6);
+	select		top 1 
+				@CurrentScore = [Value]
+	from		metrics.Score
+	where		AssetUid = @assetUid
+				and EffectiveDate <= @effectiveDate
+	order by	EffectiveDate desc;
+
+--	select @CurrentScore as [Current], @Score as [New] -- DEBUG PURPOSES
+	
+	-- Determine which "most-recent" measures are already associated with the asset
+	update	m
+	set		m.ItemUid = ex.ItemUid,
+			m.DoesExist = iif(ex.ItemUid is not null, 1, 0)
+	from	@measures m
+			left join (
+				select		i.Uid as ItemUid,
+							i.AssetVersionUid,
+							i.ConditionUid,
+							i.AdjustedWeight,
+							i.AdjustedMaxWeight,
+							i.DecimalValue,
+							i.[Value]
+				from		metrics.Score s
+							inner join metrics.ScoreItemLink l on l.ScoreUid = s.Uid
+							inner join metrics.ScoreItem i on i.Uid = l.ScoreItemUid
+				where		s.AllocationUid = @allocationUid 
+							and s.AssetUid = @assetUid
+							and s.EffectiveDate <= @effectiveDate
+			) ex on ex.AssetVersionUid = m.VersionUid and ex.DecimalValue = m.AdjustedValue;
+
+--select * from @measures
+--select @Score, @CurrentScore
+
+	-- Is there anything to update for this score?
+
+	-- Add new itemUids for those records that do not have a match.
+	update	@measures
+	set		ItemUid = newid()
+	where	ItemUid is null;
+
+	-- End date previous scores.
+
+	-- Add new score records.
+	declare @NewScoreUid uniqueidentifier = newid(),
+			@runDate datetime = getutcdate();
+
+	if exists(select 1 from metrics.Score where AllocationUid = @allocationUid and AssetUid = @assetUid and EffectiveDate = @effectiveDate)
+	begin
+		select	@NewScoreUid = Uid 
+		from	metrics.Score 
+		where	AllocationUid = @allocationUid 
+				and AssetUid = @assetUid 
+				and EffectiveDate = @effectiveDate;
+
+		update	metrics.Score
+		set		[Value] = @Score,
+				RunDate = @runDate
+		where	Uid = @NewScoreUid;
+	end
+	else
+	begin
+		insert into metrics.Score (AssetUid, EffectiveDate, [Value], RunDate, Uid, AllocationUid, [Log])
+		values (@assetUid, @effectiveDate, @Score, @runDate, @NewScoreUid, @allocationUid, '{}');
+	end
+
+	merge into	metrics.ScoreItem as t
+	using		(
+				select	ItemUid
+						, VersionUid
+						, @runDate as [UpdatedOn]
+						, @runDate as RunDate
+						, MatchUid as ConditionUid
+						, OtherMatches as OtherConditions
+						, Evidence
+						, iif([Value] = 1, 1, 0) as [Value]
+						, AdjustedValue as DecimalValue
+						, AdjustedWeight
+						, ContributionWeight as AdjustedMaxWeight
+						, AdjustedValue as DisplayWeight
+						, ContributionWeight as DisplayMaxWeight
+				from	@measures
+				) as s
+	on			(t.Uid = s.ItemUid)
+	when		matched then
+	update		set 		
+				t.RunDate  = s.RunDate
+				, t.UpdatedOn = s.UpdatedOn
+				, t.ConditionUid = s.ConditionUid
+				, t.OtherConditions = s.OtherConditions
+				, t.[Evidence] = s.[Evidence]
+				, t.[Value] = s.[Value]
+				, t.[DecimalValue] = s.[DecimalValue]
+				, t.[AdjustedWeight] = s.[AdjustedWeight]
+				, t.[AdjustedMaxWeight] = s.[AdjustedMaxWeight]
+				, t.[DisplayWeight] = s.[DisplayWeight]
+				, t.[DisplayMaxWeight] = s.[DisplayMaxWeight]
+	when		not matched then
+	insert		([Uid], [AssetVersionUid], [UpdatedOn], [RunDate]
+				, [ConditionUid], [OtherConditions], [Evidence]
+				, [Value], [DecimalValue], [AdjustedWeight], [AdjustedMaxWeight], [DisplayWeight], [DisplayMaxWeight])
+	values		(s.ItemUid, s.VersionUid, s.UpdatedOn, s.RunDate
+				, s.ConditionUid, s.OtherConditions, s.[Evidence]
+				, s.[Value], s.DecimalValue, s.AdjustedWeight, s.AdjustedMaxWeight, s.DisplayWeight, s.DisplayMaxWeight);
+
+	merge into	metrics.ScoreItemLink as t
+	using		(
+				select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
+				from	@measures
+				) as s
+	on			(t.ScoreUid = s.ScoreUid and t.ScoreItemUid = s.ScoreItemUid)
+	when not matched by target then
+	insert		(ScoreUid, ScoreItemUid)
+	values		(s.ScoreUid, s.ScoreItemUid);
+
+--	select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

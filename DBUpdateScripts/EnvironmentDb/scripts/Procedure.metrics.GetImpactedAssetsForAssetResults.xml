@@ -1,0 +1,157 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Procedure.metrics.GetImpactedAssetsForAssetResults-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure metrics.GetImpactedAssetsForAssetResults
+ @isUpdatedScoring bit,
+ @resultUids dbo.UidTable readonly
+as
+begin
+	drop table if exists #RuleResults;
+	create table #RuleResults (
+		RuleResultUid uniqueidentifier not null,
+		PRIMARY KEY NONCLUSTERED (RuleResultUid)
+	);
+	
+	insert into #RuleResults
+		select Uid from @resultUids;
+
+	drop table if exists #Items;
+	create table #Items (
+		AllocationUid uniqueidentifier, 
+		MetricAssetUid uniqueidentifier, 
+		MetricAssetVersionUid uniqueidentifier, 
+		AssetUid uniqueidentifier, 
+		EffectiveDate date
+	);
+
+	drop table if exists #Results;
+	select	distinct
+			cast(Re.EffectiveDate as date) as EffectiveDate,
+			Oat.Uid as RuleAssetTypeUid,
+			Oa.AssetTypeId as RuleAssetTypeId,
+			Oa.Uid as RuleAssetUid,
+			Eat.Uid as EvaluatedAssetTypeUid,
+			Ea.AssetTypeId as EvaluatedAssetTypeId,
+			Ea.Uid as EvaluatedAssetUid,
+			I.IntersectTypeID,
+			I.ID as IntersectID
+	into	#Results
+	from	dbo.AssetResult Re
+			inner join #RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
+			Inner Join dbo.Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
+			inner join dbo.AssetType Eat on Ea.AssetTypeId = Eat.ID
+			inner join dbo.Asset Oa on Oa.[Uid] = Re.OwningAssetUid
+			inner join dbo.AssetType Oat on Oa.AssetTypeId = Oat.ID
+			inner join dbo.[Intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
+			inner join dbo.IntersectType it on i.intersectTypeid = it.id 
+			inner join dbo.[Predicate] p on p.id = it.predicateid and p.[Type] = 2 -- EVALUATION
+
+	drop table if exists #Raw;
+	select	R.IntersectID,
+			R.EvaluatedAssetUid,
+			R.EvaluatedAssetTypeUid,
+			R.RuleAssetUid,
+			R.RuleAssetTypeUid,
+			L.RollupPathUid,
+			L.StartPosition as Position,
+			Ma.AllocationUid,
+			Mal.AssetTypeUid as AllocationAssetTypeUid,
+			Mv.Uid as MetricAssetVersionUid,
+			Mv.AssetUid as MetricAssetUid,
+			R.EffectiveDate
+	into	#Raw
+	from	#Results R
+			inner join metrics.RollupPathLink L on L.IntersectTypeID = R.IntersectTypeID
+			inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = L.RollupPathUid
+			inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
+				and (
+					(Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate >= R.EffectiveDate)
+					or (Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate is null)
+				)
+			inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
+			inner join metrics.Allocation Mal on Mal.Uid = Ma.AllocationUid;
+
+	with cte as (
+		select	EvaluatedAssetUid as AssetUid,
+				EffectiveDate,
+				RollupPathUid,
+				Position,
+				AllocationUid,
+				MetricAssetUid,
+				MetricAssetVersionUid,
+				AllocationAssetTypeUid,
+				EvaluatedAssetTypeUid as AssetTypeUid
+		from	#Raw
+		where	EvaluatedAssetTypeUid <> AllocationAssetTypeUid
+				and RuleAssetTypeUid <> AllocationAssetTypeUid
+		union all
+		select	S.Uid as AssetUid,
+				cte.EffectiveDate,
+				L.RollupPathUid,
+				L.StartPosition as Position,
+				cte.AllocationUid,
+				cte.MetricAssetUid,
+				cte.MetricAssetVersionUid,
+				cte.AllocationAssetTypeUid,
+				ST.Uid as AssetTypeUid
+		from	cte
+				inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
+				inner join dbo.[Intersect] I on I.IntersectTypeID = L.IntersectTypeID
+				inner join dbo.Asset S on S.ID = I.SubjectAssetID 
+				inner join dbo.Asset O on O.ID = I.ObjectAssetID and O.Uid = cte.AssetUid
+				inner join dbo.AssetType ST on ST.ID = S.AssetTypeID
+	)
+
+	-- Start Path Asset Scoring
+	insert into #Items
+		select	AllocationUid, 
+				MetricAssetUid,
+				MetricAssetVersionUid,
+				AssetUid,
+				EffectiveDate
+		from	cte 
+		where	Position = 1;
+
+	-- Rule Asset Scoring
+	insert into #Items
+		select	distinct
+				AllocationUid,
+				MetricAssetUid,
+				MetricAssetVersionUid,
+				RuleAssetUid as AssetUid,
+				EffectiveDate
+		from	#Raw
+		where	RuleAssetTypeUid = AllocationAssetTypeUid;
+
+	-- Evaluated Asset Scoring
+	insert into #Items
+		select	distinct
+				AllocationUid,
+				MetricAssetUid,
+				MetricAssetVersionUid,
+				EvaluatedAssetUid as AssetUid,
+				EffectiveDate
+		from	#Raw
+		where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
+
+	if @isUpdatedScoring = 1
+	begin
+		select AssetUid, EffectiveDate from #Items group by AssetUid, EffectiveDate
+	end
+	else
+	begin
+		select * from #Items
+	end
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

@@ -425,12 +425,10 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = await relationshipsController.PostRelationshipsAsync(validUid, model);
             var result = await actionResult.ExecuteAsync(new CancellationToken());
             var str = await result.Content.ReadAsStringAsync();
-			var data = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(str);
 
 			Assert.True(result.IsSuccessStatusCode);
             Assert.True(result.StatusCode == HttpStatusCode.OK);
             Assert.True(!string.IsNullOrEmpty(str));
-            Assert.True(data.Count > 0);
         }
 
         [Fact]

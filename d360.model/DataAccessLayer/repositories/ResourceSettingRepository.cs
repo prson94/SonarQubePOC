@@ -1,21 +1,18 @@
 ﻿using d360.core.entities;
 using d360.core.resources;
+using d360.model.DataAccessLayer.repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace d360.model.DataAccessLayer.repositories
+namespace d360.model.DataAccessLayer
 {
-	class ResourceSettingRepository : BaseRepository, IResourceSettingRepository
+	public class ResourceSettingRepository : BaseRepository, IResourceSettingRepository
 	{
-		private readonly ICompanyContext CompanyContext;
 		public ResourceSettingRepository(ICompanyContext companyContext)
-			: base(companyContext)
-		{
-			CompanyContext = companyContext;
-		}
+			: base(companyContext) { }
 
 		public async Task DeleteSetting(int ResourceID, int AssetTypeID, string Setting)
 		{

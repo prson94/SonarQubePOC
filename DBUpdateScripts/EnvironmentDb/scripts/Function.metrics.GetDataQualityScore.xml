@@ -1,0 +1,195 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.0">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter function [metrics].[GetDataQualityScore]
+(
+	@assetUid uniqueidentifier,
+	@effectiveDate date
+)
+returns 
+@measures table
+(
+	ParentVersionUid uniqueidentifier, 
+	VersionUid uniqueidentifier, 
+	Value decimal(8,6), 
+	Weight decimal(8,6),
+	MatchUid uniqueidentifier,
+	OtherMatches nvarchar(max),
+	Evidence nvarchar(max)
+)
+as
+begin
+    declare @include bit = 0;
+	declare @tbl table(
+		AssetId bigint, ParentUid uniqueidentifier, AssetUid uniqueidentifier, Name nvarchar(250), 
+		EffectiveDate datetime, EffectiveEndDate datetime, 
+		Weight float, Threshold float, MatchConditionsOnly bit, ResultOperation varchar(25),
+		Uid uniqueidentifier, 
+		Conditions nvarchar(max), RuleFilters nvarchar(max)
+	);
+
+	insert into @tbl
+		select	v.AssetId,
+				v.ParentUid,
+				v.AssetUid,
+				v.Name,
+				v.EffectiveDate,
+				v.EffectiveEndDate,
+				v.Weight,
+				v.Threshold,
+				v.MatchConditionsOnly,
+				v.ResultOperation,
+				v.Uid,
+				metrics.BuildConditionJson(v.Uid) as Conditions,
+				(
+					select	r.RollupPathUid,
+							r.FilterMatchType,
+							(
+								select	ps.AssetTypeID,
+										ps.Position,
+										rf.FieldTypeID,
+										ft.Name as FieldName,
+										ft.[Type],
+										rf.Operator,
+										rv.Value
+								from	[metrics].RollupPath p
+										inner join [metrics].[RollupPathSegment] ps on ps.RollupPathUid = p.Uid and p.ScoreType = 2 and p.State = 1 and p.Uid = r.RollupPathUid
+										left join [metrics].[AssetVersionRollupPathFilter] rf on rf.AssetVersionRollupPathUid = r.Uid and rf.AssetTypeID = ps.AssetTypeID
+										left join dbo.FieldType ft on ft.ID = rf.FieldTypeID
+										left join [metrics].[AssetVersionRollupPathFilterValue] rv on rv.AssetVersionRollupPathFilterUid = rf.Uid
+								order by ps.Position
+								for json path
+							) as Paths,
+							(
+								select	pl.IntersectTypeID,
+										itp.Type as PredicateType,
+										pl.StartPosition,
+										pl.EndPosition
+								from	[metrics].RollupPath p
+										inner join [metrics].[RollupPathLink] pl on pl.RollupPathUid = p.Uid and p.Uid = r.RollupPathUid and p.ScoreType = 2 and p.State = 1 and p.Uid = r.RollupPathUid
+										inner join dbo.IntersectType it on it.ID = pl.IntersectTypeID
+										inner join dbo.[Predicate] itp on itp.ID = it.PredicateID
+								order by pl.StartPosition
+								for json path
+							) as Links
+					from	[metrics].[AssetVersionRollupPath] r
+					where	r.AssetVersionUid = v.Uid 
+							and v.RowNum = 1
+					for json path, Without_array_wrapper
+				) as RuleFilters
+		from	(
+					select	row_number() over(partition by sv.AssetUid order by sv.EffectiveDate desc) as RowNum,
+							sv.*,
+							svd.ResultOperation,
+							sa.ParentUid,
+							a.Id as AssetId
+					from	metrics.AssetVersion sv
+							cross apply openjson(sv.Definition) with (ResultOperation varchar(25) '$.DataQuality.ResultOperation') svd
+							inner join metrics.Asset sa on sa.Uid = sv.AssetUid and sv.EffectiveDate < @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
+							inner join metrics.Allocation sd on sd.Uid = sa.AllocationUid and sd.ScoreType = 2
+							inner join dbo.AssetType t on t.Uid = sd.AssetTypeUid
+							inner join dbo.Asset a on a.Uid = @assetUid and a.AssetTypeID = t.Id
+				) v
+		where v.RowNum = 1
+		order by v.ParentUid, v.Name, v.EffectiveDate;
+
+	-- Gets the set of applied/relevant measures, as well as the rule results and each path associated with how we go to the rule result.
+	declare @raw table(
+		AssetId bigint, ParentUid uniqueidentifier, AssetUid uniqueidentifier, Name nvarchar(250), 
+		EffectiveDate datetime, EffectiveEndDate datetime, 
+		Weight float, Threshold float, MatchConditionsOnly bit, ResultOperation varchar(25),
+		Uid uniqueidentifier, 
+		Conditions nvarchar(max), RuleFilters nvarchar(max),
+		MatchUid uniqueidentifier, 
+		OtherMatches nvarchar(max),
+		Evidence nvarchar(max),
+		[Path] varchar(200), 
+		ResultUid uniqueidentifier,
+		PassFraction float
+	);
+
+	insert into @raw (AssetId, ParentUid, AssetUid, Name, EffectiveDate, EffectiveEndDate, Weight, Threshold, MatchConditionsOnly, ResultOperation, Uid, Conditions, RuleFilters, MatchUid, OtherMatches, [Path], ResultUid, PassFraction)
+		select	AssetId, 
+				ParentUid, 
+				AssetUid, 
+				Name, 
+				EffectiveDate, 
+				EffectiveEndDate, 
+				coalesce(c.[Weight], v.[Weight]), 
+				coalesce(c.Threshold, v.Threshold), 
+				MatchConditionsOnly, 
+				ResultOperation, 
+				v.Uid, 
+				Conditions, 
+				RuleFilters, 
+				c.MatchUid, 
+				c.OtherMatches,
+				[Path], 
+				r.Uid,
+				PassFraction
+		from	@tbl v 
+				cross apply metrics.ConditionsFiltering(v.AssetId, v.Conditions, v.MatchConditionsOnly) c 
+				cross apply openjson(v.RuleFilters) with (Paths nvarchar(max) as json, Links nvarchar(max) as json) a
+				cross apply metrics.GatherRuleResults(v.AssetId, @effectiveDate,  a.Paths , a.Links) r
+		where	c.[Include] = 1;
+
+	insert into @measures (VersionUid, Value)
+		select	Uid,
+				case ResultOperation
+				 when 'Average' then round(AVG(PassFraction), 5)
+				 else 0
+				end as [Value]
+		from	@raw 
+		group by	AssetId,
+					Uid, 
+					ResultOperation;
+
+	update	m
+	set		m.Weight = header.Weight,
+			m.ParentVersionUid = header.ParentUid,
+			m.MatchUid = header.MatchUid,
+			m.OtherMatches = header.OtherMatches,
+			m.Evidence =	(
+							select	(
+									select	p.[key]+1 as [Position],
+											a.Uid
+									from	openjson(r.[Path]) p
+											inner join dbo.Asset a on a.ID = p.[value]
+									for json path									
+									) as RollupPath, 
+									(
+									json_query(
+										'[' + STUFF((select ',' + '"' + cast(r.ResultUid as nvarchar(50)) + '"' for xml path('')), 1,1,'') + ']'
+										--'[' + STUFF((select ',' + '"' + [value] + '"' from openjson(m.Evidence) for xml path('')), 1,1,'') + ']'
+									)
+									) as ResultResultUids									
+							from	@raw r 
+							where	r.Uid = m.VersionUid
+							for json path
+						 )
+	from	@measures m
+			cross apply (
+				select	top 1
+						Weight,
+						ParentUid,
+						MatchUid,
+						OtherMatches
+				from	@raw 
+				where	Uid = m.VersionUid
+			) header
+
+--select * from @measures
+	return;
+end
+]]>
+  </sql>
+ </changeSet>
+
+</databaseChangeLog>

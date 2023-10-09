@@ -94,7 +94,7 @@ namespace d360.model
 		/// <summary>
 		/// A Score Engine method that is called when assets are added to Govern.
 		/// </summary>
-		void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid);
+		void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid, bool isUpdatedScoring);
 
 		/// <summary>
 		/// A Score Engine method that is called when relationships are removed from Govern.
@@ -129,7 +129,20 @@ namespace d360.model
 		/// <summary>
 		/// A Score Engine method that is called when a parent asset is (un)assigned a child.
 		/// </summary>
-		void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid);
+		void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid, bool isUpdatedScoring);
+
+		/// <summary>
+		/// This function takes a list of assets (using their Uids) and a type of score and submits a request to the Scoring Engine to reprocess the score for the current date.
+		/// </summary>
+		/// <param name="assets">A list of asset Uids to submit to the queue for rescoring.</param>
+		/// <param name="scoreType">The type of score to recalculate.</param>
+		void CreateRescoreRequests(List<Guid> assets, ScoreType scoreType);
+
+		/// <summary>
+		/// This function takes a list of re-processed responsibility rules (using their IDs), gathers up the assets, and submits a request to the Scoring Engine to reprocess the score for the current date.
+		/// </summary>
+		/// <param name="ruleIds">List of responsibility rules, absed on their Id</param>
+		void CreateRescoreRequestsBasedOnResponsibilityRulesRun(List<int> ruleIds);
 
 		/// <summary>
 		/// A Score Engine method that is called when an asset type or intersect type are added or removed from Govern.
@@ -1411,65 +1424,78 @@ namespace d360.model
 			}
 		}
 
-		public void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid)
+		public void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid, bool isUpdatedScoring)
 		{
-			string sql = @"
-						declare @ef date = cast(getutcdate() as date); 
-						insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-							select  * 
-							from    (
-									select	@ID as ExecutionID,
-											@changeType as ChangeType,
-											EA.ItemNumber as RowNumber,
-											(
-											select	EA.Uid as AssetUid, 
-													@ef as EffectiveDate,
-													(
-													select	A.Uid as AllocationUid,
-															M.Uid as MetricAssetUid,
-															V.Uid as MetricAssetVersionUid,
-															cast(0 as bit) as Result
-													from	metrics.Allocation A 
-															inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-															cross apply (
-																select	Uid
-																from	metrics.AssetVersion 
-																where	AssetUid = M.Uid
-																		and EffectiveDate <= getutcdate()
-																		and EffectiveEndDate is null
-																		and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-																		and Definition <> '{}'
-															) V
-													for json path
-													) as Measures
-											for json path, WITHOUT_ARRAY_WRAPPER
-											) as Payload,
-											0 as [State]
-									from	api.ExecutionAsset EA 
-									where	EA.ExecutionID = @apiExecutionUid
-											and EA.Success = 1
-									) J 
-							where   J.Payload like '%Measures%';";
-
-			ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-			int rowsImpacted = Connection.Execute(
-				sql,
-				new
+			if (Any<MetricAllocation>(i => i.AssetTypeUid == assetTypeUid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+			{ 
+				string sql = "";
+				if (isUpdatedScoring)
 				{
-					apiExecutionUid,
-					execution.ID,
-					changeType = (int)ScoreQueueChangeType.AssetMeasures,
-					assetTypeUid
-				});
+					sql = @"select Uid from api.ExecutionAsset where ExecutionID = @apiExecutionUid and Success = 1";
+					var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
+					CreateRescoreRequests(assetUids, ScoreType.Governance);
+				}
+				else 
+				{
+					sql = @"
+declare @ef date = cast(getutcdate() as date); 
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+	select  * 
+	from    (
+			select	@ID as ExecutionID,
+					@changeType as ChangeType,
+					EA.ItemNumber as RowNumber,
+					(
+					select	EA.Uid as AssetUid, 
+							@ef as EffectiveDate,
+							(
+							select	A.Uid as AllocationUid,
+									M.Uid as MetricAssetUid,
+									V.Uid as MetricAssetVersionUid,
+									cast(0 as bit) as Result
+							from	metrics.Allocation A 
+									inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+									cross apply (
+										select	Uid
+										from	metrics.AssetVersion 
+										where	AssetUid = M.Uid
+												and EffectiveDate <= getutcdate()
+												and EffectiveEndDate is null
+												and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+												and Definition <> '{}'
+									) V
+							for json path
+							) as Measures
+					for json path, WITHOUT_ARRAY_WRAPPER
+					) as Payload,
+					0 as [State]
+			from	api.ExecutionAsset EA 
+			where	EA.ExecutionID = @apiExecutionUid
+					and EA.Success = 1
+			) J 
+	where   J.Payload like '%Measures%';";
 
-			if (rowsImpacted > 0)
-			{
-				sendScoreQueueMessage(execution);
-			}
-			else
-			{
-				endEmptyExecution(Connection, execution.ID);
+					ScoreExecution execution = createScoreExecution(apiExecutionUid);
+
+					int rowsImpacted = Connection.Execute(
+						sql,
+						new
+						{
+							apiExecutionUid,
+							execution.ID,
+							changeType = (int)ScoreQueueChangeType.AssetMeasures,
+							assetTypeUid
+						});
+
+					if (rowsImpacted > 0)
+					{
+						sendScoreQueueMessage(execution);
+					}
+					else
+					{
+						endEmptyExecution(Connection, execution.ID);
+					}			
+				}			
 			}
 		}
 
@@ -1895,84 +1921,207 @@ namespace d360.model
 			}
 		}
 
-		public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid)
+		public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid, bool isUpdatedScoring)
 		{
-			string sql = @"
-						declare @ef date = cast(getutcdate() as date); 
-						declare @assetTypeUid uniqueidentifier;
+			string sql = "";
 
-						select  @assetTypeUid = T.Uid
-						from    api.ExecutionItemDependentChange E
-								inner join Asset A on A.Uid = JSON_VALUE(Payload, '$.ParentAssetUid')
-								inner join AssetType T on T.ID = A.AssetTypeID
-						where   ExecutionID = @apiExecutionUid
-								and DependentChangeType = 1 --parent change
-
-						insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-							select  distinct 
-									* 
-							from    (
-									select	@ID as ExecutionID,
-											@changeType as ChangeType,
-											EA.ItemNumber,
-											(
-											select	EA.AssetUid, 
-													@ef as EffectiveDate,
-													(
-													select	A.Uid as AllocationUid,
-															M.Uid as MetricAssetUid,
-															V.Uid as MetricAssetVersionUid,
-															cast(0 as bit) as Result
-													from	metrics.Allocation A 
-															inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-															cross apply (
-																select	Uid
-																from	metrics.AssetVersion 
-																where	AssetUid = M.Uid
-																		and EffectiveDate <= getutcdate()
-																		and EffectiveEndDate is null
-																		and (
-																			(
-																			JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
-																			and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
-																			) or (
-																			JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate'
-																			and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') in (select Uid from Predicate where [Type] in (3,4))
-																			)
-																		)
-																		and Definition <> '{}'
-															) V
-													for json path
-													) as Measures
-											for json path, WITHOUT_ARRAY_WRAPPER
-											) as Payload,
-											0 as [State]
-									from	(
-											select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
-													JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
-											from    api.ExecutionItemDependentChange
-											where   ExecutionID = @apiExecutionUid
-													and DependentChangeType = 1 --parent change
-											) EA
-									) J 
-							where   J.Payload like '%Measures%';";
-
-			ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-			int rowsImpacted = Connection.Execute(sql, new { apiExecutionUid, execution.ID, changeType = (int)ScoreQueueChangeType.AssetMeasures });
-
-			if (rowsImpacted > 0)
+			if (isUpdatedScoring)
 			{
-				sendScoreQueueMessage(execution);
-				Connection.Execute(
-					"delete api.ExecutionItemDependentChange where ExecutionID = @apiExecutionUid and DependentChangeType = 1",
-					new { apiExecutionUid }
-					);
+				sql = @"
+declare @assetTypeUid uniqueidentifier;
+
+select  top 1 
+		@assetTypeUid = T.Uid
+from    api.ExecutionItemDependentChange E
+		inner join Asset A on A.Uid = JSON_VALUE(Payload, '$.ParentAssetUid')
+		inner join AssetType T on T.ID = A.AssetTypeID
+where   ExecutionID = @apiExecutionUid
+		and DependentChangeType = 1 -- parent change
+
+select	EA.AssetUid
+from	(
+		select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
+				JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
+		from    api.ExecutionItemDependentChange
+		where   ExecutionID = @apiExecutionUid
+				and DependentChangeType = 1 --parent change
+		) EA
+where	exists(
+			select	1
+			from	metrics.Allocation A 
+					inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+					cross apply (
+						select	Uid
+						from	metrics.AssetVersion 
+						where	AssetUid = M.Uid
+								and EffectiveDate <= getutcdate()
+								and EffectiveEndDate is null
+								and (
+									(
+									JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
+									and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
+									) or (
+									JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate'
+									and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') in (select Uid from Predicate where [Type] in (3,4))
+									)
+								)
+								and Definition <> '{}'
+					) V
+		)";
+				var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
+				assetUids.ForEach(assetUid =>
+				{
+					var info = new ScoreQueueInfo
+					{
+						CompanyID = CurrentCompanyID,
+						ResourceID = CurrentResourceID,
+						ChangeType = ScoreQueueChangeType.RescoreRequest,
+						UseUpdatedScoringEngine = true,
+						Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
+						StartedOn = DateTime.UtcNow
+					};
+					QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+				});
 			}
 			else
 			{
-				endEmptyExecution(Connection, execution.ID);
+				sql = @"
+							declare @ef date = cast(getutcdate() as date); 
+							declare @assetTypeUid uniqueidentifier;
+
+							select  @assetTypeUid = T.Uid
+							from    api.ExecutionItemDependentChange E
+									inner join Asset A on A.Uid = JSON_VALUE(Payload, '$.ParentAssetUid')
+									inner join AssetType T on T.ID = A.AssetTypeID
+							where   ExecutionID = @apiExecutionUid
+									and DependentChangeType = 1 --parent change
+
+							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+								select  distinct 
+										* 
+								from    (
+										select	@ID as ExecutionID,
+												@changeType as ChangeType,
+												EA.ItemNumber,
+												(
+												select	EA.AssetUid, 
+														@ef as EffectiveDate,
+														(
+														select	A.Uid as AllocationUid,
+																M.Uid as MetricAssetUid,
+																V.Uid as MetricAssetVersionUid,
+																cast(0 as bit) as Result
+														from	metrics.Allocation A 
+																inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+																cross apply (
+																	select	Uid
+																	from	metrics.AssetVersion 
+																	where	AssetUid = M.Uid
+																			and EffectiveDate <= getutcdate()
+																			and EffectiveEndDate is null
+																			and (
+																				(
+																				JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
+																				and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
+																				) or (
+																				JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate'
+																				and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') in (select Uid from Predicate where [Type] in (3,4))
+																				)
+																			)
+																			and Definition <> '{}'
+																) V
+														for json path
+														) as Measures
+												for json path, WITHOUT_ARRAY_WRAPPER
+												) as Payload,
+												0 as [State]
+										from	(
+												select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
+														JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
+												from    api.ExecutionItemDependentChange
+												where   ExecutionID = @apiExecutionUid
+														and DependentChangeType = 1 --parent change
+												) EA
+										) J 
+								where   J.Payload like '%Measures%';";
+
+				ScoreExecution execution = createScoreExecution(apiExecutionUid);
+
+				int rowsImpacted = Connection.Execute(sql, new { apiExecutionUid, execution.ID, changeType = (int)ScoreQueueChangeType.AssetMeasures });
+
+				if (rowsImpacted > 0)
+				{
+					sendScoreQueueMessage(execution);
+					Connection.Execute(
+						"delete api.ExecutionItemDependentChange where ExecutionID = @apiExecutionUid and DependentChangeType = 1",
+						new { apiExecutionUid }
+						);
+				}
+				else
+				{
+					endEmptyExecution(Connection, execution.ID);
+				}
 			}
+
+		}
+		
+		public void CreateRescoreRequests(List<Guid> assets, ScoreType scoreType)
+		{
+			assets.ForEach(assetUid =>
+			{
+				var info = new ScoreQueueInfo
+				{
+					CompanyID = CurrentCompanyID,
+					ResourceID = CurrentResourceID,
+					ChangeType = ScoreQueueChangeType.RescoreRequest,
+					UseUpdatedScoringEngine = true,
+					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = scoreType, EffectiveDate = DateTime.UtcNow.Date },
+					StartedOn = DateTime.UtcNow
+				};
+				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+			});
+		}
+
+		public void CreateRescoreRequestsBasedOnResponsibilityRulesRun(List<int> ruleIds)
+		{
+			DateTime today = DateTime.UtcNow.Date;
+			var assets = Query<Guid>(@"
+declare		@relevantAssetTypes table (Id int)
+insert into @relevantAssetTypes
+	select		t.Id
+	from		ResponsibilityTypeRelationRule p
+				inner join ResponsibilityType r on r.ID = p.ResponsibilityTypeID and p.ID in (select ObjectID from @ruleIds)
+				inner join AssetType t on t.Object = p.Object and t.ObjectID = p.ObjectID
+				inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1
+				inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+				inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+					and ( 
+						(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+						(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+						) 
+					and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+					and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = r.Uid
+					and V.Definition <> '{}'
+	group by	t.Id;
+
+select		a.Uid
+from		ResponsibilityTypeRelationRule p
+			inner join ResponsibilityRuleResultAsset ra on ra.RuleID = p.ID and ra.AssetTypeID = 0 -- specific to asset
+			inner join Asset a on a.ID = ra.AssetID and a.AssetTypeID in (select Id from @relevantAssetTypes)
+group by	a.Uid
+union
+select		a.Uid
+from		ResponsibilityTypeRelationRule p
+			inner join ResponsibilityRuleResultAsset ra on ra.RuleID = p.ID and ra.AssetID = 0 and ra.AssetTypeID in (select Id from @relevantAssetTypes) -- specific to asset type
+			inner join Asset a on a.ID = ra.AssetTypeID
+group by	a.Uid",
+				new
+				{
+					today,
+					ruleIds = ruleIds.AsTableValuedParameter("dbo.IDTable")
+				}
+			).ToList();
+			CreateRescoreRequests(assets, ScoreType.Governance);
 		}
 
 		public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
@@ -3636,17 +3785,6 @@ namespace d360.model
 					}
 				}
 			}
-
-			#region Scoring
-
-			List<Guid> ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
-			if (ruleResultUids.Count > 0)
-			{
-				List<AssetMeasureModel> assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-				CreateMeasureChangedResultExecution(assetMeasures);
-			}
-
-			#endregion Scoring
 
 			return results;
 		}	

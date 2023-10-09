@@ -13,8 +13,10 @@ namespace d360.core.queue
         RollupPathChanged = 5,
         WorkflowCheck = 6,
         CheckTypeDependencyRemoved = 7,
-        RuleAssetRemoved = 8
-    }
+        RuleAssetRemoved = 8,
+		RescoreRequest = 9,
+		PatchCatalogExecution = 10
+	}
 
     public class ScoreQueueInfo
     {
@@ -26,6 +28,10 @@ namespace d360.core.queue
         public DateTime StartedOn { get; set; }
 
         public ScoreQueueChangeType ChangeType { get; set; }
+
+		public object Payload { get; set; }
+
+		public bool UseUpdatedScoringEngine { get; set; } = false;
 
         [JsonIgnore]
         private string StartedOnDateString { get { return StartedOn.ToString("yyyyMMdd"); } }

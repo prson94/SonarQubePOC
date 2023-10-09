@@ -32,16 +32,20 @@ namespace d360.model.DataAccessLayer
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
                
         Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool sendWorkflow = false);
-        
-        Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false);
-        
-        IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
+
+		List<DatabaseBulkRelationshipResult> PostRelationships(IntersectType intersectType, ApiExecution execution, RelationshipInserts relations, bool lookupFieldsPassedByValue = false);
+
+		Task<ApiExecutionInfo> BulkPutRelationships(Guid intersectTypeUid, RelationshipUpdates relationships, ApiExecution execution, bool triggerWorkflow = false);
+
+		List<DatabaseBulkRelationshipUpdateResult> PutRelationships(IntersectType intersectType, ApiExecution execution, RelationshipUpdates relations, bool lookupFieldsPassedByValue = false);
+
+		IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
         
         IEnumerable<dynamic> GetExportModel(int id);
         
         Task<List<DatabaseBulkAssetResult>> GetBulkResults(ApiExecutionInfo info);
         
-        List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false);
+        List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600);
         
         Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, ApiExecution execution, bool sendWorkflow = false);
 

@@ -1,3 +1,20 @@
+using AngleSharp.Text;
+using d360.core;
+using d360.core.entities;
+using d360.core.entities.Process;
+using d360.core.enums;
+using d360.core.helpers;
+using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+using Dapper;
+using LaunchDarkly.Sdk.Server;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -10,46 +27,27 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 
-using AngleSharp.Text;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Process;
-using d360.core.enums;
-using d360.core.helpers;
-using d360.core.queue;
-using d360.core.resources;
-using d360.extensions;
-using d360.model.DataAccessLayer.repositories;
-using d360.model.helpers;
-using d360.model.helpers.filters;
-
-using Dapper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using SpreadsheetLight;
-
 namespace d360.model.DataAccessLayer
 {
 	public class AssetRepository : BaseRepository, IAssetRepository
 	{
-		internal ICompanyContext CompanyContext;
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
 		internal ICommunityContext Community;
+		internal LdClient Ld;
 
 		public AssetRepository(
 			ICompanyContext companyContext,
 			IQueueSource queueSource,
 			IStorageProvider storageProvider,
-			ICommunityContext community)
+			ICommunityContext community,
+			LdClient ld)
 			: base(companyContext)
 		{
-			CompanyContext = companyContext;
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
 			Community = community;
+			Ld = ld;
 		}
 
 		public Asset GetAssetByObjectId(string obj, int objId)
@@ -3523,15 +3521,57 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
 		}
 
-		public List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
+		public List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool executionInDb = false)
 		{
-			CompanyContext.Add(execution);
+			if (!executionInDb)
+			{ 
+				CompanyContext.Add(execution);
+			}
 
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
-				results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
+				results = CompanyContext.RemoveAssets(execution, assetType, assets);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssets);
+
+				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+
+				CompanyContext.SendWorkflowEvents(assetType.Object, assetType.ObjectID, results, core.enums.Workflow.ChangeType.Delete);
+
+				var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+
+				#region DQ Scoring - send to engine to determine what scores need to be recalculated.
+				
+				if (assetType.Class == AssetTypeClass.Rule)
+				{
+					if (isUpdatedScoring)
+					{
+						results.ForEach(result => {
+							if (result.Success)
+							{
+								var info = new ScoreQueueInfo
+								{
+									CompanyID = CompanyContext.CurrentCompanyID,
+									ResourceID = CompanyContext.CurrentResourceID,
+									ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
+									UseUpdatedScoringEngine = true,
+									Payload = new RuleAssetRemovedModel { AssetUid = result.uid },
+									StartedOn = DateTime.UtcNow
+								};
+								QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+							}
+						});
+					}
+					else
+					{
+						CompanyContext.CreateRulesRemovedExecution(execution.ExecutionID, assetType.ID);
+					}
+				}
+
+				#endregion DQ Scoring
+
+				CompanyContext.CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID, isUpdatedScoring); // Rescore parents, if we have to.
 			}
 			catch (Exception ex)
 			{
@@ -3541,7 +3581,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return results;
 		}
 
-		public List<DatabaseBulkAssetTypeResult> DeleteAssetType(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
+		public List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
 		{
 			if (assetTypes.Count > 1)
 			{
@@ -3554,6 +3594,56 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, stateChangeOnly);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssetTypes);
+
+				var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+
+				#region DQ Scoring - send to engine to determine what scores need to be recalculated.
+
+				var assetUids = CompanyContext.Query<Guid>(
+					"select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID",
+					new { execution.ExecutionID }
+					).ToList();
+				
+				if (assetUids.Count > 0)
+				{
+					if (isUpdatedScoring)
+					{
+						assetUids.ForEach(assetUid => {
+							var info = new ScoreQueueInfo
+							{
+								CompanyID = CompanyContext.CurrentCompanyID,
+								ResourceID = CompanyContext.CurrentResourceID,
+								ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
+								UseUpdatedScoringEngine = true,
+								Payload = new RuleAssetRemovedModel { AssetUid = assetUid },
+								StartedOn = DateTime.UtcNow
+							};
+							QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+						});
+					}
+					else
+					{
+						CompanyContext.CreateRulesRemovedExecution(execution.ExecutionID, assetUids);
+					}
+				}
+
+				#endregion DQ Scoring
+
+				#region Queue successfully deleted asset types for reindexing
+				
+				var indexQueueName = Config.GetValue<string>("SearchIndexQueue");
+				results.Where(r => r.Success).ToList().ForEach(r =>
+				{
+					QueueSource.CreateMessage(indexQueueName, new ReindexModel
+					{
+						CompanyID = CompanyContext.CurrentCompanyID,
+						AssetTypeUid = r.uid,
+						Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
+					});
+				});
+
+				#endregion Reindex
+
 			}
 			catch (Exception ex)
 			{
@@ -3604,13 +3694,29 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 		public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
 		{
-			CompanyContext.Add(execution);
-
 			List<DatabaseBulkAssetResult> results = null;
 			try
 			{
 				results = CompanyContext.ImportAssets(execution, assetType, assets, false, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutAssets);
+
+				#region Send score recalculation notifications.
+
+				if (results.Any(r => r.Success))
+				{ 
+					var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+
+					if (CompanyContext.Query<bool>(
+						"select cast(iif(count(1) > 0, 1, 0) as bit) from IntersectType i inner join [Predicate] p on p.Id = i.PredicateId and p.[Type] in (3,4) and i.ObjectAssetTypeID = @ID", 
+						new { assetType.ID }).First()
+						)
+					{
+						CompanyContext.CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID, isUpdatedScoring); // Rescore parents, if we have to.
+					}
+					CompanyContext.CreateImportAssetsExecution(execution.ExecutionID, assetType.uid, isUpdatedScoring);
+				}
+
+				#endregion
 			}
 			catch (Exception ex)
 			{
@@ -3641,6 +3747,24 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				results = CompanyContext.ImportAssets(execution, assetType, assets, true, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostAssets);
+
+				#region Send score recalculation notifications.
+
+				if (results.Any(r => r.Success))
+				{
+					var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+
+					if (CompanyContext.Query<bool>(
+						"select cast(iif(count(1) > 0, 1, 0) as bit) from IntersectType i inner join [Predicate] p on p.Id = i.PredicateId and p.[Type] in (3,4) and i.ObjectAssetTypeID = @ID",
+						new { assetType.ID }).First()
+						)
+					{
+						CompanyContext.CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID, isUpdatedScoring); // Rescore parents, if we have to.
+					}
+					CompanyContext.CreateImportAssetsExecution(execution.ExecutionID, assetType.uid, isUpdatedScoring);
+				}
+
+				#endregion
 			}
 			catch (Exception ex)
 			{
