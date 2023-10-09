@@ -45,13 +45,21 @@ export class CompleteAssignmentFormFieldsComponent implements OnInit {
 		setTimeout(() => {
 			this.fields.forEach((x, i) => {
 				if (x.Required && x.Value == null) {
-					this.form.controls[`input_${i}`]?.setErrors({
-						required: true
-					});
+					if (x.FieldType === WorkflowFormFieldType.Link) {
+						this.form.controls[`inputName_${i}`]?.setErrors({
+							required: true
+						});
+						this.form.controls[`inputUrl_${i}`]?.setErrors({
+							required: true
+						});
+					} else {
+						this.form.controls[`input_${i}`]?.setErrors({
+							required: true
+						});
+					}
 				}
 			});
 		}, 20);
-
 	}
 
 	public getLocaleDateString(): string {
