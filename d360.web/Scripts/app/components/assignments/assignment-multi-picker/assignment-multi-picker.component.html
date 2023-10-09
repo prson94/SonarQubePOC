@@ -32,9 +32,9 @@
 						[hasDetail]="false"
 						[extraButtons]="sidePanelButtons"
 						minWidth="368px"
-						maxWidth="368px"
+						maxWidth="410px"						
 						(expandedChange)="sidePanelExpandedChange($event)"
-						height="calc(100vh - 220px)">
+						height="calc(100vh - 169px)">
 				<ng-container *ngIf="sidePanelOpen && highlightedAssignment">
 					<d3s-side-panel-switcher [outsideModal]="false" (panelHeaderLabel)="setPanelHeader($event)"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
