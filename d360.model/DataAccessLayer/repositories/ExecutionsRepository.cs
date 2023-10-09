@@ -563,7 +563,7 @@ namespace d360.model.DataAccessLayer
 						executionProcessingInfoFields = JsonConvert.SerializeObject(executionProcessingInfo);
 
 						await CompanyContext.Connection.ExecuteAsync(
-							"update api.Execution set [State] = 4, ErrorMessage = @m, CompletedOn = @dt, MarkedForProcessing = 0, Fields = @fields where Id = @executionId",
+							"update api.Execution set [State] = 4, ErrorMessage = @m, CompletedOn = @dt, Fields = @fields where Id = @executionId",
 							new
 							{
 								executionId,
