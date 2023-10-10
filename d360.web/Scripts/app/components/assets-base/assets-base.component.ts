@@ -8,7 +8,7 @@ import { BaseComponent } from '../shared/base.component';
 
 @Component({
 	selector: 'd3s-assets-base',
-	template: `<div id="main">
+	template: `<div id="main" class="d3s">
 		<d3s-artifact-list *ngIf="showArtifactList" [assetTypeApiModel]="assetType" [assetTypeUid]="assetTypeUid"></d3s-artifact-list>
 		<d3s-rule-list *ngIf="showRuleList" [assetTypeApiModel]="assetType" [assetTypeUid]="assetTypeUid"></d3s-rule-list>
 		<d3s-hierarchy-item-structure *ngIf="showHierarchyList" [assetTypeApiModel]="assetType" [assetTypeClass]="assetTypeClass" [assetTypeUid]="assetTypeUid"></d3s-hierarchy-item-structure>
