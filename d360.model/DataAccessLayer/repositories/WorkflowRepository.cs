@@ -1295,7 +1295,7 @@ namespace d360.model.DataAccessLayer
 										workflow.Type T
 										INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 										inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
-										INNER JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
+										left JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
 										left join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID
 									";
 
