@@ -6,8 +6,8 @@
 		   [zIndex]="'20001 !important'"
 		   [additionalClasses]="'large-dialog modal-form'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
-	<div *ngIf="!isLoading" class="modal-with-side-panel">
-		<div class="modal-dialog-main-panel">
+	<div class="modal-with-side-panel">
+		<div class="modal-dialog-main-panel" *ngIf="!isLoading">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
 					<div class="title">
@@ -316,7 +316,7 @@
 				</button>
 			</div>
 		</div>
-		<div class="side-panel height-auto">
+		<div class="side-panel height-auto" [hidden]="isLoading">
 			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
 						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons" [sidePanelButtonClass]="'assignment-side-panel-button-container'">
 				<ng-container>

@@ -83,10 +83,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		if (this.router.url === '/requests' || this.router.url === '/assignments') {
 			this.setHeaderBreadcrumbs();
 		}
-		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
-			this.secondarySidePanelOpen = true;
-		});
+		this.subscribeSwitcherEvents();
 	}
 
 	setHeaderBreadcrumbs(): void {
@@ -187,10 +184,23 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 
-	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }) {
+	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }): void {
 		if (event.removeSelected) {
 			this.assignmentGridComponent.loadData();
 			this.selectedWorkflowItems = [];
 		}
+		this.subscribeSwitcherEvents();
+	}
+
+	onCompleteAssignmentClicked($event: { workflowItemUid: string; stepUid: string }): void {
+		this.linkInterceptorSubscription?.unsubscribe();
+		this.completeAssignmentComponent.openModal($event)
+	}
+
+	private subscribeSwitcherEvents() {
+		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev): void => {
+			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
+			this.secondarySidePanelOpen = true;
+		});
 	}
 }

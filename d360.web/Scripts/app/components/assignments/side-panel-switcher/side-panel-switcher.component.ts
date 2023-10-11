@@ -56,6 +56,13 @@ export class SidePanelSwitcherComponent {
 	assetGrid: { triggerEdit: (event: { assetUid: string, type: string, assetTypeUid: string }) => void };
 	@Output() closeClick: EventEmitter<void> = new EventEmitter();
 	@Output() panelHeaderLabel: EventEmitter<string> = new EventEmitter();
+	@Output() completeAssignment: EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string
+	}> = new EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string
+	}>();
 	@Input() showPanelHeader: boolean = true;
 	@Input() outsideModal: boolean = true;
 
