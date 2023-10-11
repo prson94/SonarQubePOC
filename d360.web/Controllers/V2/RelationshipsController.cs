@@ -1824,30 +1824,30 @@ namespace d360.web.Controllers.V2
 												inner join [Asset] TA ON i.subjectAssetID = ta.id
 												where a.uid = @assetuid
 										)
-															insert into #relationshipCountMap
-															select IntersectTypeUid, IsSubject, count(*) as 'Count'
-															from cte
-															group by IntersectTypeUid,IsSubject
+									insert into #relationshipCountMap
+									select IntersectTypeUid, IsSubject, count(*) as 'Count'
+									from cte
+									group by IntersectTypeUid,IsSubject
 
-															;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
-															from Asset a
-															inner join assettype at on at.id = a.assettypeid
-															inner join intersecttype it on it.SubjectAssetTypeID = at.ID
-															inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
-															where a.uid = @assetuid
-															group by it.uid
-															union 
-															select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
-															from Asset a
-															inner join assettype at on at.id = a.assettypeid
-															inner join intersecttype it on it.ObjectAssetTypeID = at.ID
-															inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
-															where a.uid = @assetuid
-															group by it.uid)
-															insert into #relationshipCountMap
-															select IntersectTypeUid, IsSubject,Count from cte
+									;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
+									from Asset a
+									inner join assettype at on at.id = a.assettypeid and at.class = 9
+									inner join intersecttype it on it.SubjectAssetTypeID = at.ID
+									inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
+									where a.uid = @assetuid
+									group by it.uid
+									union 
+									select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
+									from Asset a
+									inner join assettype at on at.id = a.assettypeid and at.class = 9
+									inner join intersecttype it on it.ObjectAssetTypeID = at.ID
+									inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
+									where a.uid = @assetuid
+									group by it.uid)
+									insert into #relationshipCountMap
+									select IntersectTypeUid, IsSubject,Count from cte
 
-															select distinct * from #relationshipCountMap";
+									select distinct * from #relationshipCountMap";
 					}
 
 				}
