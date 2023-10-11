@@ -1831,7 +1831,7 @@ namespace d360.web.Controllers.V2
 
 									;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
 									from Asset a
-									inner join assettype at on at.id = a.assettypeid and at.class = 9
+									inner join assettype at on at.id = a.assettypeid and at.class = {(int)AssetTypeClass.Reference}
 									inner join intersecttype it on it.SubjectAssetTypeID = at.ID
 									inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
 									where a.uid = @assetuid
@@ -1839,7 +1839,7 @@ namespace d360.web.Controllers.V2
 									union 
 									select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
 									from Asset a
-									inner join assettype at on at.id = a.assettypeid and at.class = 9
+									inner join assettype at on at.id = a.assettypeid and at.class = {(int)AssetTypeClass.Reference}
 									inner join intersecttype it on it.ObjectAssetTypeID = at.ID
 									inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
 									where a.uid = @assetuid
