@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
@@ -30,7 +30,7 @@ export enum FormState {
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit {
+export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit,OnDestroy {
 	@Input() isModalVisible: boolean = false;
 	@Input() assetTypeName: string;
 	@Input() assetTypeClass: AssetTypeClass;
@@ -160,6 +160,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	ngOnInit() {
 		this.setDefaultTitle();
 		this.loadBaseData();
+	}
+	ngOnDestroy(): void {
+		this.changeFormSub.unsubscribe()
 	}
 
 	loadBaseData() {
@@ -1197,7 +1200,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		this.fieldTypeForm.get('IsListable').enable();
+		this.fieldTypeForm.get('IsListable').enable({emitEvent: false});
 
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
@@ -1205,7 +1208,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		//in case of Code field for reference types show IsListable selection
 		if (this.selectedFieldType === 'System' && this.isReferenceItemType) {
-			this.fieldTypeForm.get('IsListable').disable();
+			this.fieldTypeForm.get('IsListable').disable({emitEvent: false});
 			return true;
 		}
 
