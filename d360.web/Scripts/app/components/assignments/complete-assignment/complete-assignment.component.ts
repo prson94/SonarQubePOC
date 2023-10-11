@@ -230,6 +230,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = res.ObjectName;
 								this.assetId = res.ObjectID;
 							}
+							this.onClickAsset(new MouseEvent('click'), this.assetId);
 							this.allowReassignObject = res.AllowReassignObject;
 							this.allowReassignResource = res.AllowReassignResource || this.isAdmin;
 

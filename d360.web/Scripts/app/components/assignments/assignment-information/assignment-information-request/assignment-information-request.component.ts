@@ -21,7 +21,6 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	@Input() workflowItemUid: string;
 	@Input() stepUid: string;
 	@Input() showSubmittedByData: boolean = false;
-	@ViewChild('assetClick') assetClick: ElementRef;
 
 	request: FormRequest;
 
@@ -37,9 +36,6 @@ export class AssignmentInformationRequestComponent implements OnInit {
 		if (this.showSubmittedByData) {
 			this.loadFormDetails();
 		}
-		setTimeout(() => {
-			this.assetClick?.nativeElement?.click();
-		});
 	}
 
 	loadData(workflowActionUid: string): void {

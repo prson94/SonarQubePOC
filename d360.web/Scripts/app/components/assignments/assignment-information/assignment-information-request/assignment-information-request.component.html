@@ -7,7 +7,8 @@
 				<a (click)="onClickResource($event)">{{request.Action.CreatedByName}}</a>
 				on
 				<span class="heading">{{request.Action.CreatedOn | date: 'short' }}</span><br/>
-			<span class="heading">Associated Asset : </span> <a (click)="onClickAsset($event)"  #assetClick>{{request.Action.AssociatedAssetPath}}</a>
+				<span class="heading">Associated Asset : </span> <a
+				(click)="onClickAsset($event)">{{request.Action.AssociatedAssetPath}}</a>
 			</p>
 		</div>
 	</div>

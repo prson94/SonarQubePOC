@@ -49,9 +49,8 @@
 			*ngIf="_sidePanelTab === AssetDetailClickType.WorkflowStep && _selectedAsset?.workflowItemUid && _selectedAsset?.itemStepUid">
 			<d3s-assignment-progress-step-details [showCompleteAssignment]="_selectedAsset.showCompleteAssignment"
 												  [workflowItemUId]="_selectedAsset.workflowItemUid"
-												  (completeAssignment)="completeAssignmentComponent.openModal($event)"
+												  (completeAssignment)="completeAssignment.emit($event)"
 												  [itemStepUid]="_selectedAsset.itemStepUid"></d3s-assignment-progress-step-details>
-			<d3s-complete-assignment #completeAssignmentComponent></d3s-complete-assignment>
 		</ng-container>
 		<ng-container
 			*ngIf="_sidePanelTab === AssetDetailClickType.WorkflowRequestInformation && _selectedAsset && _selectedAsset.workflowItemUid
