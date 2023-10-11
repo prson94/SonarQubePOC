@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.0">
+ <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.01">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetDataQualityScore]
@@ -26,18 +26,20 @@ returns
 )
 as
 begin
+	declare @today date = getutcdate();
     declare @include bit = 0;
 	declare @tbl table(
-		AssetId bigint, ParentUid uniqueidentifier, AssetUid uniqueidentifier, Name nvarchar(250), 
+		AssetId bigint, ParentUid uniqueidentifier, Uid uniqueidentifier, IsGroup bit, AssetUid uniqueidentifier, Name nvarchar(250), 
 		EffectiveDate datetime, EffectiveEndDate datetime, 
 		Weight float, Threshold float, MatchConditionsOnly bit, ResultOperation varchar(25),
-		Uid uniqueidentifier, 
 		Conditions nvarchar(max), RuleFilters nvarchar(max)
 	);
 
 	insert into @tbl
 		select	v.AssetId,
 				v.ParentUid,
+				v.Uid,
+				v.IsGroup,
 				v.AssetUid,
 				v.Name,
 				v.EffectiveDate,
@@ -46,7 +48,6 @@ begin
 				v.Threshold,
 				v.MatchConditionsOnly,
 				v.ResultOperation,
-				v.Uid,
 				metrics.BuildConditionJson(v.Uid) as Conditions,
 				(
 					select	r.RollupPathUid,
@@ -88,11 +89,23 @@ begin
 					select	row_number() over(partition by sv.AssetUid order by sv.EffectiveDate desc) as RowNum,
 							sv.*,
 							svd.ResultOperation,
-							sa.ParentUid,
-							a.Id as AssetId
+							pv.ParentUid,
+							a.Id as AssetId,
+							sa.IsGroup
 					from	metrics.AssetVersion sv
 							cross apply openjson(sv.Definition) with (ResultOperation varchar(25) '$.DataQuality.ResultOperation') svd
-							inner join metrics.Asset sa on sa.Uid = sv.AssetUid and sv.EffectiveDate < @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
+							inner join metrics.Asset sa on sa.Uid = sv.AssetUid 
+								and sv.EffectiveDate < @effectiveDate 
+								and (sv.EffectiveEndDate is null or sv.EffectiveEndDate between @effectiveDate and @today)
+							outer apply (
+								select	top 1 
+										Uid as ParentUid
+								from	metrics.AssetVersion
+								where	AssetUid = sa.ParentUid 
+										and EffectiveDate < @effectiveDate 
+										and (EffectiveEndDate is null or EffectiveEndDate between @effectiveDate and @today)
+								order by EffectiveDate desc
+							) pv
 							inner join metrics.Allocation sd on sd.Uid = sa.AllocationUid and sd.ScoreType = 2
 							inner join dbo.AssetType t on t.Uid = sd.AssetTypeUid
 							inner join dbo.Asset a on a.Uid = @assetUid and a.AssetTypeID = t.Id
@@ -105,7 +118,7 @@ begin
 		AssetId bigint, ParentUid uniqueidentifier, AssetUid uniqueidentifier, Name nvarchar(250), 
 		EffectiveDate datetime, EffectiveEndDate datetime, 
 		Weight float, Threshold float, MatchConditionsOnly bit, ResultOperation varchar(25),
-		Uid uniqueidentifier, 
+		Uid uniqueidentifier, IsGroup bit,
 		Conditions nvarchar(max), RuleFilters nvarchar(max),
 		MatchUid uniqueidentifier, 
 		OtherMatches nvarchar(max),
@@ -115,7 +128,7 @@ begin
 		PassFraction float
 	);
 
-	insert into @raw (AssetId, ParentUid, AssetUid, Name, EffectiveDate, EffectiveEndDate, Weight, Threshold, MatchConditionsOnly, ResultOperation, Uid, Conditions, RuleFilters, MatchUid, OtherMatches, [Path], ResultUid, PassFraction)
+	insert into @raw (AssetId, ParentUid, AssetUid, Name, EffectiveDate, EffectiveEndDate, Weight, Threshold, MatchConditionsOnly, ResultOperation, Uid, IsGroup, Conditions, RuleFilters, MatchUid, OtherMatches, [Path], ResultUid, PassFraction)
 		select	AssetId, 
 				ParentUid, 
 				AssetUid, 
@@ -127,6 +140,7 @@ begin
 				MatchConditionsOnly, 
 				ResultOperation, 
 				v.Uid, 
+				v.IsGroup,
 				Conditions, 
 				RuleFilters, 
 				c.MatchUid, 
@@ -136,19 +150,29 @@ begin
 				PassFraction
 		from	@tbl v 
 				cross apply metrics.ConditionsFiltering(v.AssetId, v.Conditions, v.MatchConditionsOnly) c 
-				cross apply openjson(v.RuleFilters) with (Paths nvarchar(max) as json, Links nvarchar(max) as json) a
-				cross apply metrics.GatherRuleResults(v.AssetId, @effectiveDate,  a.Paths , a.Links) r
+				outer apply openjson(v.RuleFilters) with (Paths nvarchar(max) as json, Links nvarchar(max) as json) a
+				outer apply metrics.GatherRuleResults(v.AssetId, @effectiveDate,  a.Paths , a.Links) r
 		where	c.[Include] = 1;
 
 	insert into @measures (VersionUid, Value)
 		select	Uid,
-				case ResultOperation
-				 when 'Average' then round(AVG(PassFraction), 5)
-				 else 0
-				end as [Value]
+				iif (IsGroup = 1, 
+					null, 
+					case 
+					 when ResultOperation = 'Average' and Threshold is null then coalesce(round(AVG(PassFraction), 5), 0)
+					 when ResultOperation = 'Average' and Threshold is not null then iif(coalesce(round(AVG(PassFraction), 5), 0) >= Threshold, 1, 0)
+					 when ResultOperation = 'Minimum' and Threshold is null then coalesce(round(min(PassFraction), 5), 0)
+					 when ResultOperation = 'Minimum' and Threshold is not null then iif(coalesce(round(min(PassFraction), 5), 0) >= Threshold, 1, 0)
+					 when ResultOperation = 'Maximum' and Threshold is null then coalesce(round(max(PassFraction), 5), 0)
+					 when ResultOperation = 'Maximum' and Threshold is not null then iif(coalesce(round(max(PassFraction), 5), 0) >= Threshold, 1, 0)
+					 else 0
+					end
+				) as [Value]
 		from	@raw 
 		group by	AssetId,
 					Uid, 
+					IsGroup,
+					Threshold,
 					ResultOperation;
 
 	update	m
@@ -167,7 +191,6 @@ begin
 									(
 									json_query(
 										'[' + STUFF((select ',' + '"' + cast(r.ResultUid as nvarchar(50)) + '"' for xml path('')), 1,1,'') + ']'
-										--'[' + STUFF((select ',' + '"' + [value] + '"' from openjson(m.Evidence) for xml path('')), 1,1,'') + ']'
 									)
 									) as ResultResultUids									
 							from	@raw r 
@@ -185,7 +208,9 @@ begin
 				where	Uid = m.VersionUid
 			) header
 
---select * from @measures
+	-- If no good evidence, set to the default "ignore" format.
+	update @measures set Evidence = '{}' where Evidence = '[{}]';
+
 	return;
 end
 ]]>
