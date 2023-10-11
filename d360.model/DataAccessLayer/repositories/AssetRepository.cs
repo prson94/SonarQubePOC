@@ -3581,14 +3581,18 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return results;
 		}
 
-		public List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true)
+		public List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true, bool executionInDb = false)
 		{
 			if (assetTypes.Count > 1)
 			{
 				throw new ArgumentException(AssetTypeErrors.MaxNumberAllowedAssetType);
 			}
 
-			CompanyContext.Add(execution);
+			if (!executionInDb)
+			{
+				CompanyContext.Add(execution);
+			}
+			
 			List<DatabaseBulkAssetTypeResult> results = null;
 			try
 			{
