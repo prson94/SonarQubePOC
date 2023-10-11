@@ -186,8 +186,8 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 
 	onCompleteAssignmentModalClose(event: { isBack: boolean, removeSelected: boolean }): void {
 		if (event.removeSelected) {
-			this.assignmentGridComponent.loadData();
 			this.selectedWorkflowItems = [];
+			this.assignmentGridComponent.loadData();
 		}
 		this.subscribeSwitcherEvents();
 	}
