@@ -301,7 +301,7 @@ namespace igx.jobs.apiexecutionprocessor
 								var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(info.StorageFolder, info.RequestFileName);
 
 								log.LogTrace(logEvent, $"RemoveAssetTypes: {DateTime.UtcNow:hh:mm:ss}");
-								assetRepository.DeleteAssetTypes(deleteAssetTypes, dbExecutionItem, false);
+								assetRepository.DeleteAssetTypes(deleteAssetTypes, dbExecutionItem, false, true);
                                 company.CreateRollupPathChangedExecution();
 								resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 								break;

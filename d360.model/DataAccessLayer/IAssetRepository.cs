@@ -86,7 +86,7 @@ namespace d360.model.DataAccessLayer
        
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         
-        List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true);
+        List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true, bool executionInDb = false);
         
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
         
