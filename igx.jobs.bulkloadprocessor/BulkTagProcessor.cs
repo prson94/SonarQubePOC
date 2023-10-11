@@ -68,26 +68,29 @@ namespace igx.jobs.bulkloadprocessor
 				{
 					var load = company.Loads.FirstOrDefault(l => l.PutExecutionID == info.ExecutionID || l.PostExecutionID == info.ExecutionID);
 
-					var intersectTypeId = load.IntersectTypeUid != null ? company.IntersectTypes.Where(i => i.uid == load.IntersectTypeUid).FirstOrDefault().ID : -1;
-
-					var assetTypeId = load.AssetTypeUid != null ? company.AssetTypes.Where(i => i.uid == load.AssetTypeUid).FirstOrDefault().ID : -1;
-
-					var tagField = company.FieldTypes.FirstOrDefault(f => ((assetTypeId >= 0 &&f.AssetTypeID == assetTypeId) || (assetTypeId < 0 && f.IntersectTypeID == intersectTypeId)) && f.Type == "Tag");
-
-					if (load != null && tagField != null)
+					if (load != null)
 					{
-						var loadHasTagField = company.LoadColumns.Any(l => l.LoadID == load.ID && l.Name == tagField.Name);
+						var intersectTypeId = load.IntersectTypeUid != null ? company.IntersectTypes.Where(i => i.uid == load.IntersectTypeUid).FirstOrDefault().ID : -1;
 
-						if (loadHasTagField)
+						var assetTypeId = load.AssetTypeUid != null ? company.AssetTypes.Where(i => i.uid == load.AssetTypeUid).FirstOrDefault().ID : -1;
+
+						var tagField = company.FieldTypes.FirstOrDefault(f => ((assetTypeId >= 0 && f.AssetTypeID == assetTypeId) || (assetTypeId < 0 && f.IntersectTypeID == intersectTypeId)) && f.Type == "Tag");
+
+						if (tagField != null)
 						{
-							CoreFunction.AITrackTrace(FunctionName, $"Processing execution {execution.ExecutionID} for load {load.ID}");
-							var bulkTags = await company.GetBulkTagAssetsAsync(load.ID, execution.ExecutionID);
-							if (bulkTags.Any())
-							{
-								await tagRepository.BulkTagAssets(bulkTags, load.UpdatedBy ?? 0);
-							}
-						}
+							var loadHasTagField = company.LoadColumns.Any(l => l.LoadID == load.ID && l.Name == tagField.Name);
 
+							if (loadHasTagField)
+							{
+								CoreFunction.AITrackTrace(FunctionName, $"Processing execution {execution.ExecutionID} for load {load.ID}");
+								var bulkTags = await company.GetBulkTagAssetsAsync(load.ID, execution.ExecutionID);
+								if (bulkTags.Any())
+								{
+									await tagRepository.BulkTagAssets(bulkTags, load.UpdatedBy ?? 0);
+								}
+							}
+
+						}
 					}
 				}
 			}
