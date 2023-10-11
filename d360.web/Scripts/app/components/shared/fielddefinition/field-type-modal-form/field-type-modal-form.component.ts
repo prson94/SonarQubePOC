@@ -583,11 +583,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!this.fieldTypeForm) {
 			return;
 		}
-		this.fieldTypeForm.reset({},{ emitEvent: false});
-		this.fieldTypeForm.get('DisplayAsList').setValue('false',{ emitEvent: false});
-		this.fieldTypeForm.get('AllowAllValue').setValue(false,{ emitEvent: false});
-		this.fieldTypeForm.get('SortByAscending').setValue('true',{ emitEvent: false});
-		this.fieldTypeForm.get('Category').setValue(this.defaultCategoryName,{ emitEvent: false});
+		this.fieldTypeForm.reset({});
+		this.fieldTypeForm.get('DisplayAsList').setValue('false');
+		this.fieldTypeForm.get('AllowAllValue').setValue(false);
+		this.fieldTypeForm.get('SortByAscending').setValue('true');
+		this.fieldTypeForm.get('Category').setValue(this.defaultCategoryName);
 
 		if (this.selectedFieldType === 'Decimal' || this.selectedFieldType === 'Number') {
 			this.fieldTypeForm.controls["DefaultValue"].addValidators(this.numberDefaultValueValidator());
@@ -601,14 +601,14 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		switch (this.selectedFieldType) {
 			case 'Counter':
-				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.numberOfAssetsForType,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["CounterInitialIndex"].setValue(this.numberOfAssetsForType);
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Path':
 			case 'ComputedRelationshipField':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Date':
 			case 'DateTime':
@@ -619,37 +619,37 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			case 'Number':
 			case 'Text':
 			case 'Boolean':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsEditable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Relationship':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsEditable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["UseDisplayFormat"].setValue(false,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["IsEditable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				this.fieldTypeForm.controls["UseDisplayFormat"].setValue(false);
 				break;
 			case 'JSON':
 			case 'Json':
 			case 'JsonElement':
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
 			case 'ComputedOwnershipLookup':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
 				break;
 			case 'ComputedRelationshipReferenceList':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'Score':
 			case 'Tag':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			case 'ComputedRelationshipLookup':
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(true,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				break;
 			default: break;
 		}
@@ -691,117 +691,117 @@ count =0;
 				this.fieldTypeForm.controls["FormDescription"].setValue(type?.Description?.Form ?? null);
 
 				this.fieldTypeForm.controls["AddToResult"].setValue(type?.Search?.AddToResult ?? null);
-				this.fieldTypeForm.controls["Prefix"].setValue(type?.Search?.Prefix ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["Suffix"].setValue(type?.Search?.Suffix ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["DisplayOrder"].setValue(type?.Search?.DisplayOrder ?? null,{ emitEvent: false});
+				this.fieldTypeForm.controls["Prefix"].setValue(type?.Search?.Prefix ?? null);
+				this.fieldTypeForm.controls["Suffix"].setValue(type?.Search?.Suffix ?? null);
+				this.fieldTypeForm.controls["DisplayOrder"].setValue(type?.Search?.DisplayOrder ?? null);
 
 
-				this.fieldTypeForm.controls["IsDisplayable"].setValue(type?.IsDisplayable ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["DisplayInColumn"].setValue(type?.DisplayInColumn ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsEditable"].setValue(type?.IsEditable ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsListable"].setValue(type?.IsListable ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsRequired"].setValue(type?.Validation?.IsRequired ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["IsPartOfKey"].setValue(type?.IsPartOfKey ?? null,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsDisplayable"].setValue(type?.IsDisplayable ?? null);
+				this.fieldTypeForm.controls["DisplayInColumn"].setValue(type?.DisplayInColumn ?? null);
+				this.fieldTypeForm.controls["IsEditable"].setValue(type?.IsEditable ?? null);
+				this.fieldTypeForm.controls["IsListable"].setValue(type?.IsListable ?? null);
+				this.fieldTypeForm.controls["IsRequired"].setValue(type?.Validation?.IsRequired ?? null);
+				this.fieldTypeForm.controls["IsPartOfKey"].setValue(type?.IsPartOfKey ?? null);
 				this.partOfKeyModel = type?.IsPartOfKey ?? null;
 
-				this.fieldTypeForm.controls["IsPrimaryFilter"].setValue(type?.IsPrimaryFilter ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null,{ emitEvent: false});
+				this.fieldTypeForm.controls["IsPrimaryFilter"].setValue(type?.IsPrimaryFilter ?? null);
+				this.fieldTypeForm.controls["AllowMultipleValues"].setValue(type?.List?.AllowMultipleValues ?? null);
+				this.fieldTypeForm.controls["ShowIfEmpty"].setValue(type?.ShowIfEmpty ?? null);
 
 				let defaultValue = type?.DefaultValue ?? null;
 				if (this.selectedFieldType === "Html") {
 					defaultValue = DOMPurify.sanitize(defaultValue);
 				}
-				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue,{ emitEvent: false});
-				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["Precision"].setValue(type?.Validation?.Precision ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["Increment"].setValue(type?.Increment ?? null,{ emitEvent: false});
+				this.fieldTypeForm.controls["DefaultValue"].setValue(defaultValue);
+				this.fieldTypeForm.controls["MinimumValue"].setValue(type?.Validation?.MinimumValue ?? null);
+				this.fieldTypeForm.controls["MaximumValue"].setValue(type?.Validation?.MaximumValue ?? null);
+				this.fieldTypeForm.controls["Precision"].setValue(type?.Validation?.Precision ?? null);
+				this.fieldTypeForm.controls["Increment"].setValue(type?.Increment ?? null);
 
-				this.fieldTypeForm.controls["ColumnWidth"].setValue(type?.ColumnWidth ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["SortOrder"].setValue(type?.SortOrder ?? null,{ emitEvent: false});
-				this.fieldTypeForm.controls["SortByAscending"].setValue((type?.SortByAscending ?? '').toString() ?? 'true',{ emitEvent: false});
+				this.fieldTypeForm.controls["ColumnWidth"].setValue(type?.ColumnWidth ?? null);
+				this.fieldTypeForm.controls["SortOrder"].setValue(type?.SortOrder ?? null);
+				this.fieldTypeForm.controls["SortByAscending"].setValue((type?.SortByAscending ?? '').toString() ?? 'true');
 
 				if (this.selectedFieldType === 'Path') {
-					this.fieldTypeForm.controls["AssetPathListSegment"].setValue(type?.Definition?.AssetTypeUid ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["AssetPathListSegment"].setValue(type?.Definition?.AssetTypeUid ?? null);
 
 					//asset path cannot be empty, so its always visible
-					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true,{ emitEvent: false});
+					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				}
 
 				//Counter
 				if (this.selectedFieldType === 'Counter') {
-					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType,{ emitEvent: false});
-					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["CounterInitialIndex"].setValue(type?.CounterInitialIndex ?? this.numberOfAssetsForType);
+					this.fieldTypeForm.controls["CounterPrefix"].setValue(type?.CounterPrefix ?? null);
 				}
 
 				if (this.selectedFieldType === 'ComputedRelationshipField') {
-					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["FieldTypeName"].setValue(type?.FieldTypeName ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
+					this.fieldTypeForm.controls["FieldTypeName"].setValue(type?.FieldTypeName ?? null);
 				}
 
 				if (this.selectedFieldType === 'Link') {
-					this.fieldTypeForm.controls["LinkDefaultName"].setValue(type?.DefaultValue?.Text ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["LinkDefaultUrl"].setValue(type?.DefaultValue?.Url ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["LinkDefaultName"].setValue(type?.DefaultValue?.Text ?? null);
+					this.fieldTypeForm.controls["LinkDefaultUrl"].setValue(type?.DefaultValue?.Url ?? null);
 				}
 
 				if (this.selectedFieldType === 'Lookup') {
-					this.fieldTypeForm.controls["LookupUid"].setValue(type?.List?.Uid ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["AllowAllValue"].setValue(type?.AllowAllValue ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["ParentFieldTypeName"].setValue(type?.ParentFieldTypeName ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["LookupUid"].setValue(type?.List?.Uid ?? null);
+					this.fieldTypeForm.controls["AllowAllValue"].setValue(type?.AllowAllValue ?? null);
+					this.fieldTypeForm.controls["AllowAllLabel"].setValue(type?.AllowAllLabel ?? null);
+					this.fieldTypeForm.controls["DisplayFormat"].setValue(type?.Format?.Display ?? null);
+					this.fieldTypeForm.controls["EditFormat"].setValue(type?.Format?.Edit ?? null);
+					this.fieldTypeForm.controls["ParentFieldTypeName"].setValue(type?.ParentFieldTypeName ?? null);
 
 					//handle special case when we are picking Model class and not asset type
 					if ((type?.List?.Uid === null || typeof type?.List?.Uid === 'undefined') && type?.List?.Class === 'Model') {
-						this.fieldTypeForm.controls["LookupUid"].setValue('TaxonomyType',{ emitEvent: false});
+						this.fieldTypeForm.controls["LookupUid"].setValue('TaxonomyType');
 					}
 				}
 
 				if (this.selectedFieldType === 'ComputedOwnershipLookup') {
-					this.fieldTypeForm.controls["ResponsibilityTypeUid"].setValue(type?.Definition?.ResponsibilityTypeUid ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["ExpandGroupMembership"].setValue(type?.Definition?.ExpandGroupMembership ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["DisplayAssignmentSource"].setValue(type?.Definition?.DisplayAssignmentSource ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["DisplayAsList"].setValue((type?.Definition?.DisplayAsList ?? 'false').toString(),{ emitEvent: false});
-					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["ResponsibilityTypeUid"].setValue(type?.Definition?.ResponsibilityTypeUid ?? null);
+					this.fieldTypeForm.controls["ExpandGroupMembership"].setValue(type?.Definition?.ExpandGroupMembership ?? null);
+					this.fieldTypeForm.controls["DisplayAssignmentSource"].setValue(type?.Definition?.DisplayAssignmentSource ?? null);
+					this.fieldTypeForm.controls["DisplayAsList"].setValue((type?.Definition?.DisplayAsList ?? 'false').toString());
+					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null);
+					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null);
+					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null);
 				}
 
 				if (this.selectedFieldType === 'ComputedRelationshipReferenceList') {
-					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["DisplayRefListDescription"].setValue(type?.DisplayRefListDescription ?? null);
+					this.fieldTypeForm.controls["IntersectTypeUid"].setValue(type?.IntersectTypeUid ?? null);
 				}
 
 				if (this.selectedFieldType === 'Relationship') {
-					this.fieldTypeForm.controls["IntersectTypeUid"].setValue((type?.IntersectTypeUid + '|' + type?.IsSubject) ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["UseDisplayFormat"].setValue(type?.UseDisplayFormat ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["IntersectTypeUid"].setValue((type?.IntersectTypeUid + '|' + type?.IsSubject) ?? null);
+					this.fieldTypeForm.controls["UseDisplayFormat"].setValue(type?.UseDisplayFormat ?? null);
 				}
 
 				if (this.selectedFieldType === 'Score') {
-					this.fieldTypeForm.controls["ScoreType"].setValue(type?.ScoreType ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["ScoreType"].setValue(type?.ScoreType ?? null);
 				}
 
 				if (this.selectedFieldType === 'Text') {
-					this.fieldTypeForm.controls["ValidationPattern"].setValue(type?.Validation?.Pattern ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["MaximumLength"].setValue(type?.Validation?.MaximumLength ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["ValidationPattern"].setValue(type?.Validation?.Pattern ?? null);
+					this.fieldTypeForm.controls["MaximumLength"].setValue(type?.Validation?.MaximumLength ?? null);
 				}
 
 				if (this.selectedFieldType === 'ComputedRelationshipLookup') {
 					this.computedRelationshipLookupInitialDefinition = type?.Definition ?? null;
-					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["HideFilter"].setValue(type?.HideFilter ?? null);
+					this.fieldTypeForm.controls["HideHeader"].setValue(type?.HideHeader ?? null);
+					this.fieldTypeForm.controls["HideFooter"].setValue(type?.HideFooter ?? null);
 				}
 				else {
 					this.computedRelationshipLookupInitialDefinition = null;
 				}
 
 				if (this.selectedFieldType === 'JsonElement') {
-					this.fieldTypeForm.controls["JsonAttributeName"].setValue(type?.JsonAttribute?.FieldName ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["JsonAttributePath"].setValue(type?.JsonAttribute?.Path ?? null,{ emitEvent: false});
-					this.fieldTypeForm.controls["JsonAttributeType"].setValue(type?.JsonAttribute?.DataType ?? null,{ emitEvent: false});
+					this.fieldTypeForm.controls["JsonAttributeName"].setValue(type?.JsonAttribute?.FieldName ?? null);
+					this.fieldTypeForm.controls["JsonAttributePath"].setValue(type?.JsonAttribute?.Path ?? null);
+					this.fieldTypeForm.controls["JsonAttributeType"].setValue(type?.JsonAttribute?.DataType ?? null);
 				}
 
 				this.title = $localize`Edit Field`;
