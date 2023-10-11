@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, QueryList, SimpleChange, ViewChild, ViewChildren, ViewEncapsulation } from "@angular/core";
 import { AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators } from "@angular/forms";
 import { SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
@@ -30,7 +30,7 @@ export enum FormState {
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit {
+export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit,OnDestroy {
 	@Input() isModalVisible: boolean = false;
 	@Input() assetTypeName: string;
 	@Input() assetTypeClass: AssetTypeClass;
@@ -160,6 +160,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	ngOnInit() {
 		this.setDefaultTitle();
 		this.loadBaseData();
+	}
+	ngOnDestroy(): void {
+		this.changeFormSub.unsubscribe()
 	}
 
 	loadBaseData() {
@@ -580,7 +583,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (!this.fieldTypeForm) {
 			return;
 		}
-		this.fieldTypeForm.reset();
+		this.fieldTypeForm.reset({});
 		this.fieldTypeForm.get('DisplayAsList').setValue('false');
 		this.fieldTypeForm.get('AllowAllValue').setValue(false);
 		this.fieldTypeForm.get('SortByAscending').setValue('true');
@@ -653,6 +656,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.cdRef.markForCheck();
 	}
 
+count =0;
 	updateForm() {
 		this.subTitle = this.assetTypeName;
 
@@ -662,7 +666,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.changeFormSub.unsubscribe();
 			}
 
-			this.fieldTypeForm.controls["Name"].disable();
+			this.fieldTypeForm.controls["Name"].disable({emitEvent:false});
 
 
 			forkJoin(
@@ -811,9 +815,9 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 				setTimeout(() => {
 					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
-						this.isEditFormUpdated = true;
-					});
-				}, 500);
+						this.isEditFormUpdated=true;					
+				});
+				}, 200);
 			});
 		}
 		else {
@@ -850,9 +854,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	close() {
-		if (this.changeFormSub) {
-			this.changeFormSub.unsubscribe();
-		}
+		
 		this.setDefaultFormValues();
 		if (this.relationLookupEditor) {
 			this.relationLookupEditor.resetForm();
@@ -860,6 +862,11 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (this.formElement) {
 			this.formElement.nativeElement.scrollTop = 0;
 		}
+		setTimeout(() => {
+			this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
+				this.isEditFormUpdated=false;					
+		});
+		}, 200);
 		this.selectedFieldType = null;
 		this.onClose.emit();
 	}
@@ -953,10 +960,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		props.forEach((prop) => {
 			if (this.isSettingDisabled(prop)) {
-				this.fieldTypeForm.get(prop).disable();
+				this.fieldTypeForm.get(prop).disable({ emitEvent: false});
 			}
 			else {
-				this.fieldTypeForm.get(prop).enable();
+				this.fieldTypeForm.get(prop).enable({ emitEvent: false});
 			}
 		});
 	}
@@ -1197,7 +1204,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		this.fieldTypeForm.get('IsListable').enable();
+		this.fieldTypeForm.get('IsListable').enable({emitEvent: false});
 
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
@@ -1205,7 +1212,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		//in case of Code field for reference types show IsListable selection
 		if (this.selectedFieldType === 'System' && this.isReferenceItemType) {
-			this.fieldTypeForm.get('IsListable').disable();
+			this.fieldTypeForm.get('IsListable').disable({emitEvent: false});
 			return true;
 		}
 
