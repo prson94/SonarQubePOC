@@ -275,7 +275,7 @@ namespace d360.web.Controllers.V2
 
 			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
 
-			if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User))
+			if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User, AssetTypeClass.Group))
 			{
 				IsassetUidReqUnion = true;
 				dbArgs.Add("uid", assetUid);
