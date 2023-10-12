@@ -5,11 +5,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.0">
+ <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.01">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-create or alter function metrics.GetGovernanceScore ( @assetUid uniqueidentifier, @effectiveDate date )
-returns  -- declare
+create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
+returns   --declare
 @measures table
 (
 	ParentVersionUid uniqueidentifier, 
@@ -207,26 +207,34 @@ begin
 
 	update	m
 	set		m.[Value] = case 
-							when m.Operator = 'Populated' and f.FormattedValue is not null then 1
-							when m.Operator = 'NotPopulated' and f.FormattedValue is null then 1
+							when m.Operator = 'Populated' and (f.FormattedValue is not null and f.FormattedValue <> '') then 1
+							when m.Operator = 'NotPopulated' and (f.FormattedValue is null or f.FormattedValue = '') then 1
 							else 0
 						end
 	from	@tbl m
 			inner join dbo.Asset a on a.ID = m.AssetId
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator in ('Populated', 'NotPopulated')
+	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated')
 
+	-- Non-lookups, skipping Populated/NotPopulated 
 	update	m
 	set		m.[Value] = case 								
+							when m.FieldType = 'Boolean' then
+								case 
+									when m.Operator = 'IsTrue' and lower(f.FormattedValue) in ('true', '1') then 1
+									when m.Operator = 'IsFalse' and lower(f.FormattedValue) in ('false', '0') then 1
+									else 0
+								end
+
 							when m.FieldType = 'Date' then
 								case 
 									when m.Operator = 'Equals' and try_parse(f.FormattedValue as date) = try_parse(m.SingleValue as date) then 1
 									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as date) <> try_parse(m.SingleValue as date) then 1
 									when m.Operator = 'Between' and try_parse(f.FormattedValue as date) between try_parse(m.StartRangeValue as date) and try_parse(m.EndRangeValue as date) then 1
-									when m.Operator = 'GreaterThan' and try_parse(f.FormattedValue as date) > try_parse(m.SingleValue as date) then 1
-									when m.Operator = 'GreaterThanOrEquals' and try_parse(f.FormattedValue as date) >= try_parse(m.SingleValue as date) then 1
-									when m.Operator = 'LessThan' and try_parse(f.FormattedValue as date) < try_parse(m.SingleValue as date) then 1
-									when m.Operator = 'LessThanOrEquals' and try_parse(f.FormattedValue as date) <= try_parse(m.SingleValue as date) then 1
+									when m.Operator in ('After', 'GreaterThan') and try_parse(f.FormattedValue as date) > try_parse(m.SingleValue as date) then 1
+									when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(f.FormattedValue as date) >= try_parse(m.SingleValue as date) then 1
+									when m.Operator in ('Before', 'LessThan') and try_parse(f.FormattedValue as date) < try_parse(m.SingleValue as date) then 1
+									when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(f.FormattedValue as date) <= try_parse(m.SingleValue as date) then 1
 									else 0
 								end
 
@@ -235,10 +243,10 @@ begin
 									when m.Operator = 'Equals' and try_parse(f.FormattedValue as datetime) = try_parse(m.SingleValue as datetime) then 1
 									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as datetime) <> try_parse(m.SingleValue as datetime) then 1
 									when m.Operator = 'Between' and try_parse(f.FormattedValue as datetime) between try_parse(m.StartRangeValue as datetime) and try_parse(m.EndRangeValue as datetime) then 1
-									when m.Operator = 'GreaterThan' and try_parse(f.FormattedValue as datetime) > try_parse(m.SingleValue as datetime) then 1
-									when m.Operator = 'GreaterThanOrEquals' and try_parse(f.FormattedValue as datetime) >= try_parse(m.SingleValue as datetime) then 1
-									when m.Operator = 'LessThan' and try_parse(f.FormattedValue as datetime) < try_parse(m.SingleValue as datetime) then 1
-									when m.Operator = 'LessThanOrEquals' and try_parse(f.FormattedValue as datetime) <= try_parse(m.SingleValue as datetime) then 1
+									when m.Operator in ('After', 'GreaterThan') and try_parse(f.FormattedValue as datetime) > try_parse(m.SingleValue as datetime) then 1
+									when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(f.FormattedValue as datetime) >= try_parse(m.SingleValue as datetime) then 1
+									when m.Operator in ('Before', 'LessThan') and try_parse(f.FormattedValue as datetime) < try_parse(m.SingleValue as datetime) then 1
+									when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(f.FormattedValue as datetime) <= try_parse(m.SingleValue as datetime) then 1
 									else 0
 								end
 
@@ -390,9 +398,6 @@ begin
 						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
 			) o
 	where	m.[Check] = 'Relation'
-
-	--select	* 
-	--from	@tbl 
 
 	insert into @measures (ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches)
 		select		ParentUid,
