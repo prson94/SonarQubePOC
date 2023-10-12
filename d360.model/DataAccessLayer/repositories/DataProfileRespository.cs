@@ -415,6 +415,44 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includesamples").Value, out includeSamples);
 			}
 
+			bool includeChildAssets = false;
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includechildassets"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includechildassets").Value, out includeChildAssets);
+			}
+
+			var descendantsSQL = $@"with descendants as (select @assetID as ID)";
+
+			if (includeChildAssets)
+			{
+				descendantsSQL = $@"with descendants as (
+										select @assetID as ID
+										union all
+										select	AAP.ObjectAssetID as ID
+										from	descendants as d
+												inner join PredicateIntersect AAP on AAP.SubjectAssetID = d.ID and AAP.PredicateType in (3,4)
+									)";
+			}
+			 
+			bool hasAssetUidParam = false;
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
+			{
+				hasAssetUidParam = true;
+				if (Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_assetuid").Value, out Guid assetUid))
+				{
+					Asset asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
+					if (asset == null)
+					{
+						throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
+					}
+					else
+					{
+						dbArgs.Add("@assetId", asset.ID);
+					}
+				}
+			}
+
 			var dataProfileIdsSql = $@"
 						drop table if exists #tempADPS;
 						drop table if exists #assetdataprofileids
@@ -423,10 +461,13 @@ namespace d360.model.DataAccessLayer
 							ProfileSetDate DateTime
 						);
 
+						{(hasAssetUidParam? descendantsSQL: "")}
+
 						insert into #assetdataprofileids
 						select ADP.ID, ADP.[ProfileSetDate]
-						from AssetDataProfile ADP
-						inner join Asset A on A.id = ADP.AssetID
+						from 
+						AssetDataProfile ADP inner join 
+						{(hasAssetUidParam ? "descendants" : "asset")} A on A.id = ADP.AssetID
 						{whereConditions}
 						order by ADP.[ProfileSetDate] desc
 						{offset}";
@@ -440,9 +481,12 @@ namespace d360.model.DataAccessLayer
 			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples, "inner join #assetdataprofileids ids on ids.ID = ADP.ID");
 
 
-			var countSql = $@"select count(1) 
+			var countSql = $@"
+							{(hasAssetUidParam ? descendantsSQL : "")}
+
+							  select count(1) 
 							  from AssetDataProfile ADP 
-							  inner join Asset A on A.id = ADP.AssetID 
+							  inner join {(hasAssetUidParam ? "descendants" : "asset")} A on A.id = ADP.AssetID 
 							  {whereConditions}
 							  option (recompile)";
 
