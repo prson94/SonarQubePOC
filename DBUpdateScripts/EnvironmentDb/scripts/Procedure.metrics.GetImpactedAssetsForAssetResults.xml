@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GetImpactedAssetsForAssetResults-v1">
+ <changeSet author="Pappas" id="Procedure.metrics.GetImpactedAssetsForAssetResults-v1.01">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure metrics.GetImpactedAssetsForAssetResults
@@ -147,7 +147,7 @@ begin
 	end
 	else
 	begin
-		select * from #Items
+		select distinct * from #Items
 	end
 end
 ]]>
