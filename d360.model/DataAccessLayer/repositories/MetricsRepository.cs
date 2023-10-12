@@ -2280,7 +2280,21 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				var assetMeasures = Company.Query<AssetMeasureModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
+				var rawChanges = Company.Query<RuleResultChangedRawModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
+				var assetMeasures = rawChanges
+					.GroupBy(o => new { o.AssetUid, o.EffectiveDate })
+					.Select(o => new AssetMeasureModel
+					{
+						AssetUid = o.Key.AssetUid,
+						EffectiveDate = o.Key.EffectiveDate,
+						Measures = o.Select(m => new AssetMeasureChildModel
+						{
+							AllocationUid = m.AllocationUid,
+							MetricAssetUid = m.MetricAssetUid,
+							MetricAssetVersionUid = m.MetricAssetVersionUid
+						})
+						.ToList()
+					}).ToList();
 				if (assetMeasures.Count > 0)
 				{
 					Company.CreateMeasureChangedResultExecution(assetMeasures);
