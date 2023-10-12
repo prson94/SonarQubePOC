@@ -77,7 +77,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { ExecutionUid = payload.MetricAssetVersionUid });
+								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid });
 							}
 						}
 						else
