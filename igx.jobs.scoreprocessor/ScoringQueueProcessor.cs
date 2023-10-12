@@ -46,7 +46,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { payload.AssetUid, EffectiveDate = payload.EffectiveDate.Date, ScoreType = (int)payload.ScoreType });
+								await companyConnection.ExecuteAsync(sql, new { payload.AssetUid, EffectiveDate = payload.EffectiveDate.Date, ScoreType = (int)payload.ScoreType }, commandTimeout: 600);
 							}
 						}
 						break;
@@ -58,7 +58,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { scoreInfo.ExecutionUid });
+								await companyConnection.ExecuteAsync(sql, new { scoreInfo.ExecutionUid }, commandTimeout: 18000);
 							}
 						}
 						break;
@@ -77,7 +77,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid });
+								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
 							}
 						}
 						else
@@ -94,7 +94,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid });
+								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
 							}
 						}
 						else 
@@ -114,7 +114,7 @@ namespace igx.jobs.scoreprocessor
 							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
 								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid });
+								await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid }, commandTimeout: 18000);
 							}
 						}
 						else
