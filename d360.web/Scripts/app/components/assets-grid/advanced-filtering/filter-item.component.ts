@@ -237,6 +237,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	filterTable($event: any) {
+		this.currentField.Values=[];
 		this.dataTable.filterGlobal($event, 'contains');
 	}
 
@@ -754,7 +755,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 				loadedData.push({ title: str, value: str });
 			}
 		});
-
+		
 		if (loadedData.length <= params.take) {
 			this.currentField.Values = loadedData;
 		}
@@ -762,9 +763,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
 			this.currentField.Values = [...this.currentField.Values];
 		}
-
 		this.isLookupValuesLoading = false;
-
 		this.cdRef.markForCheck();
 	}
 
