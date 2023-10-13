@@ -40,7 +40,8 @@
 												*ngIf="selectedWorkflowItems?.length === 1"
 												[showCompleteAssignment]="!isRequestsFlow"
 												(completeAssignment)="completeAssignmentComponent.openModal($event)"
-												[hidden]="sidePanelTab !== 'information'"></d3s-assignment-information>
+												[hidden]="sidePanelTab !== 'information'"
+												[isCurrentUserAssigned]="selectedWorkflowItems?.[0]?.isCurrentUserAssigned"></d3s-assignment-information>
 					<d3s-assignment-progress [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
 											 [workflowUid]="selectedWorkflowItems?.[0]?.workflowUid"
 											 [workflowTypeVersion]="selectedWorkflowItems?.[0].Version"
@@ -48,7 +49,8 @@
 											 [showCompleteAssignment]="!isRequestsFlow"
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
-											 [hidden]="sidePanelTab !== 'progress'"></d3s-assignment-progress>
+											 [hidden]="sidePanelTab !== 'progress'"
+											 [isCurrentUserAssigned]="selectedWorkflowItems?.[0]?.isCurrentUserAssigned"></d3s-assignment-progress>
 					<d3s-assignment-multi-delete
 						*ngIf="isAdmin && !isRequestsFlow && (selectedWorkflowItems?.length > 1)"
 						(confirmDelete)="deleteAssignments($event)">

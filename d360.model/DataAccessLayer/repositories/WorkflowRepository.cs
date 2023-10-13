@@ -1054,6 +1054,10 @@ namespace d360.model.DataAccessLayer
 			var selectColumns = new DynamicQuerySelects();
 			var hasActionFilter = false;
 
+			var currentResourceUid = CompanyContext.GlobalReportingResources.Where(x => x.ResourceID == CompanyContext.CurrentResourceID).First().Uid;
+
+			dbArgs.Add("@currentResourceUid", currentResourceUid);
+
 			var queryFieldOptions = new List<DefaultFilter>
 			{
 				new DefaultFilter("initiatorUid", "WA.initiatorUid", SqlFieldType.Guid),
@@ -1321,7 +1325,9 @@ namespace d360.model.DataAccessLayer
 				WA.VersionId,
 				WA.VersionUid,
 				WA.Version,
-				WA.DaysOpen
+				WA.DaysOpen,
+				WA.workflowItemStepID,
+				case when exists(select 1 from openJson(AssignedUsers.value) u where JSON_VALUE(u.value,'$.uid') = @currentResourceUid) then 1 else 0 end as isCurrentUserAssigned
 				{(selectColumns.GetStatements().Count > 0 ? "," + string.Join("," + Environment.NewLine, selectColumns.GetStatements()) : "")}";
 
 			var coreJoins = $@"

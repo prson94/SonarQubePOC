@@ -24,6 +24,8 @@ export class AssignmentProgressComponent {
 		}
 	}
 
+	@Input() isCurrentUserAssigned: boolean = false;
+
 	get workflowItemUid(): string {
 		return this._workflowItemUid;
 	}
