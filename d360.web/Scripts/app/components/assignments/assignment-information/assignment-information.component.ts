@@ -10,6 +10,7 @@ import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../..
 export class AssignmentInformationComponent {
 	@Input() showCompleteAssignment: boolean = false;
 	@Input() workflowTypeVersion: number;
+	@Input() isCurrentUserAssigned: boolean = false;
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
