@@ -12,15 +12,6 @@ namespace igx.jobs.scoreprocessor
             builder.ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices()
-                .AddAzureStorage(s => {
-#if DEBUG
-                    s.MaxDequeueCount = 3;
-                    s.BatchSize = 1;
-#else
-                    s.MaxDequeueCount = 5;
-#endif
-                    s.VisibilityTimeout = TimeSpan.FromMinutes(30);
-                })
                 .AddTimers();
             });
 
