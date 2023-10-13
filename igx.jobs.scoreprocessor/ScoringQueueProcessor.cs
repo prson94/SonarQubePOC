@@ -200,6 +200,7 @@ while @current <= @max
 begin
 	select @currentAssetUid = AssetUid from #ids where RowId = @current
 	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType
+	set @current = @current + 1
 end";
 		}
 
@@ -207,20 +208,28 @@ end";
 		{
 			return $@"
 declare @effectiveDate date = getutcdate(),
-		@scoreType int;
+		@scoreType int,
+		@conditionsJson nvarchar(max),
+		@matchConditionsOnly bit,
+		@assetTypeId int;
 
 {getCommonTempTable()}
 
-select	@scoreType = al.ScoreType
+select	@scoreType = al.ScoreType,
+		@matchConditionsOnly = v.MatchConditionsOnly,
+		@conditionsJson = metrics.BuildConditionJson(v.Uid),
+		@assetTypeId = t.ID
 from	metrics.Asset a
 		inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @versionUid
-		inner join metrics.Allocation al on al.Uid = a.AllocationUid;
+		inner join metrics.Allocation al on al.Uid = a.AllocationUid
+		inner join AssetType t on t.Uid = al.AssetTypeUid;
 
 insert into #ids
-	select	s.AssetUid
-	from	metrics.ScoreItem i
-			inner join metrics.ScoreItemLink l on l.ScoreItemUid = i.Uid and i.AssetVersionUid = @versionUid
-			inner join metrics.Score s on s.Uid = l.ScoreUid;
+	select	a.Uid
+	from	Asset a
+			cross apply metrics.ConditionsFiltering(a.Id, @conditionsJson, @matchConditionsOnly) cm
+	where	a.AssetTypeID = @assetTypeId 
+			and cm.[Include] = 1;
 
 {getCommonLookupSql()}";
 		}
