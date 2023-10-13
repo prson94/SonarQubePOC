@@ -330,8 +330,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				});
 				action = "change"
 			}
-
-
 			this.isLoading = true;
 			forkJoin(obs).subscribe(() => {
 				this.onModalClose.emit({ isBack: this.areAllMultiAssignmentsSelected ? false : true, removeSelected: true, action: action });
@@ -363,7 +361,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					.subscribe(() => {
 						this.closeModal();
 						this.modal.closePopUp();
-						this.onModalClose.emit({ isBack: !this.areAllMultiAssignmentsSelected, removeSelected: true, action: "changeAsset" });
+						this.onModalClose.emit({ isBack: !this.areAllMultiAssignmentsSelected, removeSelected: true, action: "change" });
 					});
 			}
 
