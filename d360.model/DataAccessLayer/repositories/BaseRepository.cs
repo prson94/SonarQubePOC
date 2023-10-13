@@ -798,54 +798,6 @@ namespace d360.model.DataAccessLayer.repositories
 							 fieldJoins.Add(defaultSql, f.ID.ToString(), simpleFieldJoin);
 						 }
 					 }
-					 else if (f.AllowMultipleValues && IsCreateTempTable && referenceListTempQryList != null)
-					 {
-						 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
-
-						 string temptableqry = "";
-						 if (f.AllowMultipleValues && referenceListTempQryList != null)
-						 {
-							 var temptable = referenceListTempQryList.Where(x => x.FieldTypeID == f.ID).FirstOrDefault();
-							 if (temptable != null)
-							 {
-								 temptableqry = temptable.Query;
-							 }
-						 }
-
-						 if (!string.IsNullOrWhiteSpace(temptableqry))
-						 {
-							 temptableScript = $@" 
-
-							drop table if exists {temptablename};
-		
-							{temptableqry}
-
-							create clustered index ix_{temptablename} on {temptablename}(object,objectid);
-							";
-
-							 var sql = $@"
-								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and {fieldJoinIdSQL.Replace(tableAlias, "F" + tableAlias)}
-								outer apply(
-								SELECT string_agg(COALESCE(ADV{tableAlias}.DisplayValue, ACF{tableAlias}.Code),',') within group (order by ACF{tableAlias}.rowseq) as FormattedValue
-								from {temptablename} ACF{tableAlias}
-								inner join AssetDisplayValue ADV{tableAlias} on ADV{tableAlias}.AssetID = ACF{tableAlias}.ID 
-								cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} 
-								where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.ObjectID = try_cast(SPF{tableAlias}.value as int)
-							){tableAlias}(FormattedValue) ";
-
-							 fieldJoins.Add(sql, f.ID.ToString(), simpleFieldJoin);
-
-							 if (!TempTableNameList.Contains(temptablename))
-							 {
-								 TempTableNameList.Add(temptablename);
-								 TempTableScriptList.Add(temptableScript);
-							 }
-						 }
-						 else
-						 {
-							 fieldJoins.Add(simpleFieldJoin, f.ID.ToString());
-						 }
-					 }
 					 else
 					 {
 						 fieldJoins.Add(simpleFieldJoin, f.ID.ToString());
