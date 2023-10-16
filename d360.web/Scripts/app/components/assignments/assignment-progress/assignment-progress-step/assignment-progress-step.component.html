@@ -3,18 +3,18 @@
 	 [class.assignment-progress-step-with-button]="isCompleteAssignmentVisible"
 	 tabindex="0" (click)="toggleStepDetails($event)">
 	<div class="row display-flex">
-		<div class="col flex-grow-1">
+		<div class="col flex-grow-1 display-flex">
 			<div class="col no-padding">
 				<i class="fa spacing-top" [ngClass]="icon"></i>
 			</div>
-			<div class="col">
+			<div class="col flex-grow-1">
 				<div class="header-text" i18n>{{ header }}</div>
 				<div class="row" *ngIf="!assignmentItemStep.CompletedOn && message">
 					<div class="preserve-line-break ig-light-grey-text" i18n>{{message}}</div>
 				</div>
 			</div>
 		</div>
-		<div class="col right-align" [class.ig-light-grey-text]="assignmentItemStep.CompletedOn" i18n>
+		<div class="col right-align status-text" [class.ig-light-grey-text]="assignmentItemStep.CompletedOn" i18n>
 			{{ status }}
 		</div>
 	</div>
