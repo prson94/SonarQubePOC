@@ -270,7 +270,7 @@ namespace d360.model
 														case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
 															L.DateCompleted
 														when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
-															null
+															L.DateCompleted
 														when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
 															EE.CompletedOn
 														else
