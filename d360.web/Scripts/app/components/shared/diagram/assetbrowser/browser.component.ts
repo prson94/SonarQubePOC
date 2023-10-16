@@ -1433,8 +1433,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.startTransaction("load_all_data");
         const dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
-        //#region add data to diagram model
-
+		//#region add data to diagram model
         trans.nodes.forEach((n) => {
             n.showIcon = this.displayConfiguration.DisplayIcons;
         });
@@ -1702,7 +1701,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.browserService.getLineageHop(requestModel)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
-                    if (response.hierarchy && response.hierarchy.length > 0) {
+					if (response.hierarchy && response.hierarchy.length > 0) {
+
+						//GOV-29512 loading next hops can lead to assets already existing on diagram, instead of creating new nodes with same key, lets ignore them
+						response.hierarchy = response.hierarchy.filter((h) => !this.diagramData.hierarchy.some((dd) => dd.hierarchyKey === h.hierarchyKey))
+						response.nodes = !response.nodes ? [] : response.nodes.filter((h) => !this.diagramData.nodes.some((dd) => dd.hierarchyKey === h.hierarchyKey))
+						response.reveals = !response.reveals ? [] : response.reveals.filter((h) => !this.diagramData.reveals.some((dd) => dd.hierarchyKey === h.hierarchyKey))
 
                         // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
                         response.hierarchy.forEach((o) => {
