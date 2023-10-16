@@ -587,19 +587,19 @@ namespace d360.web.Controllers
 
 				//Getting sql statement of referernce list LookUp type field
 				string ListQuery = $@"select * 
-								 from (select ft.id FieldTypeID, ft.LookupObjectID, [dbo].[GetReferenceItemValuesSQL](ft.id,1,1) Query
+								 from (select distinct ft.LookupObjectID, [dbo].[GetReferenceItemValuesSQL](ft.id,1,1) Query
 								 from FieldType ft
 								 inner join AssetType att on att.Object = 'ReferenceItemType' and att.ObjectID = ft.LookupObjectID
 								 where ft.{typeidFieldName} = @Typeid and ft.AllowMultipleValues = 1
 								 ) a where query is not null";
 				var referenceListTempQryListasyn = await Company.QueryAsync<FieldTypesReferenceListQry>(ListQuery, new { Typeid = typeidFieldValue }, 90);
 				List<FieldTypesReferenceListQry> referenceListTempQryList = new List<FieldTypesReferenceListQry>();
-				if (referenceListTempQryList != null)
+				if (referenceListTempQryListasyn != null)
 				{
 					referenceListTempQryList = referenceListTempQryListasyn.ToList();
-					if (referenceListTempQryListasyn.Count() > 0)
+					if (referenceListTempQryList.Count() > 0)
 					{
-						foreach (var rl in referenceListTempQryListasyn)
+						foreach (var rl in referenceListTempQryList)
 						{
 							temptable = $@"
 										  {rl.Query}
