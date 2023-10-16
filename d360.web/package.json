@@ -55,6 +55,7 @@
     "@angular/localize": "16.2.9",
     "@babel/core": "7.16.5",
     "@babel/preset-env": "7.16.5",
+    "@ngneat/transloco": "5.0.7",
     "@ngtools/webpack": "16.2.6",
     "@types/lodash-es": "4.17.6",
     "babel-loader": "8.2.3",
