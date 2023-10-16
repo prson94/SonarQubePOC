@@ -1722,7 +1722,7 @@ namespace d360.model.DataAccessLayer
 				effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
 			}
 
-			string dateLimitWhereQuery = @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
+			string dateLimitWhereQuery = @"and S.EffectiveDate = @effectiveDate";// @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
 
 			if (startDate.HasValue)
 			{
@@ -1877,7 +1877,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var endDateString = states.Contains(State.Deleted) ? ",V.EffectiveEndDate" : "";
-			var fragments = Company.Query<string>($@"
+			var sql = $@"
 					select	A.Uid,
 							A.ParentUid,
 							A.AllocationUid,
@@ -1907,7 +1907,9 @@ namespace d360.model.DataAccessLayer
 							inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] IN @states
 							cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
 					order by A.ParentUid, V.Name
-					for		json path", new { allocationUid, states }, ApiTimeout).ToList();
+					for		json path";
+
+			var fragments = Company.Query<string>(sql, new { allocationUid, states }, ApiTimeout).ToList();
 
 			var jsonString = string.Join("", fragments);
 			JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);

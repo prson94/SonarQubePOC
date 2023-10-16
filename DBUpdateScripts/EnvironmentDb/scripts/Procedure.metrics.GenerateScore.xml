@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.0">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.02">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -34,6 +34,7 @@ begin
 		AdjustedWeight decimal(8,6),
 		ContributionWeight decimal(8,6),
 		Value decimal(8,6), 
+		RawValue decimal(8,6),
 		AdjustedValue decimal(8,6),
 		ItemUid uniqueidentifier null,
 		DoesExist bit null
@@ -41,15 +42,15 @@ begin
 
 	if @scoreType = 1
 	begin
-		insert into @measures (	ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches, Evidence )
-			select	ParentVersionUid, VersionUid, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), '{}' 
+		insert into @measures (	ParentVersionUid, VersionUid, Value, RawValue, Weight, MatchUid, OtherMatches, Evidence )
+			select	ParentVersionUid, VersionUid, Value, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), '{}' 
 			from	metrics.GetGovernanceScore(@assetUid, @effectiveDate)
 	end;
 
 	if @scoreType = 2
 	begin
-		insert into @measures (	ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches, Evidence)
-			select	ParentVersionUid, VersionUid, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), Evidence 
+		insert into @measures (	ParentVersionUid, VersionUid, Value, RawValue, Weight, MatchUid, OtherMatches, Evidence)
+			select	ParentVersionUid, VersionUid, Value, RawValue, Weight, MatchUid, coalesce(OtherMatches, '[]'), Evidence 
 			from	metrics.GetDataQualityScore(@assetUid, @effectiveDate)
 	end;
 
@@ -210,8 +211,8 @@ begin
 						, MatchUid as ConditionUid
 						, OtherMatches as OtherConditions
 						, Evidence
+						, [RawValue] as DecimalValue
 						, iif([Value] = 1, 1, 0) as [Value]
-						, AdjustedValue as DecimalValue
 						, AdjustedWeight
 						, ContributionWeight as AdjustedMaxWeight
 						, AdjustedValue as DisplayWeight
@@ -240,15 +241,12 @@ begin
 				, s.ConditionUid, s.OtherConditions, s.[Evidence]
 				, s.[Value], s.DecimalValue, s.AdjustedWeight, s.AdjustedMaxWeight, s.DisplayWeight, s.DisplayMaxWeight);
 
-	merge into	metrics.ScoreItemLink as t
-	using		(
-				select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
-				from	@measures
-				) as s
-	on			(t.ScoreUid = s.ScoreUid and t.ScoreItemUid = s.ScoreItemUid)
-	when not matched by target then
-	insert		(ScoreUid, ScoreItemUid)
-	values		(s.ScoreUid, s.ScoreItemUid);
+	delete	metrics.ScoreItemLink
+	where	ScoreUid = @NewScoreUid;
+
+	insert into metrics.ScoreItemLink 
+		select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
+		from	@measures;
 
 --	select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
 end
