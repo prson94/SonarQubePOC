@@ -166,7 +166,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     loadFieldData() {
-        if (this.model.Definition.DataQuality.Filters && this.model.Definition.DataQuality.Filters.length > 0) {
+		if (this.model.Definition
+			&& this.model.Definition.DataQuality
+			&& this.model.Definition.DataQuality.Filters
+			&& this.model.Definition.DataQuality.Filters.length > 0
+		) {
             this.ruleResultFiltersMatchType = (this.model.Definition.DataQuality.FilterMatchType.toString() === 'All') ? 'All' : 'Any';
         }
 
@@ -306,40 +310,42 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     save() {
         // Specific to DataQuality measure.
-        this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation[this.model.Definition.DataQuality.ResultOperation + ''];
-        this.model.Definition.DataQuality.FilterMatchType = (this.ruleResultFiltersMatchType === "All") ? MetricMatchType.All : MetricMatchType.Any;
+		if (this.model.Definition && this.model.Definition.DataQuality) {
+			this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation[this.model.Definition.DataQuality.ResultOperation + ''];
+			this.model.Definition.DataQuality.FilterMatchType = (this.ruleResultFiltersMatchType === "All") ? MetricMatchType.All : MetricMatchType.Any;
 
-        this.model.Definition.DataQuality.Filters = [];
-        this.ruleResultFilters = this.ruleResultFilters.filter((x) => x.field && x.operator); // Make sure we have valid items selected here.
-        this.ruleResultFilters.forEach((f) => {
-            const filter = new MetricAssetDefinitionDataQualityFilterViewModel();
-            const fieldData = f.field.split('.'); // {assetTypeUid}.{FieldTypeName}
-            filter.AssetTypeUid = fieldData[0];
-            filter.FieldTypeName = fieldData[1];
-            filter.Operator = Operator[f.operator + ''];
-            const fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid === filter.AssetTypeUid && x.Name === filter.FieldTypeName);
+			this.model.Definition.DataQuality.Filters = [];
+			this.ruleResultFilters = this.ruleResultFilters.filter((x) => x.field && x.operator); // Make sure we have valid items selected here.
+			this.ruleResultFilters.forEach((f) => {
+				const filter = new MetricAssetDefinitionDataQualityFilterViewModel();
+				const fieldData = f.field.split('.'); // {assetTypeUid}.{FieldTypeName}
+				filter.AssetTypeUid = fieldData[0];
+				filter.FieldTypeName = fieldData[1];
+				filter.Operator = Operator[f.operator + ''];
+				const fieldTypes = this.ruleResultFields.filter((x) => x.AssetTypeUid === filter.AssetTypeUid && x.Name === filter.FieldTypeName);
 
-            let fieldDataType = 'Text'; //Default
+				let fieldDataType = 'Text'; //Default
 
-            if (fieldTypes.length > 0) {
-                const fieldType = fieldTypes[0].Type;
-                fieldDataType = FieldTypeHelper.getFieldType(fieldType);
-            }
+				if (fieldTypes.length > 0) {
+					const fieldType = fieldTypes[0].Type;
+					fieldDataType = FieldTypeHelper.getFieldType(fieldType);
+				}
 
-            if (!filter.Values) {
-                filter.Values = [];
-            }
-            if (filter.Values.length === 0) {
-                filter.Values.push('');
-            }
-            filter.Values[0] = this.getCorrectedValueForRawByDataType(fieldDataType, f.value);
+				if (!filter.Values) {
+					filter.Values = [];
+				}
+				if (filter.Values.length === 0) {
+					filter.Values.push('');
+				}
+				filter.Values[0] = this.getCorrectedValueForRawByDataType(fieldDataType, f.value);
 
-            if (!this.doesSelectedOperatorAllowValues(<any>f.operator)) {
-                filter.Values = [];
-            }
+				if (!this.doesSelectedOperatorAllowValues(<any>f.operator)) {
+					filter.Values = [];
+				}
 
-            this.model.Definition.DataQuality.Filters.push(filter);
-        });
+				this.model.Definition.DataQuality.Filters.push(filter);
+			});
+		}
 
         this.model.MatchConditionsOnly = (this.matchConditionsOnly === "true");
 
