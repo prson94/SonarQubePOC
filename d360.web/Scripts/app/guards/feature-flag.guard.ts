@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 //import { CompanySettingEnum } from '../models/settings.model';
 //import { CompanySettingsService } from '../services/settings.service';
@@ -8,7 +8,7 @@ import { FeatureFlags } from '../services/feature-flags.enum';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 @Injectable({ providedIn: 'root' })
-export class FeatureFlagGuard implements CanActivate {
+export class FeatureFlagGuard  {
 	constructor(
 		protected router: Router,
 		protected featureFlagService: LaunchDarklyService

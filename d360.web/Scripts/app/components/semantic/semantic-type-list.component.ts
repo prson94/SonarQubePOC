@@ -351,8 +351,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         }
     }
 
-    getFilterValues(params: LookupValuesAPIParameters, lookupType: string): Observable<LookupValuesAPIModel> {
-        if (params === "source") {
+	getFilterValues(lookupType: string, params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
+		if (lookupType === "source") {
             const values = this.sourceValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
             return of({
                 items: values,
@@ -360,7 +360,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             });
         }
 
-        if (params === "status") {
+		if (lookupType === "status") {
             const values = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
             return of({
                 items: values,
@@ -368,7 +368,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             });
         }
 
-        if (params === "matchType") {
+		if (lookupType === "matchType") {
             const values = this.matchTypeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
             return of({
                 items: values,
@@ -376,7 +376,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             });
         }
 
-        if (params === "baseType") {
+		if (lookupType === "baseType") {
             const values = this.baseTypeValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
             return of({
                 items: values,

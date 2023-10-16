@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Routes, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from '@angular/router';
+import { Routes, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 
 import { ConfigurationAssetTypeListPageComponent } from './list/configuration-asset-type-list-page.component';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -17,7 +17,7 @@ import { ConfigurationAssetTypeLevelsPageComponent } from './tabs/levels/configu
 import { ConfigurationAssetTypeDetailsPageComponent } from './tabs/details/configuration-asset-type-details-page.component';
 
 
-abstract class CanActivateOnlyForAvailableTypeClasses implements CanActivate {
+abstract class CanActivateOnlyForAvailableTypeClasses  {
     protected abstract typeClasses: AssetTypeClass[];
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

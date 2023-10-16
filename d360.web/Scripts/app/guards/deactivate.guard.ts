@@ -1,4 +1,4 @@
-﻿import { CanDeactivate } from '@angular/router';
+﻿
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BrowserComponent } from '../components/sidebar/visualization/browser.component';
@@ -7,7 +7,7 @@ export interface CanDeactivateComponent {
     canDeactivate: () => Observable<boolean> | boolean;
 }
 @Injectable()
-export class DeactivateGuard implements CanDeactivate<CanDeactivateComponent> {
+export class DeactivateGuard  {
     canDeactivate(component) {
         try {
             if (component && (component as BrowserComponent)) {

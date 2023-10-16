@@ -1,10 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 
 @Injectable()
-export class GalleryGuard implements CanActivate {    
+export class GalleryGuard  {    
     constructor(protected router: Router) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
