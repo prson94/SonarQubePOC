@@ -58,5 +58,23 @@ END
 ]]>
   </sql>
  </changeSet>
+   <changeSet author="Puneet Gupta" id="Table.reporting.Global_Audit.Indices-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_ReportingAudit_Object_ActionObject')
+BEGIN
+	DROP INDEX [IX_ReportingAudit_Object_ActionObject] ON [reporting].[Global_Audit];
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ReportingAudit_Object_ActionObject_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ReportingAudit_Object_ActionObject_Include] ON [reporting].[Global_Audit] ( [Object] ASC, [ObjectID] ASC, [ActionObject] ASC, [ActionObjectID] ASC ) INCLUDE([Version],[ID])
+END
+]]>
+    </sql>
+  </changeSet>
 
 </databaseChangeLog>

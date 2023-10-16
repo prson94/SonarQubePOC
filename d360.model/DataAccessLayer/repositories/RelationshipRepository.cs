@@ -2090,63 +2090,91 @@ where	Id = @Id
 		public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, int pageSize, int pageNum, bool includeTotal, string owner)
 		{
 			int? total = null;
+			string cntsql = "";
 			string whereFilter = string.IsNullOrEmpty(owner) ? " " : " and i.owner = @owner";
 
 			if (includeTotal)
 			{
-				var cntsql = $@"
+				cntsql = $@"
 select	count(1)
 from	[Intersect] i 
 where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
-
-				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID, owner }, ApiTimeout);
 			}
 
-			var sql = $@"
-						begin                         
-						 -- create temp table
-						 drop table if exists #TempIntersectInfo
-						 create table #TempIntersectInfo
-						(
-							IntersectUid UniqueIdentifier not null, 
-							SubjectAssetID bigint,
-							SubjectUid UniqueIdentifier null,
-							ObjectAssetID bigint,
-							ObjectUid UniqueIdentifier null,
-						    [Owner] varchar(100) null
-						)
+			string sql = $@"
+								Begin
 
-						create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([ObjectAssetID],[SubjectAssetID])
+									{cntsql}
 
-						 -- add intersect info into temp table
+									drop table if exists #temprelation;
+									create table #temprelation(id int);
 
-						 insert into #TempIntersectInfo
-							(IntersectUid, [SubjectAssetID],[ObjectAssetID],[Owner])
-						   select 
-							I.[UID],
-							I.[SubjectAssetID],
-							I.[ObjectAssetID],
-							I.[Owner]
-							from	[intersect] I 
-							where	I.IntersectTypeID = @intersectTypeID {whereFilter}
-							order by I.ID OFFSET @offset ROWS 
-							FETCH NEXT @rows ROWS ONLY
+									create clustered index temp_temprelation_idx on #temprelation ([id])
 
-							UPDATE	#TempIntersectInfo
-							SET		#TempIntersectInfo.SubjectUid =  a.[uid]
-							FROM	Asset a
-									INNER JOIN #TempIntersectInfo t ON a.ID = t.SubjectAssetID;
+									insert into #temprelation
+									select i.id
+									from [intersect] i
+									where i.IntersectTypeID = @intersectTypeID {whereFilter}
+									order by i.id
+									OFFSET @offset ROWS 
+									FETCH NEXT @rows ROWS ONLY
 
-							UPDATE	#TempIntersectInfo
-							SET		#TempIntersectInfo.ObjectUID =  a.[uid]
-							FROM	asset a	
-									INNER JOIN #TempIntersectInfo t ON a.ID = t.ObjectAssetID;
+								
+									-- create temp table
+									 drop table if exists #TempIntersectInfo
+									 create table #TempIntersectInfo
+									(
+										rowseq int identity(1,1),
+										IntersectUid UniqueIdentifier not null, 
+										SubjectAssetID bigint,
+										SubjectUid UniqueIdentifier null,
+										ObjectAssetID bigint,
+										ObjectUid UniqueIdentifier null,
+										[Owner] varchar(100) null
+									)
 
-							select IntersectUid as RelationshipUid, ObjectUid, SubjectUid, Owner from #TempIntersectInfo 
-						end";
+									 -- add intersect info into temp table
 
-			var results = await CompanyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);
+									 insert into #TempIntersectInfo
+										(IntersectUid, [SubjectAssetID],[ObjectAssetID],[Owner])
+									   select 
+										I.[UID],
+										I.[SubjectAssetID],
+										I.[ObjectAssetID],
+										I.[Owner]
+										from #temprelation t
+										inner join [intersect] I on t.id = I.id
+										order by t.id
 
+										UPDATE	t
+										SET		t.SubjectUid =  a.[uid]
+										FROM	#TempIntersectInfo t
+												INNER JOIN Asset a ON a.ID = t.SubjectAssetID;
+
+										UPDATE	t
+										SET		t.ObjectUID =  a.[uid]
+										FROM	#TempIntersectInfo t	
+												INNER JOIN asset a ON a.ID = t.ObjectAssetID;
+
+										select IntersectUid as RelationshipUid, ObjectUid, SubjectUid, Owner 
+										from #TempIntersectInfo 
+										order by rowseq;
+
+										drop table if exists #TempIntersectInfo;
+										drop table if exists #temprelation;
+										
+								End
+							   ";
+			SqlMapper.GridReader gridReader = await CompanyContext.QueryMultipleAsync(sql,
+			  new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner },
+			  ApiTimeout
+			);
+
+			if (includeTotal)
+			{
+				total = gridReader.Read<int>().FirstOrDefault();
+			}
+			var results = gridReader.Read<RelationshipUidResultItem>().ToList();
 			return new RelationshipUidResult { Total = total, pageSize = pageSize, pageNum = pageNum, Results = results };
 		}
 	}
