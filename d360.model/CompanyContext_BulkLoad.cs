@@ -1262,9 +1262,7 @@ inner join AssetPath P on P.ID = A.ID
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
 
-			string sql = string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc";
-
-			return Query<LoadDetail>(sql);
+			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
 		}
 
 		public LoadDetail GetLoadDetail(int id)
