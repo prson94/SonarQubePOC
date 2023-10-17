@@ -1,13 +1,5 @@
 [
   {
-    "outputFileName": "content/styles/ang.css",
-    "inputFiles": [
-      "Content/styles/Root.css",
-      "Content/styles/ContentFormatting.css",
-      "Content/styles/angular.css"
-    ]
-  },
-  {
     "outputFileName": "content/styles/materialize.min.css",
     "inputFiles": [
       "Content/styles/materialize.css"

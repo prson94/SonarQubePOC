@@ -4,7 +4,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-assets',
-    template: `<div id="main"><router-outlet> </router-outlet></div>`,
+    template: `<div id="main"><div class="d3s"><router-outlet> </router-outlet></div></div>`,
     providers: [AssetTypeService]
 })
 

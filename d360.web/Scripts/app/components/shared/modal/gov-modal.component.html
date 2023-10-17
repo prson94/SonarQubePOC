@@ -1,4 +1,4 @@
-﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap [style.z-index]="zIndex">
+﻿<div #popupBox class="modal-overlay d3s" tabindex=-1 (keydown)="checkKey($event)" pFocusTrap [style.z-index]="zIndex">
     <div class="modal-dialog {{additionalClasses}} {{(includePreciselyLogo ? 'modal-with-background' : '')}}">
         <div *ngIf="includePreciselyLogo" class="white-background"></div>
         <div *ngIf="showTitle" class="modal-title-bar">
