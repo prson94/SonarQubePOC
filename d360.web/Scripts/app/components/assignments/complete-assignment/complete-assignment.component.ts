@@ -424,7 +424,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				const name =
 					this.workflowForm.form.controls[`inputName_${i}`].value;
 				const url =
-					this.workflowForm.form.controls[`inputUrl_${i}`].value;
+					this.workflowForm.form.controls[`input_${i}`].value;
 				x.Value =
 					name.length + url.length === 0 ? '' : name + '|' + url;
 			} else if (Array.isArray(x.Value)) {

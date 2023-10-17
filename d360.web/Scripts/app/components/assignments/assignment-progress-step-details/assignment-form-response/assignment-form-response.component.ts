@@ -28,6 +28,6 @@ export class AssignmentFormResponseComponent {
 	}
 
 	getName(value: string): string {
-		return value.split('|')[0];
+		return value.split('|')[0] || this.getUrl(value);
 	}
 }
