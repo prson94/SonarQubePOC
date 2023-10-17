@@ -285,7 +285,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			//https://jira.syncsort.com/browse/GOV-21580
 			//Show side panel of the asset on which action is being taken automatically when action is taken on a specific asset
 			const last = this.breadCrumbs[this.breadCrumbs.length - 1];
-			if (!last.isType) {
+			if (!last.isType && last.link) {
 				this.selectedReferenceItem = this.selectedTag = null;
 				this.selectedAsset = { type: this.objectType };
 				this.selectedAsset.uid = last.link.replace("asset/", "");
