@@ -1,6 +1,26 @@
 @import (reference) "../../../../../Content/styles/infogix-ui/IgColorVariables";
 @import (reference) "../../../../../Content/styles/_Variables.less";
 
+
+
+
+.assignment-selector {
+  height: 100%;
+
+  .ig-property-group {
+    padding-bottom: 16px;
+  }
+
+  .side-panel-button {
+    margin-right: 0;
+  }
+}
+
+.large-dialog .modal-with-side-panel .side-panel .expanded-panel {
+  width: 410px;
+}
+
+
 .modal-buttons {
   padding-top: 16px;
   float: right;
@@ -30,7 +50,12 @@
 
 
 .radio-button {
-  padding: 5px 0 5px 0;
+  margin: 5px 0 5px 0;
+}
+
+.modal-form{
+  min-height: 256px;
+  height: 100%;
 }
 
 .row-data {
@@ -68,6 +93,8 @@
 
 .subtitle {
   color: @ig-grey;
+  opacity: 0.6;
+  padding: 8px 0 16px 0;
 }
 
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */

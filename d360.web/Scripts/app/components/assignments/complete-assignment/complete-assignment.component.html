@@ -1,12 +1,11 @@
 <d3s-modal #modal
 		   [showTitle]="false"
 		   [isVisible]="isModalAvailable"
-		   [showActionBar]="false"
 		   [hidden]="hideDialog"
 		   [zIndex]="'20001 !important'"
 		   [additionalClasses]="'large-dialog modal-form'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
-	<div class="modal-with-side-panel">
+	<div class="modal-with-side-panel assignment-selector">		
 		<div class="modal-dialog-main-panel" *ngIf="!isLoading">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
@@ -317,8 +316,15 @@
 			</div>
 		</div>
 		<div class="side-panel height-auto" [hidden]="isLoading">
-			<side-panel [(expanded)]="sidePanelOpen" [storageKey]="sidePanelStorageKey" [hasDetail]="false"
-						height="calc(100vh - 220px)" [extraButtons]="sidePanelButtons" [sidePanelButtonClass]="'assignment-side-panel-button-container'">
+			<side-panel 
+			[isSecondarySidePanel]="true"
+			[(expanded)]="sidePanelOpen" 
+			[storageKey]="sidePanelStorageKey" 
+			minWidth="368px"
+			maxWidth="410px"	
+			[hasDetail]="false"
+			height="calc(100vh - 169px)"
+			[extraButtons]="sidePanelButtons" >
 				<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
