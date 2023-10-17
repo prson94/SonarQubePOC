@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CompanySettingEnum } from '../models/settings.model';
 import { CompanySettingsService } from '../services/settings.service';
@@ -8,7 +8,7 @@ import { CompanySettingsService } from '../services/settings.service';
 declare var ResourceHomePage;
 
 @Injectable({ providedIn: 'root' })
-export class RedirectGuard implements CanActivate {
+export class RedirectGuard  {
     constructor(
         protected settingsService: CompanySettingsService,
         protected router: Router

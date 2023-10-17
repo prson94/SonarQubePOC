@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { AuthenticationService } from '../services/authentication.service';
 import { Observable } from 'rxjs';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 
 @Injectable({ providedIn: 'root' })
-export class AdminUserGuard implements CanActivate {
+export class AdminUserGuard  {
     constructor(protected authenticationService: AuthenticationService, protected router: Router) { }
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {

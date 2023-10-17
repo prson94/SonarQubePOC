@@ -219,6 +219,7 @@ button {
 
 .p-button:disabled {
     cursor: default;
+    pointer-events: none;
 }
 
 .p-button-icon-only {
@@ -267,6 +268,10 @@ button {
     z-index: 1;
 }
 
+/* stylelint-disable-next-line selector-type-no-unknown */
+p-button[iconpos="right"] spinnericon {
+    order: 1;
+}
 .p-checkbox {
     display: inline-flex;
     cursor: pointer;

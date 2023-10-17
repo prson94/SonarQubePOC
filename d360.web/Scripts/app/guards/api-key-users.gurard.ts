@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { CompanySettingEnum } from '../models/settings.model';
 import { AuthenticationService } from '../services/authentication.service';
 import { CompanySettingsService } from '../services/settings.service';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 @Injectable()
-export class ApiKeyUsersGuard implements CanActivate {
+export class ApiKeyUsersGuard  {
     _isAdmin: boolean = false;
     constructor(
         protected authenticationService: AuthenticationService,

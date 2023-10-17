@@ -58,7 +58,9 @@
 				"powerbi-client",
 				"quill",
 				"codemirror",
-				"codemirror/*"
+				"codemirror/*",
+				"flat",
+				"zone.js/dist/long-stack-trace-zone"
 			],
             "scripts": [
             ],
