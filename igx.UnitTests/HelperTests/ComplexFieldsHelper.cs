@@ -39,7 +39,7 @@ namespace igx.UnitTests.HelperTests
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("asset/")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains(".formattedvalue")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as bit")));
-            Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as int")));
+            Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as bigint")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as decimal")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as date")));
             Assert.True(selects.Any(x => x.ToLowerInvariant().Contains("as datetime")));
