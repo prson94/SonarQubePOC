@@ -448,6 +448,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not found any valid field in [_includeFields] parameter..
+        /// </summary>
+        public static string InvalidValue_includeFields {
+            get {
+                return ResourceManager.GetString("InvalidValue_includeFields", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayParent].
         /// </summary>
         public static string InvalidValueAutoDisplayParent {
@@ -516,15 +525,6 @@ namespace d360.core.resources {
         public static string InvalidValueReturnCount {
             get {
                 return ResourceManager.GetString("InvalidValueReturnCount", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid value {0} in [_includeFields] parameter, field with this name not found..
-        /// </summary>
-        public static string InvalueValue_includeFields {
-            get {
-                return ResourceManager.GetString("InvalueValue_includeFields", resourceCulture);
             }
         }
         
