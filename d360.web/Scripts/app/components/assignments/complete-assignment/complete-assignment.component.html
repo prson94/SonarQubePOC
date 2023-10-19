@@ -35,7 +35,9 @@
 				<div class="subtitle">
 					{{workflowName}}
 					<ng-container *ngIf="!isBulkRespond && multiSubmitionItems.length <= 1">
-						<span i18n> on </span> <a (click)="onClickAsset($event, this.assetId)">{{ assetName }}</a>
+						<span i18n> on </span>
+						<span *ngIf="!isType"><a (click)="onClickAsset($event, assetId)">{{ assetName }}</a></span>
+						<span *ngIf="isType">{{ assetName }}</span>
 					</ng-container>
 				</div>
 				<div [hidden]="isAssignmentProgressSelected"
@@ -316,19 +318,28 @@
 			</div>
 		</div>
 		<div class="side-panel height-auto" [hidden]="isLoading">
-			<side-panel 
-			[isSecondarySidePanel]="true"
-			[(expanded)]="sidePanelOpen" 
-			[storageKey]="sidePanelStorageKey" 
-			minWidth="368px"
-			maxWidth="410px"	
-			[hasDetail]="false"
-			height="calc(100vh - 169px)"
-			[extraButtons]="sidePanelButtons" >
+			<side-panel [isSecondarySidePanel]="true"
+						[(expanded)]="sidePanelOpen"
+						[storageKey]="sidePanelStorageKey"
+						minWidth="368px"
+						maxWidth="410px"
+						[hasDetail]="false"
+						height="calc(100vh - 169px)"
+						[extraButtons]="sidePanelButtons">
 				<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>
+				</ng-container>
+				<ng-container *ngIf="!isSidePanelPopulated">
+					<div class="empty-overlay">
+						<div class="content">
+							<div class="icon-holder">
+								<i class="fa fa-info-circle"></i>
+							</div>
+							<span i18n>Click a link to display the properties of the associated item</span>
+						</div>
+					</div>
 				</ng-container>
 			</side-panel>
 		</div>
