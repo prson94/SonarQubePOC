@@ -51,6 +51,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isAssignmentProgressSelected: boolean = false;
 	modalTitle: string = 'Assignment';
 	sidePanelOpen: boolean = false;
+	isSidePanelPopulated: boolean = false;
 	workflowItemUid: string;
 	stepUid: string;
 	sidePanelStorageKey: string =
@@ -115,6 +116,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isReassign: boolean = false;
 	isAdmin: boolean = false;
 	private receivedFormFields: WorkflowFormField[] = [];
+	isType: boolean = false;	
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
@@ -125,6 +127,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	) {
 		super(settingsService);
 		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+		this.subscribeSwitcherEvents();
 	}
 
 	ngOnInit(): void {
@@ -175,16 +178,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
-			}
-			this.linkInterceptorSubscription = this.linkClickInterceptor
-				.getEvents()
-				.subscribe((ev) => {
-					this.linkClickInterceptor.handleEvent(
-						this.sidePanelSwitcherComponent,
-						ev
-					);
-					this.sidePanelOpen = true;
-				});
+			}			
 			if (this.isReassign) {
 				this.radioSelectionValue = 'reassignUser';
 			} else {
@@ -223,14 +217,25 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							this.formFields = this.formFields?.length > 0 ? this.formFields : res.Fields;
 							this.receivedFormFields = structuredClone(res.Fields);
 							this.request = res.Request;
+							
 							if (res.IssueObjectID) {
 								this.assetName = res.IssueObjectName;
 								this.assetId = res.IssueObjectID;
+								this.isType = res.IssueObject.toLowerCase().endsWith("type");
+								if (!this.isType) {
+									this.onClickAsset(new MouseEvent('click'), this.assetId.toString());
+								} else {									
+									this.isSidePanelPopulated = false;
+									this.sidePanelOpen = false;
+									if (this.sidePanelSwitcherComponent) {
+										this.sidePanelSwitcherComponent.clear();										
+									}
+								}
+								
 							} else {
 								this.assetName = res.ObjectName;
-								this.assetId = res.ObjectID;
-							}
-							this.onClickAsset(new MouseEvent('click'), this.assetId);
+								this.assetId = res.ObjectID;								
+							}							
 							this.allowReassignObject = res.AllowReassignObject;
 							this.allowReassignResource = res.AllowReassignResource || this.isAdmin;
 
@@ -254,6 +259,11 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							if (!this.assetName) {
 								this.assetName = results[2].AssetPath;
 							}
+
+							let assetUid = results[2].AssetUid;
+							if (assetUid && assetUid != "" && assetUid != "00000000-0000-0000-0000-000000000000") {
+								this.onClickAsset(new MouseEvent('click'), assetUid);
+							}							
 						}
 						this.isLoading = false;
 						this.cdRef.markForCheck();
@@ -290,6 +300,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		this.modalTitle = 'Assignment Progress and Information';
 		if (this.sidePanelSwitcherComponent) {
 			this.sidePanelSwitcherComponent.clear();
+			this.isSidePanelPopulated = false;
 		}
 	}
 
@@ -389,18 +400,21 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				ResourceID: resourceId
 			},
 			'users/' + resourceId
-		);
-	}
+		);		
+	}	
 
-	onClickAsset(event: MouseEvent, assetId: number): void {
-		if (this.assetId) {
-			this.linkClickInterceptor.sendEvent(
-				event,
-				{
-					AssetId: assetId
-				},
-				'asset/' + assetId
-			);
+	onClickAsset(event: MouseEvent, identifier: string): void {
+		if (identifier) {
+			if (!this.isType) {			
+				this.linkClickInterceptor.sendEvent(
+					event,
+					{
+						AssetUid: identifier
+					},
+					'asset/' + identifier
+				);				
+			}
+			
 		}
 	}
 
@@ -472,6 +486,19 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			localStorage.setItem(this.storageKey, event.rows);
 			this.rowsPerPage = event?.rows;
 		}
+	}
+
+	subscribeSwitcherEvents() {
+		this.linkInterceptorSubscription = this.linkClickInterceptor
+			.getEvents()
+			.subscribe((ev) => {
+				this.linkClickInterceptor.handleEvent(
+					this.sidePanelSwitcherComponent,
+					ev
+				);
+				this.isSidePanelPopulated = true;
+				this.sidePanelOpen = true;
+			});
 	}
 	protected readonly Number = Number;
 }
