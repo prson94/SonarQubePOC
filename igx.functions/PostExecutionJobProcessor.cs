@@ -624,6 +624,24 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 		string historyUpsertRelations()
 		{ 
 			return $@"
+drop table if exists #tempdata;
+
+select	cast(l.id as bigint) id,
+		p.Object, 
+		p.ObjectId,
+		p.ObjectName, 
+		iif(p.IsNew = 1, 'Created', 'Updated') Action, 
+		p.ActionObjectId,
+		p.ActionObjectTypeName, 
+		p.ActionObjectName
+into #tempdata
+from	api.ExecutionLog l
+		inner join api.Execution e on e.Id = l.ExecutionId 
+		cross apply openjson(l.Payload) with (Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectId int, ActionObjectName nvarchar(250), ActionObjectTypeName nvarchar(250), IsNew bit) p 
+where	l.ExecutionId = @Id;
+
+create clustered index idx_tempdata on #tempdata (id);
+
 {insertStatement}
 	select	p.Object, 
 			p.ObjectId,
@@ -631,17 +649,17 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
 			@r, 
 			@dt, 
 			mv.[Version],
-			iif(p.IsNew = 1, 'Created', 'Updated'), 
+			p.Action, 
 			'Intersect',
 			p.ActionObjectId,
 			p.ActionObjectTypeName, 
 			p.ActionObjectName, 
 			'Relationship created.' 
-	from	api.ExecutionLog l
-			inner join api.Execution e on e.Id = l.ExecutionId 
-			cross apply openjson(l.Payload) with (Object varchar(50), ObjectId int, ObjectName nvarchar(250), ActionObjectId int, ActionObjectName nvarchar(250), ActionObjectTypeName nvarchar(250), IsNew bit) p 
+	from	#tempdata p
 			{maxVersionSql("p.Object", "p.ObjectId")}
-	where	l.ExecutionId = @Id;";
+	order by p.id;
+
+drop table if exists #tempdata;";
 		}
 
 		string historyUpsertScoreAllocation() 

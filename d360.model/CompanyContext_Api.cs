@@ -2709,7 +2709,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			bool IsUidPassed = false;
 			Dictionary<string, double> metrics = new Dictionary<string, double>();
 			int step = 0;
-
+			string QueryID = " ";
 			if ((rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation)
 			{
 				checkCircularRelationships = true;
@@ -2954,20 +2954,33 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					if (execution.Total > 1)
 					{
+						QueryID = "-Q10000001";
+
 						Connection.Execute(@"
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'This relationship is specified more than once. Each relationship must be unique within a given request.',
-													T.Success = 0
-											from	api.ExecutionRelationship T
-											cross apply (
-												select      SubjectUid, ObjectUid
-												from        api.ExecutionRelationship
-												where       ExecutionID = @ExecutionID
-												group by    SubjectUid, ObjectUid
-												having      count(*) > 1
-											) D
-											where   T.ExecutionId = @ExecutionID
-													and T.SubjectUid = D.SubjectUid and T.ObjectUid = D.ObjectUid",
+											drop table if exists #tempduplicate;
+											create table #tempduplicate
+											(SubjectUid uniqueidentifier,
+											ObjectUid uniqueidentifier);
+
+											insert into #tempduplicate(SubjectUid,ObjectUid)
+											select	SubjectUid, ObjectUid
+											from	api.ExecutionRelationship
+											where	ExecutionID = @ExecutionID
+											group by	SubjectUid, ObjectUid
+											having	count(1) > 1
+
+											create nonclustered index idx_tempduplicate on #tempduplicate(SubjectUid, ObjectUid);
+											if exists (select 1 from #tempduplicate)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'This relationship is specified more than once. Each relationship must be unique within a given request.',
+														T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join #tempduplicate D on D.SubjectUid = T.SubjectUid and D.ObjectUid = T.ObjectUid
+												where   T.ExecutionId = @ExecutionID;
+											end
+											drop table if exists #tempduplicate;
+											",
 						new { execution.ExecutionID }, commandTimeout: timeout);
 						addMeasurement(metrics, "Invalidate duplicates", sw.ElapsedMilliseconds, ++step);
 					}
@@ -2977,6 +2990,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					if (IsUidPassed)
 					{
 						#region Validate Relationship Uid
+						
+						QueryID = "-Q10000002";
 
 						Connection.Execute(@"
 											declare @it int;
@@ -3016,6 +3031,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 													from	api.ExecutionRelationship T
 													where   T.ExecutionId = @ExecutionID
 											end
+											drop table if exists #tempdupuid;
 										",
 										new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
 						addMeasurement(metrics, "Log Validate Relationship Uid", sw.ElapsedMilliseconds, ++step);
@@ -3023,6 +3039,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						#endregion
 
 						#region Validate Relationship Uid - Add
+						QueryID = "-Q10000003";
 
 						Connection.Execute(@"
 											declare @sc int,
@@ -3066,6 +3083,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 													from	api.ExecutionRelationship T
 													where   T.ExecutionId = @ExecutionID
 											end
+											drop table if exists #tempNewuid;
 										",
 										new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
 						addMeasurement(metrics, "Log Validate Relationship Uid - Add", sw.ElapsedMilliseconds, ++step);
@@ -3097,6 +3115,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					}
 
 					sw.Restart();
+					QueryID = "-Q10000004";
+
 					Connection.Execute($@"
 										declare @sc int,
 												@stid int,
@@ -3200,6 +3220,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					#region Log subject/object resolution errors
 
 					sw.Restart();
+					QueryID = "-Q10000005";
+
 					Connection.Execute(@"
 										update	api.ExecutionRelationship
 										set		Success = 0,
@@ -3226,69 +3248,134 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					if (rt.SubjectCardinality == Cardinality.One)
 					{
 						sw.Restart();
-						Connection.Execute(@"
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
-												T.Success = 0
-											from	api.ExecutionRelationship T
-												inner join	(
-															select	ER.ExecutionID,
-																	ER.ItemNumber,
-																	count(1) as RelationshipCount
-															from	api.ExecutionRelationship ER
-																	inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
-																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.ObjectAssetID = O.ID
-																	inner join Asset S on S.Uid <> ER.SubjectUid and S.ID = I.SubjectAssetID 
-															group by ER.ExecutionID, ER.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+						QueryID = "-Q10000006";
 
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'Object already referenced in this batch and cannot be used again due to cardinality restrictions.',
-												T.Success = 0
-											from	api.ExecutionRelationship T
-												inner join	(
-															select	ER.ExecutionID,
-																	ER.ObjectUid,
-																	min(ER.ItemNumber) as ItemNumber
-															from	api.ExecutionRelationship ER
-																	inner join Asset O on O.Uid = ER.ObjectUid and ER.ExecutionID = @ExecutionID
-															group by ER.ExecutionID, ER.ObjectUid
-															) S on S.ExecutionID = T.ExecutionID and S.ObjectUid = T.ObjectUid and S.ItemNumber < T.ItemNumber;",
-																	new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+						Connection.Execute(@"
+											drop table if exists #tempobjectone;
+											create table #tempobjectone(ItemNumber int, ExecutionID uniqueidentifier);
+
+											insert into #tempobjectone(ItemNumber,ExecutionID)
+											select	distinct ER.ItemNumber,ER.ExecutionID
+											from	api.ExecutionRelationship ER
+											inner join Asset O on O.Uid = ER.ObjectUid 
+											inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.ObjectAssetID = O.ID
+											inner join Asset S on S.Uid <> ER.SubjectUid and S.ID = I.SubjectAssetID 
+											where ER.ExecutionID = @ExecutionID;
+
+											create nonclustered index idx_tempobjectone on #tempobjectone(ItemNumber, ExecutionID);
+
+											if exists (select 1 from #tempobjectone)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
+													T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join #tempobjectone S on S.ItemNumber = T.ItemNumber and S.ExecutionID = T.ExecutionID
+												where T.ExecutionID = @ExecutionID;
+											end
+
+											drop table if exists #tempobjectone;
+
+											drop table if exists #tempobjectexists;
+											create table #tempobjectexists
+											( 
+											ObjectUid uniqueidentifier,
+											ExecutionID uniqueidentifier,
+											ItemNumber int,
+											RecCount bigint
+											);
+											
+											insert into #tempobjectexists(ExecutionID,ObjectUid,ItemNumber,RecCount)
+											select	ER.ExecutionID,
+													ER.ObjectUid,
+													min(ER.ItemNumber) as ItemNumber,
+													Count(1) RecCount
+											from	api.ExecutionRelationship ER
+													inner join Asset O on O.Uid = ER.ObjectUid
+											where	ER.ExecutionID = @ExecutionID
+											group by ER.ExecutionID, ER.ObjectUid
+											having count(1) > 1
+
+											create clustered index idx_tempobjectexists on #tempobjectexists(ObjectUid, ExecutionID);
+											if exists (select 1 from #tempobjectexists)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'Object already referenced in this batch and cannot be used again due to cardinality restrictions.',
+													T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join	#tempobjectexists  S on S.ObjectUid = T.ObjectUid and S.ExecutionID = T.ExecutionID  and S.ItemNumber < T.ItemNumber
+												where T.ExecutionID = @ExecutionID;
+											end
+											drop table if exists #tempobjectexists;
+											", new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
 						addMeasurement(metrics, "SubjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);
 					}
 
 					if (rt.ObjectCardinality == Cardinality.One)
 					{
 						sw.Restart();
-						Connection.Execute(@"
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
-												T.Success = 0
-											from	api.ExecutionRelationship T
-												inner join	(
-															select	ER.ExecutionID,
-																	ER.ItemNumber,
-																	count(1) as RelationshipCount
-															from	api.ExecutionRelationship ER
-																	inner join Asset S on S.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
-																	inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.SubjectAssetID = S.ID 
-																	inner join Asset O on O.Uid <> ER.ObjectUid and O.ID = I.ObjectAssetID 
-															group by ER.ExecutionID, ER.ItemNumber
-															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+						QueryID = "-Q10000007";
 
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already referenced in this batch and cannot be used again due to cardinality restrictions.',
-												T.Success = 0
-											from	api.ExecutionRelationship T
-												inner join	(
-															select	ER.ExecutionID,
-																	ER.SubjectUid,
-																	min(ER.ItemNumber) as ItemNumber
-															from	api.ExecutionRelationship ER
-																	inner join Asset O on O.Uid = ER.SubjectUid and ER.ExecutionID = @ExecutionID
-															group by ER.ExecutionID, ER.SubjectUid
-															) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
+						Connection.Execute(@"
+											drop table if exists #tempsubjectone;
+											create table #tempsubjectone(ItemNumber int, ExecutionID uniqueidentifier);
+
+											insert into #tempsubjectone(ItemNumber,ExecutionID)
+											select	distinct ER.ItemNumber,ER.ExecutionID
+											from	api.ExecutionRelationship ER
+											inner join Asset S on S.Uid = ER.SubjectUid 
+											inner join [Intersect] I on I.IntersectTypeID = @IntersectTypeID and I.SubjectAssetID = S.ID 
+											inner join Asset O on O.Uid <> ER.ObjectUid and O.ID = I.ObjectAssetID
+											where ER.ExecutionID = @ExecutionID;
+
+											create nonclustered index idx_tempsubjectone on #tempsubjectone(ItemNumber, ExecutionID);
+
+
+											if exists (select 1 from #tempsubjectone)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
+													T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join	#tempsubjectone S on S.ItemNumber = T.ItemNumber and S.ExecutionID = T.ExecutionID 
+												where T.ExecutionID = @ExecutionID;
+											end
+
+											drop table if exists #tempsubjectone;
+
+											drop table if exists #tempsubjectexists;
+											create table #tempsubjectexists
+											( 
+											SubjectUid uniqueidentifier,
+											ExecutionID uniqueidentifier,
+											ItemNumber int,
+											RecCount bigint
+											);
+
+											insert into #tempsubjectexists(ExecutionID,SubjectUid,ItemNumber,RecCount)
+											select	ER.ExecutionID,
+													ER.SubjectUid,
+													min(ER.ItemNumber) as ItemNumber,
+													Count(1) RecCount
+											from	api.ExecutionRelationship ER
+													inner join Asset O on O.Uid = ER.SubjectUid 
+											where	ER.ExecutionID = @ExecutionID
+											group by ER.ExecutionID ,ER.SubjectUid
+											having count(1) > 1;
+
+											create clustered index idx_tempsubjectexists on #tempsubjectexists(SubjectUid, ExecutionID);
+
+											if exists (select 1 from #tempsubjectexists)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already referenced in this batch and cannot be used again due to cardinality restrictions.',
+													T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join	#tempsubjectexists S on S.SubjectUid = T.SubjectUid and S.ExecutionID = T.ExecutionID and S.ItemNumber < T.ItemNumber
+												Where T.ExecutionID = @ExecutionID;
+											End
+											drop table if exists #tempsubjectexists;
+											",
 				new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
 						addMeasurement(metrics, "ObjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);
 					}
@@ -3296,6 +3383,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					#endregion
 
 					#region Permissions Validation
+
+					QueryID = "-Q10000008";
 
 					sw.Restart();
 					Connection.Execute($@"
@@ -3374,14 +3463,34 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					if (checkCircularRelationships)
 					{
 						sw.Restart();
+						
+						QueryID = "-Q10000009";
+
 						Connection.Execute(@"
-											update	T
-											set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship as it would cause circular relationship',
-													T.Success = 0
-											from	api.ExecutionRelationship T
-													where T.ExecutionId = @ExecutionID
-													and T.IsNew = 1 
-													and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
+											drop table if exists #tempCheckCircularRelationship;
+
+											create table #tempCheckCircularRelationship(ItemNumber int, ExecutionID uniqueidentifier);
+
+											insert into #tempCheckCircularRelationship(ItemNumber,ExecutionID)
+											select T.ItemNumber,T.ExecutionID
+											from api.ExecutionRelationship T
+											where T.ExecutionId = @ExecutionID
+											and T.IsNew = 1 
+											and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1;
+
+											create nonclustered index idx_tempCheckCircularRelationship on #tempCheckCircularRelationship(ItemNumber, ExecutionID);
+
+											if exists (select 1 from #tempCheckCircularRelationship)
+											begin
+												update	T
+												set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship as it would cause circular relationship',
+														T.Success = 0
+												from	api.ExecutionRelationship T
+												inner join #tempCheckCircularRelationship S on S.ItemNumber = T.ItemNumber and S.ExecutionID = T.ExecutionID 
+												where T.ExecutionId = @ExecutionID
+												and T.IsNew = 1;
+											end
+											drop table if exists #tempCheckCircularRelationship;
 											", new { execution.ExecutionID, predicateType = rt.Predicate.Type }, commandTimeout: timeout);
 						addMeasurement(metrics, "Circular Relationships Validation", sw.ElapsedMilliseconds, ++step);
 					}
@@ -3389,22 +3498,63 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					if (checkSemanticRelation)
 					{
 						sw.Restart();
+
+						QueryID = "-Q10000010";
+
 						Connection.Execute(@"
+											drop table if exists #tempitypeids;
+											create table #tempitypeids(intersectTypeID int);
+											create clustered index idx_tempitypeids on #tempitypeids(intersectTypeID);
+
+											insert into #tempitypeids
+											select IT.ID intersectTypeID
+											from [Predicate] P 
+											inner join [IntersectType] IT on IT.PredicateID = P.ID
+											where P.[Type] = @predicateType and IT.ID <> @intersectTypeID;
+
 											update	T
 											set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
 													T.Success = 0
 											from	api.ExecutionRelationship T
-													inner join [Intersect] I on ( 
+													inner join [Intersect] I on  
 														(I.SubjectAssetID = T.SubjectAssetID and I.ObjectAssetID = T.ObjectAssetID) 
-														or (I.ObjectAssetID = T.SubjectAssetID and I.SubjectAssetID = T.ObjectAssetID)
-													)
-													inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
-													inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
-													where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
+													inner join #tempitypeids IT on IT.intersectTypeID = I.IntersectTypeID
+													where T.ExecutionId = @ExecutionID 
+													and T.IsNew = 1 
+
+											update	T
+											set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
+													T.Success = 0
+											from	api.ExecutionRelationship T
+													inner join [Intersect] I on  
+													(I.ObjectAssetID = T.SubjectAssetID and I.SubjectAssetID = T.ObjectAssetID)
+													inner join #tempitypeids IT on IT.intersectTypeID = I.IntersectTypeID
+													where T.ExecutionId = @ExecutionID 
 													and T.IsNew = 1 
 											", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID }, commandTimeout: timeout);
 						addMeasurement(metrics, "Semantic Relationships Validation", sw.ElapsedMilliseconds, ++step);
 					}
+
+					// update intersect id and uid
+					sw.Restart();
+
+					QueryID = "-Q10000011";
+
+					Connection.Execute(@"
+											update	T
+											set		T.IntersectID = I.ID,
+													T.Uid = I.Uid,
+													T.IsNew = 0
+											from	api.ExecutionRelationship T
+													inner join [Intersect] I on  
+													( I.IntersectTypeID = @rtID 
+													and I.SubjectAssetID = T.SubjectAssetID and I.ObjectAssetID = T.ObjectAssetID 
+													and I.SubjectAssetTypeID = T.SubjectAssetTypeID and I.ObjectAssetTypeID = T.ObjectAssetTypeID)
+													where T.ExecutionId = @ExecutionID 
+													and T.Success is null;
+											", new { execution.ExecutionID, rtID = rt.ID }, commandTimeout: timeout);
+					addMeasurement(metrics, "Update Intersect Id and Uid", sw.ElapsedMilliseconds, ++step);
+
 
 					generalChecksCompleted = true;
 				}
@@ -3412,7 +3562,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				{
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = msg;
+					execution.ErrorMessage = msg + QueryID;
 					execution.Processed = 0;
 					execution.Error = import.Count();
 
@@ -3442,20 +3592,27 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									#region Intersect table merge
 
 									sw.Restart();
+
+									QueryID = "-Q10000012";
+
 									Connection.Execute($@"
 														drop table if exists #ObjectMergeTableResult;
-														create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
-														CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+														create table #ObjectMergeTableResult (ID int, Uid uniqueidentifier,ItemNumber int, [Action] nvarchar(10));
+														CREATE CLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
 														merge into  [Intersect] T
 														using		(
-																	select      *
-																	from        api.ExecutionRelationship
-																	where		ExecutionID = @ExecutionID
-																				and ItemNumber between @beginItemNumber and @endItemNumber
-																				and Success is null	
+																	select	Uid,
+																			SubjectAssetID,SubjectAssetTypeID,
+																			ObjectAssetID,ObjectAssetTypeID,
+																			coalesce(Owner,'BULK_API') Owner,
+																			IntersectID,ItemNumber
+																	from	api.ExecutionRelationship
+																	where	ExecutionID = @ExecutionID
+																			and ItemNumber between @beginItemNumber and @endItemNumber
+																			and Success is null	
 																) S
-														on      ( T.IntersectTypeID = @rtID and T.SubjectAssetID = S.SubjectAssetID and T.ObjectAssetID = S.ObjectAssetID and T.SubjectAssetTypeID = S.SubjectAssetTypeID and T.ObjectAssetTypeID = S.ObjectAssetTypeID)
+														on      ( T.ID = S.IntersectID)
 														when matched then
 															update set
 																	T.UpdatedBy = @CurrentResourceID,
@@ -3464,16 +3621,19 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 														when not matched by target then
 															insert  (uid,IntersectTypeID, SubjectAssetID, SubjectAssetTypeID, ObjectAssetID, ObjectAssetTypeID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
 															values  (isnull(S.Uid,newid()),@rtID, S.SubjectAssetID, S.SubjectAssetTypeID, S.ObjectAssetID, S.ObjectAssetTypeID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), coalesce(S.Owner,'BULK_API'))
-														output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
+														output inserted.ID,inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 														update	T
 														set		T.IntersectID = S.ID,
-																T.uid = IT.uid,
+																T.uid = S.uid,
 																T.IsNew = iif(S.[Action] = 'INSERT', 1, 0)
 														from	api.ExecutionRelationship T
-																inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
-																inner join [Intersect] IT on IT.ID = S.ID
-														where   T.ItemNumber between @beginItemNumber and @endItemNumber;",
+																inner join #ObjectMergeTableResult S on S.ItemNumber = T.ItemNumber
+														where   T.ExecutionID = @ExecutionID and T.ItemNumber between @beginItemNumber and @endItemNumber
+														and (T.IntersectID is null or T.uid is null);
+
+														drop table if exists #ObjectMergeTableResult;
+														",
 														new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 									addMeasurement(metrics, "Intersect table merge", sw.ElapsedMilliseconds, ++step);
 
@@ -3484,55 +3644,116 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (relationshipTypeHasFieldTypes)
 									{
 										sw.Restart();
+
+										QueryID = "-Q10000013";
+
 										fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", SystemObjects.Intersect, "A.IntersectID", beginItemNumber, endItemNumber, true, timeout);
 										addMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
 									}
 
 									#region Execution Log
 
+QueryID = "-Q10000014";
+
 									string logSql = $@"
-insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	e.Id,
-			(select I.Subject as Object, 
-					I.SubjectId as ObjectId,
-					I.SubjectName as ObjectName,
-					I.Id as ActionObjectId,
-					I.ObjectName as ActionObjectName,
-					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as ActionObjectTypeName,
-					o.IsNew
-			for json path
-			) as Payload
-	from	api.Execution e
-			inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
-				and e.ExecutionID = @ExecutionID 
-				and o.ItemNumber between @beginItemNumber and @endItemNumber 
-				and o.Success is null
-			inner join IntersectDetail I on I.ID = o.IntersectID;
+
+declare @PredicateName Nvarchar(250),
+		@PredicateInverse Nvarchar(250),
+		@ObjectRefList bit;
+
+select	@PredicateName = Name,
+		@PredicateInverse = Inverse,
+		@ObjectRefList = case when T.ObjectClass = 9  and T.ObjectAssetTypeID = 0 then 1 else 0 end 
+from	IntersectType T
+inner join [Predicate] P on P.ID = T.PredicateID
+where T.id = @rtID;
+
+drop table if exists #tempexecurelat;
+
+select e.id,o.IsNew,o.IntersectID,
+o.SubjectAssetID,cast(null as nvarchar(100)) Subject,
+cast(null as int) SubjectID,cast(null as varchar(2000)) as SubjectName,
+cast(null as nvarchar(500)) SubjectTypeName,
+o.ObjectAssetID,cast(null as nvarchar(100)) Object,
+cast(null as int) ObjectID,cast(null as varchar(2000)) as ObjectName,
+cast(null as nvarchar(500)) ObjectTypeName,o.ObjectAssetTypeID
+into #tempexecurelat
+from api.Execution e
+inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
+and e.ExecutionID = @ExecutionID 
+and o.ItemNumber between @beginItemNumber and @endItemNumber 
+and o.Success is null;
+
+update t
+set Subject = A.Object,
+SubjectID = A.ObjectID,
+SubjectName = ADV.DisplayValue,
+SubjectTypeName = ATT.Name
+from #tempexecurelat t
+inner join Asset A on A.ID = t.SubjectAssetID
+inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+inner join AssetType ATT on ATT.ID = A.AssetTypeID;
+
+if (@ObjectRefList = 0)
+	begin
+
+		update t
+		set Object = A.Object,
+		ObjectID = A.ObjectID,
+		ObjectName = ADV.DisplayValue,
+		ObjectTypeName = ATT.Name
+		from #tempexecurelat t
+		inner join Asset A on A.ID = t.ObjectAssetID
+		inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+		inner join AssetType ATT on ATT.ID = A.AssetTypeID;
+	end
+else
+	begin
+		update t
+		set Object = ATT.Object,
+		ObjectID = ATT.ObjectID,
+		ObjectName = ATT.Name,
+		ObjectTypeName = ATT.Name
+		from #tempexecurelat t
+		inner join AssetType ATT on ATT.ID = t.ObjectAssetTypeID;
+	end
 
 insert into api.ExecutionLog (ExecutionId, [Payload])
-	select	e.Id,
-			(select I.Object, 
-					I.ObjectId,
-					I.ObjectName,
-					I.Id as ActionObjectId,
-					I.SubjectName as ActionObjectName,
-					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as ActionObjectTypeName,
-					o.IsNew
-			for json path
-			) as Payload
-	from	api.Execution e
-			inner join api.ExecutionRelationship o on o.ExecutionID = e.ExecutionID 
-				and e.ExecutionID = @ExecutionID 
-				and o.ItemNumber between @beginItemNumber and @endItemNumber 
-				and o.Success is null
-			inner join IntersectDetail I on I.ID = o.IntersectID;";
-
-									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+select * from 
+(
+select	e.Id,
+		(select e.Subject as Object, 
+				e.SubjectId as ObjectId,
+				e.SubjectName as ObjectName,
+				e.IntersectID as ActionObjectId,
+				e.ObjectName as ActionObjectName,
+				e.ObjectTypeName + ' (' + @PredicateName + ')'  as ActionObjectTypeName,
+				e.IsNew
+		for json path
+		) as Payload
+from	#tempexecurelat e
+union all
+select	e.Id,
+		(select e.Object, 
+				e.ObjectId,
+				e.ObjectName,
+				e.IntersectID as ActionObjectId,
+				e.SubjectName as ActionObjectName,
+				e.SubjectTypeName + ' (' + @PredicateInverse + ')'  as ActionObjectTypeName,
+				e.IsNew
+		for json path
+		) as Payload
+from	#tempexecurelat e
+)a;";
+									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 
 									#endregion
 
 									// Update success flag
 									sw.Restart();
+
+									QueryID = "-Q10000015";
+
 									Connection.Execute(
 										$"update api.ExecutionRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and IntersectID is not null;",
 										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -3561,7 +3782,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
 										sw.Restart();
-										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
+										string msg = ex.GetFullExceptionData(false) + QueryID;
+										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", msg, timeout);
 										addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
 									}
 									else
@@ -3571,7 +3793,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								}
 							}
 						}
-						
+
+						QueryID = "-Q10000016";
 						results.AddRange(
 							Query<DatabaseBulkRelationshipResult>(
 								$"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
@@ -3586,10 +3809,12 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					Connection.Close();
 					
 					sw.Restart();
+					QueryID = "-Q10000017";
 					SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 					addMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
 				}
 			}
+			QueryID = " ";
 			addMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
 			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
