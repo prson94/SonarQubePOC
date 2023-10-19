@@ -261,7 +261,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 							}
 
 							const assetUid = results[2].AssetUid;
-							if (assetUid && assetUid != "" && assetUid != "00000000-0000-0000-0000-000000000000") {
+							if (assetUid && assetUid !== "" && assetUid !== "00000000-0000-0000-0000-000000000000") {
 								this.onClickAsset(new MouseEvent('click'), assetUid);
 							}							
 						}
