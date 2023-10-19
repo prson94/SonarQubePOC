@@ -260,7 +260,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 								this.assetName = results[2].AssetPath;
 							}
 
-							let assetUid = results[2].AssetUid;
+							const assetUid = results[2].AssetUid;
 							if (assetUid && assetUid != "" && assetUid != "00000000-0000-0000-0000-000000000000") {
 								this.onClickAsset(new MouseEvent('click'), assetUid);
 							}							
