@@ -307,7 +307,7 @@ namespace d360.model.helpers
 							selects.Add($"try_cast({fieldSelector}.FormattedValue AS bit) AS [{fieldAlias}]");
 							break;
 						case "number":
-							selects.Add($"try_cast({fieldSelector}.FormattedValue AS int) AS [{fieldAlias}]");
+							selects.Add($"try_cast({fieldSelector}.FormattedValue AS bigint) AS [{fieldAlias}]");
 							break;
 						case "decimal":
 							selects.Add($"try_cast({fieldSelector}.FormattedValue AS decimal(38,6)) AS [{fieldAlias}]");
