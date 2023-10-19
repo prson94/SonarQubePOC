@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
@@ -40,15 +41,18 @@ namespace igx.functions.consumption
             {
                 CoreFunction.AITrackJobStart(functionName);
 
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+				var topicName = config["DisplayValueQueue"];
+				AzureQueueSource queueSource = new AzureQueueSource(config);
+
+				var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
                 companies = companies.Where(x => x.CompanyID == 2).ToList();
 #endif
                 foreach (var c in companies)
                 {
-                    try
-                    {
+					try
+					{
 						var securityContext = new UriSecurityContextProvider
 						{
 							CompanyID = c.CompanyID,
@@ -69,36 +73,25 @@ namespace igx.functions.consumption
 								queueSource: new AzureQueueSource(config),
 								cachingProvider: new DummyCachingProvider(),
 								connectionString: CoreFunction.GetConnectionString("CommunityContext")))
-						{ 
+						{
 							var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
 							if (rs.StatusCode == System.Net.HttpStatusCode.OK)
 							{
-								try
-								{
-									companyContext.Connection.Execute("CheckDisplayValues", commandTimeout: 2400, commandType: System.Data.CommandType.StoredProcedure);
-								}
-								catch (Exception ex)
-								{
-									CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-								}
-								finally
-								{
-									await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
-								}
+								await queueSource.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 							}
 							else
 							{
-								CoreFunction.AITrackTrace(functionName, $"UpdateRebuildJobStatus message: ${rs.Message}", null, c.CompanyID);
+								CoreFunction.AITrackTrace(functionName, $"UpdateRebuildJobStatus message: {rs.Message}", null, c.CompanyID);
 							}
 						}
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-                }
+					}
+					catch (Exception ex)
+					{
+						CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+					}
+				}
 
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
+				CoreFunction.AITrackJobCompletedNoErrors(functionName);
             }
             catch (Exception ex)
             {
