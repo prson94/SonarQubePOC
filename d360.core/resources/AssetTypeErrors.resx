@@ -243,8 +243,8 @@
   <data name="InvalidValueObjID" xml:space="preserve">
     <value>Invalid value for parameter [objID]</value>
   </data>
-  <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Invalid value {0} in [_includeFields] parameter, field with this name not found.</value>
+  <data name="InvalidValue_includeFields" xml:space="preserve">
+    <value>Not found any valid field in [_includeFields] parameter.</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
     <value>Could not parse value of [_includeFields]</value>

@@ -460,13 +460,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 
 				//validate param values
-				includeFieldsList.ForEach(f =>
-				{
-					if (!allFieldTypes.Any(x => x.Name.ToLower() == f.ToLower()))
-					{
-						throw new ArgumentException(string.Format(AssetTypeErrors.InvalueValue_includeFields, f));
-					}
-				});
+				includeFieldsList.RemoveAll(f => !allFieldTypes.Any(x => x.Name.ToLower() == f.ToLower()));
 
 				if (includeFieldsList.Any())
 				{
@@ -474,6 +468,10 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					fieldTypes = fieldTypes
 						.Where(x => includeFieldsList.Contains(x.Name.ToLower()))
 						.ToList();
+				}
+				else
+				{
+					throw new ArgumentException(AssetTypeErrors.InvalidValue_includeFields);
 				}
 
 			}
