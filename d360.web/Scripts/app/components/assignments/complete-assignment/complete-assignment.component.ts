@@ -109,6 +109,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	hasForm: boolean;
 	isUserDataLoading: boolean = false;
 	isReassignmentAssetsLoading: boolean = false;
+	showAssignmentProgressOnly: boolean = false;
 
 	private linkInterceptorSubscription: Subscription;
 	private loadSub: Subscription;
@@ -116,7 +117,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isReassign: boolean = false;
 	isAdmin: boolean = false;
 	private receivedFormFields: WorkflowFormField[] = [];
-	isType: boolean = false;	
+	isType: boolean = false;
+	private hideSubmitButton: boolean = false;
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,
@@ -168,7 +170,9 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			} else {
 				this.radioSelectionValue = 'completeForm';
 			}
-			this.showBackButton = details.showBackButton ?? false
+			this.showBackButton = details.showBackButton ?? false;
+			this.hideSubmitButton = details.showAssignmentProgress ?? false;
+			this.showAssignmentProgressOnly = details.showAssignmentProgress ?? false;
 
 			this.stepUid = details.stepUid;
 			this.workflowItemUid = details.workflowItemUid;
@@ -179,15 +183,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
 			}			
-			if (this.isReassign) {
-				this.radioSelectionValue = 'reassignUser';
-			} else {
-				this.radioSelectionValue = 'completeForm';
-
-			}
-			this.stepUid = details.stepUid;
-
-			this.workflowItemUid = details.workflowItemUid;
 
 			if (details.resetSidePanel) {
 				//if we are coming from email link lets keep side panel closed

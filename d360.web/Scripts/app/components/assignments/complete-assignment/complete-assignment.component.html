@@ -15,7 +15,7 @@
 
 						<span class="title-emp"
 							  *ngIf="isBulkRespond && !isReassign && multiSubmitionItems.length > 1" i18n>Bulk Respond</span>
-						<span class="modal-buttons" *ngIf="!isBulkRespond && !isReassign">
+						<span class="modal-buttons" *ngIf="!isBulkRespond && !isReassign && !showAssignmentProgressOnly">
 							<button igButton
 									[ngClass]="
 									isAssignmentProgressSelected
@@ -309,6 +309,7 @@
 				</button>
 				<button class="right ig-button-primary"
 						igButton
+						*ngIf="!hideSubmitButton"
 						(click)="onFormSubmit()"
 						[attr.data-cy]="'CompleteAssignment_Button_Submit'"
 						[disabled]="(radioSelectionValue === 'completeForm' && !workflowForm?.valid) || (radioSelectionValue !== 'completeForm' && !tableRadioSelection || !hasForm)"
