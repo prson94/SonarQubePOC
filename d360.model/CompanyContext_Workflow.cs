@@ -2621,10 +2621,17 @@ namespace d360.model
 				bodyTemplate = bodyTemplate.SanitizeHtml();
 			}
 
-			string result = bodyTemplate;
+			//if we don't have any tokens return the body
+			if (!Regex.IsMatch(bodyTemplate, "\\[([A-Z]+_?)+([0-9.]*)\\]"))
+			{
+				return bodyTemplate;
+			}
 
-			//replace [OBJECT_NAME] with the object name            
-			if (result.Contains("[OBJECT_NAME]"))
+			StringBuilder sb = new StringBuilder(bodyTemplate);
+
+			Dictionary<string, string> tokenMap = new Dictionary<string, string>();
+						
+			if (bodyTemplate.Contains("[OBJECT_NAME]"))
 			{
 				ObjectDetail item = null;
 				if (obj == SystemObjects.Issue)
@@ -2656,10 +2663,10 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[OBJECT_NAME]", itemLink);
+				tokenMap.Add("[OBJECT_NAME]", itemLink);
 			}
 
-			if (result.Contains("[REL_OBJECT_NAME]"))
+			if (bodyTemplate.Contains("[REL_OBJECT_NAME]"))
 			{
 				string itemLink = "";
 
@@ -2684,10 +2691,10 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[REL_OBJECT_NAME]", itemLink);
+				tokenMap.Add("[REL_OBJECT_NAME]", itemLink);
 			}
 
-			if (result.Contains("[REL_SUBJECT_NAME]"))
+			if (bodyTemplate.Contains("[REL_SUBJECT_NAME]"))
 			{
 				string itemLink = "";
 
@@ -2712,10 +2719,10 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[REL_SUBJECT_NAME]", itemLink);
+				tokenMap.Add("[REL_SUBJECT_NAME]", itemLink);
 			}
 
-			if (result.Contains("[ACTION_DETAILS]"))
+			if (bodyTemplate.Contains("[ACTION_DETAILS]"))
 			{
 				//get the details of the issue and add them in
 				Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
@@ -2771,11 +2778,11 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[ACTION_DETAILS]", issueInfo.ToString());
+				tokenMap.Add("[REL_SUBJECT_NAME]", issueInfo.ToString());
 			}
 
 
-			if (result.Contains("[WORKFLOW_INITIATOR_UID]") || result.Contains("[WORKFLOW_INITIATOR_EMAIL]") || result.Contains("[WORKFLOW_INITIATOR]"))
+			if (bodyTemplate.Contains("[WORKFLOW_INITIATOR_UID]") || bodyTemplate.Contains("[WORKFLOW_INITIATOR_EMAIL]") || bodyTemplate.Contains("[WORKFLOW_INITIATOR]"))
 			{
 				Guid initiatorUid = Guid.Empty;
 				string initiatorEmail = "";
@@ -2793,13 +2800,13 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
-				result = result.Replace("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
-				result = result.Replace("[WORKFLOW_INITIATOR]", initiatorName);
+				tokenMap.Add("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
+				tokenMap.Add("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
+				tokenMap.Add("[WORKFLOW_INITIATOR]", initiatorName);
 			}
 
 			//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
-			if (result.Contains("[GOV_SCORE]") || result.Contains("[SCORE]"))
+			if (bodyTemplate.Contains("[GOV_SCORE]") || bodyTemplate.Contains("[SCORE]"))
 			{
 				ObjectDetail item = null;
 
@@ -2824,11 +2831,11 @@ namespace d360.model
 					score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
 				}
 
-				result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-				result = result.Replace("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+				tokenMap.Add("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+				tokenMap.Add("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
 			}
 
-			if (result.Contains("[DQ_SCORE]"))
+			if (bodyTemplate.Contains("[DQ_SCORE]"))
 			{
 				ObjectDetail item = null;
 
@@ -2853,10 +2860,10 @@ namespace d360.model
 					score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
 				}
 
-				result = result.Replace("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+				tokenMap.Add("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
 			}
 
-			if (result.Contains("[DQ_SCORE_PREV]"))
+			if (bodyTemplate.Contains("[DQ_SCORE_PREV]"))
 			{
 				ObjectDetail item = null;
 				if (obj == SystemObjects.Issue)
@@ -2880,10 +2887,10 @@ namespace d360.model
 					score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
 				}
 
-				result = result.Replace("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+				tokenMap.Add("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
 			}
 
-			if (result.Contains("[GOV_SCORE_PREV]"))
+			if (bodyTemplate.Contains("[GOV_SCORE_PREV]"))
 			{
 				ObjectDetail item = null;
 
@@ -2909,12 +2916,12 @@ namespace d360.model
 					score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
 				}
 
-				result = result.Replace("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+				tokenMap.Add("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
 			}
 
-			if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))
+			if (Regex.IsMatch(bodyTemplate, "\\[FIELD([0-9.]+)\\]"))
 			{
-				MatchCollection fields = Regex.Matches(result, "\\[FIELD([0-9.]+)\\]");
+				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[FIELD([0-9.]+)\\]");
 
 				foreach (object field in fields)
 				{
@@ -3061,13 +3068,13 @@ namespace d360.model
 						}
 					}
 
-					result = result.Replace(item, fieldValue);
+					tokenMap.Add(item, fieldValue);
 				}
 			}
 
-			if (Regex.IsMatch(result, "\\[JSON([0-9.]+)\\]"))
+			if (Regex.IsMatch(bodyTemplate, "\\[JSON([0-9.]+)\\]"))
 			{
-				MatchCollection fields = Regex.Matches(result, "\\[JSON([0-9.]+)\\]");
+				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[JSON([0-9.]+)\\]");
 
 				foreach (object field in fields)
 				{
@@ -3104,13 +3111,13 @@ namespace d360.model
 						}
 					}
 
-					result = result.Replace(item, fieldValue);
+					tokenMap.Add(item, fieldValue);
 				}
 			}
 
-			if (Regex.IsMatch(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
+			if (Regex.IsMatch(bodyTemplate, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
 			{
-				MatchCollection fields = Regex.Matches(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]");
+				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]");
 
 				foreach (object field in fields)
 				{
@@ -3136,10 +3143,10 @@ namespace d360.model
 							switch (property.ToUpperInvariant())
 							{
 								case "STATUSCODE":
-									result = result.Replace(item, response.Element("StatusCode")?.Value ?? "");
+									tokenMap.Add(item, response.Element("StatusCode")?.Value ?? "");
 									break;
 								case "RESPONSEBODY":
-									result = result.Replace(item, response.Element("Body")?.Value ?? "");
+									tokenMap.Add(item, response.Element("Body")?.Value ?? "");
 									break;
 								default:
 									//Do nothing.
@@ -3150,9 +3157,9 @@ namespace d360.model
 				}
 			}
 
-			if (Regex.IsMatch(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
+			if (Regex.IsMatch(bodyTemplate, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
 			{
-				MatchCollection fields = Regex.Matches(result, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]");
+				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]");
 
 				foreach (object field in fields)
 				{
@@ -3165,11 +3172,11 @@ namespace d360.model
 					string fieldId = fieldTypeIdStringitem.Split('|')[1];
 					int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
 
-					result = result.Replace(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
+					tokenMap.Add(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
 				}
 			}
 
-			if (result.Contains("[OBJECT_TYPE]"))
+			if (bodyTemplate.Contains("[OBJECT_TYPE]"))
 			{
 				string path = null;
 
@@ -3203,31 +3210,32 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[OBJECT_TYPE]", itemLink);
+				tokenMap.Add("[OBJECT_TYPE]", itemLink);
 			}
 
-			if (result.Contains("[WORKFLOW_STEP_ID]"))
+			if (bodyTemplate.Contains("[WORKFLOW_STEP_ID]"))
 			{
-				result = result.Replace("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
+				tokenMap.Add("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
 			}
 
-			if (result.Contains("[WORKFLOW_INSTANCE_ID]"))
+			if (bodyTemplate.Contains("[WORKFLOW_INSTANCE_ID]"))
 			{
-				result = result.Replace("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
+				tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
 			}
 
-			if (result.Contains("[WORKFLOW_ID]"))
+			if (bodyTemplate.Contains("[WORKFLOW_ID]"))
 			{
 				WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
 
 				if (versionStep != null)
 				{
 					WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
-					result = result.Replace("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
+
+					tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
 				}
 			}
 
-			if (result.Contains("[RECIPIENT_RESPONSIBILITY]"))
+			if (bodyTemplate.Contains("[RECIPIENT_RESPONSIBILITY]"))
 			{
 				string recipientResponsibility = "";
 				if (itemStep != null && itemStep.Step != null)
@@ -3239,11 +3247,11 @@ namespace d360.model
 						recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
 					}
 
-					result = result.Replace("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
+					tokenMap.Add("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
 				}
 			}
 
-			if (result.Contains("[RECIPIENT_TYPE]"))
+			if (bodyTemplate.Contains("[RECIPIENT_TYPE]"))
 			{
 				string recipientType = "";
 				if (itemStep != null && itemStep.Step != null)
@@ -3290,10 +3298,11 @@ namespace d360.model
 						}
 					}
 				}
-				result = result.Replace("[RECIPIENT_TYPE]", recipientType);
+
+				tokenMap.Add("[RECIPIENT_TYPE]", recipientType);
 			}
 
-			if (result.Contains("[ASSET_PATH]"))
+			if (bodyTemplate.Contains("[ASSET_PATH]"))
 			{
 
 				ObjectDetail item = null;
@@ -3315,10 +3324,10 @@ namespace d360.model
 
 				string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 
-				result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
+				tokenMap.Add("[ASSET_PATH]", path ?? "(unknown)");
 			}
 
-			if (result.Contains("[ASSET_UID]"))
+			if (bodyTemplate.Contains("[ASSET_UID]"))
 			{
 				string uid = null;
 
@@ -3355,10 +3364,10 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[ASSET_UID]", (uid ?? "(unknown item)"));
+				tokenMap.Add("[ASSET_UID]", (uid ?? "(unknown item)"));
 			}
 
-			if (result.Contains("[REL_SUBJECT_UID]"))
+			if (bodyTemplate.Contains("[REL_SUBJECT_UID]"))
 			{
 				string uid = null;
 
@@ -3376,10 +3385,10 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
+				tokenMap.Add("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
 			}
 
-			if (result.Contains("[REL_OBJECT_UID]"))
+			if (bodyTemplate.Contains("[REL_OBJECT_UID]"))
 			{
 				string uid = null;
 				if (obj == SystemObjects.Intersect)
@@ -3395,10 +3404,15 @@ namespace d360.model
 					}
 				}
 
-				result = result.Replace("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+				tokenMap.Add("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
 			}
 
-			return result;
+			foreach (string k in tokenMap.Keys)
+			{
+				sb.Replace(k, tokenMap[k]);
+			}
+
+			return sb.ToString();
 		}
 
 		public void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId)

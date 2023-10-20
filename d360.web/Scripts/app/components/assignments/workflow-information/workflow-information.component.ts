@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 
@@ -6,7 +6,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 	selector: 'd3s-workflow-information',
 	templateUrl: './workflow-information.component.html'
 })
-export class WorkflowInformationComponent {
+export class WorkflowInformationComponent implements OnChanges {
 
 	@Input() shouldBePadded: boolean = true;
 	@Input() showHeaderLine: boolean = true;
@@ -22,23 +22,21 @@ export class WorkflowInformationComponent {
 	uid: string = '00000000-0000-0000-0000-000000000000';
 	version: number;
 
-	@Input() set workflowTypeId(value: number) {
-		this.id = value;
-		this.getWorkflowTypeDetails();
-	}
+	@Input() workflowTypeId: number;
 
-	@Input() set workflowTypeUid(value: string) {
-		this.uid = value;
-		this.getWorkflowTypeDetails();
-	}
+	@Input() workflowTypeUid: string;
 
-	@Input() set workflowTypeVersion(value: number) {
-		this.version = value;
-		this.getWorkflowTypeDetails();
-	}
+	@Input() workflowTypeVersion: number;
 
 	constructor(private workflowService: WorkflowService) {
 	}
+
+    ngOnChanges(changes: SimpleChanges): void {
+		this.uid = this.workflowTypeUid ?? this.uid;
+		this.version = this.workflowTypeVersion ?? this.version;
+		this.id = this.workflowTypeId ?? this.id;
+		this.getWorkflowTypeDetails()
+    }
 
 	@HostListener('document:click', ['$event'])
 	clickedOutside(event: PointerEvent): void {

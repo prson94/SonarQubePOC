@@ -135,7 +135,7 @@ export class WorkflowService extends BaseObservableService {
 	}
 
 	getActions(actionUid?: string): Observable<Actions> {
-		return this.http.get('/api/v2/actions?' + (actionUid ? `actionUid=${actionUid}` : ''))
+		return this.http.get('/api/v2/actions?' + (actionUid ? `actionUid=${actionUid}&includeTotal=false` : ''))
 			.pipe(
 				map((response) => <Actions>response),
 				catchError((err) => this.handleError(err))
