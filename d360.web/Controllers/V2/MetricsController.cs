@@ -591,7 +591,19 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					effectiveDate = DateTime.UtcNow;
+					var maxEffectiveDate = Company.Query<DateTime?>(
+						"select max(EffectiveDate) from metrics.Score s inner join metrics.Allocation a on a.Uid = s.AllocationUid and a.ScoreType = @scoreType and s.AssetUid = @assetUid",
+						new { assetUid, scoreType = (int)scoreType }
+					).FirstOrDefault();
+					if (maxEffectiveDate.HasValue)
+					{
+						effectiveDate = maxEffectiveDate.Value;
+					}
+					else
+					{
+						effectiveDate = DateTime.UtcNow;
+					}
+					
 				}
 
 				var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();

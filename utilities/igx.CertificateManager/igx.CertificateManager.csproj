@@ -41,7 +41,7 @@
     <StartupObject>igx.CertificateManager.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\favicon.ico</ApplicationIcon>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -63,6 +63,7 @@
     <Compile Include="AddSsoCertificate.Designer.cs">
       <DependentUpon>AddSsoCertificate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\CertificateExportModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="AddSsoCertificate.resx">
@@ -107,6 +108,9 @@
     <PackageReference Include="Dapper">
       <Version>2.0.143</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="favicon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

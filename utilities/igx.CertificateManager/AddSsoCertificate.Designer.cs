@@ -58,15 +58,18 @@
             this.Level = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.UrlPrefix = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.chkAutoProvision = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.grpStatus = new System.Windows.Forms.GroupBox();
-            this.chkAutoProvision = new System.Windows.Forms.CheckBox();
+            this.btnDownloadCertificate = new System.Windows.Forms.Button();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             ((System.ComponentModel.ISupportInitialize)(this.dsClient)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable2)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.grpStatus.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // openFileDialog1
@@ -75,9 +78,10 @@
             // 
             // btnFindCertificate
             // 
-            this.btnFindCertificate.Location = new System.Drawing.Point(6, 30);
+            this.btnFindCertificate.Location = new System.Drawing.Point(12, 58);
+            this.btnFindCertificate.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.btnFindCertificate.Name = "btnFindCertificate";
-            this.btnFindCertificate.Size = new System.Drawing.Size(128, 24);
+            this.btnFindCertificate.Size = new System.Drawing.Size(256, 46);
             this.btnFindCertificate.TabIndex = 0;
             this.btnFindCertificate.Text = "Find Certificate File";
             this.btnFindCertificate.UseVisualStyleBackColor = true;
@@ -85,66 +89,74 @@
             // 
             // lblFileName
             // 
-            this.lblFileName.Location = new System.Drawing.Point(9, 57);
+            this.lblFileName.Location = new System.Drawing.Point(18, 110);
+            this.lblFileName.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblFileName.Name = "lblFileName";
-            this.lblFileName.Size = new System.Drawing.Size(251, 27);
+            this.lblFileName.Size = new System.Drawing.Size(502, 52);
             this.lblFileName.TabIndex = 1;
             // 
             // lblSsoEndpoint
             // 
             this.lblSsoEndpoint.AutoSize = true;
-            this.lblSsoEndpoint.Location = new System.Drawing.Point(4, 201);
+            this.lblSsoEndpoint.Location = new System.Drawing.Point(8, 387);
+            this.lblSsoEndpoint.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblSsoEndpoint.Name = "lblSsoEndpoint";
-            this.lblSsoEndpoint.Size = new System.Drawing.Size(90, 13);
+            this.lblSsoEndpoint.Size = new System.Drawing.Size(180, 25);
             this.lblSsoEndpoint.TabIndex = 6;
             this.lblSsoEndpoint.Text = "SSO Endpoint Url";
             // 
             // lblSloEndpoint
             // 
             this.lblSloEndpoint.AutoSize = true;
-            this.lblSloEndpoint.Location = new System.Drawing.Point(3, 258);
+            this.lblSloEndpoint.Location = new System.Drawing.Point(6, 496);
+            this.lblSloEndpoint.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblSloEndpoint.Name = "lblSloEndpoint";
-            this.lblSloEndpoint.Size = new System.Drawing.Size(89, 13);
+            this.lblSloEndpoint.Size = new System.Drawing.Size(178, 25);
             this.lblSloEndpoint.TabIndex = 7;
             this.lblSloEndpoint.Text = "SLO Endpoint Url";
             // 
             // txtFriendlyName
             // 
-            this.txtFriendlyName.Location = new System.Drawing.Point(6, 162);
+            this.txtFriendlyName.Location = new System.Drawing.Point(12, 312);
+            this.txtFriendlyName.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtFriendlyName.MaxLength = 250;
             this.txtFriendlyName.Name = "txtFriendlyName";
-            this.txtFriendlyName.Size = new System.Drawing.Size(254, 20);
+            this.txtFriendlyName.Size = new System.Drawing.Size(504, 31);
             this.txtFriendlyName.TabIndex = 4;
             // 
             // lblCertificateName
             // 
             this.lblCertificateName.AutoSize = true;
-            this.lblCertificateName.Location = new System.Drawing.Point(3, 146);
+            this.lblCertificateName.Location = new System.Drawing.Point(6, 281);
+            this.lblCertificateName.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblCertificateName.Name = "lblCertificateName";
-            this.lblCertificateName.Size = new System.Drawing.Size(124, 13);
+            this.lblCertificateName.Size = new System.Drawing.Size(254, 25);
             this.lblCertificateName.TabIndex = 5;
             this.lblCertificateName.Text = "Certificate Friendly Name";
             // 
             // txtSsoEndpoint
             // 
-            this.txtSsoEndpoint.Location = new System.Drawing.Point(6, 217);
+            this.txtSsoEndpoint.Location = new System.Drawing.Point(12, 417);
+            this.txtSsoEndpoint.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtSsoEndpoint.Name = "txtSsoEndpoint";
-            this.txtSsoEndpoint.Size = new System.Drawing.Size(254, 20);
+            this.txtSsoEndpoint.Size = new System.Drawing.Size(504, 31);
             this.txtSsoEndpoint.TabIndex = 8;
             // 
             // txtSloEndpoint
             // 
-            this.txtSloEndpoint.Location = new System.Drawing.Point(7, 273);
+            this.txtSloEndpoint.Location = new System.Drawing.Point(14, 525);
+            this.txtSloEndpoint.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.txtSloEndpoint.Name = "txtSloEndpoint";
-            this.txtSloEndpoint.Size = new System.Drawing.Size(253, 20);
+            this.txtSloEndpoint.Size = new System.Drawing.Size(502, 31);
             this.txtSloEndpoint.TabIndex = 9;
             // 
             // chkSignRequest
             // 
             this.chkSignRequest.AutoSize = true;
-            this.chkSignRequest.Location = new System.Drawing.Point(139, 113);
+            this.chkSignRequest.Location = new System.Drawing.Point(278, 217);
+            this.chkSignRequest.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.chkSignRequest.Name = "chkSignRequest";
-            this.chkSignRequest.Size = new System.Drawing.Size(121, 17);
+            this.chkSignRequest.Size = new System.Drawing.Size(235, 29);
             this.chkSignRequest.TabIndex = 10;
             this.chkSignRequest.Text = "Sign SSO Request?";
             this.chkSignRequest.UseVisualStyleBackColor = true;
@@ -152,9 +164,10 @@
             // lblHashType
             // 
             this.lblHashType.AutoSize = true;
-            this.lblHashType.Location = new System.Drawing.Point(9, 95);
+            this.lblHashType.Location = new System.Drawing.Point(18, 183);
+            this.lblHashType.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblHashType.Name = "lblHashType";
-            this.lblHashType.Size = new System.Drawing.Size(105, 13);
+            this.lblHashType.Size = new System.Drawing.Size(212, 25);
             this.lblHashType.TabIndex = 11;
             this.lblHashType.Text = "Hash Algorithm Type";
             // 
@@ -167,17 +180,19 @@
             "SHA224",
             "SHA384",
             "SHA512"});
-            this.ddlHashType.Location = new System.Drawing.Point(6, 111);
+            this.ddlHashType.Location = new System.Drawing.Point(12, 213);
+            this.ddlHashType.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.ddlHashType.Name = "ddlHashType";
-            this.ddlHashType.Size = new System.Drawing.Size(127, 21);
+            this.ddlHashType.Size = new System.Drawing.Size(250, 33);
             this.ddlHashType.TabIndex = 12;
             // 
             // btnSave
             // 
             this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnSave.Location = new System.Drawing.Point(8, 314);
+            this.btnSave.Location = new System.Drawing.Point(16, 604);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.Size = new System.Drawing.Size(150, 44);
             this.btnSave.TabIndex = 13;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
@@ -186,9 +201,10 @@
             // lblStatus
             // 
             this.lblStatus.AutoEllipsis = true;
-            this.lblStatus.Location = new System.Drawing.Point(7, 16);
+            this.lblStatus.Location = new System.Drawing.Point(14, 31);
+            this.lblStatus.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(550, 36);
+            this.lblStatus.Size = new System.Drawing.Size(1100, 69);
             this.lblStatus.TabIndex = 14;
             // 
             // ddlClient
@@ -196,9 +212,10 @@
             this.ddlClient.DataSource = this.dsClient;
             this.ddlClient.DisplayMember = "Table1.Name";
             this.ddlClient.FormattingEnabled = true;
-            this.ddlClient.Location = new System.Drawing.Point(6, 42);
+            this.ddlClient.Location = new System.Drawing.Point(12, 81);
+            this.ddlClient.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.ddlClient.Name = "ddlClient";
-            this.ddlClient.Size = new System.Drawing.Size(282, 21);
+            this.ddlClient.Size = new System.Drawing.Size(560, 33);
             this.ddlClient.TabIndex = 15;
             this.ddlClient.ValueMember = "Table1.ID";
             this.ddlClient.SelectedIndexChanged += new System.EventHandler(this.ddlClient_SelectedIndexChanged);
@@ -245,18 +262,20 @@
             // lblClient
             // 
             this.lblClient.AutoSize = true;
-            this.lblClient.Location = new System.Drawing.Point(6, 23);
+            this.lblClient.Location = new System.Drawing.Point(12, 44);
+            this.lblClient.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblClient.Name = "lblClient";
-            this.lblClient.Size = new System.Drawing.Size(33, 13);
+            this.lblClient.Size = new System.Drawing.Size(67, 25);
             this.lblClient.TabIndex = 16;
             this.lblClient.Text = "Client";
             // 
             // lblEnvironment
             // 
             this.lblEnvironment.AutoSize = true;
-            this.lblEnvironment.Location = new System.Drawing.Point(6, 84);
+            this.lblEnvironment.Location = new System.Drawing.Point(12, 162);
+            this.lblEnvironment.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.lblEnvironment.Name = "lblEnvironment";
-            this.lblEnvironment.Size = new System.Drawing.Size(66, 13);
+            this.lblEnvironment.Size = new System.Drawing.Size(132, 25);
             this.lblEnvironment.TabIndex = 17;
             this.lblEnvironment.Text = "Environment";
             // 
@@ -267,9 +286,11 @@
             this.ID,
             this.Level,
             this.UrlPrefix});
-            this.lstEnvironment.Location = new System.Drawing.Point(9, 100);
+            this.lstEnvironment.HideSelection = false;
+            this.lstEnvironment.Location = new System.Drawing.Point(18, 192);
+            this.lstEnvironment.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.lstEnvironment.Name = "lstEnvironment";
-            this.lstEnvironment.Size = new System.Drawing.Size(279, 165);
+            this.lstEnvironment.Size = new System.Drawing.Size(554, 314);
             this.lstEnvironment.TabIndex = 19;
             this.lstEnvironment.UseCompatibleStateImageBehavior = false;
             this.lstEnvironment.View = System.Windows.Forms.View.Details;
@@ -291,12 +312,27 @@
             this.groupBox1.Controls.Add(this.lstEnvironment);
             this.groupBox1.Controls.Add(this.lblClient);
             this.groupBox1.Controls.Add(this.lblEnvironment);
-            this.groupBox1.Location = new System.Drawing.Point(8, 30);
+            this.groupBox1.Location = new System.Drawing.Point(16, 58);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(294, 271);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox1.Size = new System.Drawing.Size(588, 521);
             this.groupBox1.TabIndex = 20;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "1. Client and Environments";
+            // 
+            // chkAutoProvision
+            // 
+            this.chkAutoProvision.AutoSize = true;
+            this.chkAutoProvision.Checked = true;
+            this.chkAutoProvision.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAutoProvision.Location = new System.Drawing.Point(378, 154);
+            this.chkAutoProvision.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.chkAutoProvision.Name = "chkAutoProvision";
+            this.chkAutoProvision.Size = new System.Drawing.Size(194, 29);
+            this.chkAutoProvision.TabIndex = 20;
+            this.chkAutoProvision.Text = "Auto-provision?";
+            this.chkAutoProvision.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
@@ -313,9 +349,11 @@
             this.groupBox2.Controls.Add(this.chkSignRequest);
             this.groupBox2.Controls.Add(this.lblSloEndpoint);
             this.groupBox2.Controls.Add(this.txtSloEndpoint);
-            this.groupBox2.Location = new System.Drawing.Point(308, 30);
+            this.groupBox2.Location = new System.Drawing.Point(616, 58);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(266, 307);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox2.Size = new System.Drawing.Size(532, 590);
             this.groupBox2.TabIndex = 21;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "2. Certificate Information";
@@ -325,35 +363,48 @@
             this.grpStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grpStatus.Controls.Add(this.lblStatus);
-            this.grpStatus.Location = new System.Drawing.Point(8, 343);
+            this.grpStatus.Location = new System.Drawing.Point(16, 660);
+            this.grpStatus.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.grpStatus.Name = "grpStatus";
-            this.grpStatus.Size = new System.Drawing.Size(566, 67);
+            this.grpStatus.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.grpStatus.Size = new System.Drawing.Size(1419, 129);
             this.grpStatus.TabIndex = 22;
             this.grpStatus.TabStop = false;
             this.grpStatus.Text = "Status: ";
             // 
-            // chkAutoProvision
+            // btnDownloadCertificate
             // 
-            this.chkAutoProvision.AutoSize = true;
-            this.chkAutoProvision.Checked = true;
-            this.chkAutoProvision.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkAutoProvision.Location = new System.Drawing.Point(189, 80);
-            this.chkAutoProvision.Name = "chkAutoProvision";
-            this.chkAutoProvision.Size = new System.Drawing.Size(99, 17);
-            this.chkAutoProvision.TabIndex = 20;
-            this.chkAutoProvision.Text = "Auto-provision?";
-            this.chkAutoProvision.UseVisualStyleBackColor = true;
+            this.btnDownloadCertificate.Location = new System.Drawing.Point(24, 54);
+            this.btnDownloadCertificate.Margin = new System.Windows.Forms.Padding(6);
+            this.btnDownloadCertificate.Name = "btnDownloadCertificate";
+            this.btnDownloadCertificate.Size = new System.Drawing.Size(205, 46);
+            this.btnDownloadCertificate.TabIndex = 13;
+            this.btnDownloadCertificate.Text = "Download Certs";
+            this.btnDownloadCertificate.UseVisualStyleBackColor = true;
+            this.btnDownloadCertificate.Click += new System.EventHandler(this.btnDownloadCertificate_Click);
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.btnDownloadCertificate);
+            this.groupBox3.Location = new System.Drawing.Point(1167, 62);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(268, 586);
+            this.groupBox3.TabIndex = 23;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Global Options";
             // 
             // AddSsoCertificate
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(586, 424);
+            this.ClientSize = new System.Drawing.Size(1459, 815);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.grpStatus);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.btnSave);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "AddSsoCertificate";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Add SSO Settings";
@@ -366,6 +417,7 @@
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.grpStatus.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -404,5 +456,7 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox grpStatus;
         private System.Windows.Forms.CheckBox chkAutoProvision;
-    }
+		private System.Windows.Forms.Button btnDownloadCertificate;
+		private System.Windows.Forms.GroupBox groupBox3;
+	}
 }
