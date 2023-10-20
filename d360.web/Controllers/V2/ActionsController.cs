@@ -69,7 +69,7 @@ namespace d360.web.Controllers.V2
 		   SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 	   ]
-		public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string actionUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc")
+		public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string actionUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc", bool includeTotal = true)
 		{
 			List<string> selectColumns = new List<string>() {
 				"I.Uid", "I.CompletedOn",
@@ -292,13 +292,16 @@ namespace d360.web.Controllers.V2
 			}
 
 			string resultsSql = $"select {columns} from Issue I {joins} {conditions} order by {_order} {_direction} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-			string countSql = $"select count(*) from Issue I {joins} {conditions}";
-
+			
 			#endregion
-
-			var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
-			var results = await Company.QueryAsync<dynamic>(resultsSql, dbArgs, ApiTimeout);
-			model.total = count.FirstOrDefault();
+			if (includeTotal)
+			{
+				string countSql = $"select count(*) from Issue I {joins} {conditions}";
+				var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
+				model.total = count.FirstOrDefault();
+			}
+			
+			var results = await Company.QueryAsync<dynamic>(resultsSql, dbArgs, ApiTimeout);			
 			model.items = results;
 
 			return Ok(model);

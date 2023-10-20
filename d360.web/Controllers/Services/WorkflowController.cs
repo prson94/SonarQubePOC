@@ -3589,8 +3589,7 @@ namespace d360.web.Controllers.Services
 		{
 			if (itemStepUid == null || itemStepUid == Guid.Empty)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));
-				//return Request.CreateResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));				
+				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(ApiMessages.InvalidGuid, itemStepUid));				
 			}
 
 			var itemStepId = Company.WorkflowItemSteps.Where(wis => wis.UID == itemStepUid).Select(s => s.ID).FirstOrDefault();
