@@ -31,7 +31,7 @@ export class WorkflowInformationComponent implements OnChanges {
 	constructor(private workflowService: WorkflowService) {
 	}
 
-    ngOnChanges(changes: SimpleChanges): void {
+    ngOnChanges(): void {
 		this.uid = this.workflowTypeUid ?? this.uid;
 		this.version = this.workflowTypeVersion ?? this.version;
 		this.id = this.workflowTypeId ?? this.id;
