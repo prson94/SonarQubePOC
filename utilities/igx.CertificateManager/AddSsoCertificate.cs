@@ -1,10 +1,12 @@
 ﻿using d360.core.enums;
 using Dapper;
+using igx.CertificateManager.Models;
 using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace igx.CertificateManager
@@ -170,5 +172,58 @@ namespace igx.CertificateManager
                 }
             }
         }
-    }
+
+		private void btnDownloadCertificate_Click(object sender, EventArgs e)
+		{
+			btnDownloadCertificate.Enabled = false;
+			lblStatus.Text = "Downloading...";
+
+			string sql = @"
+select	idp.HashAlgorithmType,
+		idp.SignInitialSSORequest,
+		idp.IdpSloEndpoint,
+		idp.IdpSsoEndpoint,
+		ic.Name as IcName,
+		ic.ID as IcId,
+		ic.[File] as IcFile,
+		u.UrlPrefix
+from	DomainSetting idp 
+		left join DomainCertificate ic on ic.ID = idp.IdpDomainCertificateID
+		left join DomainCertificate sc on sc.ID = idp.SpDomainCertificateID
+		inner join CompanyDomainSetting u on u.DomainSettingID = idp.ID and u.IsPrimary = 1 and u.AuthenticationType = 2
+		inner join Company c on c.ID = u.CompanyID and c.Status = 'Active'";
+
+
+			var dir = Directory.CreateDirectory($"Certificates on {DateTime.Now:yyMMdd-HHmmss}");
+
+			var cnn = new SqlConnection(connectionString);
+			cnn.Open();
+			var certs = cnn.Query<CertificateExportModel>(sql).GroupBy(c => new { c.IcId, c.IcName }).ToList();
+			certs.ForEach(c =>
+			{
+				var idDir = dir.CreateSubdirectory($"{c.Key.IcName} (ID {c.Key.IcId})");
+				//var certStream = File.Create($"{idDir.FullName}\\$\"{{c.Key.IcName}}.cer");
+				//certStream.Write(c.First().IcFile, 0, c.First().IcFile.Length - 1);
+				var certPath = Path.Combine(idDir.FullName, $"{c.Key.IcName}.cer");
+				if (c.First().IcFile != null)
+				{ 
+					File.WriteAllBytes(certPath, c.First().IcFile);
+				}
+				
+				c.ToList().ForEach(u => {
+					var infoPath = Path.Combine(idDir.FullName, $"{u.UrlPrefix}.txt");
+					File.WriteAllText(
+						infoPath, 
+						$"SSO Endpoint: {u.IdpSsoEndpoint}\n" +
+						$"SLO Endpoint: {u.IdpSloEndpoint}\n" +
+						$"Hash Algorithm: {u.HashAlgorithmType}\n" +
+						$"Sign Request: {u.SignInitialSSORequest}"
+					);
+				});
+			});
+
+			lblStatus.Text = $"Path at: {dir.Name}";
+			btnDownloadCertificate.Enabled = true;
+		}
+	}
 }
