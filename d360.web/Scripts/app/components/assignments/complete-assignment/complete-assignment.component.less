@@ -102,6 +102,11 @@
   width: -webkit-fill-available !important;
 }
 
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host ::ng-deep .modal-overlay .modal-dialog .content {
+  overflow: hidden !important;
+}
+
 .action-bar{
   height: 80px;
 }
@@ -119,4 +124,9 @@
     width: 300px;
     max-width: 300px;    
   }
+}
+
+.ig-form-feedback-badges {
+  height: 1em;
+  padding-bottom:0.1px;
 }

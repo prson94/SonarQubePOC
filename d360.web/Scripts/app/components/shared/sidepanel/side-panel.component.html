@@ -1,5 +1,5 @@
 ﻿<div *ngIf="expanded === false">
-    <div class="collapsed-panel" [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'">        
+    <div class="collapsed-panel" [ngClass]="isSecondarySidePanel ? 'side-panel-top-spacing' : 'side-panel-container'">        
         <button *ngFor="let b of visibleButtons"
                 igButton
                 [disabled]="b.disabled"
