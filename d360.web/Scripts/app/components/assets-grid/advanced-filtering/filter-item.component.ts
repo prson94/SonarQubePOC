@@ -237,7 +237,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	filterTable($event: any) {
-		this.currentField.Values=[];
+		this.currentField.Values = [];
 		this.dataTable.filterGlobal($event, 'contains');
 	}
 
@@ -300,7 +300,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			console.warn(ex);
 			this.selectionScrollHeight = "320px";
 		}
-		this.cdRef.markForCheck();
+		this.updateDynamicHeight();
 	}
 
 	removePositionStyling() {
@@ -310,6 +310,16 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 		selectionElement.style.removeProperty("left");
 		const fieldSelectionElement = html.getElementsByClassName("field-selection")[0] as HTMLElement;
 		fieldSelectionElement.style.removeProperty("left");
+	}
+
+	updateDynamicHeight(): void {
+		const html: HTMLElement = this.elRef.nativeElement as HTMLElement;
+		const scrollWrapper: HTMLElement = html.getElementsByClassName('p-datatable-wrapper')[0] as HTMLElement;
+		const pScroller: HTMLElement = scrollWrapper?.getElementsByClassName('p-scroller')[0] as HTMLElement;
+		if (pScroller?.style.height !== this.selectionScrollHeight) {
+			pScroller.style.height = this.selectionScrollHeight;
+			this.cdRef.markForCheck();
+		}
 	}
 
 	updateDynamicWidths() {
