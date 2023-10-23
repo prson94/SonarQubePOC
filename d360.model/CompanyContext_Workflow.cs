@@ -25,7 +25,6 @@ using Dapper;
 using DocumentFormat.OpenXml.Drawing.Diagrams;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -2620,9 +2619,11 @@ namespace d360.model
 			{
 				bodyTemplate = bodyTemplate.SanitizeHtml();
 			}
+			
+			List<string> tokens = Regex.Matches(bodyTemplate, "\\[([A-Z]+_?\\|?)+([0-9.]*)\\|?([a-zA-Z]*)\\]").OfType<Match>().Select(m => m.Value).Distinct().ToList();			
 
 			//if we don't have any tokens return the body
-			if (!Regex.IsMatch(bodyTemplate, "\\[([A-Z]+_?)+([0-9.]*)\\]"))
+			if (!tokens.Any())
 			{
 				return bodyTemplate;
 			}
@@ -2630,430 +2631,435 @@ namespace d360.model
 			StringBuilder sb = new StringBuilder(bodyTemplate);
 
 			Dictionary<string, string> tokenMap = new Dictionary<string, string>();
-						
-			if (bodyTemplate.Contains("[OBJECT_NAME]"))
-			{
-				ObjectDetail item = null;
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-					if (issue != null)
+			
+			foreach(var token in tokens)
+			{				
+				if(token == "[OBJECT_NAME]")
+				{
+					ObjectDetail item = null;
+					if (obj == SystemObjects.Issue)
 					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-				string itemLink = "(unknown item)";
-
-				if (item != null)
-				{
-					if (supportHtml)
-					{
-						itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+						if (issue != null)
+						{
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						}
 					}
 					else
 					{
-						itemLink = item.Name;
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
 					}
-				}
 
-				tokenMap.Add("[OBJECT_NAME]", itemLink);
-			}
-
-			if (bodyTemplate.Contains("[REL_OBJECT_NAME]"))
-			{
-				string itemLink = "";
-
-				if (obj == SystemObjects.Intersect)
-				{
-					Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-					if (intersect != null)
-					{
-						var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
-						if (assetDetail != null)
-						{
-							if (supportHtml)
-							{
-								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
-							}
-							else
-							{
-								itemLink = assetDetail.DisplayValue;
-							}
-						}
-					}
-				}
-
-				tokenMap.Add("[REL_OBJECT_NAME]", itemLink);
-			}
-
-			if (bodyTemplate.Contains("[REL_SUBJECT_NAME]"))
-			{
-				string itemLink = "";
-
-				if (obj == SystemObjects.Intersect)
-				{
-					Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-					if (intersect != null)
-					{
-						var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
-						if (assetDetail != null)
-						{
-							if (supportHtml)
-							{
-								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
-							}
-							else
-							{
-								itemLink = assetDetail.DisplayValue;
-							}
-						}
-					}
-				}
-
-				tokenMap.Add("[REL_SUBJECT_NAME]", itemLink);
-			}
-
-			if (bodyTemplate.Contains("[ACTION_DETAILS]"))
-			{
-				//get the details of the issue and add them in
-				Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-				var issueInfo = new StringBuilder();
-				issueInfo.Append("(unknown)");
-
-				if (issue != null)
-				{
-					ObjectDetail item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+					string itemLink = "(unknown item)";
 
 					if (item != null)
 					{
-						issueInfo.Clear();
-						issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.");
-					}
-
-					GlobalReportingResource creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
-
-					if (creator != null)
-					{
-						issueInfo.Append($"<br>Created By <b>{creator.FullName}</b>");
-					}
-
-					//get any field values for this issue
-					IOrderedQueryable<FieldType> fieldTypes = FieldTypes
-						.Where(x => x.IssueTypeID == issue.IssueTypeID)
-						.OrderBy(x => x.ColumnOrder)
-						.ThenBy(x => x.FriendlyName);
-
-					IQueryable<Field> fieldValues = Fields.Where(x => x.IssueID == issue.ID);
-
-					foreach (FieldType fieldType in fieldTypes)
-					{
-						Field field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-						if (field != null)
+						if (supportHtml)
 						{
-							string type = fieldType.Type;
-							string ConvertFormattedValue;
-
-							if (type == "Date" || type == "DateTime")
-							{
-								ConvertFormattedValue = GetDisplayDateTimeValue(type, field.FormattedValue);
-							}
-							else
-							{
-								ConvertFormattedValue = field.FormattedValue;
-							}
-
-							issueInfo.Append($"<br><b>{fieldType.FriendlyName}</b>: {ConvertFormattedValue}");
+							itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+						}
+						else
+						{
+							itemLink = item.Name;
 						}
 					}
+
+					tokenMap.Add("[OBJECT_NAME]", itemLink);
 				}
 
-				tokenMap.Add("[REL_SUBJECT_NAME]", issueInfo.ToString());
-			}
-
-
-			if (bodyTemplate.Contains("[WORKFLOW_INITIATOR_UID]") || bodyTemplate.Contains("[WORKFLOW_INITIATOR_EMAIL]") || bodyTemplate.Contains("[WORKFLOW_INITIATOR]"))
-			{
-				Guid initiatorUid = Guid.Empty;
-				string initiatorEmail = "";
-				string initiatorName = "unknown user";
-
-				if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+				if (token == "[REL_OBJECT_NAME]")
 				{
-					GlobalReportingResource user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+					string itemLink = "";
 
-					if (user != null)
+					if (obj == SystemObjects.Intersect)
 					{
-						initiatorUid = user.Uid;
-						initiatorEmail = user.Email;
-						initiatorName = user.FullName;
-					}
-				}
+						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
-				tokenMap.Add("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
-				tokenMap.Add("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
-				tokenMap.Add("[WORKFLOW_INITIATOR]", initiatorName);
-			}
-
-			//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
-			if (bodyTemplate.Contains("[GOV_SCORE]") || bodyTemplate.Contains("[SCORE]"))
-			{
-				ObjectDetail item = null;
-
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					if (issue != null)
-					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
-				decimal? score = null;
-
-				if (item != null && item.AssetID.HasValue)
-				{
-					score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
-				}
-
-				tokenMap.Add("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-				tokenMap.Add("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-			}
-
-			if (bodyTemplate.Contains("[DQ_SCORE]"))
-			{
-				ObjectDetail item = null;
-
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					if (issue != null)
-					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
-				decimal? score = null;
-
-				if (item != null && item.AssetID.HasValue)
-				{
-					score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
-				}
-
-				tokenMap.Add("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-			}
-
-			if (bodyTemplate.Contains("[DQ_SCORE_PREV]"))
-			{
-				ObjectDetail item = null;
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					if (issue != null)
-					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
-				decimal? score = null;
-
-				if (item != null && item.AssetID.HasValue)
-				{
-					score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
-				}
-
-				tokenMap.Add("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
-			}
-
-			if (bodyTemplate.Contains("[GOV_SCORE_PREV]"))
-			{
-				ObjectDetail item = null;
-
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					if (issue != null)
-					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
-
-				decimal? score = null;
-
-				if (item != null && item.AssetID.HasValue)
-				{
-					score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
-				}
-
-				tokenMap.Add("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
-			}
-
-			if (Regex.IsMatch(bodyTemplate, "\\[FIELD([0-9.]+)\\]"))
-			{
-				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[FIELD([0-9.]+)\\]");
-
-				foreach (object field in fields)
-				{
-					string item = field.ToString();
-
-
-					string fieldIdStringitem = item.Replace("[FIELD", "");
-					fieldIdStringitem = fieldIdStringitem.Replace("]", "");
-
-					int.TryParse(fieldIdStringitem, out int fieldId);
-
-					string fieldValue = "";
-
-					if (fieldId > 0)
-					{
-						//logic still uses objectId and in case of asset we needs to fetch assetid
-						var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x => x.ID).FirstOrDefault();
-						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
-
-						//If there is no field and type is Issue, this might be asset field
-						if (fieldRecord == null && obj == SystemObjects.Issue)
+						if (intersect != null)
 						{
-							Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
-							if (issue?.AssetID != null)
+							var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+							if (assetDetail != null)
 							{
-								fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-							}
-						}
-
-						if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
-						{
-							Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-							if (intersect != null)
-							{
-								Field ofieldRecord = Fields.Where(x => x.AssetID == intersect.ObjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-
-								if (ofieldRecord != null)
+								if (supportHtml)
 								{
-									fieldValue = ofieldRecord.FormattedValue;
+									itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
 								}
-
-								Field sfieldRecord = Fields.Where(x => x.AssetID == intersect.SubjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-
-								if (!string.IsNullOrEmpty(fieldValue))
+								else
 								{
-									fieldValue += " ";
-								}
-
-								if (sfieldRecord != null)
-								{
-									fieldValue = sfieldRecord.FormattedValue;
+									itemLink = assetDetail.DisplayValue;
 								}
 							}
 						}
+					}
 
-						if (fieldRecord != null)
+					tokenMap.Add("[REL_OBJECT_NAME]", itemLink);
+				}
+
+				if (token == "[REL_SUBJECT_NAME]")
+				{
+					string itemLink = "";
+
+					if (obj == SystemObjects.Intersect)
+					{
+						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+						if (intersect != null)
 						{
-							FieldType fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
-
-							if (fieldType != null)
+							var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+							if (assetDetail != null)
 							{
-								DateTime dateValue;
+								if (supportHtml)
+								{
+									itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
+								}
+								else
+								{
+									itemLink = assetDetail.DisplayValue;
+								}
+							}
+						}
+					}
+
+					tokenMap.Add("[REL_SUBJECT_NAME]", itemLink);
+				}
+
+				if (token == "[ACTION_DETAILS]")
+				{
+					//get the details of the issue and add them in
+					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+					var issueInfo = new StringBuilder();
+					issueInfo.Append("(unknown)");
+
+					if (issue != null)
+					{
+						ObjectDetail item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+
+						if (item != null)
+						{
+							issueInfo.Clear();
+							issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.");
+						}
+
+						GlobalReportingResource creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
+
+						if (creator != null)
+						{
+							issueInfo.Append($"<br>Created By <b>{creator.FullName}</b>");
+						}
+
+						//get any field values for this issue
+						IOrderedQueryable<FieldType> fieldTypes = FieldTypes
+							.Where(x => x.IssueTypeID == issue.IssueTypeID)
+							.OrderBy(x => x.ColumnOrder)
+							.ThenBy(x => x.FriendlyName);
+
+						IQueryable<Field> fieldValues = Fields.Where(x => x.IssueID == issue.ID);
+
+						foreach (FieldType fieldType in fieldTypes)
+						{
+							Field field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+							if (field != null)
+							{
 								string type = fieldType.Type;
+								string ConvertFormattedValue;
 
-								if (type == "Date")
+								if (type == "Date" || type == "DateTime")
 								{
-									if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
+									ConvertFormattedValue = GetDisplayDateTimeValue(type, field.FormattedValue);
+								}
+								else
+								{
+									ConvertFormattedValue = field.FormattedValue;
+								}
+
+								issueInfo.Append($"<br><b>{fieldType.FriendlyName}</b>: {ConvertFormattedValue}");
+							}
+						}
+					}
+
+					tokenMap.Add("[REL_SUBJECT_NAME]", issueInfo.ToString());
+				}
+
+
+				if (token == "[WORKFLOW_INITIATOR_UID]" || token == "[WORKFLOW_INITIATOR_EMAIL]" || token == "[WORKFLOW_INITIATOR]")
+				{
+					Guid initiatorUid = Guid.Empty;
+					string initiatorEmail = "";
+					string initiatorName = "unknown user";
+
+					if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+					{
+						GlobalReportingResource user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+
+						if (user != null)
+						{
+							initiatorUid = user.Uid;
+							initiatorEmail = user.Email;
+							initiatorName = user.FullName;
+						}
+					}
+
+					tokenMap.Add("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
+					tokenMap.Add("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
+					tokenMap.Add("[WORKFLOW_INITIATOR]", initiatorName);
+				}
+
+				//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
+				if (token == "[GOV_SCORE]" || token == "[SCORE]")
+				{
+					ObjectDetail item = null;
+
+					if (obj == SystemObjects.Issue)
+					{
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						if (issue != null)
+						{
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						}
+					}
+					else
+					{
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
+					}
+					decimal? score = null;
+
+					if (item != null && item.AssetID.HasValue)
+					{
+						score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
+					}
+
+					tokenMap.Add("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+					tokenMap.Add("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+				}
+
+				if (token == "[DQ_SCORE]")
+				{
+					ObjectDetail item = null;
+
+					if (obj == SystemObjects.Issue)
+					{
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						if (issue != null)
+						{
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						}
+					}
+					else
+					{
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
+					}
+					decimal? score = null;
+
+					if (item != null && item.AssetID.HasValue)
+					{
+						score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+					}
+
+					tokenMap.Add("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+				}
+
+				if (token == "[DQ_SCORE_PREV]")
+				{
+					ObjectDetail item = null;
+					if (obj == SystemObjects.Issue)
+					{
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						if (issue != null)
+						{
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						}
+					}
+					else
+					{
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
+					}
+					decimal? score = null;
+
+					if (item != null && item.AssetID.HasValue)
+					{
+						score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+					}
+
+					tokenMap.Add("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+				}
+
+				if (token == "[GOV_SCORE_PREV]")
+				{
+					ObjectDetail item = null;
+
+					if (obj == SystemObjects.Issue)
+					{
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						if (issue != null)
+						{
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						}
+					}
+					else
+					{
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
+					}
+
+					decimal? score = null;
+
+					if (item != null && item.AssetID.HasValue)
+					{
+						score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
+					}
+
+					tokenMap.Add("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+				}
+
+				if (Regex.IsMatch(token, "\\[FIELD([0-9.]+)\\]"))
+				{			
+					
+					string item = token;
+
+
+						string fieldIdStringitem = item.Replace("[FIELD", "");
+						fieldIdStringitem = fieldIdStringitem.Replace("]", "");
+
+						int.TryParse(fieldIdStringitem, out int fieldId);
+
+						string fieldValue = "";
+
+						if (fieldId > 0)
+						{
+							//logic still uses objectId and in case of asset we needs to fetch assetid
+							var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x => x.ID).FirstOrDefault();
+							Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
+
+							//If there is no field and type is Issue, this might be asset field
+							if (fieldRecord == null && obj == SystemObjects.Issue)
+							{
+								Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
+								if (issue?.AssetID != null)
+								{
+									fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+								}
+							}
+
+							if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
+							{
+								Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+								if (intersect != null)
+								{
+									Field ofieldRecord = Fields.Where(x => x.AssetID == intersect.ObjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+
+									if (ofieldRecord != null)
 									{
-										string formattedDate = dateValue.ToString("dd MMM yyyy");
-										fieldValue = formattedDate;
+										fieldValue = ofieldRecord.FormattedValue;
 									}
-									else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+
+									Field sfieldRecord = Fields.Where(x => x.AssetID == intersect.SubjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+
+									if (!string.IsNullOrEmpty(fieldValue))
 									{
-										string formattedDate = dateValue.ToString("dd MMM yyyy");
-										fieldValue = formattedDate;
+										fieldValue += " ";
 									}
-									else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+
+									if (sfieldRecord != null)
 									{
-										string formattedDate = dateValue.ToString("dd MMM yyyy");
-										fieldValue = formattedDate;
-									}
-									else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
-									{
-										string formattedDate = dateValue.ToString("dd MMM yyyy");
-										fieldValue = formattedDate;
-									}
-									else
-									{
-										fieldValue = fieldRecord.FormattedValue;
+										fieldValue = sfieldRecord.FormattedValue;
 									}
 								}
-								else if (type == "DateTime")
+							}
+
+							if (fieldRecord != null)
+							{
+								FieldType fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
+
+								if (fieldType != null)
 								{
-									if (DateTime.TryParse(fieldRecord.FormattedValue, out dateValue))
+									DateTime dateValue;
+									string type = fieldType.Type;
+
+									if (type == "Date")
 									{
-										string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
-										fieldValue = formattedDate;
-									}
-									else
-									{
-										fieldValue = fieldRecord.FormattedValue;
-									}
-								}
-								else if (forJson)
-								{
-									string fieldValuetemp = "";
-									if (type == "Lookup")
-									{
-										if (lookupFieldsPassedByValue)
+										if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
 										{
-											fieldValuetemp = fieldRecord.Value;
+											string formattedDate = dateValue.ToString("dd MMM yyyy");
+											fieldValue = formattedDate;
+										}
+										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+										{
+											string formattedDate = dateValue.ToString("dd MMM yyyy");
+											fieldValue = formattedDate;
+										}
+										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+										{
+											string formattedDate = dateValue.ToString("dd MMM yyyy");
+											fieldValue = formattedDate;
+										}
+										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
+										{
+											string formattedDate = dateValue.ToString("dd MMM yyyy");
+											fieldValue = formattedDate;
+										}
+										else
+										{
+											fieldValue = fieldRecord.FormattedValue;
+										}
+									}
+									else if (type == "DateTime")
+									{
+										if (DateTime.TryParse(fieldRecord.FormattedValue, out dateValue))
+										{
+											string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
+											fieldValue = formattedDate;
+										}
+										else
+										{
+											fieldValue = fieldRecord.FormattedValue;
+										}
+									}
+									else if (forJson)
+									{
+										string fieldValuetemp = "";
+										if (type == "Lookup")
+										{
+											if (lookupFieldsPassedByValue)
+											{
+												fieldValuetemp = fieldRecord.Value;
+											}
+											else
+											{
+												fieldValuetemp = fieldRecord.FormattedValue;
+											}
+
+											if (string.IsNullOrEmpty(fieldValuetemp))
+											{
+												fieldValuetemp = fieldRecord.FormattedValue;
+											}
 										}
 										else
 										{
 											fieldValuetemp = fieldRecord.FormattedValue;
 										}
+										fieldValue = JsonConvert.ToString(fieldValuetemp);
 
-										if (string.IsNullOrEmpty(fieldValuetemp))
+										if (!string.IsNullOrEmpty(fieldValue))
 										{
-											fieldValuetemp = fieldRecord.FormattedValue;
+											fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
 										}
 									}
 									else
 									{
-										fieldValuetemp = fieldRecord.FormattedValue;
-									}
-									fieldValue = JsonConvert.ToString(fieldValuetemp);
-
-									if (!string.IsNullOrEmpty(fieldValue))
-									{
-										fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
+										fieldValue = fieldRecord.FormattedValue;
 									}
 								}
 								else
@@ -3061,352 +3067,335 @@ namespace d360.model
 									fieldValue = fieldRecord.FormattedValue;
 								}
 							}
-							else
+						}
+
+						tokenMap.Add(item, fieldValue);
+				}
+
+				if (Regex.IsMatch(token, "\\[JSON([0-9.]+)\\]"))
+				{
+
+						string item = token;
+						string fieldValue = "";
+
+						string fieldTypeIdStringitem = item.Replace("[JSON", "");
+						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+						int.TryParse(fieldTypeIdStringitem, out int fieldTypeId);
+
+						FieldType fieldType = FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
+
+						FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+						if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
+						{
+							jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
+
+							Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
+
+							JObject fielddata = JObject.Parse(fieldRecord.Value);
+
+							fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
+						}
+
+						if (forJson)
+						{
+							fieldValue = JsonConvert.ToString(fieldValue);
+
+							if (!string.IsNullOrEmpty(fieldValue))
 							{
-								fieldValue = fieldRecord.FormattedValue;
+								fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
 							}
 						}
-					}
 
-					tokenMap.Add(item, fieldValue);
+						tokenMap.Add(item, fieldValue);
 				}
-			}
 
-			if (Regex.IsMatch(bodyTemplate, "\\[JSON([0-9.]+)\\]"))
-			{
-				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[JSON([0-9.]+)\\]");
-
-				foreach (object field in fields)
+				if (Regex.IsMatch(token, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
 				{
-					string item = field.ToString();
-					string fieldValue = "";
 
-					string fieldTypeIdStringitem = item.Replace("[JSON", "");
-					fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+						string item = token;
 
-					int.TryParse(fieldTypeIdStringitem, out int fieldTypeId);
+						string fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
+						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
 
-					FieldType fieldType = FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
+						int stepId = -1;
+						string property = fieldTypeIdStringitem.Split('|')[1];
 
-					FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+						int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
 
-					if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
-					{
-						jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
+						WorkflowItemStep step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
 
-						Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
-
-						JObject fielddata = JObject.Parse(fieldRecord.Value);
-
-						fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
-					}
-
-					if (forJson)
-					{
-						fieldValue = JsonConvert.ToString(fieldValue);
-
-						if (!string.IsNullOrEmpty(fieldValue))
+						if (step != null)
 						{
-							fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
-						}
-					}
+							XElement response = step.FieldsDocument;
+							response = response.Element("HTTPResponse");
 
-					tokenMap.Add(item, fieldValue);
-				}
-			}
-
-			if (Regex.IsMatch(bodyTemplate, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
-			{
-				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]");
-
-				foreach (object field in fields)
-				{
-					string item = field.ToString();
-
-					string fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
-					fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
-
-					int stepId = -1;
-					string property = fieldTypeIdStringitem.Split('|')[1];
-
-					int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
-
-					WorkflowItemStep step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
-
-					if (step != null)
-					{
-						XElement response = step.FieldsDocument;
-						response = response.Element("HTTPResponse");
-
-						if (response != null)
-						{
-							switch (property.ToUpperInvariant())
+							if (response != null)
 							{
-								case "STATUSCODE":
-									tokenMap.Add(item, response.Element("StatusCode")?.Value ?? "");
-									break;
-								case "RESPONSEBODY":
-									tokenMap.Add(item, response.Element("Body")?.Value ?? "");
-									break;
-								default:
-									//Do nothing.
-									break;
+								switch (property.ToUpperInvariant())
+								{
+									case "STATUSCODE":
+										tokenMap.Add(item, response.Element("StatusCode")?.Value ?? "");
+										break;
+									case "RESPONSEBODY":
+										tokenMap.Add(item, response.Element("Body")?.Value ?? "");
+										break;
+									default:
+										//Do nothing.
+										break;
+								}
 							}
 						}
-					}
 				}
-			}
 
-			if (Regex.IsMatch(bodyTemplate, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
-			{
-				MatchCollection fields = Regex.Matches(bodyTemplate, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]");
-
-				foreach (object field in fields)
+				if (Regex.IsMatch(token, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
 				{
-					string item = field.ToString();
 
-					string fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
-					fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+					string item = token;
 
-					int stepId = -1;
-					string fieldId = fieldTypeIdStringitem.Split('|')[1];
-					int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+						string fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
+						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
 
-					tokenMap.Add(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
+						int stepId = -1;
+						string fieldId = fieldTypeIdStringitem.Split('|')[1];
+						int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+						tokenMap.Add(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
+
 				}
-			}
 
-			if (bodyTemplate.Contains("[OBJECT_TYPE]"))
-			{
-				string path = null;
-
-				if (obj == SystemObjects.Issue)
+				if (token == "[OBJECT_TYPE]")
 				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+					string path = null;
 
-					if (issue != null)
+					if (obj == SystemObjects.Issue)
 					{
-						var issueObjectDetail = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						path = issueObjectDetail.TypeName;
-					}
-				}
-				else
-				{
-					//get the objects name
-					path = GetObjectTypePath(obj.ToString(), objectID);
-				}
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-				string itemLink = "(unknown item)";
-
-				if (path != null)
-				{
-					if (supportHtml)
-					{
-						itemLink = $"<b>{path}</b>";
+						if (issue != null)
+						{
+							var issueObjectDetail = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							path = issueObjectDetail.TypeName;
+						}
 					}
 					else
 					{
-						itemLink = path;
-					}
-				}
-
-				tokenMap.Add("[OBJECT_TYPE]", itemLink);
-			}
-
-			if (bodyTemplate.Contains("[WORKFLOW_STEP_ID]"))
-			{
-				tokenMap.Add("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
-			}
-
-			if (bodyTemplate.Contains("[WORKFLOW_INSTANCE_ID]"))
-			{
-				tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
-			}
-
-			if (bodyTemplate.Contains("[WORKFLOW_ID]"))
-			{
-				WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
-
-				if (versionStep != null)
-				{
-					WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
-
-					tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
-				}
-			}
-
-			if (bodyTemplate.Contains("[RECIPIENT_RESPONSIBILITY]"))
-			{
-				string recipientResponsibility = "";
-				if (itemStep != null && itemStep.Step != null)
-				{
-					WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-					if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
-					{
-						recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
+						//get the objects name
+						path = GetObjectTypePath(obj.ToString(), objectID);
 					}
 
-					tokenMap.Add("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
-				}
-			}
+					string itemLink = "(unknown item)";
 
-			if (bodyTemplate.Contains("[RECIPIENT_TYPE]"))
-			{
-				string recipientType = "";
-				if (itemStep != null && itemStep.Step != null)
-				{
-					WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-					switch (stepSettings.RecipientType)
+					if (path != null)
 					{
-						case EmailTaskRecipientType.Initiator:
-							recipientType = "Initiator";
-							break;
-						case EmailTaskRecipientType.Responsibility:
-							recipientType = "Responsibility";
-							break;
-						case EmailTaskRecipientType.SpecificUser:
-							recipientType = "Specific User";
-							break;
-						default:
-							//Nothing to do here.
-							break;
-					}
-
-					//check how many users would recieve this if responsibility
-					if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
-					{
-						int adminGroupId = GetWorkflowAdminGroup();
-
-						if (adminGroupId <= 0)
+						if (supportHtml)
 						{
-							recipientType = "Default - Administrators";
+							itemLink = $"<b>{path}</b>";
 						}
 						else
 						{
-							AssetDetail group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+							itemLink = path;
+						}
+					}
 
-							if (group != null)
+					tokenMap.Add("[OBJECT_TYPE]", itemLink);
+				}
+
+				if (token == "[WORKFLOW_STEP_ID]")
+				{
+					tokenMap.Add("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
+				}
+
+				if (token == "[WORKFLOW_INSTANCE_ID]")
+				{
+					tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
+				}
+
+				if (token == "[WORKFLOW_ID]")
+				{
+					WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
+
+					if (versionStep != null)
+					{
+						WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
+
+						tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
+					}
+				}
+
+				if (token == "[RECIPIENT_RESPONSIBILITY]")
+				{
+					string recipientResponsibility = "";
+					if (itemStep != null && itemStep.Step != null)
+					{
+						WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+						if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
+						{
+							recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
+						}
+
+						tokenMap.Add("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
+					}
+				}
+
+				if (token == "[RECIPIENT_TYPE]")
+				{
+					string recipientType = "";
+					if (itemStep != null && itemStep.Step != null)
+					{
+						WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+						switch (stepSettings.RecipientType)
+						{
+							case EmailTaskRecipientType.Initiator:
+								recipientType = "Initiator";
+								break;
+							case EmailTaskRecipientType.Responsibility:
+								recipientType = "Responsibility";
+								break;
+							case EmailTaskRecipientType.SpecificUser:
+								recipientType = "Specific User";
+								break;
+							default:
+								//Nothing to do here.
+								break;
+						}
+
+						//check how many users would recieve this if responsibility
+						if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
+						{
+							int adminGroupId = GetWorkflowAdminGroup();
+
+							if (adminGroupId <= 0)
 							{
-								recipientType = $"Default - {group.DisplayValue}";
+								recipientType = "Default - Administrators";
 							}
 							else
 							{
-								recipientType = $"Default - (unknown group)";
+								AssetDetail group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+
+								if (group != null)
+								{
+									recipientType = $"Default - {group.DisplayValue}";
+								}
+								else
+								{
+									recipientType = $"Default - (unknown group)";
+								}
 							}
 						}
 					}
+
+					tokenMap.Add("[RECIPIENT_TYPE]", recipientType);
 				}
 
-				tokenMap.Add("[RECIPIENT_TYPE]", recipientType);
-			}
-
-			if (bodyTemplate.Contains("[ASSET_PATH]"))
-			{
-
-				ObjectDetail item = null;
-
-				if (obj == SystemObjects.Issue)
+				if (token == "[ASSET_PATH]")
 				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-					if (issue != null)
+					ObjectDetail item = null;
+
+					if (obj == SystemObjects.Issue)
 					{
-						item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-					}
-				}
-				else
-				{
-					//get the objects name
-					item = GetObjectDetail(obj.ToString(), objectID);
-				}
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-				string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
-
-				tokenMap.Add("[ASSET_PATH]", path ?? "(unknown)");
-			}
-
-			if (bodyTemplate.Contains("[ASSET_UID]"))
-			{
-				string uid = null;
-
-				if (obj == SystemObjects.Issue)
-				{
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					if (issue != null)
-					{
-						Asset issueAsset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
-
-						if (issueAsset != null)
+						if (issue != null)
 						{
-							uid = issueAsset.uid.ToString();
+							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 						}
 					}
-				}
-				else if (obj == SystemObjects.Intersect)
-				{
-					Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-					if (intersect != null)
+					else
 					{
-						uid = intersect.uid.ToString();
+						//get the objects name
+						item = GetObjectDetail(obj.ToString(), objectID);
 					}
-				}
-				else
-				{
-					Asset asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
 
-					if (asset != null)
-					{
-						uid = asset.uid.ToString();
-					}
+					string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
+
+					tokenMap.Add("[ASSET_PATH]", path ?? "(unknown)");
 				}
 
-				tokenMap.Add("[ASSET_UID]", (uid ?? "(unknown item)"));
-			}
-
-			if (bodyTemplate.Contains("[REL_SUBJECT_UID]"))
-			{
-				string uid = null;
-
-				if (obj == SystemObjects.Intersect)
+				if (token == "[ASSET_UID]")
 				{
-					Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+					string uid = null;
 
-					if (intersect != null)
+					if (obj == SystemObjects.Issue)
 					{
-						var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
-						if (assetDetail != null)
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						if (issue != null)
 						{
-							uid = assetDetail.uid.ToString();
+							Asset issueAsset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
+
+							if (issueAsset != null)
+							{
+								uid = issueAsset.uid.ToString();
+							}
 						}
 					}
-				}
-
-				tokenMap.Add("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
-			}
-
-			if (bodyTemplate.Contains("[REL_OBJECT_UID]"))
-			{
-				string uid = null;
-				if (obj == SystemObjects.Intersect)
-				{
-					var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-					if (intersect != null)
+					else if (obj == SystemObjects.Intersect)
 					{
-						var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
-						if (assetDetail != null)
+						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+						if (intersect != null)
 						{
-							uid = assetDetail.uid.ToString();
+							uid = intersect.uid.ToString();
 						}
 					}
+					else
+					{
+						Asset asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
+
+						if (asset != null)
+						{
+							uid = asset.uid.ToString();
+						}
+					}
+
+					tokenMap.Add("[ASSET_UID]", (uid ?? "(unknown item)"));
 				}
 
-				tokenMap.Add("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
-			}
+				if (token == "[REL_SUBJECT_UID]")
+				{
+					string uid = null;
 
+					if (obj == SystemObjects.Intersect)
+					{
+						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+						if (intersect != null)
+						{
+							var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+							if (assetDetail != null)
+							{
+								uid = assetDetail.uid.ToString();
+							}
+						}
+					}
+
+					tokenMap.Add("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
+				}
+
+				if (token == "[REL_OBJECT_UID]")
+				{
+					string uid = null;
+					if (obj == SystemObjects.Intersect)
+					{
+						var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+						if (intersect != null)
+						{
+							var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+							if (assetDetail != null)
+							{
+								uid = assetDetail.uid.ToString();
+							}
+						}
+					}
+
+					tokenMap.Add("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+				}
+			}
 			foreach (string k in tokenMap.Keys)
 			{
 				sb.Replace(k, tokenMap[k]);
