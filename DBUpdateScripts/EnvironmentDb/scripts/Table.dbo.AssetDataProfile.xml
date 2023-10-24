@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas/Gupta" id="Table.dbo.AssetDataProfile-v18">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v19">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
@@ -107,11 +107,24 @@ IF NOT EXISTS (
 	BEGIN
 		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileType] INT NULL
 	END	
+
+IF EXISTS (
+	SELECT *
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') AND name = 'ProfileSetDate' and type_name(system_type_id) =  'datetime'
+	)
+	BEGIN
+		DROP INDEX IF EXISTS [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile]
+		DROP INDEX IF EXISTS [IX_AssetDataProfile_ProfileSeries] ON [dbo].[AssetDataProfile]
+
+		ALTER TABLE assetdataprofile
+		ALTER COLUMN ProfileSetDate DATETIME2 NOT NULL
+	END	
 ]]>
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetDataProfile.Indices-v18">
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile.Indices-v19">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfile_AssetID_ProfileSetDate')

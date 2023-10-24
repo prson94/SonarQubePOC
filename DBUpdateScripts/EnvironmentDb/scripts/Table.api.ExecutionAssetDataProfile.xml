@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-<changeSet author="Pappas/Gupta" id="Table.api.ExecutionAssetDataProfile-v13">
+<changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v14">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetDataProfile')
@@ -106,6 +106,16 @@ IF NOT EXISTS (
 	BEGIN
 		ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileType] INT NULL
 	END
+
+IF EXISTS (
+	SELECT *
+	FROM   sys.columns 
+	WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') AND name = 'ProfileSetDate' and type_name(system_type_id) =  'datetime'
+	)
+	BEGIN
+		ALTER TABLE api.ExecutionAssetDataProfile
+		ALTER COLUMN ProfileSetDate DATETIME2 NOT NULL
+	END	
 
 		]]>
     </sql>

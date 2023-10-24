@@ -1298,7 +1298,7 @@ namespace d360.model
 
 						update	EDP
 						set		Success = 0,
-								[Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 120)
+								[Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 121)
 						from
 							api.ExecutionAssetDataProfile EDP
 							inner join 
@@ -1309,7 +1309,7 @@ namespace d360.model
 						
 						update	EDP
 						set		Success = 0,
-								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 20)
+								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 121)
 						from
 							api.ExecutionAssetDataProfile EDP
 							inner join 
