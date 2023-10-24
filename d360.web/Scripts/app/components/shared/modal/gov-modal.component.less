@@ -319,6 +319,10 @@
     display: flex;
     justify-content: flex-start;
 
+    &:has( + .action-bar) {
+      height: calc(100% - 80px);
+    }
+
     .side-panel {
       min-width: 417px;
       height: auto;
