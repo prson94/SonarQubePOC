@@ -61,6 +61,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 	private isEditFormUpdated: boolean = false;
 	private changeFormSub: Subscription;
+	private defaultBackgroundColor: string = "#202020";
 
 	defaultDescriptionButtonTextValue = $localize`Information`;
 
@@ -183,7 +184,7 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		this.assetTypeForm.reset();
 		this.assetTypeForm.controls["displayFormat"].setValue(this.isReferenceItemTypeForm ? '{Code}' : '{Name}');
 		this.assetTypeForm.controls["descriptionButtonName"].setValue(this.defaultDescriptionButtonTextValue);
-		this.assetTypeForm.controls["backgroundColor"].setValue('#202020');
+		this.assetTypeForm.controls["backgroundColor"].setValue(this.defaultBackgroundColor);
 		this.assetTypeForm.controls['backgroundColorTextValue'].setValue('Ebony');
 		this.assetTypeForm.controls['isDescriptionCollapsedByDefault'].setValue(true);
 		this.assetTypeForm.controls['isDefaultReadAccessEnabled'].setValue(undefined);
@@ -237,14 +238,14 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 
 				//ui label is `Collapsed by default` so we need to revert this boolean here
 				this.assetTypeForm.controls["isDescriptionCollapsedByDefault"].setValue(!assetType.IsDescriptionVisibleByDefault);
-				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle.BackColor);
+				this.assetTypeForm.controls["backgroundColor"].setValue(assetType.IconStyle?.BackColor);
 
-				const colorCode = (assetType.IconStyle.BackColor ?? '') as string;
+				const colorCode = (assetType.IconStyle?.BackColor ?? '') as string;
 				const defColor = this.defaultColors.find((c) => c.title.toLowerCase() === colorCode.toLowerCase());
 				this.assetTypeForm.controls['backgroundColorTextValue'].setValue(defColor ? defColor.value : $localize`Custom`);
 
-				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle.Icon);
-				this.selectedIcon = assetType.IconStyle.Icon;
+				this.assetTypeForm.controls["icon"].setValue(assetType.IconStyle?.Icon);
+				this.selectedIcon = assetType.IconStyle?.Icon;
 				this.assetTypeForm.controls["useAsTransformation"].setValue(assetType.UseAsTransformation);
 
 				this.assetTypeForm.controls["autoDisplayParent"].setValue(assetType.AutoDisplayParent ?? false);
@@ -373,10 +374,10 @@ export class ConfigurationAssetTypeModalForm implements OnChanges, OnInit, After
 		//ui label is `Collapsed by default` so we need to revert this boolean here
 		model.IsDescriptionVisibleByDefault = !this.assetTypeForm.get("isDescriptionCollapsedByDefault").value;
 
-		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value;
+		model.BackgroundColor = this.assetTypeForm.get("backgroundColor").value ?? this.defaultBackgroundColor;
 		model.IconStyle = new IconStyle();
 		model.IconStyle.Icon = this.assetTypeForm.get("icon").value;
-		model.IconStyle.BackColor = this.assetTypeForm.get("backgroundColor").value;
+		model.IconStyle.BackColor = this.assetTypeForm.get("backgroundColor").value ?? this.defaultBackgroundColor;
 		model.IconStyle.ForeColor = "#FFF";
 		model.UseAsTransformation = this.assetTypeForm.get("useAsTransformation").value;
 
