@@ -2786,7 +2786,7 @@ namespace d360.model
 				}
 
 
-				if (token == "[WORKFLOW_INITIATOR_UID]" || token == "[WORKFLOW_INITIATOR_EMAIL]" || token == "[WORKFLOW_INITIATOR]")
+				if ((token == "[WORKFLOW_INITIATOR_UID]" || token == "[WORKFLOW_INITIATOR_EMAIL]" || token == "[WORKFLOW_INITIATOR]") && !tokenMap.Keys.Any(key => (key == "[WORKFLOW_INITIATOR_UID]") || (key == "[WORKFLOW_INITIATOR_EMAIL]") || (key == "[WORKFLOW_INITIATOR]")))
 				{
 					Guid initiatorUid = Guid.Empty;
 					string initiatorEmail = "";
@@ -2810,7 +2810,7 @@ namespace d360.model
 				}
 
 				//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
-				if (token == "[GOV_SCORE]" || token == "[SCORE]")
+				if ((token == "[GOV_SCORE]" || token == "[SCORE]") && !tokenMap.Keys.Any(key => (key == "[GOV_SCORE]") || (key == "[SCORE]")))
 				{
 					ObjectDetail item = null;
 
