@@ -2782,7 +2782,7 @@ namespace d360.model
 						}
 					}
 
-					tokenMap.Add("[REL_SUBJECT_NAME]", issueInfo.ToString());
+					tokenMap.Add("[ACTION_DETAILS]", issueInfo.ToString());
 				}
 
 
