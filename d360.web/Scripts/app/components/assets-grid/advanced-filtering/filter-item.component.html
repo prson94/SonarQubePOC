@@ -111,70 +111,75 @@
                     </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'lookup' && currentField && isSelectingValue">
-                        <div class="lookup-selection">
-                            <p-table #dataTable
-                                     tableStyleClass="ig-filter-table"
-                                     selectionMode="multiple"
-                                     [metaKeySelection]="false"
-                                     [value]="currentField.Values"
-                                     (onRowSelect)="onItemSelected($event)"
-                                     (onRowUnselect)="onItemSelected($event)"
-                                     [(selection)]="condition.value"
-                                     [globalFilterFields]="['title']"
-                                     dataKey="value"
-                                     [scrollable]="true"
-                                     [scrollHeight]="selectionScrollHeight"
-                                     [virtualRowHeight]="30"
-                                     [rows]="20"
-                                     [virtualScroll]="true"
-                                     [lazy]="isLazyLoad()"
-                                     (onLazyLoad)="loadListLazy($event)"
-                                     [lazyLoadOnInit]="false"
-                                     [loading]="isLookupValuesLoading"
-                                     [loadingIcon]="'fa fa-spinner fa-spin'">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th class="first-col">
-                                            <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
-                                        </th>
-                                        <th>
-                                            <input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" i18n-placeholder placeholder="Search list" />
-                                        </th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                                    <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
-                                        <tr class="{{item.styleClass}}">
-                                            <td class="first-col" colspan="2">
-                                                <span class="item-value">{{item.title}}</span>
-                                            </td>
-                                        </tr>
-                                    </ng-container>
-                                    <ng-template #elseBlock>
-                                        <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
-                                            <td class="first-col">
-                                                <p-tableCheckbox [value]="item"
-                                                                 [pSelectableRow]="item"></p-tableCheckbox>
-                                            </td>
-                                            <td (click)="selectSingleItem($event,item);" style="{{item.count ? 'display:flex;' : ''}}">
-                                                <span class="item-value" [innerHTML]="item.title"></span>
-                                                <ng-container *ngIf="item.count">
-                                                    <div class="flex-grow"></div>
-                                                    <span class="row-badge">
-                                                        <ig-badge [text]="item.count"></ig-badge>
-                                                    </span>
-                                                </ng-container>
-                                            </td>
+                            <div class="lookup-selection">
+                                <p-table #dataTable
+                                         tableStyleClass="ig-filter-table"
+                                         selectionMode="multiple"
+                                         [metaKeySelection]="false"
+                                         [value]="currentField.Values"
+                                         (onRowSelect)="onItemSelected($event)"
+                                         (onRowUnselect)="onItemSelected($event)"
+                                         [(selection)]="condition.value"
+                                         [globalFilterFields]="['title']"
+                                         dataKey="value"
+                                         [scrollable]="true"
+                                         [scrollHeight]="selectionScrollHeight"
+                                         [virtualRowHeight]="30"
+                                         [rows]="20"
+                                         [virtualScroll]="true"
+                                         [lazy]="isLazyLoad()"
+                                         (onLazyLoad)="loadListLazy($event)"
+                                         [lazyLoadOnInit]="false"
+                                         [loading]="isLookupValuesLoading"
+                                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th class="first-col">
+                                                <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
+                                            </th>
+                                            <th>
+                                                <input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" i18n-placeholder placeholder="Search list" />
+                                            </th>
                                         </tr>
                                     </ng-template>
-                                </ng-template>
-                            </p-table>
-                        </div>
+                                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                        <ng-container *ngIf="item.styleClass === 'group-name'; else elseBlock">
+                                            <tr class="{{item.styleClass}}">
+                                                <td class="first-col" colspan="2">
+                                                    <span class="item-value">{{item.title}}</span>
+                                                </td>
+                                            </tr>
+                                        </ng-container>
+                                        <ng-template #elseBlock>
+                                            <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
+                                                <td class="first-col">
+                                                    <p-tableCheckbox [value]="item"
+                                                                     [pSelectableRow]="item"></p-tableCheckbox>
+                                                </td>
+                                                <td (click)="selectSingleItem($event,item);" style="{{item.count ? 'display:flex;' : ''}}">
+                                                    <span class="item-value" [innerHTML]="item.title"></span>
+                                                    <ng-container *ngIf="item.count">
+                                                        <div class="flex-grow"></div>
+                                                        <span class="row-badge">
+                                                            <ig-badge [text]="item.count"></ig-badge>
+                                                        </span>
+                                                    </ng-container>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr class="{{item.styleClass}}">
+                                            <td class="first-col" colspan="2">No matching filter options.</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
 
-                        <div class="any-all-picker">
-                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" i18n-label label="Match all"></p-radioButton>
-                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" i18n-label label="Match any"></p-radioButton>
-                        </div>
+                            <div class="any-all-picker">
+                                <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" i18n-label label="Match all"></p-radioButton>
+                                <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" i18n-label label="Match any"></p-radioButton>
+                            </div>                        
                     </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'score-band'">
@@ -237,7 +242,7 @@
                         </ig-color-picker>
                     </ng-container>
                 </ng-container>
-            </div>
+            </div>           
 
             <div class="buttons flex">
                 <button *ngIf="hasRemoveButton()"
