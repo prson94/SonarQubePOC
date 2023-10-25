@@ -42,7 +42,7 @@
 							 [rowsPerPageOptions]="defaultPagingOptions"
 							 [pageLinks]="3"
 							 [(selection)]="selectedRow"
-							 (onPage)="numberOfRowsByCategoryService.onPage($event);updatePaginatorIcons();"
+							 (onPage)="numberOfRowsByCategoryService.onPage($event);"
 							 filterMode="strict"
 							 [loading]="isLoading"
 							 [loadingIcon]="'fa fa-spinner fa-spin'"
