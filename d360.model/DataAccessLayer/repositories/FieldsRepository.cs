@@ -748,7 +748,7 @@ namespace d360.model.DataAccessLayer
 
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			var currentFieldTypes = Company.Filter<FieldType>(f => (f.AssetTypeID == typeIdentifierInfoModel.ID || f.IssueTypeID == typeIdentifierInfoModel.ID || f.IntersectTypeID == typeIdentifierInfoModel.ID), i => i.FieldTypeLookup).ToList();
+			var currentFieldTypes = Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
 			var existingKeyFieldsHash = GetKeyFieldsHash(currentFieldTypes);
 
 			var newFieldTypes = new List<FieldType>();
