@@ -913,7 +913,7 @@ namespace d360.web.Controllers.V2
 
 			var deleteModel = new List<ResponsibilityOverrideDeleteModel>
 			{
-				new ResponsibilityOverrideDeleteModel() { ResourceUid = resourceUid }
+				new ResponsibilityOverrideDeleteModel { ResourceUid = resourceUid }
 			};
 			DeleteResponsibilitiesOverride(assetUid, responsibilityUid, deleteModel, passedResponsibilityCheck: true);
 
