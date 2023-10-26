@@ -1946,7 +1946,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         });
 
-        const pt = this.g(go.Palette, "WorkflowPalette",
+        const pt = this.g(go.Palette, "WorkflowPalette-" + this.diagramGuid,
             {
                 "animationManager.duration": 800,
                 nodeTemplateMap: this.diagram.nodeTemplateMap,
