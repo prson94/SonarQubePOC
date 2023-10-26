@@ -71,7 +71,19 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                 map((response) => <JsonResult>response),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	putResponsibilityOverride(assetUid: string, responsibilityUid: string, responsibilityOverridePostModel: ResponsibilityOverridePostModel): Observable<JsonResult> {
+		const httpOptions = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+		};
+
+		return this.http.put(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, JSON.stringify(responsibilityOverridePostModel), httpOptions)
+			.pipe(
+				map((response) => <JsonResult>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
     putResponsibility(responsibility: ResponsibilityItem): Observable<JsonResult> {
         var headers = new HttpHeaders({ 'Content-Type': 'application/json' });

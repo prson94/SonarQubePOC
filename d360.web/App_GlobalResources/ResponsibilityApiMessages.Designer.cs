@@ -214,6 +214,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility override does not exist..
+        /// </summary>
+        public static string ResponsibilityOverrideNotExist {
+            get {
+                return ResourceManager.GetString("ResponsibilityOverrideNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsibility successfully added.
         /// </summary>
         public static string ResponsibilitySuccessAddMessage {
