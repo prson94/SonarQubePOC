@@ -230,13 +230,13 @@
                         <td style="vertical-align: top; background-color: #e8eaee; width: 210px;"
                             class="p-0"
                             [style.display]="(isReadOnly) ? 'none' : 'table-cell'">
-                            <div id="WorkflowPalette"
+                            <div id="WorkflowPalette-{{diagramGuid}}"
                                  #workflowPalette
                                  style="overflow: hidden;"
                                  class="diagram"></div>
                         </td>
                         <td style="vertical-align: top;">
-                            <div id="WorkflowDiagram"
+                            <div id="WorkflowDiagram-{{diagramGuid}}"
                                  #workflowDiagram
                                  style="overflow: hidden;"
 								 (click)="$event.stopPropagation()"

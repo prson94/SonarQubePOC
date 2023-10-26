@@ -45,6 +45,7 @@ import { concatMap, map, tap } from 'rxjs/operators';
 import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
+import { StringHelpers } from '../../../../static/string-helpers';
 
 declare var window: any;
 
@@ -92,7 +93,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     WorkflowChangeType = WorkflowChangeType;
     WorkflowActivityType = WorkflowActivityType;
     FormResponseType = FormResponseType;
-
+	diagramGuid: string = StringHelpers.newGuid();
     fieldTypes: FieldType[] = [];
 
     //diagram properties
@@ -1945,7 +1946,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         });
 
-        const pt = this.g(go.Palette, "WorkflowPalette",
+        const pt = this.g(go.Palette, "WorkflowPalette-" + this.diagramGuid,
             {
                 "animationManager.duration": 800,
                 nodeTemplateMap: this.diagram.nodeTemplateMap,
@@ -1965,7 +1966,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
     private createDiagram(): go.Diagram {
 
-        const dg = this.g(go.Diagram, 'WorkflowDiagram', {
+        const dg = this.g(go.Diagram, 'WorkflowDiagram-' + this.diagramGuid, {
             initialContentAlignment: go.Spot.TopLeft,
             allowDrop: true,
             "undoManager.isEnabled": !this.isReadOnly
