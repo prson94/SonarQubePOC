@@ -162,7 +162,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.loadBaseData();
 	}
 	ngOnDestroy(): void {
-		this.changeFormSub.unsubscribe()
+		this.changeFormSub?.unsubscribe()
 	}
 
 	loadBaseData() {
