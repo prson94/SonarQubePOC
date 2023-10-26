@@ -182,7 +182,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			if (details.items) {
 				this.multiSubmitionItems = details.items;
 				this.isBulkRespond = true;
-			}			
+			}
 
 			if (details.resetSidePanel) {
 				//if we are coming from email link lets keep side panel closed
@@ -190,6 +190,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 				this.sidePanelStorageKey = StringHelpers.generateRandomString(20);
 			}
 
+			this.subscribeSwitcherEvents();
 			this.isLoading = true;
 			this.cdRef.detectChanges();
 			if (this.loadSub) {
