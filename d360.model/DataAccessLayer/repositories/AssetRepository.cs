@@ -455,7 +455,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				}
 				catch
 				{
-					throw new ArgumentException(AssetTypeErrors.UnableParse_IncludeFields);
+					//Do nothing. You should not error here.
 				}
 
 
@@ -468,10 +468,6 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					fieldTypes = fieldTypes
 						.Where(x => includeFieldsList.Contains(x.Name.ToLower()))
 						.ToList();
-				}
-				else
-				{
-					throw new ArgumentException(AssetTypeErrors.InvalidValue_includeFields);
 				}
 
 			}
