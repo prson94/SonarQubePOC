@@ -313,6 +313,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Maximum length allowed for DataSource is 250..
+        /// </summary>
+        public static string DataSourceLengthMax {
+            get {
+                return ResourceManager.GetString("DataSourceLengthMax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provided value does not match the expected data type for this setting.
         /// </summary>
         public static string DataTypeValueNotMatched {
@@ -633,6 +642,15 @@ namespace Resources {
         public static string ExportViewMessage {
             get {
                 return ResourceManager.GetString("ExportViewMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum length allowed for ExternalID is 250..
+        /// </summary>
+        public static string ExternalIDLengthMax {
+            get {
+                return ResourceManager.GetString("ExternalIDLengthMax", resourceCulture);
             }
         }
         
@@ -1911,6 +1929,15 @@ namespace Resources {
         public static string Type {
             get {
                 return ResourceManager.GetString("Type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum length allowed for Type is 50..
+        /// </summary>
+        public static string TypeLengthMax {
+            get {
+                return ResourceManager.GetString("TypeLengthMax", resourceCulture);
             }
         }
         
