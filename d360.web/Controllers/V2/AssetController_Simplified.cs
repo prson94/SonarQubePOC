@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.helpers.filters;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -366,11 +367,16 @@ namespace d360.web.Controllers.V2
 								{
 									//contains and not contains operator needs to use temp table that contains hierarchy of all catalog asset
 									//with temp table we can filter out results faster
+
+									if (!filterOperation.In("ct", "nct"))
+									{
+										return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.displaypathsegmentValidOper));
+									}
 									if (assetsHierarchyTempTable.Length == 0)
 									{
 										//find max depth of any asset type that is used CatalogBrowse relationship types
 										hierarchyMaxDepth = (await Company.QueryAsync<int>($@"
-													select max(Type.Depth) from IntersectTypeDetail ITD
+													select coalesce (max(Type.Depth),0) from IntersectTypeDetail ITD
 													outer apply (
 													select top 1 ap.Segments.value('count(/path/segment)', 'int') - 1 as Depth from Asset a 
 													inner join AssetPath AP on AP.ID = a.ID
