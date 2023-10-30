@@ -199,8 +199,23 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ModelNotContainFields));
             }
 
-            //check if the item already exists   
-            bool exists = await CrossReferencesRepository.XrefExists(model);
+			if (model?.DataSource.Length > 250)
+			{
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.DataSourceLengthMax));
+			}
+
+			if (model?.Type.Length > 50)
+			{
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.TypeLengthMax));
+			}
+
+			if (model?.ExternalID.Length > 250)
+			{
+				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ExternalIDLengthMax));
+			}
+
+			//check if the item already exists   
+			bool exists = await CrossReferencesRepository.XrefExists(model);
 
             if (exists)
             {
