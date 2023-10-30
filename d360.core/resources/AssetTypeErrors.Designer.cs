@@ -151,6 +151,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &quot;displaypathsegment&quot; valid operator are ct and nct..
+        /// </summary>
+        public static string displaypathsegmentValidOper {
+            get {
+                return ResourceManager.GetString("displaypathsegmentValidOper", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Duplicate Found.
         /// </summary>
         public static string DuplicateFound {

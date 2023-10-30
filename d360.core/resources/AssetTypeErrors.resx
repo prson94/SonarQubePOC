@@ -366,4 +366,7 @@
   <data name="AssetTypeWithSourceIdExists" xml:space="preserve">
     <value>An asset type with the specified [SourceID] already exists.</value>
   </data>
+  <data name="displaypathsegmentValidOper" xml:space="preserve">
+    <value>"displaypathsegment" valid operator are ct and nct.</value>
+  </data>
 </root>
