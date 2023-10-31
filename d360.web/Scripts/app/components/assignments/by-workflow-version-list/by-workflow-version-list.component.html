@@ -59,8 +59,10 @@
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-workflow-version-information *ngIf="selectedAssignmentVersionItems?.length === 1"
-													  [workflowTypeUid]="selectedAssignmentVersionItems?.[0].WorkflowTypeUid"
-													  [workflowTypeVersion]="selectedAssignmentVersionItems?.[0].Version"></d3s-workflow-version-information>
+											  [nodeClickPropagate]="true"
+											  [showHeader]="false"
+											  [workflowTypeUid]="selectedAssignmentVersionItems?.[0].WorkflowTypeUid"
+											  [workflowTypeVersion]="selectedAssignmentVersionItems?.[0].Version"></d3s-workflow-version-information>
 				</ng-container>
 			</side-panel>
 		</as-split-area>

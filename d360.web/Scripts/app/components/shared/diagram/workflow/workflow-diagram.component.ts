@@ -2,6 +2,7 @@
 import * as go from 'gojs';
 import { cloneDeep, isArray, isEmpty } from "lodash-es";
 import {
+	ChangeDetectorRef,
     Component,
     ElementRef,
     EventEmitter,
@@ -138,7 +139,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         private uriBasedService: UriBasedService,
         private objectDetailService: ObjectDetailService,
         protected settingsService: CompanySettingsService,
-		private linkClickInterceptor:LinkClickInterceptor) {
+		private linkClickInterceptor:LinkClickInterceptor,
+		private changeDetectorRef: ChangeDetectorRef) {
         super(settingsService);
     }
     
@@ -151,6 +153,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     set isLoadingCounter(value) {
         this._isLoadingCounter = value;
         this.isLoading = this._isLoadingCounter > 0;
+		this.changeDetectorRef.markForCheck();
     }
 
     //#region angular

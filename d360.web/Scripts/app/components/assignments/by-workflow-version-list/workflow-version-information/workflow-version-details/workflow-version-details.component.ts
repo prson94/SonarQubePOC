@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges } from '@angular/core';
 import { LinkClickInterceptor } from '../../../../../services/href-click-service';
 import { WorkflowService } from '../../../../../services/workflow.service';
 import { AssignmentVersionItem } from '../../../../../models/workflow.model';
@@ -9,16 +9,14 @@ import { AssignmentVersionItem } from '../../../../../models/workflow.model';
 	styleUrls: ['./workflow-version-details.component.less']
 })
 export class WorkflowVersionDetailsComponent implements OnChanges {
-	@Input() workflowTypeUid: string;
-
-	@Input() workflowTypeVersion: number;
-
-	@Input() title: string = 'Workflow Version Details';
+	@Input({ required: true }) workflowTypeUid: string;
+	@Input({ required: true }) workflowTypeVersion: number;
+	@Input({ required: true }) title: string;
 
 	isLoading: boolean;
 	selectedAssignmentVersion: AssignmentVersionItem;
 
-	constructor(private workflowService: WorkflowService, private linkClickInterceptor: LinkClickInterceptor) {
+	constructor(private workflowService: WorkflowService, private linkClickInterceptor: LinkClickInterceptor, private changeDetector: ChangeDetectorRef) {
 	}
 
 	ngOnChanges(): void {
@@ -35,10 +33,11 @@ export class WorkflowVersionDetailsComponent implements OnChanges {
 
 	private loadAssignmentsByVersion(): void {
 		this.isLoading = true;
-		const advancedFilterString = this.workflowTypeVersion ? `(Version eq ${this.workflowTypeVersion})` : '';
-		this.workflowService.getAssignmentsByVersion(1, 10, '', advancedFilterString, '', null, '', this.workflowTypeUid).subscribe((response) => {
+		const advancedFilterString: string = this.workflowTypeVersion ? `(Version eq ${this.workflowTypeVersion})` : '';
+		this.workflowService.getAssignmentsByVersion(1, 1, '', advancedFilterString, '', null, '', this.workflowTypeUid).subscribe((response) => {
 			this.selectedAssignmentVersion = response.items?.[0];
 			this.isLoading = false;
+			this.changeDetector.markForCheck();
 		});
 	}
 }

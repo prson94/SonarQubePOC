@@ -63,12 +63,12 @@
 		</ng-container>
 		<ng-container
 			*ngIf="_sidePanelTab==AssetDetailClickType.WorkflowTypeInformation && _selectedAsset?.workflowTypeUid && _selectedAsset?.workflowTypeVersion">
-			<d3s-workflow-information [shouldBePadded]="true"
-									  [showHeaderLine]="false"
-									  [isSidePanel]="true"
-									  [interceptLinkClick]="true"
-									  [workflowTypeUid]="_selectedAsset.workflowTypeUid"
-									  [workflowTypeVersion]="_selectedAsset.workflowTypeVersion"></d3s-workflow-information>
+			<d3s-workflow-version-information [workflowTypeUid]="_selectedAsset.workflowTypeUid"
+											  [workflowTypeVersion]="_selectedAsset.workflowTypeVersion"
+											  [showCountPanel]="false"
+											  versionDetailsTitle="General"
+											  workflowDiagramTitle="Diagram"
+			></d3s-workflow-version-information>
 		</ng-container>
 		<ng-container
 			*ngIf="_sidePanelTab==AssetDetailClickType.AssignmentProgressInformation && _selectedAsset?.workflowTypeUid && _selectedAsset?.workflowTypeVersion && _selectedAsset?.workflowItemUid">
