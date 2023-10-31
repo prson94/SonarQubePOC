@@ -917,6 +917,16 @@ namespace d360.core.entities
 		public bool Cascade { get; set; }
 	}
 
+	public class RelationParentChild
+	{
+		[DataMember]
+		public Guid? Uid { get; set; }
+
+		[DataMember]
+		public string operation { get; set; }
+	}
+	
+
 	#region Allocations
 
 	[DataContract]
