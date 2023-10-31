@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ActionItems, Actions, FormRequest, WorkflowForm } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -14,8 +14,8 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
 export class AssignmentInformationRequestComponent implements OnInit {
 	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
-	@Input() set workflowActionUid(value: string) {
-		this.loadData(value);
+	@Input({ required: true }) set workflowActionUid(value: string) {
+		this.loadActionDetails(value);
 	}
 
 	@Input() workflowItemUid: string;
@@ -24,12 +24,14 @@ export class AssignmentInformationRequestComponent implements OnInit {
 
 	request: FormRequest;
 
-	isLoading: boolean;
+	isFormDetailsLoading: boolean = false;
+	isActionDetailsLoading: boolean = false;
 	actionItems: ActionItems;
 
 	constructor(private workflowService: WorkflowService,
 				private linkClickInterceptor: LinkClickInterceptor,
-				private fieldsObservableService: FieldsObservableService) {
+				private fieldsObservableService: FieldsObservableService,
+				private changeDetectorRef: ChangeDetectorRef) {
 	}
 
 	ngOnInit(): void {
@@ -38,8 +40,8 @@ export class AssignmentInformationRequestComponent implements OnInit {
 		}
 	}
 
-	loadData(workflowActionUid: string): void {
-		this.isLoading = true;
+	private loadActionDetails(workflowActionUid: string): void {
+		this.isActionDetailsLoading = true;
 		this.workflowService.getActions(workflowActionUid)
 			.subscribe((response: Actions) => {
 				if (response?.items?.length > 0) {
@@ -47,22 +49,23 @@ export class AssignmentInformationRequestComponent implements OnInit {
 					this.fieldsObservableService.getFieldsV2(null, this.actionItems.ActionTypeUid, null)
 						.subscribe((response: FieldTypeAPIModelField[]): void => {
 							this.fieldTypeModelFields = response;
-							this.isLoading = false;
+							this.isActionDetailsLoading = false;
+							this.changeDetectorRef.markForCheck();
 						});
 				} else {
-					this.isLoading = false;
+					this.isActionDetailsLoading = false;
+					this.changeDetectorRef.markForCheck();
 				}
 			});
 	}
 
 	private loadFormDetails(): void {
-		this.isLoading = true;
+		this.isFormDetailsLoading = true;
 		this.workflowService.getWorkflowFormByUid(this.workflowItemUid, this.stepUid)
 			.subscribe((res: WorkflowForm) => {
-				this.isLoading = false;
-				if (res) {
-					this.request = res.Request;
-				}
+				this.isFormDetailsLoading = false;
+				this.request = res?.Request;
+				this.changeDetectorRef.markForCheck();
 			});
 	}
 

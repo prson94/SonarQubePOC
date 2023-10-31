@@ -1,6 +1,18 @@
-<div class="asset-detail full-height">
-	<d3s-workflow-version-details [workflowTypeUid]="workflowTypeUid"
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div class="asset-detail full-height" *ngIf="!isLoading">
+	<div class="asset-detail-header" *ngIf="showHeader">
+		<div class="asset-name">
+			{{ assignmentByVersion?.items?.[0]?.WorkflowName }}
+		</div>
+		<div i18n class="class-name">
+			Workflow
+		</div>
+	</div>
+	<d3s-workflow-version-details [workflowTypeUid]="assignmentByVersion?.items?.[0]?.WorkflowTypeUid"
+								  [title]="versionDetailsTitle"
 								  [workflowTypeVersion]="workflowTypeVersion"></d3s-workflow-version-details>
-	<d3s-workflow-pending-assignments [workflowTypeUid]="workflowTypeUid" [nodeClickPropagate]="true"
+	<d3s-workflow-pending-assignments [workflowTypeUid]="assignmentByVersion?.items?.[0]?.WorkflowTypeUid"
+									  [title]="workflowDiagramTitle"
+									  [showCountPanel]="showCountPanel" [nodeClickPropagate]="nodeClickPropagate"
 									  [workflowTypeVersion]="workflowTypeVersion"></d3s-workflow-pending-assignments>
 </div>

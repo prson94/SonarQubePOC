@@ -1,5 +1,5 @@
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<ng-container *ngIf="!isLoading">
+<d3s-loading [isLoading]="isActionDetailsLoading || isFormDetailsLoading"></d3s-loading>
+<ng-container *ngIf="!isActionDetailsLoading && !isFormDetailsLoading">
 	<div *ngIf="showSubmittedByData" class="row">
 		<div class="category-column">
 			<p>

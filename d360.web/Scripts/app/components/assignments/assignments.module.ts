@@ -43,7 +43,6 @@ import {
 	AssignmentProgressStepDetailsComponent
 } from './assignment-progress-step-details/assignment-progress-step-details.component';
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
-import { WorkflowInformationComponent } from './workflow-information/workflow-information.component';
 import {
 	AssignmentStepFieldChangeDetailsComponent
 } from './assignment-progress-step-details/assignment-step-field-change-details/assignment-step-field-change-details.component';
@@ -160,7 +159,6 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		StepInformationFormComponent,
 		StepInformationFormFieldsComponent,
 		StepInformationRelationshipChangeComponent,
-		WorkflowInformationComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
 		WorkflowVersionInformationComponent,
