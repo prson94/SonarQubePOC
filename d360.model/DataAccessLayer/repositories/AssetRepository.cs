@@ -4432,8 +4432,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 								A.SourceID as XrefId,
 								A.AssetTypeId,
 								T.[uid] as AssetTypeUid, 
-								P.[Uid] as ParentAssetUid,
-								P.DisplayValue as ParentDisplayName,
+								parentAsset.[Uid] as ParentAssetUid,
+								parentAdv.DisplayValue as ParentDisplayName,
 								A.CreatedOn,
 								A.UpdatedOn,
 								ACJ.ColorJson as Color,
@@ -4444,14 +4444,9 @@ where	N.DisplayPath like @phrase {prefilterSql}
 								inner join AssetType T on T.ID = A.AssetTypeID
 								inner join AssetPath Node on Node.ID = a.ID 
 								cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
-								outer apply (
-									select	PA.Uid,
-											PD.DisplayValue
-									from	[Intersect] I
-											inner join Asset PA on PA.ID = I.SubjectAssetID 
-											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
-									where	I.ObjectAssetID = A.ID
-								) P 
+								outer apply GetParentByAssetID(a.id)Parent
+								left join Asset parentAsset on parentAsset.ID = Parent.ID
+								left join AssetDisplayValue parentAdv on parentAdv.AssetID = parentAsset.ID
 								{string.Join("\n", fieldJoins.GetStatements())}
 						where   A.[uid] = @assetUid";
 
