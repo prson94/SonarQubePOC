@@ -107,7 +107,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.loadSub.unsubscribe();
 		}
 
-		let params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder === SortOrder.Descending ? "desc" : "asc"  };
+		const params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder === SortOrder.Descending ? "desc" : "asc"  };
 
 		this.isLoading = true;
 		this.loadSub =
