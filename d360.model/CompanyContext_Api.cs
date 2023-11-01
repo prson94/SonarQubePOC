@@ -5618,7 +5618,8 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 													(select P.PredicateID as Id,
 															P.Name,
 															P.Inverse,
-															cast(iif(Res.[Action] = 'Insert', 1, 0) as bit) as IsNew
+															cast(iif(Res.[Action] = 'Insert', 1, 0) as bit) as IsNew,
+															P.Type
 													for json path
 													) as Payload
 											from	api.Execution e

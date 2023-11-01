@@ -609,12 +609,15 @@ output inserted.ID, inserted.ObjectID into @tbl
 			f.FieldValue,
 			pv.[Value] as PreviousValue
 from	api.ExecutionLog a
-		cross apply openjson(a.Payload) with (Id int, Name nvarchar(250), Inverse nvarchar(250), IsNew bit) p
+		cross apply openjson(a.Payload) with (Id int, Name nvarchar(250), Inverse nvarchar(250), Type int, IsNew bit) p
 		inner join @tbl tt on tt.ObjectID = p.Id
+		inner join api.Execution e on e.Id = a.ExecutionId and e.Id = @Id
 		cross apply (
 					select 0 as FieldTypeID, 'Name' as FieldName, p.Name as FieldValue, cast(null as nvarchar(max)) as LookupValue
-					union
+					union all
 					select 0 as FieldTypeID, 'Inverse' as FieldName, p.Inverse as FieldValue, cast(null as nvarchar(max)) as LookupValue
+					union all
+					select 0 as FieldTypeID, 'Functional Type' as FieldName, [utility].[GetPredicateFunctionalTypeValue](Type) as FieldValue, cast(null as nvarchar(max)) as LookupValue
 					) f
 		outer apply {previousValueCrossApplySql("'Predicate'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 

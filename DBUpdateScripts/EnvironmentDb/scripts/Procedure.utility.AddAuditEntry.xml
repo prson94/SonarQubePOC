@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.utility.AddAuditEntry-v27">
+ <changeSet author="Pappas,puneetgupta" id="Procedure.utility.AddAuditEntry-v28">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -76,10 +76,6 @@ begin
 		begin
 			select @ActionObjectName = @MainObject
 		end	
-		else if @DependentObject = 'Predicate'
-		begin
-			select @ActionObjectName = @MainObject
-		end
 		else
 		begin
 			if @DependentObject like '%Type'
@@ -223,7 +219,6 @@ begin
 		insert into @tbl (FieldName, NewValue) select 'Name', Name from dbo.getIntersectTypeNames(@MainObjectID)
 		insert into @tbl (FieldName, NewValue) select 'SubjectCardinality', SubjectCardinality from IntersectType O where ID = @MainObjectID
 		insert into @tbl (FieldName, NewValue) select 'ObjectCardinality', ObjectCardinality from IntersectType O where	ID = @MainObjectID
-		insert into @tbl (FieldName, NewValue) select 'Predicate', Name from predicate where id = (select predicateid from intersecttype where id = @MainObjectID)
 	end
 	
 	if @MainObject = 'IssueType'
@@ -427,26 +422,6 @@ begin
 		insert into @tbl (FieldName, NewValue) values (@DependentObject, @NewValue)
 	end
 
-	if @MainObject = 'Predicate'
-	begin
-		select	@ActionObjectTypeName = 'Predicate',
-				@ObjectName = coalesce(Name,'Predicate')
-		from	[Predicate]
-		where	ID = @MainObjectID;
-
-		insert into @tbl (FieldName, NewValue)
-			select	FieldName, NewValue
-			from	[Predicate]
-					cross apply
-					(
-					  values
-					  ('Name', cast(Name as nvarchar(max))),
-					  ('Inverse', cast(Inverse as nvarchar(max))),
-					  ('Type', cast(utility.GetPredicateFunctionalTypeValue(Type) as nvarchar(max)))
-					) c (FieldName, NewValue)
-			where	ID = @MainObjectID;
-	end
-  
 	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
 	begin
 		declare @deletedAuditIds table ([ID] bigint)

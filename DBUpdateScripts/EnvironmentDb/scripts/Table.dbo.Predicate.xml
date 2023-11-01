@@ -158,12 +158,17 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterInsert-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Predicate_AfterInsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+	  DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterInsert]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterInsert]
 	ON [dbo].[Predicate]
 	AFTER INSERT
@@ -175,20 +180,20 @@ BEGIN
         select 'Add', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(CreatedBy, 0)), 'Predicate', ID from inserted
 END
 		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterInsert]
-		]]>
     </rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterUpdate-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Predicate_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+	  DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterUpdate]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterUpdate]
 	ON [dbo].[Predicate]
 	AFTER UPDATE
@@ -199,21 +204,22 @@ BEGIN
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
         select 'Update', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(UpdatedBy, 0)), 'Predicate', ID from inserted
 END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterUpdate]
+
 		]]>
     </rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.dbo.Predicate_AfterDelete-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.Predicate_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterDelete]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Predicate_AfterDelete]
 	ON [dbo].[Predicate]
 	AFTER DELETE
@@ -224,11 +230,6 @@ BEGIN
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
 		select 'Delete', [queue].WriteIndexXml('', 'Predicate', ID, coalesce(UpdatedBy, 0)), 'Predicate', ID from deleted
 END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [dbo].[Predicate_AfterDelete]
 		]]>
     </rollback>
   </changeSet>
