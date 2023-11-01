@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
-import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -107,7 +107,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.loadSub.unsubscribe();
 		}
 
-		var params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder == SortOrder.Descending ? "desc" : "asc"  };
+		let params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder === SortOrder.Descending ? "desc" : "asc"  };
 
 		this.isLoading = true;
 		this.loadSub =
