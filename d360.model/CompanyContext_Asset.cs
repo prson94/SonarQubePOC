@@ -1783,6 +1783,21 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			'R'
 	from	#PCRelationships o
 			inner join IntersectDetail i on i.Uid = o.uid;
+
+	insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+		select	@Id,
+				(select i.Subject as Object, 
+						i.SubjectId as ObjectId,
+						i.SubjectName as ObjectName,
+						i.ID as ActionObjectId,
+						i.Name as ActionObjectName,
+						i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
+						case when o.Action = 'INSERT' then 'A' else 'U' end as [Action]
+				for json path
+				) as Payload,
+				'R'
+		from	#PCRelationships o
+				inner join IntersectDetail i on i.Uid = o.uid;
 ";
 
 	Connection.Execute(logSqlR, new { execution.Id, Uid = parentIntersectGuids.Select(x => x.Uid).ToList(), operation = parentIntersectGuids.Select(x => x.operation).ToList() }, transaction: trans, commandTimeout: timeout);
