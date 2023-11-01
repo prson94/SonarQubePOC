@@ -2620,7 +2620,7 @@ namespace d360.model
 				bodyTemplate = bodyTemplate.SanitizeHtml();
 			}
 			
-			List<string> tokens = Regex.Matches(bodyTemplate, "\\[([A-Z]+_?\\|?)+([0-9.]*)\\|?([a-zA-Z]*)\\]").OfType<Match>().Select(m => m.Value).Distinct().ToList();			
+			List<string> tokens = Regex.Matches(bodyTemplate, "\\[([A-Z]+_?\\|?)+([0-9.]*)\\|?([0-9a-zA-Z]*)\\]").OfType<Match>().Select(m => m.Value).Distinct().ToList();			
 
 			//if we don't have any tokens return the body
 			if (!tokens.Any())
