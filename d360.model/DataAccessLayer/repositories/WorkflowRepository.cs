@@ -1841,9 +1841,29 @@ namespace d360.model.DataAccessLayer
 			return await CompanyContext.QueryFirstOrDefaultAsync<long>(sql, new { ID }, ApiTimeout);
 		}
 
-		public async Task<List<WorkflowUserGroupedAssignments>> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid)
+		public async Task<WorkflowUserGroupedAssignments> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
 		{
 			StringBuilder classQuery = new StringBuilder();
+
+			if (cancellationToken == null)
+			{
+				cancellationToken = CancellationToken.None;
+			}
+
+			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
+			int pageSize = CompanyContext.ParsePageSize(queryParams);
+			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+			var orderFieldOptions = new List<DefaultFilter>
+			{
+				new DefaultFilter("workflowName", "ua.Name", SqlFieldType.Text),
+				new DefaultFilter("stepName", "ua.Step", SqlFieldType.Text),
+				new DefaultFilter("count", "ua.Total", SqlFieldType.Text),
+				new DefaultFilter("associatedWith", "JSON_VALUE(AssociatedWith.json,'$[0].Name')", SqlFieldType.Text),					
+			};
+
+			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, orderFieldOptions, "ua.Name");
+			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "asc");
 
 			classQuery.AppendLine("declare @classNames table(id int, name nvarchar(max))");
 			foreach(var item in AssetTypeClass.BusinessAsset.GetAsList())
@@ -1851,13 +1871,17 @@ namespace d360.model.DataAccessLayer
 				classQuery.AppendLine($"insert into @classNames values({(int)item.ID},'{item.Name}')");
 			}
 
+			var orderBySql = $" order by {orderColumn} {orderDirection} ";
+
 			string sql = $@"
 						declare @resourceId int;
 						select @resourceId = ResourceID from reporting.Global_Resource where uid = @resourceUid;
 
 						{classQuery.ToString()}
-
-						;with user_ass as(select
+						
+						drop table if exists #userAssignments
+						
+						SELECT
 						 wt.name as Name
 						,wt.uid as uid
 						,wv.[version]
@@ -1865,7 +1889,8 @@ namespace d360.model.DataAccessLayer
 						,wvs.Id as StepId
 						,count(1) as Total
 						,string_agg(CAST(wia.Id as nvarchar(max)),',') as WorkflowAssignments
-						from
+						INTO #userAssignments
+						FROM
 							[workflow].[type] wt
 							inner join [workflow].[version] wv on (wt.id = wv.typeid)
 							inner join [workflow].[item] wi on (wv.id = wi.versionid)	
@@ -1874,7 +1899,7 @@ namespace d360.model.DataAccessLayer
 							inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 						where
 						wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
-						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id)
+						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id
 
 						select
 						ua.Name as WorkflowName, 
@@ -1883,7 +1908,7 @@ namespace d360.model.DataAccessLayer
 						ua.uid as WorkflowTypeUid, 
 						ua.Total as [Count],
 						AssociatedWith.json as _associatedWith
-						from user_ass ua
+						from #userAssignments ua
 						outer apply (
 						select 
 							wi.UID as WorkflowItemUid, 
@@ -1922,9 +1947,30 @@ namespace d360.model.DataAccessLayer
 						)ObjectData(Name, AssetId, AssetUid, ObjectType, AssetTypeName, AssetTypePath)
 						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
 						)AssociatedWith(json)
-						order by ua.Name";
-			var data = await CompanyContext.Database.Connection.QueryAsync<WorkflowUserGroupedAssignments>(sql, new { resourceUid });
-			return data.ToList();
+						{orderBySql}
+						{offset}
+
+						select
+							count(*)
+						from 
+							#userAssignments ua";
+
+			WorkflowUserGroupedAssignments userAssignments = new WorkflowUserGroupedAssignments();
+
+			using (var multi = await CompanyContext.Database.Connection.QueryMultipleAsync(
+				  new CommandDefinition(sql,
+				  cancellationToken: cancellationToken.Value,
+				  parameters: new { resourceUid },
+				  commandTimeout: ApiTimeout
+				)))
+			{
+				userAssignments.items = multi.Read<WorkflowUserGroupedAssignment>().ToList();
+				userAssignments.total = multi.Read<int>().First();
+				userAssignments.pageNum = pageNum;
+				userAssignments.pageSize = pageSize;
+			}
+
+			return userAssignments;
 		}
 
 	}

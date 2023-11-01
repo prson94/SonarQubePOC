@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
-import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { SortOrder } from '../../../models/enums.model';
+import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -25,10 +27,14 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	totalRecords: number;
 	rowsPerPage: number = 10;
 	currentPageNumber: number = 1;
-	assignments: WorkflowUserGroupedAssignments[];
-	selectedAssignment: WorkflowUserGroupedAssignments
+	assignments: WorkflowUserGroupedAssignment[];
+	selectedAssignment: WorkflowUserGroupedAssignment
 	isMe: boolean = false;
 	isReassign: boolean = false;
+	sortField: string = "workflowName";
+	sortOrder: SortOrder = SortOrder.Descending;
+	storageKey = 'userAssignmentGrid' + this.settingsService.CurrentResourceID;
+		
 
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
@@ -73,6 +79,25 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		this.loadUserAssignments();
 	}
 
+	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
+		this.loadRowsPerPage(event);
+		this.sortOrder = event.sortField == null ? SortOrder.Descending : event.sortOrder;
+		this.sortField = event.sortField == null ? '' : event.sortField;
+		this.currentPageNumber = (event.first / event.rows) + 1;
+		this.loadUserAssignments();
+	}
+
+	setRowsPerPage(event): void {
+		if (event?.rows) {
+			localStorage.setItem(this.storageKey, event.rows);
+		}
+	}	
+
+	loadRowsPerPage(event: LazyLoadEvent): void {
+		const rowsPerPageStorage: string = localStorage.getItem(this.storageKey);
+		this.rowsPerPage = rowsPerPageStorage != null ? Number(rowsPerPageStorage) : event?.rows;
+	}
+
 	loadUserAssignments() {
 		if (!this.isMe && this.isAdminPage) {
 			this.onlyAdminReassignMode = true;
@@ -81,12 +106,15 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (this.loadSub) {
 			this.loadSub.unsubscribe();
 		}
+
+		var params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder == SortOrder.Descending ? "desc" : "asc"  };
+
 		this.isLoading = true;
 		this.loadSub =
-			this.workflowService.getUserAssignments(this.userUid)
+			this.workflowService.getUserAssignments(this.userUid, params)
 				.subscribe((res) => {
-					this.assignments = res;
-					this.totalRecords = +res.length;
+					this.assignments = res.items;
+					this.totalRecords = +res.total;
 					this.assignments.forEach((item) => {
 						if (item.AssociatedItems.length > 1) {
 							item.AssociatedWith = $localize`${item.AssociatedItems.length} Assets`;
@@ -157,7 +185,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 	}
 
-	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignments) {
+	onItemClick($event: MouseEvent, item: WorkflowUserGroupedAssignment) {
 		if ($event) {
 			$event.preventDefault();
 			$event.stopPropagation();

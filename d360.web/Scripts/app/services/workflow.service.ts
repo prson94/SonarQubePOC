@@ -634,8 +634,15 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	getUserAssignments(resourceUid: string): Observable<WorkflowUserGroupedAssignments[]> {
-		const url: string = `api/v2/workflow/assignments/${resourceUid}`;
+	getUserAssignments(resourceUid: string, params: any): Observable<WorkflowUserGroupedAssignments> {
+		let queryString = ""
+
+		if (params) {
+			queryString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+			if (queryString) { queryString = '?' + queryString; }
+		}
+
+		const url: string = `api/v2/workflow/assignments/${resourceUid}${queryString}`;
 
 		return this.http.get(url)
 			.pipe(

@@ -651,6 +651,21 @@ namespace d360.core.entities.Workflow
 
 	public class WorkflowUserGroupedAssignments
 	{
+		[DataMember]
+		public int pageSize { get; set; } = 250;
+
+		[DataMember]
+		public int pageNum { get; set; } = 1;
+
+		[DataMember]
+		public int total { get; set; } = 0;
+
+		[DataMember]
+		public List<WorkflowUserGroupedAssignment> items { get; set; }
+	}
+
+	public class WorkflowUserGroupedAssignment
+	{
 		public string WorkflowName { get; set; }
 		public Guid WorkflowTypeUid { get; set; }
 		public string StepName { get; set; }
