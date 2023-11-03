@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.02">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.05">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -22,6 +22,11 @@ begin
 	from	dbo.Asset a
 			inner join dbo.AssetType t on t.ID = a.AssetTypeID and a.Uid = @assetUid
 			inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = @scoreType;
+
+	if @allocationUid is null
+	begin
+		return;
+	end
 
 	-- Store the value of measures.
 	declare @measures table (
@@ -131,9 +136,14 @@ begin
 
 	-- Get the actual score.
 	declare @Score decimal(8,6);
-	select		@Score = sum(AdjustedValue)
+	select		@Score = sum(coalesce(AdjustedValue, 0))
 	from		@measures
 	where		ParentVersionUid is null;
+
+	if @Score is null 
+	begin
+		set @Score = 0
+	end
 
 	-- Get the current score for the asset.
 	declare		@CurrentScore decimal(8,6);

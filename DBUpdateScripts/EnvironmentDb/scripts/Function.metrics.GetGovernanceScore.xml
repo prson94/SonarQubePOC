@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.01">
+ <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.04">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -76,9 +76,9 @@ begin
 								select	pv.Uid
 								from	metrics.Asset pa
 										inner join metrics.AssetVersion pv on pv.AssetUid = pa.Uid and pa.Uid = sa.ParentUid 
-											and pv.EffectiveDate < @effectiveDate and (pv.EffectiveEndDate is null or pv.EffectiveEndDate >= @effectiveDate)
+											and pv.EffectiveDate <= @effectiveDate and (pv.EffectiveEndDate is null or pv.EffectiveEndDate >= @effectiveDate)
 							) p
-					where	sv.EffectiveDate < @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
+					where	sv.EffectiveDate <= @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
 				) v 			
 		where v.RowNum = 1
 		order by v.ParentUid, v.Name, v.EffectiveDate
