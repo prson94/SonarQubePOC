@@ -918,7 +918,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				PredicateType? predicateType = DeterminePredicateType(at.Object);
 				IntersectType it = null;
 				int? parentAssetTypeId = null;
-				List<Guid> parentIntersectGuids = new List<Guid>();
+				List<RelationParentChild> parentIntersectGuids = new List<RelationParentChild>();
 				Guid? intersectTypeUid = null;
 				int? intersectTypeID = null;
 				CurrentExecutionLocationModel currentLocation = null;
@@ -1477,7 +1477,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 									sw.Restart();
 									if (intersectTypeID.HasValue)
 									{
-										parentIntersectGuids = Connection.Query<Guid>(@"
+										parentIntersectGuids = new List<RelationParentChild>();
+										parentIntersectGuids = Connection.Query<RelationParentChild>(@"
 																						drop table if exists #ParentChildRelationships;
 																						create table #ParentChildRelationships([operation] varchar(10), [uid] uniqueidentifier, ItemNumber int);
 																						create index idx_parentchildrelationships on #ParentChildRelationships([uid]);
@@ -1535,7 +1536,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																									inner join [Intersect] I on I.Uid = A.Uid
 																									inner join Asset P on P.ID = I.SubjectAssetID;
 
-																						select [uid] from #ParentChildRelationships",
+																						select distinct [uid],operation from #ParentChildRelationships",
 											new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
 											.ToList();
 										addMeasurement(metrics, $"Parent/Child Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
@@ -1760,9 +1761,50 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-									#endregion
+	if (intersectTypeID.HasValue && parentIntersectGuids != null && parentIntersectGuids.Count()>0)
+	{
+	string logSqlR = @"
 
-									sw.Restart();
+		drop table if exists #PCRelationships;
+		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
+		insert into #PCRelationships values (@Uid,@operation);
+
+		insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+		select	@Id,
+			(select i.Object, 
+					i.ObjectId,
+					i.ObjectName,
+					i.ID as ActionObjectId,
+					i.Name as ActionObjectName,
+					i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
+					case when o.Action = 'INSERT' then 'A' else 'U' end as [Action]
+			for json path
+			) as Payload,
+			'R'
+	from	#PCRelationships o
+			inner join IntersectDetail i on i.Uid = o.uid;
+
+	insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
+		select	@Id,
+				(select i.Subject as Object, 
+						i.SubjectId as ObjectId,
+						i.SubjectName as ObjectName,
+						i.ID as ActionObjectId,
+						i.Name as ActionObjectName,
+						i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
+						case when o.Action = 'INSERT' then 'A' else 'U' end as [Action]
+				for json path
+				) as Payload,
+				'R'
+		from	#PCRelationships o
+				inner join IntersectDetail i on i.Uid = o.uid;
+";
+
+	Connection.Execute(logSqlR, new { execution.Id, Uid = parentIntersectGuids.Select(x => x.Uid).ToList(), operation = parentIntersectGuids.Select(x => x.operation).ToList() }, transaction: trans, commandTimeout: timeout);
+	}
+										#endregion
+
+										sw.Restart();
 
 									// Update success flag.
 									Connection.Execute(
