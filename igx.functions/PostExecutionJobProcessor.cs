@@ -351,7 +351,7 @@ from	api.ExecutionCatalogItem l
 		inner join api.ExecutionCatalogItemProperty f on f.ExecutionId = l.ExecutionID and f.SourceId = l.SourceId
 		outer apply {previousValueCrossApplySql("a.Object", "a.ObjectId", "f.Name")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') != '') 
-			or (coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') <> coalesce(pv.Value,'')));";
+			or (coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertAssets(string actionText)
@@ -402,7 +402,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 						) fv
 			outer apply {previousValueCrossApplySql("p.Object", "p.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(fv.FormattedValue, f.FieldValue,'') != '') 
-			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'')));";
+			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
@@ -517,7 +517,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			inner join @tbl tt on tt.Object = f.Object and tt.ObjectID = f.ObjectID
 			outer apply {previousValueCrossApplySql("f.Object", "f.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 
 			return commandText;
 		}
@@ -576,7 +576,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Group'", "p.ID", "f.FieldName")} pv
 		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-		or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+		or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertPredicates()
@@ -621,7 +621,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Predicate'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertRelations()
@@ -711,7 +711,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'MetricAllocation'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertUsers()
@@ -766,7 +766,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Resource'", "p.ObjectId", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		#endregion
