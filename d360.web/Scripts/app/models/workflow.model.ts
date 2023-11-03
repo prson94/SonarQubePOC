@@ -1027,7 +1027,14 @@ export class AssignmentSelection {
 	isReassign: boolean = false;
 }
 
-export class WorkflowUserGroupedAssignments {
+export class WorkflowUserGroupedAssignments {	
+	items: WorkflowUserGroupedAssignment[] = [];
+	pageNum: number;
+	pageSize: number;
+	total: number;
+}
+
+export class WorkflowUserGroupedAssignment {
 	WorkflowName: string;
 	WorkflowTypeUid: string
 	StepName: string;

@@ -19,6 +19,7 @@ import {
 	WorkflowFormField,
 	WorkflowFormFieldType,
 	WorkflowFormResponse,
+	WorkflowUserGroupedAssignment,
 	WorkflowUserGroupedAssignments,
 } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -100,7 +101,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	allowReassignResource: boolean = false;
 	clearOtherAssignments: boolean = false;
 	sendFormEmails: boolean = true;
-	selectedAssignment: WorkflowUserGroupedAssignments;
+	selectedAssignment: WorkflowUserGroupedAssignment;
 	areAllMultiAssignmentsSelected: boolean;
 
 	hideDialog: boolean = false;
@@ -153,7 +154,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 		stepUid: string,
 		assetId?: number,
 		items?: SingleAssignment[]
-		selectedAssignment?: WorkflowUserGroupedAssignments,
+		selectedAssignment?: WorkflowUserGroupedAssignment,
 		showAssignmentProgress?: boolean,
 		areAllMultiAssignmentsSelected?: boolean,
 		showBackButton?: boolean,

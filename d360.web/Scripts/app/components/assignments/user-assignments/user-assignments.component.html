@@ -17,26 +17,29 @@
 				 [paginator]="true"
 				 [loadingIcon]="'fa fa-spinner fa-spin'"
 				 [scrollHeight]="'calc(100vh - 353px)'"
-				 sortField="StartedOn" [sortOrder]="-1"
+				 sortField="workflowName" [sortOrder]="1"
 				 [rows]="rowsPerPage"
-				 [rowsPerPageOptions]="defaultPagingOptions">
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 [lazy]="true"
+				 (onPage)="setRowsPerPage($event)"
+				 (onLazyLoad)="loadWorkflowAssignmentItems($event)">
 			<ng-template pTemplate="header">
 				<tr>
-					<th [pSortableColumn]="'WorkflowName'" class="workflow-name-column">
+					<th [pSortableColumn]="'workflowName'" class="workflow-name-column">
 						<ng-container i18n>Workflow Name</ng-container>
-						<d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'workflowName'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'StepName'" class="step-name-column">
+					<th [pSortableColumn]="'stepName'" class="step-name-column">
 						<ng-container i18n>Step</ng-container>
-						<d3s-sortIcon [field]="'StepName'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'stepName'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'AssociatedWith'" class="associated-with-column">
+					<th [pSortableColumn]="'associatedWith'" class="associated-with-column">
 						<ng-container i18n>Associated with</ng-container>
-						<d3s-sortIcon [field]="'AssociatedWith'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'associatedWith'"></d3s-sortIcon>
 					</th>
-					<th [pSortableColumn]="'Count'" class="count-column">
+					<th [pSortableColumn]="'count'" class="count-column">
 						<ng-container i18n>Count</ng-container>
-						<d3s-sortIcon [field]="'Count'"></d3s-sortIcon>
+						<d3s-sortIcon [field]="'count'"></d3s-sortIcon>
 					</th>
 				</tr>
 			</ng-template>
