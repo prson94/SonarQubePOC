@@ -314,10 +314,20 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 				this.selectedCount = this.selected.length;
 				return;
 			}
-
 		}
 		const target = (<any>(event.target));
-		if (element && target.nodeName !== "P-TABLECHECKBOX") {
+		let istablecheckbox = false;
+
+		if (element && target.nodeName === "P-TABLECHECKBOX") {
+			istablecheckbox = true;
+		}
+		else if (element && target.className && target.className.contains('p-checkbox-box.p-component')) {
+			istablecheckbox = true;
+		}
+		else {
+			istablecheckbox = false;
+		}
+		if (element && !istablecheckbox) {
 			this.selected = [];
 			this.selected.push(item);
 			this.lastSelectedElement = item;
