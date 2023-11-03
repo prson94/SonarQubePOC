@@ -1938,7 +1938,7 @@ from    api.ExecutionItemDependentChange E
 where   ExecutionID = @apiExecutionUid
 		and DependentChangeType = 1 -- parent change
 
-select	EA.AssetUid
+select	cast(EA.AssetUid as uniqueidentifier)
 from	(
 		select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
 				JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
