@@ -165,6 +165,12 @@ namespace igx.jobs.apiexecutionprocessor
 								dbExecutionItem);
 						};
 
+						Action markExecutionAsCompleteForFieldType = () => {
+							company.Connection.ExecuteAsync(
+								"update api.Execution set Processed = @Processed, CompletedOn = @CompletedOn where Id = @Id",
+								dbExecutionItem);
+						};
+
 						Action markExecutionAsComplete = () =>
 						{
 							company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
@@ -343,8 +349,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 List<FieldType> currentFieldTypes = fieldsRepository.GetFieldTypes(deleteFieldtypes.TypeIdentifierInfo);
                                 var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
                                 dbExecutionItem.Processed = result;
-								dbExecutionItem.CompletedOn = DateTime.UtcNow;
-								company.Update(dbExecutionItem);
+                                dbExecutionItem.CompletedOn = DateTime.UtcNow;
+                                markExecutionAsCompleteForFieldType();
                                 break;
                             case ApiExecutionAction.UpsertUsers:
                                 UserUpsertModel model = await storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
