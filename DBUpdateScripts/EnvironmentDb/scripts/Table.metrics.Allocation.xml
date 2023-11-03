@@ -225,12 +225,17 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterInsert-v2">
+  <changeSet author="PuneetGupta" id="Table.metrics.Allocation-Allocation_AfterInsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+	  DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterInsert]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [metrics].[Allocation_AfterInsert]
 	ON [metrics].[Allocation]
 	AFTER INSERT
@@ -242,20 +247,20 @@ BEGIN
         select 'Add', [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(CreatedBy, 0)), 'MetricAllocation', ID from inserted
 END
 		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterInsert]
-		]]>
     </rollback>
   </changeSet>
 
-  <changeSet author="sDooley" id="Table.metrics.Allocation-Allocation_AfterUpdate-v2">
+  <changeSet author="PuneetGupta" id="Table.metrics.Allocation-Allocation_AfterUpdate-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
       <![CDATA[
+	  DROP TRIGGER IF EXISTS [metrics].[Allocation_AfterUpdate]
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
 CREATE OR ALTER TRIGGER [metrics].[Allocation_AfterUpdate]
 	ON [metrics].[Allocation]
 	AFTER UPDATE
@@ -275,25 +280,6 @@ BEGIN
 	Else IF(@state = 1 and @oldState = 3)
 	BEGIN
 		select @action = 'Add';
-	END
-	else
-	Begin
-		select @action = 'Update';
-	end
-		
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select @action, [queue].WriteIndexXml('', 'MetricAllocation', ID, coalesce(UpdatedBy, 0)), 'MetricAllocation', ID from inserted
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-	declare @action varchar(20);
-	declare @state int;
-	select @state = State from inserted;
-	IF (@state = 3 )
-	BEGIN
-	  select @action = 'Delete';
 	END
 	else
 	Begin
