@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneetgupta" id="Procedure.utility.AddAuditEntry-v28">
+ <changeSet author="Pappas,puneetgupta" id="Procedure.utility.AddAuditEntry-v29">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -72,10 +72,6 @@ begin
 		begin
 			select @ActionObjectName = Value from Tag where ID = @DependentObjectID
 		end			
-		else if @DependentObject = 'MetricAllocation'
-		begin
-			select @ActionObjectName = @MainObject
-		end	
 		else
 		begin
 			if @DependentObject like '%Type'
@@ -389,30 +385,6 @@ begin
 			where	ID = @MainObjectID;
 	end
 
-	if @MainObject = 'MetricAllocation'
-	begin
-		select	@ActionObjectTypeName = 'Score Definition',
-				@ObjectName = AT.Name
-		from	[dbo].[AssetType] AT		
-				inner join [metrics].[Allocation] MA on MA.ID = @MainObjectID		
-		where	AT.uid = MA.AssetTypeUid
-
-		insert into @tbl (FieldName, NewValue)
-			select	FieldName, NewValue
-			from	[metrics].[Allocation]
-					cross apply
-					(
-					  values
-					  ('LowerThreshold', cast(LowerThreshold as nvarchar(max))),
-					  ('UpperThreshold', cast(UpperThreshold as nvarchar(max))),
-					  ('ScoreType', cast(iif(ScoreType = 1, 'Governance', 'Data Quality') as nvarchar(max))),
-					  ('IsExternallyCalculated', cast(iif(IsExternallyCalculated = 1, 'External', 'Internal') as nvarchar(max)))
-					) c (FieldName, NewValue)
-			where	ID = @MainObjectID;
-
-		insert into @tbl (FieldName, NewValue) select 'AssetTypeName', AT.Name from [metrics].[Allocation] MA inner join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid where MA.ID = @MainObjectID
-	end
-
 	if @MainObject = 'CompanySettings'
 	begin
 		set @ActionObjectTypeName = @MainObject
@@ -420,17 +392,6 @@ begin
 		set	@ObjectName = @DependentObject
 		
 		insert into @tbl (FieldName, NewValue) values (@DependentObject, @NewValue)
-	end
-
-	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')
-	begin
-		declare @deletedAuditIds table ([ID] bigint)
-		delete from [reporting].[Global_Audit] 
-		Output deleted.ID into @deletedAuditIds
-		where [Object] = 'MetricAllocation' and [ObjectID] = @DependentObjectID;
-
-		Delete FA 
-		from [reporting].[Global_FieldAudit] FA inner join @deletedAuditIds DA on FA.AuditID=DA.ID
 	end
 
 	if (@Action = 'Created')

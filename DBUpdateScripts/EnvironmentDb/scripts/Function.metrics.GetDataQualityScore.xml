@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.02">
+ <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.04">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetDataQualityScore]
@@ -96,7 +96,7 @@ begin
 					from	metrics.AssetVersion sv
 							cross apply openjson(sv.Definition) with (ResultOperation varchar(25) '$.DataQuality.ResultOperation') svd
 							inner join metrics.Asset sa on sa.Uid = sv.AssetUid 
-								and sv.EffectiveDate < @effectiveDate 
+								and sv.EffectiveDate <= @effectiveDate 
 								and (sv.EffectiveEndDate is null or sv.EffectiveEndDate between @effectiveDate and @today)
 								and sa.[State] = 1
 							outer apply (
@@ -104,7 +104,7 @@ begin
 										Uid as ParentUid
 								from	metrics.AssetVersion
 								where	AssetUid = sa.ParentUid 
-										and EffectiveDate < @effectiveDate 
+										and EffectiveDate <= @effectiveDate 
 										and (EffectiveEndDate is null or EffectiveEndDate between @effectiveDate and @today)
 								order by EffectiveDate desc
 							) pv
