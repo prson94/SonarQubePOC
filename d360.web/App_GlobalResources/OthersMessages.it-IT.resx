@@ -143,7 +143,7 @@
     <value>Eccezione critica</value>
   </data>
   <data name="CustomConstant" xml:space="preserve">
-    <value>Personalizzata</value>
+    <value>Personalizzato</value>
   </data>
   <data name="DatasourceNotReachable" xml:space="preserve">
     <value>L'origine dati sottostante non è raggiungibile.</value>
@@ -287,9 +287,9 @@
     <value>Autorizzazione non disponibile</value>
   </data>
   <data name="_PageNumGT0" xml:space="preserve">
-    <value> Il parametro [_pageNum] deve essere maggiore di 0.</value>
+    <value>Il parametro [_pageNum] deve essere maggiore di 0.</value>
   </data>
   <data name="_PageSizeMax200" xml:space="preserve">
-    <value> Il parametro [_pageSize] ha un valore massimo supportato di 200.</value>
+    <value>Il parametro [_pageSize] ha un valore massimo supportato di 200.</value>
   </data>
 </root>

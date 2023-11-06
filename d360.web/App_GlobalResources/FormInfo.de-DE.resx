@@ -155,7 +155,7 @@
     <value>'When' enthält eine ungültige FieldTypeId für diesen Asset-Typ.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value> 'When' ist erforderlich, wenn ApplyToType auf 'false' festgelegt ist.</value>
+    <value>'When' ist erforderlich, wenn ApplyToType auf 'false' festgelegt ist.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
     <value>'When' ist erforderlich.</value>

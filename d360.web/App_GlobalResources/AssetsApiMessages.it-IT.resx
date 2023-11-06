@@ -161,7 +161,7 @@
     <value>ExecutionUid</value>
   </data>
   <data name="ExportTemplateMessage" xml:space="preserve">
-    <value> Il parametro [_exportTemplateUid] deve essere utilizzato con l'intestazione "Accept" impostata su "application/octet-stream".</value>
+    <value>Il parametro [_exportTemplateUid] deve essere utilizzato con l'intestazione "Accept" impostata su "application/octet-stream".</value>
   </data>
   <data name="ExportTemplateUidNotExist" xml:space="preserve">
     <value>Il modello di esportazione con l'UID '{0}' non esiste.</value>

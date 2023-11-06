@@ -241,8 +241,8 @@
   <data name="InvalidValueObjID" xml:space="preserve">
     <value>Ungültiger Wert für Parameter [objID]</value>
   </data>
-  <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Ungültiger Wert {0} in Parameter [_includeFields], Feld mit diesem Namen wurde nicht gefunden.</value>
+  <data name="InvalidValue_includeFields" xml:space="preserve">
+    <value>Kein gültiges Feld in Parameter [_includeFields] gefunden.</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
     <value>Wert von [_includeFields] konnte nicht geparst werden</value>
@@ -363,5 +363,8 @@
   </data>
   <data name="AssetTypeWithSourceIdExists" xml:space="preserve">
     <value>Ein Asset-Typ mit [SourceID] (angegeben) ist bereits vorhanden.</value>
+  </data>
+  <data name="displaypathsegmentValidOper" xml:space="preserve">
+    <value>Gültige Operatoren für "displaypathsegment" sind "ct" und "nct".</value>
   </data>
 </root>

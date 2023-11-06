@@ -152,7 +152,7 @@
     <value>{0} {1} ist keine gültige UID.</value>
   </data>
   <data name="DescriptionLengthValidation" xml:space="preserve">
-    <value> [Description] ({0} Zeichen) ist zu lang. Sie darf maximal 4000 Zeichen enthalten.</value>
+    <value>[Description] ({0} Zeichen) ist zu lang. Sie darf maximal 4000 Zeichen enthalten.</value>
   </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Fehler bei der Suche nach der Metrik</value>

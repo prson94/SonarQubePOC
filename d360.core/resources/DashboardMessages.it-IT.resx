@@ -140,7 +140,7 @@
     <value>[AssetUid] fornito non valido.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value> [Location] deve essere uno dei seguenti valori: Elenco, Dettagli o Homepage</value>
+    <value>[Location] deve essere uno dei seguenti valori: Elenco, Dettagli o Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
     <value>[ReportType] deve essere uno dei seguenti valori: DqPlus o PowerBi</value>

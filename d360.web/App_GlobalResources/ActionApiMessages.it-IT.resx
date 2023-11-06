@@ -193,8 +193,11 @@
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Direzione non valida trasmessa nella richiesta.</value>
   </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>Il valore [_hasAssignments] fornito non è valido.</value>
+  </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value> Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
+    <value>Il valore [_limitToActiveWorkflows] fornito non è valido.</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
     <value>Ordine non valido trasmesso nella richiesta.</value>

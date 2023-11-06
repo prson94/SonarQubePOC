@@ -766,4 +766,13 @@
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>AssetTypeuid {0} is ongeldig</value>
   </data>
+  <data name="DataSourceLengthMax" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor DataSource is 250.</value>
+  </data>
+  <data name="ExternalIDLengthMax" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor ExternalID is 250.</value>
+  </data>
+  <data name="TypeLengthMax" xml:space="preserve">
+    <value>De maximaal toegestane lengte voor Type is 50.</value>
+  </data>
 </root>

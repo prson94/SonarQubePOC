@@ -266,7 +266,7 @@
     <value>Besturingselementen kopbalk verbergen</value>
   </data>
   <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
-    <value>Deze instelling wordt gebruikt om een aangepaste afbeelding op de startpagina weer te geven. </value>
+    <value>Deze instelling wordt gebruikt om een aangepaste afbeelding op de startpagina weer te geven.</value>
   </data>
   <data name="HomePageBackgroundImage_Name" xml:space="preserve">
     <value>Achtergrondafbeelding startpagina</value>

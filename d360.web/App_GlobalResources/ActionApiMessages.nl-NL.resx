@@ -193,6 +193,9 @@
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Ongeldige richting doorgevoerd in de aanvraag.</value>
   </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>De opgegeven waarde [_hasAssignments] is ongeldig.</value>
+  </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
     <value>De opgegeven waarde [_limitToActiveWorkflows] is ongeldig.</value>
   </data>

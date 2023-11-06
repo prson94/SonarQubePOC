@@ -317,7 +317,7 @@
     <value>L'ID area di lavoro per questi client in Power BI.</value>
   </data>
   <data name="PowerBIGroupId_Name" xml:space="preserve">
-    <value>ID area di lavoro/gruppo Power BI incorporato </value>
+    <value>ID area di lavoro/gruppo Power BI incorporato</value>
   </data>
   <data name="RequestCertificationDraft_Desc" xml:space="preserve">
     <value>Questa impostazione viene utilizzata per controllare quando il pulsante Richiedi certificazione è disponibile in Govern e cosa viene considerato stato della bozza.</value>

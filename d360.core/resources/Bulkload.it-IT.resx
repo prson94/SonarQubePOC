@@ -122,7 +122,7 @@
     <value>Lineage: tecnico</value>
   </data>
   <data name="Object_Default" xml:space="preserve">
-    <value>Predefinito</value>
+    <value>Valore predefinito</value>
   </data>
   <data name="Object_Deleted" xml:space="preserve">
     <value>Eliminato</value>

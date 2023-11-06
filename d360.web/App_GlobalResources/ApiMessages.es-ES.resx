@@ -380,13 +380,13 @@
     <value>Parámetro no válido</value>
   </data>
   <data name="InvalidResourceuid" xml:space="preserve">
-    <value>[_resourceuid] proporcionado no válido.</value>
+    <value>[_resourceuid] proporcionada no válida.</value>
   </data>
   <data name="InvalidUserUids" xml:space="preserve">
     <value>Uno o más de los UID de usuario pasados no son un usuario.</value>
   </data>
   <data name="Invalid_Order" xml:space="preserve">
-    <value>[_order] proporcionado no válido.</value>
+    <value>[_order] proporcionada no válida.</value>
   </data>
   <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
     <value>Hay elementos existentes en su entorno. No puede realizar una acción 'Replace' hasta que se eliminen esos elementos.</value>
@@ -765,5 +765,14 @@
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>AssetTypeuid {0} no es válido</value>
+  </data>
+  <data name="DataSourceLengthMax" xml:space="preserve">
+    <value>La longitud máxima permitida para DataSource es 250.</value>
+  </data>
+  <data name="ExternalIDLengthMax" xml:space="preserve">
+    <value>La longitud máxima permitida para ExternalID es 250.</value>
+  </data>
+  <data name="TypeLengthMax" xml:space="preserve">
+    <value>La longitud máxima permitida para Type es 50.</value>
   </data>
 </root>

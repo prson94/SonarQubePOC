@@ -152,7 +152,7 @@
     <value>Tipo di risorsa non trovato in base a [Class] fornito.</value>
   </data>
   <data name="ErrorNameTaken" xml:space="preserve">
-    <value>Il nome è già in uso. Prova un altro nome per cortesia.</value>
+    <value>Il nome è già in uso. Provarne un altro.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
     <value>Tipo di risorsa non trovato in base a [Uid] fornito.</value>
@@ -241,8 +241,8 @@
   <data name="InvalidValueObjID" xml:space="preserve">
     <value>Valore non valido per il parametro [objID]</value>
   </data>
-  <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Valore {0} non valido nel parametro [_includeFields]; il campo con questo nome non è stato trovato.</value>
+  <data name="InvalidValue_includeFields" xml:space="preserve">
+    <value>Nessun campo valido trovato nel parametro [_includeFields].</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
     <value>Impossibile analizzare il valore di [_includeFields]</value>
@@ -363,5 +363,8 @@
   </data>
   <data name="AssetTypeWithSourceIdExists" xml:space="preserve">
     <value>Esiste già un tipo di risorsa con [SourceID] specificato.</value>
+  </data>
+  <data name="displaypathsegmentValidOper" xml:space="preserve">
+    <value>Gli operatori validi "displaypathsegment" sono ct e nct.</value>
   </data>
 </root>
