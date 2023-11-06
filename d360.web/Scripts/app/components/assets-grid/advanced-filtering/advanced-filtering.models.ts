@@ -577,7 +577,7 @@ export class AdvancedFilterFieldConditionCollection {
 
 				let connectingOperator = cond.connectingOperator;
 				if (cond.fieldType === "Lookup" && cond.operator.toString() === "NotContains" && cond.type?.Type?.Lookup?.List?.AllowMultipleValues === true) {
-					if (cond.connectingOperator == "or") {
+					if (cond.connectingOperator === "or") {
 						connectingOperator = "and";
 					} else {
 						connectingOperator = "or";
