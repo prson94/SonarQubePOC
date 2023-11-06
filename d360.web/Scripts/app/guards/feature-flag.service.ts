@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from '../services/feature-flags.enum';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
