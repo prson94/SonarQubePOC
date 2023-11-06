@@ -126,9 +126,18 @@ import { SwitchModule } from '../shared/controls/switch/switch';
 import { IgDateModule } from '../shared/controls/date/date';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import {
+	AssignmentDetailsComponent
+} from './assignment-details-container/assignment-details/assignment-details.component';
+import {
+	AssignmentDetailsContainerComponent
+} from './assignment-details-container/assignment-details-container.component';
 
 @NgModule({
 	declarations: [
+		AssignmentAssetListComponent,
+		AssignmentDetailsComponent,
+		AssignmentDetailsContainerComponent,
 		AssignmentFormResponseComponent,
 		AssignmentGridComponent,
 		AssignmentHeaderComponent,
@@ -151,6 +160,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		ByWorkflowVersionGridComponent,
 		ByWorkflowVersionListComponent,
 		CompleteAssignmentComponent,
+		CompleteAssignmentFormFieldsComponent,
 		PendingAssignmentsStepComponent,
 		SidePanelSwitcherComponent,
 		StepInformationComponent,
@@ -161,17 +171,17 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		StepInformationRelationshipChangeComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent,
-		CompleteAssignmentFormFieldsComponent,
-		AssignmentAssetListComponent
+		WorkflowVersionInformationComponent
 	],
-    exports: [
-        AssignmentInformationComponent,
-        AssignmentListComponent,
-        AssignmentProgressStepDetailsComponent,
-        CompleteAssignmentComponent,
-        SidePanelSwitcherComponent
-    ],
+	exports: [
+		AssignmentInformationComponent,
+		AssignmentInformationRequestComponent,
+		AssignmentListComponent,
+		AssignmentProgressStepComponent,
+		AssignmentProgressStepDetailsComponent,
+		CompleteAssignmentComponent,
+		SidePanelSwitcherComponent
+	],
 	imports: [
 		AdvancedFiltersModule,
 		AngularSplitModule,
@@ -179,7 +189,9 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		AssetTypeDetailModule,
 		AssignmentsRoutingModule,
 		AutoCompleteModule,
+		AutoCompleteModule,
 		ButtonModule,
+		CalendarModule,
 		CheckboxModule,
 		CommonModule,
 		CoreModule,
@@ -188,14 +200,21 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		DataProfileModule,
 		DirectivesModule,
 		DropdownModule,
+		DropdownModule,
+		EditorModule,
 		FormsModule,
 		IgBadgeModule,
+		IgDateModule,
+		IgNumberFieldModule,
 		InputTextModule,
+		MultiSelectModule,
+		OverlayPanelModule,
 		PageHeaderModule,
 		PipesModule,
 		PopupMenuModule,
 		PortalsModule,
 		PropertyGroupModule,
+		RadioButtonModule,
 		RouterModule,
 		SearchFieldModule,
 		SharedDeleteFormModule,
@@ -203,25 +222,16 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 		SharedModule,
 		SidePanelModule,
 		SiteModalModule,
+		SwitchModule,
 		TableModule,
 		TabsModule,
 		TaggedAssetDetailModule,
 		TilesModule,
 		TooltipModule,
 		WorkflowDiagramModule,
-		AutoCompleteModule,
-		DropdownModule,
 		WorkflowModule,
-		CalendarModule,
-		EditorModule,
-		MultiSelectModule,
-		RadioButtonModule,
-		FormFeedbackBadgesModule,
 		WorkflowModule,
-		SwitchModule,
-		IgDateModule,
-		IgNumberFieldModule,
-		OverlayPanelModule
+		FormFeedbackBadgesModule
 	]
 })
 export class AssignmentsModule {

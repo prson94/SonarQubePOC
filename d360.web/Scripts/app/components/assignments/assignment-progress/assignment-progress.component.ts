@@ -13,9 +13,11 @@ export class AssignmentProgressComponent {
 
 	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
-	@Input() workflowUid: string;
-
-	@Input() workflowTypeVersion: number;
+	@Input({ required: true }) workflowUid: string;
+	@Input({ required: true }) workflowTypeVersion: number;
+	@Input() shouldBePadded: boolean = false;
+	@Input() isCurrentUserAssigned: boolean = false;
+	@Input() showCompleteAssignment: boolean = true;
 
 	@Input() set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
@@ -24,13 +26,9 @@ export class AssignmentProgressComponent {
 		}
 	}
 
-	@Input() isCurrentUserAssigned: boolean = false;
-
 	get workflowItemUid(): string {
 		return this._workflowItemUid;
 	}
-
-	@Input() showCompleteAssignment: boolean = true;
 
 	@Output() completeAssignment: EventEmitter<{
 		workflowItemUid: string,
@@ -41,8 +39,8 @@ export class AssignmentProgressComponent {
 	}>();
 
 	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
-	isLoading: boolean = false;
 
+	isLoading: boolean = false;
 	assignmentItemSteps: AssignmentItemStep[];
 	private _workflowItemUid: string;
 
