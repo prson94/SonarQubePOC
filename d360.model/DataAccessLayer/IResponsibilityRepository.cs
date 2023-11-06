@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using d360.core.entities;
 using d360.core.queue;
 using d360.model.DataAccessLayer.repositories;
@@ -79,5 +78,7 @@ namespace d360.model.DataAccessLayer
         Task<ICollection<ResponsibilityBreakdownResponse>> GetTypeBreakdownAsync(Guid? responsibilityTypeUid = null);
 
         Task<ICollection<ResponsibilityBreakdownByResourceAggregate>> GetTypeBreakdownByResourceAsync(Guid resourceUid, Guid? responsibilityTypeUid = null);
-    }
+
+		Task<(ResponsibilityTypeRelationOverrideItem, Guid)> GetResponsibilityTypeRelationOverride(long assetId, int responsibilityTypeId);
+	}
 }

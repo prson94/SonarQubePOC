@@ -116,7 +116,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     canEdit(item): boolean {
-        return item != null && item.AssignedBy.toLowerCase() === "user" && this.hasModifyResponsibilitiesPermissions(null);
+        return item != null && item.AssignedBy.toLowerCase() === "user" && this.hasModifyResponsibilitiesPermissions();
     }
 
     showEdit(item): boolean {
