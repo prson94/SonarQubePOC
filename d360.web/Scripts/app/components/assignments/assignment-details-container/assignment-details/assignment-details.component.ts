@@ -21,10 +21,6 @@ export class AssignmentDetailsComponent {
 	constructor(private workflowService: WorkflowService, private route: ActivatedRoute) {
 	}
 
-	stepSelectionChanged(assignmentItemStep: AssignmentItemStep) {
-
-	}
-
 	private loadWorkflowDetails(assignmentUid: string): void {
 		this.workflowService.getWorkflowAssignments(1, 1, null, '(workflowItemUid eq \'' + assignmentUid + '\')').subscribe((workflowAssignments: WorkflowAssignments): void => {
 			this.workflowAssignmentItem = workflowAssignments.items[0];

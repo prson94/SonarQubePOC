@@ -17,9 +17,10 @@ export class FeatureFlagService {
 	}
 }
 
-export const AssignmentDetailsGuard: CanActivateFn = (next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean => {
+export const AssignmentDetailsGuard: CanActivateFn = (): boolean => {
 	if (!inject(FeatureFlagService).canActivateAssignmentDetails()) {
 		inject(Router).navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+		return false;
 	}
 	return true;
 };

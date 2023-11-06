@@ -81,15 +81,17 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		this.secondaryNavService.clearCurrentObject();
 		this.secondaryNavService.showHeader(true);
 		if (this.isRequestDetailsFlow) {
+			const pageTitle: string = $localize`Request Progress and Information`;
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Requests`, SiteUrlHelpers.SITE_URL_REQUESTS_ROOT));
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Request Progress and Information`, null, true));
-			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), $localize`Request Progress and Information`);
-			this.secondaryNavService.setCurrentArea(this.assignmentItem.WorkflowName, 'fa-list-ul', $localize`Definition`, [this.getStatusBadge()]);
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(pageTitle, null));
+			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), pageTitle);
+			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);
 		} else {
+			const pageTitle: string = $localize`Assignment Progress and Information`;
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT));
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignment Progress and Information`, null, true));
-			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), $localize`Assignment Progress and Information`);
-			this.secondaryNavService.setCurrentArea(this.assignmentItem.WorkflowName, 'fa-list-ul', $localize`Definition`, [this.getStatusBadge()]);
+			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(pageTitle, null));
+			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), pageTitle);
+			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);
 		}
 	}
 
