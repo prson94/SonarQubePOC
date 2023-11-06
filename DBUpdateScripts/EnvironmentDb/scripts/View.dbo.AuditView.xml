@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="TDuric,puneetgupta" id="View.dbo.AuditView.v6">
+ <changeSet author="TDuric,PuneetGupta" id="View.dbo.AuditView.v7">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 CREATE OR ALTER VIEW [dbo].[AuditView]
@@ -31,7 +31,7 @@ SELECT 	ad.uid AS [Uid],
 		END AS [ActionObjectTypeName],
 		ga.actionObjectName AS [ActionObjectName],
 		ga.actionDescription AS [ActionDescription],
-		fa.FieldName as [Field],
+		COALESCE(FT.FriendlyName,fa.FieldName) as [Field],
 		CASE 
 			WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 			ELSE fa.Value
@@ -95,7 +95,7 @@ FROM 	reporting.global_audit ga
 				END AS [ActionObjectTypeName],
 				ga.actionObjectName AS [ActionObjectName],
 				ga.actionDescription AS [ActionDescription],
-				fa.FieldName as [Field],
+				COALESCE(FT.FriendlyName,fa.FieldName) as [Field],
 				CASE 
 					WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 					ELSE fa.Value
