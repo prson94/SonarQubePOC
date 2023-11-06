@@ -3,6 +3,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { AssignmentsContainerComponent } from './assignments-container.component';
 import { AssignmentListComponent } from './assignment-list/assignment-list.component';
 import { ByWorkflowVersionListComponent } from './by-workflow-version-list/by-workflow-version-list.component';
+import {
+	AssignmentDetailsContainerComponent
+} from './assignment-details-container/assignment-details-container.component';
+import { AssignmentDetailsGuard } from '../../guards/feature-flag.service';
 
 const routes: Routes = [
 	{
@@ -10,6 +14,11 @@ const routes: Routes = [
 		component: AssignmentsContainerComponent,
 		children: [
 			{ path: '', component: AssignmentListComponent },
+			{
+				path: ':assignmentUid',
+				component: AssignmentDetailsContainerComponent,
+				canActivate: [AssignmentDetailsGuard]
+			},
 			{ path: 'by-workflow-version', component: ByWorkflowVersionListComponent }
 		]
 	}

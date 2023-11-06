@@ -37,6 +37,8 @@ import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.compo
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { State } from '../../../models/asset.model';
+import { FeatureFlagService } from '../../../guards/feature-flag.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 /*global $localize*/
 
@@ -88,6 +90,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 	modalSubtitle: string;
+	assignmentDetailsAvailable: boolean;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
@@ -100,7 +103,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				protected settingsService: CompanySettingsService,
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService,
-				private router: Router
+				private router: Router,
+				private featureFlagService: FeatureFlagService
 	) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
@@ -126,6 +130,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
+		this.assignmentDetailsAvailable = this.featureFlagService.canActivateAssignmentDetails();
 	}
 
 	loadRowsPerPage(event: LazyLoadEvent): void {
@@ -434,6 +439,15 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		filterFieldsSubject.complete();
 	}
 
+	openAssignmentDetails(item: WorkflowAssignmentGrid, newWindow: boolean = false): void {
+		const url = this.federateUrl(`${(this.isRequestsFlow ? SiteUrlHelpers.SITE_URL_REQUESTS_ROOT : SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT)}/${item.workflowItemUid}`);
+		if (newWindow) {
+			window.open(url, '_blank');
+		} else {
+			this.router.navigateByUrl(url);
+		}
+	}
+
 	get storageKey(): string {
 		if (this.assetTypeUid) {
 			return 'assetsAssignmentGrid' + this.settingsService.CurrentResourceID;
@@ -472,7 +486,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private getFilteredWorkflowNames = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
 		return this.workflowService.getTypes().pipe(
-			map((workflowTypeList: WorkflowTypeModel[]) => { 
+			map((workflowTypeList: WorkflowTypeModel[]) => {
 				let workflowNameList: {
 					'name': string,
 					'value': string

@@ -1,0 +1,20 @@
+<d3s-loading *ngIf="!workflowAssignmentItem" [isLoading]="true"></d3s-loading>
+<div class="space-around" *ngIf="workflowAssignmentItem">
+	<ig-property-group i18n-title title="Request" [shouldBePadded]="true" [showHeaderLine]="false"
+					   *ngIf="workflowAssignmentItem?.initiatingObjectType === 'Action'">
+		<div readonly class="max-width">
+			<ng-container>
+				<d3s-assignment-information-request [workflowActionUid]="workflowAssignmentItem.actionUid"
+				></d3s-assignment-information-request>
+			</ng-container>
+		</div>
+	</ig-property-group>
+	<d3s-assignment-progress [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
+							 [workflowTypeVersion]="workflowAssignmentItem?.Version"
+							 [workflowUid]="workflowAssignmentItem?.workflowUid"
+							 [showCompleteAssignment]="false" [shouldBePadded]="true"
+							 (stepClickChange)="stepSelectionChanged($event)"></d3s-assignment-progress>
+	<d3s-assignment-information-general [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
+										[shouldBePadded]="true" [isCollapsed]="true"
+										[workflowTypeVersion]="workflowAssignmentItem?.Version"></d3s-assignment-information-general>
+</div>
