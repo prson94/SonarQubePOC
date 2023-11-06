@@ -757,7 +757,7 @@ from	#tempScore p
 					) f
 		outer apply {previousValueCrossApplySql("'MetricAllocation'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
 drop table if exists #tempScore;";
 		}
 
