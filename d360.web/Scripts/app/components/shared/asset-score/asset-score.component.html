@@ -222,6 +222,7 @@
                         igSize="medium"
                         [styleClass]="dropdownClassName"
                         required
+                        [showClear]="false"
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
                         (onChange)="onScorePointChange($event)">
