@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.utility.GetFormattedFieldLookupValue-v8">
-   <comment>GOV-28803</comment>
+  <changeSet author="PuneetGupta" id="Function.utility.GetFormattedFieldLookupValue-v9">
+   <comment>GOV-29748</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -120,6 +120,7 @@ begin
 					FROM	FieldType IT 
 					WHERE   IT.AssetTypeID = @AssetTypeID
 							and CHARINDEX(lower('#' + IT.name + '#'),@fieldlist) > 0
+							and IT.Type != 'System'
 							
 							
 					If Exists(select 1 from @fieldtype)
@@ -386,13 +387,30 @@ begin
 				end
 		else
 			begin
-				declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
-				declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250), AllowMultipleValues bit)
+				declare @tokens table(ID int identity(1,1), 
+									  Token nvarchar(100), 
+									  Field nvarchar(100),
+									  index ix_tokens clustered (ID));
+									  
+				declare @fieldValues table( Field nvarchar(100), 
+											Value nvarchar(max), 
+											LookupObjectType nvarchar(250), 
+											LookupObjectID int, 
+											LookupDisplayFormat nvarchar(250), 
+											AllowMultipleValues bit,
+											index ix_fieldValues clustered (Field));
 				declare @fromPos int;
 				declare @EndPos int;
 				declare @ToPos int;
 				declare @fieldlist nvarchar(4000);
 				declare @valueint int;
+				
+				declare @fieldtype table(FieldTypeID int,Field nvarchar(100), 
+				LookupObjectType nvarchar(250), LookupObjectID int, 
+				LookupDisplayFormat nvarchar(250), AllowMultipleValues bit,
+				index ix_fieldtype clustered (FieldTypeID))
+				declare @AssetTypeID int;
+				declare @AssetID BigInt;
 				
 				set @valueint = TRY_CAST(@Value AS int)
 				
@@ -420,7 +438,28 @@ begin
 					set @formattedValue = replace(@formattedValue, @txt, '')
 				end
 
+				select top 1 @AssetID = ID,
+				@AssetTypeID = AssetTypeID
+				from Asset A
+				Where [A].Object = @LookupObjectType
+				and [A].ObjectID = @valueint;
 
+				if (@AssetTypeID is not null)
+				begin
+					insert into @fieldtype(FieldTypeID,Field, LookupObjectType, LookupObjectID, LookupDisplayFormat, AllowMultipleValues)
+					SELECT	IT.ID,
+							IT.Name,
+							[IT].LookupObjectType,
+							COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+							[IT].LookupDisplayFormat,
+							[IT].AllowMultipleValues
+					FROM	FieldType IT 
+					WHERE   IT.AssetTypeID = @AssetTypeID
+							and CHARINDEX(lower('#' + IT.name + '#'),@fieldlist) > 0
+							
+
+					If Exists(select 1 from @fieldtype)
+						begin
 				insert into @fieldValues
 				select	distinct
 						V.Name,
@@ -430,20 +469,18 @@ begin
 						V.LookupDisplayFormat,
 						V.AllowMultipleValues
 				from	(
-						SELECT	IT.Name,
+									SELECT	IT.Field Name,
 								COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 								[IT].LookupObjectType,
-								COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+											[IT].LookupObjectID,
 								[IT].LookupDisplayFormat,
 								[IT].AllowMultipleValues
 						FROM	Field [IF]
-								inner join FieldType IT 
-								ON [IF].FieldTypeID = IT.ID 
-								inner join Asset A on A.ID = [IF].AssetID
-						WHERE   [A].Object = @LookupObjectType
-								and [A].ObjectID = @valueint
-								and CHARINDEX(lower('#' + it.name + '#'),@fieldlist) > 0
+											inner join @fieldtype IT ON [IF].FieldTypeID = IT.FieldTypeID 
+									WHERE   [IF].AssetID = @AssetID
 						) V
+						end			
+				end
 
 				if @LookupObjectType = 'Artifact' and (CHARINDEX('#id#',@fieldlist) > 0 or CHARINDEX('#textpath#',@fieldlist) > 0)
 					begin
@@ -463,12 +500,11 @@ begin
 									NULL as LookupDisplayFormat,
 									cast(0 as bit) as AllowMultipleValues
 								FROM	(
-									SELECT	A.ObjectID as AID,
-											cast(A.ObjectID as nvarchar(max)) as ID,
+									SELECT	@valueint as AID,
+											cast(@valueint as nvarchar(max)) as ID,
 											cast(P.DisplayPath as nvarchar(max)) as TextPath
-									FROM	Asset A											
-											inner join AssetPath P on P.ID = A.ID
-									WHERE	A.ObjectID = @valueint and A.[Object] = 'Artifact' 																						
+									FROM	AssetPath P
+									WHERE	P.ID = @AssetID																			
 									) A
 									unpivot	(
 											FieldValue for FieldName in (ID, TextPath)
@@ -493,11 +529,10 @@ begin
 										NULL as LookupDisplayFormat,
 										cast(0 as bit) as AllowMultipleValues
 								FROM	(											
-										SELECT	A.ObjectID as ID,													
+										SELECT	@valueint as ID,													
 												P.DisplayPath as TextPath
-										FROM	Asset A
-												inner join AssetPath P on P.ID = A.ID
-										WHERE	A.ObjectID = @valueint and A.[Object] = 'Taxonomy' 
+										FROM	AssetPath P
+										WHERE	P.ID = @AssetID	 
 										) A
 										unpivot	(
 												FieldValue for FieldName in (TextPath)
@@ -522,10 +557,10 @@ begin
 										NULL as LookupDisplayFormat,
 										cast(0 as bit) as AllowMultipleValues
 								FROM	(
-										SELECT	ObjectID as ID,
+										SELECT	@valueint as ID,
 												CAST(Code as nvarchar(max)) as Code
 										FROM	Asset A
-										WHERE	A.ObjectID = @valueint and A.[Object] = 'ReferenceItem'
+										WHERE	A.ID = @AssetID
 										) A
 										unpivot	(
 												FieldValue for FieldName in (Code)
