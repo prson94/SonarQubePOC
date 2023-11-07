@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -7,10 +7,18 @@ import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { AssignmentItem } from '../../../models/workflow.model';
+import {
+	AssignmentItem,
+	AssignmentItemStep,
+	WorkflowAssignmentItem,
+	WorkflowAssignments,
+	WorkflowStepDetail
+} from '../../../models/workflow.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkflowService } from '../../../services/workflow.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { DynamicButton } from '../../../models/secondaryNav.model';
+import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 
 @Component({
 	selector: 'd3s-assignment-details-container',
@@ -23,9 +31,15 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 	sidePanelTab: string;
 	assignmentUid: string;
 	assignmentItem: AssignmentItem;
+	completeAssignmentButton: DynamicButton;
 	private flowContext: string = 'assignmentDetails';
 	private isAdmin: boolean = false;
 	private isRequestDetailsFlow: boolean = false;
+
+	@ViewChild('completeAssignmentComponent') private completeAssignmentComponent: CompleteAssignmentComponent;
+	private workflowStepDetail: WorkflowStepDetail;
+	private assignmentItemStep: AssignmentItemStep;
+	private workflowAssignment: WorkflowAssignmentItem;
 
 	constructor(public sidePanelService: SidePanelService,
 				private companySettingsService: CompanySettingsService,
@@ -41,10 +55,12 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		});
 		this.assignmentUid = this.getAssignmentUidFromUrlParam();
 		this.secondaryNavService = secondaryNavService;
-		if (this.router.url === '/requests') {
+		if (this.router.url.startsWith('/requests/')) {
 			this.flowContext = 'requestDetails';
 			this.isRequestDetailsFlow = true;
 		}
+		this.completeAssignmentButton = new DynamicButton($localize`Complete Assignment`);
+		this.setHeaderButton();
 	}
 
 	ngOnInit(): void {
@@ -75,7 +91,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		this.sidePanelStorageKey = this.flowContext + '_' + this.companySettingsService.CurrentResourceID;
 	}
 
-	private setHeaderBreadCrumbs() {
+	private setHeaderBreadCrumbs(): void {
 		this.headerBreadcrumbService.clearBreadcrumbs();
 		this.secondaryNavService.clearItems();
 		this.secondaryNavService.clearCurrentObject();
@@ -100,6 +116,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 			.subscribe((assignmentItem: AssignmentItem): void => {
 				this.assignmentItem = assignmentItem;
 				this.setHeaderBreadCrumbs();
+				this.loadAssignmentSteps();
 			});
 	}
 
@@ -109,7 +126,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 
 	private getStatusBadge(): string {
 		return JSON.stringify([{
-			'name': this.getAssignmentStatus(this.assignmentItem.Status),
+			'name': this.getBadgeLabel(this.assignmentItem.Status),
 			'color': this.getBadgeColor(this.assignmentItem.Status)
 		}]);
 	}
@@ -122,11 +139,83 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		}
 	}
 
-	private getAssignmentStatus(Status: string): string {
-		if (Status === 'Complete') {
+	private getBadgeLabel(assignmentStatus: string): string {
+		if (assignmentStatus === 'Complete') {
 			return $localize`Complete`;
 		} else {
 			return $localize`Pending`;
 		}
+	}
+
+	workflowClicked(workflowUid: string): void {
+		console.log(workflowUid);
+	}
+
+	assetClicked(assetUid: string): void {
+		console.log(assetUid);
+	}
+
+	initiatorClicked(initiatorUid: string): void {
+		console.log(initiatorUid);
+	}
+
+	private setHeaderButton(): void {
+		this.secondaryNavService.clearButtons();
+		if (!this.isRequestDetailsFlow && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser && !(this.workflowStepDetail?.CompletedOn) && this.workflowAssignment.isCurrentUserAssigned) {
+			this.secondaryNavService.showButton(this.completeAssignmentButton);
+			this.completeAssignmentButton.dynamicCallback = () => {
+				this.completeAssignmentButton.disabled = true;
+				this.completeAssignmentButton.isLoading = true;
+				this.onCompleteAssignmentClicked();
+			};
+		}
+	}
+
+	onCompleteAssignmentModalClose({ action }: {
+		isBack: boolean,
+		removeSelected: boolean,
+		action?: string
+	}): void {
+		if (action?.toLowerCase() === 'complete') {
+			this.assignmentItem = null;
+			this.loadAssignmentItem();
+		}
+		this.setHeaderButton();
+	}
+
+	onCompleteAssignmentClicked(): void {
+		this.completeAssignmentComponent.openModal({
+			workflowItemUid: this.assignmentItem?.WorkflowItemUid,
+			stepUid: this.assignmentItemStep?.Uid
+		});
+	}
+
+	private loadAssignmentSteps() {
+		this.workflowStepDetail = null;
+		this.workflowService.getAssignmentItemSteps(this.assignmentItem.WorkflowItemUid)
+			.subscribe((assignmentItemSteps: AssignmentItemStep[]): void => {
+				this.assignmentItemStep = null;
+				let stepCounter: number = 0;
+				for (; stepCounter < assignmentItemSteps.length; stepCounter++) {
+					if (!assignmentItemSteps[stepCounter].CompletedOn) {
+						this.assignmentItemStep = assignmentItemSteps[stepCounter];
+						this.workflowService.getAssignmentStepDetail(assignmentItemSteps[stepCounter].Uid).subscribe((response: WorkflowStepDetail) => {
+							this.workflowStepDetail = response;
+							this.loadWorkflowAssignment(this.assignmentItem.WorkflowItemUid);
+						});
+						break;
+					}
+				}
+				if (stepCounter === assignmentItemSteps.length) {
+					this.setHeaderButton();
+				}
+			});
+	}
+
+	private loadWorkflowAssignment(workflowItemUid: string) {
+		this.workflowService.getWorkflowAssignments(1, 1, null, '(workflowItemUid eq \'' + workflowItemUid + '\')').subscribe((workflowAssignments: WorkflowAssignments): void => {
+			this.workflowAssignment = workflowAssignments.items[0];
+			this.setHeaderButton();
+		});
 	}
 }

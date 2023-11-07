@@ -6,6 +6,18 @@
 			  [class.side-panel-close]="!sidePanelOpen"
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
+			<ig-portal-content-provider name="asset-description" [template]="description">
+				<ng-template #description>
+					<div class="detail-header-subtitle" i18n>
+						<a (click)="workflowClicked(assignmentItem.WorkflowUid)">{{assignmentItem.WorkflowName}}</a> on
+						<a (click)="assetClicked(assignmentItem.AssetUid)"
+						   *ngIf="assignmentItem.AssetPath">{{assignmentItem.AssetPath}}</a><span
+						*ngIf="!assignmentItem.AssetPath">---</span> initiated
+						by <a (click)="initiatorClicked(assignmentItem.InitiatorUid)">{{assignmentItem.Initiator}}</a>
+						on {{assignmentItem.StartedOn | date: 'short'}}
+					</div>
+				</ng-template>
+			</ig-portal-content-provider>
 			<d3s-assignment-details [assignmentUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-details>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
@@ -24,3 +36,5 @@
 		</as-split-area>
 	</as-split>
 </div>
+<d3s-complete-assignment (onModalClose)="onCompleteAssignmentModalClose($event)"
+						 #completeAssignmentComponent></d3s-complete-assignment>
