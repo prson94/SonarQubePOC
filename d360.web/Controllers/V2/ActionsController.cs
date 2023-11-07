@@ -383,7 +383,8 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_limitToActiveWorkflows", "Set to true to only return actions associated with an active workflow.", DataType = "boolean", ParameterType = "query", Required = false),
-			SwaggerParameter("_hasAssignments", "Set to true to only return actions types where there are open assignments.", DataType = "boolean", ParameterType = "query", Required = false),			
+			SwaggerParameter("_hasAssignments", "Set to true to only return actions types where there are open assignments.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerParameter("_hasAnyAssignments", "Set to true to only return actions types where there are assignments. This includes both open and complete assignments", DataType = "boolean", ParameterType = "query", Required = false),
 		]
 		public async Task<IHttpActionResult> GetIssueTypes()
 		{
@@ -506,6 +507,16 @@ namespace d360.web.Controllers.V2
 				if (!bool.TryParse(hasAssignments.Value, out _))
 				{
 					throw new ArgumentException(ActionApiMessages.InvalidHasAssignments);
+				}
+			}
+
+			var hasAnyAssignments = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_hasanyassignments");
+
+			if (hasAnyAssignments.Key != null && !string.IsNullOrWhiteSpace(hasAnyAssignments.Value))
+			{
+				if (!bool.TryParse(hasAnyAssignments.Value, out _))
+				{
+					throw new ArgumentException(ActionApiMessages.InvalidHasAnyAssignments);
 				}
 			}
 

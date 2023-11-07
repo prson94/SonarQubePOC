@@ -535,7 +535,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	};
 
 	private getFilteredActions = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
-		const queryParams: Record<string, unknown> = { '_hasAssignments': true };
+		const queryParams: Record<string, unknown> = { '_hasAnyAssignments': true };
 		if (this.assetUid) {
 			queryParams['_assetUid'] = this.assetUid;
 		} else if (this.assetTypeUid) {
@@ -630,7 +630,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	private loadActionTypeCount() {
-		const queryParams: Record<string, unknown> = { '_hasAssignments': true };
+		const queryParams: Record<string, unknown> = { '_hasAnyAssignments': true };
 		if (this.assetUid) {
 			queryParams['_assetUid'] = this.assetUid;
 		} else if (this.assetTypeUid) {

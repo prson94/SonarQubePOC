@@ -37,6 +37,9 @@ namespace d360.model.DataAccessLayer
 			List<string> issueJoins = new List<string>();
 			List<string> assetJoins = new List<string>();
 
+			Guid assetTypeUid = Guid.Empty;
+			Guid assetUid = Guid.Empty;
+
 			var assetSql = "";
 			var resourceSql = "";
 			var issueTypeSql = "";
@@ -78,15 +81,34 @@ namespace d360.model.DataAccessLayer
 			var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
 			var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
 			var hasAssignmentsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_hasassignments");
+			var hasAnyAssignmentsParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_hasanyassignments");			
 
 			hasAssetParam = !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) || !string.IsNullOrWhiteSpace(assetUidParam.Value);
+
+			var hasAnyAssignments = false;
+
+			if (hasAnyAssignmentsParam.Key != null)
+			{
+				if (hasAnyAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAnyAssignmentsParam.Value) && !bool.TryParse(hasAnyAssignmentsParam.Value, out hasAnyAssignments))
+				{
+					throw new ArgumentException(IssueErrors.InvalidHasAnyAssignments);
+				}
+			}
+
+			if (hasAssignmentsParam.Key != null)
+			{
+				if (hasAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAssignmentsParam.Value) && !bool.TryParse(hasAssignmentsParam.Value, out hasAssignments))
+				{
+					throw new ArgumentException(IssueErrors.InvalidHasAssignments);
+				}
+			}
 
 			var assignmentsSql = $@"SELECT 1
 									  FROM [workflow].[EventRegistration] E
 									  inner join workflow.Version V on E.TypeID=V.TypeID
-									  inner join workflow.item wi on wi.VersionID = v.ID and CompletedOn is null
-									  {(string.IsNullOrWhiteSpace(assetUidParam.Value) ? "" : 
-									  @"left join asset A2 on WI.Object <> 'Issue' and A.object = WI.object and WI.objectID=A.objectID and A2.ID = A.ID
+									  inner join workflow.item wi on wi.VersionID = v.ID {(hasAnyAssignments ? "" :  "and CompletedOn is null")}
+									  {(string.IsNullOrWhiteSpace(assetUidParam.Value) && string.IsNullOrWhiteSpace(assetTypeUidParam.Value) ? "" :
+									  $@"left join asset A2 on WI.Object <> 'Issue' and A2.object = WI.object and WI.objectID=A2.objectID AND {(!string.IsNullOrWhiteSpace(assetUidParam.Value) ? "A2.ID = A.ID" : "")} {(!string.IsNullOrWhiteSpace(assetTypeUidParam.Value) ? "A2.AssetTypeID = AT.ID" : "")} 
 									  left join issue I on WI.object = 'Issue' and WI.objectID=I.ID and I.AssetID = A.ID")}										
 									where 
 										E.[Object] = 'IssueType' and E.ObjectID = IT.ID";
@@ -104,6 +126,30 @@ namespace d360.model.DataAccessLayer
 				else
 				{
 					throw new ArgumentException(IssueErrors.InvalidActionUid);
+				}
+			}
+
+			#endregion
+
+			#region Asset Type
+
+			if (assetTypeUidParam.Key != null)
+			{
+				if (assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value) && (!Guid.TryParse(assetTypeUidParam.Value, out assetTypeUid) || assetTypeUid == Guid.Empty))
+				{
+					throw new ArgumentException(IssueErrors.InvalidAssetTypeUid);
+				}
+			}
+
+			#endregion
+
+			#region Asset
+
+			if (assetUidParam.Key != null)
+			{
+				if (assetUidParam.Value != null && !string.IsNullOrWhiteSpace(assetUidParam.Value) && (!Guid.TryParse(assetUidParam.Value, out assetUid) || assetUid == Guid.Empty))
+				{
+					throw new ArgumentException(IssueErrors.InvalidAssetUid);
 				}
 			}
 
@@ -143,29 +189,20 @@ namespace d360.model.DataAccessLayer
 					throw new ArgumentException(IssueErrors.InvalidLimitProvided);
 				}
 			}
-			#endregion
+#endregion
 
-			#region Limit By Actions with open assignments
+#region Limit By Actions with open assignments
 
-			if (hasAssignmentsParam.Key != null)
-			{
-				if (hasAssignmentsParam.Value != null && !string.IsNullOrWhiteSpace(hasAssignmentsParam.Value) && bool.TryParse(hasAssignmentsParam.Value, out hasAssignments))
-				{
-					if (hasAssignments)
-					{													
-						var assetAssignmentsSQL = $@"exists ({assignmentsSql} and ({assetCondition}) {(!string.IsNullOrWhiteSpace(assetUidParam.Value) ? "and (A2.Id is not null or I.assetID is not null)" : "")})";
-						var issueAssignmentsSql = hasAssetParam ? assetAssignmentsSQL : $@"exists({assignmentsSql})";
 
-						issueConditions.Add(issueAssignmentsSql);
-						assetConditions.Add(assetAssignmentsSQL);
-					}
+			if (hasAssignments || hasAnyAssignments)
+			{													
+				var assetAssignmentsSQL = $@"exists ({assignmentsSql} and ({assetCondition}) {(assetTypeUid != Guid.Empty || assetUid != Guid.Empty ? "and (A2.Id is not null or I.assetID is not null)" : "")})";
+				var issueAssignmentsSql = hasAssetParam ? assetAssignmentsSQL : $@"exists({assignmentsSql})";
 
-				}
-				else
-				{
-					throw new ArgumentException(IssueErrors.InvalidLimitProvided);
-				}
+				issueConditions.Add(issueAssignmentsSql);
+				assetConditions.Add(assetAssignmentsSQL);
 			}
+			
 			#endregion
 
 			#region Asset, Asset Type and Resource
@@ -186,11 +223,13 @@ namespace d360.model.DataAccessLayer
 
 				issueJoins.Add("cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C");
 
-				if (!string.IsNullOrEmpty(assetTypeUidParam.Value))
+				if (assetTypeUid != Guid.Empty)
 				{
 					issueJoins.Add("left join AssetType AT on AT.uid = @assetTypeUid");
+					issueJoins.Add("left join Asset A on A.AssetTypeID = AT.ID");
+
 				}
-				else if (!string.IsNullOrEmpty(assetUidParam.Value))
+				else if (assetUid != Guid.Empty)
 				{
 					issueJoins.Add("left join Asset A on A.uid = @assetUid");
 					issueJoins.Add("left join AssetType AT on AT.ID = A.AssetTypeID");
@@ -201,39 +240,18 @@ namespace d360.model.DataAccessLayer
 				issueTypeSql = $@"{baseIssueTypesSql}
 								  {string.Join("\n", issueJoins)}
 								  where {string.Join(" AND ", issueConditions)}";
-
-
-				if (assetTypeUidParam.Key != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
+				
+				if (assetTypeUid != Guid.Empty)
 				{
-					if (Guid.TryParse(assetTypeUidParam.Value, out Guid assetTypeUid))
-					{
-						if (assetTypeUid != Guid.Empty)
-						{
-							assetConditions.Add("AT.Uid = @assetTypeUid");
-							dbArgs.Add("@assetTypeUid", assetTypeUid);
-						}
-					}
-					else
-					{
-						throw new ArgumentException(IssueErrors.InvalidActionUid);
-					}
-				}
-
-				if (assetUidParam.Key != null && !string.IsNullOrWhiteSpace(assetUidParam.Value))
+					assetConditions.Add("AT.Uid = @assetTypeUid");
+					dbArgs.Add("@assetTypeUid", assetTypeUid);
+				}					
+				
+				if (assetUid != Guid.Empty)
 				{
-					if (Guid.TryParse(assetUidParam.Value, out Guid assetUid))
-					{
-						if (assetUid != Guid.Empty)
-						{
-							assetConditions.Add("A.Uid = @assetUid");
-							dbArgs.Add("@assetUid", assetUid);
-						}
-					}
-					else
-					{
-						throw new ArgumentException(IssueErrors.InvalidActionUid);
-					}
-				}
+					assetConditions.Add("A.Uid = @assetUid");
+					dbArgs.Add("@assetUid", assetUid);
+				}				
 
 				if (resourceUidParam.Key != null && !string.IsNullOrWhiteSpace(resourceUidParam.Value))
 				{
