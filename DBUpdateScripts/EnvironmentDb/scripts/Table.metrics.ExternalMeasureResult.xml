@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Table.metrics.ExternalMeasureResult-v1.01">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ExternalMeasureResult')
+BEGIN
+	CREATE TABLE metrics.ExternalMeasureResult (
+		Id bigint identity not null,
+		AssetUid uniqueidentifier not null,
+		AssetVersionUid uniqueidentifier not null,
+		EffectiveDate date,
+		[Value] bit not null,
+		CONSTRAINT [PK_MetricExternalMeasureResult] PRIMARY KEY CLUSTERED ( Id ASC )
+	)
+END
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Index.metrics.ScoreItem-v1.01">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[metrics].[ExternalMeasureResult]') AND name = N'IX_metrics_ScoreItem_AssetVersionUid')
+begin
+ CREATE NONCLUSTERED INDEX [IX_MetricExternalMeasureResult_AssetUid] ON [metrics].[ExternalMeasureResult] ( [AssetUid] ASC )
+end
+]]>
+  </sql>
+ </changeSet>  
+ 
+</databaseChangeLog>

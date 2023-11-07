@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.05">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.06">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -50,6 +50,10 @@ begin
 		insert into @measures (	ParentVersionUid, VersionUid, Value, RawValue, Weight, MatchUid, OtherMatches, Evidence )
 			select	ParentVersionUid, VersionUid, Value, Value, Weight, MatchUid, coalesce(OtherMatches, '[]'), '{}' 
 			from	metrics.GetGovernanceScore(@assetUid, @effectiveDate)
+
+		-- Clean out the relevant record as we just processed them above, in case we have any External measures.
+		delete	metrics.ExternalMeasureResult
+		where	AssetUid = @assetUid and EffectiveDate = @effectiveDate;
 	end;
 
 	if @scoreType = 2
@@ -258,7 +262,7 @@ begin
 		select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
 		from	@measures;
 
---	select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
+	--select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
 end
 ]]>
   </sql>
