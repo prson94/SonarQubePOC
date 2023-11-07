@@ -1518,7 +1518,7 @@ namespace d360.model.DataAccessLayer
 								else
 									'Complete' end as [Status],
 							TWD.AssetUid as AssetUid,
-							coalesce(TWD.RelationshipName,AP.DisplayPath) as AssetPath,
+							coalesce(TWD.RelationshipName,AP.DisplayPath,AST.Name) as AssetPath,
 							TWD.IssueUid as ActionUid,
 							TWD.IntersectUid as RelationshipUid,
 							{changeTypeSQL}
