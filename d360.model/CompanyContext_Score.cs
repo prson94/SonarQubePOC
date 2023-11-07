@@ -24,6 +24,8 @@ namespace d360.model
 	{
 		#region DbSets
 
+		DbSet<ExternalMeasureResult> ExternalMeasureResults { get; set; }
+
 		DbSet<MetricAllocation> MetricAllocations { get; set; }
 
 		DbSet<MetricAsset> MetricAssets { get; set; }
@@ -210,6 +212,8 @@ namespace d360.model
 	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
 		#region DbSets
+
+		public DbSet<ExternalMeasureResult> ExternalMeasureResults { get; set; }
 
 		public DbSet<MetricAllocation> MetricAllocations { get; set; }
 

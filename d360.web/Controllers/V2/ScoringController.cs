@@ -699,20 +699,9 @@ namespace d360.web.Controllers.V2
 				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
-			try
-			{
-				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
-			}
-			catch (Exception ex)
-			{
-				return DetermineUnhandledException(
-					ex,
-					ApiMessages.ErrorAddingScoreResultsHeading,
-					null,
-					new Dictionary<string, string> { { "Method Name", "PostScoreResultsByScoreType" } }
-				);
-			}
+			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
+			var results = ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model);
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
 		}
 
 		/// <summary>

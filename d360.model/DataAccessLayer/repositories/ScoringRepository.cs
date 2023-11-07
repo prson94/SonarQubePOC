@@ -14,16 +14,19 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 
 using Dapper;
+using LaunchDarkly.Sdk.Server;
 
 namespace d360.model.DataAccessLayer
 {
 	public class ScoringRepository : BaseRepository, IScoringRepository
 	{
+		internal LdClient Ld;
 		internal IQueueSource QueueSource;
 
-		public ScoringRepository(ICompanyContext companyContext, IQueueSource queueSource)
+		public ScoringRepository(ICompanyContext companyContext, LdClient ld, IQueueSource queueSource)
 			: base(companyContext)
 		{
+			Ld = ld;
 			QueueSource = queueSource;
 		}
 
@@ -559,14 +562,97 @@ select @id";
 			return CompanyContext.BulkExternalResultsImport(model, execution, scoreType);
 		}
 
+		private List<InternalScoreResultApiResponseModel> postScoreResults(List<InternalScoreResultApiRequestModel> results)
+		{
+			List<InternalScoreResultApiResponseModel> list = new();
+
+			var now = DateTime.UtcNow.Date;
+			var models = results.Select(o => new ExternalMeasureResult { AssetUid = o.assetUid, AssetVersionUid = o.metricAssetUid, EffectiveDate = o.effectiveDate ?? now, Value = o.result }).ToList();
+			results = null;
+
+			CompanyContext.ExternalMeasureResults.AddRange(models);
+			CompanyContext.SaveChanges();
+
+			var minId = models.Select(o => o.Id).Min();
+			var maxId = models.Select(o => o.Id).Max();
+
+			models = CompanyContext.Query<ExternalMeasureResult>(@"
+update	t
+set		t.AssetUid = s.Uid,
+		t.AssetVersionUid = m.Uid 
+from	metrics.ExternalMeasureResult t
+		outer apply (
+			select	a.Uid,
+					aa.Uid as AssetTypeUid
+			from	Asset a
+					inner join AssetType aa on aa.Id = a.AssetTypeId and a.Uid = t.AssetUid
+		) s
+		outer apply (
+			select	v.Uid
+			from	metrics.AssetVersion v
+					cross apply openjson(v.Definition) with (
+						[Check] varchar(25) '$.Governance.Check'
+					) vd
+					inner join metrics.Asset a on a.Uid = v.AssetUid and a.Uid = t.AssetVersionUid and v.EffectiveDate <= t.EffectiveDate and (v.EffectiveEndDate is null or v.EffectiveEndDate >= t.EffectiveDate)
+					inner join metrics.Allocation al on al.Uid = a.AllocationUid and al.ScoreType = 1 and al.AssetTypeUid = s.AssetTypeUid
+			where	vd.[Check] = 'External'
+		) m
+where	t.Id between @minId and @maxId;
+
+delete	metrics.ExternalMeasureResult
+where	Id between @minId and @maxId
+		and (AssetUid is null or AssetVersionUid is null);
+
+select	*
+from	metrics.ExternalMeasureResult
+where	Id between @minId and @maxId;
+", new { minId, maxId }).ToList();
+
+			var uniques = models.Select(o => new { o.AssetUid, o.EffectiveDate }).Distinct();
+			foreach (var unique in uniques)
+			{
+				var info = new ScoreQueueInfo
+				{
+					CompanyID = CompanyContext.CurrentCompanyID,
+					ResourceID = CompanyContext.CurrentResourceID,
+					ChangeType = ScoreQueueChangeType.RescoreRequest,
+					UseUpdatedScoringEngine = true,
+					Payload = new AssetRescoreRequestModel { AssetUid = unique.AssetUid, EffectiveDate = unique.EffectiveDate, ScoreType = ScoreType.Governance },
+					StartedOn = DateTime.UtcNow
+				};
+				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+			}
+
+			list = models.Select(o => new InternalScoreResultApiResponseModel { AssetUid = o.AssetUid, EffectiveDate = o.EffectiveDate, IsSuccess = true, Result = o.Value }).ToList();
+			models = null;
+
+			return list;
+		}
+
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			return CompanyContext.BulkMetricsImport(results, execution, allocation);
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+			if (isUpdatedScoring)
+			{
+				return postScoreResults(results);
+			}
+			else
+			{
+				return CompanyContext.BulkMetricsImport(results, execution, allocation);
+			}
 		}
 
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			return CompanyContext.BulkMetricsImport(results, execution, scoreType);
+			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
+			if (isUpdatedScoring)
+			{
+				return postScoreResults(results);
+			}
+			else 
+			{
+				return CompanyContext.BulkMetricsImport(results, execution, scoreType);
+			}
 		}
 
 		public async Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams)

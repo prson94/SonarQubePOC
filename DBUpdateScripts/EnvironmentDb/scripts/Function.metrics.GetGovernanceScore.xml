@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.01">
+ <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.06">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -201,10 +201,16 @@ begin
 	where	m.[Check] = 'Field'
 
 	-- Now process each Governance check -------------------------
-	--select	* 
-	--from	@tbl 
-	--where	[Check] = 'External'
 
+	-- External measure check.
+	update	m
+	set		m.[Value] = iif(r.[Value] = 1, 1, 0)
+	from	@tbl m
+			inner join dbo.Asset a on a.Id = m.AssetId 
+			inner join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
+	where	m.[Check] = 'External';			
+
+	-- Non-lookups, checking Populated/NotPopulated 
 	update	m
 	set		m.[Value] = case 
 							when m.Operator = 'Populated' and (f.FormattedValue is not null and f.FormattedValue <> '') then 1
@@ -408,6 +414,7 @@ begin
 					OtherMatches
 		from		@tbl;
 
+	--select * from @measures
 	return;
 end
 ]]>
