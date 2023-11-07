@@ -24,7 +24,7 @@ export class AssignmentInformationGeneralComponent {
 	private assetPathPartIndex: number = -1;
 
 	get AssociatedWithEmpty(): boolean {
-		if (this.assignmentItem?.initiatingObjectType === 'Relationship') {
+		if (this.assignmentItem?.initiatingObjectType === 'Relationship' || !this.assignmentItem?.AssetUid) {
 			return this.assetPathTextPart.length === 0 ? true : false;
 		} else {
 			const assetpath = this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
@@ -33,7 +33,7 @@ export class AssignmentInformationGeneralComponent {
 	}
 
 	get assetPathLinkPart(): string {
-		if (this.assignmentItem?.initiatingObjectType === 'Relationship') {
+		if (this.assignmentItem?.initiatingObjectType === 'Relationship' || !this.assignmentItem?.AssetUid) {
 			return '';
 		} else {
 			return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(this.assetPathPartIndex + 3) : this.assignmentItem?.AssetPath;
@@ -41,7 +41,7 @@ export class AssignmentInformationGeneralComponent {
 	}
 
 	get assetPathTextPart(): string {
-		if (this.assignmentItem?.initiatingObjectType === 'Relationship') {
+		if (this.assignmentItem?.initiatingObjectType === 'Relationship' || !this.assignmentItem?.AssetUid) {
 			return this.assignmentItem?.AssetPath ? this.assignmentItem?.AssetPath : '';
 		} else {
 			return this.assetPathPartIndex >= 0 ? this.assignmentItem?.AssetPath?.substring(0, this.assetPathPartIndex + 3) : '';
