@@ -1354,6 +1354,12 @@ namespace d360.model.DataAccessLayer
 					inner join Asset a on A.ID = I.AssetID 
 
 					update WA
+					set WA.AssetTypeId = Ast.ID
+					FROM #assignments WA
+					inner join Issue I on WA.Object = 'Issue' and I.ID = WA.ObjectID and I.AssetID is null				
+					inner join AssetType ast on ast.ID = I.AssetTypeID
+
+					update WA
 					set WA.AssetId = a.ID, WA.AssetTypeId = A.AssetTypeID
 					FROM #assignments WA
 					inner join Asset a on WA.Object=A.object and WA.ObjectID= A.objectID 
@@ -1457,7 +1463,7 @@ namespace d360.model.DataAccessLayer
 						begin
 							update t
 							set AssetUid = ait.uid,
-							t.AssetTypeID = ait.assettypeid,
+							t.AssetTypeID = I.assettypeid,
 							t.AssetID = ait.id,
 							t.IssueTypeID = I.IssueTypeID,
 							t.ChangeType = WERAT.ChangeType ,
@@ -1465,7 +1471,7 @@ namespace d360.model.DataAccessLayer
 							from #tempWorkFlowDetail t
 							inner join Issue I on I.ID = t.ObjectID
 							inner join IssueType IT on I.IssueTypeID = IT.ID
-							inner join Asset ait on ait.Id = I.AssetId
+							left join Asset ait on ait.Id = I.AssetId
 							left join workflow.EventRegistration WERAT on WERAT.TypeID = T.TypeID and WERAT.IssueTypeID = I.IssueTypeID
 							where trim(t.Object) = 'Issue' ;
 						end
