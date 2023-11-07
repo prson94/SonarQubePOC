@@ -1,9 +1,9 @@
 ﻿import { Component, EventEmitter, Input, NgModule, OnInit, Output } from '@angular/core';
 import {
-    ResponsibilityEditorModel,
-    ResponsibilityItemDetailV2,
-    ResponsibilityItemV2,
-    ResponsibilityOverridePostModel
+	ResponsibilityEditorModel,
+	ResponsibilityItemDetailV2,
+	ResponsibilityItemV2,
+	ResponsibilityOverridePostModel
 } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { SelectItem, SharedModule } from 'primeng/api';
@@ -35,291 +35,305 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import * as DOMPurify from 'dompurify';
 
 @Component({
-    selector: 'd3s-responsibility-item-form',
-    templateUrl: './responsibility-item.form.html',
-    providers: [ResponsibilityService, ResourcesService],
+	selector: 'd3s-responsibility-item-form',
+	templateUrl: './responsibility-item.form.html',
+	providers: [ResponsibilityService, ResourcesService],
 })
 
 export class ResponsibilityItemForm extends BaseComponent implements OnInit {
-    @Input() item: ResponsibilityItemDetailV2;
-    @Input() assetUid: string;
-    @Output() onSaveComplete = new EventEmitter();
-    @Output() onLoadComplete = new EventEmitter();
-    @Output() onCancel = new EventEmitter();
+	@Input() item: ResponsibilityItemDetailV2;
+	@Input() assetUid: string;
+	@Output() onSaveComplete = new EventEmitter();
+	@Output() onLoadComplete = new EventEmitter();
+	@Output() onCancel = new EventEmitter();
 
-    private model: ResponsibilityEditorModel;
-    field: EditorField;
-    private resourceGrid: boolean = false;
-    private message: FormMessage = new FormMessage();
-    private itemToSave = new ResponsibilityItemV2();
-    private checkD: ResponsibilityItemDetailV2[] = [];
-    private showVisible: boolean = false;
-    private resources: SelectItem[] = [];
-    private IsResponsibilityDisabled: boolean = false;
-    private resouceAssigned: string;
+	private model: ResponsibilityEditorModel;
+	field: EditorField;
+	private resourceGrid: boolean = false;
+	private message: FormMessage = new FormMessage();
+	private itemToSave = new ResponsibilityItemV2();
+	private checkD: ResponsibilityItemDetailV2[] = [];
+	private showVisible: boolean = false;
+	private resources: SelectItem[] = [];
+	private IsResponsibilityDisabled: boolean = false;
+	private resouceAssigned: string;
 
-    constructor(
-        private responsibilityService: ResponsibilityService,
-        private messagesService: MessagesObservableService,
-        protected settingsService: CompanySettingsService) {
-        super(settingsService);
-    }
+	constructor(
+		private responsibilityService: ResponsibilityService,
+		private messagesService: MessagesObservableService,
+		protected settingsService: CompanySettingsService) {
+		super(settingsService);
+	}
 
-    ngOnInit() {
+	ngOnInit() {
+		this.IsResponsibilityDisabled = !this.hasDeleteResponsibilitiesPermissions() || !this.hasAddResponsibilitiesPermissions();
+		this.itemToSave = new ResponsibilityItemV2();
+		this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
+		this.itemToSave.AssetUid = this.assetUid;
+		this.itemToSave.Description = this.item.Description;
+		this.itemToSave.ResourceUid = this.item.GroupResourceUid ?? this.item.ResourceUid;
 
+		this.setResouceAssigned();
 
-        this.itemToSave = new ResponsibilityItemV2();
-        this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
-        this.itemToSave.AssetUid = this.assetUid;
-        this.itemToSave.Description = this.item.Description;
-        this.itemToSave.ResourceUid = this.item.GroupResourceUid ?? this.item.ResourceUid;
-
-        this.setResouceAssigned();
-
-        if (this.item == null || (!this.item.ResponsibilityUid && !this.assetUid)) {
+		if (this.item == null || (!this.item.ResponsibilityUid && !this.assetUid)) {
 			throw new Error("responsibility-item-editor [item] requires either a ResponsibilityID or an AssetUid");
-        }
-        this.load();
-    }
+		}
+		this.load();
+	}
 
-    private load(): void {
+	private load(): void {
 
-        if (this.item == null) {
-            this.onLoadComplete.emit({ item: null });
-            return;
-        }
+		if (this.item == null) {
+			this.onLoadComplete.emit({ item: null });
+			return;
+		}
 
-        this.isLoading = true;
+		this.isLoading = true;
 
-        this.responsibilityService.getResponsibilityItemEditor(null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
-            .subscribe((data) => {
+		this.responsibilityService.getResponsibilityItemEditor(null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
+			.subscribe((data) => {
 				this.model = data;
 				if (this.model.responsibility.Context) {
 					this.model.responsibility.Context = DOMPurify.sanitize(this.model.responsibility.Context);
 				}
-                this.onLoadComplete.emit({ item: this.item });
-                this.isLoading = false;
-            });
-    }
+				this.onLoadComplete.emit({ item: this.item });
+				this.isLoading = false;
+			});
+	}
 
-    private setResouceAssigned() {
-        switch (this.item.ResourceType) {
-            case "Group":
-                this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Group}`;
-                break;
-            case "User":
-                this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Resource}`;
-                break;
-            default:
-                this.resouceAssigned = "";
-        }
-    }
+	private setResouceAssigned() {
+		switch (this.item.ResourceType) {
+			case "Group":
+				this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Group}`;
+				break;
+			case "User":
+				this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Resource}`;
+				break;
+			default:
+				this.resouceAssigned = "";
+		}
+	}
 
-    private getResponsibilityTypes(): void {
-        this.resouceAssigned = "";
-        this.showResourceGrid();
-    }
+	private getResponsibilityTypes(): void {
+		this.resouceAssigned = "";
+		this.showResourceGrid();
+	}
 
-    private getAssetType(resource): string {
-        let atype;
-        switch (resource) {
-            case "Group":
-            case "G":
-                atype = "G";
-                break;
-            case "User":
-            case "Resource":
-            case "R":
-                atype = "R";
-                break;
-            default:
-                atype = null;
-                break;
-        }
-        return atype;
-    }
+	private getAssetType(resource): string {
+		let atype;
+		switch (resource) {
+			case "Group":
+			case "G":
+				atype = "G";
+				break;
+			case "User":
+			case "Resource":
+			case "R":
+				atype = "R";
+				break;
+			default:
+				atype = null;
+				break;
+		}
+		return atype;
+	}
 
-    private save(): void {
-        var selectedResourceUid = "";
-        try {
+	private save(): void {
+		let selectedResourceUid = "";
+		try {
 
-            this.itemToSave.ResponsibilityUid = this.model.selectedResponsibilityType;
+			this.itemToSave.ResponsibilityUid = this.model.selectedResponsibilityType;
 
-            var selectedResourceType = "R";
-            var selectedResourceID = this.model.selectedResource.split('|')[1];
+			let selectedResourceType = "R";
+			const selectedResourceID = this.model.selectedResource.split('|')[1];
 
-            switch (this.model.selectedResource.split('|')[0]) {
-                case "Group":
-                case "G":
-                    selectedResourceType = "G";
-                    break;
-            }
+			switch (this.model.selectedResource.split('|')[0]) {
+				case "Group":
+				case "G":
+					selectedResourceType = "G";
+					break;
+			}
 
-            selectedResourceUid = this.model.resources.find((x) => x.Value.split('|')[0] === selectedResourceType && x.Value.split('|')[1] === selectedResourceID).Value.split('|')[2];
-            this.itemToSave.ResourceUid = selectedResourceUid;
-            this.itemToSave.Description = this.model.responsibility.Context;
-        }
-        catch (exception) {
-            this.message.Error($localize`An error occurred while parsing the select item values.`);
-            this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
-            return;
-        }
+			selectedResourceUid = this.model.resources.find((x) => x.Value.split('|')[0] === selectedResourceType && x.Value.split('|')[1] === selectedResourceID).Value.split('|')[2];
+			this.itemToSave.ResourceUid = selectedResourceUid;
+			this.itemToSave.Description = this.model.responsibility.Context;
+		}
+		catch (exception) {
+			this.message.Error($localize`An error occurred while parsing the select item values.`);
+			this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
+			return;
+		}
 
-        this.isLoading = true;
+		this.isLoading = true;
 
-        this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetUid)
-            .subscribe((data) => {
-                this.checkD = data;
+		this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetUid)
+			.subscribe((data) => {
+				this.checkD = data;
 
-                //Delete existing record before creating new only when description changed
-                if (
-                    (this.item.ResponsibilityUid && this.item.ResponsibilityUid === this.itemToSave.ResponsibilityUid)
-                    &&
-                    (this.item.ResourceUid && this.item.ResourceUid === this.itemToSave.ResourceUid)
-                ) {
-                    if (this.item.Description !== this.itemToSave.Description) {
-                        this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid)
-                            .subscribe(() => {
-                                this.postRequest();
-                            });
-                    } else {
-                        this.cancel();
-                    }
-                } else {
+				const isResponsibilityUpdated = this.item.ResponsibilityUid && this.item.ResponsibilityUid !== this.itemToSave.ResponsibilityUid;
+				const isResourceUpdated = this.item.ResourceUid && this.item.ResourceUid !== this.itemToSave.ResourceUid;
 
-                    for (var i = 0; i < this.checkD.length; i++) {
-                        if (this.checkD[i].ResourceUid === this.itemToSave.ResourceUid &&
-                            this.checkD[i].ResponsibilityUid === this.itemToSave.ResponsibilityUid) {
+				if (!this.item.ResponsibilityUid) {
+					this.postRequest();
+				}
+				else if (!isResponsibilityUpdated && !isResourceUpdated) {
+					if (this.item.Description !== this.itemToSave.Description) {
+						//if only description has changed, call PUT endpoint which will verify user has update permissions
+						this.putRequest();
+					} else {
+						this.cancel();
+					}
+				}
+				else {
+					for (let i = 0; i < this.checkD.length; i++) {
+						if (this.checkD[i].ResourceUid === this.itemToSave.ResourceUid &&
+							this.checkD[i].ResponsibilityUid === this.itemToSave.ResponsibilityUid) {
 
-                            this.message.Error($localize`There is already a responsibility assigned for this role and ${this.checkD[i].ResourceType}.`);
-                            this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
-                            return;
-                        }
+							this.message.Error($localize`There is already a responsibility assigned for this role and ${this.checkD[i].ResourceType}.`);
+							this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
+							return;
+						}
+					}
 
-                    }
+					if (isResponsibilityUpdated) {
+						//if responsibility is updated go through delete and post to verify user has rights to do this
+						this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid)
+							.subscribe((res) => {
+								if (res) {
+									this.postRequest();
+								}
+							});
+					} else {
+						this.putRequest()
+					}
+				}
+			});
+	}
 
-                    if ((this.item.ResponsibilityUid && this.item.ResponsibilityUid !== this.itemToSave.ResponsibilityUid)
-                        ||
-                        (this.item.ResourceUid && this.item.ResourceUid !== this.itemToSave.ResourceUid)) {
-                        this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid).subscribe(() => { this.postRequest(); });
-                    } else {
-                        this.postRequest();
-                    }
-                }
-            });
-    }
+	private putRequest() {
+		const responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
+		responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
+		responsibilityOverridePostModel.Description = this.itemToSave.Description;
 
-    private postRequest() {
-        var responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
-        responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
-        responsibilityOverridePostModel.Description = this.itemToSave.Description;
+		this.responsibilityService.putResponsibilityOverride(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
+			.subscribe((data) => {
+				this.isLoading = false;
+				data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
+				this.showMessageForResult(this.messagesService, data);
+				this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
+			});
+	}
 
-        this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
-            .subscribe((data) => {
-                this.isLoading = false;
-                data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
-                this.showMessageForResult(this.messagesService, data);
-                this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-            });
-    }
+	private postRequest() {
+		const responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
+		responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
+		responsibilityOverridePostModel.Description = this.itemToSave.Description;
 
-    private cancel(): void {
-        this.onCancel.emit({ item: this.item });
-    }
+		this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
+			.subscribe((data) => {
+				this.isLoading = false;
+				data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
+				this.showMessageForResult(this.messagesService, data);
+				this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
+			});
+	}
 
-    private showResourceGrid() {
+	private cancel(): void {
+		this.onCancel.emit({ item: this.item });
+	}
 
-        let resTypeId;
-        let resTypeUid;
-        let securityAsset;
-        let securityAssetId;
-        const selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
-        const selectedResource = this.model == null ? "" : this.model.selectedResource;
-        if (StringHelpers.isNullOrEmpty(selectedRespType)) {
-            resTypeId = 0;
-        }
-        else {
-            if (isNumber(this.model.selectedResponsibilityType))
-                {resTypeId = this.model.selectedResponsibilityType;}
-            else {
-                resTypeUid = this.model.selectedResponsibilityType;
-                resTypeId = 0;
-            }
+	private showResourceGrid() {
 
-        }
+		let resTypeId;
+		let resTypeUid;
+		let securityAsset;
+		let securityAssetId;
+		const selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
+		const selectedResource = this.model == null ? "" : this.model.selectedResource;
+		if (StringHelpers.isNullOrEmpty(selectedRespType)) {
+			resTypeId = 0;
+		}
+		else {
+			if (isNumber(this.model.selectedResponsibilityType)) { resTypeId = this.model.selectedResponsibilityType; }
+			else {
+				resTypeUid = this.model.selectedResponsibilityType;
+				resTypeId = 0;
+			}
 
-        if (StringHelpers.isNullOrEmpty(selectedResource)) {
-            securityAsset = "";
-            securityAssetId = 0;
-        }
-        else {
-            securityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
-            securityAssetId = this.model.selectedResource.split('|')[1];
-        }
+		}
 
-        this.field = new EditorField();
-        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=0&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}&resTypeUid=${resTypeUid}`;
-        this.field.FieldName = "resources";
-        this.field.MultiSelect = false;
-        this.field.Value = [];
-        this.resourceGrid = true;
-    }
+		if (StringHelpers.isNullOrEmpty(selectedResource)) {
+			securityAsset = "";
+			securityAssetId = 0;
+		}
+		else {
+			securityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
+			securityAssetId = this.model.selectedResource.split('|')[1];
+		}
 
-    private set fieldValue(value) {
-        this.field.Value = value;
+		this.field = new EditorField();
+		this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=0&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}&resTypeUid=${resTypeUid}`;
+		this.field.FieldName = "resources";
+		this.field.MultiSelect = false;
+		this.field.Value = [];
+		this.resourceGrid = true;
+	}
 
-        if (this.field.Value != null && this.field.Value.length > 0) {
-            const x = this.field.Value[0];
-            this.resouceAssigned = x.split('|')[2];
-            this.resourceGrid = false;
-            this.model.selectedResource = x;
-        }
-        else {
-            this.model.selectedResource = null;
-        }
+	private set fieldValue(value) {
+		this.field.Value = value;
 
-    }
+		if (this.field.Value != null && this.field.Value.length > 0) {
+			const x = this.field.Value[0];
+			this.resouceAssigned = x.split('|')[2];
+			this.resourceGrid = false;
+			this.model.selectedResource = x;
+		}
+		else {
+			this.model.selectedResource = null;
+		}
 
-    private isValid(): boolean {
-        return !(StringHelpers.isNullOrEmpty(this.resouceAssigned) ||
-            StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType));
+	}
 
-    }
+	private isValid(): boolean {
+		return !(StringHelpers.isNullOrEmpty(this.resouceAssigned) ||
+			StringHelpers.isNullOrEmpty(this.model.selectedResponsibilityType));
+
+	}
 
 }
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
+	imports: [
+		CommonModule,
+		FormsModule,
 
 
-        //d3s
-        CoreModule,
-        TilesModule,
-        SharedDeleteFormModule,
-        SharedFormMessageModule,
-        SharedGridPagingInfoModule,
-        PipesModule,
-        ResourceMultiSelectGridModule,
+		//d3s
+		CoreModule,
+		TilesModule,
+		SharedDeleteFormModule,
+		SharedFormMessageModule,
+		SharedGridPagingInfoModule,
+		PipesModule,
+		ResourceMultiSelectGridModule,
 
-        //prime
-        ButtonModule,
-        CheckboxModule,
-        DropdownModule,
-        InputTextModule,
-        EditorModule,
-        MultiSelectModule,
-        SharedModule,
-        TableModule,
-        TooltipModule,
-    ],
-    declarations: [
-        ResponsibilityItemForm
-    ],
-    exports: [
-        ResponsibilityItemForm
-    ],
-    providers: []
+		//prime
+		ButtonModule,
+		CheckboxModule,
+		DropdownModule,
+		InputTextModule,
+		EditorModule,
+		MultiSelectModule,
+		SharedModule,
+		TableModule,
+		TooltipModule,
+	],
+	declarations: [
+		ResponsibilityItemForm
+	],
+	exports: [
+		ResponsibilityItemForm
+	],
+	providers: []
 })
 export class ResponsibilityItemFormModule { }

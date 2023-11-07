@@ -289,15 +289,15 @@ export class BaseComponent {
 		return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
 	}
 
-	hasAddResponsibilitiesPermissions(object: string) {
+	hasAddResponsibilitiesPermissions() {
 		return this.hasPermission(Permission.AddResponsibilities);
 	}
 
-	hasModifyResponsibilitiesPermissions(object: string) {
+	hasModifyResponsibilitiesPermissions() {
 		return this.hasPermission(Permission.EditResponsibilities);
 	}
 
-	hasDeleteResponsibilitiesPermissions(object: string) {
+	hasDeleteResponsibilitiesPermissions() {
 		return this.hasPermission(Permission.DeleteResponsibilities);
 	}
 

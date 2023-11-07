@@ -11,7 +11,7 @@ import {
 	ViewEncapsulation
 } from '@angular/core';
 import { Table } from 'primeng/table';
-import { AssignmentSelection, SingleAssignment, WorkflowUserGroupedAssignments } from '../../../models/workflow.model';
+import { AssignmentSelection, SingleAssignment, WorkflowUserGroupedAssignment } from '../../../models/workflow.model';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { WorkflowService } from '../../../services/workflow.service';
@@ -49,7 +49,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 	isLoading: boolean = false;
 	formTitle: string = '';
 	formDescription: string = '';
-	selectedAssignment: WorkflowUserGroupedAssignments;
+	selectedAssignment: WorkflowUserGroupedAssignment;
 	@ViewChild('dt', { static: false }) tableEl: Table;
 	@ViewChild('modal', { static: false }) modelEl: D3SModal;
 	@ViewChild('sidePanelSwitcherComponent') sidePanelSwitcherComponent: SidePanelSwitcherComponent;
@@ -85,7 +85,7 @@ export class AssignmentsMultiPickerComponent implements OnDestroy {
 		this.loadRowsPerPage();
 	}
 
-	public openModal(assignments: SingleAssignment[], workflowTypeName: string, workflowTypeUid: string, item?: WorkflowUserGroupedAssignments) {
+	public openModal(assignments: SingleAssignment[], workflowTypeName: string, workflowTypeUid: string, item?: WorkflowUserGroupedAssignment) {
 		this.isModalVisible = true;
 		this.isLoading = true;
 		this.assignments = assignments;

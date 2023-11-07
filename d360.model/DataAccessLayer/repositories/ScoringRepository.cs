@@ -328,17 +328,19 @@ select @id = Id from api.Execution where ExecutionID = @executionUid;
 
 insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	@id,
-			(select Id,
+			(select MA.Id,
 					@CalculationMethod as CalculationMethod,
 					@ScoreType as ScoreType,
-					iif(IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
-					LowerThreshold,
-					UpperThreshold,
-					cast(1 as bit) as IsNew
+					iif(MA.IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
+					MA.LowerThreshold,
+					MA.UpperThreshold,
+					cast(1 as bit) as IsNew,
+					AT.Name AssetTypeName
 			for json path
 			) as Payload
-	from	metrics.Allocation
-	where	Uid = @Uid;
+	from	metrics.Allocation MA
+	Left join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid
+	where	MA.Uid = @Uid;
 
 select @id";
 			
@@ -407,17 +409,19 @@ select @id = Id from api.Execution where ExecutionID = @executionUid;
 
 insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	@id,
-			(select Id,
+						(select MA.Id,
 					@CalculationMethod as CalculationMethod,
 					@ScoreType as ScoreType,
-					iif(IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
-					LowerThreshold,
-					UpperThreshold,
-					cast(0 as bit) as IsNew
+					iif(MA.IsExternallyCalculated = 1, 'true', 'false') as IsExternallyCalculated,
+					MA.LowerThreshold,
+					MA.UpperThreshold,
+					cast(0 as bit) as IsNew,
+					AT.Name AssetTypeName
 			for json path
 			) as Payload
-	from	metrics.Allocation
-	where	Uid = @Uid;
+	from	metrics.Allocation MA
+	Left join [dbo].[AssetType] AT on AT.uid = MA.AssetTypeUid
+	where	MA.Uid = @Uid;
 
 select @id";
 

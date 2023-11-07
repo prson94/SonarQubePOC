@@ -351,7 +351,7 @@ from	api.ExecutionCatalogItem l
 		inner join api.ExecutionCatalogItemProperty f on f.ExecutionId = l.ExecutionID and f.SourceId = l.SourceId
 		outer apply {previousValueCrossApplySql("a.Object", "a.ObjectId", "f.Name")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') != '') 
-			or (coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') <> coalesce(pv.Value,'')));";
+			or (coalesce(cast(f.ValueId as nvarchar(max)), f.Value,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertAssets(string actionText)
@@ -402,7 +402,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 						) fv
 			outer apply {previousValueCrossApplySql("p.Object", "p.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(fv.FormattedValue, f.FieldValue,'') != '') 
-			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'')));";
+			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
@@ -517,7 +517,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			inner join @tbl tt on tt.Object = f.Object and tt.ObjectID = f.ObjectID
 			outer apply {previousValueCrossApplySql("f.Object", "f.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 
 			return commandText;
 		}
@@ -576,7 +576,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Group'", "p.ID", "f.FieldName")} pv
 		where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-		or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+		or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertPredicates()
@@ -621,7 +621,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Predicate'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		string historyUpsertRelations()
@@ -668,6 +668,53 @@ drop table if exists #tempdata;";
 		string historyUpsertScoreAllocation() 
 		{
 			return $@"
+drop table if exists #tempScore;
+
+select	cast(p.Id as bigint) ExecutionId,
+		p.ID,
+		p.CalculationMethod, 
+		p.ScoreType,
+		p.IsExternallyCalculated, 
+		p.LowerThreshold,
+		p.UpperThreshold,
+		p.IsNew, 
+		p.AssetTypeName
+into #tempScore
+from	api.ExecutionLog l
+cross apply openjson(l.Payload) with (Id int, CalculationMethod nvarchar(250), ScoreType nvarchar(250), 
+									  IsExternallyCalculated varchar(10), LowerThreshold int, 
+									  UpperThreshold int, IsNew bit,AssetTypeName nvarchar(250)) p 
+where	l.ExecutionId = @Id;
+
+
+if exists(select 1 from #tempScore where IsNew = 1)
+begin
+	drop table if exists #tempdeletedAuditIds;
+
+	select distinct ga.ID
+	into #tempdeletedAuditIds
+	from #tempScore t
+	inner join [reporting].[Global_Audit] ga on ga.[Object] = 'MetricAllocation' and ga.[Objectid] = t.id
+	where t.IsNew = 1;
+
+	if exists(select 1 from #tempdeletedAuditIds)
+	begin
+		create clustered index idx_tempdeletedAuditIds on #tempdeletedAuditIds (id);
+
+		delete gfa 
+		from [reporting].[Global_FieldAudit] gfa 
+		inner join #tempdeletedAuditIds da on gfa.AuditID=da.ID;
+
+		delete ga 
+		from [reporting].[Global_Audit] ga 
+		inner join #tempdeletedAuditIds da on ga.ID=da.ID;
+	end
+	drop table if exists #tempdeletedAuditIds;
+end
+
+
+create clustered index idx_tempScore on #tempScore (id);
+
 declare @tbl table (ID bigint, ObjectID int)
 {insertStatement}
 output inserted.ID, inserted.ObjectID into @tbl
@@ -683,10 +730,8 @@ output inserted.ID, inserted.ObjectID into @tbl
 			'MetricAllocation', 
 			'Score Definition',--p.Name, 
 			'Score definition ' + iif(p.IsNew = 1, 'created', 'updated') + '.'
-	from	api.ExecutionLog l
-			cross apply openjson(l.Payload) with (Id int, CalculationMethod nvarchar(250), ScoreType nvarchar(250), IsExternallyCalculated varchar(10), LowerThreshold int, UpperThreshold int, IsNew bit) p 
-			{maxVersionSql("'MetricAllocation'", "p.Id")}
-	where l.ExecutionId = @Id;
+	from	#tempScore p
+			{maxVersionSql("'MetricAllocation'", "p.Id")};
 
 {insertFieldStatement}
 	select	distinct
@@ -695,23 +740,25 @@ output inserted.ID, inserted.ObjectID into @tbl
 			f.FieldName,
 			f.FieldValue,
 			pv.[Value] as PreviousValue
-from	api.ExecutionLog a
-		cross apply openjson(a.Payload) with (Id int, CalculationMethod nvarchar(250), ScoreType nvarchar(250), IsExternallyCalculated varchar(10), LowerThreshold int, UpperThreshold int, IsNew bit) p 
+from	#tempScore p
 		inner join @tbl tt on tt.ObjectID = p.Id
 		cross apply (
 					select 0 as FieldTypeID, 'CalculationMethod' as FieldName, p.CalculationMethod as FieldValue, cast(null as nvarchar(max)) as LookupValue
-					union
+					union All
 					select 0 as FieldTypeID, 'ScoreType' as FieldName, p.ScoreType as FieldValue, cast(null as nvarchar(max)) as LookupValue
-					union
+					union All
 					select 0 as FieldTypeID, 'IsExternallyCalculated' as FieldName, p.IsExternallyCalculated as FieldValue, cast(null as nvarchar(max)) as LookupValue
-					union
+					union All
 					select 0 as FieldTypeID, 'LowerThreshold' as FieldName, cast(p.LowerThreshold as nvarchar(50)) as FieldValue, cast(null as nvarchar(max)) as LookupValue
-					union
+					union All
 					select 0 as FieldTypeID, 'UpperThreshold' as FieldName, cast(p.UpperThreshold as nvarchar(50)) as FieldValue, cast(null as nvarchar(max)) as LookupValue					
+					union All
+					select 0 as FieldTypeID, 'AssetTypeName' as FieldName, cast(p.AssetTypeName as nvarchar(250)) as FieldValue, cast(null as nvarchar(max)) as LookupValue					
 					) f
 		outer apply {previousValueCrossApplySql("'MetricAllocation'", "p.Id", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
+drop table if exists #tempScore;";
 		}
 
 		string historyUpsertUsers()
@@ -766,7 +813,7 @@ from	api.ExecutionLog a
 					) f
 		outer apply {previousValueCrossApplySql("'Resource'", "p.ObjectId", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'')));";
+or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
 		}
 
 		#endregion

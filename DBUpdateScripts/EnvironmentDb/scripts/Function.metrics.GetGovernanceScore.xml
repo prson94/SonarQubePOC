@@ -76,9 +76,9 @@ begin
 								select	pv.Uid
 								from	metrics.Asset pa
 										inner join metrics.AssetVersion pv on pv.AssetUid = pa.Uid and pa.Uid = sa.ParentUid 
-											and pv.EffectiveDate < @effectiveDate and (pv.EffectiveEndDate is null or pv.EffectiveEndDate >= @effectiveDate)
+											and pv.EffectiveDate <= @effectiveDate and (pv.EffectiveEndDate is null or pv.EffectiveEndDate >= @effectiveDate)
 							) p
-					where	sv.EffectiveDate < @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
+					where	sv.EffectiveDate <= @effectiveDate and (sv.EffectiveEndDate is null or sv.EffectiveEndDate >= @effectiveDate)
 				) v 			
 		where v.RowNum = 1
 		order by v.ParentUid, v.Name, v.EffectiveDate

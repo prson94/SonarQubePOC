@@ -5,7 +5,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
@@ -13,10 +12,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
-
 using Dapper;
-using DocumentFormat.OpenXml.Office2010.CustomUI;
-using DocumentFormat.OpenXml.Vml.Office;
 using LaunchDarkly.Sdk.Server;
 using Newtonsoft.Json;
 
@@ -865,13 +861,13 @@ from    Asset A
 				) 
 			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
-			and V.Definition <> '{}'", 
+			and V.Definition <> '{}'",
 				new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today }).ToList();
 
 				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 			}
 			else
-			{ 
+			{
 				var measureResults = CompanyContext.Query<ResponsibilityAssetMeasureProcessedResult>(@"
 select  A.Uid as AssetUid, 
 		M.Uid as MetricAssetUid,
@@ -902,7 +898,7 @@ from    Asset A
 							MetricAssetVersionUid = o.MetricAssetVersionUid
 						}).Distinct().ToList()
 					}).ToList();
-				CompanyContext.CreateMeasureChangedResultExecution(structuredMeasures);			
+				CompanyContext.CreateMeasureChangedResultExecution(structuredMeasures);
 			}
 		}
 
@@ -1279,7 +1275,7 @@ from    Asset A
 			string countSQL = "";
 			if (includeTotal)
 			{
-					countSQL = $@"select count(*) from ({resultsSql}) x 
+				countSQL = $@"select count(*) from ({resultsSql}) x 
 									{simpleFilterSQL};";
 			}
 
@@ -1291,11 +1287,11 @@ from    Asset A
 									{simpleFilterSQL} 
 									{orderSql} 
 									{pagingSql}";
-			
+
 
 
 			dbArgs.Add("offset", pageSize * (pageNum - 1));
-			dbArgs.Add("rows", pageSize );
+			dbArgs.Add("rows", pageSize);
 
 			SqlMapper.GridReader gridReader = await CompanyContext.QueryMultipleAsync(getAllQuery, dbArgs);
 
@@ -1319,7 +1315,7 @@ from    Asset A
 		public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
 		{
 			CompanyContext.CreateRescoreRequests(new List<Guid> { uid }, ScoreType.Governance);
-			
+
 			return CompanyContext.Connection.ExecuteAsync(@"
                 DELETE FROM source
                   FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source  
@@ -1328,7 +1324,7 @@ from    Asset A
                     OR (a.Object = 'Group' AND source.SecurityAsset = 'G'))
                    AND source.SecurityAssetID = a.ObjectID
                  WHERE a.uid = @uid
-            ", new { uid });	
+            ", new { uid });
 		}
 
 		/// <inheritdoc />
@@ -1648,6 +1644,18 @@ from    Asset A
 			}
 
 			return result;
+		}
+
+		public async Task<(ResponsibilityTypeRelationOverrideItem, Guid)> GetResponsibilityTypeRelationOverride(long assetId, int responsibilityTypeId)
+		{
+			Guid resourceUid = Guid.Empty;
+			var responsibilityOverride = await CompanyContext.ResponsibilityTypeRelationOverrideItems.FirstOrDefaultAsync(x => x.AssetID == assetId && x.ResponsibilityTypeID == responsibilityTypeId);
+			if (responsibilityOverride != null)
+			{
+				var obj = responsibilityOverride.SecurityAsset == "R" ? SystemObjects.Resource.ToString() : SystemObjects.Group.ToString();
+				resourceUid = (await CompanyContext.Assets.Where(x=> x.Object == obj && x.ObjectID == responsibilityOverride.SecurityAssetID).FirstOrDefaultAsync()).uid;
+			}
+			return (responsibilityOverride, resourceUid);
 		}
 	}
 }

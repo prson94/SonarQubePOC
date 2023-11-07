@@ -9,11 +9,11 @@
 	<ig-property-group i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>
 			<ng-container>
-				<d3s-assignment-information-request [workflowActionUid]="assignmentItem.ActionUid"
+				<d3s-assignment-information-request [workflowActionUid]="assignmentItem?.ActionUid"
 				></d3s-assignment-information-request>
 			</ng-container>
 		</div>
 	</ig-property-group>
 </div>
 <d3s-assignment-information-general [hidden]="isAssignmentItemLoading" [workflowTypeVersion]="workflowTypeVersion"
-									[assignmentItem]="assignmentItem"></d3s-assignment-information-general>
+									[workflowItemUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-information-general>

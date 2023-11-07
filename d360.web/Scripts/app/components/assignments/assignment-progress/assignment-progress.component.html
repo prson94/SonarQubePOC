@@ -1,7 +1,7 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="asset-detail-tabs" [hidden]="isLoading">
-	<ig-property-group i18n-title title="Steps" [shouldBePadded]="false" [showHeaderLine]="false">
-		<div readonly>
+	<ig-property-group i18n-title title="Steps" [shouldBePadded]="shouldBePadded" [showHeaderLine]="false">
+		<div readonly class="parent-set-style">
 			<d3s-assignment-progress-step *ngFor="let assignmentItemStep of assignmentItemSteps"
 										  [workflowItemUid]="workflowItemUid"
 										  [assignmentItemStep]="assignmentItemStep"

@@ -543,18 +543,36 @@ namespace d360.web.Controllers.V2
 			Route("assignments/{resourceUid}"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json", "application/octet-stream"),
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are StartedOn, CompletedOn, Initiator, AssetDisplayValue, Status, DisplayPath, WorkflowName and AssigneesJson . By default the results are ordered by StartedOn.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowUserGroupedAssignments)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetWorkflowAssignmentsGrouped(Guid resourceUid)
+		public async Task<IHttpActionResult> GetWorkflowAssignmentsGrouped(Guid resourceUid, CancellationToken cancellationToken)
 		{
 			var prefix = "Workflow.GetWorkflowAssignmentsGrouped => ";
+
+			var queryParams = Request.GetQueryNameValuePairs();
+			var isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
+			}
+
+			if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
+			{
+				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+			}
+
 			try
 			{
-				var response = await workflowRepository.GetWorkflowAssignmentListGroupedForUser(resourceUid).ConfigureAwait(false);
+				var response = await workflowRepository.GetWorkflowAssignmentListGroupedForUser(resourceUid, queryParams, cancellationToken).ConfigureAwait(false);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
 			}
