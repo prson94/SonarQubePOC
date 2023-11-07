@@ -151,7 +151,7 @@ AS
   </sql>
  </changeSet>
 
- <changeSet author="bquinlivan" id="Table.dbo.Field-FieldType_AfterUpsert-v2">
+ <changeSet author="bquinlivan,PuneetGupta" id="Table.dbo.Field-FieldType_AfterUpsert-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
@@ -159,17 +159,54 @@ CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
    AFTER INSERT,UPDATE
 AS 
 BEGIN
+		declare @FieldTypeID int;
 		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
 		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
 		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
 		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
 		(substring( columns_updated() , 5 , 1 ) & power( 2, 1 ) > 0))
 		BEGIN
+				drop table if exists #tempfieldtypeid;
+				create table #tempfieldtypeid(fieldtypeid int);
 
-				UPDATE	F
-				set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				insert into #tempfieldtypeid
+				select distinct ID FieldTypeID from inserted FT
+				Where FT.LookupObjectType is not null;
+
+				WHILE ((Select Count(1) from #tempfieldtypeid) > 0)
+				begin
+					select top 1 @FieldTypeID = FieldTypeID
+					from #tempfieldtypeid;
+
+					drop table if exists #tempdata;
+
+					select distinct cast(F.Value as nvarchar(425)) ValuePrefix,
+					F.Value,
+					cast(null as nvarchar(max)) formattedvalue,
+					FT.Type, FT.LookupDisplayFormat, 
+					FT.LookupObjectType, FT.LookupObjectID,  
+					FT.AllowMultipleValues
+					into #tempdata
 				FROM	Field F
 						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+					where F.FieldTypeID = @FieldTypeID and F.[Value] is not null;
+
+					update ft
+					set formattedvalue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, FT.Value, FT.AllowMultipleValues)
+					from #tempdata ft;
+
+					create clustered index cx_index on #tempdata (ValuePrefix);
+
+					UPDATE	F
+					set		F.FormattedValue = t.formattedvalue
+					FROM	Field F
+					inner join #tempdata t on t.ValuePrefix = cast(f.Value as nvarchar(425)) and t.Value = f.Value
+					where F.FieldTypeID = @FieldTypeID;
+					
+					delete tft
+					from #tempfieldtypeid tft
+					where FieldTypeID = @FieldTypeID;
+				end
 		END
 		
 		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
