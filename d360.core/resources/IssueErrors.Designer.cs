@@ -70,6 +70,42 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid[_hasAssetTypeUid] value provided.
+        /// </summary>
+        public static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid[_hasAssetUid] value provided.
+        /// </summary>
+        public static string InvalidAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid[_hasAnyAssignments] value provided.
+        /// </summary>
+        public static string InvalidHasAnyAssignments {
+            get {
+                return ResourceManager.GetString("InvalidHasAnyAssignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid [_hasAssignments] value provided.
+        /// </summary>
+        public static string InvalidHasAssignments {
+            get {
+                return ResourceManager.GetString("InvalidHasAssignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid [_limitToActiveWorkflows] value provided.
         /// </summary>
         public static string InvalidLimitProvided {

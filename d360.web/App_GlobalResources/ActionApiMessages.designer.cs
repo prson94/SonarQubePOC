@@ -295,6 +295,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [_hasAnyAssignments] value provided is not valid..
+        /// </summary>
+        public static string InvalidHasAnyAssignments {
+            get {
+                return ResourceManager.GetString("InvalidHasAnyAssignments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to [_hasAssignments] value provided is not valid..
         /// </summary>
         public static string InvalidHasAssignments {
