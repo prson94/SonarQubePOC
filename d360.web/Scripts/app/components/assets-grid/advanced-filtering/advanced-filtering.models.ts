@@ -574,7 +574,17 @@ export class AdvancedFilterFieldConditionCollection {
 				subConditions.forEach((sc) => {
 					subQueries.push(sc.getQueryString());
 				});
-				queries.push("(" + subQueries.join(" " + cond.connectingOperator + " ") + ")");
+
+				let connectingOperator = cond.connectingOperator;
+				if (cond.fieldType === "Lookup" && cond.operator.toString() === "NotContains" && cond.type?.Type?.Lookup?.List?.AllowMultipleValues === true) {
+					if (cond.connectingOperator === "or") {
+						connectingOperator = "and";
+					} else {
+						connectingOperator = "or";
+					}
+				}
+
+				queries.push("(" + subQueries.join(" " + connectingOperator + " ") + ")");
 			}
 			else if (cond.fieldType === "Score" && cond.operator.toString() === "IsInBand") {
 				queries.push(this.getInBandQuery(cond));
