@@ -148,15 +148,15 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 	}
 
 	workflowClicked(workflowUid: string): void {
-
+		console.log(workflowUid);
 	}
 
 	assetClicked(assetUid: string): void {
-
+		console.log(assetUid);
 	}
 
 	initiatorClicked(initiatorUid: string): void {
-
+		console.log(initiatorUid);
 	}
 
 	private setHeaderButton(): void {
