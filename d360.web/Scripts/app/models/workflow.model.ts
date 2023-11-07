@@ -844,10 +844,9 @@ export class WorkflowAssignmentItem {
 	Version: number;
 	VersionId: number;
 	VersionUid: string;
-	actionUid: string;
 	actionTypeUid: string;
+	actionUid: string;
 	assetDisplayValue: string;
-	objectType: string;
 	assetPath: string;
 	assetTypeUid: string;
 	assetUid: string;
@@ -856,6 +855,8 @@ export class WorkflowAssignmentItem {
 	initiatingObjectTypeName: string;
 	initiator: string;
 	initiatorUid: string;
+	isCurrentUserAssigned: boolean;
+	objectType: string;
 	workflowItemUid: string;
 	workflowName: string;
 	workflowUid: string;
