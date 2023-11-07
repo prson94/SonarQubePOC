@@ -303,7 +303,7 @@
     <value>Een beschrijving van de betekenis voor dit rapport; wat met dit rapport wordt geprobeerd uit te leggen.</value>
   </data>
   <data name="ValidationDescription_Description" xml:space="preserve">
-    <value>Dit bericht wordt aan de gebruiker getoond als ze ongeldige of ontbrekende informatie in dit veld opgeven.   U moet voor dit veld een bepaalde vorm van validatie van reguliere expressiepatronen inschakelen, anders wordt het bericht niet weergegeven.</value>
+    <value>Dit bericht wordt aan de gebruiker getoond als ze ongeldige of ontbrekende informatie in dit veld opgeven.  U moet voor dit veld een bepaalde vorm van validatie van reguliere expressiepatronen inschakelen, anders wordt het bericht niet weergegeven.</value>
   </data>
   <data name="ValidationDescription_Name" xml:space="preserve">
     <value>Validatiebericht</value>

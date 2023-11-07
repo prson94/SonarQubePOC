@@ -146,7 +146,7 @@
     <value>Kan bovenliggend element bewerken</value>
   </data>
   <data name="ClassNotSupport" xml:space="preserve">
-    <value>Klasse {0} wordt niet ondersteund. Toegestane waarden zijn BusinessAsset, TechnicalAsset, model, beleid, regel., </value>
+    <value>Klasse {0} wordt niet ondersteund. Toegestane waarden zijn BusinessAsset, TechnicalAsset, model, beleid, regel.,</value>
   </data>
   <data name="CorrectEndpoint" xml:space="preserve">
     <value>Het juiste eindpunt voor {0}s is {1}://{2}{3}</value>
@@ -257,7 +257,7 @@
     <value>U hebt pre-filtercriteria opgegeven, maar geen enkel criterium lijkt geldig te zijn. U moet ten minste één voorwaarde opgeven.</value>
   </data>
   <data name="ProvideSearchPhrase" xml:space="preserve">
-    <value>U moet een woordgroep voor de zoekopdracht opgeven. </value>
+    <value>U moet een woordgroep voor de zoekopdracht opgeven.</value>
   </data>
   <data name="ReachedTransformationlimit" xml:space="preserve">
     <value>Transformatielimiet bereikt</value>

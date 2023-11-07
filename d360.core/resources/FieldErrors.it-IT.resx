@@ -346,7 +346,7 @@
     <value>Il campo JSON {0} non esiste o non fa parte di questo tipo di risorsa.</value>
   </data>
   <data name="JsonNotSupported" xml:space="preserve">
-    <value>[Type.Json] non sono consentiti per il tipo di risorsa corrente.</value>
+    <value>I campi [Type.Json] non sono consentiti per il tipo di risorsa corrente.</value>
   </data>
   <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
     <value>La proprietà [IsRequired] non può essere true per [Type.Json] definiti su questo tipo di risorsa.</value>

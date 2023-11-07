@@ -203,7 +203,7 @@
     <value>Relatie-UID</value>
   </data>
   <data name="Relationships_SheetName" xml:space="preserve">
-    <value>Relaties </value>
+    <value>Relaties</value>
   </data>
   <data name="Relationships_Subject_Asset_Path" xml:space="preserve">
     <value>Pad naar onderwerpasset</value>

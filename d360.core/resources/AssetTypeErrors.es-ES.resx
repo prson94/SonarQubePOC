@@ -241,8 +241,8 @@
   <data name="InvalidValueObjID" xml:space="preserve">
     <value>Valor no válido para el parámetro [objID]</value>
   </data>
-  <data name="InvalueValue_includeFields" xml:space="preserve">
-    <value>Valor no válido {0} en el parámetro [_includeFields]. No se ha encontrado el campo con este nombre.</value>
+  <data name="InvalidValue_includeFields" xml:space="preserve">
+    <value>No se ha encontrado ningún campo válido en el parámetro [_includeFields].</value>
   </data>
   <data name="UnableParse_IncludeFields" xml:space="preserve">
     <value>No se ha podido analizar el valor de [_includeFields]</value>
@@ -363,5 +363,8 @@
   </data>
   <data name="AssetTypeWithSourceIdExists" xml:space="preserve">
     <value>Ya existe un tipo de activo con el [SourceID] especificado.</value>
+  </data>
+  <data name="displaypathsegmentValidOper" xml:space="preserve">
+    <value>El operador válido "displaypathsegment" es ct y nct.</value>
   </data>
 </root>

@@ -122,7 +122,7 @@
     <value>{0} {1} is niet geldig</value>
   </data>
   <data name="GenericInvalidFieldValueError" xml:space="preserve">
-    <value> {0} is een ongeldige {1}-waarde.</value>
+    <value>{0} is een ongeldige {1}-waarde.</value>
   </data>
   <data name="GreaterThanError" xml:space="preserve">
     <value>{0} mag niet hoger zijn dan {1}.</value>

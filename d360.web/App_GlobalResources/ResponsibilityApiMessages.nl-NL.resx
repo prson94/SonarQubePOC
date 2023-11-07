@@ -140,7 +140,7 @@
     <value>Ongeldig testtype. Geldige waarden zijn ‘wanneer’ en ‘dan’</value>
   </data>
   <data name="ReponsibilityOverrideExists" xml:space="preserve">
-    <value>Verantwoordelijkheid overschrijving voor “{0}” bestaat al.   </value>
+    <value>Verantwoordelijkheid overschrijving voor “{0}” bestaat al.</value>
   </data>
   <data name="ReposibilityTypeNotValidForAsset" xml:space="preserve">
     <value>Verantwoordelijkheidstype niet geldig voor huidige asset.</value>
