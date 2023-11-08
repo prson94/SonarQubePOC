@@ -1767,7 +1767,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 		drop table if exists #PCRelationships;
 		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
-		insert into #PCRelationships values (@Uid,@operation);
+		insert into #PCRelationships 
+		select Uid,operation
+		from @TableData;
 
 		insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 		select	@Id,
@@ -1800,11 +1802,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				inner join IntersectDetail i on i.Uid = o.uid;
 ";
 
-	Connection.Execute(logSqlR, new { execution.Id, Uid = parentIntersectGuids.Select(x => x.Uid).ToList(), operation = parentIntersectGuids.Select(x => x.operation).ToList() }, transaction: trans, commandTimeout: timeout);
+		Connection.Execute(logSqlR, new { execution.Id, TableData = getRelationParentChildTable(parentIntersectGuids).AsTableValuedParameter("dbo.ParentIntersect") }, transaction: trans, commandTimeout: timeout);
 	}
-										#endregion
+									#endregion
 
-										sw.Restart();
+									sw.Restart();
 
 									// Update success flag.
 									Connection.Execute(
@@ -1902,6 +1904,24 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
 			return results;
+		}
+
+		private static DataTable getRelationParentChildTable(List<RelationParentChild> model)
+		{
+			var tb = new DataTable();
+
+			tb.Columns.Add("Uid", typeof(Guid));
+			tb.Columns.Add("operation", typeof(string));
+
+			foreach (var f in model)
+			{
+				var fieldRow = tb.NewRow();
+
+				fieldRow["Uid"] = f.Uid;
+				fieldRow["operation"] = f.operation;
+				tb.Rows.Add(fieldRow);
+			}
+			return tb;
 		}
 
 		public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
