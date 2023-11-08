@@ -74,6 +74,6 @@ export class AssignmentProgressComponent {
 	}
 
 	forceRefresh(): void {
-		this.workflowItemUid = this.workflowItemUid;
+		this.workflowItemUid = this._workflowItemUid;
 	}
 }
