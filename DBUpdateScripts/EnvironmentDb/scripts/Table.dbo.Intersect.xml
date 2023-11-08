@@ -63,96 +63,77 @@ end
     </sql>
   </changeSet>
 
-<changeSet author="TKlok" id="Table.dbo.Intersect-Indices-v5">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+ <changeSet author="Pappas" id="Table.dbo.Intersect-Indices-v6">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_Uid')
 	begin
 		create unique nonclustered index [IX_Intersect_Uid] on [dbo].[Intersect] ([uid] asc)
 	end
-
+GO
 	if exists (select * from sys.indexes where name = 'CIX_Intersect')
 	begin
 		drop index [CIX_Intersect] on [dbo].[Intersect] with ( ONLINE = ON );
 		alter table [dbo].[Intersect] drop constraint PK_Intersect;
 		alter table [dbo].[Intersect] add constraint [PK_Intersect] primary key clustered ( [ID] asc ) on [PRIMARY];
 	end
-
-	if not exists (select * from sys.indexes where name = 'IX_Intersect_IntersectTypeID')
+GO
+	if exists (select * from sys.indexes where name = 'IX_Intersect_IntersectTypeID')
 	begin
-		create nonclustered index [IX_Intersect_IntersectTypeID] on [dbo].[Intersect] ( [IntersectTypeID] ASC )
+		drop index [IX_Intersect_IntersectTypeID] on [dbo].[Intersect]
 	end
-
+GO
+	if exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+	begin
+		drop index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect]
+	end
+GO
+	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
+	begin
+		create nonclustered index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect] ( [IntersectTypeID] ASC ) include ([UpdatedOn], [ObjectAssetID], [SubjectAssetID])
+	end
+GO
 	if exists (select * from sys.indexes where name = 'IX_Intersect_Object_IntersectType_Deleted')
 	begin
 		drop index [IX_Intersect_Object_IntersectType_Deleted] on [dbo].[Intersect];
 	end
-
+GO
 	if exists (select * from sys.indexes where name = 'IX_Intersect_Subject_SubjectID_IntersectType')
 	begin
 		drop index [IX_Intersect_Subject_SubjectID_IntersectType] on [dbo].[Intersect];
 	end
-
+GO
 	if exists (select * from sys.indexes where name = 'IX_Intersect_Object_ObjectID_IntersectType')
 	begin
 		drop index [IX_Intersect_Object_ObjectID_IntersectType] on [dbo].[Intersect];
 	end
-
+GO
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_SubjectAssetID_IntersectType')
 	begin
 		create nonclustered index [IX_Intersect_SubjectAssetID_IntersectType] on [dbo].[Intersect] ( SubjectAssetID asc ) include ( [IntersectTypeID] ) 
 	end
-
+GO
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_SubjectAssetTypeID_IntersectType')
 	begin
 		create nonclustered index [IX_Intersect_SubjectAssetTypeID_IntersectType] on [dbo].[Intersect] ( SubjectAssetTypeID asc ) include ( [IntersectTypeID] ) 
 	end
-
+GO
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_ObjectAssetID_IntersectType')
 	begin
 		create nonclustered index [IX_Intersect_ObjectAssetID_IntersectType] on [dbo].[Intersect] ( ObjectAssetID asc ) include ( [IntersectTypeID] ) 
 	end
-
+GO
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_ObjectAssetTypeID_IntersectType')
 	begin
 		create nonclustered index [IX_Intersect_ObjectAssetTypeID_IntersectType] on [dbo].[Intersect] ( ObjectAssetTypeID asc ) include ( [IntersectTypeID] ) 
 	end
-
-	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_IntersectTypeID_Include')
-	begin
-		create nonclustered index [IX_Intersect_IntersectTypeID_Include] on [dbo].[Intersect] ( [IntersectTypeID] ASC ) include ([ObjectAssetID], [SubjectAssetID])
-	end
-
+GO
 	if not exists (select 1 from [sys].[indexes] i where name = 'IX_Intersect_ObjectAssetID_SubjectAssetID')
 	begin
 		create nonclustered index [IX_Intersect_ObjectAssetID_SubjectAssetID] on [dbo].[Intersect] ( ObjectAssetID ) include ( [SubjectAssetID] ) 
 	end
 ]]>
     </sql>
-	<rollback>
-<![CDATA[]]>
-	</rollback>
   </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterDelete-v2">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterDelete]
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterInsert-v4">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterInsert]
-  </sql>
- </changeSet>
-
- <changeSet author="Pappas" id="Table.dbo.Intersect-Intersect_AfterUpdate-v4">
-  <sql dbms="mssql">
-   DROP TRIGGER IF EXISTS [dbo].[Intersect_AfterUpdate]
-  </sql>
- </changeSet>
 
 </databaseChangeLog>
