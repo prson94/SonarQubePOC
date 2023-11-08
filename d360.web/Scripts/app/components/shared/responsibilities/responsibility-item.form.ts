@@ -33,6 +33,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import * as DOMPurify from 'dompurify';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
 	selector: 'd3s-responsibility-item-form',
@@ -60,13 +61,14 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
 	constructor(
 		private responsibilityService: ResponsibilityService,
+		protected authenticationService: AuthenticationService,
 		private messagesService: MessagesObservableService,
 		protected settingsService: CompanySettingsService) {
 		super(settingsService);
 	}
 
 	ngOnInit() {
-		this.IsResponsibilityDisabled = !this.hasDeleteResponsibilitiesPermissions() || !this.hasAddResponsibilitiesPermissions();
+		this.IsResponsibilityDisabled = (!this.hasDeleteResponsibilitiesPermissions() || !this.hasAddResponsibilitiesPermissions()) && !this.authenticationService.isAdmin;
 		this.itemToSave = new ResponsibilityItemV2();
 		this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
 		this.itemToSave.AssetUid = this.assetUid;
