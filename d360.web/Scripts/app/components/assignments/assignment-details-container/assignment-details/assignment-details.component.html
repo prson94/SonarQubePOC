@@ -9,11 +9,11 @@
 			</ng-container>
 		</div>
 	</ig-property-group>
-	<d3s-assignment-progress [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
+	<d3s-assignment-progress #assignmentProgressComponent [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
 							 [workflowTypeVersion]="workflowAssignmentItem?.Version"
 							 [workflowUid]="workflowAssignmentItem?.workflowUid"
 							 [showCompleteAssignment]="false" [shouldBePadded]="true"></d3s-assignment-progress>
-	<d3s-assignment-information-general [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
+	<d3s-assignment-information-general #assignmentInformationGeneralComponent [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
 										[shouldBePadded]="true" [isCollapsed]="true"
 										[workflowTypeVersion]="workflowAssignmentItem?.Version"></d3s-assignment-information-general>
 </div>
