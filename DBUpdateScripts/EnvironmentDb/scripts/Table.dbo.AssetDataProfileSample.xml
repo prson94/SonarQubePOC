@@ -5,113 +5,38 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Table.dbo.AssetDataProfileSample-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfileSample')
-BEGIN
-	CREATE TABLE [dbo].[AssetDataProfileSample](
-		[ID] [BIGINT] IDENTITY(1,1) NOT NULL,
-		[AssetDataProfileID] BIGINT NOT NULL,			
-		[SampleType] NVARCHAR(100) NOT NULL,
-		[Key] NVARCHAR(200) NULL,
-		[Value] NVARCHAR(200) NOT NULL,		
-		CONSTRAINT [PK_AssetDataProfileSample] PRIMARY KEY CLUSTERED ([ID], AssetDataProfileID),
-		CONSTRAINT [FK_AssetDataProfileSample_AssetDataProfile] FOREIGN KEY (AssetDataProfileID) REFERENCES AssetDataProfile(ID) ON DELETE CASCADE
+ <changeSet author="Pappas" id="Table.dbo.AssetDataProfileSample-v4">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if not exists (select * from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'AssetDataProfileSample')
+begin
+	create table [dbo].[AssetDataProfileSample](
+		[ID] bigint identity not null,
+		[AssetDataProfileID] bigint not null,
+		[SampleType] nvarchar(100) not null,
+		[Key] nvarchar(200) null,
+		[Value] nvarchar(200) not null,		
+		constraint [PK_AssetDataProfileSample] primary key clustered ([ID], AssetDataProfileID)
 	)
-END
-
-IF NOT EXISTS (
-  SELECT * 
-  FROM   sys.columns 
-  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfileSample]') 
-         AND name = 'Key'
-)
-BEGIN
-    ALTER TABLE [dbo].[AssetDataProfileSample] ADD [Key] NVARCHAR(200) NULL
-END
-
-IF EXISTS (
-	SELECT
-		*
-	FROM
-		sys.foreign_keys FK
-		INNER JOIN
-		sys.all_objects AO on FK.parent_object_id = AO.object_id     
-	where 
-		FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 		
-)
-BEGIN
-
-	IF EXISTS (
-		SELECT
-			*
-		FROM
-			sys.foreign_keys FK
-			INNER JOIN
-			sys.all_objects AO on FK.parent_object_id = AO.object_id     
-		where 
-			FK.[NAME] = 'FK_AssetDataProfileSample_AssetDataProfile' 
-	)
-	BEGIN
-		ALTER TABLE AssetDataProfileSample
-		DROP CONSTRAINT FK_AssetDataProfileSample_AssetDataProfile;
-	END
-END
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
+end
+]]>
+  </sql>
+ </changeSet>
   
-   <changeSet author="Puneet Gupta" id="Table.dbo.AssetDataProfileSample-v4-AddAssetDataProfileIDIndex">
-   <comment>GOV-14869</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_AssetDataProfileSample_AssetDataProfileID] ON [dbo].[AssetDataProfileSample] ( [AssetDataProfileID] ASC )
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
-BEGIN
-	DROP INDEX [IX_AssetDataProfileSample_AssetDataProfileID] ON [dbo].[AssetDataProfileSample]
-END
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfileSample-v5">
-   <comment>GOV-21225</comment>
-   <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			ALTER TABLE AssetDataProfileSample
-			ALTER COLUMN [value] NVARCHAR(500)
-			
-			ALTER TABLE AssetDataProfileSample
-			ALTER COLUMN [key] NVARCHAR(500)				
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-			
-		]]>
-	</rollback>
-  </changeSet>
+ <changeSet author="Pappas" id="Table.dbo.AssetDataProfileSample.Indices-v4">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+if exists (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
+begin
+	drop index [IX_AssetDataProfileSample_AssetDataProfileID] on [dbo].[AssetDataProfileSample]
+end
+GO
+if not exists (select * from sys.indexes where name = 'IX_AssetDataProfileSample_AssetDataProfileID')
+begin
+	create nonclustered index [IX_AssetDataProfileSample_AssetDataProfileID] on [dbo].[AssetDataProfileSample] ([AssetDataProfileID]) include ([Key], [SampleType], [Value]) with (ONLINE = ON)
+end
+]]>
+  </sql>
+ </changeSet>
 
 </databaseChangeLog>
