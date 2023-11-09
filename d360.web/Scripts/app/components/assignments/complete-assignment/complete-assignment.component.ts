@@ -438,6 +438,8 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					this.workflowForm.form.controls[`input_${i}`].value;
 				x.Value =
 					name.length + url.length === 0 ? '' : name + '|' + url;
+			} else if (x.FieldType === WorkflowFormFieldType.RelationshipType) {
+				x.Value = this.workflowForm.form.controls[`input_${i}`].value.map(f => f.Value).join();
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
 			}
