@@ -1154,7 +1154,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						tempArgs = new DynamicParameters();
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
-						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true, referenceListTempQryList: referenceListTempQryList); 
+						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns, TempTableScriptList: TempTableScriptList, CreateTempTableForFieldFromRelationship: true, referenceListTempQryList: referenceListTempQryList);
 						fieldColumns.Merge(tempFieldColumns);
 						fieldJoins.Merge(tempJoins);
 						countJoins.Merge(tempJoins);
@@ -1920,7 +1920,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			}
 
 			bool needFieldDataConversion = fieldColumns.NeedExplicitCast();
-			List<string> pathSegmentsForParsing = allFieldTypes.Where(x => x.IsListable && x.Type == "Path" && !string.IsNullOrEmpty(x.Definition) && x.Definition.Contains("AssetTypeUid")).Select(x=> x.Name).ToList();
+			List<string> pathSegmentsForParsing = allFieldTypes.Where(x => x.IsListable && x.Type == "Path" && !string.IsNullOrEmpty(x.Definition) && x.Definition.Contains("AssetTypeUid")).Select(x => x.Name).ToList();
 
 			//Loop results once for if any applicable conversions
 			if (needFieldDataConversion || useTempTableForResults || includeRelationships || includePermissionDetails || includeSegments || (includeOwnershipLookup && ownershipFieldTypes.Any()) || pathSegmentsForParsing.Count > 0)
@@ -3172,8 +3172,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 						IsDescriptionEnabled = model.IsDescriptionEnabled,
 						IsDescriptionVisibleByDefault = model.IsDescriptionVisibleByDefault,
 						DescriptionButtonName = model.DescriptionButtonName,
-						DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ? 
-							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) : 
+						DefaultPermissions = model.IsDefaultReadAccessEnabled.HasValue ?
+							(model.IsDefaultReadAccessEnabled.Value ? (int)Permission.ReadAsset : 0) :
 							(int)Permission.ReadAsset
 					};
 
@@ -3497,7 +3497,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				CompanyContext.Update(assetType);
 				UpdateAssetTypeSynonymAllocations(model, assetType);
-				if(defaultPermissionChanged)
+				if (defaultPermissionChanged)
 				{
 					QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
 					{
@@ -3518,7 +3518,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		public List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool executionInDb = false)
 		{
 			if (!executionInDb)
-			{ 
+			{
 				CompanyContext.Add(execution);
 			}
 
@@ -3536,12 +3536,13 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
 
 				#region DQ Scoring - send to engine to determine what scores need to be recalculated.
-				
+
 				if (assetType.Class == AssetTypeClass.Rule)
 				{
 					if (isUpdatedScoring)
 					{
-						results.ForEach(result => {
+						results.ForEach(result =>
+						{
 							if (result.Success)
 							{
 								var info = new ScoreQueueInfo
@@ -3586,11 +3587,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			{
 				CompanyContext.Add(execution);
 			}
-			
+
 			List<DatabaseBulkAssetTypeResult> results = null;
 			try
 			{
-				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, stateChangeOnly);
+				results = CompanyContext.RemoveAssetTypes(execution, assetTypes, stateChangeOnly: stateChangeOnly);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssetTypes);
 
 				var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
@@ -3601,12 +3602,13 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					"select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID",
 					new { execution.ExecutionID }
 					).ToList();
-				
+
 				if (assetUids.Count > 0)
 				{
 					if (isUpdatedScoring)
 					{
-						assetUids.ForEach(assetUid => {
+						assetUids.ForEach(assetUid =>
+						{
 							var info = new ScoreQueueInfo
 							{
 								CompanyID = CompanyContext.CurrentCompanyID,
@@ -3628,7 +3630,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				#endregion DQ Scoring
 
 				#region Queue successfully deleted asset types for reindexing
-				
+
 				var indexQueueName = Config.GetValue<string>("SearchIndexQueue");
 				results.Where(r => r.Success).ToList().ForEach(r =>
 				{
@@ -3650,7 +3652,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 			return results;
 		}
-		
+
 		public async Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
 		{
 			var executionInfo = new ApiExecutionInfo
@@ -3701,11 +3703,11 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				#region Send score recalculation notifications.
 
 				if (results.Any(r => r.Success))
-				{ 
+				{
 					var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
 
 					if (CompanyContext.Query<bool>(
-						"select cast(iif(count(1) > 0, 1, 0) as bit) from IntersectType i inner join [Predicate] p on p.Id = i.PredicateId and p.[Type] in (3,4) and i.ObjectAssetTypeID = @ID", 
+						"select cast(iif(count(1) > 0, 1, 0) as bit) from IntersectType i inner join [Predicate] p on p.Id = i.PredicateId and p.[Type] in (3,4) and i.ObjectAssetTypeID = @ID",
 						new { assetType.ID }).First()
 						)
 					{
@@ -3965,7 +3967,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 			return resultsModel;
 		}
-	
+
 		public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
 		{
 			var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
@@ -4009,7 +4011,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				{
 					reached = false;
 				}
-				else 
+				else
 				{
 					int totalUseAsTransform = transformationUids.Count + 1;
 					if (totalUseAsTransform > useAsTransformationLimit)
@@ -5157,7 +5159,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			union
 			select at.Class from assettype at where at.uid = @uid", new { uid }).FirstOrDefault();
 		}
-		
+
 		public async Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetType, List<dynamic> customfields, CancellationToken? cancellationToken = null)
 		{
 			string customfieldSelect = "";
@@ -5739,12 +5741,12 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			return retval;
 		}
 
-		public void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "",bool SupportHtml = false)
+		public void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false)
 		{
 			string? valuestring = value;
 			if (SupportHtml && value != null)
 			{
-				valuestring = valuestring.RemoveHtml().Replace("&nbsp;"," ");
+				valuestring = valuestring.RemoveHtml().Replace("&nbsp;", " ");
 			}
 			if (string.IsNullOrEmpty(fieldname))
 			{
@@ -5762,7 +5764,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				}
 			}
 		}
-		
+
 		public void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "")
 		{
 			bool isShowValue = true;
