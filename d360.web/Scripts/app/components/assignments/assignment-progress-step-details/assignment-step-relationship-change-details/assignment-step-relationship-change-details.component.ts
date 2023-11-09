@@ -33,14 +33,21 @@ export class AssignmentStepRelationshipChangeDetailsComponent extends BaseCompon
 			this.workflowService.getWorkflowDetailsV2ByUid(this.workflowItemUId).subscribe((workflowDetails: WorkflowDetails) => {
 				for (const step of workflowDetails.ItemSteps) {
 					if (step.StepID === formStepId) {
-						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: WorkflowStepDetail) => {
+						this.workflowService.getWorkflowStepDetail(step.ID).subscribe((stepDetails: WorkflowStepDetail) => {							
 							if (stepDetails?.Fields?.form?.field) {
-								for (const formField of stepDetails.Fields.form.field) {
-									if (formField['@id'] === formFieldId) {
-										this.relationshipFormField = formField['@label'] ?? '';
-										break;
+								if (Array.isArray(stepDetails?.Fields?.form?.field)) {
+									for (const formField of stepDetails.Fields.form.field) {
+										if (formField['@id'] === formFieldId) {
+											this.relationshipFormField = formField['@label'] ?? '';
+											break;
+										}
+									}
+								} else {
+									if (stepDetails.Fields.form.field['@id'] === formFieldId) {
+										this.relationshipFormField = stepDetails.Fields.form.field['@label'] ?? '';
 									}
 								}
+								
 							}
 						});
 						break;

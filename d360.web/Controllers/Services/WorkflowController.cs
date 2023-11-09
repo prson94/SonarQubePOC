@@ -3180,10 +3180,14 @@ namespace d360.web.Controllers.Services
 				{
 					if (sfield["@fieldtype"] != null && sfield["@fieldtype"].ToString() == "relationshiptype")
 					{
-						string changedType = sfield["@value"] != null ? sfield["@value"].ToString() : null;
-						if (!string.IsNullOrEmpty(changedType))
+						string changedTypes = sfield["@value"] != null ? sfield["@value"].ToString() : null;
+						if (!string.IsNullOrEmpty(changedTypes))
 						{
-							var types = changedType.Split('|');
+							var types = changedTypes.Split(',');
+							List<string> displayValues = new List<string>();
+							foreach (var changedType in types )
+						{
+								var type = changedType.Split('|');
 
 							if (types.Length == 2)
 							{
@@ -3191,9 +3195,11 @@ namespace d360.web.Controllers.Services
 								string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
 								displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
 
-								sfield["@displayvalue"] = displayValue;
-
+									displayValues.Add(displayValue);
+								}
 							}
+
+							sfield["@displayvalue"] = displayValues.Count > 0 ? string.Join(", ",displayValues) : sfield["@displayvalue"];
 						}
 					}
 				}
