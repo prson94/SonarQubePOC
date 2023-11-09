@@ -73,7 +73,7 @@ namespace igx.jobs.workflowdigestprocessor
 					};
 
 					using (log.BeginScope(logProperties))
-					{ 
+					{
 						try
 						{
 							// Create EF connection
@@ -116,6 +116,10 @@ namespace igx.jobs.workflowdigestprocessor
 				{
 					log.LogCritical(ex, "Critical error while running this web job.");
 				}
+			}
+			finally 
+			{
+				CoreFunction.AIFlush();
 			}
 		}
 	}

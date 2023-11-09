@@ -432,6 +432,8 @@ namespace igx.jobs.bulkloadprocessor
 					log.LogCritical(ex, "Critical error during Bulk Load Processor Execution");
 				}			
 			}
+
+			CoreFunction.AIFlush();
 		}
 
 		private static void BulkLoadMembership(SqlConnection company, int companyID, int loadId)

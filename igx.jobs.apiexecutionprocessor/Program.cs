@@ -450,6 +450,8 @@ namespace igx.jobs.apiexecutionprocessor
 					return;
 				}
 			}
+			
+			CoreFunction.AIFlush();
 		}
     }
 }

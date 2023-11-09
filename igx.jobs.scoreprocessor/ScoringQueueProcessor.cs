@@ -131,6 +131,9 @@ namespace igx.jobs.scoreprocessor
 						case ScoreQueueChangeType.WorkflowCheck:
 							process = new WorkflowCheckProcess();
 							break;
+						default:
+							// no action found.
+							break;
 					}		
 
 					if (process != null)
@@ -156,7 +159,9 @@ namespace igx.jobs.scoreprocessor
 					log.LogError(ex, ex.Message);
 				}
 			}
-        }
+
+			CoreFunction.AIFlush();
+		}
 
 
 		static string getCompanyConnectionString(int companyID)

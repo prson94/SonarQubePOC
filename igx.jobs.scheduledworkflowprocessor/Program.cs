@@ -52,12 +52,12 @@ namespace igx.jobs.scheduledworkflowprocessor
 
 		public static void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)   
         {
-            try
-            {
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+			try
+			{
+				var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-                companies.ForEach(c =>
-                {
+				companies.ForEach(c =>
+				{
 					var logProperties = new Dictionary<string, object> {
 						{ "Function", FUNCTION_NAME },
 						{ "CompanyID", c.CompanyID },
@@ -105,19 +105,23 @@ namespace igx.jobs.scheduledworkflowprocessor
 							log.LogError(ex, "Error processing scheduled workflows for this environment.");
 						}
 					}
-                });
-            }
-            catch (Exception ex)
-            {
+				});
+			}
+			catch (Exception ex)
+			{
 				var logProperties = new Dictionary<string, object> {
 					{ "Function", FUNCTION_NAME }
 				};
 
-				using (log.BeginScope(logProperties)) 
+				using (log.BeginScope(logProperties))
 				{
 					log.LogCritical(ex, "Critical error when running scheduled workflows.");
 				}
-            }
+			}
+			finally 
+			{
+				CoreFunction.AIFlush();
+			}
         }
     }
 }

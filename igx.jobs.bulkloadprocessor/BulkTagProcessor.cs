@@ -110,6 +110,7 @@ namespace igx.jobs.bulkloadprocessor
 				}
 			}
 
+			CoreFunction.AIFlush();
 		}
 	}
 }

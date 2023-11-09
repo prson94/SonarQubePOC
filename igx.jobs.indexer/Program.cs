@@ -98,7 +98,9 @@ namespace igx.jobs.indexer
 					log.LogCritical(ex, "Critical error on ReIndexer web job.");
 				}			
 			}
-        }
+
+			CoreFunction.AIFlush();
+		}
 
         public static async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
         {

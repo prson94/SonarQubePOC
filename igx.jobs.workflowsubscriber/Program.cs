@@ -181,6 +181,8 @@ namespace igx.jobs.workflowsubscriber
 					log.LogError(ex, "Error while processing workflow activity.");
 				}
 			}
-        }
+
+			CoreFunction.AIFlush();
+		}
     }
 }

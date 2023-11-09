@@ -86,6 +86,8 @@ namespace igx.jobs.databaseindexrebuilder
 					log.LogCritical(ex, "DatabaseReindexWebJob critical job error.");
 				}
 			}
-        }
+
+			CoreFunction.AIFlush();
+		}
     }
 }
