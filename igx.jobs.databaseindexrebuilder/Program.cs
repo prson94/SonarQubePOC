@@ -4,10 +4,12 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using AngleSharp.Css;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace igx.jobs.databaseindexrebuilder
 {
@@ -31,67 +33,59 @@ namespace igx.jobs.databaseindexrebuilder
     }
     public static class DatabaseIndexRebuilder
     {
-        const string functionName = "DatabaseTask_IndexRebuilder";
+        const string FUNCTION_NAME = "DatabaseTask_IndexRebuilder";
 #if DEBUG
-        const string timerSettings = "*/60 * * * * *";
+        const string TIMER_SETTINGS = "*/60 * * * * *";
 #else
-        const string timerSettings = "0 0 0 * * SAT";
+        const string TIMER_SETTINGS = "0 0 0 * * SAT";
 #endif
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+		public static void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)
         {
             int commandTimeout = int.TryParse(ConfigurationManager.AppSettings["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
 
             try
             {
-                CoreFunction.AITrackJobStart(functionName);
-                List<string> failedReindexes = new List<string>();
                 var companies = CoreFunction.GetCompaniesByCurrentSlot().OrderBy(x => x.Priority);
                 foreach (var item in companies)
                 {
-                    Dictionary<string, string> properties = new Dictionary<string, string>();
-                    properties.Add("Prefix", item.UrlPrefix);
-                    try
-                    {
-                        CoreFunction.AITrackEvent(functionName, "Starting Index Rebuild", properties, item.CompanyID);
-                        var start = DateTime.Now;
-                        using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
-                        {
-                            companyConnection.Open();
-                            var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", MinReorganize = 5, From = 15, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
-                        }
-                        TimeSpan end = DateTime.Now - start;
-                        properties.Add("Time Taken", end.TotalMilliseconds.ToString());
-                        CoreFunction.AITrackEvent(functionName, "Completed Index Rebuild", properties, item.CompanyID);
-                    }
-                    catch (Exception e)
-                    {
-                        CoreFunction.AITrackException(functionName, e, item.CompanyID);
-                        failedReindexes.Add(item.UrlPrefix);
-                    }
-                }
-                if (failedReindexes.Any())
-                {
-                    CoreFunction.AITrackEvent(functionName, "Completed with errors.",
-                        new Dictionary<string, string>()
-                        {
-                            { "Function", functionName },
-                            { "Failed Items", string.Join(", ", failedReindexes.ToArray()) }
-                        });
-                }
-                else
-                {
-                    CoreFunction.AITrackJobCompletedNoErrors(functionName);
+					var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME },
+						{ "CompanyID", item.CompanyID },
+						{ "UrlPrefix", item.UrlPrefix }
+					};
+
+					using (log.BeginScope(logProperties)) 
+					{
+						try
+						{
+							var start = DateTime.Now;
+							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
+							{
+								companyConnection.Open();
+								var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", MinReorganize = 5, From = 15, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
+							}
+							TimeSpan end = DateTime.Now - start;
+							log.LogInformation($"Completed database index rebuild. Time taken: {end.TotalMinutes}");
+						}
+						catch (Exception e)
+						{
+							log.LogError(e, "Error during DB index rebuild.");
+						}					
+					}
                 }
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex);
-            }
+				var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME }
+					};
 
+				using (log.BeginScope(logProperties))
+				{
+					log.LogCritical(ex, "DatabaseReindexWebJob critical job error.");
+				}
+			}
         }
-
-
     }
-
 }

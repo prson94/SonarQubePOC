@@ -5,11 +5,13 @@ using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -36,124 +38,120 @@ namespace igx.jobs.reportlayer
 
     public static class ReportLayerGenerator
     {
-        #region Utility
-
-        static string cleanObjectName(string name)
-        {
-            name = name.Replace("'", "").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
-            Regex rgx = new Regex("[^a-zA-Z0-9-]");
-            name = rgx.Replace(name, "");
-            return name;
-        }
-
-
-        static void executeSqlWithTry(SqlConnection companyConnection, string viewSql)
-        {
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, null, new Dictionary<string, string>() { { "Attempted SQL: ", viewSql } });
-            }
-        }
-
-        #endregion
-
-        const string functionName = "ReportingLayer_Generate";
+        const string FUNCTION_NAME = "ReportingLayer_Generate";
 
 #if DEBUG
-        const string timerSettings = "*/1 * * * * *";
+        const string TIMER_SETTINGS = "*/1 * * * * *";
 #else
-        const string timerSettings = "0 */5 * * * *";
+        const string TIMER_SETTINGS = "0 */5 * * * *";
 #endif
 
-        public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
+		public static void Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
-#if DEBUG
-                companies = companies.Where(i => i.CompanyID == 3).ToList();
-#endif
-
                 companies.ForEach(c =>
                 {
-                    var synonymNames = new List<string>();
-                    var viewNames = new List<string>();
-                    string SCHEMA = "reporting";
+					var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME },
+						{ "CompanyID", c.CompanyID },
+						{ "UrlPrefix", c.UrlPrefix }
+					};
 
-                    try
-                    {
-                        using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-                        {
-                            companyConnection.Open();
+					using (log.BeginScope(logProperties))
+					{
+						var synonymNames = new List<string>();
+						var viewNames = new List<string>();
+						string SCHEMA = "reporting";
 
-                            var selectSql = "";
-                            var objectName = "";
+						try
+						{
+							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+							{
+								companyConnection.Open();
 
-                            #region General Views
+								var selectSql = "";
+								var objectName = "";
 
-                            #region REPORING USERS (dynamic)
+								#region General Views
 
-                            var fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ResourceType'").ToList();
-                            var fjoins = string.Empty;
-                            var ffields = string.Empty;
-                            fieldTypes.ForEach(f =>
-                            {  
-                                fjoins += $@" left join field as [Type_{f.ID}] on 
-                                        [Type_{f.ID}].fieldtypeId={f.ID} and [Type_{f.ID}].AssetID=A.ID ";
-                                ffields += $@",[Type_{f.ID}].FormattedValue as [{f.FriendlyName}]";
-                            });
+								#region REPORING USERS (dynamic)
 
-                            objectName = $"{SCHEMA}.[Users]";
-                            viewNames.Add(objectName);
+								var fieldTypes = companyConnection.Query<FieldType>("select * from FieldType where [Object] = 'ResourceType'").ToList();
+								var fjoins = string.Empty;
+								var ffields = string.Empty;
+								fieldTypes.ForEach(f =>
+								{  
+									fjoins += $@" left join field as [Type_{f.ID}] on 
+											[Type_{f.ID}].fieldtypeId={f.ID} and [Type_{f.ID}].AssetID=A.ID ";
+									ffields += $@",[Type_{f.ID}].FormattedValue as [{f.FriendlyName}]";
+								});
 
-                            selectSql = $@"select 
-                                    r.FirstName ,
-                                    r.LastName ,
-                                    r.Email, 
-                                    r.ResourceID,
-                                    '/Resource/' + cast(r.ResourceID as varchar(250)) as ResourceURI,
-                                    r.LastLoggedInOn as DateLastLoggedIn, 
-                                    case when r.[State] = 1 then 'Active' else 'Inactive' end as [Status], 
-                                    r.LastLoggedInOn, 
-                                    r.[State], 
-                                    r.IsAdministrator
-                                    {ffields}
-                                    from reporting.Global_Resource as r
-									inner join Asset A on r.uid = A.Uid
-                                    {fjoins}";
+								objectName = $"{SCHEMA}.[Users]";
+								viewNames.Add(objectName);
 
-                            executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
+								selectSql = $@"select 
+										r.FirstName ,
+										r.LastName ,
+										r.Email, 
+										r.ResourceID,
+										'/Resource/' + cast(r.ResourceID as varchar(250)) as ResourceURI,
+										r.LastLoggedInOn as DateLastLoggedIn, 
+										case when r.[State] = 1 then 'Active' else 'Inactive' end as [Status], 
+										r.LastLoggedInOn, 
+										r.[State], 
+										r.IsAdministrator
+										{ffields}
+										from reporting.Global_Resource as r
+										inner join Asset A on r.uid = A.Uid
+										{fjoins}";
 
-                            #endregion
+								try
+								{
+									companyConnection.Execute($@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
+								}
+								catch (Exception ex)
+								{
+									log.LogError(ex, $"Error create or altering view: {objectName}");
+								}
 
-                            #endregion
+								#endregion
 
-                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.BusinessAsset, viewNames, log);
-                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.TechnicalAsset, viewNames, log);
-                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.Model, viewNames, log);
-                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.Policy, viewNames, log);
+								#endregion
 
-                            RemoveSynonyms(companyConnection, synonymNames, log, SCHEMA);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
+								RemoveOldDynamicViews(companyConnection, AssetTypeClass.BusinessAsset, viewNames, log);
+								RemoveOldDynamicViews(companyConnection, AssetTypeClass.TechnicalAsset, viewNames, log);
+								RemoveOldDynamicViews(companyConnection, AssetTypeClass.Model, viewNames, log);
+								RemoveOldDynamicViews(companyConnection, AssetTypeClass.Policy, viewNames, log);
+
+								RemoveSynonyms(companyConnection, synonymNames, log, SCHEMA);
+							}
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Error when running report layer for environment.");
+						}
+					}
                 });
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex);
+				var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME }
+					};
+
+				using (log.BeginScope(logProperties))
+				{
+					log.LogCritical(ex, "Critical error at the root of this web job.");
+				}
             }
+			
+			CoreFunction.AIFlush();
         }
 
-        private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, TextWriter log, string schemaName)
+        private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, ILogger log, string schemaName)
         {
             var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%' and base_object_name not in (select '[' + TABLE_SCHEMA + '].[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting')").ToList();
 
@@ -169,15 +167,13 @@ namespace igx.jobs.reportlayer
                     }
                     catch (Exception ex)
                     {
-                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                        log.WriteLine(msg);
+						log.LogError(ex, "Error removing synonyms");
                     }
                 }
             });
-
         }
 
-        private static void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, TextWriter log)
+        private static void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, ILogger log)
         {
             var currentViewNames = connection.Query<string>($@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME like '{className}_%' and TABLE_NAME not in('model_all','model_fields', 'ModelInterRelationships','policy_all')").ToList();
                         
@@ -191,8 +187,7 @@ namespace igx.jobs.reportlayer
                     }
                     catch (Exception ex)
                     {
-                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                        log.WriteLine(msg);
+						log.LogError(ex, "Error removing dynamic views");
                     }
                 }
             });

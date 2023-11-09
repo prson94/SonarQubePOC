@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,130 +24,138 @@ namespace igx.jobs.scoreprocessor
 
 		public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
         {
-			var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
-			var logEvent = new EventId(scoreInfo.CompanyID, $"Score Processor: {scoreInfo.ChangeType}");
+			var info = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
+			var logProperties = new Dictionary<string, object> {
+				{ "Function", FUNCTION_NAME },
+				{ "CompanyID", info.CompanyID },
+				{ "ExecutionId", info.ExecutionUid },
+				{ "ChangeType", info.ChangeType.ToString() }
+			};
 
-			try
+			using (log.BeginScope(logProperties))
 			{
-				string sql = "";
-				string companyConnectionString = "";
-
-				IScoreProcess process = null;
-
-				switch (scoreInfo.ChangeType)
+				try
 				{
-					case ScoreQueueChangeType.RescoreRequest:
-						if (scoreInfo.UseUpdatedScoringEngine)
-						{
-							var payload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(scoreInfo.Payload.ToString());
-							sql = "exec metrics.GenerateScore @AssetUid, @EffectiveDate, @scoreType";
-							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { payload.AssetUid, EffectiveDate = payload.EffectiveDate.Date, ScoreType = (int)payload.ScoreType }, commandTimeout: 600);
-							}
-						}
-						break;
-					case ScoreQueueChangeType.PatchCatalogExecution:
-						if (scoreInfo.UseUpdatedScoringEngine)
-						{
-							sql = getPatchExecutionSql();
-							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { scoreInfo.ExecutionUid }, commandTimeout: 18000);
-							}
-						}
-						break;
-					case ScoreQueueChangeType.AssetMeasures:
-						process = new AssetMeasuresProcess();
-						break;
-					case ScoreQueueChangeType.CheckTypeDependencyRemoved:
-						process = new CheckTypeDependencyRemovedProcess();
-						break;
-					case ScoreQueueChangeType.MeasureChanged:
-						if (scoreInfo.UseUpdatedScoringEngine)
-						{
-							var payload = JsonConvert.DeserializeObject<MeasureChangedModel>(scoreInfo.Payload.ToString());
-							sql = getMeasureChangedSql();
-							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
-							}
-						}
-						else
-						{
-							process = new MeasureChangedProcess();
-						}
-						break;
-					case ScoreQueueChangeType.MeasureRemoved:
-						if (scoreInfo.UseUpdatedScoringEngine)
-						{
-							var payload = JsonConvert.DeserializeObject<MeasureRemovedModel>(scoreInfo.Payload.ToString());
-							sql = getMeasureChangedSql();
-							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
-							}
-						}
-						else 
-						{
-							process = new MeasureRemovedProcess();
-						}
-						break;
-					case ScoreQueueChangeType.RollupPathChanged:
-						process = new RollupPathChangedProcess();
-						break;
-					case ScoreQueueChangeType.RuleAssetRemoved:
-						if (scoreInfo.UseUpdatedScoringEngine)
-						{ 
-							var payload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(scoreInfo.Payload.ToString());
-							sql = getRuleRemovedSql();
-							companyConnectionString = getCompanyConnectionString(scoreInfo.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid }, commandTimeout: 18000);
-							}
-						}
-						else
-						{
-							process = new RuleAssetRemovedProcess();
-						}
-						break;
-					case ScoreQueueChangeType.WorkflowCheck:
-						process = new WorkflowCheckProcess();
-						break;
-				}		
+					string sql = "";
+					string companyConnectionString = "";
 
-				if (process != null)
-				{
-					process.Info = scoreInfo;
-					await process.Run();
+					IScoreProcess process = null;
+
+					switch (info.ChangeType)
+					{
+						case ScoreQueueChangeType.RescoreRequest:
+							if (info.UseUpdatedScoringEngine)
+							{
+								var payload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(info.Payload.ToString());
+								sql = "exec metrics.GenerateScore @AssetUid, @EffectiveDate, @scoreType";
+								companyConnectionString = getCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									await companyConnection.ExecuteAsync(sql, new { payload.AssetUid, EffectiveDate = payload.EffectiveDate.Date, ScoreType = (int)payload.ScoreType }, commandTimeout: 600);
+								}
+							}
+							break;
+						case ScoreQueueChangeType.PatchCatalogExecution:
+							if (info.UseUpdatedScoringEngine)
+							{
+								sql = getPatchExecutionSql();
+								companyConnectionString = getCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									await companyConnection.ExecuteAsync(sql, new { info.ExecutionUid }, commandTimeout: 18000);
+								}
+							}
+							break;
+						case ScoreQueueChangeType.AssetMeasures:
+							process = new AssetMeasuresProcess();
+							break;
+						case ScoreQueueChangeType.CheckTypeDependencyRemoved:
+							process = new CheckTypeDependencyRemovedProcess();
+							break;
+						case ScoreQueueChangeType.MeasureChanged:
+							if (info.UseUpdatedScoringEngine)
+							{
+								var payload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
+								sql = getMeasureChangedSql();
+								companyConnectionString = getCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
+								}
+							}
+							else
+							{
+								process = new MeasureChangedProcess();
+							}
+							break;
+						case ScoreQueueChangeType.MeasureRemoved:
+							if (info.UseUpdatedScoringEngine)
+							{
+								var payload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
+								sql = getMeasureChangedSql();
+								companyConnectionString = getCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
+								}
+							}
+							else 
+							{
+								process = new MeasureRemovedProcess();
+							}
+							break;
+						case ScoreQueueChangeType.RollupPathChanged:
+							process = new RollupPathChangedProcess();
+							break;
+						case ScoreQueueChangeType.RuleAssetRemoved:
+							if (info.UseUpdatedScoringEngine)
+							{ 
+								var payload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
+								sql = getRuleRemovedSql();
+								companyConnectionString = getCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid }, commandTimeout: 18000);
+								}
+							}
+							else
+							{
+								process = new RuleAssetRemovedProcess();
+							}
+							break;
+						case ScoreQueueChangeType.WorkflowCheck:
+							process = new WorkflowCheckProcess();
+							break;
+					}		
+
+					if (process != null)
+					{
+						process.Info = info;
+						await process.Run();
+					}
 				}
-            }
-            catch (ArgumentNullException)
-            {
-                log.LogError(logEvent, $"No score execution record found. Company: {scoreInfo.CompanyID}; Execution: {scoreInfo.ExecutionUid}.");
-            }
-            catch (InvalidScoreMeasure ex)
-            {
-				handleInvalidMeasureError(ex, scoreInfo, log, logEvent);
-            }
-            catch (ScoresCurrentlyProcessingException ex)
-            {
-				await handleScoreProcessingError(ex, scoreInfo);
-            }
-            catch (Exception ex)
-            {
-				await handleError(ex, scoreInfo, log, logEvent);
-            }
+				catch (ArgumentNullException ex)
+				{
+					log.LogError(ex, $"No score execution record found.");
+				}
+				catch (InvalidScoreMeasure ex)
+				{
+					log.LogError(ex, "Attempting to process an invalid score measure.");
+				}
+				catch (ScoresCurrentlyProcessingException ex)
+				{
+					await handleScoreProcessingError(info);
+				}
+				catch (Exception ex)
+				{
+					log.LogError(ex, ex.Message);
+				}
+			}
         }
 
 
@@ -281,7 +288,7 @@ insert into #ids
 {getCommonLookupSql()}";
 		}
 
-		static async Task handleError(Exception ex, ScoreQueueInfo scoreInfo, ILogger log, EventId logEvent)
+		static async Task handleError(Exception ex, ScoreQueueInfo scoreInfo, ILogger log)
 		{
 			bool warningOnly = false;
 			if (scoreInfo.ChangeType == ScoreQueueChangeType.RollupPathChanged)
@@ -296,7 +303,7 @@ insert into #ids
 			bool shouldRequeue = true;
 			if (warningOnly)
 			{
-				log.LogWarning(logEvent, ex, ex.Message);
+				log.LogWarning(ex, ex.Message);
 
 				// Only requeue 1 out of 3 times as there are rapid changes that will put many messages on the queue.
 				Random random = new Random();
@@ -310,7 +317,7 @@ insert into #ids
 			}
 			else
 			{
-				log.LogError(logEvent, ex, ex.Message);
+				log.LogError(ex, ex.Message);
 			}
 
 
@@ -324,12 +331,7 @@ insert into #ids
 			}
 		}
 
-		static void handleInvalidMeasureError(InvalidScoreMeasure ex, ScoreQueueInfo scoreInfo, ILogger log, EventId logEvent)
-		{
-			log.LogError(logEvent, ex, ex.Message);
-		}
-
-		static async Task handleScoreProcessingError(ScoresCurrentlyProcessingException ex, ScoreQueueInfo scoreInfo)
+		static async Task handleScoreProcessingError(ScoreQueueInfo scoreInfo)
 		{
 			var queue = new AzureQueueSource();
 			await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));

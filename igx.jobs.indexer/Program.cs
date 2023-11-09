@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
 using d360.extensions.mail;
 using System.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace igx.jobs.indexer
 {
@@ -71,26 +72,35 @@ namespace igx.jobs.indexer
 
     public static class Indexer
     {        
-        const string functionName = "Indexing_ReIndex";
-        public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        const string FUNCTION_NAME = "Indexing_ReIndex";
+
+        public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 
-            try
-            {
-                var source = new ElasticSearchSource();
-                using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID))
-                {
-                    await ProcessRebuildRequest(source, company, reindex);
-                }
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, reindex.CompanyID);
-            }
+			var logProperties = new Dictionary<string, object> {
+				{ "Function", FUNCTION_NAME },
+				{ "CompanyID", reindex.CompanyID }
+			};
+
+			using (log.BeginScope(logProperties))
+			{
+				try
+				{
+					var source = new ElasticSearchSource();
+					using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID))
+					{
+						await ProcessRebuildRequest(source, company, reindex, log);
+					}
+				}
+				catch (Exception ex)
+				{
+					log.LogCritical(ex, "Critical error on ReIndexer web job.");
+				}			
+			}
         }
 
-        public static async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex)
+        public static async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
         {
             SearchIndexer indexer = new SearchIndexer(company, reindex.CompanyID, source);
             if (reindex.AssetUid.HasValue)
@@ -104,15 +114,15 @@ namespace igx.jobs.indexer
                 Guid assetTypeUid = reindex.AssetTypeUid ?? Guid.Empty;
                 if (assetTypeUid != Guid.Empty)
                 {
-                    CoreFunction.AITrackTrace(functionName, $"Indexing asset type {assetTypeUid} for company {reindex.CompanyID}, origin: {reindex.Origin}", companyId: reindex.CompanyID);
-                    indexer.IndexAssetType(assetTypeUid);
+					log.LogTrace($"Indexing asset type {assetTypeUid} for company {reindex.CompanyID}, origin: {reindex.Origin}");
+					indexer.IndexAssetType(assetTypeUid);
                 }
             }
             else if (!string.IsNullOrEmpty(reindex.Category))
             {
 				if (reindex.Category == "UpdateMapping")
 				{
-					CoreFunction.AITrackTrace(functionName, $"Updating mapping for company {reindex.CompanyID}", companyId: reindex.CompanyID);
+					log.LogTrace($"Updating mapping for company {reindex.CompanyID}");
 					source.UpdateMappingIfExists(reindex.CompanyID);
 				}
 
@@ -124,14 +134,12 @@ namespace igx.jobs.indexer
                 if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
                 {
                     string categoryLabel = reindex.Category == AssetTypeClass.Predicate.ToString() ? "Synonym" : reindex.Category;
-                    LogReindexStart(categoryLabel, reindex.CompanyID);
 
                     AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
                     if (info != null)
                     {
                         indexer.IndexAssetClass(info.ID);
                     }
-                    LogReindexEnd(categoryLabel, reindex.CompanyID);
                 }
             }
             else if (reindex.BatchUids != null && reindex.BatchUids.Any())
@@ -148,11 +156,11 @@ namespace igx.jobs.indexer
             }
             else
             {
-                await RebuildAllIndex(source, company, reindex.CompanyID, indexer);
+                await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
             }
         }
 
-        public static async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer)
+        public static async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
         {
             await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active);
 
@@ -195,14 +203,13 @@ namespace igx.jobs.indexer
             source.ClearIndex(CompanyID);
 
             classes.ForEach(cls => {
-                LogReindexStart(cls == AssetTypeClass.Predicate ? "Synonym" : cls.ToString(), CompanyID);
                 try
                 {
                     indexer.IndexAssetClass(cls);
                 }
                 catch (Exception ex)
                 {
-                    CoreFunction.AITrackException(functionName, ex, CompanyID);
+					log.LogError(ex, "Error indexing asset class");
                 }
 
             });
@@ -218,8 +225,6 @@ namespace igx.jobs.indexer
 
         private static async Task LogCompanyReindexComplete(int companyID)
         {
-            CoreFunction.AITrackTrace(functionName, $"Completed reindex for company {companyID}", companyId: companyID);
-
             await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive);
         }
 
@@ -250,16 +255,6 @@ namespace igx.jobs.indexer
             if(currentStatue != status)
                 await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
-        }
-
-        private static void LogReindexStart(string typeName, int companyID)
-        {
-            CoreFunction.AITrackTrace(functionName, $"Starting {typeName} reindex for company {companyID}", companyId: companyID);
-        }
-
-        private static void LogReindexEnd(string typeName, int companyID)
-        {
-            CoreFunction.AITrackTrace(functionName, $"Completed {typeName} reindex for company {companyID}", companyId: companyID);
         }
 
         private static Tuple<byte, byte> GetNGramLimits(SqlConnection context)
