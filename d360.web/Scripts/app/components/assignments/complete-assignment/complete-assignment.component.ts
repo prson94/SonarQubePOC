@@ -443,7 +443,6 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
 			}
-			alert(x.Value);
 		});
 	}
 
