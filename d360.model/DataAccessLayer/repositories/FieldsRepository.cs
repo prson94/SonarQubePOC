@@ -757,6 +757,17 @@ namespace d360.model.DataAccessLayer
 			var reservedWords = new List<string>() { "color", "icon", "parentid", "database", "path", "keypath", "displaypath" };
 			var maxColumnIndexItem = currentFieldTypes.OrderByDescending(x => x.ColumnOrder).FirstOrDefault();
 			var maxColumnIndex = 0;
+			string existingDisplayValueKeyFieldsHash = "";
+			string qurydpfieldcheck = $@"
+					select STRING_AGG(ft.name + ISNULL(ft.LookupDisplayFormat,'{{}}') , '|') WITHIN GROUP (ORDER BY ft.ID)
+					from FieldType ft
+					inner join assettype att on ft.AssetTypeID = att.id
+					where att.uid = @AssetTypeUid and ft.LookupDisplayFormat is not null and att.DisplayFormat like '%{{' + ft.name +'}}%';";
+
+			if (model.AssetTypeUid.HasValue)
+			{
+				existingDisplayValueKeyFieldsHash = Company.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
+			}
 
 			if (maxColumnIndexItem != null)
 			{
@@ -2166,6 +2177,26 @@ namespace d360.model.DataAccessLayer
 					// Key fields have changed. You need to update the graph for this asset type.
 					Company.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);
 
+				}
+				
+				var newDisplayValueKeyFieldsHash = Company.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
+				bool rundisplayValue = false;
+				if ((string.IsNullOrWhiteSpace(newDisplayValueKeyFieldsHash) && !string.IsNullOrWhiteSpace(existingDisplayValueKeyFieldsHash))
+				   || (!string.IsNullOrWhiteSpace(newDisplayValueKeyFieldsHash) && string.IsNullOrWhiteSpace(existingDisplayValueKeyFieldsHash)))
+				{
+					rundisplayValue = true;
+				}
+				else if (!string.IsNullOrWhiteSpace(newDisplayValueKeyFieldsHash) && !string.IsNullOrWhiteSpace(existingDisplayValueKeyFieldsHash) && !newDisplayValueKeyFieldsHash.Equals(existingDisplayValueKeyFieldsHash))
+				{
+					rundisplayValue = true;
+				}
+				if (rundisplayValue) { 
+					//update affected display values
+					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					if (assetType != null && assetType.Object != null)
+					{
+						Company.CreateOrUpdateTypeDisplayValuesAsync(assetType.ObjectID, assetType.Object.ToString());
+					}
 				}
 			}
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
