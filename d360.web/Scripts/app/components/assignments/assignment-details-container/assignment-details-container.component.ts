@@ -1,8 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IOutputData } from 'angular-split';
 import { SidePanelService } from '../../../services/side-panel.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AuthenticationService } from '../../../services/authentication.service';
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -19,53 +18,76 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/secondaryNav.model';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { Subscription } from 'rxjs';
+import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
+import { SidePanelButton } from '../../../models/side-panel.model';
+import { AssignmentDetailsComponent } from './assignment-details/assignment-details.component';
 
 @Component({
 	selector: 'd3s-assignment-details-container',
 	templateUrl: './assignment-details-container.component.html',
 	styleUrls: ['./assignment-details-container.component.less']
 })
-export class AssignmentDetailsContainerComponent extends BaseComponent implements OnInit {
+export class AssignmentDetailsContainerComponent extends BaseComponent implements OnInit, OnDestroy {
 	sidePanelOpen: boolean;
 	sidePanelStorageKey: string;
 	sidePanelTab: string;
 	assignmentUid: string;
 	assignmentItem: AssignmentItem;
-	completeAssignmentButton: DynamicButton;
-	private flowContext: string = 'assignmentDetails';
-	private isAdmin: boolean = false;
-	private isRequestDetailsFlow: boolean = false;
-
+	selectedItem: object;
+	workflowAssignment: WorkflowAssignmentItem;
+	sidePanelButtons: SidePanelButton[] = [
+		new SidePanelButton({
+			label: $localize`Information`,
+			tooltip: $localize`Information`,
+			disabledTooltip: null,
+			nothingSelectedMessage: $localize`Select one of the links on the left to display its information`,
+			notApplicableMessage: $localize`Information is not available for the selected option`,
+			multipleSelectedMessage: $localize`Select a single link to display it’s information`,
+			key: 'information',
+			icon: 'fa-info-circle',
+			disabled: false,
+			visible: true,
+			needsSelection: true
+		})
+	];
 	@ViewChild('completeAssignmentComponent') private completeAssignmentComponent: CompleteAssignmentComponent;
+	@ViewChild('sidePanelSwitcherComponent') private sidePanelSwitcherComponent: SidePanelSwitcherComponent;
+	@ViewChild('assignmentDetailsComponent') private assignmentDetailsComponent: AssignmentDetailsComponent;
+
 	private workflowStepDetail: WorkflowStepDetail;
 	private assignmentItemStep: AssignmentItemStep;
-	private workflowAssignment: WorkflowAssignmentItem;
+	private linkInterceptorSubscription: Subscription;
+	private readonly isRequestDetailsFlow: boolean = false;
+	private readonly flowContext: string = 'assignmentDetails';
 
 	constructor(public sidePanelService: SidePanelService,
 				private companySettingsService: CompanySettingsService,
-				private authenticationService: AuthenticationService,
 				private headerBreadcrumbService: HeaderBreadcrumbService,
 				private workflowService: WorkflowService,
 				private route: ActivatedRoute,
 				private router: Router,
+				private linkClickInterceptor: LinkClickInterceptor,
 				secondaryNavService: SecondaryNavService) {
 		super(companySettingsService);
-		this.authenticationService.checkCurrentUserAdmin().subscribe((response: boolean): void => {
-			this.isAdmin = response;
-		});
 		this.assignmentUid = this.getAssignmentUidFromUrlParam();
 		this.secondaryNavService = secondaryNavService;
 		if (this.router.url.startsWith('/requests/')) {
 			this.flowContext = 'requestDetails';
 			this.isRequestDetailsFlow = true;
 		}
-		this.completeAssignmentButton = new DynamicButton($localize`Complete Assignment`);
 		this.setHeaderButton();
 	}
 
 	ngOnInit(): void {
 		this.setFlowSpecificDetails();
 		this.loadAssignmentItem();
+		this.subscribeSwitcherEvents();
+	}
+
+	ngOnDestroy(): void {
+		this.unsubscribeSwitcherEvents();
 	}
 
 	getSidePanelMaxWidth(): number {
@@ -147,31 +169,22 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		}
 	}
 
-	workflowClicked(workflowUid: string): void {
-		console.log(workflowUid);
+	workflowClicked(mouseEvent: MouseEvent, workflowUid: string, workflowTypeVersion: number): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, {
+			workflowTypeUid: workflowUid,
+			workflowTypeVersion: workflowTypeVersion
+		}, null);
 	}
 
-	assetClicked(assetUid: string): void {
-		console.log(assetUid);
+	assetClicked(mouseEvent: MouseEvent, assetUid: string): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, { AssetUid: assetUid }, 'assets/' + assetUid);
 	}
 
-	initiatorClicked(initiatorUid: string): void {
-		console.log(initiatorUid);
+	initiatorClicked(mouseEvent: MouseEvent, initiatorUid: string): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, { ResourceUid: initiatorUid }, 'users/' + initiatorUid);
 	}
 
-	private setHeaderButton(): void {
-		this.secondaryNavService.clearButtons();
-		if (!this.isRequestDetailsFlow && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser && !(this.workflowStepDetail?.CompletedOn) && this.workflowAssignment.isCurrentUserAssigned) {
-			this.secondaryNavService.showButton(this.completeAssignmentButton);
-			this.completeAssignmentButton.dynamicCallback = () => {
-				this.completeAssignmentButton.disabled = true;
-				this.completeAssignmentButton.isLoading = true;
-				this.onCompleteAssignmentClicked();
-			};
-		}
-	}
-
-	onCompleteAssignmentModalClose({ action }: {
+	completeAssignmentModalClosed({ action }: {
 		isBack: boolean,
 		removeSelected: boolean,
 		action?: string
@@ -179,11 +192,26 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		if (action?.toLowerCase() === 'complete') {
 			this.assignmentItem = null;
 			this.loadAssignmentItem();
+			this.assignmentDetailsComponent.forceRefresh();
 		}
 		this.setHeaderButton();
+		this.subscribeSwitcherEvents();
 	}
 
-	onCompleteAssignmentClicked(): void {
+	private setHeaderButton(): void {
+		this.secondaryNavService.clearButtons();
+		if (!this.isRequestDetailsFlow && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser && !(this.workflowStepDetail?.CompletedOn) && this.workflowAssignment.isCurrentUserAssigned) {
+			const completeAssignmentButton: DynamicButton = new DynamicButton($localize`Complete Assignment`);
+			this.secondaryNavService.showButton(completeAssignmentButton);
+			completeAssignmentButton.dynamicCallback = () => {
+				completeAssignmentButton.isLoading = true;
+				this.completeAssignmentButtonClicked();
+			};
+		}
+	}
+
+	private completeAssignmentButtonClicked(): void {
+		this.unsubscribeSwitcherEvents();
 		this.completeAssignmentComponent.openModal({
 			workflowItemUid: this.assignmentItem?.WorkflowItemUid,
 			stepUid: this.assignmentItemStep?.Uid
@@ -217,5 +245,21 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 			this.workflowAssignment = workflowAssignments.items[0];
 			this.setHeaderButton();
 		});
+	}
+
+	private subscribeSwitcherEvents() {
+		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev): void => {
+			this.selectedItem = { type: ev.type };
+			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
+			this.sidePanelOpen = true;
+		});
+	}
+
+	updatePanelHeader(headerLabel: string): void {
+		this.sidePanelButtons[0].label = headerLabel;
+	}
+
+	private unsubscribeSwitcherEvents() {
+		this.linkInterceptorSubscription?.unsubscribe();
 	}
 }

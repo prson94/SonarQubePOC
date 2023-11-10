@@ -9,16 +9,18 @@
 			<ig-portal-content-provider name="asset-description" [template]="description">
 				<ng-template #description>
 					<div class="detail-header-subtitle" i18n>
-						<a (click)="workflowClicked(assignmentItem.WorkflowUid)">{{assignmentItem.WorkflowName}}</a> on
-						<a (click)="assetClicked(assignmentItem.AssetUid)"
-						   *ngIf="assignmentItem.AssetPath">{{assignmentItem.AssetPath}}</a><span
-						*ngIf="!assignmentItem.AssetPath">---</span> initiated
-						by <a (click)="initiatorClicked(assignmentItem.InitiatorUid)">{{assignmentItem.Initiator}}</a>
+						<a (click)="workflowClicked($event, assignmentItem?.WorkflowUid, workflowAssignment?.Version)">{{assignmentItem.WorkflowName}}</a>
+						on
+						<a (click)="assetClicked($event, assignmentItem?.AssetUid)"
+						   *ngIf="assignmentItem?.AssetPath">{{assignmentItem?.AssetPath}}</a><span
+						*ngIf="!assignmentItem?.AssetPath">---</span> initiated
+						by <a
+						(click)="initiatorClicked($event, assignmentItem.InitiatorUid)">{{assignmentItem.Initiator}}</a>
 						on {{assignmentItem.StartedOn | date: 'short'}}
 					</div>
 				</ng-template>
 			</ig-portal-content-provider>
-			<d3s-assignment-details [assignmentUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-details>
+			<d3s-assignment-details #assignmentDetailsComponent [assignmentUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-details>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"
@@ -26,15 +28,17 @@
 					   class="tile tile-detail side-panel">
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
+						[multipleItemsSelected]="false"
 						[(selectedPanel)]="sidePanelTab"
 						[setMinMaxWidth]="false"
-						[hasDetail]="true">
-				<ng-container *ngIf="sidePanelOpen">
-					<d3s-side-panel-switcher [showPanelHeader]="false" [outsideModal]="true"></d3s-side-panel-switcher>
-				</ng-container>
+						[selectedItem]="selectedItem"
+						[extraButtons]="sidePanelButtons"
+						[hasDetail]="false">
+				<d3s-side-panel-switcher #sidePanelSwitcherComponent [showPanelHeader]="false" [outsideModal]="true"
+										 (panelHeaderLabel)="updatePanelHeader($event)"></d3s-side-panel-switcher>
 			</side-panel>
 		</as-split-area>
 	</as-split>
 </div>
-<d3s-complete-assignment (onModalClose)="onCompleteAssignmentModalClose($event)"
+<d3s-complete-assignment (onModalClose)="completeAssignmentModalClosed($event)"
 						 #completeAssignmentComponent></d3s-complete-assignment>

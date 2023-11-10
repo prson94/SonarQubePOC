@@ -19,7 +19,7 @@ export class AssignmentProgressComponent {
 	@Input() isCurrentUserAssigned: boolean = false;
 	@Input() showCompleteAssignment: boolean = true;
 
-	@Input() set workflowItemUid(value: string) {
+	@Input({ required: true }) set workflowItemUid(value: string) {
 		this._workflowItemUid = value;
 		if (this._workflowItemUid) {
 			this.loadAssignmentSteps();
@@ -71,5 +71,9 @@ export class AssignmentProgressComponent {
 				assignmentProgressStepComponent.selected = false;
 			}
 		}
+	}
+
+	forceRefresh(): void {
+		this.workflowItemUid = this._workflowItemUid;
 	}
 }

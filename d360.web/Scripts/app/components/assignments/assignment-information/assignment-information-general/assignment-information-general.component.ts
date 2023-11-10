@@ -48,18 +48,12 @@ export class AssignmentInformationGeneralComponent {
 		}
 	}
 
-	constructor(private workflowService: WorkflowService, public linkClickInterceptor: LinkClickInterceptor) {
-		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
+	get workflowType(): string {
+		return this.workflowChangeType + ': ' + this.assignmentItem?.initiatingObjectType;
 	}
 
-	loadAssignmentItem(workflowItemUid: string): void {
-		this.isLoading = true;
-		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
-			this.isLoading = false;
-			this.assignmentItem = response;
-			this.workflowChangeType = this.changeTypeInfos.find((changeTypeInfo: ChangeTypeInfo) => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
-			this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
-		});
+	constructor(private workflowService: WorkflowService, public linkClickInterceptor: LinkClickInterceptor) {
+		this.workflowService.getChangeTypes().subscribe((response: ChangeTypeInfo[]) => this.changeTypeInfos = response);
 	}
 
 	onClickResource(event: MouseEvent): void {
@@ -74,7 +68,19 @@ export class AssignmentInformationGeneralComponent {
 		}, 'asset/' + this.assignmentItem?.AssetUid);
 	}
 
-	get workflowType(): string {
-		return this.workflowChangeType + ': ' + this.assignmentItem?.initiatingObjectType;
+	forceRefresh() {
+		if (this.assignmentItem?.WorkflowItemUid) {
+			this.loadAssignmentItem(this.assignmentItem.WorkflowItemUid);
+		}
+	}
+
+	private loadAssignmentItem(workflowItemUid: string): void {
+		this.isLoading = true;
+		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
+			this.isLoading = false;
+			this.assignmentItem = response;
+			this.workflowChangeType = this.changeTypeInfos.find((changeTypeInfo: ChangeTypeInfo) => changeTypeInfo.Name === this.assignmentItem?.ChangeType)?.Description;
+			this.assetPathPartIndex = this.assignmentItem?.AssetPath?.lastIndexOf(' > ') ?? -1;
+		});
 	}
 }
