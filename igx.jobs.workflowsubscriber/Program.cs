@@ -138,7 +138,6 @@ namespace igx.jobs.workflowsubscriber
 							// if the registration applies fire of the workflow and break if not go to the next one.
 							await company.CreateWorkflowItem(registration.TypeID, info.Object, registration, info.ResourceID);
 						}
-
 					}
 					else
 					{
