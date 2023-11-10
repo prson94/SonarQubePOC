@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneetgupta" id="Procedure.utility.AddAuditEntry-v29">
+ <changeSet author="Pappas" id="Procedure.utility.AddAuditEntry-v30">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -489,8 +489,16 @@ begin
 
 	if @ShouldAudit = 1
 	begin
-		insert into	reporting.Global_Audit ( Object, ObjectID, ObjectName, ResourceID, [Date], [Action], ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version] ) 
-		values		( @MainObject, @MainObjectID, @ObjectName, coalesce(@ResourceID, 0), @Date, @Action, @DependentObject, @DependentObjectID, @ActionObjectTypeName, @ActionObjectName, @ActionDescription, @Version );
+		insert into	reporting.Global_Audit ( 
+			Object, ObjectID, ObjectName, 
+			ResourceID, [Date], [Action], 
+			ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, 
+			[Version] ) 
+		values		( 
+			@MainObject, @MainObjectID, coalesce(@ObjectName, ''), 
+			coalesce(@ResourceID, 0), @Date, @Action, 
+			@DependentObject, @DependentObjectID, coalesce(@ActionObjectTypeName, ''), coalesce(@ActionObjectName,''), coalesce(@ActionDescription,''), 
+			@Version );
 
 		select @auditID = SCOPE_IDENTITY();
 
