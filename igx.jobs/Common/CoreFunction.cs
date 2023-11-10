@@ -48,72 +48,6 @@ namespace igx.jobs
             }
         }
 
-        private static Dictionary<string, string> buildPropertiesToLog(string jobName, IDictionary<string, string> properties = null, int? companyId = null)
-        {
-            var propsToSend = new Dictionary<string, string> {
-                { "Environment", ConfigurationManager.AppSettings["Environment"] },
-                { "Function", jobName }
-            };
-            if (companyId.HasValue) propsToSend["CompanyID"] = companyId.Value.ToString();
-
-            if (properties != null)
-            {
-                foreach (var key in properties.Keys)
-                {
-                    if (!propsToSend.ContainsKey(key) && !string.IsNullOrEmpty(properties[key]))
-                    {
-                        propsToSend.Add(key, properties[key]);
-                    }
-                }
-            }
-
-            return propsToSend;
-        }
-
-        public static void AITrackTrace(string jobName, string message, IDictionary<string, string> properties = null, int? companyId = null)
-        {
-            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
-            AITelemetryClient.TrackTrace(message, propsToSend);
-        }
-
-        public static void AITrackEvent(string jobName, string eventName, IDictionary<string, string> properties = null, int? companyId = null, IDictionary<string, double> metrics = null)
-        {
-            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
-            AITelemetryClient.TrackEvent(eventName, propsToSend, metrics);
-        }
-
-        public static void AITrackException(string jobName, Exception e, int? companyId = null, IDictionary<string, string> properties = null)
-        {
-            var propsToSend = buildPropertiesToLog(jobName, properties, companyId);
-            AITelemetryClient.TrackException(e, propsToSend);
-            AIFlush();
-        }
-
-        public static void AITrackJobCompletedNoErrors(string jobName)
-        {
-            Dictionary<string, string> properties = new Dictionary<string, string>();
-            properties["Function"] = jobName;
-            properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-
-            AITelemetryClient.TrackEvent("Function Completed Successfully", properties);
-
-            AIFlush();
-        }
-
-        public static void AITrackJobStart(string name)
-        {
-            Dictionary<string, string> properties = new Dictionary<string, string>();
-            properties["Function"] = name;
-            properties["Environment"] = ConfigurationManager.AppSettings["Environment"];
-
-            AITelemetryClient.TrackEvent("Function Started", properties);
-        }
-
-        public static void AITrackRequest(string name, TimeSpan elapsedTime)
-        {
-            AITelemetryClient.TrackRequest(name, DateTime.Now, elapsedTime, "", true);
-        }
-
         public static void AIFlush()
         {
             AITelemetryClient.Flush();
@@ -176,7 +110,13 @@ namespace igx.jobs
         {
             var builder = new HostBuilder();
             var env = GetConfigValueByKey("Environment");
+			var logLevel = LogLevel.Warning;
 
+			var configLogLevel = GetConfigValueByKey("LogLevel");
+			if (!string.IsNullOrEmpty(configLogLevel))
+			{ 
+				Enum.TryParse<LogLevel>(configLogLevel, out logLevel);
+			}
 
             builder
             .UseEnvironment(env)
@@ -193,12 +133,11 @@ namespace igx.jobs
             })
             .ConfigureLogging((context, b) =>
             {
-#if !DEBUG
-               b.SetMinimumLevel(LogLevel.Warning); // turn off trace messages
+				b.SetMinimumLevel(logLevel);
+#if DEBUG
+				b.AddConsole();
 #endif
-                b.AddConsole();                
-
-                string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+				string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
                 if (!string.IsNullOrEmpty(appInsightsKey))
                 {
                     b.AddApplicationInsights(appInsightsKey);

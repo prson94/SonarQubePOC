@@ -5,16 +5,13 @@ using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Configuration;
-using System.IO;
-using System.Threading.Tasks;
-using LaunchDarkly;
 using Microsoft.Extensions.DependencyInjection;
-using DocumentFormat.OpenXml.Drawing;
-using System.Runtime.CompilerServices;
-using System.Linq;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Threading.Tasks;
 
 namespace igx.jobs.workflowdigestprocessor
 {
@@ -48,13 +45,12 @@ namespace igx.jobs.workflowdigestprocessor
 	public class WorkflowDigestProcessor
 	{
 		readonly LaunchDarkly.Sdk.Server.LdClient LdClient;
-		const string functionName = "Workflow_DigestProcessor";
-
+		const string FUNCTION_NAME = "Workflow_DigestProcessor";
 
 #if DEBUG
-		const string timerSettings = "*/10 * * * * *";
+		const string TIMER_SETTINGS = "*/10 * * * * *";
 #else
-        const string timerSettings = "0 0 5 * * *"; // every day at 5am
+        const string TIMER_SETTINGS = "0 0 5 * * *"; // every day at 5am
 #endif
 
 		public WorkflowDigestProcessor(LaunchDarkly.Sdk.Server.LdClient ldc)
@@ -62,57 +58,69 @@ namespace igx.jobs.workflowdigestprocessor
 			this.LdClient = ldc;
 		}
 
-		public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, TextWriter log) //   
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)   
 		{
 			try
 			{
-				CoreFunction.AITrackJobStart(functionName);
 				var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 				foreach (var c in companies)
 				{
-					try
+					var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME },
+						{ "CompanyID", c.CompanyID },
+						{ "UrlPrefix", c.UrlPrefix }
+					};
+
+					using (log.BeginScope(logProperties))
 					{
-						// Create EF connection
-						var company = JobDbContextCreator.CreateCompanyContext(
-							new UriSecurityContextProvider
-							{
-								CompanyID = c.CompanyID,
-								CompanyPrefix = c.UrlPrefix,
-								ResourceID = 0,
-								IsAdministrator = true
-							},
-							new MandrillMailProvider
-							{
-								ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
-								SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-							},
-							new AzureQueueSource(),
-							new DummyCachingProvider(),
-							constants.COMMUNITY_DATABASE_CONNECTION);
+						try
+						{
+							// Create EF connection
+							var company = JobDbContextCreator.CreateCompanyContext(
+								new UriSecurityContextProvider
+								{
+									CompanyID = c.CompanyID,
+									CompanyPrefix = c.UrlPrefix,
+									ResourceID = 0,
+									IsAdministrator = true
+								},
+								new MandrillMailProvider
+								{
+									ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+									SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+								},
+								new AzureQueueSource(),
+								new DummyCachingProvider(),
+								constants.COMMUNITY_DATABASE_CONNECTION);
 
 
-						company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
+							company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
 
-						await company.SendDigestEmails(c.EnvironmentLevel);
-					}
-					catch (Exception ex)
-					{
-						CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-						log.WriteLine($"Company [{c.CompanyID}]: [{ex.Message}]");
+							await company.SendDigestEmails(c.EnvironmentLevel);
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Error while processing workflow digests for this environment.");
+						}
 					}
 				}
-
-				CoreFunction.AITrackJobCompletedNoErrors(functionName);
 			}
 			catch (Exception ex)
 			{
-				CoreFunction.AITrackException(functionName, ex);
-				log.WriteLine($"General Exception: {ex.Message}");
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", FUNCTION_NAME }
+				};
+
+				using (log.BeginScope(logProperties))
+				{
+					log.LogCritical(ex, "Critical error while running this web job.");
+				}
 			}
-
-			CoreFunction.AIFlush();
-
+			finally 
+			{
+				CoreFunction.AIFlush();
+			}
 		}
 	}
 }

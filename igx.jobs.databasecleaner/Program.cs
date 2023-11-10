@@ -10,6 +10,8 @@ using d360.core.enums;
 using Microsoft.Azure;
 using System.Threading;
 using Microsoft.Azure.Storage.Blob;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace igx.jobs.databasecleaner
 {
@@ -36,75 +38,82 @@ namespace igx.jobs.databasecleaner
 
     public static class DatabaseCleaner
     {
-        const string functionName = "DatabaseMaintenance_Cleaner";
+        const string FUNCTION_NAME = "DatabaseMaintenance_Cleaner";
 
 #if DEBUG
-        const string timerSettings = "*/1 * * * * *";
+        const string TIMER_SETTINGS = "*/1 * * * * *";
 #else
-        const string timerSettings = "0 0 4 * * *";
+        const string TIMER_SETTINGS = "0 0 4 * * *";
 #endif
 
-        public static async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
+		public static async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
-            try
-            {
-                CoreFunction.AITrackJobStart(functionName);
-
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
-#if DEBUG
-				//                companies = companies.Where(x => x.CompanyID == 1).ToList();
-#endif
+			try
+			{
+				var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 				foreach (var c in companies)
-                {
-					// Clear old blob files.
-					await RemoveOldBlobs("api-execution", c.CompanyID);
-					await RemoveOldBlobs("bulk-loads", c.CompanyID, 60);
-					await RemoveOldBlobs("scoring", c.CompanyID);
+				{
+					var logProperties = new Dictionary<string, object> {
+						{ "Function", FUNCTION_NAME },
+						{ "CompanyID", c.CompanyID },
+						{ "UrlPrefix", c.UrlPrefix }
+					};
 
-					try
-                    {
-						using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
-                        {
-                            company.Open();
-                            string overrideValue = company.Query<string>("select Value from Setting where ID = @ID", new { ID = (int)Setting.AssetDataProfileLifespan }).SingleOrDefault();
-                            var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
-                            settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
+					using (log.BeginScope(logProperties))
+					{
+						// Clear old blob files.
+						await RemoveOldBlobs("api-execution", c.CompanyID, log);
+						await RemoveOldBlobs("bulk-loads", c.CompanyID, log, 60);
+						await RemoveOldBlobs("scoring", c.CompanyID, log);
 
-                            //remove any old api execution records
-                            await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
+						try
+						{
+							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+							{
+								company.Open();
+								string overrideValue = company.Query<string>("select Value from Setting where ID = @ID", new { ID = (int)Setting.AssetDataProfileLifespan }).SingleOrDefault();
+								var settingInfo = Setting.AssetDataProfileLifespan.AsInfoModel();
+								settingInfo.Value = (string.IsNullOrEmpty(overrideValue)) ? settingInfo.DefaultValue : overrideValue;
 
-                            //remove any old data profile records
-                            await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
+								//remove any old api execution records
+								await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
 
-                            //remove any old score execution data
-                            await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
+								//remove any old data profile records
+								await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
 
-                            //remove any old queue task data
-                            await company.ExecuteAsync("Queue.DeleteQueueTaskRecords", commandTimeout: 1800);
+								//remove any old score execution data
+								await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
 
-                            //update database statistics
-                            await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
-                        }                          
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);                        
-                    }
-                }
+								//remove any old queue task data
+								await company.ExecuteAsync("Queue.DeleteQueueTaskRecords", commandTimeout: 1800);
 
-                CoreFunction.AITrackJobCompletedNoErrors(functionName);
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);                
-            }
+								//update database statistics
+								await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
+							}
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Error occured for company.");
+						}
+						finally
+						{
+							log.LogError("Finished run for company.");
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				log.LogCritical(ex, "Web job failed.");
+			}
+			finally 
+			{ 
+				CoreFunction.AIFlush();
+			}
+		}
 
-            CoreFunction.AIFlush();
-        }
-
-		static async Task RemoveOldBlobs(string container, int companyId, int days = 30)
+		static async Task RemoveOldBlobs(string container, int companyId, ILogger log, int days = 30)
 		{
 			try
 			{
@@ -126,7 +135,7 @@ namespace igx.jobs.databasecleaner
 			}
 			catch (Exception ex)
 			{
-				CoreFunction.AITrackException(functionName, ex);
+				log.LogError(ex, "Error while removing old blobs from storage.");
 			}
 		}
     }
