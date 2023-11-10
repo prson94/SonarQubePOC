@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.06">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.07">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -206,14 +206,14 @@ begin
 				and EffectiveDate = @effectiveDate;
 
 		update	metrics.Score
-		set		[Value] = @Score,
+		set		[Value] = coalesce(@Score, 0),
 				RunDate = @runDate
 		where	Uid = @NewScoreUid;
 	end
 	else
 	begin
 		insert into metrics.Score (AssetUid, EffectiveDate, [Value], RunDate, Uid, AllocationUid, [Log])
-		values (@assetUid, @effectiveDate, @Score, @runDate, @NewScoreUid, @allocationUid, '{}');
+		values (@assetUid, @effectiveDate, coalesce(@Score, 0), @runDate, @NewScoreUid, @allocationUid, '{}');
 	end
 
 	merge into	metrics.ScoreItem as t
