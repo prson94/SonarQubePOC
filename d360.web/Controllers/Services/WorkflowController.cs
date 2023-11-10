@@ -3186,14 +3186,14 @@ namespace d360.web.Controllers.Services
 							var types = changedTypes.Split(',');
 							List<string> displayValues = new List<string>();
 							foreach (var changedType in types )
-						{
+							{
 								var type = changedType.Split('|');
 
-							if (types.Length == 2)
-							{
-								var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
-								string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
-								displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
+								if (type.Length == 2)
+								{
+									var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+									var displayValue = Company.Query<string>(typeSql, new { obj = type[0].Replace("Type", ""), objId = type[1] }).FirstOrDefault();
+									displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
 
 									displayValues.Add(displayValue);
 								}
