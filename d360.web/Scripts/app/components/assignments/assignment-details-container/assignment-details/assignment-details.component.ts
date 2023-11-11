@@ -18,10 +18,10 @@ export class AssignmentDetailsComponent {
 		}
 	}
 
-	@ViewChild('assignmentProgressComponent') assignmentProgressComponent: AssignmentProgressComponent;
-	@ViewChild('assignmentInformationGeneralComponent') assignmentInformationGeneralComponent: AssignmentInformationGeneralComponent;
+	@ViewChild('assignmentProgressComponent') private assignmentProgressComponent: AssignmentProgressComponent;
+	@ViewChild('assignmentInformationGeneralComponent') private assignmentInformationGeneralComponent: AssignmentInformationGeneralComponent;
 
-	workflowAssignmentItem: WorkflowAssignmentItem;
+	protected workflowAssignmentItem: WorkflowAssignmentItem;
 
 	constructor(private workflowService: WorkflowService) {
 	}

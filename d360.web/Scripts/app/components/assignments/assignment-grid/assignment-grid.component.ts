@@ -39,6 +39,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { State } from '../../../models/asset.model';
 import { FeatureFlagService } from '../../../guards/feature-flag.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 /*global $localize*/
 
@@ -78,9 +79,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
 	private destroy: Subject<void> = new Subject<void>();
-	menuItems: PopupMenuItem[] = [new PopupMenuItem({
-		title: $localize`Delete`
-	})];
+	menuItems: PopupMenuItem[] = [];
 	isExportInProgress: boolean = false;
 	filterFields$: Observable<AdvancedFilterFieldType[]>;
 	protected readonly JSON: JSON = JSON;
@@ -104,7 +103,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService,
 				private router: Router,
-				private featureFlagService: FeatureFlagService
+				private featureFlagService: FeatureFlagService,
+				public linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
 		this.urlLoadAssignment = null;
@@ -120,7 +120,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 			});
 		this.currentResourceUid = this.settingsService.CurrentResourceUid;
-		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => { this.isAdmin = res; });
+		this.authenticationService.checkCurrentUserAdmin().subscribe((res) => {
+			this.isAdmin = res;
+			this.populateMenuItems();
+		});
 		this.loadData();
 	}
 
@@ -304,6 +307,10 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			});
 
 			this.showDeletionModal = true;
+		} else if (key === $localize`Open`.toLowerCase()) {
+			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid);
+		} else if (key === $localize`Open in New Tab`.toLowerCase()) {
+			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid, true);
 		}
 	}
 
@@ -641,5 +648,21 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.createFilterFields();
 			this.areTypesLoaded = true;
 		});
+	}
+
+	private populateMenuItems(): void {
+		this.menuItems = [];
+		if (this.featureFlagService.canActivateAssignmentDetails()) {
+			this.menuItems = [new PopupMenuItem({
+				title: $localize`Open`
+			}), new PopupMenuItem({
+				title: $localize`Open in New Tab`
+			})];
+		}
+		if (this.isAdmin) {
+			this.menuItems.push(new PopupMenuItem({
+				title: $localize`Delete`
+			}));
+		}
 	}
 }
