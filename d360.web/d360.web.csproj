@@ -25,13 +25,11 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>443</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
-    <IISExpressUseClassicPipelineMode>
-    </IISExpressUseClassicPipelineMode>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -2114,6 +2112,14 @@
     <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
       <Project>{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}</Project>
       <Name>d360.utils.excel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\repositories.dis\repositories.dis.csproj">
+      <Project>{63a7c554-f096-44d0-8684-5acdfa62d050}</Project>
+      <Name>repositories.dis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\repositories\repositories.csproj">
+      <Project>{c2b66b7d-01ff-4c90-8b3d-5472af1aab9e}</Project>
+      <Name>repositories</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

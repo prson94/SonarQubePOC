@@ -17,17 +17,16 @@ using d360.model.helpers.filters;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using FieldType = d360.core.entities.FieldType;
 
 namespace d360.model.DataAccessLayer
 {
 	public class WorkflowRepository : BaseRepository, IWorkflowRepository
 	{
-		private readonly ICompanyContext CompanyContext;
 		public WorkflowRepository(ICompanyContext CompanyContext)
 			: base(CompanyContext)
 		{
-			this.CompanyContext = CompanyContext;
 		}
 
 		public async Task<IEnumerable<WorkflowTypeApiViewModel>> GetWorkflowTypes(IEnumerable<KeyValuePair<string, string>> queryParams)

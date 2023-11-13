@@ -20,6 +20,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.core.validators;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -33,7 +34,7 @@ using LaunchDarkly.Sdk;
 using Microsoft.ApplicationInsights;
 
 using Newtonsoft.Json;
-
+using repositories;
 using Resources;
 
 namespace d360.web.Controllers

@@ -69,7 +69,7 @@ namespace igx.jobs.bulkloadprocessor
 					var community = new CommunityContext(cache, queue, sec);
 
 					var company = new CompanyContext(community, cache, queue, mail, sec, true);
-					var tagRepository = new TagRepository(company, community);
+					var tagRepository = new TagRepository(company);
 
 
 					var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);

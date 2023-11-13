@@ -10,8 +10,8 @@ using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
-
 using Newtonsoft.Json;
+using repositories;
 
 namespace d360.model.DataAccessLayer
 {

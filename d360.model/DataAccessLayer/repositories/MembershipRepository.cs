@@ -5,10 +5,12 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
+using d360.core.validators;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,7 +24,6 @@ namespace d360.model.DataAccessLayer
 {
 	public class MembershipRepository : BaseRepository, IMembershipRepository
 	{
-		internal ICompanyContext CompanyContext;
 		internal ICommunityContext CommunityContext;
 		internal IAssetRepository AssetRepository;
 		internal IQueueSource QueueSource;
@@ -31,7 +32,6 @@ namespace d360.model.DataAccessLayer
 		public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository, IQueueSource queueSource, IStorageProvider storageProvider)
 			: base(companyContext)
 		{
-			CompanyContext = companyContext;
 			CommunityContext = communityContext;
 			AssetRepository = assetRepository;
 			QueueSource = queueSource;

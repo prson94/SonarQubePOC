@@ -1,11 +1,10 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.entities.Transitive;
+using repositories;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-
-using d360.core;
-using d360.core.enums;
 
 namespace d360.model.DataAccessLayer.repositories
 {
@@ -267,32 +266,6 @@ namespace d360.model.DataAccessLayer.repositories
 							";
 
 			return await QueryComposer.QuerySingleOrDefaultAsync<int?>(sql, new { resourceId, route });
-		}
-
-		public class FavoriteItem
-		{
-			public int FavoriteId { get; set; }
-
-			public SystemObjects ObjectType { get; set; }
-
-			public int ObjectId { get; set; }
-
-			public Guid Uid { get; set; }
-
-			public int? TypeObjectId { get; set; }
-
-			public string Name { get; set; }
-
-			public AssetTypeClass AssetTypeClass { get; set; }
-		}
-
-		public class FavoriteBreadcrumbItem
-		{
-			public int FavoriteId { get; set; }
-
-			public int Level { get; set; }
-
-			public string Name { get; set; }
 		}
 	}
 }

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using d360.core;
+using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.resources;
@@ -180,7 +181,7 @@ namespace d360.web.Services.Favorites
             }
 
             var routeParams = match.Groups
-                .OfType<Group>()
+                .OfType<System.Text.RegularExpressions.Group>()
                 .ToDictionary(g => g.Name, g => g.Value);
 
             routeParams.Add("route", route);

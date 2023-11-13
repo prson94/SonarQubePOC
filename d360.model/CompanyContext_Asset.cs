@@ -1,14 +1,12 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
-using d360.core.queue;
 using d360.core.resources;
-using d360.model.DataAccessLayer;
 using Dapper;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;

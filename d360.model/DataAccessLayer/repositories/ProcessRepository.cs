@@ -14,6 +14,7 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using SpreadsheetLight;
 using SpreadsheetLight.Drawing;
 
@@ -21,13 +22,11 @@ namespace d360.model.DataAccessLayer
 {
 	public class ProcessRepository : BaseRepository, IProcessRepository
 	{
-		internal ICompanyContext Company;
 		internal IAssetRepository AssetRepository;
 		internal IStorageProvider StorageProvider;
 
 		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage) : base(context)
 		{
-			Company = context;
 			AssetRepository = assetRepository;
 			StorageProvider = storage;
 		}
@@ -55,19 +54,19 @@ namespace d360.model.DataAccessLayer
 						A.[State] = 1 and A.ObjectID != 0 and Class = 15
 						order by Name ";
 
-			var nodes = await Company.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram }, ApiTimeout);
+			var nodes = await CompanyContext.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram }, ApiTimeout);
 			return nodes;
 		}
 
 		public ProcessDiagramModel GetAssetsProcessDiagram(Guid assetUid)
 		{
-			var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+			var targetAsset = CompanyContext.Assets.FirstOrDefault(x => x.uid == assetUid);
 
 			var diagramJson = string.Empty;
 
 			if (targetAsset != null)
 			{
-				var diagram = Company.AssetProcessDiagrams.FirstOrDefault(x => x.AssetId == targetAsset.ID);
+				var diagram = CompanyContext.AssetProcessDiagrams.FirstOrDefault(x => x.AssetId == targetAsset.ID);
 				
 				if (diagram != null && !string.IsNullOrEmpty(diagram.Diagram))
 				{
@@ -90,7 +89,7 @@ namespace d360.model.DataAccessLayer
 			List<Guid> assetUids = model.nodeDataArray.Select(x => x.AssetUid).ToList();
 
 			//expand model with db data
-			var nodesExpandedData = Company.Query<dynamic>(@"select 
+			var nodesExpandedData = CompanyContext.Query<dynamic>(@"select 
 					a.uid,
 					ATS.Icon as icon,
 					a.objectId,
@@ -155,7 +154,7 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
+			var linksExpandedData = CompanyContext.Query<dynamic>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a 
 					inner join AssetProcessDiagram apd on apd.AssetID = a.ID
 				where a.uid = @assetUid)
@@ -212,9 +211,9 @@ namespace d360.model.DataAccessLayer
 		{
 			var validationRes = new List<ValidationError>();
 
-			if (Company.Database.Connection.State != ConnectionState.Open)
+			if (CompanyContext.Database.Connection.State != ConnectionState.Open)
 			{
-				Company.Connection.Open();
+				CompanyContext.Connection.Open();
 			}
 
 			//Validation passed lets do some work
@@ -222,8 +221,8 @@ namespace d360.model.DataAccessLayer
 
 			List<Guid> addedAssets = new List<Guid>();
 
-			Company.Add(execution);
-			Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
+			CompanyContext.Add(execution);
+			CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
 			var assetsTable = "api.ExecutionDiagramAsset";
 			var fieldsTable = "api.ExecutionDiagramAssetField";
@@ -325,7 +324,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			var conn = Company.Connection;
+			var conn = CompanyContext.Connection;
 
 			using (var bulk = new SqlBulkCopy(conn))
 			{
@@ -341,7 +340,7 @@ namespace d360.model.DataAccessLayer
 				bulk.WriteToServer(fieldTable);
 			}
 
-			using (var trans = Company.Connection.BeginTransaction())
+			using (var trans = CompanyContext.Connection.BeginTransaction())
 			{
 				try
 				{
@@ -479,7 +478,7 @@ namespace d360.model.DataAccessLayer
 								when		not matched by target then
 								insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 								values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());", 
-					new { executionId = execution.ExecutionID, resourceId = Company.CurrentResourceID },
+					new { executionId = execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID },
 					transaction: trans);
 
 					if (isDiagramReplace)
@@ -576,7 +575,7 @@ namespace d360.model.DataAccessLayer
 									{
 										assetId = targetAssetId,
 										diagram = (simpleModel.nodeDataArray.Count > 0 || simpleModel.linkDataArray.Count > 0) ? JsonConvert.SerializeObject(simpleModel) : null,
-										resourceId = Company.CurrentResourceID
+										resourceId = CompanyContext.CurrentResourceID
 									}, transaction: trans);
 
 					//call new procedure.
@@ -590,7 +589,7 @@ namespace d360.model.DataAccessLayer
 					execution.Processed = totalCount;
 					execution.Error = 0;
 					execution.CompletedOn = DateTime.UtcNow;
-					Company.Update(execution);
+					CompanyContext.Update(execution);
 				}
 				catch (Exception ex)
 				{
@@ -605,7 +604,7 @@ namespace d360.model.DataAccessLayer
 					{
 					}
 
-					Company.UpdateExecutionWithErrorFromException(execution, ex);
+					CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 					validationRes.Add(new ValidationError() { Error = ex.Message });
 				}
 			}
@@ -637,7 +636,7 @@ namespace d360.model.DataAccessLayer
 
 			if (isDiagramReplace && addedAssets.Count > 0)
 			{
-				var intersectUids = Company.Query<Guid>(@"
+				var intersectUids = CompanyContext.Query<Guid>(@"
 						select i.uid from [Intersect] I 
 							inner join Asset A on A.ID = I.ObjectAssetID
 						where A.uid in @assets
@@ -737,7 +736,7 @@ namespace d360.model.DataAccessLayer
 							from #intersectMap IM
 								inner join Field F on F.IntersectID = IM.intersectFromId
 
-							", new { execution.ExecutionID, resourceId = Company.CurrentResourceID, json = relJson }, transaction: trans);
+							", new { execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID, json = relJson }, transaction: trans);
 		}
 		private void CopyTags(ApiExecution execution, List<ProcessDiagramCopyMapper> copyMappers, SqlConnection conn, SqlTransaction trans)
 		{
@@ -762,7 +761,7 @@ namespace d360.model.DataAccessLayer
 					inner join Asset NewAsset on NewAsset.uid = eda.uid
 					inner join AssetTag ATAG on ATAG.AssetId = A.Id
 					where eda.executionid = @executionid and eda.Action <> 'Delete'
-							", new { execution.ExecutionID, resourceId = Company.CurrentResourceID, assetMap }, transaction: trans);
+							", new { execution.ExecutionID, resourceId = CompanyContext.CurrentResourceID, assetMap }, transaction: trans);
 		}
 
 		public IEnumerable<ProcessDiagramBadge> GetDiagramAssetBadges(Guid assetUid)
@@ -786,7 +785,7 @@ namespace d360.model.DataAccessLayer
 				)Rels(cnt)
 			group by a.uid";
 
-			var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid }, ApiTimeout);
+			var response = CompanyContext.Query<ProcessDiagramBadge>(badgesSql, new { assetUid }, ApiTimeout);
 			return response;
 		}
 
@@ -795,7 +794,7 @@ namespace d360.model.DataAccessLayer
 			var document = new SLDocument();
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
 
-			var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+			var assetType = CompanyContext.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
 
 			await AssetRepository.PopulateSheetForAssetTypeAndAssets(document, assetType, new List<Guid>() { asset.uid });
 			await GetDiagramWorkflowSheet(asset, document);
@@ -843,7 +842,7 @@ namespace d360.model.DataAccessLayer
 
 		private async Task GetSheetsForRelatedAssets(Asset asset, SLDocument document)
 		{
-			var relModels = await Company.QueryAsync<DiagramAssetRelationshipModel>(@"declare @diagram nvarchar(max) = (
+			var relModels = await CompanyContext.QueryAsync<DiagramAssetRelationshipModel>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a 
 					inner join AssetProcessDiagram apd on apd.AssetID = a.ID
 				where a.uid = @assetUid)
@@ -866,7 +865,7 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
 			{
-				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeGroup.Key);
+				var assetType = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == assetTypeGroup.Key);
 				string relatedSheetName = ("Related " + assetType.Name).GetSafeSheetName();
 
 				document.AddWorksheet(relatedSheetName);
@@ -879,7 +878,7 @@ namespace d360.model.DataAccessLayer
 				par.Add(new KeyValuePair<string, string>("_pagesize", assetUidForParam.Count().ToString()));
 				var assets = await AssetRepository.GetAssets(assetType, par, true);
 
-				var hierarchy = Company.IntersectTypes
+				var hierarchy = CompanyContext.IntersectTypes
 				.FirstOrDefault(x => x.ObjectAssetTypeID == assetType.ID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
 				bool includeParent = true;
@@ -906,7 +905,7 @@ namespace d360.model.DataAccessLayer
 					fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
 				}
 
-				fields.AddRange(Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+				fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
 
 				fields.Add(new FieldType { Type = "string", Name = guid + "UID", FriendlyName = "Diagram Asset UID" });
@@ -998,7 +997,7 @@ namespace d360.model.DataAccessLayer
 
 		private async Task GetSheetsForDiagramTypes(Asset asset, SLDocument document)
 		{
-			var types = await Company.QueryAsync<dynamic>(@"declare @diagram nvarchar(max) = (
+			var types = await CompanyContext.QueryAsync<dynamic>(@"declare @diagram nvarchar(max) = (
 				select apd.Diagram  as json from asset a 
 					inner join AssetProcessDiagram apd on apd.AssetID = a.ID
 				where a.uid = @assetUid)
@@ -1023,7 +1022,7 @@ namespace d360.model.DataAccessLayer
 				string detailSheetName = (name + " Details").GetSafeSheetName();
 				document.AddWorksheet(detailSheetName);
 				document.SelectWorksheet(detailSheetName);
-				var at = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+				var at = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 				await AssetRepository.PopulateSheetForAssetTypeAndAssets(document, at, assets.ToString().Split(',').Select(x => Guid.Parse(x)).ToList());
 			}
 		}
@@ -1109,7 +1108,7 @@ namespace d360.model.DataAccessLayer
 			"Next Asset Name","Asset UID","Asset ID","Asset URL",
 			"Next Asset UID","Next Asset ID","Next Asset URL"
 			};
-			var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid }, ApiTimeout);
+			var diagram = await CompanyContext.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid }, ApiTimeout);
 			int index = 1;
 
 			foreach (var field in diagramFields)

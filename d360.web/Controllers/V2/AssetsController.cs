@@ -39,7 +39,7 @@ using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using repositories;
 using Resources;
 
 using SpreadsheetLight;
@@ -2176,7 +2176,6 @@ namespace d360.web.Controllers.V2
 				List<dynamic> scoringInfo = new List<dynamic>();
 
 				int count = 0;
-				var dbArgs = new DynamicParameters();
 
 				if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
 				{
@@ -2297,15 +2296,17 @@ namespace d360.web.Controllers.V2
 					pageNum = 1;
 					pageSize = 10000;
 				}
-
-				dbArgs.Add("resourceId", Company.CurrentResourceID);
-				dbArgs.Add("pageSize", pageSize);
-				dbArgs.Add("pageNum", pageNum);
-				dbArgs.Add("useUidUrls", returnuseUidUrls);
-				dbArgs.Add("assetUid", assetUid);
-				dbArgs.Add("object", asset.Object);
-				dbArgs.Add("objectId", asset.ObjectID);
-				dbArgs.Add("fieldTypeId", fieldType.ID);
+				var dbArgs = new Dictionary<string, object>
+				{
+					{ "resourceId", Company.CurrentResourceID },
+					{ "pageSize", pageSize },
+					{ "pageNum", pageNum },
+					{ "useUidUrls", returnuseUidUrls },
+					{ "assetUid", assetUid },
+					{ "object", asset.Object },
+					{ "objectId", asset.ObjectID },
+					{ "fieldTypeId", fieldType.ID }
+				};
 
 				if (fieldType.Type == "ComplexRelationLookup")
 				{
@@ -4271,7 +4272,8 @@ namespace d360.web.Controllers.V2
 
 			ValidateParameters();
 
-			var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeID, cancellationToken);
+			var results = await AssetTypeRepository.GetAncestryAsync(assetTypeID, cancellationToken);
+			var entities = results.ToList();
 			if (entities.Count == 0)
 			{
 				throw new NotFoundBusinessLayerException($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");

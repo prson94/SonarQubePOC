@@ -161,6 +161,10 @@
       <Project>{df57be56-958b-4c4d-b82c-6b61297434ab}</Project>
       <Name>d360.web</Name>
     </ProjectReference>
+    <ProjectReference Include="..\repositories\repositories.csproj">
+      <Project>{C2B66B7D-01FF-4C90-8B3D-5472AF1AAB9E}</Project>
+      <Name>repositories</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

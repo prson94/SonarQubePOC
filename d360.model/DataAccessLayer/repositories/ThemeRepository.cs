@@ -1,3 +1,11 @@
+using d360.core;
+using d360.core.entities;
+using d360.core.exceptions;
+using d360.core.resources;
+using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
+using Dapper;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,24 +14,14 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.exceptions;
-using d360.core.resources;
-using d360.extensions;
-using d360.model.DataAccessLayer.repositories;
-
-using Dapper;
-
 namespace d360.model.DataAccessLayer
 {
-    public class ThemeRepository : BaseRepository, IThemeRepository
+	public class ThemeRepository : BaseRepository, IThemeRepository
     {
         #region DI
 
         private readonly Guid defaultThemeUID = new Guid("AAAAAAAA-0000-0000-0000-000000000001");
 
-        internal ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
@@ -31,7 +29,6 @@ namespace d360.model.DataAccessLayer
         public ThemeRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
-            CompanyContext = companyContext;
             QueueSource = queueSource;
             StorageProvider = storageProvider;
             Community = community;

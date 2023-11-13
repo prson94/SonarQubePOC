@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Web.Mvc;
-
+using d360.core.search;
 using d360.extensions;
 using d360.web.Models.Attributes;
 

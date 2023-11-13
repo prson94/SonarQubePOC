@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
@@ -12,9 +7,13 @@ using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
-
 using Dapper;
 using LaunchDarkly.Sdk.Server;
+using repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {

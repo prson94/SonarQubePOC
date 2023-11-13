@@ -1,43 +1,37 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+using d360.model.DataAccessLayer.repositories;
+using Dapper;
+using repositories;
+using SpreadsheetLight;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.resources;
-using d360.model.DataAccessLayer.repositories;
-
-using Dapper;
-
-using SpreadsheetLight;
-
 namespace d360.model.DataAccessLayer
 {
 	public class ConnectorLabelRepository : BaseRepository, IConnectorLabelRepository
 	{
-		private readonly ICompanyContext companyContext;
-		private readonly ICommunityContext communityContext;
-		public ConnectorLabelRepository(ICompanyContext company, ICommunityContext community) : base(company)
+		public ConnectorLabelRepository(ICompanyContext company) : base(company)
 		{
-			companyContext = company;
-			communityContext = community;
 		}
 
 		public bool DeleteConnectorLabels(List<ConnectorLabelApiDeleteModel> model)
 		{
 			IEnumerable<Guid> labelUids = model.Select(m => m.uid);
 
-			List<ConnectorLabel> labelsToDelete = companyContext.ConnectorLabels.Where(x => labelUids.Contains(x.uid)).ToList();
+			List<ConnectorLabel> labelsToDelete = CompanyContext.ConnectorLabels.Where(x => labelUids.Contains(x.uid)).ToList();
 
 			foreach (var item in model)
 			{
 				DeleteConnectorLabel(item.uid, item.cascade, ref labelsToDelete);
 			}
 
-			var result = companyContext.SaveChanges() > 0;
+			var result = CompanyContext.SaveChanges() > 0;
 			return result;
 		}
 
@@ -163,11 +157,11 @@ namespace d360.model.DataAccessLayer
 
 			results.pageNum = pageNum;
 			results.pageSize = pageSize;
-			results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
+			results.total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
 
 			if (results.total > 0)
 			{
-				results.items = (await companyContext.QueryAsync<ConnectorLabelApiModel>(sql, dbArgs, ApiTimeout));
+				results.items = (await CompanyContext.QueryAsync<ConnectorLabelApiModel>(sql, dbArgs, ApiTimeout));
 			}
 
 			return results;
@@ -180,22 +174,22 @@ namespace d360.model.DataAccessLayer
 				Value = model.Value
 			};
 
-			var label = companyContext.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == model.Value.ToLower() && x.State == State.Deleted);
+			var label = CompanyContext.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == model.Value.ToLower() && x.State == State.Deleted);
 
 			if (label == null)
 			{
 				label = new ConnectorLabel { Value = model.Value };
-				companyContext.Add(label);
+				CompanyContext.Add(label);
 			}
 			else
 			{
 				label.State = State.Active;
-				label.CreatedBy = label.UpdatedBy = companyContext.CurrentResourceID;
+				label.CreatedBy = label.UpdatedBy = CompanyContext.CurrentResourceID;
 				label.CreatedOn = label.UpdatedOn = DateTime.UtcNow;
-				companyContext.SaveChanges();
+				CompanyContext.SaveChanges();
 			}
 
-			var user = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == companyContext.CurrentResourceID);
+			var user = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == CompanyContext.CurrentResourceID);
 
 			result.uid = label.uid;
 			result.UpdatedOn = label.UpdatedOn.GetValueOrDefault();
@@ -210,22 +204,22 @@ namespace d360.model.DataAccessLayer
 		{
 			var result = new ConnectorLabelApiModel();
 			existingLabel.Value = model.Value;
-			companyContext.Update(existingLabel);
+			CompanyContext.Update(existingLabel);
 
 			result.Value = model.Value;
 			result.uid = existingLabel.uid;
 			result.UpdatedOn = existingLabel.UpdatedOn.GetValueOrDefault();
 			result.CreatedOn = existingLabel.CreatedOn.GetValueOrDefault();
-			result.UseCount = companyContext.Query<int>
+			result.UseCount = CompanyContext.Query<int>
 				("select count(*) from ProcessExpandedData where LabelUid = @uid",
 				new DynamicParameters(new { existingLabel.uid })).FirstOrDefault();
 
-			var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingLabel.CreatedBy);
+			var createUser = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingLabel.CreatedBy);
 			if (createUser != null)
 			{
 				result.CreatedByUid = createUser.Uid;
 			}
-			var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
+			var updateUser = CompanyContext.GlobalReportingResources.First(x => x.ResourceID == CompanyContext.CurrentResourceID);
 			if (updateUser != null)
 			{
 				result.UpdatedByUid = updateUser.Uid;
@@ -236,17 +230,17 @@ namespace d360.model.DataAccessLayer
 
 		public bool DoesLabelExists(Guid uid)
 		{
-			return companyContext.ConnectorLabels.Any(x => x.uid == uid);
+			return CompanyContext.ConnectorLabels.Any(x => x.uid == uid);
 		}
 
 		public bool DoesLabelExists(string value)
 		{
-			return companyContext.ConnectorLabels.Any(x => x.Value == value && x.State == State.Active);
+			return CompanyContext.ConnectorLabels.Any(x => x.Value == value && x.State == State.Active);
 		}
 
 		public bool DoesLabelExists(Guid existingUid, ConnectorLabelPostModel model)
 		{
-			return companyContext.ConnectorLabels.Any(x => x.Value == model.Value && x.uid != existingUid && x.State == State.Active);
+			return CompanyContext.ConnectorLabels.Any(x => x.Value == model.Value && x.uid != existingUid && x.State == State.Active);
 		}
 
 		public async Task<dynamic> GetConnectorLabelsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -349,7 +343,7 @@ namespace d360.model.DataAccessLayer
 						{whereClause}
 						{sortClause}";
 
-			return await companyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
+			return await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 		}
 
 		public IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -467,7 +461,7 @@ namespace d360.model.DataAccessLayer
 								{whereClause}
 								{sortClause}";
 
-			var response = companyContext.Query<dynamic>(labelsSql, dbArgs, ApiTimeout);
+			var response = CompanyContext.Query<dynamic>(labelsSql, dbArgs, ApiTimeout);
 			return response;
 		}
 
@@ -523,13 +517,13 @@ namespace d360.model.DataAccessLayer
 
 		public bool IsAuthorizedToEditConnectorLabel(Guid connectorLabelUid)
 		{
-			var connectorLabel = companyContext.ConnectorLabels.FirstOrDefault(x => x.uid == connectorLabelUid);
+			var connectorLabel = CompanyContext.ConnectorLabels.FirstOrDefault(x => x.uid == connectorLabelUid);
 			if (connectorLabel == null)
 			{
 				return false;
 			}
 
-			if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == connectorLabel.CreatedBy)
+			if (CompanyContext.CurrentResourceIsAdmin || CompanyContext.CurrentResourceID == connectorLabel.CreatedBy)
 			{
 				return true;
 			}
