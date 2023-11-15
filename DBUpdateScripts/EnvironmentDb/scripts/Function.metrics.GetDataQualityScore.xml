@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.04">
+ <changeSet author="Pappas" id="Function.metrics.GetDataQualityScore-v1.05">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetDataQualityScore]
@@ -154,7 +154,8 @@ begin
 				cross apply metrics.ConditionsFiltering(v.AssetId, v.Conditions, v.MatchConditionsOnly) c 
 				outer apply openjson(v.RuleFilters) with (Paths nvarchar(max) as json, Links nvarchar(max) as json) a
 				outer apply metrics.GatherRuleResults(v.AssetId, @effectiveDate,  a.Paths , a.Links) r
-		where	c.[Include] = 1;
+		where	c.[Include] = 1
+				and (r.Uid is not null or v.IsGroup = 1);
 
 	insert into @measures (VersionUid, Value, RawValue)
 		select	Uid,
@@ -221,6 +222,9 @@ begin
 
 	-- If no good evidence, set to the default "ignore" format.
 	update @measures set Evidence = '{}' where Evidence = '[{}]';
+
+	-- Remove those measure groups that do not have any representative descendant measures.
+	delete @measures where Evidence = '{}' and VersionUid not in (select distinct ParentVersionUid from @measures where ParentVersionUid is not null);
 
 	return;
 end
