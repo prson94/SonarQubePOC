@@ -9,17 +9,15 @@ using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 
 using Dapper;
+using repositories;
 
 namespace d360.model.DataAccessLayer
 {
 	public class IssueRepository : BaseRepository, IIssueRepository
 	{
-		private readonly ICompanyContext companyContext;
-
 		public IssueRepository(ICompanyContext context)
 			: base(context)
 		{
-			companyContext = context;
 		}
 
 		public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -304,7 +302,7 @@ namespace d360.model.DataAccessLayer
 						 {resourceSql}
 						 {orderBySql}";
 
-			return await companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
+			return await CompanyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
 		}
 
 		public async Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid uid)
@@ -319,19 +317,19 @@ namespace d360.model.DataAccessLayer
 				inner join IssueType I on I.ID = R.IssueTypeID                
 				{whereClause}";
 
-			var allocations = await companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
+			var allocations = await CompanyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
 
 			return allocations;
 		}
 
 		public IssueType GetIssueTypeByUID(Guid issueTypeUid)
 		{
-			return companyContext.Filter<IssueType>(i => i.uid == issueTypeUid).SingleOrDefault();
+			return CompanyContext.Filter<IssueType>(i => i.uid == issueTypeUid).SingleOrDefault();
 		}
 
 		public Issue GetIssueByUID(Guid issueUid)
 		{
-			return companyContext.Filter<Issue>(i => i.UID == issueUid).SingleOrDefault();
+			return CompanyContext.Filter<Issue>(i => i.UID == issueUid).SingleOrDefault();
 		}
 	}
 }

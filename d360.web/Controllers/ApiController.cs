@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
-using System.Xml.Linq;
 using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
@@ -18,7 +7,6 @@ using d360.core.Models;
 using d360.core.resources;
 using d360.extensions;
 using d360.model;
-using d360.model.DataAccessLayer;
 using d360.model.helpers;
 using d360.web.Extensions;
 using d360.web.Filters;
@@ -26,8 +14,19 @@ using d360.web.Models;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using Resources;
 using SmartFormat;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
+using System.Xml.Linq;
 
 namespace d360.web.Controllers
 {
@@ -1861,13 +1860,14 @@ namespace d360.web.Controllers
 				List<dynamic> scoringInfo = new List<dynamic>();
 
 				int count = 0;
-				var dbArgs = new DynamicParameters();
-
-				dbArgs.Add("resourceId", Company.CurrentResourceID);
-				dbArgs.Add("assetUid", asset.uid);
-				dbArgs.Add("object", asset.Object);
-				dbArgs.Add("objectId", asset.ObjectID);
-				dbArgs.Add("fieldTypeId", fieldType.ID);
+				var dbArgs = new Dictionary<string, object>
+				{
+					{ "resourceId", Company.CurrentResourceID },
+					{ "assetUid", asset.uid },
+					{ "object", asset.Object },
+					{ "objectId", asset.ObjectID },
+					{ "fieldTypeId", fieldType.ID }
+				};
 
 				if (fieldType.Type == "ComplexRelationLookup")
 				{

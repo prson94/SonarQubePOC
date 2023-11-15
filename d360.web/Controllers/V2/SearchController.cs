@@ -15,6 +15,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.core.search;
 using d360.extensions;
 using d360.extensions.search;
 using d360.model;
@@ -26,7 +27,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
-
+using repositories;
 using Resources;
 
 using SpreadsheetLight;

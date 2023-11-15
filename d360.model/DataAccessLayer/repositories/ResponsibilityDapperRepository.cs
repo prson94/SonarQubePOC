@@ -1,16 +1,15 @@
-﻿using System;
+﻿using d360.core.entities;
+using Dapper;
+using repositories;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-using d360.core.entities;
-
-using Dapper;
-
 namespace d360.model.DataAccessLayer.repositories
 {
-    internal sealed class ResponsibilityDapperRepository : DapperRepositoryBase<ICompanyDbConnectionProvider>, IResponsibilityDapperRepository
+	internal sealed class ResponsibilityDapperRepository : DapperRepositoryBase<ICompanyDbConnectionProvider>, IResponsibilityDapperRepository
     {
         public ResponsibilityDapperRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer) : base(queryComposer)
         {

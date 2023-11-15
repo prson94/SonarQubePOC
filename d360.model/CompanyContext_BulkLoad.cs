@@ -18,6 +18,7 @@ using d360.model.DataAccessLayer;
 using Dapper;
 
 using Newtonsoft.Json;
+using repositories;
 
 namespace d360.model
 {

@@ -3,6 +3,7 @@
 using d360.model.DataAccessLayer;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.validators;
+using repositories;
 
 namespace d360.model
 {
@@ -14,7 +15,7 @@ namespace d360.model
             builder.RegisterType<ResponsibilityDapperRepository>().As<IResponsibilityDapperRepository>().InstancePerRequest();
             builder.RegisterType<FavoritesRepository>().AsImplementedInterfaces().InstancePerRequest();
             builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
-            builder.RegisterType<AuditDapperRepository>().As<IAuditDapperRepository>().InstancePerRequest();
+            builder.RegisterType<AuditRepository>().As<IAuditRepository>().InstancePerRequest();
             builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
@@ -46,8 +47,7 @@ namespace d360.model
             builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
             builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();
 			builder.RegisterType<ResourceSettingRepository>().As<IResourceSettingRepository>().InstancePerRequest();
-
-			builder.RegisterType<AssetTypeDapperRepository>().As<IAssetTypeRepository>().InstancePerRequest();
+			builder.RegisterType<AssetTypeRepository>().As<IAssetTypeRepository>().InstancePerRequest();
 			builder.RegisterType<NavigationRepository>().AsImplementedInterfaces().InstancePerRequest();
         }
     }

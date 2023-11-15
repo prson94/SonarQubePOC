@@ -1,4 +1,21 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Metric;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.queue;
+using d360.core.resources;
+using d360.core.validators;
+using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+using Dapper;
+using LaunchDarkly.Sdk.Server;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using repositories;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -7,24 +24,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.queue;
-using d360.core.resources;
-using d360.extensions;
-using d360.model.DataAccessLayer.repositories;
-using d360.model.helpers;
-using d360.model.helpers.filters;
-
-using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
-using LaunchDarkly.Sdk.Server;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {

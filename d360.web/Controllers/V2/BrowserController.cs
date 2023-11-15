@@ -28,6 +28,7 @@ using d360.core.exceptions;
 
 using Swashbuckle.Swagger.Annotations;
 using d360.model.validators;
+using repositories;
 
 namespace d360.web.Controllers.V2
 {

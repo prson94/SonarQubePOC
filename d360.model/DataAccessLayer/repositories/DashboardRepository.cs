@@ -13,6 +13,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 
 using Dapper;
+using repositories;
 
 namespace d360.model.DataAccessLayer
 {

@@ -1,6 +1,8 @@
 ﻿using d360.core.queue;
+using d360.core.search;
 using d360.extensions;
 using d360.extensions.search;
+using d360.extensions.search.models;
 using Elasticsearch.Net;
 using Moq;
 using Moq.Protected;
@@ -14,7 +16,7 @@ using Xunit;
 
 namespace igx.UnitTests.SearchTests
 {
-    [Trait("Unit tests", "Elastic Search Source tests")]
+	[Trait("Unit tests", "Elastic Search Source tests")]
     public class ElasticSourceTests : BaseTest
     {
 

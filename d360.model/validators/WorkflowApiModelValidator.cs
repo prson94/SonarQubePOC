@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using d360.model.DataAccessLayer;
+using repositories;
 
 namespace d360.model.validators
 {

@@ -1,40 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
 using d360.core.Models;
 using d360.core.queue;
 using d360.core.resources;
+using d360.core.validators;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
-
+using MoreLinq;
 using Newtonsoft.Json;
+using repositories;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace d360.model.DataAccessLayer
 {
 	public class FieldsRepository : BaseRepository, IFieldsRepository
 	{
-		internal ICompanyContext Company;
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
 
 		public FieldsRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
 			: base(companyContext)
 		{
-			Company = companyContext;
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
 		}
@@ -73,7 +71,7 @@ namespace d360.model.DataAccessLayer
 				if (Guid.TryParse(actionTypeUidString, out Guid ac))
 				{
 					actionTypeUid = ac;
-					var actionType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
+					var actionType = CompanyContext.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
 					if (actionType != null)
 					{
@@ -100,7 +98,7 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(assetTypeUidString, out Guid at))
 					{
 						assetTypeUid = at;
-						var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
+						var assetType = CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 
 						if (assetType != null)
 						{
@@ -135,7 +133,7 @@ namespace d360.model.DataAccessLayer
 					if (Guid.TryParse(relationshipTypeUidString, out Guid rt))
 					{
 						relationshipTypeUid = rt;
-						var intersectType = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
+						var intersectType = CompanyContext.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
 
 						if (intersectType != null)
 						{
@@ -727,7 +725,7 @@ namespace d360.model.DataAccessLayer
 								) as 'items'
 						for json path, WITHOUT_ARRAY_WRAPPER";
 
-			var model = await Company.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs, ApiTimeout);
+			var model = await CompanyContext.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs, ApiTimeout);
 
 			return new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(model, workHttpStatus);
 		}
@@ -748,7 +746,7 @@ namespace d360.model.DataAccessLayer
 
 		public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			var currentFieldTypes = Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
+			var currentFieldTypes = CompanyContext.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
 			var existingKeyFieldsHash = GetKeyFieldsHash(currentFieldTypes);
 
 			var newFieldTypes = new List<FieldType>();
@@ -766,7 +764,7 @@ namespace d360.model.DataAccessLayer
 
 			if (model.AssetTypeUid.HasValue)
 			{
-				existingDisplayValueKeyFieldsHash = Company.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
+				existingDisplayValueKeyFieldsHash = CompanyContext.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
 			}
 
 			if (maxColumnIndexItem != null)
@@ -795,7 +793,7 @@ namespace d360.model.DataAccessLayer
 
 				if (f.Name.ToLower() == "code" && f.Type.System == null)
 				{
-					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NameReservedword, f.Name));
@@ -810,7 +808,7 @@ namespace d360.model.DataAccessLayer
 					Category = f.Category,
 					Name = f.Name,
 					FriendlyName = f.FriendlyName,
-					UpdatedBy = Company.CurrentResourceID
+					UpdatedBy = CompanyContext.CurrentResourceID
 				};
 
 				if (f.Type.Boolean != null)
@@ -866,7 +864,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseScoreTypeOnActionAndRelationshipType, f.Name));
 					}
 
-					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
 					var disallowedClasses = new List<AssetTypeClass>() {
 						AssetTypeClass.User,
@@ -878,7 +876,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseSCoreTypeAssetForField, assetType.Class.ToString(), f.Name));
 					}
 
-					var types = Company.Query<int>(
+					var types = CompanyContext.Query<int>(
 				   "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @uid and [State] = 1"
 				   , new { assetType.uid }).ToList();
 
@@ -936,7 +934,7 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
 					{
-						int relationshipsTypeId = Company.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
+						int relationshipsTypeId = CompanyContext.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
 						{
 							uid = f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid
 						}).FirstOrDefault();
@@ -972,7 +970,7 @@ namespace d360.model.DataAccessLayer
 												F.AssetTypeID = case when I.SubjectAssetTypeID = @assetTypeId then I.objectAssetTypeID else I.SubjectAssetTypeID end
 												and I.Uid = @intersectTypeUid 
 												and F.Name = @fieldTypeName";
-					var relationshipsFieldType = Company.Query<dynamic>(query, new
+					var relationshipsFieldType = CompanyContext.Query<dynamic>(query, new
 					{
 						intersectTypeUid = f.Type.ComputedRelationshipField.IntersectTypeUid,
 						fieldTypeName = f.Type.ComputedRelationshipField.FieldTypeName,
@@ -1013,7 +1011,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.NotUseRelationshipLookupField, f.Name));
 					}
 
-					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 
 					if (assetType.Class == AssetTypeClass.User)
 					{
@@ -1050,7 +1048,7 @@ namespace d360.model.DataAccessLayer
 					f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
 					{
 						var relation = new FieldTypeComplexLookupDefinitionRelation();
-						var relationInfo = Company.Query<dynamic>(
+						var relationInfo = CompanyContext.Query<dynamic>(
 							"select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid",
 							new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
 						).SingleOrDefault();
@@ -1061,7 +1059,7 @@ namespace d360.model.DataAccessLayer
 							return;
 						}
 
-						var relationRefListInfo = Company.Query<dynamic>(
+						var relationRefListInfo = CompanyContext.Query<dynamic>(
 							"select T.ID as IntersectTypeID from IntersectType T where T.uid = @intersectUid and ((T.objectclass = @AssetTypeClass and T.ObjectAssetTypeID = 0) or (T.SubjectClass = @AssetTypeClass and T.subjectAssetTypeID = 0))",
 							new { intersectUid = i.IntersectTypeUid, AssetTypeClass = AssetTypeClass.Reference }
 						).SingleOrDefault();
@@ -1083,7 +1081,7 @@ namespace d360.model.DataAccessLayer
 						relatedItemUids.Add(i.AssetTypeUid);
 						definitionRelations.Add(relation);
 
-						var relatedTypeList = Company.Filter<IntersectTypeDetail>(r =>
+						var relatedTypeList = CompanyContext.Filter<IntersectTypeDetail>(r =>
 						   (r.SubjectUid == relation.AssetTypeUid) ||
 						   (r.ObjectUid == relation.AssetTypeUid)
 						   )
@@ -1118,7 +1116,7 @@ namespace d360.model.DataAccessLayer
 						var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
 						var isFieldFromRelationship = i.FieldTypeName.StartsWith("Relation.");
 
-						var fieldInfo = Company.Query<FieldInfo>(@"
+						var fieldInfo = CompanyContext.Query<FieldInfo>(@"
 							select coalesce(F.ID, 0) as FieldTypeID, T.Class, F.Type  as FieldType
 							from   AssetType T 
 								   left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
@@ -1130,7 +1128,7 @@ namespace d360.model.DataAccessLayer
 							var relation = f.Type.ComputedRelationshipLookup.Definition.Relations.FirstOrDefault(x => x.AssetTypeUid == i.AssetTypeUid);
 							var intersectTypeUid = relation.IntersectTypeUid;
 							var fieldName = i.FieldTypeName.Replace("Relation.", "").Trim();
-							fieldInfo = Company.Query<FieldInfo>(@"
+							fieldInfo = CompanyContext.Query<FieldInfo>(@"
 							select coalesce(F.ID, 0) as FieldTypeID, 0 as Class, F.Type as FieldType
 							from   IntersectType IT 
 								   left join FieldType F on F.IntersecttypeID = IT.Id and F.Name = @fieldName 
@@ -1255,7 +1253,7 @@ namespace d360.model.DataAccessLayer
 
 					newFieldType.IsDisplayable = f.Type.ComputedRelationshipReferenceList.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipReferenceList.ShowIfEmpty;
-					var relationshipsFieldType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
+					var relationshipsFieldType = CompanyContext.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.ComputedRelationshipReferenceList.IntersectTypeUid }).FirstOrDefault();
 
 					if (relationshipsFieldType <= 0)
 					{
@@ -1497,7 +1495,7 @@ namespace d360.model.DataAccessLayer
 
 					if (f.Type.JsonElement.JsonAttribute != null)
 					{
-						int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.AssetTypeID == newFieldType.AssetTypeID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
+						int FieldTypeID = CompanyContext.FieldTypes.FirstOrDefault(ft => ft.AssetTypeID == newFieldType.AssetTypeID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
 						var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
 						newFieldType.Definition = JsonConvert.SerializeObject(obj);
 					}
@@ -1564,7 +1562,7 @@ namespace d360.model.DataAccessLayer
 
 					if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
 					{
-						var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+						var parentField = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
 
 						if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
 						{
@@ -1587,8 +1585,8 @@ namespace d360.model.DataAccessLayer
 						newFieldType.AllowMultipleValues = f.Type.Lookup.List.AllowMultipleValues;
 						if (f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
 						{
-							var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
-							var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
+							var listAssetType = CompanyContext.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+							var defaultOptions = CompanyContext.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
 
 							if (listAssetType != null)
 							{
@@ -1624,8 +1622,8 @@ namespace d360.model.DataAccessLayer
 						}
 						else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
 						{
-							var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
-							var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
+							var listAssetType = CompanyContext.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+							var defaultOptions = CompanyContext.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
 
 							if (listAssetType != null)
 							{
@@ -1676,7 +1674,7 @@ namespace d360.model.DataAccessLayer
 
 							}
 
-							filterFieldType = Company.Query<int>(filterFieldSQL, new { id = typeIdentifierInfoModel.ID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
+							filterFieldType = CompanyContext.Query<int>(filterFieldSQL, new { id = typeIdentifierInfoModel.ID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
 
 							if (filterFieldType <= 0)
 							{
@@ -1691,7 +1689,7 @@ namespace d360.model.DataAccessLayer
 
 						if (f.Type.Lookup.Filter.PredicateUid.HasValue && f.Type.Lookup.Filter.PredicateUid != Guid.Empty)
 						{
-							filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
+							filterPredicate = CompanyContext.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
 
 							if (filterPredicate <= 0)
 							{
@@ -1826,7 +1824,7 @@ namespace d360.model.DataAccessLayer
 						newFieldType.FormDescription = f.Type.Relationship.Description.Form.SanitizeHtml();
 					}
 
-					var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
+					var relationshipType = CompanyContext.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
 
 					if (relationshipType <= 0)
 					{
@@ -2092,7 +2090,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.Type = newFieldType.Type;
 					currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
 					currentFieldType.Definition = newFieldType.Definition;
-					currentFieldType.UpdatedBy = Company.CurrentResourceID;
+					currentFieldType.UpdatedBy = CompanyContext.CurrentResourceID;
 					currentFieldType.SearchAddToResult = newFieldType.SearchAddToResult;
 					currentFieldType.SearchPrefix = newFieldType.SearchPrefix;
 					currentFieldType.SearchSuffix = newFieldType.SearchSuffix;
@@ -2115,24 +2113,24 @@ namespace d360.model.DataAccessLayer
 
 			if (model.ActionTypeUid.HasValue)
 			{
-				var action = Company.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
-				action.UpdatedBy = Company.CurrentResourceID;
+				var action = CompanyContext.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
+				action.UpdatedBy = CompanyContext.CurrentResourceID;
 				action.UpdatedOn = DateTime.UtcNow;
 
 			}
 
 			if (model.RelationshipTypeUid.HasValue)
 			{
-				var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
-				intersectType.UpdatedBy = Company.CurrentResourceID;
+				var intersectType = CompanyContext.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
+				intersectType.UpdatedBy = CompanyContext.CurrentResourceID;
 				intersectType.UpdatedOn = DateTime.UtcNow;
 
 			}
 
 			if (model.AssetTypeUid.HasValue)
 			{
-				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
-				assetType.UpdatedBy = Company.CurrentResourceID;
+				var assetType = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
+				assetType.UpdatedBy = CompanyContext.CurrentResourceID;
 				assetType.UpdatedOn = DateTime.UtcNow;
 			}
 
@@ -2142,7 +2140,7 @@ namespace d360.model.DataAccessLayer
 				{
 					newFieldTypes.RemoveAll(i => i.Name == d);
 				});
-				Company.FieldTypes.AddRange(newFieldTypes);
+				CompanyContext.FieldTypes.AddRange(newFieldTypes);
 			}
 			else  // Replace
 			{
@@ -2162,24 +2160,24 @@ namespace d360.model.DataAccessLayer
 
 				}
 
-				Company.Query<int>(deleteSQL, new { id = typeIdentifierInfoModel.ID }).FirstOrDefault();
-				Company.FieldTypes.AddRange(newFieldTypes);
+				CompanyContext.Query<int>(deleteSQL, new { id = typeIdentifierInfoModel.ID }).FirstOrDefault();
+				CompanyContext.FieldTypes.AddRange(newFieldTypes);
 			}
 
-			Company.SaveChanges();
+			CompanyContext.SaveChanges();
 
 			if (model.AssetTypeUid.HasValue)
 			{
-				var newKeyFieldsHash = GetKeyFieldsHash(Company.FieldTypes.Where(x => x.AssetTypeID == typeIdentifierInfoModel.ID).AsNoTracking().ToList());
+				var newKeyFieldsHash = GetKeyFieldsHash(CompanyContext.FieldTypes.Where(x => x.AssetTypeID == typeIdentifierInfoModel.ID).AsNoTracking().ToList());
 
 				if (!newKeyFieldsHash.Equals(existingKeyFieldsHash))
 				{
 					// Key fields have changed. You need to update the graph for this asset type.
-					Company.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);
+					CompanyContext.Connection.Execute("exec [api].[MergeAssetPaths] null,0,0,0,@uid", new { uid = model.AssetTypeUid.Value }, commandTimeout: 90);
 
 				}
 				
-				var newDisplayValueKeyFieldsHash = Company.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
+				var newDisplayValueKeyFieldsHash = CompanyContext.Query<string>(qurydpfieldcheck, new { AssetTypeUid = model.AssetTypeUid.Value }).FirstOrDefault();
 				bool rundisplayValue = false;
 				if ((string.IsNullOrWhiteSpace(newDisplayValueKeyFieldsHash) && !string.IsNullOrWhiteSpace(existingDisplayValueKeyFieldsHash))
 				   || (!string.IsNullOrWhiteSpace(newDisplayValueKeyFieldsHash) && string.IsNullOrWhiteSpace(existingDisplayValueKeyFieldsHash)))
@@ -2192,10 +2190,10 @@ namespace d360.model.DataAccessLayer
 				}
 				if (rundisplayValue) { 
 					//update affected display values
-					var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+					var assetType = CompanyContext.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
 					if (assetType != null && assetType.Object != null)
 					{
-						Company.CreateOrUpdateTypeDisplayValuesAsync(assetType.ObjectID, assetType.Object.ToString());
+						CompanyContext.CreateOrUpdateTypeDisplayValuesAsync(assetType.ObjectID, assetType.Object.ToString());
 					}
 				}
 			}
@@ -2208,13 +2206,13 @@ namespace d360.model.DataAccessLayer
 			switch (typeIdentifierInfoModel.Object)
 			{
 				case "IntersectType":
-					anyExistingItems = Company.Any<Intersect>(i => i.IntersectTypeID == typeIdentifierInfoModel.ID);
+					anyExistingItems = CompanyContext.Any<Intersect>(i => i.IntersectTypeID == typeIdentifierInfoModel.ID);
 					break;
 				case "IssueType":
-					anyExistingItems = Company.Any<Issue>(i => i.IssueTypeID == typeIdentifierInfoModel.ID);
+					anyExistingItems = CompanyContext.Any<Issue>(i => i.IssueTypeID == typeIdentifierInfoModel.ID);
 					break;
 				default:
-					anyExistingItems = Company.Any<Asset>(i => i.AssetTypeID == typeIdentifierInfoModel.ID);
+					anyExistingItems = CompanyContext.Any<Asset>(i => i.AssetTypeID == typeIdentifierInfoModel.ID);
 					break;
 			}
 
@@ -2225,7 +2223,7 @@ namespace d360.model.DataAccessLayer
 		{
 			var anyResponsibilityUsingField = false;
 
-			var rules = Company.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
+			var rules = CompanyContext.ResponsibilityTypeRelationRules.Where(x => x.Object == typeIdentifierInfoModel.Object && x.ObjectID == typeIdentifierInfoModel.ObjectID);
 			foreach (var rule in rules)
 			{
 				rule.SetDefinitionFromRaw();
@@ -2238,7 +2236,7 @@ namespace d360.model.DataAccessLayer
 
 			if (typeIdentifierInfoModel.Object == "GroupType")
 			{
-				var usageInThenCondition = Company.Query<int>(@"select count(*) from ResponsibilityTypeRelationRule rtrr
+				var usageInThenCondition = CompanyContext.Query<int>(@"select count(*) from ResponsibilityTypeRelationRule rtrr
 					 cross apply (select * from OpenJson(rtrr.Definition,'$.Then.Conditions'))Data
 					 where rtrr.Definition is not null
 					 and JSON_VALUE(rtrr.Definition,'$.Then.Object') = 'GroupType' 
@@ -2267,7 +2265,7 @@ namespace d360.model.DataAccessLayer
 				assetTypeID = c.AssetTypeID;
 				if (!assetTypeHasScoringAllocation.HasValue)
 				{
-					assetTypeHasScoringAllocation = Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.Allocation A inner join AssetType T on T.Uid = A.AssetTypeUid and T.ID = @assetTypeID", new { assetTypeID }).Single();
+					assetTypeHasScoringAllocation = CompanyContext.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.Allocation A inner join AssetType T on T.Uid = A.AssetTypeUid and T.ID = @assetTypeID", new { assetTypeID }).Single();
 				}
 				if (fieldNamesToDelete.Contains(c.Name))
 				{
@@ -2277,7 +2275,7 @@ namespace d360.model.DataAccessLayer
 					}
 					if (assetTypeHasScoringAllocation.Value)
 					{
-						var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
+						var impacted = CompanyContext.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
 						impactedMeasureVersions.AddRange(impacted);
 					}
 					deletedFieldTypes.Add(c);
@@ -2291,15 +2289,15 @@ namespace d360.model.DataAccessLayer
 				{
 					if (ft.Type == DataType.Counter.ToString())
 					{
-						Company.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID });
+						CompanyContext.Connection.Execute("delete from dbo.FieldCounterValue where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID });
 					}
 					else
 					{
-						Company.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, Company.CurrentResourceID });
+						CompanyContext.Connection.Execute("update field set updatedby = @CurrentResourceID where FieldTypeId = @fieldTypeId", new { fieldTypeId = ft.ID, CompanyContext.CurrentResourceID });
 					}
 
-					Company.FieldTypes.Remove(ft);
-					Company.SaveChanges();
+					CompanyContext.FieldTypes.Remove(ft);
+					CompanyContext.SaveChanges();
 				}
 
 
@@ -2310,7 +2308,7 @@ namespace d360.model.DataAccessLayer
 				// Key fields have changed. You need to update the graph IF this is asset type.
 				if (assetTypeID.HasValue)
 				{
-					var assetType = Company.GetById<AssetType>(assetTypeID.Value);
+					var assetType = CompanyContext.GetById<AssetType>(assetTypeID.Value);
 					if (assetType != null)
 					{
 						// TODO: Add event grid calls here.
@@ -2320,7 +2318,7 @@ namespace d360.model.DataAccessLayer
 
 			if (impactedMeasureVersions.Count > 0)
 			{
-				Company.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
+				CompanyContext.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
 			}
 			return deletedFieldTypes.Count();
 		}
@@ -2329,8 +2327,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = Company.CurrentCompanyID,
-				CompanyDomainPrefix = Company.CurrentCompanyDomain,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID
 			};
@@ -2340,7 +2338,7 @@ namespace d360.model.DataAccessLayer
 
 		public List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel)
 		{
-			return Company.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
+			return CompanyContext.Filter<FieldType>(f => ((typeIdentifierInfoModel.Object == SystemObjects.IntersectType.ToString() && f.IntersectTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString() && f.IssueTypeID == typeIdentifierInfoModel.ID) || (typeIdentifierInfoModel.Object != SystemObjects.IntersectType.ToString() && typeIdentifierInfoModel.Object != SystemObjects.IssueType.ToString() && f.AssetTypeID == typeIdentifierInfoModel.ID)), i => i.FieldTypeLookup).ToList();
 		}
 
 		public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
@@ -2358,10 +2356,10 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				id = Company.AssetTypes.Where(a => a.Object == objectType.ToString() && a.ObjectID == objectId).FirstOrDefault().ID;
+				id = CompanyContext.AssetTypes.Where(a => a.Object == objectType.ToString() && a.ObjectID == objectId).FirstOrDefault().ID;
 			}
 
-			return Company.Query<string>(
+			return CompanyContext.Query<string>(
 				$@"select distinct FT.FriendlyName as Name from fieldtype FT
 				inner join field F on F.fieldtypeid = FT.id 
 				 where {whereSQL}", new { id }, ApiTimeout);
@@ -2375,7 +2373,7 @@ namespace d360.model.DataAccessLayer
 			{
 				if (field.Type == DataType.Relationship.ToString() && field.LookupObjectID != null)
 				{
-					var intersectType = Company.Filter<IntersectType>(i => i.ID == field.LookupObjectID).SingleOrDefault();
+					var intersectType = CompanyContext.Filter<IntersectType>(i => i.ID == field.LookupObjectID).SingleOrDefault();
 					if (intersectType != null)
 					{
 						var RetValue = new Tuple<string, Guid>(field.Name, intersectType.uid);
@@ -2390,7 +2388,7 @@ namespace d360.model.DataAccessLayer
 		public List<dynamic> GetGrammaticAllocations()
 		{
 
-			return Company.Query<dynamic>($@"select P.Name, p.id
+			return CompanyContext.Query<dynamic>($@"select P.Name, p.id
 											from[Predicate] P
 											WHERE P.Type = 6
 											order by p.Name;").ToList();
@@ -2417,7 +2415,7 @@ namespace d360.model.DataAccessLayer
 			{
 				var fields = new List<FieldType>();
 
-				fields.AddRange(Company.Query<FieldType>($@"
+				fields.AddRange(CompanyContext.Query<FieldType>($@"
 					declare @objectAssetId int
 					declare @referenceId int
 					declare @isSubject bit
@@ -2460,12 +2458,12 @@ namespace d360.model.DataAccessLayer
 			else
 			{
 
-				var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+				var ftl = CompanyContext.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 				var definition = ftl.ParseComplexLookupDefinition();
 
 				var mappings = definition.GetFieldMapings();
 				var fieldTypeIds = definition.Fields.Where(x => !x.FieldTypeName.StartsWith("Related Item.")).Select(x => x.FieldTypeID).Where(x => x > 0).ToList();
-				List<FieldType> fields = Company.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
+				List<FieldType> fields = CompanyContext.FieldTypes.Where(x => fieldTypeIds.Contains(x.ID)).AsNoTracking().ToList();
 				foreach (var f in mappings)
 				{
 					if (f.Value == null)
@@ -2518,7 +2516,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else if (f.Value.FieldTypeName.StartsWith("Related Item."))
 					{
-						var it = Company.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
+						var it = CompanyContext.IntersectTypes.FirstOrDefault(x => x.ID == f.Value.FieldTypeID);
 
 						if (!forUiFiltering && it != null)
 						{
@@ -2559,7 +2557,7 @@ namespace d360.model.DataAccessLayer
 			}
 		}
 
-		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int, List<dynamic>)> GetComplexRelationLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
 		{
 			string orderByClause = "order by 1";
 			var Columns = new List<GridColumn>();
@@ -2580,7 +2578,7 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var relFt in definition.Fields.Where(x => x.FieldTypeName.StartsWith("Related Item.")))
 			{
-				bool isSubject = Company.Query<bool>(@"
+				bool isSubject = CompanyContext.Query<bool>(@"
 					declare @AssetTypeid int,
 					@AssetTypeClass int;
 
@@ -2600,7 +2598,7 @@ namespace d360.model.DataAccessLayer
 					isSubject ? FieldTypeComplexLookupRelationDirection.Forward : FieldTypeComplexLookupRelationDirection.Back));
 			}
 
-			var fieldtypeRelationshipType = Company.Query<FieldTypeRelationShipType>(@"
+			var fieldtypeRelationshipType = CompanyContext.Query<FieldTypeRelationShipType>(@"
 					select distinct IT.uid IntersectTypeUid,IT.ID IntersectTypeId,case when SubjectAssetTypeID = ObjectAssetTypeID then 1 else 0 end IsBothSideSame
 					from FieldTypeLookup FTL 
 					cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
@@ -2615,6 +2613,8 @@ namespace d360.model.DataAccessLayer
 			new { ftl.FieldTypeID })
 			.ToList();
 
+			var dbArgs = new DynamicParameters();
+			filters.Keys.ForEach(k => { dbArgs.Add(k, filters[k]); });
 
 			string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping, fieldtypeRelationshipType);
 
@@ -2647,7 +2647,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(advancedFilter))
 			{
-				var filterDataProvider = new FilterDataProvider(Company);
+				var filterDataProvider = new FilterDataProvider(CompanyContext);
 				var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
 				filterExpressionParser.LoadFieldTypes(fields, selects);
 
@@ -2687,7 +2687,7 @@ namespace d360.model.DataAccessLayer
 
 			var permissionSQL = "";
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
 				permissionSQL = $@"	
 									declare @hasPermission bit = 1,
@@ -2789,7 +2789,7 @@ namespace d360.model.DataAccessLayer
 							from #tempdata a 
 							option (recompile);";
 			}
-			var reader = await Company.QueryMultipleAsync(
+			var reader = await CompanyContext.QueryMultipleAsync(
 				$"{SQLAll}", dbArgs);
 
 			if (!countOnly)
@@ -2803,7 +2803,7 @@ namespace d360.model.DataAccessLayer
 
 			if (scoreFields.Any())
 			{
-				scoringInfo = (await Company.QueryAsync($@"select ft.id AS FieldTypeId, ma.ScoreType, ma.LowerThreshold, ma.UpperThreshold from 
+				scoringInfo = (await CompanyContext.QueryAsync($@"select ft.id AS FieldTypeId, ma.ScoreType, ma.LowerThreshold, ma.UpperThreshold from 
 							 FieldType ft 
 							inner join AssetType at on ft.assetTypeID = at.ID
 							inner join metrics.Allocation ma on ma.AssetTypeUid = at.uid  and ma.ScoreType = ft.ScoreType
@@ -2813,7 +2813,7 @@ namespace d360.model.DataAccessLayer
 			return (Columns, Fields, Values, count, scoringInfo);
 		}
 
-		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetRefListFromRelationshipGrid(List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
 		{
 			string orderByClause = "order by A.Code";
 			var Columns = new List<GridColumn>();
@@ -2823,6 +2823,9 @@ namespace d360.model.DataAccessLayer
 			List<string> joins = new List<string>();
 			List<string> wheres = new List<string>();
 			List<(int order, string sql)> sortFields = new List<(int order, string sql)>();
+
+			var dbArgs = new DynamicParameters();
+			filters.Keys.ForEach(k => { dbArgs.Add(k, filters[k]); });
 
 			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs).ConfigureAwait(false);
 
@@ -2848,7 +2851,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(advancedFilter))
 			{
-				var filterDataProvider = new FilterDataProvider(Company);
+				var filterDataProvider = new FilterDataProvider(CompanyContext);
 				var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
 				filterExpressionParser.LoadFieldTypes(fields, selects);
 
@@ -2892,7 +2895,7 @@ namespace d360.model.DataAccessLayer
 				itemsSQL = "";
 			}
 
-			var reader = await Company.QueryMultipleAsync(
+			var reader = await CompanyContext.QueryMultipleAsync(
 				$"{itemsSQL}; {countSQL}", dbArgs);
 
 			var Values = new List<dynamic>();
@@ -2906,7 +2909,7 @@ namespace d360.model.DataAccessLayer
 			return (Columns, Fields, Values, count);
 		}
 
-		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, DynamicParameters dbArgs, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
+		public async Task<(List<GridColumn>, List<GridField>, List<dynamic>, int)> GetOwnershipLookupGrid(FieldTypeLookup ftl, List<FieldType> fields, Dictionary<string, object> filters, string simpleFilter, string advancedFilter, string orderBy = "", string direction = "asc", bool countOnly = false)
 		{
 			var definition = ftl.ParseOwnershipLookupDefinition();
 
@@ -2971,6 +2974,9 @@ namespace d360.model.DataAccessLayer
 			wheres.Add("r.isvisible = 1");
 			wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
 
+			var dbArgs = new DynamicParameters();
+			filters.Keys.ForEach(k => { dbArgs.Add(k, filters[k]); });
+
 			if (definition.ResponsibilityType != null)
 			{
 				wheres.Add("(r.responsibilitytypeid = @responsibilityTypeId)");
@@ -2991,7 +2997,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(advancedFilter))
 			{
-				var filterDataProvider = new FilterDataProvider(Company);
+				var filterDataProvider = new FilterDataProvider(CompanyContext);
 				var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.ComplexLookupField, false, false, true);
 				filterExpressionParser.LoadFieldTypes(fields, selects);
 
@@ -3035,7 +3041,7 @@ namespace d360.model.DataAccessLayer
 				itemsSQL = "";
 			}
 
-			var reader = await Company.QueryMultipleAsync(
+			var reader = await CompanyContext.QueryMultipleAsync(
 				$"{itemsSQL}; {countSQL}", dbArgs);
 
 			var Values = new List<dynamic>();
@@ -3049,7 +3055,7 @@ namespace d360.model.DataAccessLayer
 
 		private async Task<int?> GetAssetTypeIdForRefListField(DynamicParameters dbArgs)
 		{
-			return (await Company.QueryAsync<int?>($@"declare @objectAssetId int
+			return (await CompanyContext.QueryAsync<int?>($@"declare @objectAssetId int
 					declare @referenceId int
 					declare @isSubject bit
 
@@ -3077,7 +3083,6 @@ namespace d360.model.DataAccessLayer
 
 						select @referenceId", dbArgs)).FirstOrDefault();
 		}
-
 
 		private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)
 		{

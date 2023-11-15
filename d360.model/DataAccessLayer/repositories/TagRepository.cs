@@ -18,32 +18,28 @@ using d360.model.helpers.filters;
 using Dapper;
 using MoreLinq;
 using Newtonsoft.Json;
+using repositories;
 
 namespace d360.model.DataAccessLayer
 {
 	public class TagRepository : BaseRepository, ITagRepository
 	{
-		private readonly ICompanyContext companyContext;
-		private readonly ICommunityContext communityContext;
-		public TagRepository(ICompanyContext company, ICommunityContext community)
-			: base(company)
+		public TagRepository(ICompanyContext company) : base(company)
 		{
-			companyContext = company;
-			communityContext = community;
 		}
 
 		public bool DeleteTags(List<TagApiDeleteModel> model)
 		{
 			IEnumerable<Guid> tagUids = model.Select(m => m.uid);
 
-			List<Tag> tagsToDelete = companyContext.Tags.Where(x => tagUids.Contains(x.uid)).ToList();
+			List<Tag> tagsToDelete = CompanyContext.Tags.Where(x => tagUids.Contains(x.uid)).ToList();
 
 			foreach (var item in model)
 			{
 				DeleteTag(item.uid, item.cascade, ref tagsToDelete);
 			}
 
-			var result = companyContext.SaveChanges() > 0;
+			var result = CompanyContext.SaveChanges() > 0;
 			if (result)
 			{
 				AddTagAudit(tagsToDelete, "Delete");
@@ -61,7 +57,7 @@ namespace d360.model.DataAccessLayer
 				throw new ArgumentException(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
 			}
 
-			var anyAssetTagsForDeletion = companyContext.AssetTags.Any(x => x.TagID == model.ID);
+			var anyAssetTagsForDeletion = CompanyContext.AssetTags.Any(x => x.TagID == model.ID);
 
 			if (anyAssetTagsForDeletion && !cascade)
 			{
@@ -70,14 +66,14 @@ namespace d360.model.DataAccessLayer
 
 			model.State = State.Deleted;
 
-			companyContext.Query<int>($@"
+			CompanyContext.Query<int>($@"
 										INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
 											select  distinct
 													'Update', 'Tag', 0, [queue].WriteIndexXml('Update', A.Object, A.ObjectID, coalesce(@r, 0))
 											from    AssetTag T
 													inner join Asset A on A.ID = T.AssetID and T.TagID = @t;
 
-										delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, t = model.ID }).FirstOrDefault();
+										delete AssetTag where TagID = @t;", new { r = CompanyContext.CurrentResourceID, t = model.ID }).FirstOrDefault();
 		}
 
 		public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -261,14 +257,14 @@ namespace d360.model.DataAccessLayer
 
 			if (includeTotal)
 			{
-				results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
+				results.total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
 			}
 			else
 			{
 				results.total = null;
 			}
 
-			results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
+			results.items = (await CompanyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
 
 			return results;
 		}
@@ -291,7 +287,7 @@ namespace d360.model.DataAccessLayer
 							var value = qitem.Value;
 							if (!string.IsNullOrEmpty(value))
 							{
-								var filterDataProvider = new FilterDataProvider(companyContext);
+								var filterDataProvider = new FilterDataProvider(CompanyContext);
 								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Tags);
 								var sqlParams = new Dictionary<string, object>();
 								whereClauses.Add(filterExpressionParser.Parse(value, out sqlParams, out _));
@@ -387,7 +383,7 @@ namespace d360.model.DataAccessLayer
 								cross apply (select count(*) from AssetTag where TagId = t.Id)Tags (count)
 							{whereClause}";
 
-			return await companyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
+			return await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 		}
 
 		public TagApiModel CreateTag(TagApiUpsertModel model)
@@ -398,10 +394,10 @@ namespace d360.model.DataAccessLayer
 			};
 
 			var tag = new Tag { Value = model.Value };
-			companyContext.Add(tag);
+			CompanyContext.Add(tag);
 			AddTagAudit(tag, "Add");
 
-			var user = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == companyContext.CurrentResourceID);
+			var user = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == CompanyContext.CurrentResourceID);
 
 			result.uid = tag.uid;
 			result.UpdatedOn = tag.UpdatedOn.GetValueOrDefault();
@@ -418,34 +414,34 @@ namespace d360.model.DataAccessLayer
 		{
 			var result = new TagApiModel();
 			existingTag.Value = model.Value;
-			companyContext.Update(existingTag);
+			CompanyContext.Update(existingTag);
 
 			result.Value = model.Value;
 			result.uid = existingTag.uid;
 			result.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
 			result.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
-			result.UseCount = companyContext.Query<int>
+			result.UseCount = CompanyContext.Query<int>
 				("select count(*) from AssetTag where TagId =  @ID",
 				new DynamicParameters(new { existingTag.ID })).FirstOrDefault();
 			// Send To Queue.Task Table
 			AddTagAudit(existingTag, "Update");
 
-			companyContext.Query<int>($@"
+			CompanyContext.Query<int>($@"
 										INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
 											select  distinct
 													'Update', 'Tag', 0, [queue].WriteIndexXml('Update', A.Object, A.ObjectID, coalesce(@r, 0))
 											from    AssetTag T
 													inner join Asset A on A.ID = T.AssetID and T.TagID = @t", 
-													new { r = companyContext.CurrentResourceID, t = existingTag.ID }).FirstOrDefault();
+													new { r = CompanyContext.CurrentResourceID, t = existingTag.ID }).FirstOrDefault();
 
-			var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
+			var createUser = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
 			
 			if (createUser != null)
 			{
 				result.CreatedByUid = createUser.Uid;
 			}
 			
-			var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
+			var updateUser = CompanyContext.GlobalReportingResources.First(x => x.ResourceID == CompanyContext.CurrentResourceID);
 			
 			if (updateUser != null)
 			{
@@ -457,31 +453,31 @@ namespace d360.model.DataAccessLayer
 
 		public Tag GetTagByUid(Guid uid)
 		{
-			return companyContext.Tags.FirstOrDefault(x => x.uid == uid);
+			return CompanyContext.Tags.FirstOrDefault(x => x.uid == uid);
 		}
 
 		public Tag GetTagByName(string name)
 		{
-			return companyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
+			return CompanyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
 		}
 
 		public Tag GetTagById(int tagId)
 		{
-			return companyContext.Tags.FirstOrDefault(x => x.ID == tagId);
+			return CompanyContext.Tags.FirstOrDefault(x => x.ID == tagId);
 		}
 		public bool DoesTagExists(Guid tagUid)
 		{
-			return companyContext.Tags.Any(x => x.uid == tagUid);
+			return CompanyContext.Tags.Any(x => x.uid == tagUid);
 		}
 
 		public bool DoesTagExists(string value)
 		{
-			return companyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
+			return CompanyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
 		}
 
 		public bool DoesTagExists(Guid existingTagUid, TagApiUpsertModel model)
 		{
-			return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != existingTagUid && x.State == State.Active);
+			return CompanyContext.Tags.Any(x => x.Value == model.Value && x.uid != existingTagUid && x.State == State.Active);
 		}
 
 		public List<AssetTagList> GetAssetsPathForTag(Guid tagUid)
@@ -500,7 +496,7 @@ namespace d360.model.DataAccessLayer
 					left join AssetDisplayValue D on D.AssetID = A.ID
 				where t.uid = @uid";
 
-			var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }, ApiTimeout).ToList();
+			var result = CompanyContext.Query<dynamic>(sql, new { uid = tagUid }, ApiTimeout).ToList();
 
 			var ret = new List<AssetTagList>();
 			foreach (var item in result)
@@ -529,7 +525,7 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "TaskType":
 						atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Task} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
-						atl.Url = companyContext.GetDiagramUrlForDiagramAsset(item.uid);
+						atl.Url = CompanyContext.GetDiagramUrlForDiagramAsset(item.uid);
 						break;
 				}
 
@@ -616,7 +612,7 @@ namespace d360.model.DataAccessLayer
 						where   T.uid = @parentUid or T.uid in (select uid from @children);";
 
 
-			var result = companyContext.Query<TagApiModel>(sql, new { parentUid, resourceId = companyContext.CurrentResourceID });
+			var result = CompanyContext.Query<TagApiModel>(sql, new { parentUid, resourceId = CompanyContext.CurrentResourceID });
 			
 			return result;
 		}
@@ -678,7 +674,7 @@ namespace d360.model.DataAccessLayer
 						where State = 1 and T.Value like @value and T.uid != @exceptUid";
 			}
 
-			return companyContext.Query<dynamic>(sql, new { value, exceptUid }, ApiTimeout).ToList();
+			return CompanyContext.Query<dynamic>(sql, new { value, exceptUid }, ApiTimeout).ToList();
 		}
 
 
@@ -690,35 +686,35 @@ namespace d360.model.DataAccessLayer
 				sb.AppendLine(GetTagAuditInsertSql(tag, action));
 			}
 
-			companyContext.Query<int>(sb.ToString()).FirstOrDefault();
+			CompanyContext.Query<int>(sb.ToString()).FirstOrDefault();
 		}
 
 		private void AddTagAudit(Tag tag, string action)
 		{
 			string sql = GetTagAuditInsertSql(tag, action);
-			companyContext.Query<int>(sql).FirstOrDefault();
+			CompanyContext.Query<int>(sql).FirstOrDefault();
 		}
 
 		private string GetTagAuditInsertSql(Tag tag, string action)
 		{
 			return $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-						 VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
+						 VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({CompanyContext.CurrentResourceID}, 0)))";
 		}
 
 		private string GetAssetTagAuditInsertSql(long assetId)
 		{
-			var asset = companyContext.GetById<Asset>(assetId);
+			var asset = CompanyContext.GetById<Asset>(assetId);
 			return $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-						 VALUES ('Update', 'Tag', 0, [queue].WriteIndexXml('Update', '{asset.Object}', {asset.ObjectID}, coalesce({companyContext.CurrentResourceID}, 0)))";
+						 VALUES ('Update', 'Tag', 0, [queue].WriteIndexXml('Update', '{asset.Object}', {asset.ObjectID}, coalesce({CompanyContext.CurrentResourceID}, 0)))";
 		}
 
 		public bool DoesAssetTagExists(int tagId, long assetId)
 		{
-			return companyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
+			return CompanyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
 		}
 		public int? GetAssetTagDetails(int tagId, long assetId)
 		{
-			return companyContext.AssetTags.FirstOrDefault(x => x.TagID == tagId && x.AssetID == assetId).CreatedBy;
+			return CompanyContext.AssetTags.FirstOrDefault(x => x.TagID == tagId && x.AssetID == assetId).CreatedBy;
 		}
 
 		public AssetTag CreateAssetTag(int tagId, long assetId)
@@ -734,26 +730,26 @@ namespace d360.model.DataAccessLayer
 				AssetID = assetId
 			};
 
-			companyContext.Add(assetTag);
+			CompanyContext.Add(assetTag);
 
 			// Send To Queue.Task Table
-			companyContext.Query<int>(GetAssetTagAuditInsertSql(assetId), null).FirstOrDefault();
+			CompanyContext.Query<int>(GetAssetTagAuditInsertSql(assetId), null).FirstOrDefault();
 
 			return assetTag;
 		}
 
 		public AssetTag GetAssetTag(int tagId, long assetId)
 		{
-			return companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+			return CompanyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
 		}
 
 		public IEnumerable<Tag> GetTagsForAsset(long assetId)
 		{
-			var assetTags = companyContext.AssetTags.Where(x => x.AssetID == assetId).ToList();
+			var assetTags = CompanyContext.AssetTags.Where(x => x.AssetID == assetId).ToList();
 			List<Tag> tags = new List<Tag>();
 			assetTags.ForEach(x =>
 			{
-				var tag = companyContext.Tags.FirstOrDefault(y => y.ID == x.TagID);
+				var tag = CompanyContext.Tags.FirstOrDefault(y => y.ID == x.TagID);
 				if (tag != null)
 				{
 					tags.Add(tag);
@@ -764,12 +760,12 @@ namespace d360.model.DataAccessLayer
 
 		public bool DeleteAssetTag(int tagId, long assetId)
 		{
-			bool deleted = companyContext.Delete<AssetTag>(x => x.TagID == tagId && x.AssetID == assetId);
+			bool deleted = CompanyContext.Delete<AssetTag>(x => x.TagID == tagId && x.AssetID == assetId);
 
 			if (deleted)
 			{
 				// Send To Queue.Task Table
-				companyContext.Query<int>(GetAssetTagAuditInsertSql(assetId)).FirstOrDefault();
+				CompanyContext.Query<int>(GetAssetTagAuditInsertSql(assetId)).FirstOrDefault();
 			}
 
 			return deleted;
@@ -777,21 +773,21 @@ namespace d360.model.DataAccessLayer
 
 		public bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId)
 		{
-			bool hasPersmission = companyContext.CurrentResourceIsAdmin;
+			bool hasPersmission = CompanyContext.CurrentResourceIsAdmin;
 			
 			if (!hasPersmission)
 			{
-				AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+				AssetTag tag = CompanyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
 				
 				if (tag != null)
 				{
-					hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
+					hasPersmission = tag.CreatedBy == CompanyContext.CurrentResourceID;
 				}
 			}
 
 			if (!hasPersmission)
 			{
-				hasPersmission = companyContext.HasAssetPermission(assetId, Permission.EditAsset);
+				hasPersmission = CompanyContext.HasAssetPermission(assetId, Permission.EditAsset);
 			}
 			return hasPersmission;
 		}
@@ -805,7 +801,7 @@ namespace d360.model.DataAccessLayer
 				return false;
 			}
 			
-			if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == tag.CreatedBy)
+			if (CompanyContext.CurrentResourceIsAdmin || CompanyContext.CurrentResourceID == tag.CreatedBy)
 			{
 				return true;
 			}
@@ -840,7 +836,7 @@ namespace d360.model.DataAccessLayer
 							var value = param.Value;
 							if (!string.IsNullOrEmpty(value))
 							{
-								var filterDataProvider = new FilterDataProvider(companyContext);
+								var filterDataProvider = new FilterDataProvider(CompanyContext);
 								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.TagDetails);
 								var sqlParams = new Dictionary<string, object>();
 								whereClauses.Add(filterExpressionParser.Parse(value, out sqlParams, out _));
@@ -1071,7 +1067,7 @@ namespace d360.model.DataAccessLayer
 							{(addtagasstingfilter ? $" {tagsCrossApply} " : "")}
 						{whereClause}";
 
-				result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
+				result.total = CompanyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
 
 			}
 
@@ -1108,7 +1104,7 @@ namespace d360.model.DataAccessLayer
 						{pagingSql}
 						for json path";
 
-			var data = string.Join("", companyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
+			var data = string.Join("", CompanyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
 
 			result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
 
@@ -1150,7 +1146,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			var result = companyContext.Query<dynamic>(sql, new { tagUid, assetUid }, ApiTimeout);
+			var result = CompanyContext.Query<dynamic>(sql, new { tagUid, assetUid }, ApiTimeout);
 			
 			return result;
 		}
@@ -1189,9 +1185,9 @@ namespace d360.model.DataAccessLayer
 		public async Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId)
 		{
 			tags = tags.DistinctBy(x => new { x.AssetUid, x.Tag }).ToList();
-			await companyContext.Connection.OpenIfClosed();
+			await CompanyContext.Connection.OpenIfClosed();
 
-			await companyContext.Connection.ExecuteAsync(@"
+			await CompanyContext.Connection.ExecuteAsync(@"
 					DROP TABLE IF EXISTS #bulkTags;
 					CREATE TABLE #bulkTags
 					(
@@ -1218,7 +1214,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			using (SqlBulkCopy bulkCopy = new SqlBulkCopy(companyContext.Connection)
+			using (SqlBulkCopy bulkCopy = new SqlBulkCopy(CompanyContext.Connection)
 			{
 				BatchSize = 5000,
 				DestinationTableName = "#bulkTags",
@@ -1233,7 +1229,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			await companyContext.Connection.ExecuteAsync(@"
+			await CompanyContext.Connection.ExecuteAsync(@"
 					--add new tags
 					INSERT INTO Tag (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
 					SELECT DISTINCT B.Tag as Value, 

@@ -17,6 +17,7 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using repositories;
 using Resources;
 using System;
 using System.Collections.Generic;

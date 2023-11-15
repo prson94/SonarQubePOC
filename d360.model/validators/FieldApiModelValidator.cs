@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using d360.core;
 using d360.core.entities;
 using d360.core.resources;
+using d360.core.validators;
 
 namespace d360.model.validators
 {

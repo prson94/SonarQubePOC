@@ -1,4 +1,6 @@
-﻿using d360.core.enums;
+﻿using d360.core.entities;
+using d360.core.enums;
+using repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
