@@ -6,6 +6,7 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
+using d360.core.search;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -14,6 +15,7 @@ using Dapper;
 using LaunchDarkly.Sdk.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using repositories;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -3578,11 +3580,6 @@ where	N.DisplayPath like @phrase {prefilterSql}
 
 		public List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true, bool executionInDb = false)
 		{
-			if (assetTypes.Count > 1)
-			{
-				throw new ArgumentException(AssetTypeErrors.MaxNumberAllowedAssetType);
-			}
-
 			if (!executionInDb)
 			{
 				CompanyContext.Add(execution);

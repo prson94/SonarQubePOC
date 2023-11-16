@@ -15,6 +15,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ namespace igx.jobs.bulkloadprocessor
 					var ldClient = new LaunchDarkly.Sdk.Server.LdClient(sdkKey);
 					var company = new CompanyContext(community, cache, queue, mail, sec, true);
 					var assetRepository = new AssetRepository(company, queue, storage, community, ldClient);
-					var tagRepository = new TagRepository(company, community);
+					var tagRepository = new TagRepository(company);
 					var relationshipRepository = new RelationshipRepository(community, company, queue, storage, ldClient);
 
 					#endregion

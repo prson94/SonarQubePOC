@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using d360.core;
 using d360.core.entities;
+using d360.core.Models;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 
@@ -12,7 +13,7 @@ using Dapper;
 
 namespace d360.model.DataAccessLayer.repositories
 {
-    internal abstract class DapperRepositoryBase<TConnectionProvider>
+    public abstract class DapperRepositoryBase<TConnectionProvider>
         where TConnectionProvider : IDbConnectionProvider
     {
         protected IDapperQueryComposer<TConnectionProvider> QueryComposer { get; }

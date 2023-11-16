@@ -1,4 +1,20 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.Models;
+using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+using d360.web.Services;
+using d360.web.Utilities;
+using Dapper;
+using Microsoft.Web.Http;
+using repositories;
+using Resources;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,28 +23,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.model.helpers.filters;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using d360.web.Services;
-using d360.web.Utilities;
-
-using Dapper;
-using Microsoft.Web.Http;
-
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -43,15 +37,15 @@ namespace d360.web.Controllers.V2
 	public class AuditController : BaseV2ApiController
 	{
 		private IRequestValidator RequestValidator { get; }
-		private IAuditDapperRepository AuditDapperRepository { get; }
+		private IAuditRepository AuditRepository { get; }
 
 		public AuditController(CoreComponentSet set,
 			IRequestValidator requestValidator,
-			IAuditDapperRepository auditDapperRepository
+			IAuditRepository auditRepository
 		) : base(set)
 		{
 			RequestValidator = requestValidator;
-			AuditDapperRepository = auditDapperRepository;
+			AuditRepository = auditRepository;
 		}
 
 		/// A dictionary of Action Object with the DB value as key, and the display value as value
@@ -138,13 +132,13 @@ namespace d360.web.Controllers.V2
 
 				if (isStreamResponse)
 				{
-					var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
+					var result = await AuditRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
 					
 					return Excel(GetExcelDocumentFromQuery(result), $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
 				}
 				else
 				{
-					var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
+					var result = await AuditRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
 					
 					return Ok(result);
 				}

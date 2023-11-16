@@ -6,7 +6,7 @@ using Dapper;
 namespace d360.model.DataAccessLayer
 {
     // ReSharper disable once UnusedTypeParameter
-    internal interface IDapperQueryComposer<TDbConnectionProvider>
+    public interface IDapperQueryComposer<TDbConnectionProvider>
         where TDbConnectionProvider : IDbConnectionProvider
     {
         Task<SqlMapper.GridReader> StoredProcedureMultipleResultsAsync(

@@ -29,5 +29,11 @@ namespace d360.core
         public const string TITLE_PREFIX = "Data360";
         public const string COMPANY = "Precisely.";
         public const string PRODUCT = "Data360 Govern";
-    }
+
+		public const string DYNAMIC_FIELD = "fields";
+		public const string DYNAMIC_FIELD_PREFIX = DYNAMIC_FIELD + ".";
+
+		public const string D3S_FIELD = "d3s";
+		public const string D3S_FIELD_PREFIX = D3S_FIELD + ".";
+	}
 }

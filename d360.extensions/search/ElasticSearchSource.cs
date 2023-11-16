@@ -1,163 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
-
+using d360.core.search;
+using d360.extensions.search.models;
 using Dapper;
-
 using Elasticsearch.Net;
-
 using MoreLinq;
-
 using Nest;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace d360.extensions.search
 {
-    public class JsonResponseModel
-    {
-        public JObject Data { get; set; }
-        public HttpStatusCode Status { get; set; }
-        public string StatusMessage { get; set; }
-
-        public bool IsSuccessStatusCode => ((int)Status >= 200) && ((int)Status <= 299);
-    }
-
-    public class SearchResultsModel
-    {
-        public int took { get; set; }
-        
-        public bool timed_out { get; set; }
-        
-        public SearchResultsShardModel _shards { get; set; }
-        
-        public SearchResultsHitsModel hits { get; set; }
-
-        public SearchAggregationsModel aggregations { get; set; }
-    }
-    public class SearchResultsShardModel
-    {
-        public int total { get; set; }
-        
-        public int successful { get; set; }
-        
-        public int failed { get; set; }
-    }
-    public class SearchResultsHitsModel
-    {
-        public int total { get; set; }
-        
-        public float? max_score { get; set; }
-        
-        public List<SearchResultsHitModel> hits { get; set; }
-    }
-
-    public class SearchAggregationsModel
-    {
-        public SearchAggregationTypeModel all_types { get; set; }
-    }
-
-    public class SearchAggregationTypeModel
-    {
-        public List<SearchAggregationTypeBucketModel> buckets { get; set; }
-    }
-
-    public class SearchAggregationTypeBucketModel
-    {
-        public int doc_count { get; set; }
-        
-        public string key { get; set; }
-        
-        public SearchAggregationCategoryTypeModel category { get; set; }
-    }
-
-    public class SearchAggregationCategoryTypeModel
-    {
-        public List<SearchAggregationCategoryBucketModel> buckets { get; set; }
-    }
-
-    public class SearchAggregationCategoryBucketModel
-    {
-        public int doc_count { get; set; }
-        
-        public string key { get; set; }
-    }
-
-    public class SearchTagInnerHitsModel
-    {
-        public IndexTag _source { get; set; }
-        
-        public JObject highlight { get; set; }
-        
-        public string GetHighLightValue()
-        {
-            if (highlight != null && highlight.TryGetValue(ElasticSearchSource.D3S_FIELD_PREFIX + "Tags.Value", out JToken jToken))
-            {
-                if (jToken.Type == JTokenType.Array)
-                {
-                    return ((JArray)jToken)[0].Value<string>();
-                }
-                return jToken.Value<string>();
-            }
-            return null;
-        }
-    }
-
-    public class SearchResultsHitModel
-    {
-        public string _index { get; set; }
-        
-        public string _type { get; set; }
-        
-        public string d3sCategory
-        {
-            get
-            {
-                if (_source != null)
-                {
-                    JToken jToken = _source.SelectToken(ElasticSearchSource.D3S_FIELD_PREFIX + "Category");
-                    return jToken?.Value<string>();
-                }
-                return null;
-            }
-        }
-
-        public string _id { get; set; }
-        
-        public float _score { get; set; }
-        
-        public JObject _source { get; set; }
-        
-        public JObject highlight { get; set; }
-        
-        public JObject inner_hits { get; set; }
-        
-        public JObject _explanation { get; set; }
-    }
-
-    public class ElasticSearchSource : ISearchSource
+	public class ElasticSearchSource : ISearchSource
     {
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
         private const int BULK_BATCH_SIZE = 5000;
         private const string INDEX_PREFIX = "d3s";
-
-        private const string DYNAMIC_FIELD = "fields";
-        public const string DYNAMIC_FIELD_PREFIX = DYNAMIC_FIELD + ".";
-
-        private const string D3S_FIELD = "d3s";
-        public static readonly string D3S_FIELD_PREFIX = D3S_FIELD + ".";
 
 		private const string NGRAM_FIELD = "ngram";
 		public static readonly string NGRAM_FIELD_PREFIX = NGRAM_FIELD + ".";
@@ -239,7 +107,7 @@ namespace d360.extensions.search
             }
 
             //Start d3s section
-            sb.Append("{\"" + D3S_FIELD + "\": {");
+            sb.Append("{\"" + constants.D3S_FIELD + "\": {");
             sb.Append(string.Join(",", d3sFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
 
             if (item.AssetPath?.Length > 0)
@@ -297,7 +165,7 @@ namespace d360.extensions.search
             }
 
             sb.Append("  },"); //End d3s section
-            sb.Append("  \"" + DYNAMIC_FIELD + "\": {");
+            sb.Append("  \"" + constants.DYNAMIC_FIELD + "\": {");
             sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value, i.Key.ToLower() != "name") + "\"").ToArray()));
             sb.Append("  }");
             sb.Append("}");
@@ -419,7 +287,7 @@ namespace d360.extensions.search
                             .Properties(ps => ps
                                 .Object<dynamic>(o => o
                                     .Dynamic(true)
-                                    .Name(DYNAMIC_FIELD)
+                                    .Name(constants.DYNAMIC_FIELD)
                                     .Properties(p => p
                                         .Text(t => t
                                             .Name("Name")
@@ -470,7 +338,7 @@ namespace d360.extensions.search
 									)
 								)
 								.Object<dynamic>(o => o
-                                    .Name(D3S_FIELD)
+                                    .Name(constants.D3S_FIELD)
                                     .Properties(p => p
                                         .Keyword(s => s.Name("Category"))
                                         .Nested<dynamic>(n => n
@@ -887,7 +755,7 @@ namespace d360.extensions.search
             {
                 new TermQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category"),
                     Value = category
                 }
             };
@@ -895,7 +763,7 @@ namespace d360.extensions.search
             {
                 termQueries.Add(new TermQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetType"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetType"),
                     Value = assetType
                 });
             }
@@ -924,7 +792,7 @@ namespace d360.extensions.search
             {
                 Query = new TermQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetTypeUid"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetTypeUid"),
                     Value = assetTypeGuid
                 }
             };
@@ -954,7 +822,7 @@ namespace d360.extensions.search
             {
                 Query = new TermsQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Uid"),
                     Terms = assetUids.Select(u => u.ToString())
                 }
             };
@@ -1097,8 +965,8 @@ namespace d360.extensions.search
             List<QueryContainer> mainQueries = new List<QueryContainer>();
             List<QueryContainer> tagQueries = new List<QueryContainer>();
 
-            Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
-            string tagPath = D3S_FIELD_PREFIX + "Tags";
+            Nest.Field fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Value");
+            string tagPath = constants.D3S_FIELD_PREFIX + "Tags";
 
             char strategy = STRATEGY_NONE;
 
@@ -1120,7 +988,7 @@ namespace d360.extensions.search
             //Search in the DYNAMIC_FIELD_PREFIX.* namespace
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
-                new Nest.Field(DYNAMIC_FIELD_PREFIX + "*"),
+                new Nest.Field(constants.DYNAMIC_FIELD_PREFIX + "*"),
             };
 
             //Search phrase
@@ -1172,12 +1040,12 @@ namespace d360.extensions.search
                 case STRATEGY_PartialUID:
                     mainQueries.Add(new PrefixQuery
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
                     tagQueries.Add(new PrefixQuery
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
+                        Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
                     break;
@@ -1187,12 +1055,12 @@ namespace d360.extensions.search
                 case STRATEGY_FullUID:
                     mainQueries.Add(new TermQuery
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
                     tagQueries.Add(new TermQuery
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
+                        Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Uid"),
                         Value = queryRequest.Term.ToLower()
                     });
                     break;
@@ -1354,8 +1222,8 @@ namespace d360.extensions.search
                 string[] values = fieldFilter.Values.Select(v => EscapeSpecialCharacters(v).ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToArray();
 				if (fieldFilter.Field == "Tags")
 				{
-					string path = D3S_FIELD_PREFIX + "Tags";
-					Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+					string path = constants.D3S_FIELD_PREFIX + "Tags";
+					Nest.Field fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Value");
 
 					if (fieldFilter.Connector == SearchConnector.And)
 					{
@@ -1401,8 +1269,8 @@ namespace d360.extensions.search
 				}
 				else if (fieldFilter.Field == "TagUids")
 				{
-					string path = D3S_FIELD_PREFIX + "Tags";
-					Nest.Field fldTagUid = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+					string path = constants.D3S_FIELD_PREFIX + "Tags";
+					Nest.Field fldTagUid = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Uid");
 					if (fieldFilter.Connector == SearchConnector.And)
 					{
 						qry = new BoolQuery
@@ -1445,7 +1313,7 @@ namespace d360.extensions.search
 				}
 				else if (fieldFilter.Field == "Path")
 				{
-					Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
+					Nest.Field fldPath = new Nest.Field(constants.D3S_FIELD_PREFIX + "Path");
 					var segmentQueries = values.Select(v =>
 					{
 						QueryContainer q = new MatchQuery
@@ -1480,8 +1348,8 @@ namespace d360.extensions.search
 
 					if (fieldFilter.Field == "Semantictype")
 					{
-						flds.Add(D3S_FIELD_PREFIX + "SemanticName");
-						flds.Add(D3S_FIELD_PREFIX + "SemanticQualifier");
+						flds.Add(constants.D3S_FIELD_PREFIX + "SemanticName");
+						flds.Add(constants.D3S_FIELD_PREFIX + "SemanticQualifier");
 						if (!term.StartsWith("*"))
 						{
 							term = $"*{term}";
@@ -1493,12 +1361,12 @@ namespace d360.extensions.search
 
 						if (IsPhraseGuid(values.First()) > 0)
 						{
-							flds.Add(D3S_FIELD_PREFIX + "SemanticUid");
+							flds.Add(constants.D3S_FIELD_PREFIX + "SemanticUid");
 						}
 					}
 					else
 					{
-						flds.Add(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
+						flds.Add(constants.DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
 						//For Name, also search the underscore field
 						if (fieldFilter.Field == "Name")
 						{
@@ -1609,10 +1477,10 @@ namespace d360.extensions.search
                 {
                     case "Category":
                     case "AssetType":
-                        fieldname = D3S_FIELD_PREFIX + aggFilter.Field;
+                        fieldname = constants.D3S_FIELD_PREFIX + aggFilter.Field;
                         break;
                     default:
-                        fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
+                        fieldname = constants.DYNAMIC_FIELD_PREFIX + aggFilter.Field;
                         break;
                 }
                 IEnumerable<string> terms;
@@ -1641,9 +1509,9 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            Nest.Field fldName = new Nest.Field(DYNAMIC_FIELD_PREFIX + "Name");
-            Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
-            Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
+            Nest.Field fldName = new Nest.Field(constants.DYNAMIC_FIELD_PREFIX + "Name");
+            Nest.Field fldCategory = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category");
+            Nest.Field fldAssetType = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetType");
 
             //If no main search phrase, return an empty result set
             if (string.IsNullOrWhiteSpace(queryRequest.Term))
@@ -1712,20 +1580,20 @@ namespace d360.extensions.search
             {
                 Name = GetHighlightedNameValueIfExists(h),
                 DisplayName = GetDisplayName(h),
-                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description") ?? GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "description"),
+                Description = GetHighlightedPropertyValueIfExists(h, constants.DYNAMIC_FIELD_PREFIX + "Description") ?? GetHighlightedPropertyValueIfExists(h, constants.DYNAMIC_FIELD_PREFIX + "description"),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
                 ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
                 Score = h._score,
-                Type = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "AssetType"),
-                Url = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "Url"),
-                Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
-                AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
+                Type = GetHighlightedPropertyValueIfExists(h, constants.D3S_FIELD_PREFIX + "AssetType"),
+                Url = GetHighlightedPropertyValueIfExists(h, constants.D3S_FIELD_PREFIX + "Url"),
+                Uid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "AssetTypeUid"),
                 Tags = GetTags(h),
                 Explanation = queryRequest.Explain ? h._explanation.ToString() : "",
-				SemanticName = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "SemanticName"),
-				SemanticQualifier = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "SemanticQualifier"),
-				SemanticUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "SemanticUid")
+				SemanticName = GetHighlightedPropertyValueIfExists(h, constants.D3S_FIELD_PREFIX + "SemanticName"),
+				SemanticQualifier = GetHighlightedPropertyValueIfExists(h, constants.D3S_FIELD_PREFIX + "SemanticQualifier"),
+				SemanticUid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "SemanticUid")
 			}).ToList();
 
 
@@ -1775,7 +1643,7 @@ namespace d360.extensions.search
                 Size = 0,
                 Aggregations = new TermsAggregation("all_types")
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category"),
                     Size = 30
                 }
             };
@@ -1784,7 +1652,7 @@ namespace d360.extensions.search
             {
                 sReq.Aggregations["all_types"].Aggregations = new TermsAggregation("category")
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetType"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetType"),
                     Size = 2000
                 };
             }
@@ -1834,11 +1702,11 @@ namespace d360.extensions.search
                 Size = 0,
                 Aggregations = new TermsAggregation("all_types")
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category"),
                     Size = 30,
                     Aggregations = new TermsAggregation("category")
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetTypeUid"),
+                        Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetTypeUid"),
                         Size = 2000
                     }
                 }
@@ -1857,19 +1725,19 @@ namespace d360.extensions.search
 
         private List<QueryContainer> FiltersFromLimit(QueryLimitation queryLimit)
         {
-			var permissionField = new Nest.Field(D3S_FIELD_PREFIX + "DefaultPermissions");
+			var permissionField = new Nest.Field(constants.D3S_FIELD_PREFIX + "DefaultPermissions");
 
 			List<QueryContainer> mustNotQueries = new List<QueryContainer>
 			{
 				//NoRead limitations
 				new TermQuery
 				{
-					Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
+					Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "NoReadResourceID"),
 					Value = queryLimit.ResourceID
 				},
 				new TermsQuery
 				{
-					Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
+					Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "NoReadGroupID"),
 					Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
 				}
             };
@@ -1912,12 +1780,12 @@ namespace d360.extensions.search
 									{
 										new TermQuery
 										{
-											Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadResourceID"),
+											Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "CanReadResourceID"),
 											Value = queryLimit.ResourceID
 										},
 										new TermsQuery
 										{
-											Field = new Nest.Field(D3S_FIELD_PREFIX + "CanReadGroupID"),
+											Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "CanReadGroupID"),
 											Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
 										},
 									}
@@ -1936,12 +1804,12 @@ namespace d360.extensions.search
                 {
                     Must = new QueryContainer[] {
                             new TermQuery {
-                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                                Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category"),
                                 Value = AssetTypeClass.User.ToString()
                             },
                             new TermQuery
                             {
-                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
+                                Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Data3SixtyUser"),
                                 Value = true
                             }
                         }
@@ -1956,10 +1824,10 @@ namespace d360.extensions.search
                 {
                     case "Category":
                     case "AssetType":
-                        fieldname = D3S_FIELD_PREFIX + limitAggFilter.Field;
+                        fieldname = constants.D3S_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                     default:
-                        fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
+                        fieldname = constants.DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                 }
 
@@ -2038,9 +1906,9 @@ namespace d360.extensions.search
                 phrase = phrase.Substring(0, QueryRequest.SEARCH_TERM_MAX_LENGTH);
             }
 
-            Nest.Field fldName = new Nest.Field(DYNAMIC_FIELD_PREFIX + "Name");
-            Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
-            Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+            Nest.Field fldName = new Nest.Field(constants.DYNAMIC_FIELD_PREFIX + "Name");
+            Nest.Field fldCategory = new Nest.Field(constants.D3S_FIELD_PREFIX + "Category");
+            Nest.Field fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Value");
             List<QueryContainer> mustClauses = new List<QueryContainer>();
             List<QueryContainer> filterMustQueries = new List<QueryContainer>();
             string tagSearch;
@@ -2050,20 +1918,20 @@ namespace d360.extensions.search
             {
                 mustClauses.Add(new PrefixQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Uid"),
                     Value = phrase.ToLowerInvariant()
                 });
-                fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Uid");
                 tagSearch = phrase.ToLowerInvariant();
             }
             else if (isGuid == 2)
             {
                 mustClauses.Add(new TermQuery
                 {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Field = new Nest.Field(constants.D3S_FIELD_PREFIX + "Uid"),
                     Value = phrase.ToLowerInvariant()
                 });
-                fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Uid");
                 tagSearch = phrase.ToLowerInvariant();
             }
             else
@@ -2162,7 +2030,7 @@ namespace d360.extensions.search
 									Query = phrase
 								},
 								new NestedQuery {
-                                    Path = D3S_FIELD_PREFIX + "Tags",
+                                    Path = constants.D3S_FIELD_PREFIX + "Tags",
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
                                             DefaultField = fldTag,
@@ -2192,13 +2060,13 @@ namespace d360.extensions.search
 
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
-                Name = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name"),
+                Name = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Name"),
                 DisplayName = GetDisplayName(h),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
-                Type = GetPropertyValue<string>(h._source, D3S_FIELD_PREFIX + "AssetType"),
-                Url = GetPropertyValue<string>(h._source, D3S_FIELD_PREFIX + "Url"),
-                Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
-                AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
+                Type = GetPropertyValue<string>(h._source, constants.D3S_FIELD_PREFIX + "AssetType"),
+                Url = GetPropertyValue<string>(h._source, constants.D3S_FIELD_PREFIX + "Url"),
+                Uid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "AssetTypeUid"),
                 Tags = GetTags(h, true)
             });
         }
@@ -2224,8 +2092,8 @@ namespace d360.extensions.search
             IndexResults result = new IndexResults();
             CreateIndexIfNotExists(companyID);
 
-            Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
-            Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+            Nest.Field fldAssetType = new Nest.Field(constants.D3S_FIELD_PREFIX + "AssetType");
+            Nest.Field fldTag = new Nest.Field(constants.D3S_FIELD_PREFIX + "Tags.Value");
             List<QueryContainer> filterMustQueries = new List<QueryContainer>();
 
             phrase = EscapeSpecialCharacters(phrase);
@@ -2253,7 +2121,7 @@ namespace d360.extensions.search
                                     AnalyzeWildcard = true
                                 },
                                 new NestedQuery {
-                                    Path = D3S_FIELD_PREFIX + "Tags",
+                                    Path = constants.D3S_FIELD_PREFIX + "Tags",
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
                                             DefaultField = fldTag,
@@ -2288,17 +2156,17 @@ namespace d360.extensions.search
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
-                Name = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name"),
+                Name = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Name"),
                 DisplayName = GetDisplayName(h),
-                Description = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Description") ?? GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "description"),
+                Description = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Description") ?? GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "description"),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
                 ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
                 Score = h._score,
-                Type = GetPropertyValue<string>(h._source, D3S_FIELD_PREFIX + "AssetType"),
-                Url = GetPropertyValue<string>(h._source, D3S_FIELD_PREFIX + "Url"),
-                Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
-                AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
+                Type = GetPropertyValue<string>(h._source, constants.D3S_FIELD_PREFIX + "AssetType"),
+                Url = GetPropertyValue<string>(h._source, constants.D3S_FIELD_PREFIX + "Url"),
+                Uid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, constants.D3S_FIELD_PREFIX + "AssetTypeUid"),
                 Tags = GetTags(h)
             }).ToList();
 
@@ -2340,9 +2208,9 @@ namespace d360.extensions.search
 
         private string GetDisplayName(SearchResultsHitModel h)
         {
-            var synonymFor = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "SynonymFor");
+            var synonymFor = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "SynonymFor");
 
-            var name = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name");
+            var name = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Name");
 
             if (string.IsNullOrEmpty(synonymFor))
             {
@@ -2351,24 +2219,24 @@ namespace d360.extensions.search
                     return name;
                 }
 
-                var taxonomy = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Taxonomy");
+                var taxonomy = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Taxonomy");
 
                 return (string.IsNullOrEmpty(taxonomy) ? $"{name}" : $"{name} ({taxonomy})");
             }
 
-            var nymType = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "NymType");
+            var nymType = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "NymType");
 
             return $"{name} ({nymType ?? ""} For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
         }
 
         private string GetHighlightedNameValueIfExists(SearchResultsHitModel h)
         {
-            var synonymFor = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "SynonymFor");
+            var synonymFor = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "SynonymFor");
             var taxonomy = "";
 
             if ((h.d3sCategory ?? "").ToUpperInvariant() == "ARTIFACT")
             {
-                taxonomy = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Taxonomy");
+                taxonomy = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Taxonomy");
 
                 if (!string.IsNullOrEmpty(taxonomy))
                 {
@@ -2378,19 +2246,19 @@ namespace d360.extensions.search
 
             if (!string.IsNullOrEmpty(synonymFor))
             {
-                var nymType = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "NymType");
+                var nymType = GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "NymType");
 
                 synonymFor = $" ({nymType ?? ""} For: {GetTypeAheadSynonymDisplayType(h)}: {synonymFor})";
             }
 
-            var highlightVal = GetPropertyValue<string>(h.highlight, DYNAMIC_FIELD_PREFIX + "Name");
+            var highlightVal = GetPropertyValue<string>(h.highlight, constants.DYNAMIC_FIELD_PREFIX + "Name");
 
             if (!string.IsNullOrEmpty(highlightVal))
             {
                 return highlightVal + (synonymFor ?? "") + (taxonomy ?? "");
             }
 
-            return GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name") + (synonymFor ?? "") + (taxonomy ?? "");
+            return GetPropertyValue<string>(h._source, constants.DYNAMIC_FIELD_PREFIX + "Name") + (synonymFor ?? "") + (taxonomy ?? "");
         }
 
         private string GetHighlightedPropertyValueIfExists(SearchResultsHitModel h, string propName)
@@ -2425,7 +2293,7 @@ namespace d360.extensions.search
                 return tags;
             }
 
-            if (h.inner_hits.TryGetValue(D3S_FIELD_PREFIX + "Tags", out JToken innerHits))
+            if (h.inner_hits.TryGetValue(constants.D3S_FIELD_PREFIX + "Tags", out JToken innerHits))
             {
 
                 if (highlightHits && h.inner_hits != null)
@@ -2449,7 +2317,7 @@ namespace d360.extensions.search
                 }
                 else
                 {
-                    tags = h._source.SelectTokens(D3S_FIELD_PREFIX + "Tags[*]").Select(t => t.ToObject<IndexTag>()).ToList();
+                    tags = h._source.SelectTokens(constants.D3S_FIELD_PREFIX + "Tags[*]").Select(t => t.ToObject<IndexTag>()).ToList();
                 }
 
                 if (highlightHits)

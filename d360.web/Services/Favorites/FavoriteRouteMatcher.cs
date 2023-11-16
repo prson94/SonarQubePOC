@@ -1,15 +1,14 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using d360.core;
-using d360.core.entities.Membership;
-using d360.core.enums;
-using d360.model.DataAccessLayer;
-
 namespace d360.web.Services.Favorites
 {
-    public class FavoriteRouteMatcher
+	public class FavoriteRouteMatcher
     {
         public string RoutePattern { get; set; }
 

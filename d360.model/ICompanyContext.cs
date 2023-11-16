@@ -19,6 +19,7 @@ using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.queue;
+using d360.core.validators;
 using d360.model.DataAccessLayer;
 using d360.model.helpers.filters;
 

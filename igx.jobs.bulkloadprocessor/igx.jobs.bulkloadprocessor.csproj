@@ -113,6 +113,10 @@
       <Project>{cafac467-d243-4cc4-bc7f-9f1da0fbfffe}</Project>
       <Name>igx.jobs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\repositories\repositories.csproj">
+      <Project>{c2b66b7d-01ff-4c90-8b3d-5472af1aab9e}</Project>
+      <Name>repositories</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7">

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using d360.core.entities;
 using d360.model.DataAccessLayer;
 
 namespace d360.web.Services.Favorites

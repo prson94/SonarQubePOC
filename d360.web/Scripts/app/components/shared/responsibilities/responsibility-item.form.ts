@@ -48,6 +48,10 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 	@Output() onLoadComplete = new EventEmitter();
 	@Output() onCancel = new EventEmitter();
 
+	@Input() hasAdd: boolean = false;
+	@Input() hasDelete: boolean = false;
+	@Input() isEditing: boolean = false;
+
 	private model: ResponsibilityEditorModel;
 	field: EditorField;
 	private resourceGrid: boolean = false;
@@ -68,7 +72,14 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 	}
 
 	ngOnInit() {
-		this.IsResponsibilityDisabled = (!this.hasDeleteResponsibilitiesPermissions() || !this.hasAddResponsibilitiesPermissions()) && !this.authenticationService.isAdmin;
+		if (this.isEditing) {
+			//changing responsibiliy type will trigger delete + add, so we must check if all rights are present
+			//if not, user with edit rights can change only context and resource
+			this.IsResponsibilityDisabled = (!this.hasAdd || !this.hasDelete) && !this.authenticationService.isAdmin;
+		}
+		else {
+			this.IsResponsibilityDisabled = !this.hasAdd && !this.authenticationService.isAdmin;
+		}
 		this.itemToSave = new ResponsibilityItemV2();
 		this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
 		this.itemToSave.AssetUid = this.assetUid;

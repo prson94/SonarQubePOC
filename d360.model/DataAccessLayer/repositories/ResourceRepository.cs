@@ -1,29 +1,29 @@
-﻿using System;
+﻿using d360.core.entities;
+using repositories;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
-using d360.core.entities;
-
 namespace d360.model.DataAccessLayer
 {
-    public class ResourceRepository : IResourceRepository
+	public class ResourceRepository : IResourceRepository
     {
-        private readonly ICompanyContext companyContext;
+        private readonly ICompanyContext CompanyContext;
 
         public ResourceRepository(ICompanyContext companyContext)
         {
-            this.companyContext = companyContext;
+            CompanyContext = companyContext;
         }
 
         public GlobalReportingResource GetResouceByUID(Guid uid)
         {
-            return companyContext.Filter<GlobalReportingResource>(i => i.Uid == uid).SingleOrDefault();
+            return CompanyContext.Filter<GlobalReportingResource>(i => i.Uid == uid).SingleOrDefault();
         }
 
         public Task<GlobalReportingResource> GetByUidAsync(Guid uid)
         {
-            return companyContext.GlobalReportingResources.FirstOrDefaultAsync(x => x.Uid == uid);
+            return CompanyContext.GlobalReportingResources.FirstOrDefaultAsync(x => x.Uid == uid);
         }
     }
 }

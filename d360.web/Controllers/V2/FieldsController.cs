@@ -15,6 +15,7 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
+using d360.core.validators;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -25,6 +26,7 @@ using d360.web.Services;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using repositories;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
 

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using d360.core.entities;
 using d360.model.DataAccessLayer.repositories;
+using repositories;
 
 namespace d360.model.DataAccessLayer
 {

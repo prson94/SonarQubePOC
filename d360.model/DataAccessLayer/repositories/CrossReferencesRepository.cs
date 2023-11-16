@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
-
 using Dapper;
-
 using Newtonsoft.Json;
+using repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class CrossReferencesRepository : BaseRepository, ICrossReferencesRepository
+	public class CrossReferencesRepository : BaseRepository, ICrossReferencesRepository
     {
         private readonly ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;

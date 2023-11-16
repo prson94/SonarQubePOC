@@ -6,6 +6,7 @@ using d360.web.Controllers.V2;
 using d360.web.Services;
 using igx.UnitTests.Core;
 using Moq;
+using repositories;
 
 namespace igx.UnitTests.V2ControllerTests
 {

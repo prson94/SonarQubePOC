@@ -6,8 +6,8 @@ using d360.core.resources;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
-using Nest;
 using Newtonsoft.Json;
+using repositories;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,13 +16,11 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace d360.model.DataAccessLayer
 {
 	public class ExecutionsRepository : BaseRepository, IExecutionsRepository
 	{
-		internal ICompanyContext CompanyContext;
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
 
@@ -32,7 +30,6 @@ namespace d360.model.DataAccessLayer
 			IStorageProvider storageProvider)
 			: base(companyContext)
 		{
-			CompanyContext = companyContext;
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
 		}

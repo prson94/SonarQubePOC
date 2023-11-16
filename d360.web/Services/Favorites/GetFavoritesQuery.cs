@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.model.DataAccessLayer;
 using d360.web.Services.Favorites;
 
 using MediatR;
+using repositories;
 
 namespace d360.web.Services
 {
