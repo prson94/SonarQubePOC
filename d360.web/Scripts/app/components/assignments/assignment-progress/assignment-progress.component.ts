@@ -19,7 +19,6 @@ export class AssignmentProgressComponent {
 	@Input() shouldBePadded: boolean = false;
 	@Input() isCurrentUserAssigned: boolean = false;
 	@Input() showCompleteAssignment: boolean = true;
-	@Input() isRequestsFlow: boolean = false;
 	@Input() hideLinks: boolean = false;
 	@Input({ required: true }) set workflowItemUid(value: string) {
 		this._workflowItemUid = value;

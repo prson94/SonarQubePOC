@@ -12,7 +12,6 @@ export class AssignmentInformationComponent {
 	@Input() showCompleteAssignment: boolean = false;
 	@Input() workflowTypeVersion: number;
 	@Input() isCurrentUserAssigned: boolean = false;
-	@Input() isRequestsFlow: boolean = false;
 	@Input() hideLinks: boolean = false;
 	@Input({ required: true }) set workflowItemUid(value: string) {
 		if (value) {
