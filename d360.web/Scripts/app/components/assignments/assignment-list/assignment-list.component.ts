@@ -197,7 +197,7 @@ export class AssignmentListComponent extends BaseComponent implements OnInit, On
 		this.completeAssignmentComponent.openModal($event)
 	}
 
-	private subscribeSwitcherEvents() {
+	private subscribeSwitcherEvents(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev): void => {
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
 			this.secondarySidePanelOpen = true;

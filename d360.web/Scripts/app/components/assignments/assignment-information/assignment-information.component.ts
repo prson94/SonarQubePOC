@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
+import { FeatureFlagService } from '../../../guards/feature-flag.service';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -11,23 +12,8 @@ export class AssignmentInformationComponent {
 	@Input() showCompleteAssignment: boolean = false;
 	@Input() workflowTypeVersion: number;
 	@Input() isCurrentUserAssigned: boolean = false;
-
-	@Output() completeAssignment: EventEmitter<{
-		workflowItemUid: string,
-		stepUid: string
-	}> = new EventEmitter<{
-		workflowItemUid: string,
-		stepUid: string
-	}>();
-	assignmentItem: AssignmentItem;
-	isAssignmentItemLoading: boolean = false;
-	isWorkflowStepDetailLoading: boolean = false;
-
-	workflowStepDetail: WorkflowStepDetail;
-	private assignmentItemStep: AssignmentItemStep;
-
-	_workflowItemUid: string;
-	@Input() set workflowItemUid(value: string) {
+	@Input() hideLinks: boolean = false;
+	@Input({ required: true }) set workflowItemUid(value: string) {
 		if (value) {
 			this._workflowItemUid = value;
 			this.loadAssignmentItem(value);
@@ -39,8 +25,26 @@ export class AssignmentInformationComponent {
 		return this._workflowItemUid;
 	}
 
+	@Output() completeAssignment: EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string
+	}> = new EventEmitter<{
+		workflowItemUid: string,
+		stepUid: string
+	}>();
+	assignmentItem: AssignmentItem;
+	isAssignmentItemLoading: boolean = false;
+	isWorkflowStepDetailLoading: boolean = false;
+	workflowStepDetail: WorkflowStepDetail;
+
+	protected canActivateAssignmentDetails: boolean = false;
+
+	private assignmentItemStep: AssignmentItemStep;
+	private _workflowItemUid: string;
+
 	constructor(private workflowService: WorkflowService,
-		private cdRef: ChangeDetectorRef) {
+		private cdRef: ChangeDetectorRef, featureFlagService: FeatureFlagService) {
+		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {

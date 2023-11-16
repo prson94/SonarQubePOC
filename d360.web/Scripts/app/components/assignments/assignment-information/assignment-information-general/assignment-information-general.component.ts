@@ -68,7 +68,7 @@ export class AssignmentInformationGeneralComponent {
 		}, 'asset/' + this.assignmentItem?.AssetUid);
 	}
 
-	forceRefresh() {
+	forceRefresh(): void {
 		if (this.assignmentItem?.WorkflowItemUid) {
 			this.loadAssignmentItem(this.assignmentItem.WorkflowItemUid);
 		}
