@@ -78,6 +78,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	actionFormFields: FieldTypeAPIModelField[] = [];
 	showDeletionModal: boolean = false;
 	@Output() selectionChange: EventEmitter<WorkflowAssignmentItem[]> = new EventEmitter<WorkflowAssignmentItem[]>();
+	@Output() viewAssignmentDetails: EventEmitter<void> = new EventEmitter<void>();
 	private destroy: Subject<void> = new Subject<void>();
 	menuItems: PopupMenuItem[] = [];
 	isExportInProgress: boolean = false;
@@ -308,7 +309,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 			this.showDeletionModal = true;
 		} else if (key === $localize`Open`.toLowerCase()) {
-			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid);
+			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid, false);
 		} else if (key === $localize`Open in New Tab`.toLowerCase()) {
 			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid, true);
 		}
@@ -446,9 +447,12 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		filterFieldsSubject.complete();
 	}
 
-	openAssignmentDetails(item: WorkflowAssignmentGrid, newWindow: boolean = false): void {
-		const url = this.federateUrl(`${(this.isRequestsFlow ? SiteUrlHelpers.SITE_URL_REQUESTS_ROOT : SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT)}/${item.workflowItemUid}`);
-		if (newWindow) {
+	protected openAssignmentDetails(item: WorkflowAssignmentGrid, newTab: boolean = false, mouseEvent: MouseEvent = null): void {
+		const url: string = this.federateUrl(`${(this.isRequestsFlow ? SiteUrlHelpers.SITE_URL_REQUESTS_ROOT : SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT)}/${item.workflowItemUid}`);
+		if (mouseEvent['from-context-method'] === 'info') {
+			this.gridSelectionChange([item]);
+			this.viewAssignmentDetails.emit();
+		} else if (newTab || mouseEvent['from-context-method'] === 'new-tab') {
 			window.open(url, '_blank');
 		} else {
 			this.router.navigateByUrl(url);
