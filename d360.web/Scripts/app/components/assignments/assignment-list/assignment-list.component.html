@@ -11,7 +11,7 @@
 			  (dragEnd)="onSidePanelDragEnd(sidePanelStorageKey, $event)">
 		<as-split-area class="tile tile-detail main-panel">
 			<d3s-assignment-grid #assignmentGridComponent [isRequestsFlow]="isRequestsFlow" [assetUid]="assetUid"
-								 [assetTypeUid]="assetTypeUid"
+								 [assetTypeUid]="assetTypeUid" (viewAssignmentDetails)="sidePanelOpen = true"
 								 (selectionChange)="workflowSelectionChanged($event)"></d3s-assignment-grid>
 			<div class="secondary-side-panel" [hidden]="!sidePanelOpen || !secondarySidePanelOpen"
 				 (clickOutside)="closeSecondarySidePanel()">
@@ -38,7 +38,7 @@
 					<d3s-assignment-information [workflowItemUid]="selectedWorkflowItems?.[0]?.workflowItemUid"
 												[workflowTypeVersion]="selectedWorkflowItems?.[0].Version"
 												*ngIf="selectedWorkflowItems?.length === 1"
-												[showCompleteAssignment]="!isRequestsFlow"
+												[showCompleteAssignment]="!isRequestsFlow" [showLinks]="true"
 												(completeAssignment)="completeAssignmentComponent.openModal($event)"
 												[hidden]="sidePanelTab !== 'information'"
 												[isCurrentUserAssigned]="selectedWorkflowItems?.[0]?.isCurrentUserAssigned"></d3s-assignment-information>
@@ -46,7 +46,7 @@
 											 [workflowUid]="selectedWorkflowItems?.[0]?.workflowUid"
 											 [workflowTypeVersion]="selectedWorkflowItems?.[0].Version"
 											 *ngIf="selectedWorkflowItems?.length === 1"
-											 [showCompleteAssignment]="!isRequestsFlow"
+											 [showCompleteAssignment]="!isRequestsFlow" [showLinks]="true"
 											 (stepClickChange)="stepClicked($event)"
 											 (completeAssignment)="completeAssignmentComponent.openModal($event)"
 											 [hidden]="sidePanelTab !== 'progress'"
