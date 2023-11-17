@@ -242,6 +242,9 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 
 	private subscribeSwitcherEvents(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev): void => {
+			if (ev.type !== 'WorkflowStep') {
+				this.clearStepSelection();
+			}
 			this.selectedItem = { type: ev.type };
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
 			this.sidePanelOpen = true;
@@ -250,5 +253,9 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 
 	private unsubscribeSwitcherEvents(): void {
 		this.linkInterceptorSubscription?.unsubscribe();
+	}
+
+	private clearStepSelection(): void {
+		this.assignmentDetailsComponent.clearStepSelection();
 	}
 }

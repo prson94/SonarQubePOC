@@ -31,6 +31,10 @@ export class AssignmentDetailsComponent {
 		this.assignmentInformationGeneralComponent.forceRefresh();
 	}
 
+	clearStepSelection(): void {
+		this.assignmentProgressComponent.clearStepSelection();
+	}
+
 	private loadWorkflowAssignment(assignmentUid: string): void {
 		this.workflowService.getWorkflowAssignments(1, 1, null, '(workflowItemUid eq \'' + assignmentUid + '\')').subscribe((workflowAssignments: WorkflowAssignments): void => {
 			this.workflowAssignmentItem = workflowAssignments.items[0];

@@ -10,17 +10,17 @@
 				<ng-template #description>
 					<div class="detail-header-subtitle" i18n *ngIf="assignmentItem && workflowAssignment">
 						<a (click)="workflowClicked($event, assignmentItem?.WorkflowUid, workflowAssignment?.Version)">{{assignmentItem.WorkflowName}}</a>
-						on
-						<a (click)="assetClicked($event, assignmentItem?.AssetUid)"
-						   *ngIf="assignmentItem?.AssetPath">{{assignmentItem?.AssetPath}}</a><span
-						*ngIf="!assignmentItem?.AssetPath">---</span> initiated
-						by <a
+						on <a (click)="assetClicked($event, assignmentItem?.AssetUid)"
+							  *ngIf="assignmentItem?.AssetUid">{{assignmentItem?.AssetPath}}</a><span
+						*ngIf="!this.assignmentItem?.AssetUid">{{assignmentItem?.AssetPath ?? '---'}}</span>
+						initiated by <a
 						(click)="initiatorClicked($event, assignmentItem.InitiatorUid)">{{assignmentItem.Initiator}}</a>
 						on {{assignmentItem.StartedOn | date: 'short'}}
 					</div>
 				</ng-template>
 			</ig-portal-content-provider>
-			<d3s-assignment-details #assignmentDetailsComponent [assignmentUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-details>
+			<d3s-assignment-details #assignmentDetailsComponent
+									[assignmentUid]="assignmentItem?.WorkflowItemUid"></d3s-assignment-details>
 		</as-split-area>
 		<as-split-area [size]="getSidePanelWidth()"
 					   [minSize]="getSidePanelMinWidth()"

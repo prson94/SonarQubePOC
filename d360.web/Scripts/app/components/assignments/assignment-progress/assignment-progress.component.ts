@@ -12,7 +12,7 @@ import { FeatureFlagService } from '../../../guards/feature-flag.service';
 })
 export class AssignmentProgressComponent {
 
-	@ViewChildren(AssignmentProgressStepComponent) assignmentProgressStepComponents: AssignmentProgressStepComponent[];
+	@ViewChildren(AssignmentProgressStepComponent) private assignmentProgressStepComponents: AssignmentProgressStepComponent[];
 
 	@Input({ required: true }) workflowUid: string;
 	@Input({ required: true }) workflowTypeVersion: number;
@@ -41,8 +41,8 @@ export class AssignmentProgressComponent {
 
 	@Output() stepClickChange: EventEmitter<AssignmentItemStep> = new EventEmitter<AssignmentItemStep>();
 
-	isLoading: boolean = false;
-	assignmentItemSteps: AssignmentItemStep[];
+	protected isLoading: boolean = false;
+	protected assignmentItemSteps: AssignmentItemStep[];
 
 	protected canActivateAssignmentDetails: boolean = false;
 
@@ -66,7 +66,7 @@ export class AssignmentProgressComponent {
 			});
 	}
 
-	stepSelectionChanged(assignmentItemStep: AssignmentItemStep): void {
+	protected stepSelectionChanged(assignmentItemStep: AssignmentItemStep): void {
 		this.deselectWorkflowSteps(assignmentItemStep);
 		this.stepClickChange.emit(assignmentItemStep);
 	}
@@ -81,5 +81,9 @@ export class AssignmentProgressComponent {
 
 	forceRefresh(): void {
 		this.workflowItemUid = this._workflowItemUid;
+	}
+
+	clearStepSelection() {
+		this.stepSelectionChanged(null);
 	}
 }
