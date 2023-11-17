@@ -33,7 +33,7 @@ import {
 } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
+import { PopupMenu, PopupMenuItem } from '../../shared/controls/popup-menu/popup-menu.component';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { State } from '../../../models/asset.model';
@@ -46,7 +46,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 class WorkflowAssignmentGrid extends WorkflowAssignmentItem {
 	filteredAssignees: string[];
 	allAssignees: string[];
-	daysOpen: number;
+	contextMenuItems: PopupMenuItem[];
 }
 
 @Component({
@@ -69,7 +69,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	sortOrder: SortOrder = SortOrder.Descending;
 	isAdmin: boolean = false;
 	selectedCount: number = 0;
-	assignments: WorkflowAssignmentItem[] = [];
+	selectedAssignments: WorkflowAssignmentItem[] = [];
 	simpleFilter: string = '';
 	advancedFilter: string = '';
 	singleActionTypeUidSelected: boolean = false;
@@ -90,7 +90,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 	modalSubtitle: string;
-	assignmentDetailsAvailable: boolean;
+	canActivateAssignmentDetails: boolean;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
@@ -134,7 +134,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
-		this.assignmentDetailsAvailable = this.featureFlagService.canActivateAssignmentDetails();
+		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
 	}
 
 	loadRowsPerPage(event: LazyLoadEvent): void {
@@ -222,8 +222,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	gridSelectionChange(event: WorkflowAssignmentItem[]): void {
-		this.assignments = event;
-		this.selectedCount = this.assignments == null ? 0 : this.assignments.length;
+		this.selectedAssignments = event;
+		this.selectedCount = this.selectedAssignments == null ? 0 : this.selectedAssignments.length;
 		this.selectionChange.emit(event);
 	}
 
@@ -251,9 +251,9 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.items = results[0].items as WorkflowAssignmentGrid[];
 			this.totalRecords = +results[0].total;
 			if (this.items != null && this.items.length > 0) {
-				this.assignments = [this.items[0]];
+				this.selectedAssignments = [this.items[0]];
 				this.selectedCount = 1;
-				this.selectionChange.emit(this.assignments);
+				this.selectionChange.emit(this.selectedAssignments);
 				this.createDisplayColumnData();
 			} else {
 				this.selectedCount = 0;
@@ -275,8 +275,8 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	}
 
 	selectAll(): void {
-		if (this.assignments) {
-			if (this.assignments.length === this.items.length) {
+		if (this.selectedAssignments) {
+			if (this.selectedAssignments.length === this.items.length) {
 				this.gridSelectionChange([this.items[0]]);
 			} else {
 				this.gridSelectionChange(this.items);
@@ -297,31 +297,40 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	clickMenuItem(event: { value: string, action: string, event, data: PopupMenuItem }): void {
 		const key = event.value.toLowerCase();
+		const mouseEvent = event.event;
 		if (key === $localize`Delete`.toLowerCase()) {
-			this.modalSubtitle = "";
-			this.assignments.forEach((assignment, index) => {
+			this.modalSubtitle = '';
+			this.selectedAssignments.forEach((assignment, index) => {
 				const startedOn = new Date(Date.parse(assignment.StartedOn));
-				this.modalSubtitle += `<b>${assignment.workflowName}</b>&nbsp;on&nbsp;${(assignment.assetDisplayValue ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-				if (index !== (this.assignments.length - 1)) {
-					this.modalSubtitle += "<br/>";
+				this.modalSubtitle += `<b>${assignment.workflowName}</b>&nbsp;on&nbsp;${(assignment.assetDisplayValue ?? '---')} initiated on ${startedOn.toLocaleDateString()} ${startedOn.toLocaleTimeString([], {
+					hour: '2-digit',
+					minute: '2-digit'
+				})}`;
+				if (index !== (this.selectedAssignments.length - 1)) {
+					this.modalSubtitle += '<br/>';
 				}
 			});
 
 			this.showDeletionModal = true;
 		} else if (key === $localize`Open`.toLowerCase()) {
-			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid, false);
+			mouseEvent['from-context-method'] = 'open';
+			this.openAssignmentDetails(this.selectedAssignments[0] as WorkflowAssignmentGrid, mouseEvent);
 		} else if (key === $localize`Open in New Tab`.toLowerCase()) {
-			this.openAssignmentDetails(this.assignments[0] as WorkflowAssignmentGrid, true);
+			mouseEvent['from-context-method'] = 'new-tab';
+			this.openAssignmentDetails(this.selectedAssignments[0] as WorkflowAssignmentGrid, mouseEvent);
+		} else if (key === $localize`View Information`.toLowerCase()) {
+			mouseEvent['from-context-method'] = 'info';
+			this.openAssignmentDetails(this.selectedAssignments[0] as WorkflowAssignmentGrid, mouseEvent);
 		}
 	}
 
 	deleteAssignments = (): void => {
 		this.isLoading = true;
 		let itemIds: string[] = [];
-		if (Array.isArray(this.assignments)) {
-			itemIds = this.assignments.map((i: WorkflowAssignmentItem) => i.workflowItemUid);
-		} else if (this.assignments != null) {
-			itemIds.push((this.assignments as WorkflowAssignmentItem).workflowItemUid);
+		if (Array.isArray(this.selectedAssignments)) {
+			itemIds = this.selectedAssignments.map((i: WorkflowAssignmentItem) => i.workflowItemUid);
+		} else if (this.selectedAssignments != null) {
+			itemIds.push((this.selectedAssignments as WorkflowAssignmentItem).workflowItemUid);
 		}
 		this.wfMonitorService.deleteItemsByUid(itemIds).subscribe(
 			() => {
@@ -447,12 +456,21 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		filterFieldsSubject.complete();
 	}
 
-	protected openAssignmentDetails(item: WorkflowAssignmentGrid, newTab: boolean = false, mouseEvent: MouseEvent = null): void {
+	protected positionContextMenu($event: MouseEvent, htmlButtonElement: HTMLButtonElement, popupMenu: PopupMenu): void {
+		if (this.canActivateAssignmentDetails) {
+			htmlButtonElement.style.top = `${$event['layerY']}px`;
+			htmlButtonElement.style.left = `${$event['layerX']}px`;
+			popupMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	protected openAssignmentDetails(item: WorkflowAssignmentGrid, mouseEvent: MouseEvent): void {
 		const url: string = this.federateUrl(`${(this.isRequestsFlow ? SiteUrlHelpers.SITE_URL_REQUESTS_ROOT : SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT)}/${item.workflowItemUid}`);
 		if (mouseEvent['from-context-method'] === 'info') {
 			this.gridSelectionChange([item]);
 			this.viewAssignmentDetails.emit();
-		} else if (newTab || mouseEvent['from-context-method'] === 'new-tab') {
+		} else if (mouseEvent['from-context-method'] === 'new-tab') {
 			window.open(url, '_blank');
 		} else {
 			this.router.navigateByUrl(url);
@@ -619,6 +637,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private createDisplayColumnData() {
 		this.setDisplayAssignees();
+		this.setContextMenuItems();
 	}
 
 	private getExportFileName(): string {
@@ -667,6 +686,26 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.menuItems.push(new PopupMenuItem({
 				title: $localize`Delete`
 			}));
+		}
+	}
+
+	private setContextMenuItems(): void {
+		for (const item of this.items) {
+			item.contextMenuItems = [];
+			if (this.canActivateAssignmentDetails) {
+				item.contextMenuItems.push(new PopupMenuItem({
+					title: $localize`View Information`
+				}), new PopupMenuItem({
+					title: $localize`Open`
+				}), new PopupMenuItem({
+					title: $localize`Open in New Tab`
+				}));
+				if (this.isAdmin) {
+					item.contextMenuItems.push(new PopupMenuItem({
+						title: $localize`Delete`
+					}));
+				}
+			}
 		}
 	}
 }
