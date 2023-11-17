@@ -11,6 +11,7 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
 export class AssignmentInformationGeneralComponent {
 	@Input({ required: true }) workflowTypeVersion: number;
 	@Input({ required: true }) set workflowItemUid(value: string) {
+		this.assignmentItem = null;
 		if (value) {
 			this.loadAssignmentItem(value);
 		}

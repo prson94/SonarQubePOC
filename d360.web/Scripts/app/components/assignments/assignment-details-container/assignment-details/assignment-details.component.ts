@@ -13,6 +13,7 @@ import {
 })
 export class AssignmentDetailsComponent {
 	@Input({ required: true }) set assignmentUid(value: string) {
+		this.workflowAssignmentItem = null;
 		if (value) {
 			this.loadWorkflowAssignment(value);
 		}

@@ -15,7 +15,11 @@ export class AssignmentInformationRequestComponent implements OnInit {
 	fieldTypeModelFields: FieldTypeAPIModelField[] = [];
 
 	@Input({ required: true }) set workflowActionUid(value: string) {
-		this.loadActionDetails(value);
+		this.fieldTypeModelFields = [];
+		this.actionItems = null;
+		if (value) {
+			this.loadActionDetails(value);
+		}
 	}
 
 	@Input() workflowItemUid: string;
