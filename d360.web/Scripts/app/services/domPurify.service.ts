@@ -22,7 +22,7 @@ export class DOMPurifyService {
     }
 
 	sanitize(source: string | Node): string {
-		let orgval = source;
+		const orgval = source;
 		let sanitizevalue = DOMPurify.sanitize(source);
 		if (sanitizevalue.length === String(orgval).length) {
 			sanitizevalue = String(orgval);
