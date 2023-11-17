@@ -131,7 +131,6 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     @HostListener('contextmenu', ['$event'])
     onContextClick(event) {
         this.removeElement();
-		event.preventDefault();
 		event.stopPropagation();
         var htmlEl = (this.el.nativeElement as HTMLElement);
         if (htmlEl.classList.contains('visible')) {
