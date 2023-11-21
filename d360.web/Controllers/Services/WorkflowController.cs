@@ -3489,13 +3489,14 @@ namespace d360.web.Controllers.Services
 
 							if (reassigned["@newIssueId"] != null)
 							{
-								var newWorkflowDetails = Company.Query<dynamic>(@"select i.Id, v.TypeId from workflow.item i 
+								var newWorkflowDetails = Company.Query<dynamic>(@"select i.Id, i.Uid, v.TypeId from workflow.item i 
 									inner join workflow.version v on v.id = i.versionid where [object] = 'Issue' and objectid = @newIssueId"
 									, new { newIssueId = (int)reassigned["@newIssueId"] }).FirstOrDefault();
 
 								if (newWorkflowDetails != null)
 								{
 									reassigned["@newItemId"] = newWorkflowDetails.Id;
+									reassigned["@newItemUid"] = newWorkflowDetails.Uid;
 								}
 							}
 						}

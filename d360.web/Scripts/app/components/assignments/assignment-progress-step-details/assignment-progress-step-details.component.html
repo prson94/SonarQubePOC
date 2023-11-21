@@ -59,7 +59,7 @@
 							   (click)="onClickAsset($event, reassignment.ObjectID)">{{reassignment.ObjectName}}</a>
 							on {{reassignment.ReassignOn | date: 'short'}}.<br/>
 							<ng-container *ngIf="reassignment.NewItemId != null">
-								A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow
+								A <a [href]="'/assignments/' + reassignment.NewItemUid" target="_blank">new workflow
 								<i class="fa fa-external-link"></i></a> has been created.
 							</ng-container>
 						</div>
