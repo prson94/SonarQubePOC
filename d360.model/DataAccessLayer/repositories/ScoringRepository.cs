@@ -8,6 +8,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using LaunchDarkly.Sdk.Server;
 using repositories;
 using System;
@@ -579,11 +580,28 @@ select @id";
 			var minId = models.Select(o => o.Id).Min();
 			var maxId = models.Select(o => o.Id).Max();
 
-			models = CompanyContext.Query<ExternalMeasureResult>(@"
+			string sql = $@"drop table if exists #TempDataProcess;
+create table #TempDataProcess(
+ID bigint,
+AssetUid uniqueidentifier,
+AssetVersionUid uniqueidentifier,
+EffectiveDate date,
+[Value] bit,
+IsSuccess bit,
+Message nvarchar(4000)
+);
+
+create clustered index cx_TempDataProcess on #TempDataProcess(ID);
+
+insert into #TempDataProcess(ID,AssetUid,AssetVersionUid,EffectiveDate,[Value])
+select ID,AssetUid,AssetVersionUid,EffectiveDate,[Value]
+from metrics.ExternalMeasureResult t
+where t.Id between @minId and @maxId;
+
 update	t
 set		t.AssetUid = s.Uid,
 		t.AssetVersionUid = m.Uid 
-from	metrics.ExternalMeasureResult t
+from	#TempDataProcess t
 		outer apply (
 			select	a.Uid,
 					aa.Uid as AssetTypeUid
@@ -599,19 +617,49 @@ from	metrics.ExternalMeasureResult t
 					inner join metrics.Asset a on a.Uid = v.AssetUid and a.Uid = t.AssetVersionUid and v.EffectiveDate <= t.EffectiveDate and (v.EffectiveEndDate is null or v.EffectiveEndDate >= t.EffectiveDate)
 					inner join metrics.Allocation al on al.Uid = a.AllocationUid and al.ScoreType = 1 and al.AssetTypeUid = s.AssetTypeUid
 			where	vd.[Check] = 'External'
-		) m
-where	t.Id between @minId and @maxId;
+		) m;
 
-delete	metrics.ExternalMeasureResult
-where	Id between @minId and @maxId
-		and (AssetUid is null or AssetVersionUid is null);
+delete	me
+from metrics.ExternalMeasureResult me
+inner join #TempDataProcess t on me.id = t.id
+where	me.Id between @minId and @maxId
+		and (t.AssetUid is null or t.AssetVersionUid is null or me.EffectiveDate > getutcdate());
 
-select	*
+select	distinct AssetUid,EffectiveDate
 from	metrics.ExternalMeasureResult
 where	Id between @minId and @maxId;
-", new { minId, maxId }).ToList();
 
-			var uniques = models.Select(o => new { o.AssetUid, o.EffectiveDate }).Distinct();
+update t
+set IsSuccess = 0,
+Message = coalesce(Message,'') + 'Effective date cannot be in the future;'
+from #TempDataProcess t
+where EffectiveDate > getutcdate();
+
+update t
+set IsSuccess = 0,
+Message = coalesce(Message,'') + 'Invalid asset specified;'
+from #TempDataProcess t
+where AssetUid is null;
+
+update t
+set IsSuccess = 0,
+Message = coalesce(Message,'') + 'Invalid measure specified;'
+from #TempDataProcess t
+where AssetVersionUid is null;
+
+select AssetUid,EffectiveDate,coalesce(IsSuccess,1),Message ErrorMessage,[Value] Result
+from #TempDataProcess
+order by id;
+
+drop table #TempDataProcess
+";
+
+			SqlMapper.GridReader gridReader = CompanyContext.QueryMultiple(sql,new { minId, maxId });
+
+			var modelsQueue = gridReader.Read<ExternalMeasureResult>().ToList();
+			list = gridReader.Read<InternalScoreResultApiResponseModel>().ToList();
+
+			var uniques = modelsQueue.Select(o => new { o.AssetUid, o.EffectiveDate });
 			foreach (var unique in uniques)
 			{
 				var info = new ScoreQueueInfo
@@ -626,7 +674,6 @@ where	Id between @minId and @maxId;
 				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
 			}
 
-			list = models.Select(o => new InternalScoreResultApiResponseModel { AssetUid = o.AssetUid, EffectiveDate = o.EffectiveDate, IsSuccess = true, Result = o.Value }).ToList();
 			models = null;
 
 			return list;
