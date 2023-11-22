@@ -625,6 +625,15 @@ inner join #TempDataProcess t on me.id = t.id
 where	me.Id between @minId and @maxId
 		and (t.AssetUid is null or t.AssetVersionUid is null or me.EffectiveDate > getutcdate());
 
+update	me
+set		me.AssetUid = t.AssetUid,
+		me.AssetVersionUid = t.AssetVersionUid 
+from	metrics.ExternalMeasureResult me
+inner join #TempDataProcess t on me.id = t.id
+where	me.Id between @minId and @maxId
+		and (t.AssetUid is not null and t.AssetVersionUid is not null);
+
+
 select	distinct AssetUid,EffectiveDate
 from	metrics.ExternalMeasureResult
 where	Id between @minId and @maxId;
