@@ -2193,6 +2193,12 @@ from	IntersectType I
 			return Database.Connection.Query<T>(sql, param, null, false, timeout);
 		}
 
+		public SqlMapper.GridReader QueryMultiple(string sql, object param = null, int timeout = 90)
+		{
+			return Database.Connection.QueryMultiple(sql, param, null, timeout);
+		}
+
+
 		public async Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90)
 		{
 			return await Database.Connection.QueryAsync(sql, map: map, param: param, splitOn: splitOn).ConfigureAwait(false);
