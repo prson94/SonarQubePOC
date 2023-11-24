@@ -361,7 +361,7 @@ begin
 	AssetTypeID int,
 	ApplyToType bit,
 	Present int,
-	index cx_resdata clustered(AssetID)
+	index cx_resdata clustered(ResponsibilityTypeID,AssetID,AssetTypeID)
 	);
 	
 	With rs as (select distinct AssetTypeId
