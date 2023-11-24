@@ -585,6 +585,7 @@ create table #TempDataProcess(
 ID bigint,
 AssetUid uniqueidentifier,
 AssetVersionUid uniqueidentifier,
+MetricAssetUid uniqueidentifier,
 EffectiveDate date,
 [Value] bit,
 IsSuccess bit,
@@ -593,7 +594,7 @@ Message nvarchar(4000)
 
 create clustered index cx_TempDataProcess on #TempDataProcess(ID);
 
-insert into #TempDataProcess(ID,AssetUid,AssetVersionUid,EffectiveDate,[Value])
+insert into #TempDataProcess(ID,AssetUid,MetricAssetUid,EffectiveDate,[Value])
 select ID,AssetUid,AssetVersionUid,EffectiveDate,[Value]
 from metrics.ExternalMeasureResult t
 where t.Id between @minId and @maxId;
@@ -614,7 +615,7 @@ from	#TempDataProcess t
 					cross apply openjson(v.Definition) with (
 						[Check] varchar(25) '$.Governance.Check'
 					) vd
-					inner join metrics.Asset a on a.Uid = v.AssetUid and a.Uid = t.AssetVersionUid and v.EffectiveDate <= t.EffectiveDate and (v.EffectiveEndDate is null or v.EffectiveEndDate >= t.EffectiveDate)
+					inner join metrics.Asset a on a.Uid = v.AssetUid and a.Uid = t.MetricAssetUid and v.EffectiveDate <= t.EffectiveDate and (v.EffectiveEndDate is null or v.EffectiveEndDate >= t.EffectiveDate)
 					inner join metrics.Allocation al on al.Uid = a.AllocationUid and al.ScoreType = 1 and al.AssetTypeUid = s.AssetTypeUid
 			where	vd.[Check] = 'External'
 		) m;
@@ -656,7 +657,7 @@ Message = coalesce(Message,'') + 'Invalid measure specified;'
 from #TempDataProcess t
 where AssetVersionUid is null;
 
-select AssetUid,EffectiveDate,coalesce(IsSuccess,1),Message ErrorMessage,[Value] Result
+select AssetUid,MetricAssetUid,EffectiveDate,coalesce(IsSuccess,1) IsSuccess,Message ErrorMessage,[Value] Result
 from #TempDataProcess
 order by id;
 
