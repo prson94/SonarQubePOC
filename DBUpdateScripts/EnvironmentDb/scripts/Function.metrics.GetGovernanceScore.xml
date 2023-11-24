@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.06">
+ <changeSet author="Pappas,puneetgupta" id="Function.metrics.GetGovernanceScore-v1.07">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -354,6 +354,23 @@ begin
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated')
 
 	-- OWNERSHIP -----------------------------------------------
+		
+	declare @ResData table(
+	ResponsibilityTypeID int,
+	AssetID bigint,
+	AssetTypeID int,
+	ApplyToType bit,
+	Present int,
+	index cx_resdata clustered(AssetID)
+	);
+	
+	With rs as (select distinct AssetTypeId
+				from @tbl)
+	insert into @ResData
+	select distinct rd.ResponsibilityTypeID,rd.AssetID,rd.AssetTypeID,rd.ApplyToType,1 Present
+	from rs 
+	cross apply ResponsibilityDetailByAssetTypeID(rs.AssetTypeID) rd;
+
 	update	m
 	set		m.[Value] = case 
 							when c.Operator = 'Populated' and o.Present = 1 and rt.ID is not null then 1
@@ -363,12 +380,8 @@ begin
 	from	@tbl m
 			cross apply openjson([Owner]) with (ResponsibilityTypeUid uniqueidentifier, [Operator] varchar(25)) c
 			left join dbo.ResponsibilityType rt on rt.Uid = c.ResponsibilityTypeUid
-			outer apply (
-				select	1 as Present
-				from	[dbo].[ResponsibilityDetail]
-				where	ResponsibilityTypeID = rt.ID 
-						and (AssetID = m.AssetId or (AssetID = 0 and AssetTypeID = m.AssetTypeId and ApplyToType = 1) ) 
-			) o
+			left join @ResData o on o.ResponsibilityTypeID = rt.ID 
+			and (o.AssetID = m.AssetId or (o.AssetID = 0 and o.AssetTypeID = m.AssetTypeId and o.ApplyToType = 1)) 
 	where	m.[Check] = 'Owner'
 
 	-- PREDICATE -----------------------------------------------
