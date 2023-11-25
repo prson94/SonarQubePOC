@@ -1,8 +1,27 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.helpers;
+using d360.core.queue;
+using d360.core.validators;
+using d360.extensions;
+using d360.featureflags;
+using d360.model;
+using d360.utils.excel;
+using d360.web.Handlers.Exceptions;
+using d360.web.Models;
+using d360.web.Utilities;
+using Dapper;
+using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using repositories;
+using Resources;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,32 +33,9 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.helpers;
-using d360.core.queue;
-using d360.core.validators;
-using d360.extensions;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.utils.excel;
-using d360.web.Handlers.Exceptions;
-using d360.web.Models;
-using d360.web.Utilities;
-using Dapper;
-using LaunchDarkly.Sdk;
-
-using Microsoft.ApplicationInsights;
-
-using Newtonsoft.Json;
-using repositories;
-using Resources;
-
 namespace d360.web.Controllers
 {
-    public class JsonNetResult : ActionResult
+	public class JsonNetResult : ActionResult
     {
         public Encoding ContentEncoding { get; set; }
 
@@ -94,6 +90,8 @@ namespace d360.web.Controllers
         ICompanyContext Company { get; set; }
 
         ICommunityContext Community { get; set; }
+		
+		ILogger Log { get; set; }
 
         IMailProvider Mail { get; set; }
 
@@ -103,7 +101,7 @@ namespace d360.web.Controllers
 		
 		IRuntimeInfo RuntimeInfo { get; set; }
 
-        LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
+		IFeatureFlagService FeatureFlags { get; set; }
     }
 
     public class CoreComponentSet : ICoreComponentSet
@@ -112,21 +110,24 @@ namespace d360.web.Controllers
 
         public ICommunityContext Community { get; set; }
 
-        public IMailProvider Mail { get; set; }
+		public ILogger Log { get; set; }
+
+		public IMailProvider Mail { get; set; }
 
         public ISettingsRepository SettingsRepository { get; set; }
 
         public IThemeRepository ThemeRepository { get; set; }
 
-        public LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
+        public IFeatureFlagService FeatureFlags { get; set; }
 
 		public IRuntimeInfo RuntimeInfo { get; set; }
 
-		public CoreComponentSet(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository, IThemeRepository themeRepository, LaunchDarkly.Sdk.Server.LdClient ld, IRuntimeInfo runtimeInfo)
+		public CoreComponentSet(ICommunityContext community, ICompanyContext company, ILogger log, IMailProvider mail, ISettingsRepository settingsRepository, IThemeRepository themeRepository, IFeatureFlagService ff, IRuntimeInfo runtimeInfo)
 		{
 			Company = company;
 			Community = community;
-			Ld = ld;
+			FeatureFlags = ff;
+			Log = log;
 			Mail = mail;
 			SettingsRepository = settingsRepository;
 			ThemeRepository = themeRepository;
@@ -136,10 +137,11 @@ namespace d360.web.Controllers
 
     public class BaseApiController : ApiController
     {
+		internal IFeatureFlagService FeatureFlags { get; set; }
         internal ICompanyContext Company;
         internal ICommunityContext Community;
         internal ISettingsRepository SettingsRepository;
-		internal LaunchDarkly.Sdk.Server.LdClient Ld;
+		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
@@ -174,91 +176,18 @@ namespace d360.web.Controllers
         {
             Company = set.Company;
             Community = set.Community;
-            Ld = set.Ld;
+			Log = set.Log;
             SettingsRepository = set.SettingsRepository;
 			RuntimeInfo = set.RuntimeInfo;
-        }
-
-        #region Feature Flag Logic
-
-        private ClientUserModel GetFeatureFlagUser()
-        {
-            var listKey = "ClientUserModels";
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-            var userModel = Community.GetItemInCachedList<ClientUserModel>(listKey, itemKey);
-            if (userModel == null)
-            {
-                userModel = Community.Query<ClientUserModel>(@"
-															select	C.PublicID as TenantId,
-																	C.Name as TenantName,
-																	R.Email,
-																	R.FirstName,
-																	R.LastName,
-																	R.uid as UserId,
-																	CR.IsAdministrator
-															from	CompanyResource CR
-																	inner join [Resource] R on R.ID = CR.ResourceID and CR.CompanyID = @CurrentCompanyID and CR.ResourceID = @CurrentResourceID
-																	inner join Company E on E.ID = CR.CompanyID
-																	inner join Client C on C.ID = E.ClientID",
-                                                                    new { Community.CurrentCompanyID, Community.CurrentResourceID }).FirstOrDefault();
-
-                if (userModel != null)
-                {
-                    Community.AddItemToCachedList(listKey, itemKey, userModel);
-                }
-            }
-
-            return userModel;
-        }
-
-		internal User GetSdkFeatureFlagUser()
-		{
-			var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-			var userModel = GetFeatureFlagUser();
-
-			var b = LaunchDarkly.Sdk.User.Builder(itemKey);
-
-			if (userModel != null)
-			{
-				b.FirstName(userModel.FirstName)
-					.LastName(userModel.LastName)
-					.Email(userModel.Email)
-					.Custom("tenantId", userModel.TenantId.ToString())
-					.Custom("tenantName", userModel.TenantName);
-			}
-
-			return b.Build();
+			FeatureFlags = set.FeatureFlags;
 		}
 
-		internal FeatureFlagUser GetClientFeatureFlagUser()
-        {
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentCompanyID}.{Community.CurrentResourceID}";
-            var userModel = GetFeatureFlagUser();
+		internal ClientUserModel GetFeatureFlagUser()
+		{
+			return Company.GetFeatureFlagUser();
+		}
 
-            var b = new FeatureFlagUser
-            {
-                key = itemKey,
-                anonymous = false,
-                firstName = userModel.FirstName,
-                lastName = userModel.LastName,
-                email = userModel.Email,
-                custom = new Dictionary<string, string> {
-                 { "tenantId", userModel.TenantId.ToString() },
-                 { "tenantName", userModel.TenantName }
-             }
-            };
-
-            return b;
-        }
-
-        internal bool GetBoolFlag(string flag, bool defaultValue = false)
-        {
-            return Ld.BoolVariation(flag, GetSdkFeatureFlagUser(), defaultValue);
-        }
-
-        #endregion
-
-        protected internal bool HideData3SixtyUsers()
+		protected internal bool HideData3SixtyUsers()
         {
             return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
         }
@@ -374,14 +303,10 @@ namespace d360.web.Controllers
 
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
-            var telemetry = new TelemetryClient();
-
-            if (!properties.ContainsKey("CompanyID"))
-            {
-                properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
-            }
-
-            telemetry.TrackException(ex, properties, metrics);
+			using (Log.BeginScope(properties))
+			{
+				Log.LogError(ex, ex.Message);
+			}
         }
 
 		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
@@ -618,9 +543,10 @@ namespace d360.web.Controllers
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
-        internal IMailProvider Mail;
+		internal ILogger Log;
+		internal IMailProvider Mail;
         internal ISettingsRepository SettingsRepository;
-        internal LaunchDarkly.Sdk.Server.LdClient Ld;
+        internal IFeatureFlagService FeatureFlags;
         internal IThemeRepository ThemeRepository;
 
         internal List<string> limitedFieldTypes = new List<string> {
@@ -651,7 +577,8 @@ namespace d360.web.Controllers
         {
             Community = set.Community;
             Company = set.Company;
-            Ld = set.Ld;
+            FeatureFlags = set.FeatureFlags;
+			Log = set.Log;
             Mail = set.Mail;
             SettingsRepository = set.SettingsRepository;
             ThemeRepository = set.ThemeRepository;
@@ -2162,54 +2089,10 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
             }
         }
 
-        private ClientUserModel GetFeatureFlagUser()
+        internal ClientUserModel GetFeatureFlagUser()
         {
-            var listKey = "ClientUserModels";
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-            var userModel = Community.GetItemInCachedList<ClientUserModel>(listKey, itemKey);
-
-            if (userModel == null)
-            {
-                userModel = Community.Query<ClientUserModel>(@"
-					select	C.PublicID as TenantId,
-							C.Name as TenantName,
-							R.Email,
-							R.FirstName,
-							R.LastName,
-							R.uid as UserId,
-							CR.IsAdministrator
-					from	CompanyResource CR
-							inner join [Resource] R on R.ID = CR.ResourceID and CR.CompanyID = @CurrentCompanyID and CR.ResourceID = @CurrentResourceID
-							inner join Company E on E.ID = CR.CompanyID
-							inner join Client C on C.ID = E.ClientID", new { Community.CurrentCompanyID, Community.CurrentResourceID }).FirstOrDefault();
-
-                if (userModel != null)
-                {
-                    Community.AddItemToCachedList(listKey, itemKey, userModel);
-                }
-            }
-
-            return userModel;
+			return Company.GetFeatureFlagUser();
         }
-
-		internal User GetSdkFeatureFlagUser()
-		{
-			var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
-			var userModel = GetFeatureFlagUser();
-
-			var b = LaunchDarkly.Sdk.User.Builder(itemKey);
-
-			if (userModel != null)
-			{
-				b.FirstName(userModel.FirstName)
-					.LastName(userModel.LastName)
-					.Email(userModel.Email)
-					.Custom("tenantId", userModel.TenantId.ToString())
-					.Custom("tenantName", userModel.TenantName);
-			}
-
-			return b.Build();
-		}
 
         protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
         {

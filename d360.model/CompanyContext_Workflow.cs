@@ -134,6 +134,7 @@ namespace d360.model
 		#endregion
 
 		#region Utility
+		
 		private readonly Random randomNumberGenerator = new Random();
 
 		private void ChangeItemState(WorkflowItemStep item)
@@ -1408,7 +1409,7 @@ namespace d360.model
 
 			if (asset != null)
 			{
-				CreateWorkflowItemFieldUpdateExecution(assetType, asset); // Send scoring updates
+				CreateRescoreRequests(new List<Guid> { asset.uid }, ScoreType.Governance);	// Send scoring updates
 			}
 
 			await SaveChangesAsync();
@@ -1618,7 +1619,6 @@ namespace d360.model
 
 			return issue;
 		}
-
 
 		public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
 		{

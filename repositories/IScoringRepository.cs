@@ -45,7 +45,5 @@ namespace repositories
         ScoreExecution GetExecutionById(Guid uid);
         
         IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber);
-        
-        List<ScoreExecutionItemViewModel> GetExecutionItems(long executionId, int pageSize, int pageNumber, ScoreQueueChangeType? changeType = null);
     }
 }

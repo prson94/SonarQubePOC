@@ -1,29 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using AngleSharp.Css;
-using d360.utils.company;
+﻿using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.jobs.databaseindexrebuilder
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder.ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddAzureStorage()
-                .AddTimers();
-            });
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c => {
+					c.AddTimers();
+				})
+				.ConfigureGovernLogging();
 
             using (var host = builder.Build())
             {
@@ -31,8 +29,8 @@ namespace igx.jobs.databaseindexrebuilder
             }
         }
     }
-    public static class DatabaseIndexRebuilder
-    {
+    public class DatabaseIndexRebuilder : BaseWebJob
+	{
         const string FUNCTION_NAME = "DatabaseTask_IndexRebuilder";
 #if DEBUG
         const string TIMER_SETTINGS = "*/60 * * * * *";
@@ -40,13 +38,18 @@ namespace igx.jobs.databaseindexrebuilder
         const string TIMER_SETTINGS = "0 0 0 * * SAT";
 #endif
 
-		public static void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)
+		public DatabaseIndexRebuilder(IConfiguration config) : base(config)
+		{
+
+		}
+
+		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)
         {
-            int commandTimeout = int.TryParse(ConfigurationManager.AppSettings["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
+            int commandTimeout = int.TryParse(Configuration["IndexRebuilderDBCommandTimeout"], out commandTimeout) ? commandTimeout : 1800;
 
             try
             {
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().OrderBy(x => x.Priority);
+                var companies = GetCompaniesByCurrentSlot().OrderBy(x => x.Priority);
                 foreach (var item in companies)
                 {
 					var logProperties = new Dictionary<string, object> {
@@ -63,7 +66,15 @@ namespace igx.jobs.databaseindexrebuilder
 							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
 							{
 								companyConnection.Open();
-								var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", MinReorganize = 5, From = 15, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
+								var res = companyConnection.Execute(
+									"EXEC [dbo].[AzureSQLMaintenance]", 
+									new { 
+										Operation = "reindex", 
+										MinReorganize = 5, 
+										From = 15, 
+										To = 100, 
+										MinNumberOfPages = 10 
+									}, null, commandTimeout);
 							}
 							TimeSpan end = DateTime.Now - start;
 							log.LogInformation($"Completed database index rebuild. Time taken: {end.TotalMinutes}");
@@ -86,8 +97,6 @@ namespace igx.jobs.databaseindexrebuilder
 					log.LogCritical(ex, "DatabaseReindexWebJob critical job error.");
 				}
 			}
-
-			CoreFunction.AIFlush();
 		}
     }
 }

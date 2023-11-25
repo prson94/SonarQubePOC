@@ -1262,6 +1262,10 @@ namespace d360.core.entities
 	{
 		public ChangeType ChangeType => ChangeType.ScoreUpdate;
 
+		public string ObjectType { get; set; }
+
+		public int ObjectTypeID { get; set; }
+
 		public string Object { get; set; }
 
 		public int ObjectID { get; set; }

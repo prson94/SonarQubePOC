@@ -1,508 +1,440 @@
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading;
-using System.Xml.Linq;
+using Azure.Messaging.ServiceBus;
 using d360.core;
 using d360.core.entities;
 using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
 using d360.extensions.search;
-using d360.extensions.queue;
+using d360.model;
 using d360.utils.company;
 using Dapper;
+using igx.functions.consumption.models;
 using Microsoft.Azure.WebJobs;
-using System.Collections.Concurrent;
-using System.Data;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
-using d360.extensions.mail;
-using d360.core.resources;
-using Azure.Messaging.ServiceBus;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace igx.functions.databasetaskprocessor
 {
-    public class DatabaseTaskProcessor
-    {
-        const string processorFunctionName = "DatabaseTask_Process";
-        const string schedulerFunctionName = "DatabaseTask_Scheduler";
-        const string timerSettings = "*/1 * * * * *";
+	public class DatabaseTaskProcessor: BaseFunction
+	{
         const int DEFAULT_QUEUE_ITEMS = 500;
-        private CoreFunction CoreFunction;
 
-        [FunctionName("DatabaseTaskScheduler")]
-        public async Task RunScheduler([TimerTrigger(timerSettings, RunOnStartup = true)] TimerInfo myTimer, System.IO.TextWriter log, Microsoft.Azure.WebJobs.ExecutionContext context)
+		IMailProvider Mail;
+		IQueueSource Queue;
+		ElasticSearchSource Search;
+
+		public DatabaseTaskProcessor(IConfiguration config, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(config)
+		{
+			Mail = mail;
+			Queue = queue;
+			Search = search;
+		}
+
+		[FunctionName("DatabaseTaskScheduler")]
+        public async Task RunScheduler([TimerTrigger("*/1 * * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
         {
-            var config = new ConfigurationBuilder()
-               .SetBasePath(context.FunctionAppDirectory)
-               .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-               .AddEnvironmentVariables()
-               .Build();
-
-            var topicName = config["EventBusTopicName"];
-            CoreFunction = new CoreFunction(config);
-            AzureQueueSource queueSource = new AzureQueueSource(config);
-            var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
-#if DEBUG
-            companies = companies.Where(i => i.CompanyID == 4).ToList();
-#endif
-
+            var companies = GetCompaniesByCurrentSlot();
             companies.ForEach(async company =>
             {
-                try
-                {
-                    using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
-                    {
-                        
-                        outerCompanyConnection.Open();
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", "DatabaseTask_Scheduler" },
+					{ "CompanyID", company.CompanyID },
+					{ "UrlPrefix", company.UrlPrefix }
+				};
 
-                        if (HasWork(outerCompanyConnection))
-                        {
-                            await queueSource.CreateFilteredTopicMessageAsync(topicName, new DatabaseProcessorTask(company));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(schedulerFunctionName, ex);
-                }
+				using (log.BeginScope(logProperties))
+				{ 
+					try
+					{
+						using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
+						{
+							await outerCompanyConnection.OpenIfClosed();
+							if (HasWork(outerCompanyConnection))
+							{
+								await Queue.CreateFilteredTopicMessageAsync(Config["EventBusTopicName"], new DatabaseProcessorTask(company));
+							}
+						}
+					}
+					catch (Exception ex)
+					{
+						log.LogError(ex, "Task Processor Failed for company.");
+					}				
+				}
             });
         }
 
         [FunctionName("DatabaseTaskProcessor")]
-        public async Task RunProcessor([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask")] ServiceBusReceivedMessage brokeredMessage, Microsoft.Azure.WebJobs.ExecutionContext context)
+        public async Task RunProcessor([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
         {
-            try
-            {
-                var config = new ConfigurationBuilder()
-                   .SetBasePath(context.FunctionAppDirectory)
-                   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-                   .AddEnvironmentVariables()
-                   .Build();
+			try
+			{
+				var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+				var task = JsonConvert.DeserializeObject<DatabaseProcessorTask>(messageString);
+				var company = task.Company;
 
-                CoreFunction = new CoreFunction(config);
-                var messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
-                var task = JsonConvert.DeserializeObject<DatabaseProcessorTask>(messageString);
-                var company = task.Company;
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", "DatabaseTask_Scheduler" },
+					{ "CompanyID", company.CompanyID },
+					{ "UrlPrefix", company.UrlPrefix }
+				};
 
-                try
-                {
-                    var numberOfQueueItems = DEFAULT_QUEUE_ITEMS;
-                    if (int.TryParse(CoreFunction.GetConfigValueByKey<string>("TaskProcessorNumQueueItems"), out int tempNumQueueItems))
-                    {
-                        numberOfQueueItems = tempNumQueueItems > 0 ? tempNumQueueItems : DEFAULT_QUEUE_ITEMS;
-                    }
+				using (log.BeginScope(logProperties))
+				{
+					try
+					{
+						var numberOfQueueItems = DEFAULT_QUEUE_ITEMS;
+						if (int.TryParse(Config["TaskProcessorNumQueueItems"], out int tempNumQueueItems))
+						{
+							numberOfQueueItems = tempNumQueueItems > 0 ? tempNumQueueItems : DEFAULT_QUEUE_ITEMS;
+						}
 
-                    var indexCollectionModel = new ObjectIndexCollectionModel();
+						var indexCollectionModel = new ObjectIndexCollectionModel();
 
-                    using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
-                    {
-                        outerCompanyConnection.Open();
+						using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
+						{
+							outerCompanyConnection.Open();
 
-                        if (!HasWork(outerCompanyConnection))
-                        {
-                            return;
-                        }
+							if (!HasWork(outerCompanyConnection))
+							{
+								return;
+							}
 
-                        var checkoutAndGetQueueItemSql = $@"
-                            declare @IDs table (ID uniqueidentifier,index ix_IDs clustered (ID))
+							var checkoutAndGetQueueItemSql = $@"
+								declare @IDs table (ID uniqueidentifier,index ix_IDs clustered (ID))
 
-                            ;WITH CTE AS 
-                            ( 
-                                SELECT TOP {numberOfQueueItems} MachineAssigned, ID
-                                FROM [queue].[task]
-                                where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
-                                ORDER BY [Date] ASC
-                            ) 
-                            UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
+								;WITH CTE AS 
+								( 
+									SELECT TOP {numberOfQueueItems} MachineAssigned, ID
+									FROM [queue].[task]
+									where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(second, -30, getutcdate()) 
+									ORDER BY [Date] ASC
+								) 
+								UPDATE CTE set MachineAssigned = @m OUTPUT deleted.ID into @IDs  
 
-                            select  T.* 
-                            from    [queue].[Task] T
-                                    inner join @IDs S on S.ID = T.ID
-                            order by T.[Date]
-                            ";
+								select  T.* 
+								from    [queue].[Task] T
+										inner join @IDs S on S.ID = T.ID
+								order by T.[Date]
+								";
 
-                        List<QueueTask> queueItems = null;
+							List<QueueTask> queueItems = null;
 
-                        // Checkout select and update should be done in transaction to avoid other function instances from
-                        // checking out the same items.  
-                        using (var trans = outerCompanyConnection.BeginTransaction())
-                        {
-                            try
-                            {
-                                queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 250 } }, transaction: trans,commandTimeout: 60).ToList();
+							// Checkout select and update should be done in transaction to avoid other function instances from
+							// checking out the same items.  
+							using (var trans = outerCompanyConnection.BeginTransaction())
+							{
+								try
+								{
+									queueItems = outerCompanyConnection.Query<QueueTask>(
+										checkoutAndGetQueueItemSql, 
+										new { 
+											m = new DbString { Value = Environment.MachineName, IsAnsi = true, Length = 250 } 
+										}, 
+										transaction: trans, 
+										commandTimeout: 60
+									).ToList();
 
-                                trans.Commit();
-                            }
-                            catch (Exception ex)
-                            {
-                                try
-                                {
-                                    if (trans != null)
-                                    {
-                                        trans.Rollback();
-                                    }
-                                }
-                                catch
-                                {
-                                }
+									trans.Commit();
+								}
+								catch (Exception ex)
+								{
+									try
+									{
+										if (trans != null)
+										{
+											trans.Rollback();
+										}
+									}
+									catch
+									{
+									}
+									log.LogError(ex, "Error checking out queue items from table.");
+								}
+							}
 
-                                CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID);
-                            }
-                        }
+							if (queueItems != null)
+							{
+								queueItems.ForEach(async q =>
+								{
+									try
+									{
+										using (var companyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
+										{
+											await companyConnection.OpenIfClosed();
 
-                        if (queueItems != null)
-                        {
-                            queueItems.ForEach(q =>
-                            {
-                                try
-                                {
-                                    using (var companyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
-                                    {
-                                        companyConnection.Open();
-
-                                        try
-                                        {
-                                            switch (q.Action)
-                                            {
-                                                case "Add":
-                                                    #region
-                                                    addAuditEntry(companyConnection, "Created", q);
+											switch (q.Action)
+											{
+												case "Add":
+													addAuditEntry(companyConnection, "Created", q);
 													resolveObjectObjectID(q, out var @object, out var objectId);
 													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "A", q.AssetID);
-                                                    break;
-                                                #endregion
-                                                case "Delete":
-                                                    #region                                     
-                                                    addAuditEntry(companyConnection, "Removed", q);
+													break;
+												case "Delete":
+													addAuditEntry(companyConnection, "Removed", q);
 													resolveObjectObjectID(q, out @object, out objectId);
 													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "D", q.AssetID);
-                                                    break;
-                                                #endregion
-                                                case "EventTopicNotification":
-                                                    #region
-                                                    if (!string.IsNullOrEmpty(q.Custom))
-                                                    {
-                                                        var customXml = XElement.Parse(q.Custom);
+													break;
+												case "EventTopicNotification":
+													bool parseSuccessful = true;
+													if (!string.IsNullOrEmpty(q.Custom))
+													{
+														var customXml = XElement.Parse(q.Custom);
+														d360.core.enums.Workflow.ChangeType ct;
+														SystemObjects obj;
+														SystemObjects objType;
 
-                                                        var queue = new AzureQueueSource(config);
+														if (!Enum.TryParse(customXml.Element("ChangeType").Value, out ct)) { parseSuccessful = false; }
+														if (!Enum.TryParse(customXml.Element("ObjectType").Value, out objType)) { parseSuccessful = false; }
+														if (!Enum.TryParse(customXml.Element("Object").Value, out obj)) { parseSuccessful = false; }
+														if (!Enum.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID)) { parseSuccessful = false; }
 
-                                                        d360.core.enums.Workflow.ChangeType ct;
-                                                        if (Enum.TryParse<d360.core.enums.Workflow.ChangeType>(customXml.Element("ChangeType").Value, out ct))
-                                                        {
-                                                            SystemObjects obj;
-                                                            SystemObjects objType;
-                                                            if (Enum.TryParse<SystemObjects>(customXml.Element("ObjectType").Value, out objType))
-                                                            {
-                                                                if (Enum.TryParse<SystemObjects>(q.Object, out obj))
-                                                                {
-                                                                    if (int.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID))
-                                                                    {
-                                                                        var topicName = company.EventTopic;
-#if DEBUG
-                                                                        topicName = "events-debug";
-#endif
-                                                                        queue.CreateTopicMessage(topicName, new EventInfo
-                                                                        {
-                                                                            Action = ct,
-                                                                            CompanyID = company.CompanyID,
-                                                                            DomainPrefix = company.UrlPrefix,
-                                                                            Object = new EventObjectInfo
-                                                                            {
-                                                                                Object = obj,
-                                                                                ObjectID = q.ObjectID,
-                                                                                ObjectType = objType,
-                                                                                ObjectTypeID = objectTypeID
-                                                                            },
-                                                                            ResourceID = 0
-                                                                        });
-                                                                    }
-                                                                    else { throw new ApplicationException("Unable to parse the ObjectTypeID specified."); }
-                                                                }
-                                                                else
-                                                                {
-                                                                    throw new ApplicationException("Unable to identify the Object specified.");
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                throw new ApplicationException("Unable to identify the ObjectType specified.");
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            throw new ApplicationException("Unable to identify the ChangeType specified.");
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        throw new ApplicationException("XML field does not have any valid information contained within.");
-                                                    }
-                                                    #endregion
-                                                    break;
-                                                case "Notify":
-                                                    #region Email Notification
-                                                    if (q.Object == "TaggedComment")
-                                                    {
-                                                        var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
-                                                        var mail = new MandrillMailProvider { ApiKey = config["MandrillApiKey"] };
-                                                        if (comment.AssetID > 0)
-                                                        {
-                                                            CommentNotification notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
-                                                            if (notification != null)
-                                                            {
-                                                                var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+														if (parseSuccessful)
+														{
+															var topicName = company.EventTopic;
+															Queue.CreateTopicMessage(topicName, new EventInfo
+															{
+																Action = ct,
+																CompanyID = company.CompanyID,
+																DomainPrefix = company.UrlPrefix,
+																Object = new EventObjectInfo
+																{
+																	Object = obj,
+																	ObjectID = q.ObjectID,
+																	ObjectType = objType,
+																	ObjectTypeID = objectTypeID
+																},
+																ResourceID = 0
+															});
+														}
+													}
 
-                                                                var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
+													if (!parseSuccessful)
+													{
+														throw new ApplicationException("XML field does not have any valid information contained within.");
+													}
+													break;
+												case "Notify":
+													if (q.Object == "TaggedComment")
+													{
+														var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(
+															@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id", 
+															new { id = q.ObjectID }, null, true, 900
+														).FirstOrDefault();
+															
+														if (comment.AssetID > 0)
+														{
+															var notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
+															if (notification != null)
+															{
+																var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
 
-                                                                string mailBody = $@"
-                                                                                        <html>
-                                                                                        <head>
-                                                                                            <style>
-                                                                                                body {{
-                                                                                                    margin-top: 20px;
-                                                                                                    margin-left: 50px;
-                                                                                                    margin-right: 50px;
-                                                                                                    font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
-                                                                                                }}
-                                                                                                .header {{
-                                                                                                    font-weight: bold;
-                                                                                                    padding-bottom: 10px;
-                                                                                                }}
-                                                                                                .content {{
-                                                                                                    padding-bottom: 20px;
-                                                                                                    padding-top: 20px;
-                                                                                                    border-top: 2px solid #d7d8dc;
-                                                                                                    border-bottom: 2px solid #d7d8dc;
-                                                                                                }}
-                                                                                                .footer {{
-                                                                                                    padding-top: 10px;
-                                                                                                    text-align: right;
-                                                                                                }}
-                                                                                                .button {{
-                                                                                                    display: inline-flex;
-                                                                                                    position: relative;
-                                                                                                    flex-direction: row;
-                                                                                                    justify-content: center;
-                                                                                                    align-items: center;
-                                                                                                    flex-shrink: 0;
-                                                                                                    background: #006fba;
-                                                                                                    color: #ffffff;
-                                                                                                    border: none;
-                                                                                                    border-radius: 4px;
-                                                                                                    line-height: 200%;
-                                                                                                    height:32px;
-                                                                                                }}
-                                                                                                a {{
-                                                                                                    text-decoration: none;
-                                                                                                }}
-                                                                                                a:link .link {{
-                                                                                                    color: #006fba;
-                                                                                                }}
-                                                                                                a:hover .link {{
-                                                                                                    text-decoration: underline;
-                                                                                                }}
-                                                                                                a:visited .link {{
-                                                                                                    color: #006fba;
-                                                                                                }}
-                                                                                                img {{ border-style: none; }}
-                                                                                            </style>
-                                                                                        </head>
-                                                                                        <body>
-                                                                                            <div class='header'>
-                                                                                                {string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
-                                                                                            </div>
-                                                                                            <div class='content'>
-                                                                                                {string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
-                                                                                            <br />
-                                                                                            <br />
-                                                                                            <a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
-                                                                                        </div>
-                                                                                            <div class='footer'>
-                                                                                                <img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
-                                                                                            </div>
-                                                                                        </body>
-                                                                                        </html>                                                                                        
-                                                                                        ";
-                                                                mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
-                                                            }
-                                                        }
-                                                    }
-                                                    break;
-                                                #endregion
-                                                case "ObjectIndex":
-                                                    #region
-                                                    resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
-                                                    break;
-                                                #endregion
-                                                case "Update":
-                                                    #region
-                                                    addAuditEntry(companyConnection, "Updated", q);
+																var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
+
+																string mailBody = $@"
+																						<html>
+																						<head>
+																							<style>
+																								body {{
+																									margin-top: 20px;
+																									margin-left: 50px;
+																									margin-right: 50px;
+																									font-family: Trebuchet MS, Arial, Helvetica, sans-serif;
+																								}}
+																								.header {{
+																									font-weight: bold;
+																									padding-bottom: 10px;
+																								}}
+																								.content {{
+																									padding-bottom: 20px;
+																									padding-top: 20px;
+																									border-top: 2px solid #d7d8dc;
+																									border-bottom: 2px solid #d7d8dc;
+																								}}
+																								.footer {{
+																									padding-top: 10px;
+																									text-align: right;
+																								}}
+																								.button {{
+																									display: inline-flex;
+																									position: relative;
+																									flex-direction: row;
+																									justify-content: center;
+																									align-items: center;
+																									flex-shrink: 0;
+																									background: #006fba;
+																									color: #ffffff;
+																									border: none;
+																									border-radius: 4px;
+																									line-height: 200%;
+																									height:32px;
+																								}}
+																								a {{
+																									text-decoration: none;
+																								}}
+																								a:link .link {{
+																									color: #006fba;
+																								}}
+																								a:hover .link {{
+																									text-decoration: underline;
+																								}}
+																								a:visited .link {{
+																									color: #006fba;
+																								}}
+																								img {{ border-style: none; }}
+																							</style>
+																						</head>
+																						<body>
+																							<div class='header'>
+																								{string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
+																							</div>
+																							<div class='content'>
+																								{string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
+																							<br />
+																							<br />
+																							<a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
+																						</div>
+																							<div class='footer'>
+																								<img src ='{rootUrl}/Content/images/logo.mail.small.png' alt='D360 Govern' style='border-style:none;'> 
+																							</div>
+																						</body>
+																						</html>                                                                                        
+																						";
+																Mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
+															}
+														}
+													}
+													break;
+												case "ObjectIndex":
+													resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
+													break;
+												case "Update":
+													addAuditEntry(companyConnection, "Updated", q);
 													resolveObjectObjectID(q, out @object, out objectId);
 													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "U", q.AssetID);
-                                                    break;
-                                                #endregion
-                                                case "TagConsolidated":
-                                                    addAuditEntry(companyConnection, "Tag Consolidate", q);
-                                                    break;
-                                                case "CompanySettingsUpdate":
-                                                    addAuditEntry(companyConnection, "Update settings", q);
-                                                    break;
-                                                case "QueueRebuild":
-                                                    if (!string.IsNullOrEmpty(q.Custom))
-                                                    {
-                                                        var queue = new AzureQueueSource(config);
-                                                        switch (q.Custom)
-                                                        {
-                                                            case "AssetGraph":
-                                                                queue.CreateMessage(config["AssetGraphQueue"], new RebuildAssetGraphModel { CompanyID = company.CompanyID });
-                                                                break;
-                                                            case "DisplayValue":
-                                                                queue.CreateMessage(config["DisplayValueQueue"], new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
-                                                                break;
-                                                            case "SearchIndex":
-                                                                ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
-                                                                if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
-                                                                {
-                                                                    model.Category = q.Object;
-                                                                }
-                                                                queue.CreateMessage(config["SearchIndexQueue"], model);
-                                                                break;
-                                                        }
-                                                    }
-                                                    break;
-                                            }
+													break;
+												case "TagConsolidated":
+													addAuditEntry(companyConnection, "Tag Consolidate", q);
+													break;
+												case "CompanySettingsUpdate":
+													addAuditEntry(companyConnection, "Update settings", q);
+													break;
+												case "QueueRebuild":
+													if (!string.IsNullOrEmpty(q.Custom))
+													{
+														switch (q.Custom)
+														{
+															case "AssetGraph":
+																Queue.CreateMessage(Config["AssetGraphQueue"], new RebuildAssetGraphModel { CompanyID = company.CompanyID });
+																break;
+															case "DisplayValue":
+																Queue.CreateMessage(Config["DisplayValueQueue"], new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
+																break;
+															case "SearchIndex":
+																ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
+																if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
+																{
+																	model.Category = q.Object;
+																}
+																Queue.CreateMessage(Config["SearchIndexQueue"], model);
+																break;
+														}
+													}
+													break;
+											}
+											
+											companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
+										}
+									}
+									catch (Exception ex)
+									{
+										log.LogError(ex, "Error processing queue item.");
+									}
+								});
+							}
+						}
 
+						#region Now deal with INDEXING
 
-                                            companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID);
-                                            try
-                                            {
-                                                if (q.NumberOfRetries >= 2)
-                                                {
-                                                    companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
-                                                }
-                                                else
-                                                {
-                                                    companyConnection.Execute(@"update [queue].[Task] set MachineAssigned = null, HasError = 1, NumberOfRetries = NumberOfRetries + 1, ErrorMessage = @error where ID = @queueID", new { queueID = q.ID, error = ex.GetFullExceptionData() }, null, 500);
-                                                }
-                                            }
-                                            catch (Exception iex)
-                                            {
-                                                CoreFunction.AITrackException(processorFunctionName, iex, company.CompanyID);
-                                            }
-                                        }
+						try
+						{
+							if (indexCollectionModel.Adds.Count > 0)
+							{
+								Search.AddToIndex(indexCollectionModel.Adds);
+							}
 
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    CoreFunction.AITrackException(processorFunctionName, ex);
-                                }
-                            });
-                        }
+							if (indexCollectionModel.Deletes.Count > 0)
+							{
+								Search.RemoveFromIndex(indexCollectionModel.Deletes);
+							}
 
+							if (indexCollectionModel.Updates.Count > 0)
+							{
+								Search.UpdateInIndex(indexCollectionModel.Updates);
+							}
+							
+							if (indexCollectionModel.ContainsIndexerCollections())
+							{
+								using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, Config["CommunityContext"]))
+								{
+									companyConnection.Open();
+									var indexer = new SearchIndexer(companyConnection, company.CompanyID, Search);
 
-                    }
+									if (indexCollectionModel.UpsertByUid.Any())
+									{
+										indexer.IndexAssets(indexCollectionModel.UpsertByUid);
+									}
 
-                    #region Now deal with INDEXING
+									if (indexCollectionModel.UpsertByObject.Any())
+									{
+										indexer.IndexAssets(indexCollectionModel.UpsertByObject);
+									}
 
-                    try
-                    {
-                        var search = new ElasticSearchSource(config.GetConnectionStringOrSetting("CommunityContext"));
+									if (indexCollectionModel.UpsertPathByAssetId.Any())
+									{
+										indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
+									}
 
-                        if (indexCollectionModel.Adds.Count > 0)
-                        {
-                            search.AddToIndex(indexCollectionModel.Adds);
-                        }
+									indexer = null;
+								}
+							}
+						}
+						catch (Exception ex)
+						{
+							log.LogError(ex, "Failed processing queue message.");
+						}
 
-                        if (indexCollectionModel.Deletes.Count > 0)
-                        {
-                            search.RemoveFromIndex(indexCollectionModel.Deletes);
-                        }
-
-                        if (indexCollectionModel.Updates.Count > 0)
-                        {
-                            search.UpdateInIndex(indexCollectionModel.Updates);
-                        }
-                        if (indexCollectionModel.ContainsIndexerCollections())
-                        {
-                            try
-                            {
-                                using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, config.GetConnectionStringOrSetting("CommunityContext")))
-                                {
-                                    companyConnection.Open();
-                                    SearchIndexer indexer = new SearchIndexer(companyConnection, company.CompanyID, search);
-
-                                    if (indexCollectionModel.UpsertByUid.Any())
-                                    {
-                                        indexer.IndexAssets(indexCollectionModel.UpsertByUid);
-                                    }
-
-                                    if (indexCollectionModel.UpsertByObject.Any())
-                                    {
-                                        indexer.IndexAssets(indexCollectionModel.UpsertByObject);
-                                    }
-
-                                    if (indexCollectionModel.UpsertPathByAssetId.Any())
-                                    {
-                                        indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
-                                    }
-
-                                    indexer = null;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-								var debugInfo = new Dictionary<string, string> {
-									{ "ErrorSource", "SearchIndexer" },
-									{ "SearchServer", company.SearchServer },
-									{ "UpsertByUid", indexCollectionModel.UpsertByUid.Count.ToString() },
-									{ "UpsertByObject", indexCollectionModel.UpsertByObject.Count.ToString() },
-									{ "UpsertPathByAssetId", indexCollectionModel.UpsertPathByAssetId.Count.ToString() }
-								};
-                                CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID, debugInfo);
-                            }
-                        }
-
-                        search = null;
-                    }
-                    catch (Exception ex)
-                    {
-						var debugInfo = new Dictionary<string, string> {
-							{ "ErrorSource", "ElasticSearchSource" },
-							{ "SearchServer", company.SearchServer },
-							{ "Adds", indexCollectionModel.Adds.Count.ToString() },
-							{ "Updates", indexCollectionModel.Updates.Count.ToString() },
-							{ "Deletes", indexCollectionModel.Deletes.Count.ToString() }
-						};
-						CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID, debugInfo);
-                    }
-
-                    #endregion
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(processorFunctionName, ex);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(processorFunctionName, ex);
-            }
+						#endregion
+					}
+					catch (Exception ex)
+					{
+						log.LogError(ex, "Task Processor Failed for company.");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", "DatabaseTask_Process" }
+				};
+				using (log.BeginScope(logProperties))
+				{
+					log.LogCritical(ex, "Critical error in task queue processor.");
+				}
+			}
         }
 
 		#region Utility Methods
 
-		private static void resolveObjectObjectID(QueueTask queueRecord, out string @object, out int objectId)
+		private void resolveObjectObjectID(QueueTask queueRecord, out string @object, out int objectId)
 		{
 			if(queueRecord.Object == "ResponsibilityTypeRelationOverrideItem" && !string.IsNullOrEmpty(queueRecord.Custom) && queueRecord.Custom.Contains("<ActionObjectID>"))
 			{
@@ -515,7 +447,7 @@ namespace igx.functions.databasetaskprocessor
 			} 
 		}
 
-		private static string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
+		private string resolveIndexItem(CompanyWithDatabaseServerSettings company, ObjectIndexCollectionModel indexCollectionModel, SqlConnection companyConnection, string @object, int objectId, string action, long assetId)
         {
             if (!SearchIndexer.IsIndexable(@object)) 
             { 
@@ -599,7 +531,7 @@ namespace igx.functions.databasetaskprocessor
             return string.Empty;
         }
 
-        private static void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
+        private void addAuditEntry(SqlConnection companyConnection, string oper, QueueTask queueRecord)
         {
             if (!string.IsNullOrEmpty(queueRecord.Custom))
             {
@@ -664,7 +596,7 @@ namespace igx.functions.databasetaskprocessor
             }
         }
 
-        private static DataTable getFieldsTable(AuditCustomDataModel model)
+        private DataTable getFieldsTable(AuditCustomDataModel model)
         {
             var tb = new DataTable();
 
@@ -685,10 +617,9 @@ namespace igx.functions.databasetaskprocessor
             return tb;
         }
 
-        private static bool HasWork(SqlConnection conn)
+        private bool HasWork(SqlConnection conn)
         {
-            bool hasWork = false;
-            var existsSql = @"IF EXISTS (SELECT * FROM [queue].task where MachineAssigned is null and NumberOfRetries < 2)
+            var existsSql = @"IF EXISTS (SELECT 1 FROM [queue].task where MachineAssigned is null and NumberOfRetries < 2)
                                                 BEGIN
                                                     select 1;
                                                 END
@@ -696,93 +627,9 @@ namespace igx.functions.databasetaskprocessor
                                                 BEGIN
                                                    select 0;
                                                 END";
-
-            try
-            {
-                hasWork = conn.QuerySingle<bool>(existsSql);
-                
-            }
-            catch (SqlException ex)
-            {
-                //When doing a clean DB install, the queue.task table will not exist
-                //for some time. If the table is not present, there is no work to be done
-                //by the processor, so the error is muted.
-                if (ex.Message != "Invalid object name 'queue.task'.")
-                {
-                    throw;
-                }
-            }
-
-            return hasWork;
+			return conn.QuerySingle<bool>(existsSql);
         }
 
 		#endregion
 	}
-
-    public class ObjectIndexCollectionModel
-    {
-        public ObjectIndexCollectionModel()
-        {
-            Adds = new ConcurrentBag<IndexObjectModel>();
-            Deletes = new ConcurrentBag<IndexObjectModel>();
-            Updates = new ConcurrentBag<IndexObjectModel>();
-            UpsertByUid = new ConcurrentBag<Guid>();
-            UpsertByObject = new ConcurrentBag<Tuple<string, long>>();
-            UpsertPathByAssetId = new ConcurrentBag<long>();
-        }
-
-        public ConcurrentBag<IndexObjectModel> Adds { get; set; }
-        public ConcurrentBag<IndexObjectModel> Deletes { get; set; }
-        public ConcurrentBag<IndexObjectModel> Updates { get; set; }
-        public ConcurrentBag<Guid> UpsertByUid { get; set; }
-        public ConcurrentBag<Tuple<string, long>> UpsertByObject { get; set; }
-        public ConcurrentBag<long> UpsertPathByAssetId { get; set; }
-
-        public bool ContainsIndexerCollections()
-        {
-            return UpsertByObject.Any() || UpsertByUid.Any() || UpsertPathByAssetId.Any();
-        }
-    }
-
-    public class DatabaseProcessorTask : IFilteredServiceBusMessage
-    {
-        public DatabaseProcessorTask(CompanyWithDatabaseServerSettings company)
-        {
-            Company = company;
-        }
-        public CompanyWithDatabaseServerSettings Company { get; set; }
-        public string EventType { get; set; } = "DatabaseTask";
-    }
-
-    public class QueueTask
-    {
-        public Guid ID { get; set; }
-        public string Action { get; set; }
-        public string Custom { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public DateTime Date { get; set; }
-        public string MachineAssigned { get; set; }
-        public bool HasError { get; set; }
-        public string ErrorMessage { get; set; }
-        public int NumberOfRetries { get; set; }
-        public short Priority { get; set; }
-        public long AssetID { get; set; }
-    }
-
-    public class AuditCustomDataFieldModel
-    {
-        public int FieldTypeID { get; set; }
-        public string Name { get; set; }
-        public string Value { get; set; }
-    }
-
-    public class AuditCustomDataModel
-    {
-        public string ActionObject { get; set; }
-        public int ActionObjectID { get; set; }
-        public string ActionObjectValue { get; set; }
-        public int ResourceID { get; set; }
-        public List<AuditCustomDataFieldModel> Fields { get; set; }
-    }
 }

@@ -5,12 +5,12 @@ using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
 using d360.utils.excel;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -30,12 +30,15 @@ namespace d360.model.DataAccessLayer
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
 		private readonly ICommunityContext CommunityContext;
-		private readonly LdClient Ld;
 
-		public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, LdClient ld)
-			: base(companyContext)
+		public RelationshipRepository(
+			ICommunityContext communityContext, 
+			ICompanyContext companyContext, 
+			IQueueSource queueSource, 
+			IStorageProvider storageProvider, 
+			IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
-			Ld = ld;
 			QueueSource = queueSource;
 			Storage = storageProvider;
 			CommunityContext = communityContext;
@@ -1689,22 +1692,14 @@ from	IntersectType I
 			CompanyContext.SendWorkflowEvents("IntersectType", intersectType.ID, results, ChangeType.Delete);
 
 			// Send scoring request.
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
-			{
-				var assets = CompanyContext.Query<Guid>(
-					"select	a.Uid " +
-					"from	api.ExecutionDeletedRelationship r " +
-					"		inner join Asset a on a.Id in (r.SubjectId, r.ObjectId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
-					"		inner join AssetType t on t.Id = a.AssetTypeId " +
-					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+			var assets = CompanyContext.Query<Guid>(
+				"select	a.Uid " +
+				"from	api.ExecutionDeletedRelationship r " +
+				"		inner join Asset a on a.Id in (r.SubjectId, r.ObjectId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+				"		inner join AssetType t on t.Id = a.AssetTypeId " +
+				"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
 
-				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-			}
-			else 
-			{
-				CompanyContext.CreateDeleteRelationshipsExecution(execution.ExecutionID, intersectType.ID);
-			}
+			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 
 			return results;
 		}
@@ -1740,22 +1735,14 @@ from	IntersectType I
 			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
-			{
-				var assets = CompanyContext.Query<Guid>(
-					"select	a.Uid " +
-					"from	api.ExecutionRelationship r " +
-					"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
-					"		inner join AssetType t on t.Id = a.AssetTypeId " +
-					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+			var assets = CompanyContext.Query<Guid>(
+				"select	a.Uid " +
+				"from	api.ExecutionRelationship r " +
+				"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+				"		inner join AssetType t on t.Id = a.AssetTypeId " +
+				"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
 
-				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-			}
-			else
-			{
-				CompanyContext.CreateImportRelationshipsExecution(execution.ExecutionID, intersectType.ID, 3600);
-			}
+			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 
 			return results;
 		}
@@ -1768,22 +1755,14 @@ from	IntersectType I
 			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
-			{
-				var assets = CompanyContext.Query<Guid>(
-					"select	a.Uid " +
-					"from	api.ExecutionRelationship r " +
-					"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
-					"		inner join AssetType t on t.Id = a.AssetTypeId " +
-					"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
+			var assets = CompanyContext.Query<Guid>(
+				"select	a.Uid " +
+				"from	api.ExecutionRelationship r " +
+				"		inner join Asset a on a.Id in (r.SubjectAssetId, r.ObjectAssetId) and r.ExecutionId = @ExecutionID and r.Success = 1 " +
+				"		inner join AssetType t on t.Id = a.AssetTypeId " +
+				"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
 
-				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-			}
-			else
-			{
-				CompanyContext.CreateImportRelationshipsExecution(execution.ExecutionID, intersectType.ID, 3600);
-			}
+			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 
 			return results;
 		}

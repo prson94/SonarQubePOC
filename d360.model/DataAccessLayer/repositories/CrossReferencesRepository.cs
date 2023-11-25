@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.queue;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
@@ -15,15 +16,13 @@ namespace d360.model.DataAccessLayer
 {
 	public class CrossReferencesRepository : BaseRepository, ICrossReferencesRepository
     {
-        private readonly ICompanyContext CompanyContext;
-        internal IQueueSource QueueSource;
-        internal IStorageProvider StorageProvider;
+        internal IQueueSource Queue;
+        internal IStorageProvider Storage;
 
-        public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queueSource, IStorageProvider storageProvider) : base(compCtx)
+        public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(compCtx, ff)
         {
-            CompanyContext = compCtx;
-            QueueSource = queueSource;
-            StorageProvider = storageProvider;
+            Queue = queue;
+            Storage = storage;
         }
 
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferences(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -174,7 +173,7 @@ namespace d360.model.DataAccessLayer
             };
 
             // Save to storage container.
-            await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
+            await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -182,7 +181,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
 
             // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await Queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -212,7 +211,7 @@ namespace d360.model.DataAccessLayer
 
             try
             {
-                var resultsJson = StorageProvider.GetFileContentsAsString(executionInfo.StorageFolder, executionInfo.ResponseFileName);
+                var resultsJson = Storage.GetFileContentsAsString(executionInfo.StorageFolder, executionInfo.ResponseFileName);
                 bulkResult.Results = JsonConvert.DeserializeObject<List<AssetCrossReferenceResult>>(resultsJson);
             }
             catch

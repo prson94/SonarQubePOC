@@ -1,14 +1,11 @@
-﻿using System;
-using System.Web;
-using System.Web.Http;
-using System.Web.Mvc;
-using System.Web.Routing;
-using Autofac;
+﻿using Autofac;
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
 using d360.core;
 using d360.core.types;
 using d360.extensions;
+using d360.featureflags;
+using d360.model;
 using d360.web.Controllers;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
@@ -18,15 +15,23 @@ using d360.web.Services.Favorites;
 using d360.web.Utilities;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using Microsoft.Owin;
 using Owin;
-using d360.model;
+using repositories;
+using System;
+using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using System.Web.Routing;
 
 [assembly: OwinStartup(typeof(d360.web.Startup))]
 
 namespace d360.web
 {
-    public class Startup
+	public class Startup
     {
         public void Configuration(IAppBuilder app)
         {
@@ -72,11 +77,11 @@ namespace d360.web
                 defaults: new { controller = "Home", action = "App" }
             );
 
-            #endregion
+			#endregion
 
-            #region Autofac
-
-            try
+			#region Autofac
+			
+			try
             {
 				var builder = new ContainerBuilder();
 
@@ -91,9 +96,6 @@ namespace d360.web
 				builder.AddWebApiExceptionHandler<ForbiddenWebApi2ExceptionHandler>();
 				builder.RegisterType<WebApi2ExceptionHandlerMediator>().AsSelf().SingleInstance();
 
-				// register telemetry client (instance per request?)
-				builder.RegisterType<TelemetryClient>().AsSelf().SingleInstance();
-
 				builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
 				builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
 				builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
@@ -107,62 +109,100 @@ namespace d360.web
 				builder.RegisterControllers(typeof(MvcApplication).Assembly);
 				builder.RegisterMediatR(typeof(MvcApplication).Assembly);
 
-				#region Extension DI
+				#region Config Setting Reader   
 
-				#region Config Setting Reader            
-				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
-				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>().InstancePerRequest().OnActivating(i => {
-					i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
-					i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
-				});
-
+				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
+					.InstancePerRequest().OnActivating(i => {
+						i.Instance.CommunityConnectionString = Config.GetValue<string>("CommunityContext");
+					});
+				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
+					.InstancePerRequest().OnActivating(i => {
+						i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
+						i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
+					});
 				builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
-				builder.RegisterType<extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
-				builder.RegisterType<extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
+				builder.RegisterType<extensions.events.AzureQueueSource>().As<IQueueSource>()
+					.InstancePerRequest().OnActivating(i => {
+						i.Instance.EventBusTopicName = Config.GetValue<string>("EventBusTopicName");
+						i.Instance.EventServiceBusConnectionString = Config.GetValue<string>("EventServiceBus");
+						i.Instance.QueuesConnectionString = Config.GetValue<string>("QueuesConnectionString");
+					});
+				builder.RegisterType<extensions.storage.AzureStorageProvider>().As<IStorageProvider>()
+					.InstancePerRequest().OnActivating(i => {
+						i.Instance.StorageConnectionString = Config.GetValue<string>("AzureStorageConnectionString");
+					});
+
 				#endregion
 
-				builder.RegisterModelModule();
-
-				builder.RegisterType<LaunchDarkly.Sdk.Server.LdClient>().As<LaunchDarkly.Sdk.Server.LdClient>()
-					.SingleInstance()
-					.WithParameter("sdkKey", Config.GetValue<string>("LaunchDarklySdkKey"));
+				builder.Register(c =>
+				{
+					return new FeatureFlagService(Config.GetValue<string>("LaunchDarklySdkKey"));
+				}).As<IFeatureFlagService>().SingleInstance();
 
 				builder.RegisterType<OidcDiscoveryCache>().AsSelf().InstancePerRequest();
 
 				builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
 
-				builder.RegisterType<extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()
-					.InstancePerRequest()
-					.OnActivating(i => {
-						try
+				builder.RegisterType<extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>().InstancePerRequest().OnActivating(i => {
+					try
+					{
+						var req = HttpContext.Current.Request;
+						if (req != null)
 						{
-							var req = HttpContext.Current.Request;
-							if (req != null)
-							{
-								var ctx = req.GetOwinContext();
-								i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
-								i.Instance.ClientID = ctx.Get<int>("ClientID");
-								i.Instance.CompanyID = ctx.Get<int>("CompanyID");
-								i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
-								i.Instance.ResourceID = ctx.Get<int>("ResourceID");
-								i.Instance.IsAdministrator = ctx.Get<bool>("IsAdministrator");
-							}
+							var ctx = req.GetOwinContext();
+							i.Instance.CompanyPrefix = ctx.Get<string>("CompanyDomain");
+							i.Instance.ClientID = ctx.Get<int>("ClientID");
+							i.Instance.CompanyID = ctx.Get<int>("CompanyID");
+							i.Instance.DomainSettingID = ctx.Get<int>("DomainSettingID");
+							i.Instance.ResourceID = ctx.Get<int>("ResourceID");
+							i.Instance.IsAdministrator = ctx.Get<bool>("IsAdministrator");
 						}
-						catch (Exception ex)
-						{
-							// do nothing.
-						}
-					});
+					}
+					catch (Exception ex)
+					{
+						// do nothing.
+					}
+				});
 
-				#endregion
+				// Logging
+				builder.Register(o => {
+					TelemetryClient ai = new TelemetryClient();
+					TelemetryConfiguration.Active.ConnectionString = Config.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING");
+					return ai;
+				}).AsSelf().InstancePerRequest();
+
+
+				builder.Register(o => {
+					var client = o.Resolve<TelemetryClient>();
+					var sec = o.Resolve<ISecurityContextProvider>();
+					if (sec != null)
+					{
+						client.Context.GlobalProperties.Add("ClientID", sec.ClientID.ToString());
+						client.Context.GlobalProperties.Add("CompanyPrefix", sec.CompanyPrefix);
+						client.Context.GlobalProperties.Add("CompanyID", sec.CompanyID.ToString());
+						client.Context.GlobalProperties.Add("DomainSettingID", sec.DomainSettingID.ToString());
+						var resourceId = sec.ResourceID;
+						if (resourceId > 0)
+						{
+							client.Context.GlobalProperties.Add("ResourceID", resourceId.ToString());
+						}
+					}
+					return new ApplicationInsightsLogger("Govern", client, new ApplicationInsightsLoggerOptions { FlushOnDispose = true, IncludeScopes = true, TrackExceptionsAsExceptionTelemetry = true });
+				}).As<ILogger>().InstancePerRequest();
 
 				#region Repositories
 
-				//builder.Register<repositories.IAssetTypeRepository>(c => {
-				//	var community = c.Resolve<ICommunityContext>();
-				//	var connectionString = community.GetCompanyConnectionString();
-				//	return new model.DataAccessLayer.AssetTypeRepository { ConnectionString = connectionString };
-				//}).InstancePerRequest();
+				builder.Register(c =>
+				{
+					var community = c.Resolve<ICommunityContext>();
+					var connectionString = community.GetCompanyConnectionString();
+					return new repositories.azure.DapperConnectionProvider { ConnectionString = connectionString };
+				}).InstancePerRequest();
+				
+				builder.RegisterModelModule(); // Register repos from d360.model
+				
+				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
 
 				#endregion
 
@@ -187,7 +227,7 @@ namespace d360.web
             }
             catch
             {
-                //surpress any startup exception 
+                //supress any startup exception 
             }
 
             #endregion

@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using d360.core;
+﻿using d360.core;
 using d360.extensions;
+using d360.extensions.events;
 using d360.extensions.info;
 using d360.extensions.mail;
-using d360.extensions.queue;
 using d360.model;
 using d360.web.caching;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace d360.web
 {
-    public class BaseMiddleware
+	public class BaseMiddleware
     {
 	    protected Func<IDictionary<string, object>, Task> Next { get; }
 

@@ -1,33 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Web;
-using System.Xml;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
-
+using d360.featureflags;
 using Dapper;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
 using SpreadsheetLight;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace d360.model.DataAccessLayer.repositories
 {
 	public abstract class BaseRepository
 	{
+		internal IFeatureFlagService FeatureFlags;
 		internal readonly ICompanyContext CompanyContext;
 		private const string RELATIONSHIP_DELIMITER = "|";
 		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occurred while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-		protected BaseRepository(ICompanyContext ctx)
+		protected BaseRepository(ICompanyContext ctx, IFeatureFlagService featureFlags)
 		{
 			CompanyContext = ctx;
+			FeatureFlags = featureFlags;
 		}
 
 		public int ApiTimeout

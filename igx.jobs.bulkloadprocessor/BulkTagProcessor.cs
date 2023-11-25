@@ -1,27 +1,39 @@
-﻿using d360.extensions.caching;
+﻿using Azure.Messaging.ServiceBus;
+using d360.extensions;
 using d360.extensions.info;
-using d360.extensions.queue;
+using d360.featureflags;
 using d360.model;
+using d360.model.DataAccessLayer;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using d360.model.DataAccessLayer;
 using System.Text;
-using d360.extensions.mail;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace igx.jobs.bulkloadprocessor
 {
-	public class BulkLoadTagProcessor
+	public class BulkLoadTagProcessor: BaseWebJob
 	{
 		const string FUNCTION_NAME = "BulkLoadTag_Process";
-		const string BulkMethodName = "BULK";
 
-		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] Message brokeredMessage, ILogger log)
+		ICachingProvider Cache;
+		IMailProvider Mail;
+		IQueueSource Queue;
+		IFeatureFlagService FeatureFlags;
+
+		public BulkLoadTagProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IFeatureFlagService ff) : base(config)
+		{
+			Cache = cache;
+			FeatureFlags = ff;
+			Mail = mail;
+			Queue = queue;
+		}
+
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
 		{
 			string messageString;
 			BatchApiEvent info;
@@ -30,7 +42,7 @@ namespace igx.jobs.bulkloadprocessor
 
 			try
 			{
-				messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+				messageString = Encoding.UTF8.GetString(brokeredMessage.Body.ToArray());
 				info = JsonConvert.DeserializeObject<BatchApiEvent>(messageString);
 			}
 			catch (Exception ex)
@@ -56,21 +68,16 @@ namespace igx.jobs.bulkloadprocessor
 			{
 				try
 				{
-					var sec = new UriSecurityContextProvider
+					var context = new UriSecurityContextProvider
 					{
 						CompanyID = info.CompanyID,
 						ResourceID = 0,
 						CompanyPrefix = info.CompanyDomainPrefix,
 						IsAdministrator = true
 					};
-					var cache = new DummyCachingProvider();
-					var mail = new DummyMailProvider();
-					var queue = new AzureQueueSource();
-					var community = new CommunityContext(cache, queue, sec);
-
-					var company = new CompanyContext(community, cache, queue, mail, sec, true);
-					var tagRepository = new TagRepository(company);
-
+					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+					var tagRepository = new TagRepository(company, FeatureFlags);
 
 					var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);
 					if (execution != null && (execution.Action == d360.core.queue.ApiExecutionAction.PostAssets || execution.Action == d360.core.queue.ApiExecutionAction.PutAssets))
@@ -109,8 +116,6 @@ namespace igx.jobs.bulkloadprocessor
 					return;
 				}
 			}
-
-			CoreFunction.AIFlush();
 		}
 	}
 }

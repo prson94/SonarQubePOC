@@ -190,10 +190,10 @@ namespace igx.UpdateDatabases
                         }
                         catch (Exception ex)
                         {
-                            result.Message = ex.GetFullExceptionData();
+                            result.Message = ex.Message;
                             txtMessages.Invoke((MethodInvoker)delegate
                             {
-                                txtMessages.Text += $"ERROR: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}{ex.GetFullExceptionData()}{System.Environment.NewLine}";
+                                txtMessages.Text += $"ERROR: {c.UrlPrefix} ({c.CompanyID}){System.Environment.NewLine}{ex.Message}{Environment.NewLine}";
 								txtMessages.ScrollToCaret();
 							});
                         }

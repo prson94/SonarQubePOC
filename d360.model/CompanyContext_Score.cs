@@ -54,35 +54,14 @@ namespace d360.model
 
 		DbSet<ScoreExecution> ScoreExecutions { get; set; }
 
-		DbSet<ScoreExecutionItem> ScoreExecutionItems { get; set; }
-
 		#endregion
 
 		#region Methods
-
-		/// <summary>
-		/// Gets the SQL statement to execute for data quality measures, depending on the type of query needed.
-		/// </summary>
-		/// <param name="queryType">
-		/// 1 => Impacted Assets/Effective Dates by ResultUids.
-		/// 2 => Impacted Asset/Effective Dates By Provided Uid.
-		/// 3 => Get Measure Results For Calculation.
-		/// </param>
-		DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid);
 
 		List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation);
 		
 		List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, ScoreType scoreType);
 		
-		List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation);
-		
-		List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance);
-
-		/// <summary>
-		/// A Score Engine method that is called when a dependent object such as an Intersect Type, Responsibility Type or Field Type is removed from Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
-		/// </summary>
-		void CreateCheckDependencyRemovedNotificationExecution(List<Guid> versionUids);
-
 		/// <summary>
 		/// A Score Engine method that is called when a dependent object such as an Intersect Type, Responsibility Type or Field Type is removed from Govern, and score recalculations will take place.
 		/// </summary>
@@ -96,12 +75,7 @@ namespace d360.model
 		/// <summary>
 		/// A Score Engine method that is called when assets are added to Govern.
 		/// </summary>
-		void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid, bool isUpdatedScoring);
-
-		/// <summary>
-		/// A Score Engine method that is called when relationships are removed from Govern.
-		/// </summary>
-		void CreateDeleteRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId);
+		void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid);
 
 		/// <summary>
 		/// A Score Engine method that is called when relationships are added to Govern.
@@ -114,24 +88,9 @@ namespace d360.model
 		Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null);
 
 		/// <summary>
-		/// A Score Engine method that is called when a measure is updated in Govern, resulting in a new version.
-		/// </summary>
-		void CreateMeasureChangedResultExecution(List<AssetMeasureModel> list, Guid? apiExecutionUid = null);
-
-		/// <summary>
-		/// A Score Engine method that is called when a measure is removed from Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
-		/// </summary>
-		void CreateMeasureRemovedNotificationExecution(MetricAssetVersion version);
-
-		/// <summary>
-		/// A Score Engine method that is called when a measure is removed from Govern.
-		/// </summary>
-		void CreateMeasureRemovedResultExecution(Guid metricAssetVersionUid);
-
-		/// <summary>
 		/// A Score Engine method that is called when a parent asset is (un)assigned a child.
 		/// </summary>
-		void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid, bool isUpdatedScoring);
+		void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid);
 
 		/// <summary>
 		/// This function takes a list of assets (using their Uids) and a type of score and submits a request to the Scoring Engine to reprocess the score for the current date.
@@ -151,46 +110,11 @@ namespace d360.model
 		/// </summary>
 		void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null);
 
-		/// <summary>
-		/// A Score Engine method that is called when one or more rule results are removed from Govern, and result in a score recalculation.
-		/// </summary>
-		void CreateRuleResultsRemovedExecution(Guid assetUid);
-
-		/// <summary>
-		/// A Score Engine method that is called when one or more rules are removed from Govern, and result in a score recalculation.
-		/// </summary>
-		void CreateRulesRemovedExecution(Guid apiExecutionUid, List<Guid> assetUids);
-
-		/// <summary>
-		/// A Score Engine method that is called when one or more rules are removed from Govern, and result in a score recalculation.
-		/// </summary>
-		void CreateRulesRemovedExecution(Guid apiExecutionUid, int assetTypeId);
-
-		/// <summary>
-		/// A Score Engine method that is called when a workflow check occurs after scores are processed.
-		/// </summary>
-		void CreateWorkflowCheckExecution(ScoreExecution execution, ScoreQueueChangeType previousChangeType);
-
-		/// <summary>
-		/// A Score Engine method that is called from the Workflow system when an asset field is updated.
-		/// </summary>
-		void CreateWorkflowItemFieldUpdateExecution(AssetType assetType, Asset asset);
-
 		List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
 		
-		List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids);
+		List<Guid> GetImpactedAssetsFromRuleResults(List<Guid> ruleResultUids);
 		
 		decimal? GetAssetScore(long assetId, ScoreType type);
-
-		/// <summary>
-		/// Used where BuildDataQualityMeasureQueryModel uses QueryType = 2
-		/// </summary>
-		List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid allocationUid, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate);
-
-		/// <summary>
-		/// Used where BuildDataQualityMeasureQueryModel uses QueryType = 3
-		/// </summary>
-		List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate);
 
 		/// <summary>
 		/// Gets impacted asset/measures that require rescoring based on this responsibility type allocation.
@@ -198,7 +122,7 @@ namespace d360.model
 		/// <param name="assetType">The asset type.</param>
 		/// <param name="responsibility">The responsibility type.</param>
 		/// <returns>A list of AssetMeasureModel items to send to the scoring engine.</returns>
-		List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility);
+		List<Guid> GetScoreImpactedAssetsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility);
 
 		ObjectStatisticTileModel GetObjectStatistics(string type, int id);
 		
@@ -243,7 +167,6 @@ namespace d360.model
 
 		public DbSet<ScoreExecution> ScoreExecutions { get; set; }
 
-		public DbSet<ScoreExecutionItem> ScoreExecutionItems { get; set; }
 
 		#endregion
 
@@ -722,360 +645,6 @@ namespace d360.model
 			return results;
 		}
 		
-		private List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, bool isSpecificAllocation)
-		{
-			Add(execution);
-			SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-			// Set effective date for any results that do not have a date set.
-			model.ForEach(m =>
-			{
-				if (!m.effectiveDate.HasValue)
-				{
-					m.effectiveDate = DateTime.UtcNow.Date;
-				}
-			});
-
-			bool dupes = model
-				.GroupBy(i => new { i.assetUid, i.metricAssetUid, i.effectiveDate })
-				.Where(i => i.Count() > 1)
-				.Any();
-
-			if (dupes)
-			{
-				string message = OthersError.DuplicateCombination;
-				execution.Error = 1;
-				execution.Processed = 0;
-				execution.CompletedOn = DateTime.UtcNow;
-				execution.ErrorMessage = message;
-
-				Update(execution);
-
-				throw new GenericException(
-					System.Net.HttpStatusCode.BadRequest,
-					AssetTypeErrors.DuplicateItem,
-					message);
-			}
-			else
-			{
-				DataTable table = new DataTable();
-
-				table.Columns.Add("AssetUid", typeof(Guid));
-				table.Columns.Add("MetricAssetUid", typeof(Guid));
-				table.Columns.Add("AllocationUid", typeof(Guid));
-				table.Columns["AllocationUid"].AllowDBNull = true;
-				table.Columns.Add("ScoreType", typeof(int));
-				table.Columns["ScoreType"].AllowDBNull = true;
-				table.Columns.Add("EffectiveDate", typeof(DateTime));
-				table.Columns.Add("Result", typeof(bool));
-
-				#region Generate data sets
-
-				foreach (InternalScoreResultApiRequestModel item in model)
-				{
-					DataRow row = table.NewRow();
-					row["AssetUid"] = item.assetUid;
-					row["MetricAssetUid"] = item.metricAssetUid;
-
-					if (item.scoreType.HasValue)
-					{
-						row["ScoreType"] = (int)item.scoreType.Value;
-					}
-					else
-					{
-						row["ScoreType"] = DBNull.Value;
-					}
-
-					if (item.allocationUid.HasValue)
-					{
-						row["AllocationUid"] = item.allocationUid.Value;
-					}
-					else
-					{
-						row["AllocationUid"] = DBNull.Value;
-					}
-
-					row["EffectiveDate"] = item.effectiveDate.Value;
-					row["Result"] = item.result;
-
-					table.Rows.Add(row);
-				}
-
-				#endregion
-
-				if (Connection.State != ConnectionState.Open)
-				{
-					Connection.Open();
-				}
-
-				SqlTransaction trans = Connection.BeginTransaction();
-				List<InternalScoreResultApiResponseModel> results = null;
-
-				try
-				{
-					Connection.Execute(@"
-										DROP TABLE IF EXISTS #InternalMeasures;
-
-										CREATE TABLE #InternalMeasures (
-											RowNumber int identity, 
-											AssetUid uniqueidentifier NOT NULL,
-											MetricAssetUid uniqueidentifier NOT NULL,
-											EffectiveDate date NOT NULL,
-											Result bit NOT NULL,
-
-											ScoreType int null,
-											AllocationUid uniqueidentifier null,
-
-											IsValidAllocation bit NULL,
-											IsValidAsset bit NULL,
-											IsValidMeasure bit NULL,
-											IsValidCheck bit null,
-											IsValidEffectiveDate bit NULL,
-	
-											Success bit NULL,
-											[Message] nvarchar(2500) NULL,
-
-											PRIMARY KEY ( RowNumber ASC )
-										);
-
-										CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_AssetUid] ON #InternalMeasures ( [AssetUid] ASC );
-										CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_MetricAssetUid] ON #InternalMeasures ( [MetricAssetUid] ASC, EffectiveDate DESC );
-										CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_Success] ON #InternalMeasures ( [Success] ASC )", transaction: trans);
-
-					using (SqlBulkCopy bulk = Connection.CreateBulkCopy("#InternalMeasures", trans: trans))
-					{
-						bulk.ColumnMappings.Add("AssetUid", "AssetUid");
-						bulk.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
-						bulk.ColumnMappings.Add("ScoreType", "ScoreType");
-						bulk.ColumnMappings.Add("AllocationUid", "AllocationUid");
-						bulk.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-						bulk.ColumnMappings.Add("Result", "Result");
-
-						bulk.WriteToServer(table);
-					}
-
-					#region Validation
-
-					// Resolve Allocation if scoreType is used.
-					if (!isSpecificAllocation)
-					{
-						Connection.Execute(@"
-											update  M
-											set     M.AllocationUid = L.Uid 
-											from    #InternalMeasures M
-													inner join AssetWithType A on A.uid = M.AssetUid
-													inner join metrics.Allocation L on L.ScoreType = M.ScoreType and L.AssetTypeUid = A.AssetTypeUid and L.OverrideName is null;", transaction: trans);
-					}
-
-					Connection.Execute(@"
-										update  #InternalMeasures 
-										set     IsValidAllocation = 0, 
-												Message = coalesce(Message, '') + 'This asset does not have this score type allocated; ' 
-										where   AllocationUid is null; 
-
-										update  M
-										set     M.IsValidAllocation = 0,
-												M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated for internal scores; '
-										from    #InternalMeasures M
-												inner join metrics.Allocation L on L.Uid = M.AllocationUid and L.IsExternallyCalculated = 1; 
-
-										update  #InternalMeasures 
-										set     IsValidAllocation = 1 
-										where   AllocationUid is not null 
-												and IsValidAllocation is null; 
-
-										update  M
-										set     M.IsValidAsset = IIF(A.ID is not null, 1, 0) 
-										from    #InternalMeasures M
-												inner join metrics.Allocation L on L.Uid = M.AllocationUid and M.IsValidAllocation = 1
-												left join AssetWithType A on A.uid = M.AssetUid and A.AssetTypeUid = L.AssetTypeUid;", transaction: trans);
-
-															// Resolve Measure
-															Connection.Execute(@"
-										update  T 
-										set     T.IsValidMeasure = IIF(S.[Uid] is not null, 1, 0) 
-										from    #InternalMeasures T 
-												left join metrics.[Asset] S on S.AllocationUid = T.AllocationUid and T.IsValidAllocation = 1 and S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
-
-															// Resolve Measure Check
-															Connection.Execute(@"
-										update  T 
-										set     T.IsValidCheck = IIF(V.[Uid] is not null, 1, 0) 
-										from    #InternalMeasures T 
-												left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1
-												outer apply (
-															select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = S.[Uid] and EffectiveDate <= T.[EffectiveDate]
-															) M_M
-												left join metrics.AssetVersion V on V.AssetUid = S.Uid and V.EffectiveDate = M_M.EffectiveDate and JSON_VALUE(V.Definition, '$.Governance.Check') = 'External'", transaction: trans);
-
-															// Resolve Metric Group/Item Effective Date
-															Connection.Execute(@"
-										update  T 
-										set     T.IsValidEffectiveDate = IIF(M_M.EffectiveDate is not null, 1, 0) 
-										from    #InternalMeasures T 
-												left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
-												outer apply (
-															select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-															) M_M", transaction: trans);
-
-																// Log errors
-					Connection.Execute(@"
-										update  #InternalMeasures
-										set     Success = case 
-															when IsValidAllocation = 0 then 0
-															when IsValidAsset = 0 then 0
-															when IsValidMeasure = 0 then 0
-															when IsValidCheck = 0 then 0
-															when IsValidEffectiveDate = 0 then 0
-															else 1
-															end;
-
-										update  #InternalMeasures
-										set     Message = coalesce(Message, '') + 'Invalid asset specified; '
-										where   IsValidAsset = 0;
-
-										update  #InternalMeasures
-										set     Message = coalesce(Message, '') + 'Invalid measure specified; '
-										where   IsValidMeasure = 0;
-
-										update  #InternalMeasures
-										set     Message = coalesce(Message, '') + 'Measure does not have a Test Type of External; '
-										where   IsValidCheck = 0 
-												and IsValidEffectiveDate = 1 
-												and EffectiveDate <= getutcdate();
-
-										update  #InternalMeasures
-										set     Message = coalesce(Message, '') + 'Invalid measure specified for the date provided; '
-										where   IsValidEffectiveDate = 0;
-
-										update  #InternalMeasures
-										set     Success = 0,
-												Message = coalesce(Message, '') + 'Effective date cannot be in the future; '
-										where   EffectiveDate > getutcdate();
-
-										update #InternalMeasures set Message = null where Success = 1;", new { execution.ExecutionID }, transaction: trans);
-
-					#endregion
-
-					// Send score recalculation notifications.
-					Guid scoreExecutionUid = Guid.NewGuid();
-					string sql = @"
-								set nocount on;
-								declare @ef date = cast(getutcdate() as date),
-										@scoreExecutionId bigint = 0,
-										@successfulRowCount int = 0;
-
-								select @successfulRowCount = count(1) from #InternalMeasures where Success = 1;
-
-								set nocount off;
-								if @successfulRowCount > 0
-								begin
-									insert into metrics.Execution (Uid, TriggeredByExecutionUid, StartedOn, PercentComplete, Failures, Processing)
-									values (@scoreExecutionUid, @ExecutionID, getutcdate(), 0, 0, 0);
-
-									select @scoreExecutionId = ID from metrics.Execution where Uid = @scoreExecutionUid;
-
-									insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-										select	@scoreExecutionId as ExecutionID,
-												@changeType as ChangeType,
-												ROW_NUMBER() OVER(ORDER BY M.AssetUid, M.EffectiveDate) as RowNumber,
-												(
-												select	M.AssetUid,
-														M.EffectiveDate,
-														(
-														select	IM.AllocationUid,
-																IM.MetricAssetUid,
-																V.Uid as MetricAssetVersionUid,
-																IM.Result
-														from	#InternalMeasures IM
-																inner join metrics.AssetVersion V on V.AssetUid = IM.MetricAssetUid  and ( (IM.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (IM.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) )
-														where	IM.AssetUid = M.AssetUid
-																and IM.EffectiveDate = M.EffectiveDate 
-																for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from		#InternalMeasures M
-										where		Success = 1
-										group by	AssetUid, EffectiveDate;
-								end;";
-
-					ScoreQueueChangeType changeType = ScoreQueueChangeType.AssetMeasures;
-					int rowsImpacted = Connection.Execute(sql, new { scoreExecutionUid, execution.ExecutionID, changeType = (int)changeType }, commandTimeout: 1200, transaction: trans);
-
-					Connection.Execute(@"
-										update  T 
-										set     T.Processed = P.[Count], 
-												T.Error = E.[Count], 
-												T.ProcessingStartedOn = null, 
-												T.CompletedOn = getutcdate() 
-										from    api.Execution T 
-												cross apply (
-													select count(1) as [Count] from #InternalMeasures where Success = 1
-												) P 
-												cross apply (
-													select count(1) as [Count] from #InternalMeasures where Success = 0
-												) E 
-										where   T.ExecutionID = @ExecutionID", new { execution.ExecutionID }, transaction: trans);
-
-					results = Connection.Query<InternalScoreResultApiResponseModel>(
-						$"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage from #InternalMeasures",
-						new { execution.ExecutionID },
-						commandTimeout: 1200, transaction: trans
-					).ToList();
-
-					trans.Commit();
-
-					if (rowsImpacted > 0)
-					{
-						ScoreQueueInfo info = new ScoreQueueInfo
-						{
-							CompanyID = CurrentCompanyID,
-							ResourceID = CurrentResourceID,
-							ChangeType = ScoreQueueChangeType.AssetMeasures,
-							ExecutionUid = scoreExecutionUid,
-							StartedOn = execution.StartedOn
-						};
-						QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-					}
-				}
-				catch (Exception ex)
-				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-					}
-					catch
-					{
-					}
-					UpdateExecutionWithErrorFromException(execution, ex);
-				}
-				finally
-				{
-					Connection.Close();
-				}
-
-				return results;
-			}
-		}
-
-		private void endEmptyExecution(SqlConnection cnn, long executionId)
-		{
-			try
-			{
-				cnn.OpenIfClosed().Wait();
-				cnn.Execute("update metrics.Execution set PercentComplete = 1, CompletedOn = getutcdate(), UpdatedOn = getutcdate() where ID = @executionId", new { executionId });
-			}
-			catch
-			{
-				// Do nothing.
-			}
-		}
-		
 		private bool isScoreAllocationPresentForIntersectType(int id)
 		{
 			bool present = Query<bool>(@"
@@ -1088,7 +657,7 @@ namespace d360.model
 			return present;
 		}	
 		
-		private void sendScoreQueueMessage(ScoreExecution execution, ScoreQueueChangeType changeType = ScoreQueueChangeType.AssetMeasures)
+		private void sendScoreQueueMessage(ScoreExecution execution, ScoreQueueChangeType changeType)
 		{
 			ScoreQueueInfo info = new ScoreQueueInfo
 			{
@@ -1105,157 +674,6 @@ namespace d360.model
 		#endregion
 
 		#region Methods
-		
-		public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(MetricDataQualityQueryType queryType, Guid assetVersionRollupPathUid)
-		{
-			DataQualityMeasureQueryModel dqQueryDetail = new DataQualityMeasureQueryModel
-			{
-				AssetVersionRollupPathUid = assetVersionRollupPathUid
-			};
-
-			Connection.OpenIfClosed().Wait();
-
-			SqlMapper.GridReader dqQueryDetails = Connection.QueryMultiple(
-				"metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
-				new { queryType = (int)queryType, assetVersionRollupPathUid }
-				);
-			IEnumerable<string> resultSqlQueryStatements = dqQueryDetails.Read<string>();
-			dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();
-			IEnumerable<DataQualityMeasureQueryFilterModel> resultFilters = dqQueryDetails.Read<DataQualityMeasureQueryFilterModel>();
-
-			dqQueryDetail.Sql = string.Join("", resultSqlQueryStatements);
-			dqQueryDetail.Filters = resultFilters.ToList();
-
-			string filterSql = "";
-			if (dqQueryDetail.Filters.Count > 0)
-			{
-
-				dqQueryDetail.Filters.ForEach(f =>
-				{
-					string listFieldQuery = $" in (select FD.AssetID from FieldDetail FD inner join FieldLookupValue LV on LV.FieldTypeID = FD.FieldTypeID and LV.Value = FD.Value and FD.AssetTypeID = {f.AssetTypeID} and FD.FieldTypeID = {f.FieldTypeID} and ";
-					string nonListFieldQuery = $" in (select AssetID from FieldDetail where AssetTypeID = {f.AssetTypeID} and FieldTypeID = {f.FieldTypeID} and ";
-
-					f.WhereQuery += ((f.Type == "Lookup") ? listFieldQuery : nonListFieldQuery);
-					string queryColumn = ((f.Type == "Lookup") ? "LV.AssetUid" : "FormattedValue");
-
-					string paramName = $"@P{f.AssetTypeID}_{f.FieldTypeID}";
-					string dbTypeToCastTo = "";
-					switch (f.Type)
-					{
-						case "Date":
-						case "DateTime":
-							dbTypeToCastTo = "datetime";
-							DateTime dt;
-							if (DateTime.TryParse(f.Value, out dt))
-							{
-								f.Parameter = new SqlParameter(paramName, dt);
-							}
-							break;
-						case "Decimal":
-							dbTypeToCastTo = "decimal";
-							decimal dc;
-							if (decimal.TryParse(f.Value, out dc))
-							{
-								f.Parameter = new SqlParameter(paramName, dc);
-							}
-							break;
-						case "Number":
-							dbTypeToCastTo = "bigint";
-							long lg;
-							if (long.TryParse(f.Value, out lg))
-							{
-								f.Parameter = new SqlParameter(paramName, lg);
-							}
-							break;
-						default:
-							if (!string.IsNullOrEmpty(f.Value))
-							{
-								f.Parameter = new SqlParameter(paramName, f.Value);
-							}
-							break;
-					}
-
-					switch (f.Operator)
-					{
-						case Operator.After:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
-							break;
-						case Operator.Before:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
-							break;
-						case Operator.Contains:
-							queryColumn = $"{queryColumn} like '%' + {paramName} + '%'";
-							break;
-						case Operator.EndsWith:
-							queryColumn = $"{queryColumn} like '%' + {paramName}";
-							break;
-						case Operator.Equals:
-							queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
-								$"{queryColumn} = {paramName}" :
-								$"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
-							break;
-						case Operator.GreaterThan:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
-							break;
-						case Operator.GreaterThanOrEquals:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
-							break;
-						case Operator.IsFalse:
-							queryColumn = $"coalesce(try_cast({queryColumn} as bit), 1) = 0";
-							break;
-						case Operator.IsTrue:
-							queryColumn = $"coalesce(try_cast({queryColumn} as bit), 0) = 1";
-							break;
-						case Operator.LessThan:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
-							break;
-						case Operator.LessThanOrEquals:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
-							break;
-						case Operator.NotContains:
-							queryColumn = $"{queryColumn} not like '%' + {paramName} + '%'";
-							break;
-						case Operator.NotEquals:
-							queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
-								$"{queryColumn} <> {paramName}" :
-								$"try_cast({queryColumn} as {dbTypeToCastTo}) <> {paramName}";
-							break;
-						case Operator.NotPopulated:
-							queryColumn = $"{queryColumn} is null";
-							break;
-						case Operator.OnOrAfter:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
-							break;
-						case Operator.OnOrBefore:
-							queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
-							break;
-						case Operator.Populated:
-							queryColumn = $"{queryColumn} is not null";
-							break;
-						case Operator.StartsWith:
-							queryColumn = $"{queryColumn} like {paramName} + '%'";
-							break;
-						default: //does the same thing as Equals
-							queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
-								$"{queryColumn} = {paramName}" :
-								$"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
-							break;
-
-					}
-
-					f.WhereQuery += queryColumn + ")";
-				});
-
-				filterSql = " and (" + string.Join(
-					dqQueryDetail.FilterMatchType == MetricMatchType.Any ? " or " : " and ",
-					dqQueryDetail.Filters.Select(f => f.WhereQuery)
-					) + ") ";
-			}
-
-			dqQueryDetail.Sql = dqQueryDetail.Sql.Replace("{{FILTERS}}", filterSql);
-
-			return dqQueryDetail;
-		}
 		
 		public List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation)
 		{
@@ -1277,133 +695,45 @@ namespace d360.model
 			return BulkExternalResultsImport(model, execution, false);
 		}
 
-		public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation)
-		{
-			model.ForEach(m =>
-			{
-				m.allocationUid = allocation.Uid;
-			});
-
-			return BulkMetricsImport(model, execution, true);
-		}
-
-		public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance)
-		{
-			model.ForEach(m =>
-			{
-				m.scoreType = scoreType;
-			});
-
-			return BulkMetricsImport(model, execution, false);
-		}
-		
-		public void CreateCheckDependencyRemovedNotificationExecution(List<Guid> versionUids)
-		{
-			ScoreExecution execution = createScoreExecution();
-
-			ScoreExecutionItem executionItem = new ScoreExecutionItem
-			{
-				ChangeType = ScoreQueueChangeType.CheckTypeDependencyRemoved,
-				ExecutionID = execution.ID,
-				State = ScoreExecutionItemState.NotProcessed,
-				RowNumber = 1,
-				Payload = JsonConvert.SerializeObject(new CheckTypeDependencyRemovedModel { VersionUids = versionUids })
-			};
-			Add(executionItem);
-
-			sendScoreQueueMessage(execution, ScoreQueueChangeType.CheckTypeDependencyRemoved);
-		}
-
 		public void CreateCheckDependencyRemovedResultExecution(List<Guid> versionUids)
 		{
 			string sql = @"
-							create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, Result bit)
-							insert into #results
-								select	distinct
-										S.AssetUid,
-										A2.AllocationUid,
-										A2.Uid as MetricAssetUid,
-										V2.Uid as MetricAssetVersionUid,
-										I2.Value as Result
-								from	metrics.AssetVersion V
-										inner join metrics.ScoreItem I on  I.AssetVersionUid = V.Uid
-										inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
-										inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
-										inner join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
-										inner join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
-										inner join metrics.AssetVersion V2 on V2.Uid = I2.AssetVersionUid and V2.State = 1
-										inner join metrics.Asset A2 on A2.State = 1 and A2.Uid = V2.AssetUid and A2.IsGroup = 0
-								where   V.Uid in @versionUids;
-
-							CREATE INDEX IX_TempResults ON #results ( AssetUid );
-
-							declare @ef date = cast(getutcdate() as date);
-
-							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-								select  *
-								from    (
-										select	@ID as ExecutionID,
-												@changeType as ChangeType,
-												ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
-												(
-												select	A.AssetUid,
-														@ef as EffectiveDate,
-														(
-														select	AllocationUid,
-																MetricAssetUid,
-																MetricAssetVersionUid,
-																Result
-														from	#results
-														where	AssetUid = A.AssetUid
-														for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from	#results A
-										group by A.AssetUid
-										) J 
-								where   J.Payload like '%Measures%';";
-
-			ScoreExecution execution = createScoreExecution();
+select	distinct
+		S.AssetUid
+from	metrics.AssetVersion V
+		inner join metrics.ScoreItem I on  I.AssetVersionUid = V.Uid
+		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
+		inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
+		inner join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
+		inner join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
+		inner join metrics.AssetVersion V2 on V2.Uid = I2.AssetVersionUid and V2.State = 1
+		inner join metrics.Asset A2 on A2.State = 1 and A2.Uid = V2.AssetUid and A2.IsGroup = 0
+where   V.Uid in @versionUids";
 
 			Connection.OpenIfClosed().Wait();
-
-			int rowsImpacted = Connection.Execute(
-				sql,
-				new
-				{
-					execution.ID,
-					versionUids,
-					changeType = (int)ScoreQueueChangeType.AssetMeasures
-				});
-
-			if (rowsImpacted > 0)
+			var results = Connection.Query<Guid>(sql, new { versionUids }).ToList();
+			if (results.Count > 0)
 			{
-				sendScoreQueueMessage(execution);
-			}
-			else
-			{
-				endEmptyExecution(Connection, execution.ID);
+				CreateRescoreRequests(results, ScoreType.Governance);
 			}
 		}
 
 		public void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid)
 		{
 			string sql = @"
-						insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-							select  @ID as ExecutionID, 
-									@changeType as ChangeType,
-									E.ItemNumber as RowNumber,
-									(
-									select	E.AllocationUid,
-											E.AssetUid, 
-											E.EffectiveDate
-									for json path, WITHOUT_ARRAY_WRAPPER
-									) as Payload,
-									0 as [State]
-							from    api.ExecutionScore E
-							where   E.ExecutionID = @apiExecutionUid ";
+insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
+	select  @ID as ExecutionID, 
+			@changeType as ChangeType,
+			E.ItemNumber as RowNumber,
+			(
+			select	E.AllocationUid,
+					E.AssetUid, 
+					E.EffectiveDate
+			for json path, WITHOUT_ARRAY_WRAPPER
+			) as Payload,
+			0 as [State]
+	from    api.ExecutionScore E
+	where   E.ExecutionID = @apiExecutionUid ";
 
 			ScoreExecution execution = createScoreExecution();
 
@@ -1422,163 +752,15 @@ namespace d360.model
 			{
 				sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
 			}
-			else
-			{
-				endEmptyExecution(Connection, execution.ID);
-			}
 		}
 
-		public void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid, bool isUpdatedScoring)
+		public void CreateImportAssetsExecution(Guid apiExecutionUid, Guid assetTypeUid)
 		{
 			if (Any<MetricAllocation>(i => i.AssetTypeUid == assetTypeUid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-			{ 
-				string sql = "";
-				if (isUpdatedScoring)
-				{
-					sql = @"select Uid from api.ExecutionAsset where ExecutionID = @apiExecutionUid and Success = 1";
-					var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
-					CreateRescoreRequests(assetUids, ScoreType.Governance);
-				}
-				else 
-				{
-					sql = @"
-declare @ef date = cast(getutcdate() as date); 
-insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-	select  * 
-	from    (
-			select	@ID as ExecutionID,
-					@changeType as ChangeType,
-					EA.ItemNumber as RowNumber,
-					(
-					select	EA.Uid as AssetUid, 
-							@ef as EffectiveDate,
-							(
-							select	A.Uid as AllocationUid,
-									M.Uid as MetricAssetUid,
-									V.Uid as MetricAssetVersionUid,
-									cast(0 as bit) as Result
-							from	metrics.Allocation A 
-									inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-									cross apply (
-										select	Uid
-										from	metrics.AssetVersion 
-										where	AssetUid = M.Uid
-												and EffectiveDate <= getutcdate()
-												and EffectiveEndDate is null
-												and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-												and Definition <> '{}'
-									) V
-							for json path
-							) as Measures
-					for json path, WITHOUT_ARRAY_WRAPPER
-					) as Payload,
-					0 as [State]
-			from	api.ExecutionAsset EA 
-			where	EA.ExecutionID = @apiExecutionUid
-					and EA.Success = 1
-			) J 
-	where   J.Payload like '%Measures%';";
-
-					ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-					int rowsImpacted = Connection.Execute(
-						sql,
-						new
-						{
-							apiExecutionUid,
-							execution.ID,
-							changeType = (int)ScoreQueueChangeType.AssetMeasures,
-							assetTypeUid
-						});
-
-					if (rowsImpacted > 0)
-					{
-						sendScoreQueueMessage(execution);
-					}
-					else
-					{
-						endEmptyExecution(Connection, execution.ID);
-					}			
-				}			
-			}
-		}
-
-		public void CreateDeleteRelationshipsExecution(Guid apiExecutionUid, int intersectTypeId)
-		{
-			if (isScoreAllocationPresentForIntersectType(intersectTypeId))
 			{
-				string sql = @"
-							declare @ef date = cast(getutcdate() as date); 
-							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-								select  *
-								from    (
-										select	@ID as ExecutionID,
-												@changeType as ChangeType,
-												ROW_NUMBER() OVER(order by A.ID) as RowNumber,
-												(
-												select	A.Uid as AssetUid, 
-														@ef as EffectiveDate,
-														(
-														select	SAL.Uid as AllocationUid,
-																SA.Uid as MetricAssetUid,
-																V.Uid as MetricAssetVersionUid,
-																cast(0 as bit) as Result
-														from	metrics.Allocation SAL
-																inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-																cross apply (
-																	select	Uid
-																	from	metrics.AssetVersion 
-																	where	AssetUid = SA.Uid
-																			and EffectiveDate <= getutcdate()
-																			and EffectiveEndDate is null
-																			and (
-																			(JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-																			or 
-																			(JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-																			)
-																			and Definition is not null 
-																			and Definition <> 'null' 
-																			and Definition <> '{}'
-																) V
-														where	SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-																for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from	api.ExecutionDeletedRelationship ER
-												inner join api.Execution Ex on Ex.ExecutionID = ER.ExecutionID
-												cross apply openjson(Ex.Fields) with (IntersectTypeUid uniqueidentifier '$.IntersectTypeUid') DF
-												inner join IntersectType T on T.Uid = DF.IntersectTypeUid
-												inner join Predicate P on P.ID = T.PredicateID 
-												inner join Asset A on (A.ID = ER.SubjectID or A.ID = ER.ObjectID)
-													and ER.ExecutionID = @apiExecutionUid 
-													and ER.Success = 1
-												inner join AssetType ST on ST.ID = A.AssetTypeID
-										) J 
-								where   J.Payload like '%Measures%';";
-
-				ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-				Connection.OpenIfClosed().Wait();
-
-				int rowsImpacted = Connection.Execute(
-					sql,
-					new
-					{
-						apiExecutionUid,
-						execution.ID,
-						changeType = (int)ScoreQueueChangeType.AssetMeasures
-					});
-
-				if (rowsImpacted > 0)
-				{
-					sendScoreQueueMessage(execution);
-				}
-				else
-				{
-					endEmptyExecution(Connection, execution.ID);
-				}
+				string sql = @"select Uid from api.ExecutionAsset where ExecutionID = @apiExecutionUid and Success = 1";
+				var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
+				CreateRescoreRequests(assetUids, ScoreType.Governance);
 			}
 		}
 
@@ -1587,85 +769,51 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			if (isScoreAllocationPresentForIntersectType(intersectTypeId))
 			{
 				string sql = @"
-							declare @ef date = cast(getutcdate() as date); 
-							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-								select  *
-								from    (
-										select	@ID as ExecutionID,
-												@changeType as ChangeType,
-												ROW_NUMBER() OVER(order by S.ID) as RowNumber,
-												(
-												select	S.Uid as AssetUid, 
-														@ef as EffectiveDate,
-														(
-														select	SAL.Uid as AllocationUid,
-																SA.Uid as MetricAssetUid,
-																V.Uid as MetricAssetVersionUid,
-																cast(0 as bit) as Result
-														from	metrics.Allocation SAL
-																inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-																cross apply (
-																	select	Uid
-																	from	metrics.AssetVersion 
-																	where	AssetUid = SA.Uid
-																			and EffectiveDate <= getutcdate()
-																			and EffectiveEndDate is null
-																			and (
-																			(JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-																			or 
-																			(JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-																			)
-																			and Definition is not null 
-																			and Definition <> 'null' 
-																			and Definition <> '{}'
-																) V
-														where	SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-																for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from	(
-													SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
-													FROM api.ExecutionRelationship ER
-													inner join [Intersect] R on R.ID = ER.IntersectID 
-														and ER.ExecutionID = @apiExecutionUid 
-														and ER.Success = 1
-													inner join Asset A on A.ID = R.SubjectAssetId
-													UNION ALL
-													SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
-													FROM api.ExecutionRelationship ER
-													inner join [Intersect] R on R.ID = ER.IntersectID 
-														and ER.ExecutionID = @apiExecutionUid 
-														and ER.Success = 1
-													inner join Asset A on A.ID = R.ObjectAssetId
-												) S
-												inner join IntersectType T on T.ID = S.IntersectTypeID 
-												inner join [Predicate] P on P.ID = T.PredicateID 
-												inner join AssetType ST on ST.ID = S.AssetTypeID
-										) J 
-								 where J.Payload like '%Measures%';";
-
-				ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
+select	S.Uid as AssetUid
+from	(
+			SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+			FROM api.ExecutionRelationship ER
+			inner join [Intersect] R on R.ID = ER.IntersectID 
+				and ER.ExecutionID = @apiExecutionUid 
+				and ER.Success = 1
+			inner join Asset A on A.ID = R.SubjectAssetId
+			UNION ALL
+			SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
+			FROM api.ExecutionRelationship ER
+			inner join [Intersect] R on R.ID = ER.IntersectID 
+				and ER.ExecutionID = @apiExecutionUid 
+				and ER.Success = 1
+			inner join Asset A on A.ID = R.ObjectAssetId
+		) S
+		inner join IntersectType T on T.ID = S.IntersectTypeID 
+		inner join [Predicate] P on P.ID = T.PredicateID 
+		inner join AssetType ST on ST.ID = S.AssetTypeID
+where	exists (
+		select	1
+		from	metrics.Allocation SAL
+				inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+				cross apply (
+					select	Uid
+					from	metrics.AssetVersion 
+					where	AssetUid = SA.Uid
+							and EffectiveDate <= getutcdate()
+							and EffectiveEndDate is null
+							and (
+							(JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+							or 
+							(JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+							)
+							and Definition is not null 
+							and Definition <> 'null' 
+							and Definition <> '{}'
+				) V
+		where	SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+		)";
 				Connection.OpenIfClosed().Wait();
-
-				int rowsImpacted = Connection.Execute(
-					sql,
-					new
-					{
-						apiExecutionUid,
-						execution.ID,
-						changeType = (int)ScoreQueueChangeType.AssetMeasures
-					}, commandTimeout: timeout);
-
-				if (rowsImpacted > 0)
+				var results = Connection.Query<Guid>(sql, new { apiExecutionUid }, commandTimeout: timeout).ToList();
+				if (results.Count > 0)
 				{
-					sendScoreQueueMessage(execution);
-				}
-				else
-				{
-					endEmptyExecution(Connection, execution.ID);
+					CreateRescoreRequests(results, ScoreType.Governance);
 				}
 			}
 		}
@@ -1697,241 +845,9 @@ insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, 
 			return execution.Uid;
 		}
 
-		public void CreateMeasureChangedResultExecution(List<AssetMeasureModel> list, Guid? apiExecutionUid = null)
+		public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid)
 		{
-			if (list.Count > 0)
-			{
-				List<ScoreExecutionItem> scoreExecutionItems = new List<ScoreExecutionItem>();
-				List<DateTime> effectiveDates = list.Select(o => o.EffectiveDate).Distinct().OrderBy(o => o).ToList();
-				effectiveDates.ForEach(ed =>
-				{
-					ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-					DataTable itemsTable = new DataTable();
-					itemsTable.Columns.Add("ExecutionID", typeof(long));
-					itemsTable.Columns.Add("ChangeType", typeof(int));
-					itemsTable.Columns.Add("RowNumber", typeof(int));
-					itemsTable.Columns.Add("Payload", typeof(string));
-
-					scoreExecutionItems.Clear();
-					List<AssetMeasureModel> assetMeasuresSubset = list.Where(m => m.EffectiveDate == ed).ToList();
-					for (int i = 0; i < assetMeasuresSubset.Count; i++)
-					{
-						DataRow itemRow = itemsTable.NewRow();
-						itemRow["ExecutionID"] = execution.ID;
-						itemRow["ChangeType"] = (int)ScoreQueueChangeType.AssetMeasures;
-						itemRow["RowNumber"] = i + 1;
-						itemRow["Payload"] = JsonConvert.SerializeObject(assetMeasuresSubset[i]);
-						itemsTable.Rows.Add(itemRow);
-					}
-
-					Connection.OpenIfClosed().Wait();
-
-					Connection.Execute(@"
-										drop table if exists #ExecutionItem;
-										create table #ExecutionItem (
-											ExecutionID bigint not null,
-											ChangeType int not null,
-											RowNumber int not null,
-											Payload nvarchar(max) not null
-										);
-										alter table #ExecutionItem add primary key ( ExecutionID DESC, ChangeType DESC, RowNumber ASC );");
-
-					using (SqlTransaction trans = Connection.BeginTransaction())
-					{
-
-						using (SqlBulkCopy bulkCopy = Connection.CreateBulkCopy("#ExecutionItem", trans: trans))
-						{
-							bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-							bulkCopy.ColumnMappings.Add("ChangeType", "ChangeType");
-							bulkCopy.ColumnMappings.Add("RowNumber", "RowNumber");
-							bulkCopy.ColumnMappings.Add("Payload", "Payload");
-
-							bulkCopy.WriteToServer(itemsTable);
-						}
-
-						Connection.Execute(@"
-											merge [metrics].[ExecutionItem] as T
-											using #ExecutionItem as S
-											on (S.ExecutionID = T.ExecutionID and S.ChangeType = T.ChangeType and S.RowNumber = T.RowNumber)
-											when matched then 
-											update set 
-												T.Payload = S.Payload,
-												T.State = 0
-											when not matched then
-												insert (ExecutionID, ChangeType, RowNumber, State, Payload) 
-												values (S.ExecutionID, S.ChangeType, S.RowNumber, 0, S.Payload);
-
-											truncate table #ExecutionItem;", transaction: trans, commandTimeout: timeout);
-
-						trans.Commit();
-					}
-
-					sendScoreQueueMessage(execution);
-				});
-			}
-		}
-
-		public void CreateMeasureRemovedNotificationExecution(MetricAssetVersion version)
-		{
-			ScoreExecution execution = createScoreExecution();
-
-			ScoreExecutionItem executionItem = new ScoreExecutionItem
-			{
-				ChangeType = ScoreQueueChangeType.MeasureRemoved,
-				ExecutionID = execution.ID,
-				State = ScoreExecutionItemState.NotProcessed,
-				RowNumber = 1,
-				Payload = JsonConvert.SerializeObject(
-					new MeasureRemovedModel
-					{
-						EffectiveEndDate = version.EffectiveEndDate.Value,
-						MetricAssetUid = version.AssetUid,
-						MetricAssetVersionUid = version.Uid
-					}
-				)
-			};
-
-			Add(executionItem);
-
-			sendScoreQueueMessage(execution, ScoreQueueChangeType.MeasureRemoved);
-		}
-
-		public void CreateMeasureRemovedResultExecution(Guid metricAssetVersionUid)
-		{
-			ScoreExecution execution = createScoreExecution();
-			int changeType = (int)ScoreQueueChangeType.AssetMeasures;
-
-			Connection.OpenIfClosed().Wait();
-
-			string sql = "declare @ef date = cast(getutcdate() as date), @numberOfResults int = 0;";
-
-			// Build list of results before deleting score links and other score data.
-			sql += @"
-					create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, Result bit);
-
-					insert into #results
-						select	distinct
-								S.AssetUid
-								,A.AllocationUid
-								,A.Uid as MetricAssetUid
-								,V.Uid as MetricAssetVersionUid
-								,coalesce(SI.Result, 0) as Result
-						from	metrics.ScoreItem I
-								inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricAssetVersionUid
-								inner join metrics.Score S on S.Uid = L.ScoreUid
-								inner join metrics.AssetVersion LV on LV.Uid = I.AssetVersionUid 
-								inner join metrics.Asset LA on LA.Uid = LV.AssetUid
-								inner join metrics.Asset A on A.AllocationUid = LA.AllocationUid and A.Uid <> LA.Uid and A.IsGroup = 0 and (A.ParentUid <> LV.AssetUid or A.ParentUid is null)
-								cross apply (
-									select	max(EffectiveDate) as EffectiveDate
-									from	metrics.AssetVersion
-									where	AssetUid = A.Uid
-											and [State] = 1 
-											and EffectiveDate <= @ef 
-											and (EffectiveEndDate > @ef or EffectiveEndDate is null)
-								) MV
-								inner join metrics.AssetVersion V on A.Uid = V.AssetUid and V.State = 1 and V.EffectiveDate = MV.EffectiveDate
-								outer apply (
-									select	II.Value as Result
-									from	metrics.ScoreItemLink IL
-											inner join metrics.ScoreItem II on IL.ScoreItemUid = II.Uid and IL.ScoreUid = S.Uid and II.AssetVersionUid = V.Uid
-								) SI;
-
-					CREATE INDEX IX_TempResults ON #results ( AssetUid );";
-
-			// Delete asset scores where this measure is the only one that was present and was created today (a one-measure score).
-			// Also delete score items linked to these scores that we will be deleting, but are NOT linked to any other (i.e. earlier) scores.
-			sql += @"
-					create table #Scores (Uid uniqueidentifier, EffectiveDate date, EndDate date, OtherMeasuresCount int);
-
-					insert into #Scores
-						select	distinct
-								L.ScoreUid,
-								S.EffectiveDate,
-								S.EndDate,
-								C.[Count] as OtherMeasuresCount
-						from	metrics.ScoreItem I
-								inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricAssetVersionUid
-								inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate = @ef and S.EndDate is null
-								cross apply (
-									select	count(1) as [Count]
-									from	metrics.ScoreItemLink IL
-											inner join metrics.ScoreItem II on II.Uid = IL.ScoreItemUid and IL.ScoreUid = S.Uid and IL.ScoreItemUid <> L.ScoreItemUid 
-											inner join metrics.AssetVersion IV on IV.Uid = II.AssetVersionUid and IV.State = 1
-											inner join metrics.Asset IA on IA.State = 1 and IA.Uid = IV.AssetUid and IA.ParentUid is null
-								) C;
-
-					-- Delete the link between this measure version and today's score. 
-					delete	L 
-					from	metrics.ScoreItemLink L 
-							inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate = @ef and S.EndDate is null 
-							inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid and I.AssetVersionUid = @metricAssetVersionUid; 
-
-					-- End-date active scores that are prior to current UTC.
-					update  T 
-					set     T.EndDate = dateadd(dd, -1, @ef) ,
-							T.[Log] = T.[Log] + 'End-dated by Score Execution ' + cast(@ExecutionId as varchar(50)) + '; '
-					from	metrics.Score T 
-							inner join #Scores S on S.Uid = T.Uid and S.EffectiveDate < @ef; 
-
-					-- Delete any staging data tied to this measure version / effective date
-					delete	metrics.StagingScoreItem where MeasureVersionUid = @metricAssetVersionUid and EffectiveDate = @ef; 
-
-					-- Delete asset scores where this measure is the only one that was present and was created today (a one-measure score).
-					delete  T 
-					from	metrics.Score T 
-							inner join #Scores S on S.Uid = T.Uid and S.OtherMeasuresCount = 0 and S.EffectiveDate = @ef;";
-
-			// Now insert into execution result table
-			sql += @"
-					insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-					select  *
-					from    (
-							select	@ID as ExecutionID,
-									@changeType as ChangeType,
-									ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
-									(
-									select	A.AssetUid,
-											@ef as EffectiveDate,
-											(
-											select	AllocationUid,
-													MetricAssetUid,
-													MetricAssetVersionUid,
-													Result
-											from	#results
-											where	AssetUid = A.AssetUid
-											for json path
-											) as Measures
-									for json path, WITHOUT_ARRAY_WRAPPER
-									) as Payload,
-									0 as [State]
-							from	#results A
-							group by A.AssetUid
-							) J 
-					where   J.Payload like '%Measures%';";
-
-			Connection.OpenIfClosed().Wait();
-
-			int rowsAffected = Connection.Execute(sql, new { ExecutionId = execution.Uid, execution.ID, metricAssetVersionUid, changeType }, commandTimeout: 1200);
-
-			if (rowsAffected > 0)
-			{
-				sendScoreQueueMessage(execution);
-			}
-			else
-			{
-				endEmptyExecution(Connection, execution.ID);
-			}
-		}
-
-		public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid, bool isUpdatedScoring)
-		{
-			string sql = "";
-
-			if (isUpdatedScoring)
-			{
-				sql = @"
+			string sql = @"
 declare @assetTypeUid uniqueidentifier;
 
 select  top 1 
@@ -1972,101 +888,19 @@ where	exists(
 								and Definition <> '{}'
 					) V
 		)";
-				var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
-				assetUids.ForEach(assetUid =>
-				{
-					var info = new ScoreQueueInfo
-					{
-						CompanyID = CurrentCompanyID,
-						ResourceID = CurrentResourceID,
-						ChangeType = ScoreQueueChangeType.RescoreRequest,
-						UseUpdatedScoringEngine = true,
-						Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
-						StartedOn = DateTime.UtcNow
-					};
-					QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-				});
-			}
-			else
+			var assetUids = Query<Guid>(sql, new { apiExecutionUid }).ToList();
+			assetUids.ForEach(assetUid =>
 			{
-				sql = @"
-							declare @ef date = cast(getutcdate() as date); 
-							declare @assetTypeUid uniqueidentifier;
-
-							select  @assetTypeUid = T.Uid
-							from    api.ExecutionItemDependentChange E
-									inner join Asset A on A.Uid = JSON_VALUE(Payload, '$.ParentAssetUid')
-									inner join AssetType T on T.ID = A.AssetTypeID
-							where   ExecutionID = @apiExecutionUid
-									and DependentChangeType = 1 --parent change
-
-							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-								select  distinct 
-										* 
-								from    (
-										select	@ID as ExecutionID,
-												@changeType as ChangeType,
-												EA.ItemNumber,
-												(
-												select	EA.AssetUid, 
-														@ef as EffectiveDate,
-														(
-														select	A.Uid as AllocationUid,
-																M.Uid as MetricAssetUid,
-																V.Uid as MetricAssetVersionUid,
-																cast(0 as bit) as Result
-														from	metrics.Allocation A 
-																inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @assetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-																cross apply (
-																	select	Uid
-																	from	metrics.AssetVersion 
-																	where	AssetUid = M.Uid
-																			and EffectiveDate <= getutcdate()
-																			and EffectiveEndDate is null
-																			and (
-																				(
-																				JSON_VALUE(Definition, '$.Governance.Check') = 'Relation'
-																				and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') in (select T.Uid from IntersectType T inner join Predicate P on P.ID = T.PredicateID and P.[Type] in (3,4))
-																				) or (
-																				JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate'
-																				and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') in (select Uid from Predicate where [Type] in (3,4))
-																				)
-																			)
-																			and Definition <> '{}'
-																) V
-														for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from	(
-												select  ROW_NUMBER() OVER(order by JSON_VALUE(Payload, '$.ParentAssetUid')) ItemNumber,
-														JSON_VALUE(Payload, '$.ParentAssetUid') as AssetUid 
-												from    api.ExecutionItemDependentChange
-												where   ExecutionID = @apiExecutionUid
-														and DependentChangeType = 1 --parent change
-												) EA
-										) J 
-								where   J.Payload like '%Measures%';";
-
-				ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-				int rowsImpacted = Connection.Execute(sql, new { apiExecutionUid, execution.ID, changeType = (int)ScoreQueueChangeType.AssetMeasures });
-
-				if (rowsImpacted > 0)
+				var info = new ScoreQueueInfo
 				{
-					sendScoreQueueMessage(execution);
-					Connection.Execute(
-						"delete api.ExecutionItemDependentChange where ExecutionID = @apiExecutionUid and DependentChangeType = 1",
-						new { apiExecutionUid }
-						);
-				}
-				else
-				{
-					endEmptyExecution(Connection, execution.ID);
-				}
-			}
-
+					CompanyID = CurrentCompanyID,
+					ResourceID = CurrentResourceID,
+					ChangeType = ScoreQueueChangeType.RescoreRequest,
+					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
+					StartedOn = DateTime.UtcNow
+				};
+				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+			});
 		}
 		
 		public void CreateRescoreRequests(List<Guid> assets, ScoreType scoreType)
@@ -2078,7 +912,6 @@ where	exists(
 					CompanyID = CurrentCompanyID,
 					ResourceID = CurrentResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
-					UseUpdatedScoringEngine = true,
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = scoreType, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
 				};
@@ -2158,230 +991,6 @@ group by	a.Uid",
 			}
 		}
 
-		public void CreateRuleResultsRemovedExecution(Guid assetUid)
-		{
-			string sql = @"
-						create table #results (AssetUid uniqueidentifier, AllocationUid  uniqueidentifier, MetricAssetUid uniqueidentifier, MetricAssetVersionUid uniqueidentifier, EffectiveDate date, Result bit)
-						insert into #results
-							select	S.AssetUid,
-									A.AllocationUid,
-									V.AssetUid as MetricAssetUid,
-									I.AssetVersionUid as MetricAssetVersionUid,
-									S.EffectiveDate,
-									0 as Result
-							from	metrics.ScoreItem I
-									inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
-									inner join metrics.Asset A on A.Uid = V.AssetUid
-									inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 2
-									cross apply openjson(I.Evidence) Ev
-									cross apply openjson(Ev.value) Rp 
-									cross apply openjson(Rp.value)  with (Uid nvarchar(max) '$.Uid') as P
-									inner join metrics.ScoreItemLink SIL on SIL.ScoreItemUid = I.Uid
-									inner join metrics.Score S on S.Uid = SIL.ScoreUid
-							where	Evidence <> '{}' 
-									and Evidence is not null
-									and ISNUMERIC(Ev.[key]) = 1
-									and Rp.[key] = 'RollupPath' 
-									and P.Uid = @assetUid;
-
-						CREATE INDEX IX_TempResults ON #results ( AssetUid );
-
-						insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-							select  * 
-							from    (
-									select	@ID as ExecutionID,
-											@changeType as ChangeType,
-											ROW_NUMBER() over (order by AssetUid asc) as RowNumber,
-											(
-											select	A.AssetUid,
-													A.EffectiveDate,
-													(
-													select	AllocationUid,
-															MetricAssetUid,
-															MetricAssetVersionUid,
-															Result
-													from	#results
-													where	AssetUid = A.AssetUid
-															and EffectiveDate = A.EffectiveDate
-													for json path
-													) as Measures
-											for json path, WITHOUT_ARRAY_WRAPPER
-											) as Payload,
-											0 as [State]
-									from	#results A
-									group by A.AssetUid, A.EffectiveDate
-									) J 
-							where   J.Payload like '%Measures%';";
-
-			ScoreExecution execution = createScoreExecution();
-
-			Connection.OpenIfClosed().Wait();
-
-			int rowsImpacted = Connection.Execute(
-				sql,
-				new
-				{
-					execution.ID,
-					assetUid,
-					changeType = (int)ScoreQueueChangeType.AssetMeasures
-				});
-
-			if (rowsImpacted > 0)
-			{
-				sendScoreQueueMessage(execution);
-			}
-			else
-			{
-				endEmptyExecution(Connection, execution.ID);
-			}
-		}
-
-		public void CreateRulesRemovedExecution(Guid apiExecutionUid, List<Guid> assetUids)
-		{
-			assetUids.ForEach(uid =>
-			{
-				ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-				ScoreExecutionItem executionItem = new ScoreExecutionItem
-				{
-					ChangeType = ScoreQueueChangeType.RuleAssetRemoved,
-					ExecutionID = execution.ID,
-					State = ScoreExecutionItemState.NotProcessed,
-					RowNumber = 1,
-					Payload = JsonConvert.SerializeObject(new RuleAssetRemovedModel { AssetUid = uid })
-				};
-				Add(executionItem);
-
-				sendScoreQueueMessage(execution, ScoreQueueChangeType.RuleAssetRemoved);
-			});
-		}
-
-		public void CreateRulesRemovedExecution(Guid apiExecutionUid, int assetTypeId)
-		{
-			bool anyActiveMeasureVersions = Query<bool>(@"
-														select cast(iif(count(1) > 0, 1, 0) as bit) as [Any] 
-														from metrics.RollupPathSegment Se 
-														inner join metrics.AssetVersionRollupPath Ar on Ar.RollupPathUid = Se.RollupPathUid and Se.AssetTypeID = @assetTypeId 
-														inner join metrics.AssetVersion Ve on Ve.Uid = Ar.AssetVersionUid and Ve.EffectiveEndDate is null", new { assetTypeId }).First();
-
-			if (anyActiveMeasureVersions)
-			{
-				List<Guid> assetUids = Query<Guid>("select uid from api.ExecutionDeletedAsset where ExecutionID = @apiExecutionUid and Success = 1", new { apiExecutionUid }).ToList();
-				CreateRulesRemovedExecution(apiExecutionUid, assetUids);
-			}
-		}
-
-		public void CreateWorkflowCheckExecution(ScoreExecution previousExecution, ScoreQueueChangeType previousChangeType)
-		{
-			ScoreExecution newExecution = createScoreExecution();
-
-			string sql = @"
-						insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-							select	@executionID,
-									@changeType,
-									RowNumber,
-									(
-										select	json_value(Measures, '$[0].AllocationUid') as AllocationUid,
-												AssetUid,
-												EffectiveDate
-										from	openjson(I.Payload) with (AssetUid uniqueidentifier '$.AssetUid', EffectiveDate date '$.EffectiveDate', Measures nvarchar(max) '$.Measures' as json)
-										for json path, WITHOUT_ARRAY_WRAPPER
-									) as Payload,
-									0 as [State]
-							from	metrics.ExecutionItem I
-							where	ExecutionID = @previousID 
-									and ChangeType = @previousChangeType
-									and [State] = 1";
-
-			Connection.OpenIfClosed().Wait();
-
-			int rowsImpacted = Connection.Execute(
-				sql,
-				new
-				{
-					previousID = previousExecution.ID,
-					previousChangeType = (int)previousChangeType,
-					executionID = newExecution.ID,
-					changeType = (int)ScoreQueueChangeType.WorkflowCheck,
-				});
-
-			if (rowsImpacted > 0)
-			{
-				sendScoreQueueMessage(newExecution, ScoreQueueChangeType.WorkflowCheck);
-			}
-			else
-			{
-				endEmptyExecution(Connection, newExecution.ID);
-			}
-		}
-
-		public void CreateWorkflowItemFieldUpdateExecution(AssetType assetType, Asset asset)
-		{
-			if (assetType != null && asset != null && Any<MetricAllocation>(i => i.AssetTypeUid == assetType.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
-			{
-				string sql = @"
-							declare @ef date = cast(getutcdate() as date)
-
-							insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-								select  * 
-								from    ( 
-										select	@ID as ExecutionID,
-												@changeType as ChangeType,
-												1 as RowNumber,
-												(
-												select	@AssetUid as AssetUid, 
-														@ef as EffectiveDate,
-														(
-														select	A.Uid as AllocationUid,
-																M.Uid as MetricAssetUid,
-																V.Uid as MetricAssetVersionUid,
-																cast(0 as bit) as Result
-														from	metrics.Allocation A 
-																inner join metrics.Asset M on M.AllocationUid = A.Uid and A.AssetTypeUid = @AssetTypeUid and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
-																cross apply (
-																	select	Uid
-																	from	metrics.AssetVersion 
-																	where	AssetUid = M.Uid
-																			and EffectiveDate <= getutcdate()
-																			and EffectiveEndDate is null
-																			and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-																			and Definition <> '{}'
-																) V
-														for json path
-														) as Measures
-												for json path, WITHOUT_ARRAY_WRAPPER
-												) as Payload,
-												0 as [State]
-										from	Asset EA 
-										where	EA.Uid = @AssetUid
-										) J 
-								where   J.Payload like '%Measures%'";
-
-				ScoreExecution execution = createScoreExecution();
-
-				Connection.OpenIfClosed().Wait();
-
-				int rowsImpacted = Connection.Execute(
-					sql,
-					new
-					{
-						execution.ID,
-						AssetUid = asset.uid,
-						AssetTypeUid = assetType.uid,
-						changeType = (int)ScoreQueueChangeType.AssetMeasures
-					});
-
-				if (rowsImpacted > 0)
-				{
-					sendScoreQueueMessage(execution);
-				}
-				else
-				{
-					endEmptyExecution(Connection, execution.ID);
-				}
-			}
-		}
-		
 		public List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> import, ApiExecution execution, int timeout = 3600)
 		{
 			List<DataQualityDeleteResponseModel> results = new List<DataQualityDeleteResponseModel>();
@@ -2710,7 +1319,7 @@ group by	a.Uid",
 						$"select * from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber > {currentLocation.HighestItemNumberProcessed} order by ItemNumber asc", execution, timeout
 						).ToList();
 
-					List<AssetMeasureModel> assetMeasures = new List<AssetMeasureModel>();
+					var scoreImpactedAssets = new List<Guid>();
 
 					executionDeleteAssetResults.ForEach(dr =>
 					{
@@ -2791,7 +1400,7 @@ group by	a.Uid",
 
 							if (ruleResultUids.Count > 0)
 							{
-								assetMeasures.AddRange(GetAssetMeasuresFromRuleResults(ruleResultUids));
+								scoreImpactedAssets.AddRange(GetImpactedAssetsFromRuleResults(ruleResultUids));
 							}
 
 							// Now perform the delete.
@@ -2812,36 +1421,9 @@ group by	a.Uid",
 					});
 
 					// Now that results are deleted, send the score events to re-process scores for impacted assets.
-					if (assetMeasures.Count > 0)
+					if (scoreImpactedAssets.Count > 0)
 					{
-						List<AssetMeasureModel> newAssetMeasures = new List<AssetMeasureModel>();
-
-						// Filter through and see if there are any duplicates based on the possible dupe logic above.
-						while (assetMeasures.Count > 0)
-						{
-							AssetMeasureModel existingAssetMeasure = assetMeasures.First();
-
-							AssetMeasureModel newAssetMeasure = newAssetMeasures.FirstOrDefault(n => n.AssetUid == existingAssetMeasure.AssetUid && n.EffectiveDate == existingAssetMeasure.EffectiveDate);
-							if (newAssetMeasure != null)
-							{
-								existingAssetMeasure.Measures.ForEach(e =>
-								{
-									if (!newAssetMeasure.Measures.Any(n => n.MetricAssetVersionUid == e.MetricAssetVersionUid))
-									{
-										newAssetMeasure.Measures.Add(e);
-									}
-								});
-							}
-							else
-							{
-								newAssetMeasures.Add(existingAssetMeasure.CloneThis());
-							}
-
-							assetMeasures.RemoveAt(0);
-						}
-
-						// Send to queue.
-						CreateMeasureChangedResultExecution(newAssetMeasures, execution.ExecutionID);
+						CreateRescoreRequests(scoreImpactedAssets, ScoreType.DataQuality);
 					}
 				}
 			}
@@ -2849,7 +1431,7 @@ group by	a.Uid",
 			return results;
 		}		
 		
-		public List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
+		public List<Guid> GetImpactedAssetsFromRuleResults(List<Guid> ruleResultUids)
 		{
 			DataTable ruleResults = new DataTable();
 			ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
@@ -2866,7 +1448,7 @@ group by	a.Uid",
 				Connection.Open();
 			}
 
-			List<RuleResultChangedRawModel> rawMeasures;
+			List<Guid> impactedAssets;
 			using (SqlTransaction trans = Connection.BeginTransaction())
 			{
 				Connection.Execute(@"create table #RuleResults (
@@ -2885,142 +1467,127 @@ group by	a.Uid",
 					bulkCopy.WriteToServer(ruleResults);
 				}
 
-				rawMeasures = Connection
-								.Query<RuleResultChangedRawModel>($@"
-															create table #Items (
-																AllocationUid uniqueidentifier, 
-																MetricAssetUid uniqueidentifier, 
-																MetricAssetVersionUid uniqueidentifier, 
-																AssetUid uniqueidentifier, 
-																EffectiveDate date
-															);
+				impactedAssets = Connection.Query<Guid>($@"
+create table #Items (
+	AllocationUid uniqueidentifier, 
+	MetricAssetUid uniqueidentifier, 
+	MetricAssetVersionUid uniqueidentifier, 
+	AssetUid uniqueidentifier, 
+	EffectiveDate date
+);
 
-															select	distinct
-																	cast(Re.EffectiveDate as date) as EffectiveDate,
-																	Oat.Uid as RuleAssetTypeUid,
-																	Oa.AssetTypeId as RuleAssetTypeId,
-																	Oa.Uid as RuleAssetUid,
-																	Eat.Uid as EvaluatedAssetTypeUid,
-																	Ea.AssetTypeId as EvaluatedAssetTypeId,
-																	Ea.Uid as EvaluatedAssetUid,
-																	I.IntersectTypeID,
-																	I.ID as IntersectID
-															into	#Results
-															from	AssetResult Re
-																	inner join #RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
-																	Inner Join Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
-																	inner join AssetType Eat on Ea.AssetTypeId = Eat.ID
-																	inner join Asset Oa on Oa.[Uid] = Re.OwningAssetUid
-																	inner join AssetType Oat on Oa.AssetTypeId = Oat.ID
-																	inner join [Intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
-																	inner join IntersectType it on i.intersectTypeid = it.id 
-																	inner join [Predicate] p on p.id = it.predicateid and p.[Type] = {(int)PredicateType.Evaluation}
+select	distinct
+		cast(Re.EffectiveDate as date) as EffectiveDate,
+		Oat.Uid as RuleAssetTypeUid,
+		Oa.AssetTypeId as RuleAssetTypeId,
+		Oa.Uid as RuleAssetUid,
+		Eat.Uid as EvaluatedAssetTypeUid,
+		Ea.AssetTypeId as EvaluatedAssetTypeId,
+		Ea.Uid as EvaluatedAssetUid,
+		I.IntersectTypeID,
+		I.ID as IntersectID
+into	#Results
+from	AssetResult Re
+		inner join #RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
+		Inner Join Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
+		inner join AssetType Eat on Ea.AssetTypeId = Eat.ID
+		inner join Asset Oa on Oa.[Uid] = Re.OwningAssetUid
+		inner join AssetType Oat on Oa.AssetTypeId = Oat.ID
+		inner join [Intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
+		inner join IntersectType it on i.intersectTypeid = it.id 
+		inner join [Predicate] p on p.id = it.predicateid and p.[Type] = {(int)PredicateType.Evaluation}
 
-															select	R.IntersectID,
-																	R.EvaluatedAssetUid,
-																	R.EvaluatedAssetTypeUid,
-																	R.RuleAssetUid,
-																	R.RuleAssetTypeUid,
-																	L.RollupPathUid,
-																	L.StartPosition as Position,
-																	Ma.AllocationUid,
-																	Mal.AssetTypeUid as AllocationAssetTypeUid,
-																	Mv.Uid as MetricAssetVersionUid,
-																	Mv.AssetUid as MetricAssetUid,
-																	R.EffectiveDate
-															into	#Raw
-															from	#Results R
-																	inner join metrics.RollupPathLink L on L.IntersectTypeID = R.IntersectTypeID
-																	inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = L.RollupPathUid
-																	inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
-																		and (
-																			(Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate >= R.EffectiveDate)
-																			or (Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate is null)
-																		)
-																	inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
-																	inner join metrics.Allocation Mal on Mal.Uid = Ma.AllocationUid;
+select	R.IntersectID,
+		R.EvaluatedAssetUid,
+		R.EvaluatedAssetTypeUid,
+		R.RuleAssetUid,
+		R.RuleAssetTypeUid,
+		L.RollupPathUid,
+		L.StartPosition as Position,
+		Ma.AllocationUid,
+		Mal.AssetTypeUid as AllocationAssetTypeUid,
+		Mv.Uid as MetricAssetVersionUid,
+		Mv.AssetUid as MetricAssetUid,
+		R.EffectiveDate
+into	#Raw
+from	#Results R
+		inner join metrics.RollupPathLink L on L.IntersectTypeID = R.IntersectTypeID
+		inner join metrics.AssetVersionRollupPath Mr on Mr.RollupPathUid = L.RollupPathUid
+		inner join metrics.AssetVersion Mv on Mv.Uid = Mr.AssetVersionUid
+			and (
+				(Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate >= R.EffectiveDate)
+				or (Mv.EffectiveDate <= R.EffectiveDate and Mv.EffectiveEndDate is null)
+			)
+		inner join metrics.Asset Ma on Ma.Uid = Mv.AssetUid
+		inner join metrics.Allocation Mal on Mal.Uid = Ma.AllocationUid;
 
-															with cte as (
-																select	EvaluatedAssetUid as AssetUid,
-																		EffectiveDate,
-																		RollupPathUid,
-																		Position,
-																		AllocationUid,
-																		MetricAssetUid,
-																		MetricAssetVersionUid,
-																		AllocationAssetTypeUid,
-																		EvaluatedAssetTypeUid as AssetTypeUid
-																from	#Raw
-																where	EvaluatedAssetTypeUid <> AllocationAssetTypeUid
-																		and RuleAssetTypeUid <> AllocationAssetTypeUid
-																union all
-																select	S.Uid as AssetUid,
-																		cte.EffectiveDate,
-																		L.RollupPathUid,
-																		L.StartPosition as Position,
-																		cte.AllocationUid,
-																		cte.MetricAssetUid,
-																		cte.MetricAssetVersionUid,
-																		cte.AllocationAssetTypeUid,
-																		ST.Uid as AssetTypeUid
-																from	cte
-																		inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
-																		inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
-																		inner join Asset S on S.ID = I.SubjectAssetID 
-																		inner join Asset O on O.ID = I.ObjectAssetID and O.Uid = cte.AssetUid
-																		inner join AssetType ST on ST.ID = S.AssetTypeID
-															)
+with cte as (
+	select	EvaluatedAssetUid as AssetUid,
+			EffectiveDate,
+			RollupPathUid,
+			Position,
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			AllocationAssetTypeUid,
+			EvaluatedAssetTypeUid as AssetTypeUid
+	from	#Raw
+	where	EvaluatedAssetTypeUid <> AllocationAssetTypeUid
+			and RuleAssetTypeUid <> AllocationAssetTypeUid
+	union all
+	select	S.Uid as AssetUid,
+			cte.EffectiveDate,
+			L.RollupPathUid,
+			L.StartPosition as Position,
+			cte.AllocationUid,
+			cte.MetricAssetUid,
+			cte.MetricAssetVersionUid,
+			cte.AllocationAssetTypeUid,
+			ST.Uid as AssetTypeUid
+	from	cte
+			inner join [metrics].[RollupPathLink] L on L.RollupPathUid = cte.RollupPathUid and L.EndPosition = cte.Position and L.StartPosition < cte.Position
+			inner join [Intersect] I on I.IntersectTypeID = L.IntersectTypeID
+			inner join Asset S on S.ID = I.SubjectAssetID 
+			inner join Asset O on O.ID = I.ObjectAssetID and O.Uid = cte.AssetUid
+			inner join AssetType ST on ST.ID = S.AssetTypeID
+)
 
-															-- Start Path Asset Scoring
-															insert into #Items
-																select	AllocationUid, 
-																		MetricAssetUid,
-																		MetricAssetVersionUid,
-																		AssetUid,
-																		EffectiveDate
-																from	cte 
-																where	Position = 1;
+-- Start Path Asset Scoring
+insert into #Items
+	select	AllocationUid, 
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			AssetUid,
+			EffectiveDate
+	from	cte 
+	where	Position = 1;
 
-															-- Rule Asset Scoring
-															insert into #Items
-																select	distinct
-																		AllocationUid,
-																		MetricAssetUid,
-																		MetricAssetVersionUid,
-																		RuleAssetUid as AssetUid,
-																		EffectiveDate
-																from	#Raw
-																where	RuleAssetTypeUid = AllocationAssetTypeUid;
+-- Rule Asset Scoring
+insert into #Items
+	select	distinct
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			RuleAssetUid as AssetUid,
+			EffectiveDate
+	from	#Raw
+	where	RuleAssetTypeUid = AllocationAssetTypeUid;
 
-															-- Evaluated Asset Scoring
-															insert into #Items
-																select	distinct
-																		AllocationUid,
-																		MetricAssetUid,
-																		MetricAssetVersionUid,
-																		EvaluatedAssetUid as AssetUid,
-																		EffectiveDate
-																from	#Raw
-																where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
+-- Evaluated Asset Scoring
+insert into #Items
+	select	distinct
+			AllocationUid,
+			MetricAssetUid,
+			MetricAssetVersionUid,
+			EvaluatedAssetUid as AssetUid,
+			EffectiveDate
+	from	#Raw
+	where	EvaluatedAssetTypeUid = AllocationAssetTypeUid;
 
-															select * from #Items", transaction: trans, commandTimeout: timeout).ToList();
+select distinct AssetUid from #Items", transaction: trans, commandTimeout: timeout).ToList();
 			}
 
-			List<AssetMeasureModel> structuredMeasures = rawMeasures
-				.GroupBy(m => new { m.AssetUid, m.EffectiveDate })
-				.Select(m => new AssetMeasureModel
-				{
-					AssetUid = m.Key.AssetUid,
-					EffectiveDate = m.Key.EffectiveDate,
-					Measures = m.Select(o => new AssetMeasureChildModel
-					{
-						AllocationUid = o.AllocationUid,
-						MetricAssetUid = o.MetricAssetUid,
-						MetricAssetVersionUid = o.MetricAssetVersionUid
-					}).ToList()
-				}).ToList();
-
-			return structuredMeasures;
+			return impactedAssets;
 		}
 
 		public decimal? GetAssetScore(long assetId, ScoreType type)
@@ -3037,54 +1604,6 @@ group by	a.Uid",
 			return Query<decimal?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
 		}
 
-		public List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid allocationUid, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate)
-		{
-			DynamicParameters args = new DynamicParameters();
-			args.Add("@AssetVersionEffectiveDate", measureEffectiveDate, DbType.Date);
-			foreach (SqlParameter p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
-			{
-				args.Add(p.ParameterName, p.Value, p.DbType);
-			}
-
-			Connection.OpenIfClosed().Wait();
-
-			List<AssetMeasureModel> list = Connection.Query<AssetMeasureModel>(query.Sql, args, commandTimeout: 600)
-				.ToList()
-				.Select(o => new AssetMeasureModel
-				{
-					AssetUid = o.AssetUid,
-					EffectiveDate = o.EffectiveDate,
-					Measures = new List<AssetMeasureChildModel> {
-						new AssetMeasureChildModel {
-							AllocationUid = allocationUid,
-							MetricAssetUid = metricAssetUid,
-							MetricAssetVersionUid = metricAssetVersionUid,
-							Result = false
-						}
-					}
-				})
-				.ToList();
-
-			return list;
-		}
-		
-		public List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate)
-		{
-			DynamicParameters args = new DynamicParameters();
-			args.Add("@AssetUid", assetUid, DbType.Guid);
-			args.Add("@MaximumEffectiveDate", maxDate ?? DateTime.UtcNow, DbType.Date);
-			foreach (SqlParameter p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
-			{
-				args.Add(p.ParameterName, p.Value, p.DbType);
-			}
-
-			Connection.OpenIfClosed().Wait();
-
-			List<DataQualityMeasureQueryResultModel> list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args, commandTimeout: 600).ToList();
-
-			return list;
-		}	
-		
 		public List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId)
 		{
 			string sql = "";
@@ -3140,42 +1659,29 @@ group by	a.Uid",
 			return list;
 		}		
 		
-		public List<AssetMeasureModel> GetMeasureModelsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility)
+		public List<Guid> GetScoreImpactedAssetsBasedOnResponsibilityAllocation(AssetType assetType, ResponsibilityType responsibility)
 		{
 			DateTime today = DateTime.UtcNow.Date;
-			IEnumerable<ResponsibilityAssetMeasureProcessedResult> measureResults = 
-				Query<ResponsibilityAssetMeasureProcessedResult>(@"
-																select  A.Uid as AssetUid, 
-																		M.AllocationUid,
-																		M.Uid as MetricAssetUid,
-																		V.Uid as MetricAssetVersionUid
-																from    ResponsibilityDetail O 
-																		inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
-																		inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
-																		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-																		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-																		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-																			and ( 
-																				(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-																				(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-																				) 
-																			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-																			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
-																			and V.Definition <> '{}' 
-																group by A.Uid, M.AllocationUid, M.Uid, V.Uid", new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
+			var impactedAssets = Query<Guid>(@"
+select	distinct 
+		A.Uid
+from    ResponsibilityDetail O 
+		inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
+		inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
+		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+			and ( 
+				(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+				(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+				) 
+			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
+			and V.Definition <> '{}' 
+group by A.Uid, M.AllocationUid, M.Uid, V.Uid", 
+new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
 
-			return measureResults.GroupBy(m => new { m.AssetUid })
-				.Select(m => new AssetMeasureModel
-				{
-					AssetUid = m.Key.AssetUid,
-					EffectiveDate = today,
-					Measures = m.Select(o => new AssetMeasureChildModel
-					{
-						AllocationUid = o.AllocationUid,
-						MetricAssetUid = o.MetricAssetUid,
-						MetricAssetVersionUid = o.MetricAssetVersionUid
-					}).Distinct().ToList()
-				}).ToList();
+			return impactedAssets.ToList();
 		}		
 		
 		public ObjectStatisticTileModel GetObjectStatistics(string type, int id)

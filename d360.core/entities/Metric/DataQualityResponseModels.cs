@@ -21,7 +21,8 @@ namespace d360.core.entities.Metric
         [DataMember]
         public List<DataQualityGetResultItem> items { get; set; }
     }
-    [DataContract]
+    
+	[DataContract]
     public class DataQualityGetResultItem
     {
         [DataMember]

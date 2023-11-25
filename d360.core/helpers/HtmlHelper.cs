@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using System.Collections.Generic;
 
 namespace d360.core.helpers
 {
-    public static class HtmlHelper
+	public static class HtmlHelper
     {
         public static string RemoveTags(string data)
         {

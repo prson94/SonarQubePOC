@@ -11,6 +11,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -24,7 +25,7 @@ namespace d360.model.DataAccessLayer
 {
 	public class TagRepository : BaseRepository, ITagRepository
 	{
-		public TagRepository(ICompanyContext company) : base(company)
+		public TagRepository(ICompanyContext company, IFeatureFlagService ff) : base(company, ff)
 		{
 		}
 

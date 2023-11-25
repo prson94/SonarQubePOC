@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -29,8 +30,13 @@ namespace d360.model.DataAccessLayer
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
 
-		public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository, IQueueSource queueSource, IStorageProvider storageProvider)
-			: base(companyContext)
+		public MembershipRepository(
+			ICompanyContext companyContext, 
+			ICommunityContext communityContext, 
+			IAssetRepository assetRepository, 
+			IQueueSource queueSource, 
+			IStorageProvider storageProvider, IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
 			CommunityContext = communityContext;
 			AssetRepository = assetRepository;

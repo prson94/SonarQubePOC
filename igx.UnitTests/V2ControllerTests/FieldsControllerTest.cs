@@ -29,7 +29,6 @@ namespace igx.UnitTests
     public class FieldsControllerTest : BaseTest
     {
         internal FieldsController fieldsController;
-        private Mock<IAssetTypeRepository> AssetTypeRepositoryMock { get; }
         private readonly TestDependencyResolver DependencyResolver;
         private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
@@ -43,9 +42,7 @@ namespace igx.UnitTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-			AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
-
-            this.fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), AssetTypeRepositoryMock.Object)
+            fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), GetCatalogs())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

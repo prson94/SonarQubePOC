@@ -1,21 +1,43 @@
-﻿using Microsoft.Extensions.Hosting;
-using System;
+﻿using d360.extensions;
+using d360.extensions.caching;
+using d360.extensions.events;
+using d360.extensions.mail;
+using LaunchDarkly.Sdk.Server;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder.ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddTimers();
-            });
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c => {
+					c.AddTimers()
+					 .AddAzureStorageQueues();
+				})
+				.ConfigureGovernLogging()
+				.ConfigureServices((context, services) => {
+					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
+						return new AzureQueueSource
+						{
+							EventBusTopicName = context.Configuration["EventBusTopicName"],
+							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
+							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+						};
+					});
+					services.AddSingleton(s => {
+						return new LdClient(context.Configuration["LaunchDarklySdkKey"]);
+					});
+					services.AddScoped<ICachingProvider, DummyCachingProvider>();
+					services.AddScoped<IMailProvider, DummyMailProvider>();
+				});
 
-            using (var host = builder.Build())
+			using (var host = builder.Build())
             {
                 await host.RunAsync();
             }

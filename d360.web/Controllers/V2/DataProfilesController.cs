@@ -1,10 +1,10 @@
-using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
+using d360.featureflags;
 using d360.model.helpers.filters;
 using d360.utils.excel;
 using d360.web.Filters;
@@ -38,7 +38,10 @@ namespace d360.web.Controllers.V2
     ]
     public class DataProfilesController : BaseV2ApiController
     {
-        internal IAssetRepository AssetRepository;
+		public bool SemanticTypesEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()); } }
+		private bool DataProfilesEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()); } }
+
+		internal IAssetRepository AssetRepository;
         internal IDataProfileRepository DataProfiles;
         private readonly ISemanticsRepository SemanticsRepository;
 
@@ -79,7 +82,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetDataProfilesByAsset(Guid assetUid)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
 			}
@@ -118,7 +121,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetDataProfilesByIdentifier(string profileIdentifier)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()))
             {
 				return await sendConflictNotAccessible();
 			}
@@ -285,7 +288,7 @@ namespace d360.web.Controllers.V2
 		]
         public async Task<IHttpActionResult> GetDataProfiles()
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
                 return await sendConflictNotAccessible();
             }
@@ -361,7 +364,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetDataProfilesSeries()
 		{
-			if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+			if (!DataProfilesEnabled)
 			{
 				return await sendConflictNotAccessible();
 			}
@@ -405,7 +408,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataProfiles(List<DataProfileUpsertModel> models)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
 			}				               
@@ -444,8 +447,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataProfiles(List<DataProfileUpsertModel> models)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-            {
+			if (!DataProfilesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}				
 
@@ -488,7 +491,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
         {
             var execution = getApiExecution(1, action: ApiExecutionAction.DeleteDataProfile);
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
 			}
@@ -561,8 +564,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				// FeatureFlag Check
-				if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+				if (!DataProfilesEnabled)
 				{
 					return await sendConflictNotAccessible();
 				}
@@ -679,7 +681,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
 			}
@@ -715,7 +717,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutBulkDataProfilesAsync(List<DataProfileUpsertModel> models)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
             }
@@ -752,8 +754,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteBulkDataProfilesAsync(List<AssetDataProfileDeleteModel> models)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
-            {
+			if (!DataProfilesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}
 
@@ -824,7 +826,7 @@ namespace d360.web.Controllers.V2
 
             try
             {              
-                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                if (!DataProfilesEnabled)
                 {
 					return await sendConflictNotAccessible();
 				}
@@ -913,7 +915,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetMatchingAssetCount(Guid assetUid, string similarType)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+            if (!DataProfilesEnabled)
             {
 				return await sendConflictNotAccessible();
             }
@@ -980,7 +982,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                if (!SemanticTypesEnabled)
                 {
 					return await sendConflictNotAccessible();
 				}
@@ -1409,7 +1411,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {               
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                if (!SemanticTypesEnabled)
                 {
 					return await sendConflictNotAccessible();
 				}
@@ -1486,9 +1488,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
-        {         
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+        {
+			if (!SemanticTypesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}
 
@@ -1509,8 +1511,8 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeBaseTypes()
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+			if (!SemanticTypesEnabled)
+			{
 				return sendConflictNotAccessible().Result;
 			}
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticBaseType.LocalDate.GetAsList()));
@@ -1527,8 +1529,8 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeMatchTypes()
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+			if (!SemanticTypesEnabled)
+			{
 				return sendConflictNotAccessible().Result;
 			}
 
@@ -1554,8 +1556,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetSemanticTypeStatuses()
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+			if (!SemanticTypesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}
 
@@ -1635,9 +1637,9 @@ namespace d360.web.Controllers.V2
             const string ERROR_HEADING = "Error patching semantic types";
 
             try
-            {           
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-                {
+            {
+				if (!SemanticTypesEnabled)
+				{
 					return await sendConflictNotAccessible();
 				}
 
@@ -1689,8 +1691,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-                {
+				if (!SemanticTypesEnabled)
+				{
 					return await sendConflictNotAccessible();
 				}
 
@@ -1739,8 +1741,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+			if (!SemanticTypesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}
 
@@ -1773,8 +1775,8 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
         {
-            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
-            {
+			if (!SemanticTypesEnabled)
+			{
 				return await sendConflictNotAccessible();
 			}
 

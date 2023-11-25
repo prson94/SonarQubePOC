@@ -1,54 +1,62 @@
-﻿using d360.core;
+﻿using Azure.Messaging.ServiceBus;
+using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions;
 using d360.extensions.caching;
+using d360.extensions.events;
 using d360.extensions.info;
 using d360.extensions.mail;
-using d360.extensions.queue;
+using d360.featureflags;
 using d360.model;
-using LaunchDarkly.Sdk.Server;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace igx.jobs.workflowsubscriber
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder.ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddServiceBus(s =>
-                {
-                    s.MessageHandlerOptions.MaxAutoRenewDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.                    
-                    s.MessageHandlerOptions.MaxConcurrentCalls = 25; // up to 25 concurrent calls.
-                })
-                .AddAzureStorage()
-                .AddTimers()
-                .AddFiles();
-            });
-
-			builder.ConfigureServices(services =>
-			{
-				services.AddSingleton<LaunchDarkly.Sdk.Server.LdClient>(x =>
-				{
-					return ActivatorUtilities.CreateInstance<LaunchDarkly.Sdk.Server.LdClient>(x, Config.GetValue<string>("LaunchDarklySdkKey"));
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c => {
+					c.AddServiceBus();
+				})
+				.ConfigureGovernLogging()
+				.ConfigureWebJobs(c => {
+					c.AddServiceBus(s =>
+					{
+						s.MaxAutoLockRenewalDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.                    
+						s.MaxConcurrentCalls = 25; // up to 25 concurrent calls.
+					});
+				})
+				.ConfigureServices((context, services) => {
+					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
+						return new AzureQueueSource
+						{
+							EventBusTopicName = context.Configuration["EventBusTopicName"],
+							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
+							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+						};
+					});
+					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
+						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
+					});
+					services.AddScoped<ICachingProvider, DummyCachingProvider>();
+					services.AddScoped<IMailProvider, DummyMailProvider>();
 				});
-			});
 
 			using (var host = builder.Build())
             {
@@ -57,27 +65,33 @@ namespace igx.jobs.workflowsubscriber
         }
     }
 
-    public class WorkflowSubscriber
-    {
-		readonly LaunchDarkly.Sdk.Server.LdClient LdClient;
+    public class WorkflowSubscriber : BaseWebJob
+	{
 		const string FUNCTION_NAME = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
-		public WorkflowSubscriber(LaunchDarkly.Sdk.Server.LdClient ldc)
+		ICachingProvider Cache;
+		IMailProvider Mail;
+		IQueueSource Queue;
+		IFeatureFlagService FeatureFlags;
+
+		public WorkflowSubscriber(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IFeatureFlagService ff) : base(config)
 		{
-			this.LdClient = ldc;
+			Cache = cache;
+			FeatureFlags = ff;
+			Mail = mail;
+			Queue = queue;
 		}
 
-		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]Message brokeredMessage, ILogger log)
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")]ServiceBusReceivedMessage brokeredMessage, ILogger log)
         {
             string messageString;
             EventInfo info;
-            CompanyContext company;
             var companyId = 0;
 
             try
             {
-                messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
+				messageString = Encoding.UTF8.GetString(brokeredMessage.Body.ToArray());
                 info = JsonConvert.DeserializeObject<EventInfo>(messageString);
             }
             catch (Exception ex)
@@ -97,28 +111,20 @@ namespace igx.jobs.workflowsubscriber
 
 			using (log.BeginScope(logProperties))
 			{
-				// Create EF connection
 				companyId = info.CompanyID;
-				company = JobDbContextCreator.CreateCompanyContext(
-					new UriSecurityContextProvider
-					{
-						CompanyID = companyId,
-						CompanyPrefix = info.DomainPrefix,
-						ResourceID = info.ResourceID,
-						IsAdministrator = true
-					},
-					new MandrillMailProvider
-					{
-						ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
-						SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-					},
-					new AzureQueueSource(),
-					new DummyCachingProvider(),
-					constants.COMMUNITY_DATABASE_CONNECTION);
+				var context = new UriSecurityContextProvider
+				{
+					CompanyID = companyId,
+					CompanyPrefix = info.DomainPrefix,
+					ResourceID = info.ResourceID,
+					IsAdministrator = true
+				};
+				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
 
 				try
 				{
-					company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
+					company.FeatureFlags_TEMP_ASSIGNMENTS = FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser());
 
 					//check if this event already has a open workflow instance
 					if (info.WorkflowItemID <= 0)
@@ -180,8 +186,6 @@ namespace igx.jobs.workflowsubscriber
 					log.LogError(ex, "Error while processing workflow activity.");
 				}
 			}
-
-			CoreFunction.AIFlush();
 		}
     }
 }

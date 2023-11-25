@@ -1677,11 +1677,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
 									}
-									else
-									{
-										addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Skipped", 0, ++step);
-									}
-
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();

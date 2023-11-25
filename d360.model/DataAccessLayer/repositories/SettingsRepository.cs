@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using repositories;
 using System.Collections.Generic;
@@ -8,8 +9,8 @@ namespace d360.model.DataAccessLayer
 	public class SettingsRepository : BaseRepository, ISettingsRepository
     {
 
-        public SettingsRepository(ICompanyContext companyContext)
-            : base(companyContext)
+        public SettingsRepository(ICompanyContext companyContext, IFeatureFlagService ff)
+            : base(companyContext, ff)
         {
         }
 

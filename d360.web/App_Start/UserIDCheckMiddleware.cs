@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.utils.company;
 using d360.web.Extensions;
 using d360.web.Models;
+using d360.model;
 using Dapper;
 using IdentityModel.Client;
 using Microsoft.ApplicationInsights.DataContracts;

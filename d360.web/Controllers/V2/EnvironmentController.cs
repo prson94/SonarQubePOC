@@ -4,21 +4,27 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
-using d360.model.DataAccessLayer;
+using d360.featureflags;
+using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Models.Usage;
+using d360.web.Utilities;
 using Dapper;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.PowerBI.Api.V2;
 using Microsoft.Rest;
 using Microsoft.Web.Http;
+using repositories;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.Drawing;
-using System.Dynamic;
 using System.IO;
+using System.IO.Packaging;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -29,16 +35,6 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
-using Microsoft.PowerBI.Api.V2;
-using d360.web.Extensions;
-using System.Net.Http.Formatting;
-using System.Collections.Specialized;
-using d360.web.Utilities;
-using Newtonsoft.Json;
-using d360.web.Models.Usage;
-using System.IO.Compression;
-using System.IO.Packaging;
-using repositories;
 
 namespace d360.web.Controllers.V2
 {
@@ -64,8 +60,14 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
+		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser()); } }
 
-		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage, IResourceSettingRepository resourceSettingRepository) : base(set)
+		public EnvironmentController(
+			ICoreComponentSet set, 
+			IThemeRepository themeRepository, 
+			IDashboardRepository dashboardRepository, 
+			IStorageProvider storage, 
+			IResourceSettingRepository resourceSettingRepository) : base(set)
 		{
 			ThemeRepository = themeRepository;
 			DashboardRepository = dashboardRepository;
@@ -631,27 +633,29 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetFeatureFlagInfo()
 		{
-			try
+			var userModel = Company.GetFeatureFlagUser();
+			var user = new FeatureFlagUser
 			{
-				var user = GetClientFeatureFlagUser();
-				var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
-				return await Task.FromResult(
-					ResponseMessage(
-						Request.CreateResponse(HttpStatusCode.OK, new
-						{
-							clientId = ClientId,
-							user
-						}))
-					).ConfigureAwait(false);
-
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> { { "Endpoint Method", "Environment.GetFeatureFlagInfo => " } });
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+				key = userModel.Key,
+				anonymous = false,
+				firstName = userModel.FirstName,
+				lastName = userModel.LastName,
+				email = userModel.Email,
+				custom = new Dictionary<string, string> {
+						{ "tenantId", userModel.TenantId.ToString() },
+						{ "tenantName", userModel.TenantName }
+					}
+			};
+				
+			var ClientId = Config.GetValue<string>("LaunchDarklyClientId");
+			return await Task.FromResult(
+				ResponseMessage(
+					Request.CreateResponse(HttpStatusCode.OK, new
+					{
+						clientId = ClientId,
+						user
+					}))
+				).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1762,9 +1766,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				// FeatureFlag Check
-				var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
-				if (!isCustomCssEnabled)
+				if (!IsCustomCssEnabled)
 				{
 					throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnGet, ThemeErrors.CustomCssNotAllowed);
 				}
@@ -1980,9 +1982,7 @@ select	r.uid as ResourceUid,
 
 				if (!string.IsNullOrEmpty(requestModel.CustomCss))
 				{
-					// FeatureFlag Check
-					var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
-					if (!isCustomCssEnabled)
+					if (!IsCustomCssEnabled)
 					{
 						throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, ThemeErrors.CustomCssNotAllowed);
 					}
@@ -2033,9 +2033,7 @@ select	r.uid as ResourceUid,
 
 				if (!string.IsNullOrEmpty(requestModel.CustomCss))
 				{
-					// FeatureFlag Check
-					var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
-					if (!isCustomCssEnabled)
+					if (!IsCustomCssEnabled)
 					{
 						throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.CustomCssNotAllowed);
 					}

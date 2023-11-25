@@ -2226,7 +2226,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
                     if (impactedMeasureVersions.Count > 0)
                     {
-                        CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
+						CreateCheckDependencyRemovedResultExecution(impactedMeasureVersions);
                     }
                 }
                 finally

@@ -1,9 +1,13 @@
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.extensions;
+using d360.extensions.queue;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -21,13 +25,14 @@ namespace igx.jobs.reportlayer
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder.ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddAzureStorage()
-                .AddTimers();
-            });
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c =>
+				{
+					c.AddTimers();
+				})
+				.ConfigureGovernLogging();
 
             using (var host = builder.Build())
             {
@@ -36,8 +41,8 @@ namespace igx.jobs.reportlayer
         }
     }
 
-    public static class ReportLayerGenerator
-    {
+    public class ReportLayerGenerator : BaseWebJob
+	{
         const string FUNCTION_NAME = "ReportingLayer_Generate";
 
 #if DEBUG
@@ -46,11 +51,16 @@ namespace igx.jobs.reportlayer
         const string TIMER_SETTINGS = "0 */5 * * * *";
 #endif
 
-		public static void Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+		public ReportLayerGenerator(IConfiguration config) : base(config)
+		{
+
+		}
+
+		public void Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try
             {
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                var companies = GetCompaniesByCurrentSlot();
 
                 companies.ForEach(c =>
                 {
@@ -147,11 +157,9 @@ namespace igx.jobs.reportlayer
 					log.LogCritical(ex, "Critical error at the root of this web job.");
 				}
             }
-			
-			CoreFunction.AIFlush();
         }
 
-        private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, ILogger log, string schemaName)
+        private void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, ILogger log, string schemaName)
         {
             var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%' and base_object_name not in (select '[' + TABLE_SCHEMA + '].[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting')").ToList();
 
@@ -173,7 +181,7 @@ namespace igx.jobs.reportlayer
             });
         }
 
-        private static void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, ILogger log)
+        private void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, ILogger log)
         {
             var currentViewNames = connection.Query<string>($@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME like '{className}_%' and TABLE_NAME not in('model_all','model_fields', 'ModelInterRelationships','policy_all')").ToList();
                         

@@ -10,6 +10,7 @@ using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
@@ -23,12 +24,12 @@ namespace d360.model.DataAccessLayer
 	public class ProcessRepository : BaseRepository, IProcessRepository
 	{
 		internal IAssetRepository AssetRepository;
-		internal IStorageProvider StorageProvider;
+		internal IStorageProvider Storage;
 
-		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage) : base(context)
+		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage, IFeatureFlagService ff) : base(context, ff)
 		{
 			AssetRepository = assetRepository;
-			StorageProvider = storage;
+			Storage = storage;
 		}
 
 		public async Task<IEnumerable<dynamic>> GetAvailableDiagramNodesForAsset(Guid assetUid)

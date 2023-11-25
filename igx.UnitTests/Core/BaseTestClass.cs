@@ -31,6 +31,7 @@ using LaunchDarkly.Sdk.Server;
 using Moq.Language;
 using repositories;
 using d360.core.validators;
+using d360.featureflags;
 
 namespace igx.UnitTests
 {
@@ -47,13 +48,6 @@ namespace igx.UnitTests
         {
 	        var exception = Fixture.Create<TestException>();
 	        mock.ThrowsAsync(exception);
-	        return exception;
-        }
-
-        protected TestException ThrowsTestException(IThrows mock)
-        {
-	        var exception = Fixture.Create<TestException>();
-	        mock.Throws(exception);
 	        return exception;
         }
 
@@ -79,20 +73,14 @@ namespace igx.UnitTests
 
 		#region Mock Interfaces
 
-		public LdClient GetLdClient()
-		{
-			var mock = new LdClient("");
-
-			return mock;
-		}
-
         public ICommunityContext GetCommunity()
         {
             var mock = new Mock<ICommunityContext>();
 
             return mock.Object;
         }
-        public static ICompanyContext GetCompany()
+        
+		public static ICompanyContext GetCompany()
         {
             var mock = new Mock<ICompanyContext>();
             mock.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
@@ -242,9 +230,9 @@ namespace igx.UnitTests
             var mock = new Mock<ICoreComponentSet>();
             mock.Setup(s => s.Community).Returns(GetCommunity());
             mock.Setup(s => s.Company).Returns(GetCompany());
-            mock.Setup(s => s.Ld).Returns(new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
             mock.Setup(s => s.SettingsRepository).Returns(GetSettingsRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
+			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
 			return mock.Object;
         }
 
@@ -252,6 +240,14 @@ namespace igx.UnitTests
 		{
 			var mock = new Mock<IRuntimeInfo>();
 
+			return mock.Object;
+		}
+
+		public IFeatureFlagService GetFeatureFlagService()
+		{
+			var mock = new Mock<IFeatureFlagService>();
+			mock.Setup(x => x.IsThisTrue(It.IsAny<string>(), It.IsAny<ClientUserModel>(), It.IsAny<bool>())).Returns(true);
+			//mock.Setup(x => x.IsThisTrue).Returns(true);
 			return mock.Object;
 		}
 
@@ -288,7 +284,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity(), GetLdClient());
+            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity(), GetFeatureFlagService());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
@@ -430,7 +426,22 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
-        public ICommentRepository GetCommentRepository()
+		public IEnumerable<ICatalog> GetCatalogs()
+		{
+			var mock = new Mock<ICatalog>();
+			mock.SetupGet(p => p.Platform).Returns(Platform.Dis);
+			mock.Setup(x =>
+				x.GetAssetPaths(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>())
+			).Returns(Task.FromResult(new AssetPathResults { items = new List<AssetPathResult> { new AssetPathResult { path = "" } }, total = 1 }));
+
+			mock.Setup(x =>
+				x.GetAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
+			).Returns(Task.FromResult(new List<AssetType> { new AssetType { Name = "test" } }));
+
+			return new List<ICatalog> { mock.Object };
+		}
+
+		public ICommentRepository GetCommentRepository()
         {
             var mock = new Mock<ICommentRepository>();
 

@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using repositories;
@@ -16,7 +17,7 @@ namespace d360.model.DataAccessLayer
 {
 	public class ConnectorLabelRepository : BaseRepository, IConnectorLabelRepository
 	{
-		public ConnectorLabelRepository(ICompanyContext company) : base(company)
+		public ConnectorLabelRepository(ICompanyContext company, IFeatureFlagService ff) : base(company, ff)
 		{
 		}
 

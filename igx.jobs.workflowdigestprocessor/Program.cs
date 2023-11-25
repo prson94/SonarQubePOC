@@ -1,17 +1,20 @@
 ﻿using d360.core;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.model;
+using LaunchDarkly.Sdk.Server;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Threading.Tasks;
+using d360.featureflags;
 
 namespace igx.jobs.workflowdigestprocessor
 {
@@ -19,22 +22,25 @@ namespace igx.jobs.workflowdigestprocessor
 	{
 		static async Task Main()
 		{
-			var builder = CoreFunction.JobHostConfigBuilder();
-			builder.ConfigureWebJobs(c =>
-			{
-				c.AddAzureStorageCoreServices()
-				.AddAzureStorage()
-				.AddTimers();
-			});
+			var builder = new HostBuilder();
 
-			builder.ConfigureServices(services =>
-			{
-				services.AddSingleton<LaunchDarkly.Sdk.Server.LdClient>(x =>
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c =>
 				{
-					return ActivatorUtilities.CreateInstance<LaunchDarkly.Sdk.Server.LdClient>(x, Config.GetValue<string>("LaunchDarklySdkKey"));
+					c.AddTimers();
+				})
+				.ConfigureGovernLogging()
+				.ConfigureServices((context, services) =>
+				{
+					services.AddScoped<IQueueSource, DummyQueueSource>();
+					services.AddScoped<ICachingProvider, DummyCachingProvider>();
+					services.AddScoped<IMailProvider, MandrillMailProvider>();
+					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
+						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
+					});
 				});
-			});
-
+			
 			using (var host = builder.Build())
 			{
 				await host.RunAsync();
@@ -42,9 +48,8 @@ namespace igx.jobs.workflowdigestprocessor
 		}
 	}
 
-	public class WorkflowDigestProcessor
+	public class WorkflowDigestProcessor: BaseWebJob
 	{
-		readonly LaunchDarkly.Sdk.Server.LdClient LdClient;
 		const string FUNCTION_NAME = "Workflow_DigestProcessor";
 
 #if DEBUG
@@ -53,17 +58,24 @@ namespace igx.jobs.workflowdigestprocessor
         const string TIMER_SETTINGS = "0 0 5 * * *"; // every day at 5am
 #endif
 
-		public WorkflowDigestProcessor(LaunchDarkly.Sdk.Server.LdClient ldc)
+		ICachingProvider Cache;
+		IMailProvider Mail;
+		IQueueSource Queue;
+		IFeatureFlagService FeatureFlags;
+
+		public WorkflowDigestProcessor(ICachingProvider cache, IConfiguration config, IFeatureFlagService ff, IMailProvider mail, IQueueSource queue): base(config)
 		{
-			this.LdClient = ldc;
+			Cache = cache;
+			FeatureFlags = ff;
+			Mail = mail;
+			Queue = queue;
 		}
 
 		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)   
 		{
 			try
 			{
-				var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
+				var companies = GetCompaniesByCurrentSlot();
 				foreach (var c in companies)
 				{
 					var logProperties = new Dictionary<string, object> {
@@ -76,27 +88,15 @@ namespace igx.jobs.workflowdigestprocessor
 					{
 						try
 						{
-							// Create EF connection
-							var company = JobDbContextCreator.CreateCompanyContext(
-								new UriSecurityContextProvider
-								{
-									CompanyID = c.CompanyID,
-									CompanyPrefix = c.UrlPrefix,
-									ResourceID = 0,
-									IsAdministrator = true
-								},
-								new MandrillMailProvider
-								{
-									ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
-									SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-								},
-								new AzureQueueSource(),
-								new DummyCachingProvider(),
-								constants.COMMUNITY_DATABASE_CONNECTION);
-
-
-							company.FeatureFlags_TEMP_ASSIGNMENTS = LdClient.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, company.GetSdkFeatureFlagUser(), false);
-
+							var context = new UriSecurityContextProvider {
+								CompanyID = c.CompanyID,
+								CompanyPrefix = c.UrlPrefix,
+								ResourceID = 0,
+								IsAdministrator = true
+							};
+							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+							company.FeatureFlags_TEMP_ASSIGNMENTS =  FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser(), false);
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}
 						catch (Exception ex)
@@ -116,10 +116,6 @@ namespace igx.jobs.workflowdigestprocessor
 				{
 					log.LogCritical(ex, "Critical error while running this web job.");
 				}
-			}
-			finally 
-			{
-				CoreFunction.AIFlush();
 			}
 		}
 	}

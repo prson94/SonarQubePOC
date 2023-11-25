@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
@@ -21,17 +22,18 @@ namespace d360.model.DataAccessLayer
 {
 	public class ExecutionsRepository : BaseRepository, IExecutionsRepository
 	{
-		internal IQueueSource QueueSource;
-		internal IStorageProvider StorageProvider;
+		internal IQueueSource Queue;
+		internal IStorageProvider Storage;
 
 		public ExecutionsRepository(
 			ICompanyContext companyContext,
-			IQueueSource queueSource,
-			IStorageProvider storageProvider)
-			: base(companyContext)
+			IQueueSource queue,
+			IStorageProvider storage, 
+			IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
-			QueueSource = queueSource;
-			StorageProvider = storageProvider;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		public async Task<ApiExecutionInfo> BulkPatchAssetAndRelations(PatchBulkCatalogRequestModel payload)
@@ -54,7 +56,7 @@ namespace d360.model.DataAccessLayer
 			};
 
 			// Save to storage container.
-			await StorageProvider.CreateFile(
+			await Storage.CreateFile(
 				executionInfo.StorageFolder,
 				executionInfo.RequestFileName,
 				JsonConvert.SerializeObject(payload)
@@ -65,7 +67,7 @@ namespace d360.model.DataAccessLayer
 			CompanyContext.Add(execution);
 
 			// Save to queue.
-			if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+			if (!await Queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
 			{
 				throw new ApplicationException(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}
@@ -298,7 +300,7 @@ namespace d360.model.DataAccessLayer
 				while (attempt <= maxAttempt && results == null) {
 					try
 					{
-						results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
+						results = await Storage.DeserializeJsonObjectFromBlobAsync<List<dynamic>>(info.StorageFolder, info.ResponseFileName);
 					}
 					catch
 					{

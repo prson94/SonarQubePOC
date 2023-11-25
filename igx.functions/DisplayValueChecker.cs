@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
@@ -7,98 +8,75 @@ using d360.extensions.queue;
 using d360.model;
 using d360.utils.company;
 using Dapper;
+using LaunchDarkly.Logging;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.functions.consumption
 {
-    internal class DisplayValueChecker
+    public class DisplayValueChecker: BaseFunction
     {
-        const string functionName = "DisplayValueChecker";
-        private CoreFunction CoreFunction;
-
 #if DEBUG
         const string timerSettings = "*/10 * * * * *";
 #else
         const string timerSettings = "0 0 */6 * * *"; // every 6 hours
 #endif
+		ICachingProvider Cache;
+		IMailProvider Mail;
+		IQueueSource Queue;
 
-        [FunctionName("DisplayValueChecker")]
-        public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, ExecutionContext context)
+		public DisplayValueChecker(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		{
+			Cache = cache;
+			Mail = mail;
+			Queue = queue;
+		}
+
+		[FunctionName("DisplayValueChecker")]
+        public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, ILogger log)
         {
-            var config = new ConfigurationBuilder()
-                   .SetBasePath(context.FunctionAppDirectory)
-                   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-                   .AddEnvironmentVariables()
-                   .Build();
+			var topicName = Config["DisplayValueQueue"];
+			var companies = GetCompaniesByCurrentSlot();
+			foreach (var c in companies)
+			{
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", "DatabaseTask_Scheduler" },
+					{ "CompanyID", c.CompanyID },
+					{ "UrlPrefix", c.UrlPrefix }
+				};
 
-            CoreFunction = new CoreFunction(config);
-
-            try
-            {
-                CoreFunction.AITrackJobStart(functionName);
-
-				var topicName = config["DisplayValueQueue"];
-				AzureQueueSource queueSource = new AzureQueueSource(config);
-
-				var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
-#if DEBUG
-                companies = companies.Where(x => x.CompanyID == 2).ToList();
-#endif
-                foreach (var c in companies)
-                {
+				using (log.BeginScope(logProperties))
+				{
 					try
 					{
-						var securityContext = new UriSecurityContextProvider
+						var context = new UriSecurityContextProvider
 						{
 							CompanyID = c.CompanyID,
 							CompanyPrefix = c.UrlPrefix,
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-						var mailProvider = new MandrillMailProvider
-						{
-							ApiKey = config.GetValue<string>("MandrillApiKey"),
-							SubAccount = config.GetValue<string>("MandrillSubAccount")
-						};
 
-						using (
-							var companyContext = JobDbContextCreator.CreateCompanyContext(
-								securityContextProvider: securityContext,
-								mailProvider: mailProvider,
-								queueSource: new AzureQueueSource(config),
-								cachingProvider: new DummyCachingProvider(),
-								connectionString: CoreFunction.GetConnectionString("CommunityContext")))
+						using (var companyContext = JobDbContextCreator.CreateCompanyContext(context, Mail, Queue, Cache, Config["CommunityContext"]))
 						{
-							var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
+							var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, int.Parse(Config["V2EnvironmentJobRebuildTimeoutInHours"]));
 							if (rs.StatusCode == System.Net.HttpStatusCode.OK)
 							{
-								await queueSource.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
-							}
-							else
-							{
-								CoreFunction.AITrackTrace(functionName, $"UpdateRebuildJobStatus message: {rs.Message}", null, c.CompanyID);
+								await Queue.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 							}
 						}
 					}
 					catch (Exception ex)
 					{
-						CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+						log.LogError(ex, "Error when rebuilding display values.");
 					}
 				}
-
-				CoreFunction.AITrackJobCompletedNoErrors(functionName);
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex);
-            }
-
-            CoreFunction.AIFlush();
-        }
+			}
+		}
     }
 }

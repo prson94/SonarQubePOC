@@ -5,10 +5,10 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using repositories;
 using System;
 using System.Collections.Generic;
@@ -19,14 +19,12 @@ namespace d360.model.DataAccessLayer
 {
 	public class ScoringRepository : BaseRepository, IScoringRepository
 	{
-		internal LdClient Ld;
-		internal IQueueSource QueueSource;
+		internal IQueueSource Queue;
 
-		public ScoringRepository(ICompanyContext companyContext, LdClient ld, IQueueSource queueSource)
-			: base(companyContext)
+		public ScoringRepository(ICompanyContext companyContext, IQueueSource queue, IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
-			Ld = ld;
-			QueueSource = queueSource;
+			Queue = queue;
 		}
 
 		public List<AssetTypeClass> AllowedClassesForScoreType()
@@ -352,7 +350,7 @@ select @id";
 					ScoreType = alloc.ScoreType.ToString()
 				}).Single();
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { 
+			Queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { 
 				Action = PostExecutionQueueMessageAction.History, 
 				CompanyID = CompanyContext.CurrentCompanyID, 
 				ExecutionId = executionId
@@ -434,7 +432,7 @@ select @id";
 					ScoreType = alloc.ScoreType.ToString()
 				}).Single();
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			Queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
 				CompanyID = CompanyContext.CurrentCompanyID,
@@ -502,7 +500,7 @@ select @id";
 					action = (int)ApiExecutionAction.DeleteScoreAllocation
 				}).Single();
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			Queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
 				CompanyID = CompanyContext.CurrentCompanyID,
@@ -619,11 +617,10 @@ where	Id between @minId and @maxId;
 					CompanyID = CompanyContext.CurrentCompanyID,
 					ResourceID = CompanyContext.CurrentResourceID,
 					ChangeType = ScoreQueueChangeType.RescoreRequest,
-					UseUpdatedScoringEngine = true,
 					Payload = new AssetRescoreRequestModel { AssetUid = unique.AssetUid, EffectiveDate = unique.EffectiveDate, ScoreType = ScoreType.Governance },
 					StartedOn = DateTime.UtcNow
 				};
-				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+				Queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
 			}
 
 			list = models.Select(o => new InternalScoreResultApiResponseModel { AssetUid = o.AssetUid, EffectiveDate = o.EffectiveDate, IsSuccess = true, Result = o.Value }).ToList();
@@ -634,28 +631,12 @@ where	Id between @minId and @maxId;
 
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
-			{
-				return postScoreResults(results);
-			}
-			else
-			{
-				return CompanyContext.BulkMetricsImport(results, execution, allocation);
-			}
+			return postScoreResults(results);
 		}
 
 		public List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
 		{
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
-			{
-				return postScoreResults(results);
-			}
-			else 
-			{
-				return CompanyContext.BulkMetricsImport(results, execution, scoreType);
-			}
+			return postScoreResults(results);
 		}
 
 		public async Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -869,84 +850,6 @@ where	Id between @minId and @maxId;
 			}
 
 			return CompanyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize * pageNumber).Take(pageSize);
-		}
-
-		public List<ScoreExecutionItemViewModel> GetExecutionItems(
-			long executionId,
-			int pageSize,
-			int pageNumber,
-			ScoreQueueChangeType? changeType = null)
-		{
-			if (pageNumber > 0)
-			{
-				pageNumber -= 1;
-			}
-			else
-			{
-				pageNumber = 0;
-			}
-
-			if (pageSize > 200 || pageSize < 0)
-			{
-				pageSize = 200;
-			}
-
-			var items = CompanyContext.Table<ScoreExecutionItem>();
-
-			if (changeType.HasValue)
-			{
-				items = items.Where(i => i.ExecutionID == executionId && i.ChangeType == changeType.Value);
-			}
-			else
-			{
-				items = items.Where(i => i.ExecutionID == executionId);
-			}
-
-			items = items.OrderByDescending(i => i.ChangeType).ThenBy(i => i.RowNumber);
-			items.Skip(pageSize * pageNumber).Take(pageSize);
-
-			List<ScoreExecutionItemViewModel> models = new List<ScoreExecutionItemViewModel>();
-
-			foreach (var item in items)
-			{
-				var model = new ScoreExecutionItemViewModel
-				{
-					ChangeType = item.ChangeType,
-					Message = item.Message,
-					RowNumber = item.RowNumber,
-					State = item.State
-				};
-				switch (item.ChangeType)
-				{
-					case ScoreQueueChangeType.AssetMeasures:
-						model.Payload = item.GetPayload<AssetMeasureModel>();
-						break;
-					case ScoreQueueChangeType.CheckTypeDependencyRemoved:
-						model.Payload = item.GetPayload<CheckTypeDependencyRemovedModel>();
-						break;
-					case ScoreQueueChangeType.MeasureChanged:
-						model.Payload = item.GetPayload<MeasureChangedModel>();
-						break;
-					case ScoreQueueChangeType.MeasureRemoved:
-						model.Payload = item.GetPayload<MeasureRemovedModel>();
-						break;
-					case ScoreQueueChangeType.RollupPathChanged:
-						model.Payload = item.GetPayload<RollupPathChangedModel>();
-						break;
-					case ScoreQueueChangeType.RuleAssetRemoved:
-						model.Payload = item.GetPayload<RuleAssetRemovedModel>();
-						break;
-					case ScoreQueueChangeType.WorkflowCheck:
-						model.Payload = item.GetPayload<ScoreCreatedModel>();
-						break;
-					default:
-						model.Payload = "{}";
-						break;
-				}
-				models.Add(model);
-			}
-
-			return models;
 		}
 	}
 }
