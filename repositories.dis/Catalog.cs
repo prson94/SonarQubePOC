@@ -12,6 +12,11 @@ namespace repositories.dis
 	{
 		public string BaseUrl { get { return "https://data-catalog-dev.govern.cloud.precisely.services"; } }
 
+		public Task CreateSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<List<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			throw new NotImplementedException();
@@ -28,6 +33,21 @@ namespace repositories.dis
 			});
 			model.total = payload.data.Count;
 			return model;
+		}
+
+		public Task ReadSemanticTypes()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task RemoveSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task UpdateSemanticType()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

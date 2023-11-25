@@ -13,6 +13,11 @@ namespace repositories.azure
 	{
 		public Catalog(DapperConnectionProvider provider): base(provider) { }
 
+		public Task CreateSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
 		public async Task<List<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			const string sql = @"
@@ -85,6 +90,21 @@ order by	lvl";
 			}
 
 			return model;
+		}
+
+		public Task ReadSemanticTypes()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task RemoveSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task UpdateSemanticType()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
