@@ -158,6 +158,9 @@
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage">
       <Version>5.2.1</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Web.WebJobs.Publish">
+      <Version>17.1.361</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
     </PackageReference>
