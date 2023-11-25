@@ -95,7 +95,7 @@ namespace d360.extensions.events
             try
             {
 				var queue = cloudClient.GetQueueClient(queueName);
-				var response = await queue.SendMessageAsync(JsonConvert.SerializeObject(item), initialVisibilityDelay);
+				var response = await queue.SendMessageAsync(encodeMessage(item), initialVisibilityDelay);
                 if (string.IsNullOrEmpty(response.Value.PopReceipt))
                 {
                     throw new Exception("Queue message has no population receipt and appears to not have been added properly.");
@@ -116,7 +116,7 @@ namespace d360.extensions.events
 				var queue = cloudClient.GetQueueClient(queueName);
 				items.ForEach(item =>
                 {
-					queue.SendMessage(JsonConvert.SerializeObject(item));
+					queue.SendMessage(encodeMessage(item));
                 });
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace d360.extensions.events
                 {
 					items.ForEach(item =>
 					{
-						queue.SendMessage(JsonConvert.SerializeObject(item));
+						queue.SendMessage(encodeMessage(item));
 					});
 				});
             }

@@ -56,6 +56,11 @@ namespace igx.jobs.apiexecutionprocessor
 						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
 					});
 				});
+
+			using (var host = builder.Build())
+			{
+				await host.RunAsync();
+			}
 		}
 	}
 
