@@ -8,7 +8,7 @@
 		<as-split-area class="tile tile-detail main-panel">
 			<ig-portal-content-provider name="asset-description" [template]="description">
 				<ng-template #description>
-					<div class="detail-header-subtitle" i18n>
+					<div class="detail-header-subtitle" i18n *ngIf="assignmentItem && workflowAssignment">
 						<a (click)="workflowClicked($event, assignmentItem?.WorkflowUid, workflowAssignment?.Version)">{{assignmentItem.WorkflowName}}</a>
 						on
 						<a (click)="assetClicked($event, assignmentItem?.AssetUid)"
@@ -29,7 +29,6 @@
 			<side-panel [(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
 						[multipleItemsSelected]="false"
-						[(selectedPanel)]="sidePanelTab"
 						[setMinMaxWidth]="false"
 						[selectedItem]="selectedItem"
 						[extraButtons]="sidePanelButtons"

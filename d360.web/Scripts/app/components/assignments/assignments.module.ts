@@ -132,10 +132,12 @@ import {
 import {
 	AssignmentDetailsContainerComponent
 } from './assignment-details-container/assignment-details-container.component';
+import { AssignmentDetailLinksComponent } from './assignment-detail-links/assignment-detail-links.component';
 
 @NgModule({
 	declarations: [
 		AssignmentAssetListComponent,
+		AssignmentDetailLinksComponent,
 		AssignmentDetailsComponent,
 		AssignmentDetailsContainerComponent,
 		AssignmentFormResponseComponent,
@@ -171,7 +173,7 @@ import {
 		StepInformationRelationshipChangeComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent
+		WorkflowVersionInformationComponent,
 	],
 	exports: [
 		AssignmentInformationComponent,

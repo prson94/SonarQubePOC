@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="TDuric,PuneetGupta" id="View.dbo.AuditView.v7">
+ <changeSet author="TDuric,PuneetGupta" id="View.dbo.AuditView.v8">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 CREATE OR ALTER VIEW [dbo].[AuditView]
@@ -27,10 +27,12 @@ SELECT 	ad.uid AS [Uid],
 		CASE 
 			WHEN ga.ActionObjectTypeName = 'Intersect Type'
 			THEN 'Relationship Type'
+			WHEN ga.ActionObjectTypeName = '$IntersectTypeName'
+			THEN COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectTypeName,'--RelationShip Not Found--')
 			ELSE ga.ActionObjectTypeName
 		END AS [ActionObjectTypeName],
-		ga.actionObjectName AS [ActionObjectName],
-		ga.actionDescription AS [ActionDescription],
+		case when ga.ActionObjectName = '$IntersectName' then COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectName,'--RelationShip Not Found--') else ga.actionObjectName end AS [ActionObjectName],
+		replace(ga.actionDescription,'$IntersectTypeName','Relationship') AS [ActionDescription],
 		COALESCE(FT.FriendlyName,fa.FieldName) as [Field],
 		CASE 
 			WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
@@ -50,6 +52,17 @@ FROM 	reporting.global_audit ga
 		LEFT JOIN Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
 		LEFT JOIN AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
 		LEFT JOIN FieldType FT on FT.ID = fa.FieldTypeID
+		outer apply (
+					Select I.SubjectName Relationship_ActionObjectName,
+					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Object = ga.Object and I.ObjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					union 
+					Select I.ObjectName Relationship_ActionObjectName,
+					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Subject = ga.Object and I.SubjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					) RelationPlaceHolderResolve
 		INNER JOIN (
 			select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = uid
 			union
@@ -91,10 +104,13 @@ FROM 	reporting.global_audit ga
 				CASE 
 					WHEN ga.ActionObjectTypeName = 'Intersect Type'
 					THEN 'Relationship Type'
+					WHEN ga.ActionObjectTypeName = '$IntersectTypeName'
+					THEN COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectTypeName,'--RelationShip Not Found--')
 					ELSE ga.ActionObjectTypeName
 				END AS [ActionObjectTypeName],
-				ga.actionObjectName AS [ActionObjectName],
-				ga.actionDescription AS [ActionDescription],
+
+				case when ga.ActionObjectName = '$IntersectName' then COALESCE(RelationPlaceHolderResolve.Relationship_ActionObjectName,'--RelationShip Not Found--') else ga.actionObjectName end AS [ActionObjectName],
+				replace(ga.actionDescription,'$IntersectTypeName','Relationship') AS [ActionDescription],
 				COALESCE(FT.FriendlyName,fa.FieldName) as [Field],
 				CASE 
 					WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
@@ -114,6 +130,17 @@ FROM 	reporting.global_audit ga
 				LEFT JOIN Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
 				LEFT JOIN AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
 				LEFT JOIN FieldType FT on FT.ID = fa.FieldTypeID
+				outer apply (
+					Select I.SubjectName Relationship_ActionObjectName,
+					I.SubjectTypeName + ' (' + I.PredicateInverse + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Object = ga.Object and I.ObjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					union 
+					Select I.ObjectName Relationship_ActionObjectName,
+					I.ObjectTypeName + ' (' + I.PredicateName + ')'  as Relationship_ActionObjectTypeName
+					From IntersectDetail I
+					Where I.ID = ga.ActionObjectID and I.Subject = ga.Object and I.SubjectID = ga.ObjectID and ga.ActionObjectName = '$IntersectName'
+					) RelationPlaceHolderResolve
 				INNER JOIN (
 					select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = uid
 					union

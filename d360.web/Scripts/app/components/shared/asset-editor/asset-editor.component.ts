@@ -46,7 +46,8 @@ import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { LinkClickInterceptor } from "../../../services/href-click-service";
 import { Breadcrumb } from "../../../models/breadcrumb.model";
-import * as DOMPurify from "dompurify";
+import { DOMPurifyService } from "../../../services/domPurify.service";
+
 
 @Component({
 	selector: 'asset-editor',
@@ -57,7 +58,8 @@ import * as DOMPurify from "dompurify";
 		CascadeService,
 		AssetService,
 		GroupService,
-		ObjectDetailService
+		ObjectDetailService,
+		DOMPurifyService
 	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
@@ -166,6 +168,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		protected settingsService: CompanySettingsService,
 		private fieldsObservableService: FieldsObservableService,
 		private objectDetailService: ObjectDetailService,
+		private domPurifyService: DOMPurifyService,
 		private linkClickInterceptor: LinkClickInterceptor,
 		private elRef: ElementRef
 	) {
@@ -463,7 +466,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 				}
 
 				if (f.FieldType === "Html") {
-					f.Value = DOMPurify.sanitize(f.Value);
+					f.Value = this.domPurifyService.sanitize(f.Value);
 				}
 
 				if (f.Category == null) {

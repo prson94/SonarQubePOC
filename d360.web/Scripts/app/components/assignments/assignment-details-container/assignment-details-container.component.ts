@@ -19,7 +19,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/secondaryNav.model';
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { SidePanelSwitcherComponent } from '../side-panel-switcher/side-panel-switcher.component';
 import { SidePanelButton } from '../../../models/side-panel.model';
 import { AssignmentDetailsComponent } from './assignment-details/assignment-details.component';
@@ -30,14 +30,13 @@ import { AssignmentDetailsComponent } from './assignment-details/assignment-deta
 	styleUrls: ['./assignment-details-container.component.less']
 })
 export class AssignmentDetailsContainerComponent extends BaseComponent implements OnInit, OnDestroy {
-	sidePanelOpen: boolean;
-	sidePanelStorageKey: string;
-	sidePanelTab: string;
-	assignmentUid: string;
-	assignmentItem: AssignmentItem;
-	selectedItem: object;
-	workflowAssignment: WorkflowAssignmentItem;
-	sidePanelButtons: SidePanelButton[] = [
+	protected sidePanelOpen: boolean;
+	protected sidePanelStorageKey: string;
+	protected assignmentUid: string;
+	protected assignmentItem: AssignmentItem;
+	protected selectedItem: object;
+	protected workflowAssignment: WorkflowAssignmentItem;
+	protected sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Information`,
 			tooltip: $localize`Information`,
@@ -82,7 +81,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 
 	ngOnInit(): void {
 		this.setFlowSpecificDetails();
-		this.loadAssignmentItem();
+		this.loadAssignmentDetails();
 		this.subscribeSwitcherEvents();
 	}
 
@@ -90,30 +89,63 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		this.unsubscribeSwitcherEvents();
 	}
 
-	getSidePanelMaxWidth(): number {
+	protected getSidePanelMaxWidth(): number {
 		return this.sidePanelService.getSidePanelMaxWidth(this.sidePanelOpen);
 	}
 
-	getSidePanelMinWidth(): number {
+	protected getSidePanelMinWidth(): number {
 		return this.sidePanelService.getSidePanelMinWidth(this.sidePanelOpen);
 	}
 
-	getSidePanelWidth() {
+	protected getSidePanelWidth(): number {
 		return this.sidePanelService.getSidePanelWidth(this.sidePanelOpen, this.sidePanelStorageKey);
 	}
 
-	onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData) {
+	protected onSidePanelDragEnd(sidePanelStorageKey: string, event: IOutputData): void {
 		if (this.sidePanelOpen) {
 			this.sidePanelService.onSidePanelDragEnd(sidePanelStorageKey, event);
 		}
 	}
 
-	private setFlowSpecificDetails() {
+	protected workflowClicked(mouseEvent: MouseEvent, workflowUid: string, workflowTypeVersion: number): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, {
+			workflowTypeUid: workflowUid,
+			workflowTypeVersion: workflowTypeVersion
+		}, null);
+	}
+
+	protected assetClicked(mouseEvent: MouseEvent, assetUid: string): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, { AssetUid: assetUid }, SiteUrlHelpers.getAssetUrl(assetUid));
+	}
+
+	protected initiatorClicked(mouseEvent: MouseEvent, initiatorUid: string): void {
+		this.linkClickInterceptor.sendEvent(mouseEvent, { ResourceUid: initiatorUid }, SiteUrlHelpers.getUserUrl(initiatorUid));
+	}
+
+	protected completeAssignmentModalClosed({ action }: {
+		isBack: boolean,
+		removeSelected: boolean,
+		action?: string
+	}): void {
+		if (action?.toLowerCase() === 'complete') {
+			this.assignmentItem = null;
+			this.loadAssignmentDetails();
+			this.assignmentDetailsComponent.forceRefresh();
+		}
+		this.setHeaderButton();
+		this.subscribeSwitcherEvents();
+	}
+
+	protected updatePanelHeader(headerLabel: string): void {
+		this.sidePanelButtons[0].label = headerLabel;
+	}
+
+	private setFlowSpecificDetails(): void {
 		this.sidePanelOpen = true;
 		this.sidePanelStorageKey = this.flowContext + '_' + this.companySettingsService.CurrentResourceID;
 	}
 
-	private setHeaderBreadCrumbs(): void {
+	private setTitleBreadCrumbs(): void {
 		this.headerBreadcrumbService.clearBreadcrumbs();
 		this.secondaryNavService.clearItems();
 		this.secondaryNavService.clearCurrentObject();
@@ -133,16 +165,16 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		}
 	}
 
-	private loadAssignmentItem() {
-		this.workflowService.getAssignmentItem(this.assignmentUid)
-			.subscribe((assignmentItem: AssignmentItem): void => {
-				this.assignmentItem = assignmentItem;
-				this.setHeaderBreadCrumbs();
-				this.loadAssignmentSteps();
-			});
+	private loadAssignmentDetails(): void {
+		forkJoin([this.workflowService.getAssignmentItem(this.assignmentUid), this.workflowService.getWorkflowAssignments(1, 1, null, '(workflowItemUid eq \'' + this.assignmentUid + '\')')]).subscribe((response: [AssignmentItem, WorkflowAssignments]): void => {
+			this.assignmentItem = response[0];
+			this.workflowAssignment = response[1].items[0];
+			this.setTitleBreadCrumbs();
+			this.loadAssignmentSteps();
+		});
 	}
 
-	private getAssignmentUidFromUrlParam() {
+	private getAssignmentUidFromUrlParam(): string {
 		return this.route.snapshot.paramMap.get('assignmentUid');
 	}
 
@@ -169,35 +201,6 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		}
 	}
 
-	workflowClicked(mouseEvent: MouseEvent, workflowUid: string, workflowTypeVersion: number): void {
-		this.linkClickInterceptor.sendEvent(mouseEvent, {
-			workflowTypeUid: workflowUid,
-			workflowTypeVersion: workflowTypeVersion
-		}, null);
-	}
-
-	assetClicked(mouseEvent: MouseEvent, assetUid: string): void {
-		this.linkClickInterceptor.sendEvent(mouseEvent, { AssetUid: assetUid }, 'assets/' + assetUid);
-	}
-
-	initiatorClicked(mouseEvent: MouseEvent, initiatorUid: string): void {
-		this.linkClickInterceptor.sendEvent(mouseEvent, { ResourceUid: initiatorUid }, 'users/' + initiatorUid);
-	}
-
-	completeAssignmentModalClosed({ action }: {
-		isBack: boolean,
-		removeSelected: boolean,
-		action?: string
-	}): void {
-		if (action?.toLowerCase() === 'complete') {
-			this.assignmentItem = null;
-			this.loadAssignmentItem();
-			this.assignmentDetailsComponent.forceRefresh();
-		}
-		this.setHeaderButton();
-		this.subscribeSwitcherEvents();
-	}
-
 	private setHeaderButton(): void {
 		this.secondaryNavService.clearButtons();
 		if (!this.isRequestDetailsFlow && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser && !(this.workflowStepDetail?.CompletedOn) && this.workflowAssignment.isCurrentUserAssigned) {
@@ -218,7 +221,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		});
 	}
 
-	private loadAssignmentSteps() {
+	private loadAssignmentSteps(): void {
 		this.workflowStepDetail = null;
 		this.workflowService.getAssignmentItemSteps(this.assignmentItem.WorkflowItemUid)
 			.subscribe((assignmentItemSteps: AssignmentItemStep[]): void => {
@@ -229,25 +232,15 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 						this.assignmentItemStep = assignmentItemSteps[stepCounter];
 						this.workflowService.getAssignmentStepDetail(assignmentItemSteps[stepCounter].Uid).subscribe((response: WorkflowStepDetail) => {
 							this.workflowStepDetail = response;
-							this.loadWorkflowAssignment(this.assignmentItem.WorkflowItemUid);
 						});
 						break;
 					}
 				}
-				if (stepCounter === assignmentItemSteps.length) {
-					this.setHeaderButton();
-				}
+				this.setHeaderButton();
 			});
 	}
 
-	private loadWorkflowAssignment(workflowItemUid: string) {
-		this.workflowService.getWorkflowAssignments(1, 1, null, '(workflowItemUid eq \'' + workflowItemUid + '\')').subscribe((workflowAssignments: WorkflowAssignments): void => {
-			this.workflowAssignment = workflowAssignments.items[0];
-			this.setHeaderButton();
-		});
-	}
-
-	private subscribeSwitcherEvents() {
+	private subscribeSwitcherEvents(): void {
 		this.linkInterceptorSubscription = this.linkClickInterceptor.getEvents().subscribe((ev): void => {
 			this.selectedItem = { type: ev.type };
 			this.linkClickInterceptor.handleEvent(this.sidePanelSwitcherComponent, ev);
@@ -255,11 +248,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 		});
 	}
 
-	updatePanelHeader(headerLabel: string): void {
-		this.sidePanelButtons[0].label = headerLabel;
-	}
-
-	private unsubscribeSwitcherEvents() {
+	private unsubscribeSwitcherEvents(): void {
 		this.linkInterceptorSubscription?.unsubscribe();
 	}
 }

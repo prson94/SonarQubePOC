@@ -266,4 +266,12 @@ export class SiteUrlHelpers {
 		}
 		return prefix + url;
 	}
+
+	static getAssignmentUrl(workflowItemUid: string): string {
+		return `${SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT}/${workflowItemUid}`;
+	}
+
+	static getRequestUrl(workflowItemUid: string): string {
+		return `${SiteUrlHelpers.SITE_URL_REQUESTS_ROOT}/${workflowItemUid}`;
+	}
 }

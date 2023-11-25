@@ -207,8 +207,10 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
 
 		IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
-        
-        Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+
+		SqlMapper.GridReader QueryMultiple(string sql, object param = null, int timeout = 90);
+
+		Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         
         Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90);
         

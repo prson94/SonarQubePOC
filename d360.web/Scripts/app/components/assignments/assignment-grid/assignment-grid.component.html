@@ -115,7 +115,10 @@
 				<tr [pSelectableRow]="item" class="assignments-table-data">
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td *ngIf="!assignmentDetailsAvailable">{{item.workflowName}}</td>
-						<td *ngIf="assignmentDetailsAvailable"><a (click)="openAssignmentDetails(item)">{{item.workflowName}}</a></td>
+						<td *ngIf="assignmentDetailsAvailable">
+							<a context-link
+							   (click)="openAssignmentDetails(item, false, $event)">{{item.workflowName}}</a>
+						</td>
 					</ng-container>
 					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
 					<td>{{item.objectType ?? '---'}}</td>

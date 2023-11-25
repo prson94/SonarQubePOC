@@ -1,3 +1,5 @@
+<d3s-assignment-detail-links [workflowItemUid]="workflowItemUid"
+							 *ngIf="showLinks && workflowItemUid && canActivateAssignmentDetails"></d3s-assignment-detail-links>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="asset-detail-tabs" [hidden]="isLoading">
 	<ig-property-group i18n-title title="Steps" [shouldBePadded]="shouldBePadded" [showHeaderLine]="false">

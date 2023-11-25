@@ -1541,12 +1541,16 @@ namespace d360.model
 								if (isSubject)
 								{
 									intersect.SubjectAssetID = asset.ID;
+									intersect.SubjectAssetTypeID = asset.AssetTypeID;
 									intersect.ObjectAssetID = otherAsset.ID;
+									intersect.ObjectAssetTypeID = otherAsset.AssetTypeID;
 								}
 								else
 								{
 									intersect.ObjectAssetID = asset.ID;
+									intersect.ObjectAssetTypeID = asset.AssetTypeID;
 									intersect.SubjectAssetID = otherAsset.ID;
+									intersect.SubjectAssetTypeID= otherAsset.AssetTypeID;
 								}
 
 								//check that this relationship doesnt already exist
