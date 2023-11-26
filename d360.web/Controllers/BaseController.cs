@@ -303,9 +303,12 @@ namespace d360.web.Controllers
 
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
-			using (Log.BeginScope(properties))
-			{
-				Log.LogError(ex, ex.Message);
+			if (Log != null)
+			{ 
+				using (Log.BeginScope(properties))
+				{
+					Log.LogError(ex, ex.Message);
+				}			
 			}
         }
 
