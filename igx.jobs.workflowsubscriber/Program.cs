@@ -70,10 +70,10 @@ namespace igx.jobs.workflowsubscriber
 		const string FUNCTION_NAME = "Workflow_Subscriber";
         const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		IFeatureFlagService FeatureFlags;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IFeatureFlagService FeatureFlags;
 
 		public WorkflowSubscriber(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IFeatureFlagService ff) : base(config)
 		{

@@ -66,9 +66,9 @@ namespace igx.jobs.scheduledworkflowprocessor
         const string TIMER_SETTINGS = "0 */15 * * * *";
 #endif
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
 
 		public ScheduledWorkflowProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
 		{

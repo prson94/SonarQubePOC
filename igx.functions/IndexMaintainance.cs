@@ -15,8 +15,8 @@ namespace igx.functions.consumption
 {
 	public class IndexMaintainance: BaseFunction
     {
-		ElasticSearchSource Search;
-		IQueueSource Queue;
+		readonly ElasticSearchSource Search;
+		readonly IQueueSource Queue;
 
 		public IndexMaintainance(IConfiguration config, IQueueSource queue, ElasticSearchSource search) : base(config)
 		{

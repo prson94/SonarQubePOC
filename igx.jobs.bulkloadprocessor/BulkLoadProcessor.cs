@@ -32,11 +32,11 @@ namespace igx.jobs.bulkloadprocessor
 		const string FUNCTION_NAME = "BulkLoad_Process";
 		const int SqlBulkBatchSize = 5000;
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		IStorageProvider Storage;
-		IFeatureFlagService FeatureFlags;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IStorageProvider Storage;
+		readonly IFeatureFlagService FeatureFlags;
 
 		public BulkLoadProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(config)
 		{

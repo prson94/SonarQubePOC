@@ -1,31 +1,27 @@
-﻿using System;
-using System.Linq;
+﻿using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
+using d360.extensions.info;
+using d360.model;
 using d360.utils.company;
 using Dapper;
-using Microsoft.Azure.WebJobs;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using d360.model;
-using d360.core.enums;
-using d360.extensions.info;
-using d360.extensions.mail;
-using d360.extensions.queue;
-using d360.extensions.caching;
-using LaunchDarkly.Logging;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using DocumentFormat.OpenXml.Math;
-using d360.extensions;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.functions.consumption
 {
-    public class DisplayValueUpdateProcessor: BaseFunction
+	public class DisplayValueUpdateProcessor: BaseFunction
     {
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
 
 		public DisplayValueUpdateProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue): base(config)
 		{

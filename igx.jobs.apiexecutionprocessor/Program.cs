@@ -73,11 +73,11 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
         const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		IStorageProvider Storage;
-		IFeatureFlagService FeatureFlags;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IStorageProvider Storage;
+		readonly IFeatureFlagService FeatureFlags;
 
 		public ApiExecutionProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff): base(config)
 		{

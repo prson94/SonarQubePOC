@@ -61,10 +61,10 @@ namespace igx.jobs.indexer
 	{        
         const string FUNCTION_NAME = "Indexing_ReIndex";
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		ElasticSearchSource Search;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly ElasticSearchSource Search;
 
 		public Indexer(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(config)
 		{

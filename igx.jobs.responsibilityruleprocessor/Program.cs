@@ -51,9 +51,9 @@ namespace igx.jobs.responsibilityruleprocessor
         const string FUNCTION_NAME = "ResponsibilityRules_ProcessScheduled";
         const string TIMER_SETTINGS = "0 */3 * * * *";
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
 
 		public ResponsibilityRuleProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
 		{

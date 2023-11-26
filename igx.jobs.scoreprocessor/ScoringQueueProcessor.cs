@@ -24,9 +24,9 @@ namespace igx.jobs.scoreprocessor
 	{
         const string FUNCTION_NAME = "Scoring_QueueProcessor";
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
 
 		public ScoringQueueProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
 		{

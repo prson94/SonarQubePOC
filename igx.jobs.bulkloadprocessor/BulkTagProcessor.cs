@@ -20,10 +20,10 @@ namespace igx.jobs.bulkloadprocessor
 	{
 		const string FUNCTION_NAME = "BulkLoadTag_Process";
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		IFeatureFlagService FeatureFlags;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IFeatureFlagService FeatureFlags;
 
 		public BulkLoadTagProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IFeatureFlagService ff) : base(config)
 		{

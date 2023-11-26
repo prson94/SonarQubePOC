@@ -58,10 +58,10 @@ namespace igx.jobs.workflowdigestprocessor
         const string TIMER_SETTINGS = "0 0 5 * * *"; // every day at 5am
 #endif
 
-		ICachingProvider Cache;
-		IMailProvider Mail;
-		IQueueSource Queue;
-		IFeatureFlagService FeatureFlags;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IFeatureFlagService FeatureFlags;
 
 		public WorkflowDigestProcessor(ICachingProvider cache, IConfiguration config, IFeatureFlagService ff, IMailProvider mail, IQueueSource queue): base(config)
 		{
