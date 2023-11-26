@@ -363,7 +363,7 @@ namespace d360.web.Controllers.V2
 									$"Path field could not change selected segment if asset type is not technical or business class.");
 						}
 						var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
-						var ancestryCollection = await EnvironmentCatalog.GetAncestryAsync(model.AssetTypeUid.Value);
+						var ancestryCollection = await EnvironmentCatalog.ReadAncestryAsync(model.AssetTypeUid.Value);
 						if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
 						{
 							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,

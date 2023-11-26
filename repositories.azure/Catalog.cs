@@ -18,7 +18,7 @@ namespace repositories.azure
 			throw new NotImplementedException();
 		}
 
-		public async Task<List<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
+		public async Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			const string sql = @"
 WITH cte AS (  
@@ -46,7 +46,7 @@ order by	lvl";
 			return results.ToList();
 		}
 
-		public async Task<AssetPathResults> GetAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
+		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
 		{
 			var dbArgs = new DynamicParameters();
 
@@ -90,6 +90,21 @@ order by	lvl";
 			}
 
 			return model;
+		}
+
+		public Task ReadAssetTypeDefinition()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task ReadProfiles()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task ReadRelationTypeDefinition()
+		{
+			throw new NotImplementedException();
 		}
 
 		public Task ReadSemanticTypes()

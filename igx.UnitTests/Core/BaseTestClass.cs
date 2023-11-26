@@ -431,11 +431,11 @@ namespace igx.UnitTests
 			var mock = new Mock<ICatalog>();
 			mock.SetupGet(p => p.Platform).Returns(Platform.Dis);
 			mock.Setup(x =>
-				x.GetAssetPaths(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>())
+				x.ReadAssetPaths(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>())
 			).Returns(Task.FromResult(new AssetPathResults { items = new List<AssetPathResult> { new AssetPathResult { path = "" } }, total = 1 }));
 
 			mock.Setup(x =>
-				x.GetAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
+				x.ReadAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
 			).Returns(Task.FromResult(new List<AssetType> { new AssetType { Name = "test" } }));
 
 			return new List<ICatalog> { mock.Object };

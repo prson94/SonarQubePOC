@@ -17,12 +17,12 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
-		public Task<List<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
+		public Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			throw new NotImplementedException();
 		}
 
-		public async Task<AssetPathResults> GetAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
+		public async Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000)
 		{
 			var model = new AssetPathResults();
 			var payload = await Get_PayloadFromService<PagesListModel<GetAssetModel>>($"{BaseUrl}/assets?filter=assetTypeId:eq(652e0aaa5a7fc6c78691b1f4)");
@@ -33,6 +33,21 @@ namespace repositories.dis
 			});
 			model.total = payload.data.Count;
 			return model;
+		}
+
+		public Task ReadAssetTypeDefinition()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task ReadProfiles()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task ReadRelationTypeDefinition()
+		{
+			throw new NotImplementedException();
 		}
 
 		public Task ReadSemanticTypes()

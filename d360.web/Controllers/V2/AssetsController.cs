@@ -3626,7 +3626,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			AssetPathResults results = await EnvironmentCatalog.GetAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
+			AssetPathResults results = await EnvironmentCatalog.ReadAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
 
 			HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
@@ -4276,7 +4276,7 @@ namespace d360.web.Controllers.V2
 
 			ValidateParameters();
 
-			var results = await EnvironmentCatalog.GetAncestryAsync(assetTypeID, cancellationToken);
+			var results = await EnvironmentCatalog.ReadAncestryAsync(assetTypeID, cancellationToken);
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{

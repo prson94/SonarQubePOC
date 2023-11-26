@@ -12,9 +12,15 @@ namespace repositories
 
 		Task CreateSemanticType();
 
-		Task<List<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
+		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
 
-		Task<AssetPathResults> GetAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
+		Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
+
+		Task ReadAssetTypeDefinition();
+
+		Task ReadProfiles();
+
+		Task ReadRelationTypeDefinition();
 
 		Task ReadSemanticTypes();
 
