@@ -28,9 +28,9 @@ namespace igx.functions.databasetaskprocessor
 	{
         const int DEFAULT_QUEUE_ITEMS = 500;
 
-		IMailProvider Mail;
-		IQueueSource Queue;
-		ElasticSearchSource Search;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly ElasticSearchSource Search;
 
 		public DatabaseTaskProcessor(IConfiguration config, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(config)
 		{

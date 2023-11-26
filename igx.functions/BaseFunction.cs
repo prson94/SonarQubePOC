@@ -18,34 +18,29 @@ namespace igx.functions
 
         public EnvironmentLevel GetEnvironmentLevelCurrentSlot()
         {
+            var environment = Config["Environment"];
+            EnvironmentLevel lvl;
 
-            try
+            switch (environment)
             {
-                var environment = Config["Environment"];
-                EnvironmentLevel lvl = EnvironmentLevel.Nightly;
+                case "NIGHTLY":
+                    lvl = EnvironmentLevel.Nightly;
+                    break;
+                case "CLIENTDEV":
+                    lvl = EnvironmentLevel.Development;
+                    break;
+                case "UAT":
+                    lvl = EnvironmentLevel.UAT;
+                    break;
+                case "PROD":
+                    lvl = EnvironmentLevel.Production;
+                    break;
+				default:
+					lvl = EnvironmentLevel.Nightly;
+					break;
+			}
 
-                switch (environment)
-                {
-                    case "NIGHTLY":
-                        lvl = EnvironmentLevel.Nightly;
-                        break;
-                    case "CLIENTDEV":
-                        lvl = EnvironmentLevel.Development;
-                        break;
-                    case "UAT":
-                        lvl = EnvironmentLevel.UAT;
-                        break;
-                    case "PROD":
-                        lvl = EnvironmentLevel.Production;
-                        break;
-                }
-
-                return lvl;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return lvl;
         }
 
         public List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()

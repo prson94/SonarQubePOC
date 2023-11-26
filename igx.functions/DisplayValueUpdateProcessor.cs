@@ -53,7 +53,7 @@ namespace igx.functions.consumption
 						ResourceID = 0,
 						IsAdministrator = true,
 					};
-					var community = new CommunityContext(Cache, Queue, context); ;
+					var community = new CommunityContext(Cache, Queue, context);
 					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, Config["CommunityContext"]))

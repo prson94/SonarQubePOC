@@ -23,7 +23,7 @@ namespace igx.jobs
 		public EnvironmentLevel GetEnvironmentLevelCurrentSlot()
 		{
 			var environment = Configuration["Environment"];
-			EnvironmentLevel lvl = EnvironmentLevel.Nightly;
+			EnvironmentLevel lvl;
 
 			switch (environment)
 			{
@@ -38,6 +38,9 @@ namespace igx.jobs
 					break;
 				case "PROD":
 					lvl = EnvironmentLevel.Production;
+					break;
+				default:
+					lvl = EnvironmentLevel.Nightly;
 					break;
 			}
 
