@@ -75,7 +75,7 @@ namespace igx.jobs.bulkloadprocessor
 						IsAdministrator = true
 					};
 					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 					var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
 					var tagRepository = new TagRepository(company, FeatureFlags);
 					var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);

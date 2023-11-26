@@ -4,9 +4,11 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using d360.core;
 using d360.core.entities;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Web.Infrastructure;
 using Newtonsoft.Json;
@@ -132,15 +134,7 @@ namespace d360.web
 			}
 			catch (Exception e)
 			{
-				//log error
-				var properties = new Dictionary<string, string>
-				{
-					{"Middleware","CompanyIDCheckMiddleware" },
-					{"Host", host }
-				};
-				var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-
-				telemetry.TrackException(e, properties);
+				Log.LogError(e, $"Error checking company Ids in CompanyIDCheckMiddleware. For host {host}");
 			}
 			await Next(environment);
 		}

@@ -91,7 +91,7 @@ namespace igx.jobs.responsibilityruleprocessor
 								IsAdministrator = true
 							};
 							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 							try
 							{

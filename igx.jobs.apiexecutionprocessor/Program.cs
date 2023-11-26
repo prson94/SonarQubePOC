@@ -111,7 +111,7 @@ namespace igx.jobs.apiexecutionprocessor
 					IsAdministrator = false
 				};
 				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 				var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
 				if (resource != null)

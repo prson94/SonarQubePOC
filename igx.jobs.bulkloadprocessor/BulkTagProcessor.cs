@@ -76,7 +76,7 @@ namespace igx.jobs.bulkloadprocessor
 						IsAdministrator = true
 					};
 					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 					var tagRepository = new TagRepository(company, FeatureFlags);
 
 					var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);

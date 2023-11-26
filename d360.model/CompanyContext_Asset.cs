@@ -1892,10 +1892,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				}
 			}
 
-			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
-
 			return results;
 		}
 
@@ -2483,10 +2479,6 @@ where	T.ExecutionID = @ExecutionID
 				}
 			}
 
-			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
-
 			return results;
 		}
 
@@ -2589,12 +2581,9 @@ where	T.ExecutionID = @ExecutionID
 						new { execution.ExecutionID }
 						).ToList();
 
-					addMeasurement(metrics, "Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
 					sw.Restart();
 				}
 			}
-
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
 			return results;
 		}

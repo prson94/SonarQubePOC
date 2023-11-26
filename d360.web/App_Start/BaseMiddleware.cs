@@ -1,13 +1,9 @@
-﻿using d360.core;
-using d360.extensions;
-using d360.extensions.events;
-using d360.extensions.info;
-using d360.extensions.mail;
-using d360.model;
-using d360.web.caching;
+﻿using d360.extensions;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace d360.web
 {
@@ -16,33 +12,13 @@ namespace d360.web
 	    protected Func<IDictionary<string, object>, Task> Next { get; }
 
 	    internal ICachingProvider Cache;
+		internal ILogger Log;
 
         public BaseMiddleware(Func<IDictionary<string, object>, Task> next)
         {
 	        Next = next;
-			Cache = new MemoryCachingProvider();
-        }
-
-        public CompanyContext CreateOwinCompanyContext(int companyId)
-        {
-            var sec = new UriSecurityContextProvider
-            {
-                CompanyID = companyId,
-                ResourceID = 0,
-                CompanyPrefix = "",
-                IsAdministrator = false
-            };
-
-            var community = new CommunityContext(Cache, null, sec);
-            
-            var mail = new MandrillMailProvider
-            {
-                ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY)
-            };
-
-            var queue = new AzureQueueSource();
-
-            return new CompanyContext(community, Cache, queue, mail, sec, false);
+			Cache = DependencyResolver.Current.GetService<ICachingProvider>();
+			Log = DependencyResolver.Current.GetService<ILogger>();
         }
     }
 }

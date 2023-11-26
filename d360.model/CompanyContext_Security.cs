@@ -892,9 +892,6 @@ group by A.Uid";
                 }
             }
 
-			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-            addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
-			
 			Connection.CloseIfOpened();
         }
 

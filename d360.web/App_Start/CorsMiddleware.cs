@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-
+using System.Web.Mvc;
 using d360.core.enums;
-
+using d360.model;
 using Microsoft.Owin;
 
 namespace d360.web
@@ -32,10 +32,8 @@ namespace d360.web
 					isPreflight = context.Request.Method == "OPTIONS";
 
 					string originsSetting = "";
-					using (var ctx = CreateOwinCompanyContext(companyID.Value))
-					{
-						originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
-					}
+					var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
+					originsSetting = ctx.GetSettingValue<string>(Setting.AllowedOrigins);
 
 					List<string> allowedOrigins = new List<string> {
 						"https://shell-dev.dis.cloud.precisely.services",

@@ -1,20 +1,20 @@
-﻿using System;
+﻿using d360.core.enums;
+using d360.model;
+using Microsoft.Extensions.Logging;
+using Microsoft.Owin;
+using NetTools;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using System.Xml.Linq;
-
-using d360.core.enums;
-
-using Microsoft.Owin;
-
-using NetTools;
 
 namespace d360.web
 {
-    public class IpRestrictionMiddleware : BaseMiddleware
+	public class IpRestrictionMiddleware : BaseMiddleware
     {
         public class CompanyIpSetting
         {
@@ -41,7 +41,6 @@ namespace d360.web
                 }
             }
         }
-
 
         public class IpRange
         {
@@ -70,10 +69,8 @@ namespace d360.web
                 if (companyID.HasValue && !host.Contains("-d3s") && !host.Contains("-igx") && !host.Contains("-pcy")) // If d3s url, automatically allow the user as they are a Data3Sixty/Precisely/Infogix employee.  Thrivent still has a d3s url
                 {
 					string ipXml = "<ips />";
-					using (var ctx = CreateOwinCompanyContext(companyID.Value))
-					{
-						ipXml = ctx.GetSettingValue<string>(Setting.IpRestriction);
-					}
+					var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
+					ipXml = ctx.GetSettingValue<string>(Setting.IpRestriction);
 
                     var ip = new CompanyIpSetting { Value = ipXml };
                     var ranges = ip.Ranges;
@@ -111,16 +108,8 @@ namespace d360.web
             }
             catch (Exception e)
             {
-                //log error
-                var properties = new Dictionary<string, string>
-                {
-                    {"Middleware","IpRestrictionMiddleware" },
-                    {"Host", host }
-                };
-                var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-
-                telemetry.TrackException(e, properties);
-            }
+				Log.LogError(e, $"Error checking IP restrictions in IpRestrictionMiddleware. For host {host}");
+			}
 
             await Next(environment);
         }

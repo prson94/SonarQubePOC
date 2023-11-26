@@ -61,14 +61,12 @@ namespace igx.functions.consumption
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-
-						using (var companyContext = JobDbContextCreator.CreateCompanyContext(context, Mail, Queue, Cache, Config["CommunityContext"]))
+						var community = new CommunityContext(Cache, Queue, context); ;
+						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+						var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, int.Parse(Config["V2EnvironmentJobRebuildTimeoutInHours"]));
+						if (rs.StatusCode == System.Net.HttpStatusCode.OK)
 						{
-							var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, int.Parse(Config["V2EnvironmentJobRebuildTimeoutInHours"]));
-							if (rs.StatusCode == System.Net.HttpStatusCode.OK)
-							{
-								await Queue.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
-							}
+							await Queue.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 						}
 					}
 					catch (Exception ex)

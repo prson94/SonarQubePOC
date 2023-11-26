@@ -161,7 +161,7 @@ namespace igx.jobs.indexer
 
         public async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
         {
-            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active);
+            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active, log);
 
             if (companyConn.State != System.Data.ConnectionState.Open)
             {
@@ -223,7 +223,7 @@ namespace igx.jobs.indexer
 
             });
 
-            await LogCompanyReindexComplete(CompanyID);
+            await LogCompanyReindexComplete(CompanyID, log);
             if (companyConn.State != System.Data.ConnectionState.Closed)
             {
                 companyConn.Close();
@@ -232,12 +232,12 @@ namespace igx.jobs.indexer
 
         #region Supporting Functions
 
-        private async Task LogCompanyReindexComplete(int companyID)
+        private async Task LogCompanyReindexComplete(int companyID, ILogger log)
         {
-            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive);
+            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive, log);
         }
 
-        private async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status)
+        private async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status, ILogger log)
         {
             var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == companyID);
 
@@ -249,7 +249,7 @@ namespace igx.jobs.indexer
 				IsAdministrator = true
 			};
 			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
             CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 

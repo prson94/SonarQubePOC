@@ -103,7 +103,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 								IsAdministrator = true
 							};
 							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 							// Load all workflows of type schedule.
 							var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();

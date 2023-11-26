@@ -13,7 +13,6 @@ using System.Net.Http.Formatting;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Web.Http.ExceptionHandling;
-using System.Web.Http.OData.Extensions;
 using System.Web.Http.Routing;
 
 namespace d360.web
@@ -113,7 +112,6 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
 
 			#endregion
 
-			config.AddODataQueryFilter();
 			config.EnableCors();
 
 			config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new GuidConverter());

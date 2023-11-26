@@ -95,7 +95,7 @@ namespace igx.jobs.workflowdigestprocessor
 								IsAdministrator = true
 							};
 							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 							company.FeatureFlags_TEMP_ASSIGNMENTS =  FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser(), false);
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}

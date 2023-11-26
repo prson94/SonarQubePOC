@@ -69,7 +69,7 @@ namespace igx.jobs.scoreprocessor
 								}, commandTimeout: 600);
 								updatedAssets = response.ToList();
 								
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", rescorePayload.ScoreType, updatedAssets);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", rescorePayload.ScoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.PatchCatalogExecution:
@@ -83,7 +83,7 @@ namespace igx.jobs.scoreprocessor
 								}, commandTimeout: 18000);
 								updatedAssets = response.ToList();
 								
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.Governance, updatedAssets);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.Governance, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.MeasureChanged:
@@ -100,7 +100,7 @@ namespace igx.jobs.scoreprocessor
 								
 								//Get the score type for this deleted measure, which will be sent to workflow.
 								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureChangedPayload.MetricAssetVersionUid });
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.MeasureRemoved:
@@ -117,7 +117,7 @@ namespace igx.jobs.scoreprocessor
 
 								//Get the score type for this deleted measure, which will be sent to workflow.
 								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureRemovedPayload.MetricAssetVersionUid });
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.RollupPathChanged:
@@ -140,7 +140,7 @@ namespace igx.jobs.scoreprocessor
 									assetUid = ruleRemovedPayload.AssetUid 
 								}, commandTimeout: 18000);
 								updatedAssets = response.ToList();
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets);
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log);
 							}
 							break;
 						default:
@@ -284,7 +284,7 @@ insert into #ids (AssetUid)
 {COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		void processWorkflowCalls(int companyId, int resourceId, string companyDomainPrefix, ScoreType scoreType, List<WorkflowScoredAsset> updatedAssets)
+		void processWorkflowCalls(int companyId, int resourceId, string companyDomainPrefix, ScoreType scoreType, List<WorkflowScoredAsset> updatedAssets, ILogger log)
 		{
 			var context = new UriSecurityContextProvider
 			{
@@ -294,7 +294,7 @@ insert into #ids (AssetUid)
 				IsAdministrator = false
 			};
 			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, true);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
 

@@ -3815,8 +3815,6 @@ from	#tempexecurelat e
 				}
 			}
 			QueryID = " ";
-			addMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
 			return results;
 		}
@@ -4954,9 +4952,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					addMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
 				}
 			}
-
-			addMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
 			return results;
 		}
