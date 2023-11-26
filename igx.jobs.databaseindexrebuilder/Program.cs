@@ -66,7 +66,7 @@ namespace igx.jobs.databaseindexrebuilder
 							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
 							{
 								companyConnection.Open();
-								var res = companyConnection.Execute(
+								companyConnection.Execute(
 									"EXEC [dbo].[AzureSQLMaintenance]", 
 									new { 
 										Operation = "reindex", 

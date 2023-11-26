@@ -10,7 +10,7 @@ namespace igx.functions
 {
 	public class BaseFunction
     {
-        public IConfiguration Config;
+        public IConfiguration Config { get; private set; }
         public BaseFunction(IConfiguration config)
         {
             Config = config;

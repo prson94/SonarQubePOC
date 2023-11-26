@@ -14,11 +14,12 @@ namespace d360.model
     {
 		public static string GetFullExceptionData(this Exception ex, bool includeStacktrace = true, int characterLimit = -1)
 		{
-			if (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException))
+			StringBuilder sb = new StringBuilder();
+			bool isSqlException = (ex.InnerException != null && ex.InnerException.InnerException != null && ex.InnerException.InnerException.GetType() == typeof(SqlException));
+
+			if (isSqlException)
 			{
 				SqlException sqlException = (SqlException)ex.InnerException.InnerException;
-
-				System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
 				foreach (SqlError sqlError in sqlException.Errors)
 				{
@@ -29,41 +30,35 @@ namespace d360.model
 
 					sb.Append(sqlError.Message);
 				}
-
-				if (characterLimit == -1)
-				{
-					return sb.ToString();
-				}
-				else
-				{
-					string message = sb.ToString().Substring(0, Math.Min(characterLimit, sb.Length));
-
-					return message;
-				}
 			}
+			else
+			{ 
+				if (!ex.Message.Contains("inner exception for details"))
+				{
+					sb.Append(ex.Message);
+				}
 
-			string error = "";
-
-			if (!ex.Message.Contains("inner exception for details"))
-			{
-				error += ex.Message;
-			}
-
-			var iex = ex.InnerException;
-			while (iex != null)
-			{
-				error += $";  {iex.Message}{(includeStacktrace ? "-----" + iex.StackTrace : "")}";
-				iex = iex.InnerException;
+				var iex = ex.InnerException;
+				while (iex != null)
+				{
+					sb.Append("; ");
+					sb.Append(iex.Message);
+					if (includeStacktrace)
+					{
+						sb.Append("-----");
+						sb.Append(iex.StackTrace);
+					}
+					iex = iex.InnerException;
+				}			
 			}
 
 			if (characterLimit == -1)
 			{
-				return error;
+				return sb.ToString();
 			}
 			else
 			{
-				string message = error.Substring(0, Math.Min(characterLimit, error.Length));
-
+				string message = sb.ToString().Substring(0, Math.Min(characterLimit, sb.Length));
 				return message;
 			}
 		}

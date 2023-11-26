@@ -6,7 +6,7 @@
 
 		public DapperConnectionProvider ConnectionProvider { get; set; }
 
-		public Repository(DapperConnectionProvider provider)
+		protected Repository(DapperConnectionProvider provider)
 		{
 			ConnectionProvider = provider;		
 		}

@@ -6,7 +6,7 @@ namespace d360.featureflags
 {
 	public class FeatureFlagService: IFeatureFlagService
 	{
-		private LdClient Ld;
+		private readonly LdClient Ld;
 
 		public FeatureFlagService(string apikey)
 		{

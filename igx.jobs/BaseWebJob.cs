@@ -12,7 +12,7 @@ namespace igx.jobs
 {
 	public class BaseWebJob
 	{
-		public IConfiguration Configuration;
+		public IConfiguration Configuration { get; private set; }
 		private string ConnString { get { return Configuration["CommunityContext"]; } }
 
 		public BaseWebJob(IConfiguration configuration)

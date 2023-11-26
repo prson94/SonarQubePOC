@@ -1,6 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Azure.Storage.Queues;
 using d360.core.enums.Workflow;
+using d360.core.exceptions;
 using d360.core.queue;
 using Newtonsoft.Json;
 using System;
@@ -84,67 +85,42 @@ namespace d360.extensions.events
 			var response = queue.SendMessage(encodeMessage(item));
             if (string.IsNullOrEmpty(response.Value.PopReceipt))
             {
-                throw new ApplicationException("Queue message has no population receipt and appears to not have been added properly.");
+                throw new InfrastructureException("Queue message has no population receipt and appears to not have been added properly.", "StorageQueue");
             }
-            
 			return true;
         }
 
         public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
         {
-            try
+			var queue = cloudClient.GetQueueClient(queueName);
+			var response = await queue.SendMessageAsync(encodeMessage(item), initialVisibilityDelay);
+            if (string.IsNullOrEmpty(response.Value.PopReceipt))
             {
-				var queue = cloudClient.GetQueueClient(queueName);
-				var response = await queue.SendMessageAsync(encodeMessage(item), initialVisibilityDelay);
-                if (string.IsNullOrEmpty(response.Value.PopReceipt))
-                {
-                    throw new Exception("Queue message has no population receipt and appears to not have been added properly.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Error occurred trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
-                return false;
-            }
+				throw new InfrastructureException("Queue message has no population receipt and appears to not have been added properly.", "StorageQueue");
+			}
             return true;
         }
 
         public bool CreateMessages<T>(string queueName, List<T> items)
         {
-            try
+			var queue = cloudClient.GetQueueClient(queueName);
+			items.ForEach(item =>
             {
-				var queue = cloudClient.GetQueueClient(queueName);
-				items.ForEach(item =>
-                {
-					queue.SendMessage(encodeMessage(item));
-                });
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Error occurred trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
-                return false;
-            }
+				queue.SendMessage(encodeMessage(item));
+            });
             return true;
         }
 
         public async Task<bool> CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
         {
-            try
+			var queue = cloudClient.GetQueueClient(queueName);
+			await Task.Run(() =>
             {
-				var queue = cloudClient.GetQueueClient(queueName);
-				await Task.Run(() =>
-                {
-					items.ForEach(item =>
-					{
-						queue.SendMessage(encodeMessage(item));
-					});
+				items.ForEach(item =>
+				{
+					queue.SendMessage(encodeMessage(item));
 				});
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError("Error occurred trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
-                return false;
-            }
+			});
             return true;
         }
 
