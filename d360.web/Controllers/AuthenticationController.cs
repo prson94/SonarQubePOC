@@ -728,6 +728,17 @@ namespace d360.web.Controllers
 						scopes = string.Join(" ", authenticationSettings.scopes);
 					}
 
+					string loginHint = null;
+					if (Request.Params.AllKeys.Contains("login_hint"))
+					{
+						loginHint = Request.Params["login_hint"];
+					}
+					var extraParameters = loadExtraParametersFromOpenIdSettings(authenticationSettings);
+					if (Request.Params.AllKeys.Contains("domain_hint"))
+					{
+						var domainHint = Request.Params["domain_hint"];
+						extraParameters.Add("domain_hint", domainHint);
+					}
 					var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId,
                         responseType: "code",
@@ -735,10 +746,11 @@ namespace d360.web.Controllers
                         callbackUri,
                         state,
                         nonce,
+						loginHint: loginHint,
                         responseMode: "form_post",
-                        extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
-                        );
-
+                        extra: extraParameters
+						);
+					
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
