@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneetgupta" id="Function.metrics.GetGovernanceScore-v1.07">
+ <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.08">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -96,6 +96,7 @@ begin
 		AssetTypeId int,				-- save on requerying the same tables.
 		FieldTypeId int,				-- save on requerying the same tables.
 		[FieldType] varchar(25),		-- The data type of the field.
+		[AllowMultipleValues] bit,		-- The multiValueAllowed of the field.
 		LookupObject varchar(50),		-- In case this is a field compairon for a Lookup field,
 		LookupObjectId int,	
 		Operator varchar(50),			-- get the operator
@@ -131,7 +132,7 @@ begin
 		from	@initial m
 				inner join dbo.Asset a on a.ID = m.AssetId
 				cross apply metrics.ConditionsFiltering(m.AssetId, m.Conditions, m.MatchConditionsOnly) cm
-		where	cm.[Include] = 1					
+		where	cm.[Include] = 1
 
 	-- Parse the values to validate for testing.
 	update	m
@@ -142,6 +143,7 @@ begin
 			m.AssetTypeId = a.AssetTypeID,
 			m.FieldTypeId = ft.ID,
 			m.FieldType = ft.[Type],
+			m.[AllowMultipleValues] = coalesce(ft.[AllowMultipleValues], 0),
 			m.Operator = c.Operator,
 			m.LookupObject = ft.LookupObjectType + 'Type',
 			m.LookupObjectId = ft.LookupObjectId
@@ -306,39 +308,51 @@ begin
 
 	-- Perform Lookup Populated check
 	update	m
-	set		m.[Value] = iif(f.ID is not null and a.Present = 1, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
+	set		m.[Value] = iif(f.ID is not null and a.Present > 0, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
 	from	@tbl m
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-			outer apply (
-				select	1 as Present
+			cross apply (
+				select	count(1) as Present
 				from	dbo.AssetType lt
-						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = try_parse(f.Value as int)
+						cross apply (
+							select	try_parse(value as int) as ObjectID
+							from	string_split(coalesce(f.Value,'0'), ',')
+						) vals
+						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
 			) a
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
 
 	---- Perform Lookup NotPopulated check
 	update	m
-	set		m.[Value] = iif(f.ID is null and a.Present is null, 1, 0)
+	set		m.[Value] = iif(f.ID is null and a.Present = 0, 1, 0)
 	from	@tbl m
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
 			outer apply (
-				select	1 as Present
+				select	count(1) as Present
 				from	dbo.AssetType lt
-						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = try_parse(f.Value as int)
+						cross apply (
+							select	try_parse(value as int) as ObjectID
+							from	string_split(coalesce(f.Value,'0'), ',')
+						) vals
+						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
 			) a
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated'
 
 	-- Perform Lookup other check
 	update	m
-	set		m.[Value] = iif(a.Present = 1, 1, 0)
+	set		m.[Value] = iif(a.Present > 0, 1, 0)
 	from	@tbl m
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
 			outer apply (
-				select	1 as Present
+				select	count(1) as Present
 				from	dbo.AssetType lt
+						cross apply (
+							select	try_parse(value as int) as ObjectID
+							from	string_split(coalesce(f.Value,'0'), ',')
+						) vals
 						inner join dbo.Asset la on la.AssetTypeID = lt.ID 
 							and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId 
-							and la.ObjectID = try_parse(f.Value as int)
+							and la.ObjectID = vals.ObjectID
 							and case 
 								when m.Operator = 'Equals' and la.Uid = m.SingleValue then 1
 								when m.Operator = 'NotEquals' and la.Uid <> m.SingleValue then 1
