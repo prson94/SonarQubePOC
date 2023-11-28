@@ -14,12 +14,12 @@ const routes: Routes = [
 		component: AssignmentsContainerComponent,
 		children: [
 			{ path: '', component: AssignmentListComponent },
+			{ path: 'by-workflow-version', component: ByWorkflowVersionListComponent },
 			{
 				path: ':assignmentUid',
 				component: AssignmentDetailsContainerComponent,
 				canActivate: [AssignmentDetailsGuard]
-			},
-			{ path: 'by-workflow-version', component: ByWorkflowVersionListComponent }
+			}
 		]
 	}
 ];
