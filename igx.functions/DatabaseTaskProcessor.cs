@@ -627,7 +627,18 @@ namespace igx.functions.databasetaskprocessor
                                                 BEGIN
                                                    select 0;
                                                 END";
-			return conn.QuerySingle<bool>(existsSql);
+			try
+			{
+				return conn.QuerySingle<bool>(existsSql);
+			}
+			catch (SqlException)
+			{
+				return false;
+			}
+			catch
+			{
+				throw;
+			}
         }
 
 		#endregion
