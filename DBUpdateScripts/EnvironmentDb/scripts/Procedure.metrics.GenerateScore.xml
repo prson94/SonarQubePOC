@@ -8,7 +8,6 @@
  <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-
 create or alter procedure [metrics].[GenerateScore]
 	@assetUid uniqueidentifier,
 	@effectiveDate date,
@@ -235,7 +234,6 @@ begin
 		from	metrics.Score 
 		where	AllocationUid = @allocationUid 
 				and AssetUid = @assetUid 
-				and EffectiveDate = @effectiveDate;
 				and EffectiveDate = @mostRecentDate;
 
 		update	metrics.Score
