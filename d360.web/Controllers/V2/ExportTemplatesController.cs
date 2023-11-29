@@ -1,4 +1,16 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.validators;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Services;
+using Dapper;
+using Microsoft.Web.Http;
+using repositories;
+using Resources;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -8,24 +20,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.validators;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-
-using Dapper;
-
-using Microsoft.Web.Http;
-using repositories;
-using Resources;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {

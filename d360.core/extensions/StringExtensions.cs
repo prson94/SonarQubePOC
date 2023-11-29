@@ -1,27 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using HtmlAgilityPack;
+using OWASP.AntiSamy.Html;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using d360.core.helpers;
-using d360.core.resources;
-using HtmlAgilityPack;
-using OWASP.AntiSamy.Html;
 
 namespace d360.core
 {
-    public static class StringExtensions
+	public static class StringExtensions
     {
         public static bool In<T>(this T t, params T[] values)
         {
             return values.Contains(t);
-        }
-
-        public static string FormatBooleanReadOnlyValue(this bool b)
-        {
-            return b ? Values.BooleanTrue : Values.BooleanFalse;
         }
 
         /// <summary>
@@ -67,24 +59,6 @@ namespace d360.core
 			catch { }
 			return text;
 		}
-
-        public static string ReplaceLast(this string Source, string Find, string Replace)
-        {
-            int place = Source.LastIndexOf(Find);
-
-            if (place == -1)
-            {
-                return Source;
-            }
-
-            return Source.Remove(place, Find.Length).Insert(place, Replace);
-        }
-
-        public static byte[] GetSha1Hash(this string inputString)
-        {
-            HashAlgorithm algorithm = SHA1.Create();  //or use SHA256.Create();
-            return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
-        }
 
         public static byte[] GetD3sHash(this string inputString)
         {
@@ -172,8 +146,6 @@ namespace d360.core
 			return new string(validXmlChars);
 		}
 
-		//				
-
 		public static string SanitizeHtml(this string text)
 		{
 			if (!string.IsNullOrEmpty(text))
@@ -181,15 +153,6 @@ namespace d360.core
 				var s = new AntiSamy();
 				var results = s.Scan(text);
 				text = results.GetCleanHtml();
-			}
-			return text;
-		}
-
-		public static string ConvertHtml(this string text)
-		{
-			if (!string.IsNullOrEmpty(text))
-			{
-				text = WebUtility.HtmlEncode(text);
 			}
 			return text;
 		}

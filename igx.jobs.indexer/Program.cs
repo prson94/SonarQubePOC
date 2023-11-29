@@ -1,80 +1,80 @@
 ﻿using d360.core;
-using d360.core.queue;
 using d360.core.enums;
-using d360.extensions.search;
+using d360.core.queue;
+using d360.extensions;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.mail;
 using d360.extensions.queue;
+using d360.extensions.search;
+using d360.extensions.storage;
+using d360.model;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using d360.core.entities;
-using d360.extensions.info;
-using d360.extensions.caching;
-using d360.model;
-using Microsoft.Extensions.Hosting;
-using System.Collections.Concurrent;
-using d360.extensions.mail;
-using System.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace igx.jobs.indexer
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder.ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddAzureStorage();
-            });
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c => {
+					c.AddAzureStorageQueues();
+				})
+				.ConfigureGovernLogging()
+				.ConfigureServices((context, services) => {
+					services.AddScoped<IQueueSource, DummyQueueSource>();
+					services.AddScoped<IStorageProvider, DummyStorageProvider>();
+					services.AddScoped<ICachingProvider, DummyCachingProvider>();
+					services.AddScoped<IMailProvider, DummyMailProvider>();
+					services.AddScoped(s => {
+						return new ElasticSearchSource
+						{
+							CommunityConnectionString = context.Configuration["CommunityContext"]
+						};
+					});
+				});
 
-            using (var host = builder.Build())
+			using (var host = builder.Build())
             {
                 await host.RunAsync();
             }
         }
     }
 
-    internal interface IPagedQuerySqlModel
-    {
-        long AssetID { get; set; }
-    }
-
-    internal class FieldSqlModel : IPagedQuerySqlModel
-    {
-        public long AssetID { get; set; }
-        public string Name { get; set; }
-        public string FormattedValue { get; set; }
-    }
-
-    internal class TagSqlModel : IPagedQuerySqlModel
-    {
-        public long AssetID { get; set; }
-        public Guid AssetUID { get; set; }
-        public Guid TagUID { get; set; }
-        public string Value { get; set; }
-    }
-
-    internal class ResponsibilitySqlModel : IPagedQuerySqlModel
-    {
-        public long AssetID { get; set; }
-        public string SecurityAsset { get; set; }
-        public int SecurityAssetID { get; set; }
-    }
-
-    public static class Indexer
-    {        
+    public class Indexer : BaseWebJob
+	{        
         const string FUNCTION_NAME = "Indexing_ReIndex";
 
-        public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly ElasticSearchSource Search;
+
+		public Indexer(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, ElasticSearchSource search) : base(config)
+		{
+			Cache = cache;
+			Mail = mail;
+			Queue = queue;
+			Search = search;
+		}
+
+		public async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 
@@ -87,10 +87,9 @@ namespace igx.jobs.indexer
 			{
 				try
 				{
-					var source = new ElasticSearchSource();
 					using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID))
 					{
-						await ProcessRebuildRequest(source, company, reindex, log);
+						await ProcessRebuildRequest(Search, company, reindex, log);
 					}
 				}
 				catch (Exception ex)
@@ -98,11 +97,9 @@ namespace igx.jobs.indexer
 					log.LogCritical(ex, "Critical error on ReIndexer web job.");
 				}			
 			}
-
-			CoreFunction.AIFlush();
 		}
 
-        public static async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
+        public async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
         {
             SearchIndexer indexer = new SearchIndexer(company, reindex.CompanyID, source);
             if (reindex.AssetUid.HasValue)
@@ -162,16 +159,26 @@ namespace igx.jobs.indexer
             }
         }
 
-        public static async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
+        public async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)
         {
-            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active);
+            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active, log);
 
             if (companyConn.State != System.Data.ConnectionState.Open)
             {
                 companyConn.Open();
             }
 
-            int SuggestedIndexLimit = ElasticSearchSource.SuggestIndexLimit(companyConn);
+			var sql = "select case " +
+					  "	WHEN a.dist > 30000 THEN 30000 " +
+					  "	WHEN a.total > 30000 THEN a.dist " +
+					  "	ELSE a.total " +
+					  "END " +
+					  "FROM (" + 
+					  "		select floor(count(1) * 2.4) AS total, floor(count(distinct [Name]) * 3.6) AS dist " +
+					  "		from FieldType " +
+					  "		where AssetTypeID is not null" +
+					  ") a;";
+			var SuggestedIndexLimit = companyConn.Query<int>(sql).First();
             if (SuggestedIndexLimit > 1000)
             {
                 source.IndexFieldLimit = SuggestedIndexLimit;
@@ -216,7 +223,7 @@ namespace igx.jobs.indexer
 
             });
 
-            await LogCompanyReindexComplete(CompanyID);
+            await LogCompanyReindexComplete(CompanyID, log);
             if (companyConn.State != System.Data.ConnectionState.Closed)
             {
                 companyConn.Close();
@@ -225,41 +232,32 @@ namespace igx.jobs.indexer
 
         #region Supporting Functions
 
-        private static async Task LogCompanyReindexComplete(int companyID)
+        private async Task LogCompanyReindexComplete(int companyID, ILogger log)
         {
-            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive);
+            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive, log);
         }
 
-        private static async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status)
+        private async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status, ILogger log)
         {
-            var _c = CoreFunction.GetCompaniesByCurrentSlot()
-                .FirstOrDefault(x => x.CompanyID == companyID);
+            var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == companyID);
 
-            var companyContext = JobDbContextCreator.CreateCompanyContext(
-                new UriSecurityContextProvider
-                {
-                    CompanyID = companyID,
-                    CompanyPrefix = _c.UrlPrefix,
-                    ResourceID = 0,
-                    IsAdministrator = true
-                },
-                new MandrillMailProvider
-                {
-                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
-                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                },
-                new AzureQueueSource(),
-                new DummyCachingProvider(),
-                constants.COMMUNITY_DATABASE_CONNECTION);
+			var context = new UriSecurityContextProvider
+			{
+				CompanyID = companyID,
+				CompanyPrefix = _c.UrlPrefix,
+				ResourceID = 0,
+				IsAdministrator = true
+			};
+			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+            CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
             if(currentStatue != status)
-                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
-
+                await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
         }
 
-        private static Tuple<byte, byte> GetNGramLimits(SqlConnection context)
+        private Tuple<byte, byte> GetNGramLimits(SqlConnection context)
         {
             float _ngram = context.Query<float>("SELECT Boost FROM dbo.SearchBoost WHERE Field = '_ngram'").FirstOrDefault();
             byte nGramMin = (byte)Math.Truncate(_ngram);

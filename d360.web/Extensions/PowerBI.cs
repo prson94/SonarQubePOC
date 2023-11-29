@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.PowerBI.Api.V2;
+using Microsoft.PowerBI.Api.V2.Models;
+using Microsoft.Rest;
+using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -7,16 +12,9 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.PowerBI.Api.V2;
-using Microsoft.PowerBI.Api.V2.Models;
-using Microsoft.Rest;
-
-using Newtonsoft.Json;
-
 namespace d360.web.Extensions
 {
-    public class DataSourceCredentials
+	public class DataSourceCredentials
     {
         public string credentialType { get; set; }
 

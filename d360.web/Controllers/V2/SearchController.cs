@@ -14,10 +14,12 @@ using System.Web.Http.Description;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
 using d360.core.resources;
 using d360.core.search;
 using d360.extensions;
 using d360.extensions.search;
+using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
@@ -49,20 +51,22 @@ namespace d360.web.Controllers.V2
 	{
 		private readonly ISearchSource SearchSource;
 		private readonly IAssetRepository AssetRepository;
+		private readonly IQueueSource Queue;
 		private readonly ISemanticsRepository SemanticsRepository;
 		private readonly TelemetryClient Telemetry;
 
 		//Icons set based on main Nav item for category
 		private readonly Dictionary<string, string> siteNavMap;
 
-		public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
+		public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository, IQueueSource queue) : base(set)
 		{
 			SearchSource = searchSource;
 			AssetRepository = assetRepository;
+			Queue = queue;
 			SemanticsRepository = semanticsRepository;
 			Telemetry = new TelemetryClient();
 
-			this.siteNavMap = new Dictionary<string, string> {
+			siteNavMap = new Dictionary<string, string> {
 				{ CommonNames.AssetTypeClass_Business, "#Business" },
 				{ CommonNames.AssetTypeClass_Technical, "#Technical" },
 				{ CommonNames.AssetTypeClass_Model, "#Models" },
@@ -338,7 +342,7 @@ namespace d360.web.Controllers.V2
 
 			List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
 
-			if (GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+			if (FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
 			{
 				classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
 			}
@@ -440,7 +444,19 @@ namespace d360.web.Controllers.V2
 			var response = new ConfirmResponse();
 			SearchIndexer indexer = new SearchIndexer(Company.Connection, Company.CurrentCompanyID, SearchSource);
 			rebuildRequests.ForEach(r => {
-				indexer.QueueRebuildRequest((AssetTypeClass)r.Class, r.AssetTypeUid);
+				AssetTypeClass assetTypeClass = (AssetTypeClass)r.Class;
+				var origin = "QueueRebuildRequest, class: " + assetTypeClass.ToString();
+				ReindexModel model = new ReindexModel { CompanyID = Company.CurrentCompanyID, Category = assetTypeClass.ToString() };
+				if (r.AssetTypeUid != Guid.Empty)
+				{
+					model.AssetTypeUid = r.AssetTypeUid;
+					origin += ", asset type uid: " + r.AssetTypeUid.ToString();
+				}
+				model.Origin = origin;
+				if (indexer.CanCreatePendingDBLog(assetTypeClass, r.AssetTypeUid))
+				{
+					Queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+				}
 			});
 			response.message = "Rebuild queued";
 
@@ -493,7 +509,7 @@ namespace d360.web.Controllers.V2
 		{
 			List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
 
-			if (Company.Semantics.Any() && GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+			if (Company.Semantics.Any() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
 			{
 				visibleCategories.Add(AssetTypeClass.SemanticType.ToString());
 			}
@@ -517,7 +533,7 @@ namespace d360.web.Controllers.V2
 
 		private List<IndexableCount> GetDatabaseCounts()
 		{
-			var semanticTypesEnabled = GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API);
+			var semanticTypesEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser());
 
 			var sql = $@"WITH AssetTypesCTE (Class, AssetTypeUid, CurrentCount)
 				as
@@ -805,8 +821,8 @@ namespace d360.web.Controllers.V2
 			}
 
 			// FeatureFlags
-			var dataProfilingEnabled = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING);
-			var semanticTypesEnabled = GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API);
+			var dataProfilingEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser());
+			var semanticTypesEnabled = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser());
 
 			//Determine which results have asset tyoes with search fields defined
 			List<Guid> assetTypeUidWithFields = GetAssetTypeUidWithField(results);
@@ -1069,7 +1085,7 @@ namespace d360.web.Controllers.V2
 				blockedCategories.Add(AssetTypeClass.Group.ToString());
 			}
 
-			if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_API, GetFeatureFlagUser()))
 			{
 				blockedCategories.Add(AssetTypeClass.SemanticType.ToString());
 			}

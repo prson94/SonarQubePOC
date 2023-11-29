@@ -1,4 +1,17 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Workflow;
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.queue;
+using d360.model.workflow;
+using Dapper;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
@@ -12,21 +25,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Workflow;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.queue;
-using d360.model.workflow;
-
-using Dapper;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace d360.model
 {
@@ -134,13 +132,11 @@ namespace d360.model
 		#endregion
 
 		#region Utility
+		
 		private readonly Random randomNumberGenerator = new Random();
 
 		private void ChangeItemState(WorkflowItemStep item)
 		{
-			TelemetryClient.TrackTrace($"DEBUG - CHANGING ITEM STATE.");
-			TelemetryClient.TrackTrace($"Executing - [workflow].[changeItemState] {item.Step.Version.TypeID}, {item.Step.ID}, {item.ItemID} ");
-
 			Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
 		}
 
@@ -188,8 +184,6 @@ namespace d360.model
 				workflowName = registration.Type.Name;
 			}
 
-			TelemetryClient.TrackTrace($"DEBUG - TESTING TO SEE IF ${objectInfo.Object} - {objectInfo.ObjectID} IS VALID FOR WORKFLOW {workflowName}");
-
 			string issueObjectType = "";
 			int issueObjectId = -1;
 
@@ -202,13 +196,11 @@ namespace d360.model
 
 			if (objectInfo.Object == SystemObjects.Issue)
 			{
-				TelemetryClient.TrackTrace($"DEBUG - WORKFLOW IS AN ISSUE.  DETERMINING WHAT OBJECT THE ISSUE WITH ID {objectInfo.ObjectID} WAS RAISED ON.");
-
 				Issue issueDetail = Issues.Where(x => x.ID == objectInfo.ObjectID).FirstOrDefault();
 
 				if (issueDetail == null)
 				{
-					TelemetryClient.TrackEvent("ERROR - ISSUE RAISED BUT DOESNT HAVE CORRESPONDING ISSUE RECORD.");
+					Log.LogWarning("ERROR - ISSUE RAISED BUT DOESNT HAVE CORRESPONDING ISSUE RECORD.");
 
 					return false;
 				}
@@ -223,12 +215,12 @@ namespace d360.model
 
 			if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, objectInfo.ChangedFieldIds, issueObjectType, issueObjectId, (int?)objectInfo.ScoreType))
 			{
-				TelemetryClient.TrackTrace($"DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
+				Log.LogDebug($"DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
 				return false;
 			}
 
-			TelemetryClient.TrackTrace($"DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
+			Log.LogDebug($"DEBUG - OBJECT MATCHES SPECIFIED CRITERIA");
 
 			return true;
 		}
@@ -237,24 +229,18 @@ namespace d360.model
 		{
 			if (settings.StoredProcedureID <= 0)
 			{
-				TelemetryClient.TrackTrace($"DEBUG : STORED PROC STEP DOESNT HAVE A VALID PROCEDURE ID.");
-
+				Log.LogWarning($"DEBUG : STORED PROC STEP DOESNT HAVE A VALID PROCEDURE ID.");
 				return;
 			}
 
 			WorkflowTaskProcedure procInfo = WorkflowTaskProcedures.Where(x => x.ID == settings.StoredProcedureID).FirstOrDefault();
 
-
 			if (!procInfo.PassObjectInfo)
 			{
-				TelemetryClient.TrackTrace($"DEBUG : EXECUTING PROCEDURE ID[{procInfo.ID}] PROC[{procInfo.Name}].  NOT PASSING OBJECT INFO.");
-
 				Database.Connection.Execute($"{procInfo.Procedure}", commandType: System.Data.CommandType.StoredProcedure);
 			}
 			else
 			{
-				TelemetryClient.TrackTrace($"DEBUG : EXECUTING PROCEDURE ID[{procInfo.ID}] PROC[{procInfo.Name}].  PASSING OBJECT INFO.");
-
 				Database.Connection.Execute($"{procInfo.Procedure} @obj,@objectId", new { obj = objectInfo.Object.ToString(), objectId = objectInfo.ObjectID });
 			}
 		}
@@ -499,7 +485,7 @@ namespace d360.model
 
 			if (string.IsNullOrEmpty(requestStepBody))
 			{
-				TelemetryClient.TrackEvent($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
+				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
 			}
 
 			JToken body = null;
@@ -509,7 +495,7 @@ namespace d360.model
 			}
 			catch
 			{
-				TelemetryClient.TrackEvent($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
+				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
 			}
 
 			if (!string.IsNullOrEmpty(item.Fields))
@@ -574,7 +560,7 @@ namespace d360.model
 			//if there is a Visibility value update the appropriate item
 			if (settingsModel.Visible.HasValue)
 			{
-				TelemetryClient.TrackTrace($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
+				Log.LogTrace($"DEBUG - OBJECT TYPE[{objectInfo.ObjectType}] ID[{objectInfo.ObjectID}] VISIBILITY SET TO {settingsModel.Visible}");
 			}
 		}
 
@@ -693,15 +679,13 @@ namespace d360.model
 			{
 				if (string.IsNullOrEmpty(settings.SpecificUser))
 				{
-					TelemetryClient.TrackEvent("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
-
+					Log.LogError("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
 					return;
 				}
 
 				foreach (string email in settings.SpecificUser.Split(';'))
 				{
-					TelemetryClient.TrackTrace($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
-
+					Log.LogTrace($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
 					await Mail.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true, fromEmail, fromName);
 				}
 			}
@@ -803,12 +787,7 @@ namespace d360.model
 				}
 				catch (Exception ex)
 				{
-					var telemetry = new ExceptionTelemetry(ex)
-					{
-						Message = $"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]"
-					};
-
-					TelemetryClient.TrackException(telemetry);
+					Log.LogError(ex, $"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]");
 				}
 
 				await SaveHttpResponseResultsAsync(item, requestSettings, response);
@@ -870,8 +849,7 @@ namespace d360.model
 			{
 				if (item.Item.StartedBy <= 0)
 				{
-					TelemetryClient.TrackEvent("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
-
+					Log.LogError("ERROR CANNOT DETERMINE WHO TO EMAIL WORKLFOW EMAIL TASK MESSAGE TO.");
 					return true;
 				}
 
@@ -879,12 +857,11 @@ namespace d360.model
 
 				if (res == null)
 				{
-					TelemetryClient.TrackEvent("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
-
+					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO EMAIL.");
 					return true;
 				}
 
-				TelemetryClient.TrackTrace($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
+				Log.LogTrace($"DEBUG : EMAIL STEP IS EMAILING [{res.Email}].");
 				emailedUsers.Add(res.Email);
 
 				try
@@ -893,8 +870,7 @@ namespace d360.model
 				}
 				catch (Exception e)
 				{
-					//error sending email
-					TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+					Log.LogError(e, "Error sending workflow email.");
 				}
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
@@ -908,8 +884,6 @@ namespace d360.model
 
 				foreach (GlobalReportingResource user in users)
 				{
-					TelemetryClient.TrackTrace($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
-
 					emailedUsers.Add(user.Email);
 
 					try
@@ -918,8 +892,7 @@ namespace d360.model
 					}
 					catch (Exception e)
 					{
-						//error sending email
-						TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+						Log.LogError(e, "Error sending workflow email.");
 					}
 				}
 			}
@@ -929,8 +902,6 @@ namespace d360.model
 
 				foreach (GlobalReportingResource user in users)
 				{
-					TelemetryClient.TrackTrace($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
-
 					emailedUsers.Add(user.Email);
 
 					try
@@ -939,8 +910,7 @@ namespace d360.model
 					}
 					catch (Exception e)
 					{
-						//error sending email
-						TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+						Log.LogError(e, "Error sending workflow email.");
 					}
 				}
 			}
@@ -948,12 +918,9 @@ namespace d360.model
 			{
 				if (string.IsNullOrEmpty(settings.SpecificUser))
 				{
-					TelemetryClient.TrackEvent("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
-
+					Log.LogError("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER EMAIL TASK.");
 					return true;
 				}
-
-				TelemetryClient.TrackTrace($"DEBUG : EMAIL STEP IS EMAILING [{settings.SpecificUser}].");
 
 				foreach (string email in settings.SpecificUser.Split(';'))
 				{
@@ -965,8 +932,7 @@ namespace d360.model
 					}
 					catch (Exception e)
 					{
-						//error sending email
-						TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+						Log.LogError(e, "Error sending workflow email.");
 					}
 				}
 			}
@@ -974,8 +940,7 @@ namespace d360.model
 			{
 				if (settings.RecipientGroup == Guid.Empty)
 				{
-					TelemetryClient.TrackEvent("ERROR - NO GROUP SPECIFIED FOR THE GROUP EMAIL TASK.");
-
+					Log.LogError("ERROR - NO GROUP SPECIFIED FOR THE GROUP EMAIL TASK.");
 					return true;
 				}
 
@@ -983,17 +948,13 @@ namespace d360.model
 
 				if (recipientGroup <= 0)
 				{
-					TelemetryClient.TrackEvent("ERROR - INVALID GROUP FOR THE GROUP EMAIL TASK.");
-
+					Log.LogError("ERROR - INVALID GROUP FOR THE GROUP EMAIL TASK.");
 					return true;
 				}
 
 				IEnumerable<GlobalReportingResource> users = GetWorkflowUsersBasedOnGroup(recipientGroup);
-
 				foreach (GlobalReportingResource user in users)
 				{
-					TelemetryClient.TrackTrace($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
-
 					emailedUsers.Add(user.Email);
 
 					try
@@ -1002,8 +963,7 @@ namespace d360.model
 					}
 					catch (Exception e)
 					{
-						//error sending email
-						TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+						Log.LogError(e, "Error sending workflow email.");
 					}
 				}
 			}
@@ -1050,8 +1010,7 @@ namespace d360.model
 				{
 					if (!int.TryParse(root.Attribute(RETRIES).Value, out retries))
 					{
-						TelemetryClient.TrackEvent("ERROR - COULD NOT PARSE RETRIES VALUE");
-
+						Log.LogError("ERROR - COULD NOT PARSE RETRIES VALUE");
 						return false;
 					}
 				}
@@ -1077,7 +1036,7 @@ namespace d360.model
 							item.Settings = root.ToString();
 							await SaveChangesAsync();
 
-							TelemetryClient.TrackTrace($"DEBUG DELAYING EXECUTION OF STEP {duration} MINUTE(S) UNTIL RESPONSIBILITY RULE HAS RUN (ATTEMPT {retries} OF {MAX_RETRIES})");
+							Log.LogTrace($"DEBUG DELAYING EXECUTION OF STEP {duration} MINUTE(S) UNTIL RESPONSIBILITY RULE HAS RUN (ATTEMPT {retries} OF {MAX_RETRIES})");
 
 							return true;
 						}
@@ -1147,15 +1106,14 @@ namespace d360.model
 				if (value.Count == 0)
 				{
 					//do not update list field when it is invalid
-					TelemetryClient.TrackEvent($"Warning - UpdateField : Invalid Lookup value detected. Update field skipped");
-
+					Log.LogWarning($"Warning - UpdateField : Invalid Lookup value detected. Update field skipped");
 					return;
 				}
 
 				if (value.Count != lookupValues.Count)
 				{
 					val = string.Join(",", lookupValues);
-					TelemetryClient.TrackTrace($"Warning - UpdateField : Some invalid lookup values detected. Field value updated partially");
+					Log.LogWarning($"Warning - UpdateField : Some invalid lookup values detected. Field value updated partially");
 				}
 			}
 
@@ -1408,7 +1366,7 @@ namespace d360.model
 
 			if (asset != null)
 			{
-				CreateWorkflowItemFieldUpdateExecution(assetType, asset); // Send scoring updates
+				CreateRescoreRequests(new List<Guid> { asset.uid }, ScoreType.Governance);	// Send scoring updates
 			}
 
 			await SaveChangesAsync();
@@ -1623,7 +1581,6 @@ namespace d360.model
 			return issue;
 		}
 
-
 		public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
 		{
 			foreach (WorkflowItemStep itemStep in itemSteps)
@@ -1816,8 +1773,6 @@ namespace d360.model
 			registration.LastExecuted = DateTime.UtcNow;
 			Entry(registration).State = EntityState.Modified;
 
-			TelemetryClient.TrackTrace($"DEBUG - CREATING NEW WORKFLOW ITEM FOR {objectInfo.Object} - {objectInfo.ObjectID}");
-
 			WorkflowVersion version = WorkflowVersions
 				.Include(i => i.Steps)
 				.Where(i => i.TypeID == workflowTypeID && i.ID == registration.Type.PublishedVersionID)
@@ -1855,8 +1810,7 @@ namespace d360.model
 
 			if (firstVersionStep == null)
 			{
-				TelemetryClient.TrackEvent("ERROR - WORKFLOW HAS NO START STEP.  DONE.");
-
+				Log.LogError("ERROR - WORKFLOW HAS NO START STEP.  DONE.");
 				return true;
 			}
 
@@ -1865,8 +1819,6 @@ namespace d360.model
 			WorkflowItemSteps.Add(firstItemStep);
 			SaveChanges();
 
-			TelemetryClient.TrackTrace($"DEBUG - PROCESSING START ITEM STEP.");
-
 			List<WorkflowVersionStepTransition> transitions = WorkflowVersionStepTransitions
 				.Where(i => i.FromVersionStepID == firstVersionStep.ID && i.TransitionType != TransitionType.Timer && i.State == State.Active)
 				.ToList();
@@ -1874,40 +1826,32 @@ namespace d360.model
 			//take any settings from the event registration and apply them in this start step
 			if (!string.IsNullOrEmpty(registration.Settings))
 			{
-				TelemetryClient.TrackTrace($"DEBUG - WORKFLOW HAS SETTINGS, STARTING TO SET THOSE.");
-
 				//take the workflow settings right now this is only the visible column and apply these values if present.
 				ProcessStartStepSettings(registration.Settings, objectInfo);
 			}
-
-			TelemetryClient.TrackTrace($"DEBUG - STARTING WORKFLOW TRANSITIONS.");
 
 			if (transitions.Count > 0)
 			{
 				await StartTransitions(transitions, item.ID, objectInfo);
 			}
 
-			TelemetryClient.TrackTrace($"DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
-
 			return true;
 		}
 
 		public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
 		{
-			TelemetryClient.TrackTrace($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
+			Log.LogTrace($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
 
 			//check the last run date of this workflow against how often it runs
 			if (registration.ChangeType != ChangeType.Schedule)
 			{
-				TelemetryClient.TrackTrace($"DEBUG - CURRENT REGISTRATION IS NOT OF CHANGE TYPE SCHEDULE NOT RUNNING.");
-
+				Log.LogDebug($"DEBUG - CURRENT REGISTRATION IS NOT OF CHANGE TYPE SCHEDULE NOT RUNNING.");
 				return false;
 			}
 
 			if (string.IsNullOrEmpty(registration.Settings))
 			{
-				TelemetryClient.TrackTrace($"DEBUG - CURRENT WORKFLOW DOESNT HAVE ANY SETTINGS CANNOT CONTINUE.");
-
+				Log.LogDebug($"DEBUG - CURRENT WORKFLOW DOESNT HAVE ANY SETTINGS CANNOT CONTINUE.");
 				return false;
 			}
 
@@ -2085,14 +2029,11 @@ namespace d360.model
 					}
 
 					//evaluate the condition then determine if we move to next step
-					TelemetryClient.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
 					transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, objectInfo.ChangedFieldIds, issueObject?.Object ?? "", issueObject?.ObjectID ?? -1);
-					TelemetryClient.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
 
 					break;
 				case TransitionType.Timer:
 					//check if this timer transtion has a condition if so evaluate it
-					TelemetryClient.TrackTrace($"DEBUG - EVALUATING TIMER TRANSITION");
 					transitionPassed = true;
 
 					if (!string.IsNullOrEmpty(transition.Condition))
@@ -2133,8 +2074,6 @@ namespace d360.model
 
 				long toItemStepID = 0;
 
-				TelemetryClient.TrackTrace($"DEBUG ADDING WORKFLOW WORKFLOW.ITEMSTEP STEP ID [{transition.ToVersionStepID}] ITEM ID [{itemID}] ");
-
 				WorkflowItemStep toItemStep = new WorkflowItemStep
 				{
 					StartedOn = DateTime.UtcNow,
@@ -2152,8 +2091,7 @@ namespace d360.model
 
 				if (toItemStepID <= 0)
 				{
-					TelemetryClient.TrackEvent("ERROR - ITEMSTEP ID IS LESS THAN OR EQUAL TO ZERO MEANING IT DOESNT EXIST AND WE CANT INSERT A NEW ONE.  THIS SHOULD NOT HAPPEN!");
-
+					Log.LogError("ERROR - ITEMSTEP ID IS LESS THAN OR EQUAL TO ZERO MEANING IT DOESNT EXIST AND WE CANT INSERT A NEW ONE.  THIS SHOULD NOT HAPPEN!");
 					return;
 				}
 
@@ -2194,15 +2132,11 @@ namespace d360.model
 			//if the step is already done exit
 			if (itemStep.CompletedOn.HasValue)
 			{
-				TelemetryClient.TrackTrace($"STEP WITH ID {itemStepID} HAS ALREADY COMPLETED NOT RERUNNING");
-
 				return;
 			}
 
 			if (itemStep.Step == null)
 			{
-				TelemetryClient.TrackTrace($"STEP WITH ID {itemStepID} HAS NULL STEP REFERENCE CANNOT CONTINUE");
-
 				return;
 			}
 
@@ -2223,8 +2157,6 @@ namespace d360.model
 
 				if (expectedTransitionCount != completedTransitionsCount)
 				{
-					TelemetryClient.TrackTrace($"STEP WITH ID {itemStepID} HAS WAIT FOR ALL TRANSITIONS TO COMPLETE ENABLED NOT ALL HAVE COMPLETED expected:{expectedTransitionCount} actual completed:{completedTransitionsCount}");
-
 					return;
 				}
 			}
@@ -2232,12 +2164,8 @@ namespace d360.model
 
 			StepType stepType = itemStep.Step.StepType;
 
-			TelemetryClient.TrackTrace($"DEBUG - Processing step of type {stepType}");
-
 			if (stepType == StepType.Task)
 			{
-				TelemetryClient.TrackTrace($"DEBUG - Processing workflow task of type {itemStep.Step.ActivityType}");
-
 				switch (itemStep.Step.ActivityType)
 				{
 					case WorkflowActivityType.EmailNotification:
@@ -3604,7 +3532,7 @@ namespace d360.model
 			{
 				if (item.Item.StartedBy <= 0)
 				{
-					TelemetryClient.TrackEvent("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
+					Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
 
 					return true;
 				}
@@ -3613,14 +3541,12 @@ namespace d360.model
 
 				if (res == null)
 				{
-					TelemetryClient.TrackEvent("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
+					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
 
 					return true;
 				}
 
 				users.Add(res);
-
-				TelemetryClient.TrackTrace($"DEBUG : FORM STEP IS ASSIGNED TO [{res.Email}].");
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
 			{
@@ -3638,20 +3564,16 @@ namespace d360.model
 			{
 				if (string.IsNullOrEmpty(settings.SpecificUser))
 				{
-					TelemetryClient.TrackEvent("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER FORM TASK.");
-
+					Log.LogError("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER FORM TASK.");
 					return true;
 				}
-
-				TelemetryClient.TrackTrace($"DEBUG : FORM STEP IS ASSIGNED TO [{settings.SpecificUser}].");
 
 				foreach (string email in settings.SpecificUser.Split(';'))
 				{
 					GlobalReportingResource res = GlobalReportingResources.Where(x => string.Compare(x.Email, email.Trim(), true) == 0).FirstOrDefault();
 					if (res == null)
 					{
-						TelemetryClient.TrackTrace("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
-
+						Log.LogWarning("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
 						continue;
 					}
 
@@ -3662,16 +3584,14 @@ namespace d360.model
 			{
 				if (settings.RecipientGroup == Guid.Empty)
 				{
-					TelemetryClient.TrackEvent("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
-
+					Log.LogError("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
 					return true;
 				}
 
 				int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
 				if (recipientGroup <= 0)
 				{
-					TelemetryClient.TrackEvent("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
-
+					Log.LogError("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
 					return true;
 				}
 
@@ -3781,8 +3701,6 @@ namespace d360.model
 
 				foreach (GlobalReportingResource user in users)
 				{
-					TelemetryClient.TrackTrace($"DEBUG : FORM STEP EMAIL IS EMAILING [{user.Email}].");
-
 					emailedUsers.Add(user.Email);
 
 					try
@@ -3791,8 +3709,7 @@ namespace d360.model
 					}
 					catch (Exception e)
 					{
-						//error sending email
-						TelemetryClient.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+						Log.LogError(e, "Error sending workflow email.");
 					}
 				}
 

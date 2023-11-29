@@ -3,6 +3,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -19,18 +20,21 @@ namespace d360.model.DataAccessLayer
 	{
 		#region DI
 
-		internal ICompanyContext CompanyContext;
-		internal IQueueSource QueueSource;
-		internal IStorageProvider StorageProvider;
+		internal IQueueSource Queue;
+		internal IStorageProvider Storage;
 		internal ICommunityContext Community;
 
-		public CommentRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
-			: base(companyContext)
+		public CommentRepository(
+			ICompanyContext companyContext, 
+			IQueueSource queue, 
+			IStorageProvider storage, 
+			ICommunityContext community, 
+			IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
-			CompanyContext = companyContext;
-			QueueSource = queueSource;
-			StorageProvider = storageProvider;
 			Community = community;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		#endregion DI

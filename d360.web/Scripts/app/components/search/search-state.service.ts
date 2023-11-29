@@ -41,31 +41,31 @@ export class SearchStateService extends BaseObservableService {
         return this._categories.value;
     }
     get categories() {
-        return new Observable((fn) => this._categories.subscribe(fn));
+		return new Observable<CheckTreeNode[]>((fn) => this._categories.subscribe(fn));
     }
     private _results: BehaviorSubject<SearchFullResult[]> = new BehaviorSubject([]);
     get results() {
-        return new Observable((fn) => this._results.subscribe(fn));
+		return new Observable<SearchFullResult[]>((fn) => this._results.subscribe(fn));
     }
     private _resultCount: BehaviorSubject<number> = new BehaviorSubject(0);
     get resultCount() {
-        return new Observable((fn) => this._resultCount.subscribe(fn));
+        return new Observable<number>((fn) => this._resultCount.subscribe(fn));
     }
     private _pageNumber: BehaviorSubject<number> = new BehaviorSubject(0);
     get pageNumber() {
-        return new Observable((fn) => this._pageNumber.subscribe(fn));
+		return new Observable<number>((fn) => this._pageNumber.subscribe(fn));
     }
     private _loading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get loading() {
-        return new Observable((fn) => this._loading.subscribe(fn));
+        return new Observable<boolean>((fn) => this._loading.subscribe(fn));
     }
     private _treeLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get treeLoading() {
-        return new Observable((fn) => this._treeLoading.subscribe(fn));
+        return new Observable<boolean>((fn) => this._treeLoading.subscribe(fn));
     }
     private _connectionError: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get connectionError() {
-        return new Observable((fn) => this._connectionError.subscribe(fn));
+		return new Observable<boolean>((fn) => this._connectionError.subscribe(fn));
     }
 
     public selectedFilters: CheckTreeNode[] = [];

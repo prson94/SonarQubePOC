@@ -1,12 +1,13 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.model;
 using d360.utils.company;
 using d360.web.Extensions;
 using d360.web.Models;
 using Dapper;
 using IdentityModel.Client;
-using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Resources;
 using System;
@@ -59,9 +60,7 @@ namespace d360.web
 			}
 		}
 
-		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next) : base(next)
-		{
-		}
+		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next) : base(next) { }
 
 		private usercompany LoadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string username = null)
 		{
@@ -94,7 +93,7 @@ namespace d360.web
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError($"UserIDCheckMiddleware: {ex.GetFullExceptionData()}");
+				Log.LogCritical(ex, $"UserIDCheckMiddleware: failed to laod users from company.");
 			}
 
 			return u;
@@ -103,7 +102,6 @@ namespace d360.web
 		public async Task Invoke(IDictionary<string, object> environment)
 		{
 			IOwinContext context = new OwinContext(environment);
-
 			usercompany u = null;
 
 			int companyID = context.Get<int>("CompanyID");
@@ -115,18 +113,12 @@ namespace d360.web
 
 			try
 			{
-
 				var apiCredentials = context.Request.Headers["Authorization"];
 				var token = string.Empty;
 
 				if (!string.IsNullOrEmpty(apiCredentials) && apiCredentials.ToUpper().Contains("BEARER"))
 				{
-					var jwtTelemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-
-					jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"Creds : {apiCredentials}", SeverityLevel = SeverityLevel.Verbose });
-
 					var authParts = apiCredentials.Split(' ');
-
 					if (authParts.Length == 2)
 					{
 						var jwtToken = authParts[1];
@@ -134,7 +126,7 @@ namespace d360.web
 						var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
 						var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
 						var payload = jwtSecurityToken.Payload;
-						var jwtClaim = await ValidateJwt(jwtToken, context, jwtTelemetry);
+						var jwtClaim = await ValidateJwt(jwtToken, context);
 						var allClaims = jwtSecurityToken?.Claims?.ToList() ?? new List<System.Security.Claims.Claim>();
 						var claimMappings = Cache.GetItem<List<ClaimMapping>>(mappingsKey);
 
@@ -145,8 +137,6 @@ namespace d360.web
 						{
 							userAuth.Email = jwtClaim.Identity.Name;
 						}
-
-						jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {jwtClaim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
 
 						userCacheKey += $"E_{jwtClaim.Identity.Name.ToLower()}";
 						isValidCacheKey = true;
@@ -159,9 +149,7 @@ namespace d360.web
 						}
 						if (u != null)
 						{
-							await parseLoginInfoAndClaims(companyID,
-								userAuth.FirstName, userAuth.LastName, userAuth.Email,
-								userAuth.Groups, jwtTelemetry);
+							await parseLoginInfoAndClaims(companyID, userAuth.FirstName, userAuth.LastName, userAuth.Email, userAuth.Groups);
 						}
 					}
 				}
@@ -228,17 +216,17 @@ namespace d360.web
 					{
 						if (!string.IsNullOrEmpty(apiCredentials))
 						{
-							Trace.TraceWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
+							Log.LogWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
 						}
 
 						if (!string.IsNullOrEmpty(token))
 						{
-							Trace.TraceWarning("Could not locate the user with API token of: {0}", token);
+							Log.LogWarning("Could not locate the user with API token of: {0}", token);
 						}
 
 						if (context.Request.User.Identity.IsAuthenticated)
 						{
-							Trace.TraceWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
+							Log.LogWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
 						}
 
 						if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated)
@@ -259,15 +247,7 @@ namespace d360.web
 			}
 			catch (Exception e)
 			{
-				//log error
-				var properties = new Dictionary<string, string>
-				{
-					{"Middleware","UserIDCheckMiddleware" },
-					{"companyID", companyID.ToString() }
-				};
-				var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-
-				telemetry.TrackException(e, properties);
+				Log.LogError(e, "Error checking user Ids in UserIDCheckMiddleware.");
 			}
 
 			await Next(environment);
@@ -278,14 +258,14 @@ namespace d360.web
 		private static readonly bool jwtRequireExpirationTime = (ConfigurationManager.AppSettings["jwtRequireExpirationTime"] ?? "").ToUpper() == "TRUE";
 		private static readonly bool jwtValidateLifetime = (ConfigurationManager.AppSettings["jwtValidateLifetime"] ?? "").ToUpper() == "TRUE";
 
-		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
+		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context)
 		{
 			string authority = await getJwtAuthority(context);
 			var authenticationSettings = context.Request.Get<CompanyOpenIdAuthenticationSettings>("AuthenticationSettings");
 			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
-			telemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Authority : {authority}", SeverityLevel = SeverityLevel.Verbose });
-			telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
+			Log.LogTrace($"JWT Authority : {authority}");
+			Log.LogTrace($"Discovery Client Starting");
 
 			var clientFactory = HttpClientFactory.Create(new HttpClientHandler
 			{
@@ -301,19 +281,19 @@ namespace d360.web
 
 			if (disco == null)
 			{
-				telemetry.TrackTrace($"Discovery response is null.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
+				Log.LogError($"Discovery response is null for Authority: {authority}, Discover Uri: {discoveryUri}.");
 				return null;
 			}
 
 			if (disco.IsError)
 			{
-				telemetry.TrackTrace($"Discovery response indicated error(s). {disco.Error}", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
+				Log.LogError(disco.Exception, $"Discovery response indicated error for Authority: {authority}, Discover Uri: {discoveryUri}. {disco.Error}");
 				return null;
 			}
 
 			if (disco.KeySet == null)
 			{
-				telemetry.TrackTrace($"Discovery response included no keys.", SeverityLevel.Error, new Dictionary<string, string> { { "Authority", authority }, { "DiscoverUri", discoveryUri } });
+				Log.LogError($"Discovery response did not incldue keys for Authority: {authority}, Discover Uri: {discoveryUri}.");
 				return null;
 			}
 
@@ -357,7 +337,7 @@ namespace d360.web
 			return cnName;
 		}
 
-		private async Task<Resource> parseLoginInfoAndClaims(int companyId, string firstName, string lastName, string userName, Dictionary<string, List<string>> groups, Microsoft.ApplicationInsights.TelemetryClient telemetry)
+		private async Task<Resource> parseLoginInfoAndClaims(int companyId, string firstName, string lastName, string userName, Dictionary<string, List<string>> groups)
 		{
 			Resource resource = null;
 			CompanyResource companyResource = null;
@@ -488,11 +468,7 @@ namespace d360.web
 											// Do nothing.
 										}
 
-										var properties = new Dictionary<string, string>
-										{
-											{"ResourceID", resource.ID.ToString() }
-										};
-										telemetry.TrackException(e, properties);
+										Log.LogError(e, $"Error logging user {resource.ID} in using their Jwt.");
 									}
 								}
 							}

@@ -1,101 +1,107 @@
-﻿using System;
-using System.Linq;
+﻿using d360.core.enums;
 using d360.core.queue;
+using d360.extensions;
+using d360.extensions.info;
+using d360.model;
 using d360.utils.company;
 using Dapper;
+using DocumentFormat.OpenXml.Math;
 using Microsoft.Azure.WebJobs;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using d360.model;
-using d360.core.enums;
-using d360.extensions.info;
-using d360.extensions.mail;
-using d360.extensions.queue;
-using d360.extensions.caching;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace igx.functions.consumption
 {
-    public class DisplayValueUpdateProcessor
+	public class DisplayValueUpdateProcessor: BaseFunction
     {
-        const string functionName = "DisplayValueUpdateProcessor";
-        private CoreFunction CoreFunction;
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
 
-        [FunctionName("DisplayValueUpdateProcessor")]
-        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsQueueStorageAccount")] string myQueueItem, ExecutionContext context)
+		public DisplayValueUpdateProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue): base(config)
+		{
+			Cache = cache;
+			Mail = mail;
+			Queue = queue;
+		}
+
+		[FunctionName("DisplayValueUpdateProcessor")]
+        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsQueueStorageAccount")] string myQueueItem, ILogger log)
         {
-            var config = new ConfigurationBuilder()
-                   .SetBasePath(context.FunctionAppDirectory)
-                   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-                   .AddEnvironmentVariables()
-                   .Build();
-
-            CoreFunction = new CoreFunction(config);
-
             var updateInfo = JsonConvert.DeserializeObject<DisplayUpdateInfo>(myQueueItem);
 
-            try
-            {
-                var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-                var company = JobDbContextCreator.CreateCompanyContext(
-                    securityContextProvider: new UriSecurityContextProvider
-                                                {
-                                                    CompanyID = updateInfo.CompanyID,
-                                                    CompanyPrefix = _c.UrlPrefix,
-                                                    ResourceID = 0,
-                                                    IsAdministrator = true,
-                                                },
-                    mailProvider: new MandrillMailProvider
-                                    {
-                                        ApiKey = config.GetValue<string>("MandrillApiKey"),
-                                        SubAccount = config.GetValue<string>("MandrillSubAccount")
-                                    },
-                    queueSource: new AzureQueueSource(config),
-                    cachingProvider: new DummyCachingProvider(),
-                    connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+			var logProperties = new Dictionary<string, object> {
+					{ "Function", "DisplayValueUpdateProcessor" },
+					{ "CompanyID", updateInfo.CompanyID },
+					{ "RebuildAll", updateInfo.RebuildAll }
+				};
 
-                using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, CoreFunction.GetConnectionString("CommunityContext")))
-                {
-                    await companyConnection.OpenIfClosed();
+			using (log.BeginScope(logProperties))
+			{
+				try
+				{
+					var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
+					var context = new UriSecurityContextProvider
+					{
+						CompanyID = updateInfo.CompanyID,
+						CompanyPrefix = _c.UrlPrefix,
+						ResourceID = 0,
+						IsAdministrator = true,
+					};
+					var community = new CommunityContext(Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-                    var assetTypeID = updateInfo.AssetTypeID;
-                    if (updateInfo.ObjectTypeID > 0)
-                    {
-                        assetTypeID = await companyConnection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
-                    }
+					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, Config["CommunityContext"]))
+					{
+						await companyConnection.OpenIfClosed();
 
-                    //if its an asset call the asset update proc
-                    //if its a asset type call the asset type update proc
-                    if (updateInfo.AssetID > 0)
-                    {
-                        await companyConnection.ExecuteAsync("exec GenerateAssetDisplayValue @assetID, null,-1", new { assetID = updateInfo.AssetID }, null, 2400);
-                    }
-                    else if (assetTypeID > 0)
-                    {
-                        await companyConnection.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, null, 2400);
-                    }
-                    else if (updateInfo.RebuildAll)
-                    {
-                        try
-                        {
-                            await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
-                        }
-						catch (Exception ex)
+						var assetTypeID = updateInfo.AssetTypeID;
+						if (updateInfo.ObjectTypeID > 0)
 						{
-							CoreFunction.AITrackException(functionName, ex, updateInfo.CompanyID);
-                            throw;
-                        }
-                        finally
-                        {
-                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
-                        }
+							assetTypeID = await companyConnection.QueryFirstOrDefaultAsync<int>($"select id from assettype where [object] = @obj and [objectid] = @objId", new { obj = new DbString { Value = updateInfo.ObjectType, IsFixedLength = true, Length = 20, IsAnsi = true }, objId = updateInfo.ObjectTypeID });
+						}
+
+						//if its an asset call the asset update proc
+						//if its a asset type call the asset type update proc
+						if (updateInfo.AssetID > 0)
+						{
+							await companyConnection.ExecuteAsync("exec GenerateAssetDisplayValue @assetID, null,-1", new { assetID = updateInfo.AssetID }, null, 2400);
+						}
+						else if (assetTypeID > 0)
+						{
+							await companyConnection.ExecuteAsync("exec GenerateAssetTypeDisplayValues @assetTypeID", new { assetTypeID }, null, 2400);
+						}
+						else if (updateInfo.RebuildAll)
+						{
+							try
+							{
+								await companyConnection.ExecuteAsync("exec CheckDisplayValues", commandTimeout: 2400);
+							}
+							catch (Exception ex)
+							{
+								log.LogError(ex, "Error on display value update processor.");
+							}
+							finally
+							{
+								await company.UpdateRebuildJobStatus(
+									CompanyRebuildJobToken.DisplayValues, 
+									CompanyRebuildJobStatusState.Inactive, 
+									int.Parse(Config["V2EnvironmentJobRebuildTimeoutInHours"])
+								);
+							}
+						}
 					}
 				}
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, updateInfo.CompanyID);
-            }
+				catch (Exception ex)
+				{
+					log.LogError(ex, "Error on display value update processor.");
+				}
+			}
         }
     }
 }

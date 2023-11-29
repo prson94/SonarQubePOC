@@ -22,12 +22,14 @@ using d360.core.helpers;
 using d360.core.Models;
 using d360.core.queue;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model;
 using d360.model.workflow;
 using d360.web.Controllers.V2;
 using d360.web.Models;
 
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
@@ -42,13 +44,9 @@ namespace d360.web.Controllers.Services
 	[ApiVersionNeutral, RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
 	public class WorkflowController : BaseV2ApiController
 	{
-		#region DI
+		private bool IsNewAssignments { get { return FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser()); } }
 
-		public WorkflowController(CoreComponentSet set) : base(set)
-		{
-		}
-
-		#endregion
+		public WorkflowController(CoreComponentSet set) : base(set) { }
 
 		private IEnumerable<dynamic> getIssues(int? resourceID)
 		{
@@ -596,7 +594,7 @@ namespace d360.web.Controllers.Services
 						{
 							List<string> values = new List<string>();
 
-							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS))
+							if (IsNewAssignments)
 							{
 								//new ui elements return different value object
 								values = field.Values.Select(x => x.Value).ToList();
@@ -626,7 +624,7 @@ namespace d360.web.Controllers.Services
 						}
 						else
 						{
-							if (GetBoolFlag(FeatureFlags.TEMP_ASSIGNMENTS) && field.Value != null)
+							if (IsNewAssignments && field.Value != null)
 							{
 								//new ui elements return different value object
 								val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;
@@ -734,8 +732,10 @@ namespace d360.web.Controllers.Services
 			}
 			catch (Exception ex)
 			{
-				SendException(ex, new Dictionary<string, string> { { "WorkflowItemID", "itemId" } });
-
+				using (Log.BeginScope(new Dictionary<string, string> { { "WorkflowItemID", "itemId" } }))
+				{
+					Log.LogError(ex, "Error on ApiController.GetArtifactType");
+				}
 				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
 			}
 		}

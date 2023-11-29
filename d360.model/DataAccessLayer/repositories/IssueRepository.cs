@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
-
 using Dapper;
 using repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
 	public class IssueRepository : BaseRepository, IIssueRepository
 	{
-		public IssueRepository(ICompanyContext context)
-			: base(context)
-		{
-		}
+		public IssueRepository(ICompanyContext context, IFeatureFlagService ff) : base(context, ff) { }
 
 		public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{

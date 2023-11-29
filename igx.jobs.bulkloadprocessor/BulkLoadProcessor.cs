@@ -1,18 +1,17 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.queue;
-using d360.extensions.caching;
+using d360.extensions;
 using d360.extensions.info;
-using d360.extensions.mail;
-using d360.extensions.queue;
-using d360.extensions.storage;
+using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.company;
 using Dapper;
+using LaunchDarkly.Sdk.Server;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using repositories;
@@ -28,10 +27,25 @@ using System.Threading.Tasks;
 namespace igx.jobs.bulkloadprocessor
 {
 
-	public class BulkLoadProcessor
+	public class BulkLoadProcessor: BaseWebJob
 	{
 		const string FUNCTION_NAME = "BulkLoad_Process";
 		const int SqlBulkBatchSize = 5000;
+
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+		readonly IStorageProvider Storage;
+		readonly IFeatureFlagService FeatureFlags;
+
+		public BulkLoadProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(config)
+		{
+			Cache = cache;
+			FeatureFlags = ff;
+			Mail = mail;
+			Queue = queue;
+			Storage = storage;
+		}
 
 		public async Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
 		{
@@ -50,26 +64,21 @@ namespace igx.jobs.bulkloadprocessor
 				{
 					#region Create EF connection
 
-					var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == loadInfo.CompanyID);
+					var _c = GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == loadInfo.CompanyID);
 
-					var sec = new UriSecurityContextProvider
+
+					var context = new UriSecurityContextProvider
 					{
 						CompanyID = loadInfo.CompanyID,
 						ResourceID = 0,
 						CompanyPrefix = _c.UrlPrefix,
 						IsAdministrator = true
 					};
-					var cache = new DummyCachingProvider();
-					var mail = new DummyMailProvider();
-					var queue = new AzureQueueSource();
-					var storage = new AzureStorageProvider();
-					var community = new CommunityContext(cache, queue, sec);
-					var sdkKey = CoreFunction.GetConfigValueByKey("LaunchDarklySdkKey");
-					var ldClient = new LaunchDarkly.Sdk.Server.LdClient(sdkKey);
-					var company = new CompanyContext(community, cache, queue, mail, sec, true);
-					var assetRepository = new AssetRepository(company, queue, storage, community, ldClient);
-					var tagRepository = new TagRepository(company);
-					var relationshipRepository = new RelationshipRepository(community, company, queue, storage, ldClient);
+					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+					var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
+					var tagRepository = new TagRepository(company, FeatureFlags);
+					var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
 
 					#endregion
 				
@@ -92,7 +101,7 @@ namespace igx.jobs.bulkloadprocessor
 							{
 								using (MemoryStream stream = new MemoryStream())
 								{
-									await storage.GetFileStream($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
+									await Storage.GetFileStream($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
 
 									xls = new SLDocument(stream);
 								}
@@ -433,8 +442,6 @@ namespace igx.jobs.bulkloadprocessor
 					log.LogCritical(ex, "Critical error during Bulk Load Processor Execution");
 				}			
 			}
-
-			CoreFunction.AIFlush();
 		}
 
 		private static void BulkLoadMembership(SqlConnection company, int companyID, int loadId)
@@ -1292,14 +1299,11 @@ where LI.LoadID = @loadId"
 , new { loadId = load.ID, updatedBy = load.UpdatedBy.GetValueOrDefault() }
 , transaction: trans);
 
-						#region get score events
-
+						// Get score events
 						var today = DateTime.UtcNow.Date;
-						var measureResults = await connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
-    select  A.Uid as AssetUid, 
-            M.Uid as MetricAssetUid,
-            V.Uid as MetricAssetVersionUid,
-            M.AllocationUid
+						var results = await connection.QueryAsync<Guid>(@"
+    select  distinct
+			A.Uid
     from    #ResponsibilityTypeOverride O 
 			inner join ResponsibilityType RT on RT.ID = O.ResponsibilityTypeID
             inner join Asset A on A.ID = O.AssetID
@@ -1314,29 +1318,12 @@ where LI.LoadID = @loadId"
                 and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
                 and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = RT.uid
 		        and V.Definition <> '{}'
-	where	O.Success = 1"
-, new { today }
-, transaction: trans);
-
-						var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
-							.Select(m => new AssetMeasureModel
-							{
-								AssetUid = m.Key.AssetUid,
-								EffectiveDate = today,
-								Measures = m.Select(o => new AssetMeasureChildModel
-								{
-									AllocationUid = o.AllocationUid,
-									MetricAssetUid = o.MetricAssetUid,
-									MetricAssetVersionUid = o.MetricAssetVersionUid
-								}).Distinct().ToList()
-							}).ToList();
-
-
-						#endregion
+	where	O.Success = 1", new { today }, transaction: trans);
+						var impactedAssets = results.ToList();
 
 						trans.Commit();
 
-						company.CreateMeasureChangedResultExecution(structuredMeasures);
+						company.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
 					}
 					catch (Exception ex)
 					{

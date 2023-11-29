@@ -1,5 +1,5 @@
 ﻿using d360.core.queue;
-using d360.extensions.queue;
+using d360.extensions.events;
 using System;
 using Xunit;
 

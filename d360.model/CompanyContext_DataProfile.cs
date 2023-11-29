@@ -673,9 +673,6 @@ namespace d360.model
 						sw.Restart();
 					}
 				}
-
-				addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-				addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 			}
 			Connection.CloseIfOpened();
 		}
@@ -1693,10 +1690,6 @@ namespace d360.model
 				BatchUids = profileUids,
 				BatchOperation = ReindexBatchOperation.Update
 			});
-
-			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-
-			addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
 
 			Connection.CloseIfOpened();
 		}

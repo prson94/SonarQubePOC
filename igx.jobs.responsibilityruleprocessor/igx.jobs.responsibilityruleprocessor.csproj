@@ -65,16 +65,16 @@
       <SubType>Designer</SubType>
       <TransformOnBuild>true</TransformOnBuild>
     </None>
-    <None Include="App.Release.config">
-      <DependentUpon>App.config</DependentUpon>
-      <IsTransformFile>True</IsTransformFile>
-    </None>
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions.events\d360.extensions.events.csproj">
+      <Project>{59c0ac72-75a8-41d1-975c-999ccd8a891e}</Project>
+      <Name>d360.extensions.events</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
@@ -94,104 +94,32 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Core">
-      <Version>1.9.0</Version>
-    </PackageReference>
-    <PackageReference Include="Azure.Storage.Blobs">
-      <Version>12.7.0</Version>
-    </PackageReference>
-    <PackageReference Include="Azure.Storage.Common">
-      <Version>12.7.0</Version>
-    </PackageReference>
     <PackageReference Include="Dapper">
-      <Version>2.0.143</Version>
+      <Version>2.1.21</Version>
     </PackageReference>
     <PackageReference Include="EntityFramework">
       <Version>6.4.4</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.Azure.Amqp">
-      <Version>2.4.13</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.KeyVault.Core">
-      <Version>3.0.5</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.Storage.Queue">
-      <Version>11.2.2</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.Azure.WebJobs">
-      <Version>3.0.27</Version>
+      <Version>3.0.39</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions">
-      <Version>4.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage">
-      <Version>4.0.4</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Sources">
-      <Version>3.0.27</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Data.Services.Client">
-      <Version>5.8.4</Version>
+      <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Xml">
-      <Version>5.0.0</Version>
+      <Version>8.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights">
-      <Version>2.16.0</Version>
+      <Version>2.21.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Console">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Rest.ClientRuntime">
-      <Version>2.3.21</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.SlowCheetah">
-      <Version>3.0.61</Version>
+      <Version>8.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Web.WebJobs.Publish">
-      <Version>2.0.0</Version>
+      <Version>17.1.361</Version>
     </PackageReference>
     <PackageReference Include="NCrontab">
       <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="NETStandard.Library">
-      <Version>1.6.1</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.ComponentModel.EventBasedAsync">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Dynamic.Runtime">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Linq.Queryable">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Primitives">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Net.Requests">
-      <Version>4.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Runtime.Extensions">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Security.Cryptography.X509Certificates">
-      <Version>4.3.2</Version>
-    </PackageReference>
-    <PackageReference Include="System.Text.RegularExpressions">
-      <Version>4.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Dataflow">
-      <Version>5.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

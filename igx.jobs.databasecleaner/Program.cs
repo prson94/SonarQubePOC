@@ -1,33 +1,28 @@
-﻿using d360.utils.company;
+﻿using d360.core.enums;
+using d360.utils.company;
+using Dapper;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Extensions.Hosting;
-using d360.core.enums;
-using Microsoft.Azure;
-using System.Threading;
-using Microsoft.Azure.Storage.Blob;
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 
 namespace igx.jobs.databasecleaner
 {
-    class Program
+	class Program
     {
         static async Task Main()
         {
-            var builder = CoreFunction.JobHostConfigBuilder();
-            builder
-            .ConfigureWebJobs(c =>
-            {
-                c.AddAzureStorageCoreServices()
-                .AddAzureStorage()
-                .AddTimers();
-            });
-            
+			var builder = new HostBuilder();
+			builder
+				.SetGovernConfiguration()
+				.ConfigureWebJobs(c => {
+					c.AddTimers();
+				})
+				.ConfigureGovernLogging();
 
             using (var host = builder.Build())
             {
@@ -36,7 +31,7 @@ namespace igx.jobs.databasecleaner
         }
     }
 
-    public static class DatabaseCleaner
+    public class DatabaseCleaner: BaseWebJob
     {
         const string FUNCTION_NAME = "DatabaseMaintenance_Cleaner";
 
@@ -46,11 +41,16 @@ namespace igx.jobs.databasecleaner
         const string TIMER_SETTINGS = "0 0 4 * * *";
 #endif
 
-		public static async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+		public DatabaseCleaner(IConfiguration config) : base(config)
+		{
+				
+		}
+
+		public async Task Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
 			try
 			{
-				var companies = CoreFunction.GetCompaniesByCurrentSlot();
+				var companies = GetCompaniesByCurrentSlot();
 
 				foreach (var c in companies)
 				{
@@ -62,11 +62,6 @@ namespace igx.jobs.databasecleaner
 
 					using (log.BeginScope(logProperties))
 					{
-						// Clear old blob files.
-						await RemoveOldBlobs("api-execution", c.CompanyID, log);
-						await RemoveOldBlobs("bulk-loads", c.CompanyID, log, 60);
-						await RemoveOldBlobs("scoring", c.CompanyID, log);
-
 						try
 						{
 							using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
@@ -106,36 +101,6 @@ namespace igx.jobs.databasecleaner
 			catch (Exception ex)
 			{
 				log.LogCritical(ex, "Web job failed.");
-			}
-			finally 
-			{ 
-				CoreFunction.AIFlush();
-			}
-		}
-
-		static async Task RemoveOldBlobs(string container, int companyId, ILogger log, int days = 30)
-		{
-			try
-			{
-				var acct = StorageAccount.NewFromConnectionString(CloudConfigurationManager.GetSetting("MainStorageAccount"));
-				var blobClient = acct.CreateCloudBlobClient();
-				var token = new BlobContinuationToken();
-				var path = $"{container}/{companyId}/";
-
-				var blobsResult = await blobClient.ListBlobsSegmentedAsync(path, token);
-				foreach (var blob in blobsResult.Results)
-				{
-					CloudBlockBlob bl = (CloudBlockBlob)blob;
-					TimeSpan? diff = DateTime.Today - bl.Properties.LastModified;
-					if (diff?.Days > days)
-					{
-						await bl.DeleteAsync();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				log.LogError(ex, "Error while removing old blobs from storage.");
 			}
 		}
     }

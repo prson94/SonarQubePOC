@@ -14,6 +14,7 @@ using d360.model.helpers;
 using d360.model.helpers.filters;
 using Dapper;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -45,26 +46,28 @@ namespace d360.model
 
 		#endregion
 
-		internal IQueueSource QueueSource;
+		internal ILogger Log;
 		internal IMailProvider Mail;
+		internal IQueueSource QueueSource;
 		private readonly CommunityContext Community;
+		
 		private bool IsEventingEnabled;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
 		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
-		private TelemetryClient _externalTelemetryClient;
-		private readonly Lazy<TelemetryClient> _telemetryClient = new Lazy<TelemetryClient>(() => new TelemetryClient());
-		private TelemetryClient TelemetryClient { get => _externalTelemetryClient ?? _telemetryClient.Value; }
+		
 
 		#region Ctors
 
 		public CompanyContext(
 			ICommunityContext community,
 			ICachingProvider caching,
-			IQueueSource queueSource, IMailProvider mail,
+			IQueueSource queueSource, 
+			IMailProvider mail,
 			ISecurityContextProvider context,
+			ILogger log,
 			bool skipCacheCheck = false)
 			: base(community.GetCompanyConnectionString(skipCacheCheck))
 		{
@@ -72,6 +75,7 @@ namespace d360.model
 
 			Community = (CommunityContext)community;
 			Caching = caching;
+			Log = log;
 			Mail = mail;
 			QueueSource = queueSource;
 
@@ -2716,15 +2720,6 @@ from	IntersectType I
 			CreateOrUpdateDisplayValue(0, attr.Type.ToString(), entity.ID);
 
 			return returnValue;
-		}
-
-		/// <summary>
-		/// Sets up TelemetryClient which will be used for logging. If not provided then new single instance will be created and used across all the places.
-		/// </summary>
-		/// <param name="client"></param>
-		public void SetTelemetryClient(TelemetryClient client)
-		{
-			_externalTelemetryClient = client;
 		}
 
 		public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)

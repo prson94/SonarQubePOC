@@ -2,6 +2,13 @@
 {
 	public abstract class Repository
 	{
-		public string ConnectionString { get; set; }
+		public Platform Platform { get { return Platform.Azure; } }
+
+		public DapperConnectionProvider ConnectionProvider { get; set; }
+
+		protected Repository(DapperConnectionProvider provider)
+		{
+			ConnectionProvider = provider;		
+		}
 	}
 }

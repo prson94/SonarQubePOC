@@ -17,6 +17,7 @@ using Dapper;
 using IdentityModel.Client;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Logging;
 using repositories;
 using Resources;
 using System;
@@ -48,19 +49,14 @@ namespace d360.web.Controllers
 
 		#region DI
 
-		private readonly IMembershipRepository MembershipRepository;
 		private readonly OidcDiscoveryCache Discovery;
-		private readonly TelemetryClient Telemetry;
+		private readonly IMembershipRepository MembershipRepository;
 
         public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery, IMembershipRepository membershipRepository)
             : base(set)
         {
-            Mail = mail;
-            Telemetry = new TelemetryClient();
-            Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            Telemetry.Context.GlobalProperties["CompanyID"] = Company.CurrentCompanyID.ToString();
-
 			Discovery = discovery;
+            Mail = mail;
 			MembershipRepository = membershipRepository;
         }
 
@@ -72,15 +68,15 @@ namespace d360.web.Controllers
             AuthnRequest authnRequest = new AuthnRequest
             {
                 AssertionConsumerServiceURL = string.Format("{0}://{1}/sso/acs", Request.Url.Scheme, Request.Url.Authority),
-                Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,// "https://login.windows.net/21a2b0d9-a4b4-449e-af0b-f22a7129b71f/saml2",                
+                Destination = Community.CurrentCompanySsoModel.IdpSsoEndpoint,
                 Issuer = new Issuer(APP_ID),
                 ForceAuthn = false,
                 NameIDPolicy = new NameIDPolicy(null, null, true)
             };
 
-            // Serialize the authentication request to XML for transmission.
-            var authnRequestXml = authnRequest.ToXml();
-            Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}" });
+			// Serialize the authentication request to XML for transmission.
+			var authnRequestXml = authnRequest.ToXml();
+			Log.LogTrace($"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}");
 
             return authnRequestXml;
         }
@@ -91,7 +87,7 @@ namespace d360.web.Controllers
             {
                 if (SAMLAssertionSignature.IsSigned(assertionXml))
                 {
-                    Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed.  Verifying now..." });
+					Log.LogTrace("AssertionConsumerService => Response SAML is signed.  Verifying now...");
 
                     if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
                     {
@@ -99,7 +95,7 @@ namespace d360.web.Controllers
                         
                         if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
                         {
-                            Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." }); //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
+                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
                         }
                         else
                         {
@@ -110,7 +106,7 @@ namespace d360.web.Controllers
                     {
                         if (SAMLAssertionSignature.Verify(assertionXml))
                         {
-                            Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." });
+                            Log.LogTrace("AssertionConsumerService => Response SAML is signed AND verified.");
                         }
                         else
                         {
@@ -121,7 +117,7 @@ namespace d360.web.Controllers
             }
             catch (Exception ex)
             {
-                Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Error, Message = ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : "") });
+				Log.LogError(ex, "Error while verifying the assertion signature.");
             }
         }
 
@@ -183,7 +179,7 @@ namespace d360.web.Controllers
                             break;
                         }
                     }
-					Telemetry.TrackTrace(new TraceTelemetry { Message = $"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}", SeverityLevel = SeverityLevel.Information });
+					Log.LogInformation($"Environment has domain whitelist. User Domain = {userDomain}, In Whitelist = {isDomainWhitelisted}");
 				}
                 else
                 {
@@ -212,18 +208,16 @@ namespace d360.web.Controllers
 						allGroups.Contains(g.GroupName) &&
                         g.IsAdministrator);
 					
-					Telemetry.TrackTrace(new TraceTelemetry { Message = $"Should user be admin based on group membership = {isCompanyAdministrator}", SeverityLevel = SeverityLevel.Verbose});
+					Log.LogTrace($"Should user be admin based on group membership = {isCompanyAdministrator}");
 				}
 
                 if (resource == null)
                 {
-                    Telemetry.TrackTrace(new TraceTelemetry { 
-						Message = $"Did not find resource account for Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})", 
-						SeverityLevel = SeverityLevel.Information });
+					Log.LogInformation($"Did not find resource account for Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
 
                     if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
+						Log.LogInformation($"Now creating resource account for Username: {userName}.");
 
                         if (string.IsNullOrEmpty(firstName))
                         {
@@ -276,7 +270,7 @@ namespace d360.web.Controllers
 							});
 						}
 
-						Telemetry.TrackTrace(new TraceTelemetry { Message = $"Finished creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Verbose });
+						Log.LogTrace($"Finished creating resource account for Username: {userName}.");
                     }
                 }
                 else
@@ -285,11 +279,7 @@ namespace d360.web.Controllers
                     
                     if (companyResource == null)
                     {
-						Telemetry.TrackTrace(new TraceTelemetry
-						{
-							Message = $"User not associated to tenant. Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})",
-							SeverityLevel = SeverityLevel.Information
-						});
+						Log.LogInformation($"User not associated to tenant. Username: {userName}. Other info: (First: {firstName}, Last: {lastName}, Allow New Users: {Community.CurrentCompanySsoModel.AllowNewUserLogin})");
 
 						if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
                         {
@@ -331,11 +321,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Telemetry.TrackTrace(new TraceTelemetry
-						{
-							Message = $"Is user active on tenant? {companyResource.State}. Username: {userName}.",
-							SeverityLevel = SeverityLevel.Verbose
-						});
+						Log.LogTrace($"Is user active on tenant? {companyResource.State}. Username: {userName}.");
 
 						if (companyResource.State == CompanyResourceState.Active)
                         {
@@ -385,12 +371,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-						Telemetry.TrackTrace(new TraceTelemetry
-						{
-							Message = $"User attempting to log in does not have access. Username: {userName}.",
-							SeverityLevel = SeverityLevel.Verbose
-						});
-
+						Log.LogWarning($"User attempting to log in does not have access. Username: {userName}.");
 						return Redirect("/noaccess");
                     }
                 }
@@ -398,9 +379,9 @@ namespace d360.web.Controllers
 
             if (resource != null)
             {
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Resource account exists for Username: {userName}. Now authorizing with cookie.", SeverityLevel = SeverityLevel.Verbose });
+				Log.LogTrace($"Resource account exists for Username: {userName}. Now authorizing with cookie.");
 
-                if (resource.ID > 0)
+				if (resource.ID > 0)
                 {
                     var sessionLengthMinutes = SettingsRepository.GetSettingValue<double>(Setting.SessionTimeout);
 
@@ -423,7 +404,7 @@ namespace d360.web.Controllers
                                 try
                                 {
                                     SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(Company.Connection, SqlBulkCopyOptions.Default, trans);
-                                    var dt = new System.Data.DataTable();
+                                    var dt = new DataTable();
                                     dt.Columns.Add("Name", typeof(string));
                                     dt.Columns.Add("Origin", typeof(string));
 
@@ -495,11 +476,10 @@ namespace d360.web.Controllers
                                         // Do nothing.
                                     }
 
-                                    var properties = new Dictionary<string, string>
-                                        {
-                                            {"ResourceID",resource.ID.ToString() }
-                                        };
-                                    Telemetry.TrackException(e, properties);
+									using (Log.BeginScope(new Dictionary<string, object> { { "ResourceID", resource.ID } }))
+									{
+										Log.LogError(e, "Error while processing groups for user.");
+									}
                                 }
                             }
                         }
@@ -547,7 +527,7 @@ namespace d360.web.Controllers
                     }
                     catch (Exception ex)
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Error processing custom claims for: {userName}. Error is: {ex.Message}.", SeverityLevel = SeverityLevel.Error });
+						Log.LogError(ex, $"AssertionConsumerService => Error processing custom claims for: {userName}.");
                     }
 
                     #endregion
@@ -597,12 +577,11 @@ namespace d360.web.Controllers
                     }
                     catch (Exception e)
                     {
-                        var properties = new Dictionary<string, string>
-                            {
-                                {"ResourceID",resource.ID.ToString() }
-                            };
-                        Telemetry.TrackException(e, properties);
-                        redirectURL = "/#";
+						using (Log.BeginScope(new Dictionary<string, object> { { "ResourceID", resource.ID } }))
+						{
+							Log.LogError(e, "Error while processing custom claims for user.");
+						}
+						redirectURL = "/#";
                     }
 
                     // Redirect to the originally requested resource URL, if any, or the default page.                        
@@ -610,12 +589,7 @@ namespace d360.web.Controllers
                 }
                 else
                 {
-                    Telemetry.TrackTrace(
-                        new TraceTelemetry
-                        {
-                            Message = $"Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}",
-                            SeverityLevel = SeverityLevel.Error
-                        });
+					Log.LogError($"Referencing resource: {resource.ID}. Should not authorize with the system account.  The username is: {userName}");
                 }
             }
 
@@ -681,11 +655,11 @@ namespace d360.web.Controllers
 
                     var authnRequestXml = createAuthnRequest();
 
-                    Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"Login => relayState: {returnUrl}" });
+                    Log.LogTrace($"Login => relayState: {returnUrl}");
 
                     if (Community.CurrentCompanySsoModel.SignInitialSSORequest)
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"Login => signing initial authentication request" });
+                        Log.LogTrace($"Login => signing initial authentication request");
 
                         using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("d360.web.d3s-signing.pfx"))
                         {
@@ -698,7 +672,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"Login => not signing initial authentication request" });
+                        Log.LogTrace($"Login => not signing initial authentication request");
 
                         var hashString = "";
                         switch (Community.CurrentCompanySsoModel.HashAlgorithmType)
@@ -754,6 +728,17 @@ namespace d360.web.Controllers
 						scopes = string.Join(" ", authenticationSettings.scopes);
 					}
 
+					string loginHint = null;
+					if (Request.Params.AllKeys.Contains("login_hint"))
+					{
+						loginHint = Request.Params["login_hint"];
+					}
+					var extraParameters = loadExtraParametersFromOpenIdSettings(authenticationSettings);
+					if (Request.Params.AllKeys.Contains("domain_hint"))
+					{
+						var domainHint = Request.Params["domain_hint"];
+						extraParameters.Add("domain_hint", domainHint);
+					}
 					var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId,
                         responseType: "code",
@@ -761,10 +746,11 @@ namespace d360.web.Controllers
                         callbackUri,
                         state,
                         nonce,
+						loginHint: loginHint,
                         responseMode: "form_post",
-                        extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
-                        );
-
+                        extra: extraParameters
+						);
+					
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -779,34 +765,24 @@ namespace d360.web.Controllers
         {
             // Extract the asserted identity from the SAML response.
             // The SAML assertion may be signed or encrypted and signed.
-            var telemetry = new TelemetryClient();
-
-			Telemetry.Context.Operation.Id = Guid.NewGuid().ToString();
-			Telemetry.Context.Operation.Name = "ParseSamlResponse";
-
 			SAMLResponse samlResponse = null;
             ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out XmlElement samlResponseXml, out string relayState);
 
-            Telemetry.TrackTrace(new TraceTelemetry { Message = $"samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
+            Log.LogInformation($"samlResponseXml: {samlResponseXml.InnerXml}");
 
             // Deserialize the XML.
             samlResponse = new SAMLResponse(samlResponseXml);
 
-            Telemetry.TrackTrace(new TraceTelemetry { Message = $"IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}", SeverityLevel = SeverityLevel.Information });
+			Log.LogInformation($"IsSuccessful: {(samlResponse.IsSuccess() ? "Yes" : "No")}");
 
             // Check whether the SAML response indicates success or an error and process accordingly.
             if (samlResponse.IsSuccess())
             {
                 SAMLAssertion samlAssertion = null;
 
-                Telemetry.TrackTrace(
-                    new TraceTelemetry
-                    {
-                        Message = $"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}",
-                        SeverityLevel = SeverityLevel.Information
-                    });
+				Log.LogInformation($"Assertion Count: {samlResponse.GetAssertions().Count}, Signed Assertion Count: {samlResponse.GetSignedAssertions().Count}, Encrypted Assertion Count: {samlResponse.GetEncryptedAssertions().Count}");
 
-                if (samlResponse.GetAssertions().Count > 0)
+				if (samlResponse.GetAssertions().Count > 0)
                 {
                     samlAssertion = samlResponse.GetAssertions()[0];
                     verifySignature(samlAssertion.ToXml());
@@ -880,9 +856,7 @@ namespace d360.web.Controllers
 						customClaims.Add(attName, attValue);
 					}
                 }
-
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Verbose });
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
+				Log.LogTrace($"SAML Attributes are: {submittedAttributes}. Username: {userName}, FirstName: {firstName}, LastName: {lastName}");
 
                 System.Action addSamlAssertionToCookie = () =>
                 {
@@ -908,7 +882,7 @@ namespace d360.web.Controllers
                 {
                     errorMessage = samlResponse.Status.StatusMessage.Message;
                 }
-                Telemetry.TrackTrace(new TraceTelemetry { Message = $"Unsuccessful: {errorMessage}", SeverityLevel = SeverityLevel.Error });
+				Log.LogError($"Unsuccessful: {errorMessage}");
 
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
@@ -921,19 +895,14 @@ namespace d360.web.Controllers
             var code = Request.Form["code"];
             var state = Request.Form["state"];
 			
-			Telemetry.Context.Operation.Id = Guid.NewGuid().ToString();
-			Telemetry.Context.Operation.Name = "ParseOpenIdResponse";
-			Telemetry.TrackTrace(new TraceTelemetry { Message = $"Code = {code}, State = {state}", SeverityLevel = SeverityLevel.Information });
-
 			if (string.IsNullOrEmpty(code) || string.IsNullOrEmpty(state))
             {
-				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Code and/or State is empty or null.", SeverityLevel = SeverityLevel.Critical });
+				Log.LogCritical($"Code and/or State is empty or null.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.OpenIdCodeOrStateIsNotPresent);
             }
 
             var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
-
-			Telemetry.TrackTrace(new TraceTelemetry { Message = $"AuthenticationSettings: {Community.CurrentCompanySsoModel.AuthenticationSettings}", SeverityLevel = SeverityLevel.Information });
+			Log.LogTrace($"AuthenticationSettings: {Community.CurrentCompanySsoModel.AuthenticationSettings}");
 
 			if (string.IsNullOrEmpty(authenticationSettings.baseUri) || string.IsNullOrEmpty(authenticationSettings.clientId) || string.IsNullOrEmpty(authenticationSettings.clientSecret) || string.IsNullOrEmpty(authenticationSettings.audience))
             {
@@ -945,7 +914,7 @@ namespace d360.web.Controllers
 
             if (openIdRequest == null)
             {
-				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Could not find openIdRequest.", SeverityLevel = SeverityLevel.Error });
+				Log.LogError($"Could not find openIdRequest.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
             }
 
@@ -969,11 +938,11 @@ namespace d360.web.Controllers
 
             if (response.IsError)
             {
-				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Got error from RequestAuthorizationCodeTokenAsync.", Exception = response.Exception, SeverityLevel = SeverityLevel.Critical });
+				Log.LogCritical(response.Exception, $"Got error from RequestAuthorizationCodeTokenAsync.");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
             }
 
-			Telemetry.TrackTrace(new TraceTelemetry { Message = $"Token Response: {response.Raw}", SeverityLevel = SeverityLevel.Verbose });
+			Log.LogTrace($"Token Response: {response.Raw}");
 
 			var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
@@ -986,7 +955,7 @@ namespace d360.web.Controllers
 			var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
-				Telemetry.TrackTrace(new TraceTelemetry { Message = $"Nonces do not match: Incoming: {incomingNonce}; Valid: {openIdRequest.Nonce}", SeverityLevel = SeverityLevel.Verbose });
+				Log.LogTrace($"Nonces do not match: Incoming: {incomingNonce}; Valid: {openIdRequest.Nonce}");
 				return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
             }
 
@@ -1008,7 +977,7 @@ namespace d360.web.Controllers
             }
             catch (Exception ex)
             {
-                SendException(ex, new Dictionary<string, string> { { "State", openIdRequest.State } });
+				Log.LogError(ex, $"Error while trying to remove state ({openIdRequest.State}) for OIDC request.");
             }
 
             try
@@ -1044,7 +1013,7 @@ namespace d360.web.Controllers
             }
             catch (Exception ex)
             {
-				Telemetry.TrackException(new ExceptionTelemetry { Message = $"Error when validating JWT token to active user.", Exception = ex, SeverityLevel = SeverityLevel.Critical });
+				Log.LogError(ex, $"Error when validating JWT token to active user.");
 			}
 
             // If you got this far, then something was invalid.

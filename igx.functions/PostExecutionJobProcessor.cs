@@ -3,10 +3,8 @@ using d360.core.entities;
 using d360.core.queue;
 using d360.model;
 using Dapper;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,22 +14,20 @@ using System.Threading.Tasks;
 
 namespace igx.functions.consumption
 {
-	public class PostExecutionJobProcessor
+	public class PostExecutionJobProcessor: BaseFunction
 	{
-		readonly TelemetryClient Telemetry;
-		readonly string insertStatement = "insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)";
-		readonly string insertFieldStatement = "insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)";
+		readonly string INSERT_SQL = "insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)";
+		readonly string INSERT_FIELD_SQL = "insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)";
 
-		public PostExecutionJobProcessor(TelemetryClient telemetry)
+		public PostExecutionJobProcessor(IConfiguration config): base(config)
 		{
-			Telemetry = telemetry;
 		}
 
 		string GetCompanyConnectionString(int companyID)
 		{
 			string connectionString = "";
 			
-			using (var cnn = new SqlConnection(Environment.GetEnvironmentVariable("CommunityContext")))
+			using (var cnn = new SqlConnection(Config["CommunityContext"]))
 			{
 				if (cnn.State != System.Data.ConnectionState.Open)
 				{
@@ -69,133 +65,133 @@ from	reporting.Global_FieldAudit i_p
 
 		[FunctionName("PostExecutionJobProcessor")]
 		[ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
-		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "AzureWebJobsQueueStorageAccount")] string message, ILogger log, ExecutionContext context)
+		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "AzureWebJobsQueueStorageAccount")] string message, ILogger log)
         {
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
-			string companyConnectionString = GetCompanyConnectionString(request.CompanyID);
-			string commandText = "";
+			var logProperties = new Dictionary<string, object> {
+					{ "Function", "PostExecutionJobProcessor" },
+					{ "CompanyID", request.CompanyID },
+					{ "ExecutionId", request.ExecutionId }
+				};
 
-			using (var companyConnection = new SqlConnection(companyConnectionString))
+			using (log.BeginScope(logProperties))
 			{
-				await companyConnection.OpenIfClosed();
-				
-				var execution = await companyConnection.QueryFirstAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
+				string companyConnectionString = GetCompanyConnectionString(request.CompanyID);
+				string commandText = "";
 
-				if (execution != null) 
+				using (var companyConnection = new SqlConnection(companyConnectionString))
 				{
-					string actionText = "";
+					await companyConnection.OpenIfClosed();
+				
+					var execution = await companyConnection.QueryFirstAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
 
-					switch (request.Action)
+					if (execution != null) 
 					{
-						case PostExecutionQueueMessageAction.History:
-							switch (execution.Action)
+						string actionText = "";
+
+						switch (request.Action)
+						{
+							case PostExecutionQueueMessageAction.History:
+								switch (execution.Action)
+								{
+									case ApiExecutionAction.DeleteAssets:
+										commandText = historyDeleteAssets();
+										break;
+									case ApiExecutionAction.DeleteGroups:
+										commandText = historyDeleteGroups();
+										break;
+									case ApiExecutionAction.DeletePredicates:
+										commandText = historyDeletePredicates();
+										break;
+									case ApiExecutionAction.DeleteRelationships:
+										commandText = historyDeleteRelations();
+										break;
+									case ApiExecutionAction.DeleteScoreAllocation:
+										commandText = historyDeleteScoreAllocation();
+										break;
+									case ApiExecutionAction.PostGroups:
+									case ApiExecutionAction.PutGroups:
+										actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
+										commandText = historyUpsertGroups(actionText);
+										break;
+									case ApiExecutionAction.PostAssets:
+									case ApiExecutionAction.PutAssets:
+										actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
+										commandText = historyUpsertAssets(actionText);
+										break;
+									case ApiExecutionAction.PostScoreAllocation:
+									case ApiExecutionAction.PutScoreAllocation:
+										commandText = historyUpsertScoreAllocation();
+										break;
+									case ApiExecutionAction.PostRelationships:
+									case ApiExecutionAction.PutRelationships:
+										commandText = historyUpsertRelations();
+										break;
+									case ApiExecutionAction.PatchCatalog:
+										commandText = historyPatchCatalog();
+										break;
+									case ApiExecutionAction.UpsertPredicates:
+										commandText = historyUpsertPredicates();
+										break;
+									case ApiExecutionAction.UpsertUsers:
+										commandText = historyUpsertUsers();
+										break;
+									default:
+										commandText = "";
+										break;
+								}
+								break;
+							case PostExecutionQueueMessageAction.Indexing:
+								switch (execution.Action)
+								{
+									case ApiExecutionAction.DeleteAssets:
+										commandText = indexDeleteAssets();
+										break;
+									case ApiExecutionAction.PostAssets:
+									case ApiExecutionAction.PutAssets:
+										actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
+										commandText = indexUpsertAssets(actionText);
+										break;
+									case ApiExecutionAction.PatchCatalog:
+										commandText = indexPatchCatalog();
+										break;
+									case ApiExecutionAction.DeleteGroups:
+										commandText = indexDeleteGroups();
+										break;
+									case ApiExecutionAction.PostGroups:
+									case ApiExecutionAction.PutGroups:
+										actionText = execution.Action == ApiExecutionAction.PostGroups ? "A" : "U";
+										commandText = indexUpsertGroups(actionText);
+										break;
+									case ApiExecutionAction.UpsertUsers:
+										commandText = indexUpsertUsers();
+										break;
+									default:
+										commandText = "";
+										break;
+								}
+								break;
+							default:
+								commandText = "";
+								break;
+						}
+
+						if (!string.IsNullOrEmpty(commandText))
+						{
+							try
 							{
-								case ApiExecutionAction.DeleteAssets:
-									commandText = historyDeleteAssets();
-									break;
-								case ApiExecutionAction.DeleteGroups:
-									commandText = historyDeleteGroups();
-									break;
-								case ApiExecutionAction.DeletePredicates:
-									commandText = historyDeletePredicates();
-									break;
-								case ApiExecutionAction.DeleteRelationships:
-									commandText = historyDeleteRelations();
-									break;
-								case ApiExecutionAction.DeleteScoreAllocation:
-									commandText = historyDeleteScoreAllocation();
-									break;
-								case ApiExecutionAction.PostGroups:
-								case ApiExecutionAction.PutGroups:
-									actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
-									commandText = historyUpsertGroups(actionText);
-									break;
-								case ApiExecutionAction.PostAssets:
-								case ApiExecutionAction.PutAssets:
-									actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
-									commandText = historyUpsertAssets(actionText);
-									break;
-								case ApiExecutionAction.PostScoreAllocation:
-								case ApiExecutionAction.PutScoreAllocation:
-									commandText = historyUpsertScoreAllocation();
-									break;
-								case ApiExecutionAction.PostRelationships:
-								case ApiExecutionAction.PutRelationships:
-									commandText = historyUpsertRelations();
-									break;
-								case ApiExecutionAction.PatchCatalog:
-									commandText = historyPatchCatalog();
-									break;
-								case ApiExecutionAction.UpsertPredicates:
-									commandText = historyUpsertPredicates();
-									break;
-								case ApiExecutionAction.UpsertUsers:
-									commandText = historyUpsertUsers();
-									break;
-								default:
-									commandText = "";
-									break;
+								await companyConnection.ExecuteAsync(commandText, new { execution.Id, r = execution.ResourceID, dt = execution.ProcessingStartedOn ?? execution.StartedOn }, commandTimeout: 1800);
 							}
-							break;
-						case PostExecutionQueueMessageAction.Indexing:
-							switch (execution.Action)
+							catch (Exception ex)
 							{
-								case ApiExecutionAction.DeleteAssets:
-									commandText = indexDeleteAssets();
-									break;
-								case ApiExecutionAction.PostAssets:
-								case ApiExecutionAction.PutAssets:
-									actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
-									commandText = indexUpsertAssets(actionText);
-									break;
-								case ApiExecutionAction.PatchCatalog:
-									commandText = indexPatchCatalog();
-									break;
-								case ApiExecutionAction.DeleteGroups:
-									commandText = indexDeleteGroups();
-									break;
-								case ApiExecutionAction.PostGroups:
-								case ApiExecutionAction.PutGroups:
-									actionText = execution.Action == ApiExecutionAction.PostGroups ? "A" : "U";
-									commandText = indexUpsertGroups(actionText);
-									break;
-								case ApiExecutionAction.UpsertUsers:
-									commandText = indexUpsertUsers();
-									break;
-								default:
-									commandText = "";
-									break;
+								log.LogCritical(ex, "Error when post-processing execution.");
 							}
-							break;
-						default:
-							commandText = "";
-							break;
+						}
 					}
-
-					if (!string.IsNullOrEmpty(commandText))
-					{
-						try
-						{
-							await companyConnection.ExecuteAsync(commandText, new { execution.Id, r = execution.ResourceID, dt = execution.ProcessingStartedOn ?? execution.StartedOn }, commandTimeout: 1800);
-						}
-						catch (Exception ex)
-						{
-							Telemetry.Context.User.AccountId = $"{request.CompanyID}";
-							Telemetry.Context.User.AuthenticatedUserId = $"{execution.ResourceID}";
-							Telemetry.TrackException(ex, new Dictionary<string, string>{
-									{ "ExecutionId", $"{execution.Id}" },
-									{ "RequestAction", $"{request.Action}" },
-									{ "ExecutionAction", $"{execution.Action}" }
-								});
-						}
-					}				
-				}
-				companyConnection.CloseIfOpened();
+					companyConnection.CloseIfOpened();
+				}			
 			}
-
-			Telemetry.TrackTrace($"PostExecutionJobProcessor processed message:  {message}", SeverityLevel.Information);
-			Telemetry.Flush();
 		}
 
 		#region History Generators
@@ -203,7 +199,7 @@ from	reporting.Global_FieldAudit i_p
 		string historyDeleteAssets()
 		{
 			return $@"
-{insertStatement}
+{INSERT_SQL}
 	select	p.Object, 
 			p.ObjectId,
 			p.ObjectName, 
@@ -225,7 +221,7 @@ from	reporting.Global_FieldAudit i_p
 		string historyDeleteGroups()
 		{ 
 			return $@"
-{insertStatement}
+{INSERT_SQL}
 	select	distinct
 			'Group', 
 			p.ID,
@@ -248,7 +244,7 @@ from	reporting.Global_FieldAudit i_p
 		string historyDeletePredicates()
 		{ 
 			return $@"
-{insertStatement}
+{INSERT_SQL}
 	select	distinct
 			'Predicate', 
 			p.Id,
@@ -271,7 +267,7 @@ from	reporting.Global_FieldAudit i_p
 		string historyDeleteRelations()
 		{ 
 			return $@"
-{insertStatement}
+{INSERT_SQL}
 	select	p.Object, 
 			p.ObjectId,
 			p.ObjectName, 
@@ -294,7 +290,7 @@ from	reporting.Global_FieldAudit i_p
 		string historyDeleteScoreAllocation()
 		{
 			return $@"
-{insertStatement}
+{INSERT_SQL}
 	select	distinct
 			'MetricAllocation', 
 			p.ID,
@@ -318,7 +314,7 @@ from	reporting.Global_FieldAudit i_p
 		{ 
 			return $@"
 declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	a.Object, 
 			a.ObjectId,
@@ -338,7 +334,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			inner join AssetType t on t.Id = a.AssetTypeId 
 			{maxVersionSql("a.Object", "a.ObjectID")};
 
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			coalesce(f.FieldTypeID, 0),
 			f.Name,
@@ -361,7 +357,7 @@ where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)
 			// Record history for assets we are creating/updating.
 			commandText += $@"
 declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	p.Object, 
 			p.ObjectId,
@@ -382,7 +378,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 
 			// Record field history using the audit Ids garnered above.
 			commandText += $@"
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			coalesce(f.FieldTypeID, 0),
 			f.FieldName,
@@ -406,7 +402,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
-{insertStatement}
+{INSERT_SQL}
 	select	p.Object, 
 			p.ObjectId,
 			p.ObjectName, 
@@ -488,7 +484,7 @@ delete @tbl;";
 
 			// Add the audit history header records for the asset that rely on the first set of assets.
 			commandText += $@"
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	F.Object,
 			F.ObjectId,
@@ -507,7 +503,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 
 			// Add the field history records for the assets whose lookup fields we updated.
 			commandText += $@"
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			coalesce(f.FieldTypeID, 0),
 			f.FieldName,
@@ -526,7 +522,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 		{ 
 			return $@"
 declare @tbl table (ID bigint, ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.ObjectID into @tbl
 	select	'Group', 
 			p.ID,
@@ -545,7 +541,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 			{maxVersionSql("'Group'", "p.ID")}
 	where	l.ExecutionId = @Id;
 
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			f.FieldTypeID,
 			f.FieldName,
@@ -583,7 +579,7 @@ from	api.ExecutionLog a
 		{
 			return $@"
 declare @tbl table (ID bigint, ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.ObjectID into @tbl
 	select	'Predicate', 
 			p.Id,
@@ -602,7 +598,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 			{maxVersionSql("'Predicate'", "p.Id")}
 	where l.ExecutionId = @Id;
 
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			0,
 			f.FieldName,
@@ -645,7 +641,7 @@ where	l.ExecutionId = @Id;
 
 create clustered index idx_tempdata on #tempdata (id);
 
-{insertStatement}
+{INSERT_SQL}
 	select	p.Object, 
 			p.ObjectId,
 			p.ObjectName, 
@@ -716,7 +712,7 @@ end
 create clustered index idx_tempScore on #tempScore (id);
 
 declare @tbl table (ID bigint, ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.ObjectID into @tbl
 	select	'MetricAllocation', 
 			p.Id,
@@ -733,7 +729,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 	from	#tempScore p
 			{maxVersionSql("'MetricAllocation'", "p.Id")};
 
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	distinct
 			tt.ID as AuditID,
 			0,
@@ -765,7 +761,7 @@ drop table if exists #tempScore;";
 		{ 
 			return $@"
 declare @tbl table (ID bigint, ObjectID int)
-{insertStatement}
+{INSERT_SQL}
 output inserted.ID, inserted.ObjectID into @tbl
 	select	'Resource', 
 			p.ObjectId,
@@ -784,7 +780,7 @@ output inserted.ID, inserted.ObjectID into @tbl
 			{maxVersionSql("'Resource'", "p.ObjectId")}
 	where l.ExecutionId = @Id;
 
-{insertFieldStatement}
+{INSERT_FIELD_SQL}
 	select	tt.ID as AuditID,
 			f.FieldTypeID,
 			f.FieldName,

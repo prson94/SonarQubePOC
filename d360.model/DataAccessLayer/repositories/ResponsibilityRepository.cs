@@ -1,36 +1,33 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.extensions;
+using d360.featureflags;
+using d360.model.DataAccessLayer.repositories;
+using Dapper;
+using Newtonsoft.Json;
+using repositories;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.core.queue;
-using d360.extensions;
-using d360.model.DataAccessLayer.repositories;
-using Dapper;
-using LaunchDarkly.Sdk.Server;
-using Newtonsoft.Json;
-using repositories;
 
 namespace d360.model.DataAccessLayer
 {
 	public class ResponsibilityRepository : BaseRepository, IResponsibilityRepository
 	{
-		internal LdClient Ld;
-		internal IQueueSource QueueSource;
-		internal IStorageProvider StorageProvider;
+		internal IQueueSource Queue;
+		internal IStorageProvider Storage;
 
-		public ResponsibilityRepository(ICompanyContext companyContext, IStorageProvider storageProvider, IQueueSource queueSource, LdClient ld)
-			: base(companyContext)
+		public ResponsibilityRepository(ICompanyContext companyContext, IStorageProvider storage, IQueueSource queue, IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
-			Ld = ld;
-			QueueSource = queueSource;
-			StorageProvider = storageProvider;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		public async Task<AssetResponsibilitiesApiModel> GetResponsibilities(IEnumerable<KeyValuePair<string, string>> queryParams, Guid responsibilityUidFilter, Guid assigneeUidFilter, Guid assetUidFilter, Guid assetTypeUidFilter, int pageSize, int pageNum, int timeout)
@@ -619,7 +616,7 @@ namespace d360.model.DataAccessLayer
 
 			if (impactedMeasureVersions.Count > 0)
 			{
-				CompanyContext.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
+				CompanyContext.CreateCheckDependencyRemovedResultExecution(impactedMeasureVersions);
 			}
 
 			return result;
@@ -713,7 +710,7 @@ namespace d360.model.DataAccessLayer
 				var rtr = CompanyContext.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
 
 				// Scoring - get asset measures that are impacted
-				var structuredMeasures = CompanyContext.GetMeasureModelsBasedOnResponsibilityAllocation(assetType, responsibility);
+				var impactedAssets = CompanyContext.GetScoreImpactedAssetsBasedOnResponsibilityAllocation(assetType, responsibility);
 
 				//check is there responsibility rules for this responsibility type
 				var ruleUids = CompanyContext.Filter<ResponsibilityTypeRelationRule>(i => i.ResponsibilityTypeID == responsibility.ID && i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).Select(i => i.UID.Value).ToList();
@@ -733,7 +730,7 @@ namespace d360.model.DataAccessLayer
 						CompanyContext.Delete(rtr);
 
 						// If you made it this far, then send to scoring engine.
-						CompanyContext.CreateMeasureChangedResultExecution(structuredMeasures);
+						CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
 
 						return new ResponsibilityTypeAllocationResponseModel()
 						{
@@ -758,7 +755,7 @@ namespace d360.model.DataAccessLayer
 					CompanyContext.SaveChanges();
 
 					// If you made it this far, then send to scoring engine.
-					CompanyContext.CreateMeasureChangedResultExecution(structuredMeasures);
+					CompanyContext.CreateRescoreRequests(impactedAssets, ScoreType.Governance);
 
 					return new ResponsibilityTypeAllocationResponseModel()
 					{
@@ -843,12 +840,10 @@ namespace d360.model.DataAccessLayer
 					where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
 		}
 
-		private void sendAssetMeasureQueueForOverrides(ResponsibilityType responsibilityType, Asset asset, bool isUpdatedScoring)
+		private void sendAssetMeasureQueueForOverrides(ResponsibilityType responsibilityType, Asset asset)
 		{
 			var today = DateTime.UtcNow.Date;
-			if (isUpdatedScoring)
-			{
-				var assets = CompanyContext.Query<Guid>(@"
+			var assets = CompanyContext.Query<Guid>(@"
 select  distinct
 		A.Uid
 from    Asset A 
@@ -863,44 +858,9 @@ from    Asset A
 			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
 			and V.Definition <> '{}'",
-				new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today }).ToList();
+			new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today }).ToList();
 
-				CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
-			}
-			else
-			{
-				var measureResults = CompanyContext.Query<ResponsibilityAssetMeasureProcessedResult>(@"
-select  A.Uid as AssetUid, 
-		M.Uid as MetricAssetUid,
-		V.Uid as MetricAssetVersionUid,
-		M.AllocationUid
-from    Asset A 
-		inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
-		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-			and ( 
-				(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-				(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-				) 
-			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
-			and V.Definition <> '{}'", new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today });
-
-				var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
-					.Select(m => new AssetMeasureModel
-					{
-						AssetUid = m.Key.AssetUid,
-						EffectiveDate = today,
-						Measures = m.Select(o => new AssetMeasureChildModel
-						{
-							AllocationUid = o.AllocationUid,
-							MetricAssetUid = o.MetricAssetUid,
-							MetricAssetVersionUid = o.MetricAssetVersionUid
-						}).Distinct().ToList()
-					}).ToList();
-				CompanyContext.CreateMeasureChangedResultExecution(structuredMeasures);
-			}
+			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 		}
 
 		public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
@@ -940,8 +900,7 @@ from    Asset A
 			CompanyContext.ResponsibilityTypeRelationOverrideItems.AddRange(items);
 			CompanyContext.SaveChanges();
 
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			sendAssetMeasureQueueForOverrides(responsibilityType, asset, isUpdatedScoring);
+			sendAssetMeasureQueueForOverrides(responsibilityType, asset);
 		}
 
 		public void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
@@ -971,8 +930,7 @@ from    Asset A
 			CompanyContext.ResponsibilityTypeRelationOverrideItems.RemoveRange(overrides);
 			CompanyContext.SaveChanges();
 
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, CompanyContext.GetSdkFeatureFlagUser(), false);
-			sendAssetMeasureQueueForOverrides(responsibilityType, asset, isUpdatedScoring);
+			sendAssetMeasureQueueForOverrides(responsibilityType, asset);
 		}
 
 		public async Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
@@ -1141,7 +1099,7 @@ from    Asset A
 				ResourceID = execution.ResourceID
 			};
 
-			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+			return await CreateApiBatchJob(executionInfo, execution, models, Storage, Queue).ConfigureAwait(false);
 		}
 
 		public async Task<ResponsibilityRuleTestResponseModel> GetResponsibilityRuleTestResults(ResponsibilityRuleUpsertModel test, bool hideD3SUsers, bool includeThen, IEnumerable<KeyValuePair<string, string>> queryParams, string testType)

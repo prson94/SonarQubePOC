@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -30,8 +31,12 @@ namespace d360.model.DataAccessLayer
 		internal IQueueSource QueueSource;
 		internal IStorageProvider StorageProvider;
 
-		public FieldsRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
-			: base(companyContext)
+		public FieldsRepository(
+			ICompanyContext companyContext, 
+			IQueueSource queueSource, 
+			IStorageProvider storageProvider, 
+			IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
 			QueueSource = queueSource;
 			StorageProvider = storageProvider;
@@ -2318,7 +2323,7 @@ namespace d360.model.DataAccessLayer
 
 			if (impactedMeasureVersions.Count > 0)
 			{
-				CompanyContext.CreateCheckDependencyRemovedNotificationExecution(impactedMeasureVersions);
+				CompanyContext.CreateCheckDependencyRemovedResultExecution(impactedMeasureVersions);
 			}
 			return deletedFieldTypes.Count();
 		}

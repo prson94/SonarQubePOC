@@ -1102,22 +1102,13 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of all execution items.", typeof(List<ScoreExecutionItemViewModel>))
 		]
-		public async Task<IHttpActionResult> GetExecutionItems(Guid uid, int _pageSize = 200, int _pageNum = 1, core.queue.ScoreQueueChangeType? changeType = null)
+		public async Task<IHttpActionResult> GetExecutionItems()
 		{
-			var res = ScoringRepository.GetExecutionById(uid);
-
-			if (res == null)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
-			}
-
-			var items = ScoringRepository.GetExecutionItems(res.ID, _pageSize, _pageNum, changeType);
-			
 			return await Task.FromResult<IHttpActionResult>(
 					ResponseMessage(
 						Request.CreateResponse(
 							HttpStatusCode.OK,
-							items
+							new List<ScoreExecutionItemViewModel>()
 						)
 					)
 				).ConfigureAwait(false);

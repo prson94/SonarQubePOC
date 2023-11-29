@@ -31,8 +31,6 @@ namespace d360.core.queue
 
 		public object Payload { get; set; }
 
-		public bool UseUpdatedScoringEngine { get; set; } = false;
-
         [JsonIgnore]
         private string StartedOnDateString { get { return StartedOn.ToString("yyyyMMdd"); } }
 

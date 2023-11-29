@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 using d360.core;
 using d360.core.enums;
-
+using d360.model;
 using Microsoft.Owin;
 
 namespace d360.web
@@ -49,41 +50,37 @@ namespace d360.web
 			// Get base CSP
 			var directives = Policies.ToDictionary(d => d.Key, d => d.Value.ToList());
 
-			if (companyID.HasValue)
+			string ancestor = "";
+			var ctx = DependencyResolver.Current.GetService<ICompanyContext>();
+			ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
+
+			//If company has a frame setting, a CSP header should be added to allow the frame ancestors
+			if (!string.IsNullOrEmpty(ancestor))
 			{
-				string ancestor = "";
-				using (var ctx = CreateOwinCompanyContext(companyID.Value))
+
+				//Add the allowed ancestors from the setting
+				if (!directives.ContainsKey("frame-ancestors"))
 				{
-					ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
+					directives.Add("frame-ancestors", new List<string>());
+				}
 
-					//If company has a frame setting, a CSP header should be added to allow the frame ancestors
-					if (!string.IsNullOrEmpty(ancestor))
-					{
+				List<string> frameAncestors = ancestor.Split(',').ToList().Select(a => a.Trim()).ToList();
+				directives["frame-ancestors"].AddRange(frameAncestors);
 
-						//Add the allowed ancestors from the setting
-						if (!directives.ContainsKey("frame-ancestors"))
-						{
-							directives.Add("frame-ancestors", new List<string>());
-						}
-
-						List<string> frameAncestors = ancestor.Split(',').ToList().Select(a => a.Trim()).ToList();
-						directives["frame-ancestors"].AddRange(frameAncestors);
-
-						// Set flag for Global.asax.cs to downgrade cookies as needed, if request is from a valid frame
-						if (IsFrameSessionStart(request, frameAncestors))
-						{
-							request.Set("CompanyFrameRequestStart", true);
-						}
-					}
-
-					int? resourceId = request.Get<int?>("ResourceID");
-					if (resourceId.HasValue)
-					{
-						var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
-						context.Set("ApplicationLanguageSetting", lang?.Value);
-					}
+				// Set flag for Global.asax.cs to downgrade cookies as needed, if request is from a valid frame
+				if (IsFrameSessionStart(request, frameAncestors))
+				{
+					request.Set("CompanyFrameRequestStart", true);
 				}
 			}
+
+			int? resourceId = request.Get<int?>("ResourceID");
+			if (resourceId.HasValue)
+			{
+				var lang = ctx.ResourceSettings.FirstOrDefault(x=> x.ResourceID == resourceId.Value && x.Setting == "ApplicationLanguage" && x.AssetTypeID == 0);
+				context.Set("ApplicationLanguageSetting", lang?.Value);
+			}
+
 
 			response.OnSendingHeaders(s =>
 			{

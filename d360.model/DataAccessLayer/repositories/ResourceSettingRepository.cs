@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.resources;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using repositories;
 using System;
@@ -11,8 +12,7 @@ namespace d360.model.DataAccessLayer
 {
 	public class ResourceSettingRepository : BaseRepository, IResourceSettingRepository
 	{
-		public ResourceSettingRepository(ICompanyContext companyContext)
-			: base(companyContext) { }
+		public ResourceSettingRepository(ICompanyContext companyContext, IFeatureFlagService ff) : base(companyContext, ff) { }
 
 		public async Task DeleteSetting(int ResourceID, int AssetTypeID, string Setting)
 		{

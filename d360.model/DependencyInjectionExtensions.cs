@@ -47,7 +47,6 @@ namespace d360.model
             builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
             builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();
 			builder.RegisterType<ResourceSettingRepository>().As<IResourceSettingRepository>().InstancePerRequest();
-			builder.RegisterType<AssetTypeRepository>().As<IAssetTypeRepository>().InstancePerRequest();
 			builder.RegisterType<NavigationRepository>().AsImplementedInterfaces().InstancePerRequest();
         }
     }

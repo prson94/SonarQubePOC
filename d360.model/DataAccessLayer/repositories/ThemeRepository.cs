@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using repositories;
@@ -22,16 +23,21 @@ namespace d360.model.DataAccessLayer
 
         private readonly Guid defaultThemeUID = new Guid("AAAAAAAA-0000-0000-0000-000000000001");
 
-        internal IQueueSource QueueSource;
-        internal IStorageProvider StorageProvider;
+        internal IQueueSource Queue;
+        internal IStorageProvider Storage;
         internal ICommunityContext Community;
 
-        public ThemeRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
-            : base(companyContext)
+        public ThemeRepository(
+			ICompanyContext companyContext, 
+			IQueueSource queue, 
+			IStorageProvider storage, 
+			ICommunityContext community, 
+			IFeatureFlagService ff)
+            : base(companyContext, ff)
         {
-            QueueSource = queueSource;
-            StorageProvider = storageProvider;
-            Community = community;
+			Community = community;
+            Queue = queue;
+            Storage = storage;
         }
 
         #endregion
@@ -112,14 +118,14 @@ namespace d360.model.DataAccessLayer
                 var path = $"{CompanyContext.CurrentCompanyID}/{uid}_{fileSuffix}{extension}";
                 var contentType = MimeTypeExtensionsMap.GetMimeType(extension);
                 var stream = new MemoryStream(content);
-                StorageProvider.CreateFile("themes", path, stream, contentType);
+                Storage.CreateFile("themes", path, stream, contentType);
             }
         }
 
         private void deleteStorageFile(Guid uid, string fileSuffix, string extension)
         {
             var path = $"{CompanyContext.CurrentCompanyID}/{uid}_{fileSuffix}{extension}";
-            StorageProvider.DeleteFile("themes", path);
+            Storage.DeleteFile("themes", path);
         }
 
         #endregion
@@ -196,7 +202,7 @@ namespace d360.model.DataAccessLayer
                     dbModels = dbModels.Where(m => m.t.Uid == themeUid);
                 }
 
-                var baseUri = StorageProvider.GetBaseUri("themes");
+                var baseUri = Storage.GetBaseUri("themes");
 
                 apiModels = dbModels
                     .ToList()
@@ -261,7 +267,7 @@ namespace d360.model.DataAccessLayer
             var dbTheme = gridReader.Read<Theme>().FirstOrDefault();
             var dbCreatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
             var dbUpdatedBy = gridReader.Read<GlobalReportingResource>().FirstOrDefault();
-            var baseUri = StorageProvider.GetBaseUri("themes");
+            var baseUri = Storage.GetBaseUri("themes");
 
             if (dbTheme == null)
             {
@@ -341,7 +347,7 @@ namespace d360.model.DataAccessLayer
 
             }).ConfigureAwait(false);
 
-            var baseUri = StorageProvider.GetBaseUri("themes");
+            var baseUri = Storage.GetBaseUri("themes");
             var resource = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == CompanyContext.CurrentResourceID).SingleOrDefault();
 
             return repoTheme.ToGetModel(baseUri, resource, resource, CompanyContext.CurrentCompanyID);
@@ -408,7 +414,7 @@ namespace d360.model.DataAccessLayer
 
             var createdBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.CreatedBy).SingleOrDefault();
             var updatedBy = CompanyContext.Filter<GlobalReportingResource>(r => r.ResourceID == existingTheme.UpdatedBy).SingleOrDefault();
-            var baseUri = StorageProvider.GetBaseUri("themes");
+            var baseUri = Storage.GetBaseUri("themes");
 
             return existingTheme.ToGetModel(baseUri, createdBy, updatedBy, CompanyContext.CurrentCompanyID);
         }

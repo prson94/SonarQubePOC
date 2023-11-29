@@ -23,6 +23,7 @@
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>
       <Name>d360.extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d360.featureflags\d360.featureflags.csproj" />
     <ProjectReference Include="..\d360.utils.excel\d360.utils.excel.csproj">
       <Project>{82faa62e-0a4f-4d1a-ba72-6689705a59a0}</Project>
       <Name>d360.utils.excel</Name>
@@ -31,19 +32,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="6.2.0" />
-    <PackageReference Include="Dapper" Version="2.0.143" />
+    <PackageReference Include="Autofac" Version="7.1.0" />
+    <PackageReference Include="Dapper" Version="2.1.21" />
     <PackageReference Include="Dapper.ParameterExtensions" Version="2022.7.7.1" />
     <PackageReference Include="DapperExtensionsReloaded" Version="5.0.0" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="2.14.0" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
-    <PackageReference Include="LaunchDarkly.ServerSdk" Version="6.2.2" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.13.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.21.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="morelinq" Version="4.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SmartFormat.NET" Version="2.7.0" />
     <PackageReference Include="SpreadsheetLight" Version="3.5.0" />
     <PackageReference Include="System.ComponentModel.EventBasedAsync" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
   </ItemGroup>

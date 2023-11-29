@@ -76,7 +76,7 @@ namespace igx.UnitTests.SearchTests
         [Fact]
         public void ElasticSearchSourceBasic()
         {
-            ElasticSearchSource searchSource = new ElasticSearchSource("connection string");
+            var searchSource = new ElasticSearchSource();
             searchSource.IndexFieldLimit = 1000;
             Assert.Equal(1000, searchSource.IndexFieldLimit);
         }

@@ -17,6 +17,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
@@ -43,29 +44,39 @@ namespace d360.web.Controllers.V2
 	]
 	public class FieldsController : BaseV2ApiController
 	{
+		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
+		private ICatalog EnvironmentCatalog
+		{
+			get
+			{
+				return UseCatalogMicroservice ?
+					Catalogs.Single(c => c.Platform == Platform.Dis) :
+					Catalogs.Single(c => c.Platform == Platform.Azure);
+			}
+		}
 
 		#region DI
 
-		private readonly IQueueSource QueueSource;
-		private readonly IStorageProvider Storage;
-		private readonly IFieldsRepository FieldsRepository;
 		private readonly IAssetRepository AssetRepository;
-		private readonly IAssetTypeRepository AssetTypeRepository;
+		private readonly IList<ICatalog> Catalogs;
+		private readonly IFieldsRepository FieldsRepository;
+		private readonly IQueueSource Queue;
+		private readonly IStorageProvider Storage;
 
 		public FieldsController(
 			ICoreComponentSet set,
 			IStorageProvider storage,
-			IQueueSource queueSource,
+			IQueueSource queue,
 			IFieldsRepository fieldsRepository,
 			IAssetRepository assetRepository,
-			IAssetTypeRepository assetTypeRepository
+			IEnumerable<ICatalog> catalogs
 		) : base(set)
 		{
-			AssetTypeRepository = assetTypeRepository;
-			QueueSource = queueSource;
-			Storage = storage;
-			FieldsRepository = fieldsRepository;
 			AssetRepository = assetRepository;
+			Catalogs = catalogs.ToList();
+			FieldsRepository = fieldsRepository;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		#endregion
@@ -352,7 +363,7 @@ namespace d360.web.Controllers.V2
 									$"Path field could not change selected segment if asset type is not technical or business class.");
 						}
 						var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
-						var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
+						var ancestryCollection = await EnvironmentCatalog.ReadAncestryAsync(model.AssetTypeUid.Value);
 						if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
 						{
 							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,

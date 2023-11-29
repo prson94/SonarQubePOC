@@ -289,8 +289,6 @@ namespace d360.model
         
         string GetOutputFieldValue(int stepId, long itemId, string fieldId);
 
-		LaunchDarkly.Sdk.User GetSdkFeatureFlagUser();
-
 		#region API Query Parameter Parsing
 
 		void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements);

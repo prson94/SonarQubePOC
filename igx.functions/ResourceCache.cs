@@ -1,25 +1,21 @@
-﻿using System;
+﻿using d360.model;
+using d360.utils.company;
+using Dapper;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using d360.core;
-using d360.utils.company;
-
-using Dapper;
-
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Configuration;
-
 namespace igx.functions.consumption
 {
-	public class ResourceCache
+	public class ResourceCache: BaseFunction
 	{
 		private const string functionName = "ResourceCache_Generate";
-		private CoreFunction CoreFunction;
 
 #if DEBUG
 		private const string timerSettings = "*/2 * * * * *";
@@ -27,241 +23,245 @@ namespace igx.functions.consumption
 		private const string timerSettings = "0 */2 * * * *";
 #endif
 
-		[FunctionName(functionName)]
-		public async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)] TimerInfo myTimer, ExecutionContext context, TextWriter log)
+		public ResourceCache(IConfiguration config) : base(config)
 		{
-			var config = new ConfigurationBuilder()
-				   .SetBasePath(context.FunctionAppDirectory)
-				   .AddJsonFile("appSettings.json", optional: true, reloadOnChange: true)
-				   .AddEnvironmentVariables()
-				   .Build();
 
-			CoreFunction = new CoreFunction(config);
+		}
 
+		[FunctionName(functionName)]
+		public async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+		{			
 			try
 			{
-#if DEBUG
-				var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
-#else
-				var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
+				var companies = GetCompaniesByCurrentSlot();
 
-				using (var cnn = new SqlConnection(CoreFunction.GetConnectionString("CommunityContext")))
+				using (var cnn = new SqlConnection(Config["CommunityContext"]))
 				{
-					cnn.Open();
+					await cnn.OpenIfClosed();
 
 					foreach (var c in companies)
 					{
-						try
+						var logProperties = new Dictionary<string, object> {
+							{ "Function", "ResourceCache" },
+							{ "CompanyID", c.CompanyID },
+							{ "UrlPrefix", c.UrlPrefix }
+						};
+
+						using (log.BeginScope(logProperties))
 						{
-							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+							try
 							{
-								companyConnection.Open();
-
-								var updatedResourceIDs = new HashSet<int>();
-
-								#region Insert/Update Logic
-
-								using (var transaction = companyConnection.BeginTransaction())
+								using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
 								{
+									await companyConnection.OpenIfClosed();
 
-									await companyConnection.ExecuteAsync(
-										sql: @"IF OBJECT_ID('tempdb..#users') IS NOT NULL
-											DROP TABLE #users;
+									var updatedResourceIDs = new HashSet<int>();
 
-										create table #users (                                            			                                
-											ResourceID int not null primary key ,
-											FirstName nvarchar(250) not null,
-											LastName nvarchar(250) not null,
-											LastLoggedInOn datetime null,
-											Email nvarchar(500) not null,
-											[State] int not null,
-											IsAdministrator bit not null,
-											[uid] uniqueidentifier not null,
-											UpdatedOn datetime null
-										);", 
-										transaction: transaction);
+									#region Insert/Update Logic
 
-									using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
+									using (var transaction = companyConnection.BeginTransaction())
 									{
-										bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
-										bulkCopy.DestinationTableName = "#users";
-										bulkCopy.BulkCopyTimeout = 300;
 
-										using (DataTable table = PrepareSourceTable(bulkCopy))
+										await companyConnection.ExecuteAsync(
+											sql: @"IF OBJECT_ID('tempdb..#users') IS NOT NULL
+												DROP TABLE #users;
+
+											create table #users (                                            			                                
+												ResourceID int not null primary key ,
+												FirstName nvarchar(250) not null,
+												LastName nvarchar(250) not null,
+												LastLoggedInOn datetime null,
+												Email nvarchar(500) not null,
+												[State] int not null,
+												IsAdministrator bit not null,
+												[uid] uniqueidentifier not null,
+												UpdatedOn datetime null
+											);", 
+											transaction: transaction);
+
+										using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
 										{
-											using (var resources = await cnn.ExecuteReaderAsync(
-											sql: @"select R.ID as ResourceID, 
-													R.FirstName, 
-													R.LastName, 
-													C.LastLoggedInOn, 
-													R.Email, 
-													C.[State], 
-													C.IsAdministrator,
-													R.[uid],
-													R.UpdatedOn
-												from [Resource] R 
-												inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
-												param: new { c.CompanyID }))
+											bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
+											bulkCopy.DestinationTableName = "#users";
+											bulkCopy.BulkCopyTimeout = 300;
+
+											using (DataTable table = PrepareSourceTable(bulkCopy))
 											{
-												try
+												using (var resources = await cnn.ExecuteReaderAsync(
+												sql: @"select R.ID as ResourceID, 
+														R.FirstName, 
+														R.LastName, 
+														C.LastLoggedInOn, 
+														R.Email, 
+														C.[State], 
+														C.IsAdministrator,
+														R.[uid],
+														R.UpdatedOn
+													from [Resource] R 
+													inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
+													param: new { c.CompanyID }))
 												{
-													while (resources.Read())
+													try
 													{
-														var resourceId = resources.GetInt32("ResourceID");
-														updatedResourceIDs.Add(resourceId);
+														while (resources.Read())
+														{
+															var resourceId = resources.GetInt32("ResourceID");
+															updatedResourceIDs.Add(resourceId);
 
-														var row = table.NewRow();
+															var row = table.NewRow();
 
-														row["ResourceID"] = resourceId;
-														row["FirstName"] = resources["FirstName"];
-														row["LastName"] = resources["LastName"];
-														row["LastLoggedInOn"] = resources["LastLoggedInOn"];
-														row["Email"] = resources["Email"];
-														row["State"] = resources["State"];
-														row["IsAdministrator"] = resources["IsAdministrator"];
-														row["uid"] = resources["uid"];
-														row["UpdatedOn"] = resources["UpdatedOn"];
+															row["ResourceID"] = resourceId;
+															row["FirstName"] = resources["FirstName"];
+															row["LastName"] = resources["LastName"];
+															row["LastLoggedInOn"] = resources["LastLoggedInOn"];
+															row["Email"] = resources["Email"];
+															row["State"] = resources["State"];
+															row["IsAdministrator"] = resources["IsAdministrator"];
+															row["uid"] = resources["uid"];
+															row["UpdatedOn"] = resources["UpdatedOn"];
 
-														table.Rows.Add(row);
+															table.Rows.Add(row);
 
-														//We read rows from DataReader and then send them to the server by 5000 items chanks.
-														if (table.Rows.Count % 5000 == 0)
+															//We read rows from DataReader and then send them to the server by 5000 items chanks.
+															if (table.Rows.Count % 5000 == 0)
+															{
+																await bulkCopy.WriteToServerAsync(table);
+																table.Rows.Clear();
+															}
+														}
+											
+														await resources.CloseAsync();
+											
+														if (table.Rows.Count > 0)
 														{
 															await bulkCopy.WriteToServerAsync(table);
-															table.Rows.Clear();
 														}
 													}
-											
-													await resources.CloseAsync();
-											
-													if (table.Rows.Count > 0)
+													catch (Exception ex)
 													{
-														await bulkCopy.WriteToServerAsync(table);
+														if (!resources.IsClosed)
+														{
+															await resources.CloseAsync();
+														}
+														log.LogError(ex, "");
 													}
-												}
-												catch (Exception ex)
-												{
-													if (!resources.IsClosed)
-													{
-														await resources.CloseAsync();
-													}
-													CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-													throw resolveToRealException(ex);
 												}
 											}
 										}
+
+										int rowsAffected = await companyConnection.ExecuteScalarAsync<int>(
+											sql: @"declare @mergeResults table ([action] varchar(50));
+												merge	reporting.Global_Resource as T
+												using	(
+														select	ResourceID,
+																FirstName,
+																LastName,
+																LastLoggedInOn,
+																Email,
+																[State],
+																IsAdministrator,
+																[uid],
+																UpdatedOn
+														from	#users
+														) as S
+												on		(T.ResourceID = S.ResourceID)
+												when	matched and ((coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) or (coalesce(T.LastLoggedInOn, '1/1/1900') < S.LastLoggedInOn)) then
+														update	
+														set		T.FirstName = S.FirstName,
+																T.LastName = S.LastName,
+																T.LastLoggedInOn = S.LastLoggedInOn,
+																T.Email = S.Email,
+																T.[State] = S.[State],
+																T.IsAdministrator = S.IsAdministrator,
+																T.[uid] = S.[uid],
+																T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end,
+																T.UpdatedOn = S.UpdatedOn
+												when	not matched by target then
+														insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn, UpdatedOn)
+														values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate(), getutcdate())
+												output
+														$action into @mergeResults;
+
+												select count(1) from @mergeResults;",
+										transaction: transaction,
+										commandTimeout: 300
+										);
+
+										log.LogInformation($"Found {updatedResourceIDs.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
+
+										transaction.Commit();
 									}
 
-									int rowsAffected = await companyConnection.ExecuteScalarAsync<int>(
-										sql: @"declare @mergeResults table ([action] varchar(50));
-											merge	reporting.Global_Resource as T
-											using	(
-													select	ResourceID,
-															FirstName,
-															LastName,
-															LastLoggedInOn,
-															Email,
-															[State],
-															IsAdministrator,
-															[uid],
-															UpdatedOn
-													from	#users
-													) as S
-											on		(T.ResourceID = S.ResourceID)
-											when	matched and ((coalesce(T.UpdatedOn, '1/1/1900') < S.UpdatedOn) or (coalesce(T.LastLoggedInOn, '1/1/1900') < S.LastLoggedInOn)) then
-													update	
-													set		T.FirstName = S.FirstName,
-															T.LastName = S.LastName,
-															T.LastLoggedInOn = S.LastLoggedInOn,
-															T.Email = S.Email,
-															T.[State] = S.[State],
-															T.IsAdministrator = S.IsAdministrator,
-															T.[uid] = S.[uid],
-															T.CreatedOn = case when T.CreatedOn is null then getutcdate() else T.CreatedOn end,
-															T.UpdatedOn = S.UpdatedOn
-											when	not matched by target then
-													insert (ResourceID, FirstName, LastName, LastLoggedInOn, Email, [State], IsAdministrator, [uid], CreatedOn, UpdatedOn)
-													values (S.ResourceID, S.FirstName, S.LastName, S.LastLoggedInOn, S.Email, S.[State], S.IsAdministrator, S.[uid], getutcdate(), getutcdate())
-											output
-													$action into @mergeResults;
+									#endregion
 
-											select count(1) from @mergeResults;",
-									transaction: transaction,
-									commandTimeout: 300
-									);
+									#region Delete Logic
 
-									log.WriteLine($"Found {updatedResourceIDs.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
-
-									transaction.Commit();
-								}
-
-								#endregion
-
-								#region Delete Logic
-
-								try
-								{
-									var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-									Stack<int> toDeleteIds = new Stack<int>(currentResourceIDs.Except(updatedResourceIDs));
-									LinkedList<int> idsToSend = new LinkedList<int>();
-
-									//We need the following code because SQL Server allows us to send only 2100 parameters per query.
-									while (toDeleteIds.TryPop(out int id))
+									try
 									{
-										idsToSend.AddLast(id);
+										var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
+										Stack<int> toDeleteIds = new Stack<int>(currentResourceIDs.Except(updatedResourceIDs));
+										LinkedList<int> idsToSend = new LinkedList<int>();
+
+										//We need the following code because SQL Server allows us to send only 2100 parameters per query.
+										while (toDeleteIds.TryPop(out int id))
+										{
+											idsToSend.AddLast(id);
 										
-										if (idsToSend.Count >= 1000)
+											if (idsToSend.Count >= 1000)
+											{
+												companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+												idsToSend.Clear();
+											}
+										}
+
+										if (idsToSend.Count > 0)
 										{
 											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
-											idsToSend.Clear();
+										}
+
+										if (toDeleteIds.Any())
+										{
+											log.LogInformation("Removed {0} users for company {1}.", toDeleteIds.Count(), c.CompanyID);
 										}
 									}
-
-									if (idsToSend.Count > 0)
+									catch (Exception ex)
 									{
-										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+										log.LogError(ex, "");
 									}
 
-									if (toDeleteIds.Any())
+									try
 									{
-										log.WriteLine("Removed {0} users for company {1}.", toDeleteIds.Count(), c.CompanyID);
+										companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
+										companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
 									}
-								}
-								catch (Exception ex)
-								{
-									CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-								}
+									catch (Exception ex)
+									{
+										log.LogError(ex, "");
+									}
 
-								try
-								{
-									companyConnection.Execute("delete ResponsibilityTypeRelationOverrideItem where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
-									companyConnection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where SecurityAsset = 'R' and SecurityAssetID not in (select ResourceID from reporting.Global_Resource)");
-								}
-								catch (Exception ex)
-								{
-									CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-								}
+									#endregion
 
-								#endregion
-
+								}
 							}
-						}
-						catch (Exception ex)
-						{
-							CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-							log.WriteLine($"Company [{c.CompanyID}]: [{ex.GetFullExceptionData()}]");
+							catch (Exception ex)
+							{
+								log.LogError(ex, "When when processing users for company.");
+							}
 						}
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				CoreFunction.AITrackException(functionName, ex);
-				log.WriteLine($"General Exception: {ex.GetFullExceptionData()}");
-			}
+				var logProperties = new Dictionary<string, object> {
+					{ "Function", "ResourceCache" }
+				};
 
-			CoreFunction.AIFlush();
+				using (log.BeginScope(logProperties))
+				{
+					log.LogCritical(ex, "Critical error when recaching users.");
+				}
+			}
 		}
 
 		private static DataTable PrepareSourceTable(SqlBulkCopy bulkCopy)
@@ -305,15 +305,6 @@ namespace igx.functions.consumption
 			bulkCopy.ColumnMappings.Add(columnName, columnName);
 
 			return table;
-		}
-
-		internal Exception resolveToRealException(Exception ex)
-		{
-			while (ex.Message.ToLowerInvariant().Contains("inner exception for"))
-			{
-				ex = ex.InnerException;
-			}
-			return ex;
 		}
 	}
 }

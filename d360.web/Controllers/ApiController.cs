@@ -6,12 +6,14 @@ using d360.core.helpers;
 using d360.core.Models;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model;
 using d360.model.helpers;
 using d360.web.Extensions;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using repositories;
@@ -731,13 +733,7 @@ namespace d360.web.Controllers
 			}
 			catch (Exception ex)
 			{
-				//Add exception to Azure instead of throwing an error and not showing detail page
-				//We needs this to preserve old behavior where invalid configuration of relation lookup fields was reported to azure
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", "ApiController.RelationshipLookupsHasValueResolver" },
-					{ "SQL Satetment", $"Asset UID: {details.UID}, {Company.CurrentResourceID}" }
-				});
-
+				Log.LogError(ex, "ApiController.RelationshipLookupsHasValueResolver error.");
 				complexRelationFieldHasAnyModels.ForEach(x => x.NeedsFullCheck = true);
 			}
 
@@ -1132,7 +1128,7 @@ namespace d360.web.Controllers
 			bool hasParentType = gridReader.Read<int>().FirstOrDefault() > 0;
 			gridReader.Dispose();
 
-			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? hasAssetDataProfileData : false;
+			var hasProfiling = FeatureFlags.IsThisTrue(FlagList.PERM_DATA_PROFILING, GetFeatureFlagUser()) ? hasAssetDataProfileData : false;
 
 			var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
@@ -1557,8 +1553,7 @@ namespace d360.web.Controllers
 			}
 			catch (Exception ex)
 			{
-				SendException(ex, new Dictionary<string, string>());
-
+				Log.LogError(ex, "Error on ApiController.GetArtifactType");
 				throw;
 			}
 
@@ -1892,10 +1887,7 @@ namespace d360.web.Controllers
 			}
 			catch (Exception ex)
 			{
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
-					{ "SQL Satetment", $"ComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
-				});
+				Log.LogError(ex, "Error on ApiController.AnyComplexLookupGridValues");
 			}
 
 			return any;

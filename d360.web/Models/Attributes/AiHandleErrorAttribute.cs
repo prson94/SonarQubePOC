@@ -1,14 +1,12 @@
-﻿using System;
-using System.Web.Mvc;
-
-using d360.core;
+﻿using d360.model;
 using d360.web.Controllers;
-
 using Microsoft.ApplicationInsights;
+using System;
+using System.Web.Mvc;
 
 namespace d360.web.Models.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
     public class AiHandleErrorAttribute : HandleErrorAttribute
     {
         public TelemetryClient Telemetry { get; set; }

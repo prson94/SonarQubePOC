@@ -1,13 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Linq;
-using System.Net.Http.Formatting;
-using System.Web.Http;
-using System.Web.Http.Description;
-using System.Web.Http.ExceptionHandling;
-using System.Web.Http.OData.Extensions;
-using System.Web.Http.Routing;
-using d360.web.Filters;
+﻿using d360.web.Filters;
 using d360.web.Handlers;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
@@ -16,6 +7,13 @@ using Microsoft.Web.Http.Routing;
 using Microsoft.Web.Http.Versioning;
 using Newtonsoft.Json;
 using Swashbuckle.Application;
+using System;
+using System.Configuration;
+using System.Net.Http.Formatting;
+using System.Web.Http;
+using System.Web.Http.Description;
+using System.Web.Http.ExceptionHandling;
+using System.Web.Http.Routing;
 
 namespace d360.web
 {
@@ -63,7 +61,7 @@ namespace d360.web
 				var HelpBaseUri = ConfigurationManager.AppSettings["FluidTopicBaseUri"];
 				HelpBaseUri += "en-US/Data360-Govern-Help/Integration/API-documentation";
 
-				foreach (var group in apiExplorer.ApiDescriptions.OrderByDescending(i => i.Name))
+				foreach (var group in apiExplorer.ApiDescriptions)//.OrderByDescending(i => i.Name))
 				{
 					var v = info.Version(group.Name, $"Govern REST API v{group.ApiVersion}");
 
@@ -114,7 +112,6 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
 
 			#endregion
 
-			config.AddODataQueryFilter();
 			config.EnableCors();
 
 			config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new GuidConverter());

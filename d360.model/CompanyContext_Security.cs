@@ -892,9 +892,6 @@ group by A.Uid";
                 }
             }
 
-			addMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
-            addMetric(TelemetryClient, execution, METHOD_NAME, metrics, isLog);
-			
 			Connection.CloseIfOpened();
         }
 
@@ -2210,7 +2207,7 @@ where	EG.Success is null
 
 		public void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation)
 		{
-			List<AssetMeasureModel> structuredMeasures = null;
+			List<Guid> impactedAssets = null;
 
 			try
 			{
@@ -2220,7 +2217,7 @@ where	EG.Success is null
 				if (assetType != null && responsibility != null)
 				{
 					// Scoring - get asset measures that are impacted
-					structuredMeasures = GetMeasureModelsBasedOnResponsibilityAllocation(assetType, responsibility);
+					impactedAssets = GetScoreImpactedAssetsBasedOnResponsibilityAllocation(assetType, responsibility);
 				}
 			}
 			catch
@@ -2281,10 +2278,7 @@ where	EG.Success is null
 			}
 
 			// If you made it this far, then send to scoring engine.
-			if (structuredMeasures != null)
-			{
-				CreateMeasureChangedResultExecution(structuredMeasures);
-			}
+			CreateRescoreRequests(impactedAssets, ScoreType.Governance);
 		}
 
 		public List<GroupResponseResult> UpsertGroups(ApiExecution execution, List<UpdateGroupModel> groups)

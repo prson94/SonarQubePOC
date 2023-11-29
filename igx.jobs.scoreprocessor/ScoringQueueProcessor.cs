@@ -1,28 +1,41 @@
 ﻿using d360.core;
+using d360.core.entities;
 using d360.core.entities.Metric;
+using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
-using d360.extensions.queue;
+using d360.extensions;
+using d360.extensions.info;
 using d360.model;
 using Dapper;
-using igx.jobs.scoreprocessor.ChangeTypes;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor
 {
-	public static class ScoringQueueProcessor
-    {
+	public class ScoringQueueProcessor : BaseWebJob
+	{
         const string FUNCTION_NAME = "Scoring_QueueProcessor";
 
-		public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
+		readonly ICachingProvider Cache;
+		readonly IMailProvider Mail;
+		readonly IQueueSource Queue;
+
+		public ScoringQueueProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue) : base(config)
+		{
+			Cache = cache;
+			Mail = mail;
+			Queue = queue;
+		}
+
+		public async Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
         {
 			var info = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 			var logProperties = new Dictionary<string, object> {
@@ -38,108 +51,101 @@ namespace igx.jobs.scoreprocessor
 				{
 					string sql = "";
 					string companyConnectionString = "";
-
-					IScoreProcess process = null;
+					List<WorkflowScoredAsset> updatedAssets;
 
 					switch (info.ChangeType)
 					{
 						case ScoreQueueChangeType.RescoreRequest:
-							if (info.UseUpdatedScoringEngine)
+							var rescorePayload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(info.Payload.ToString());
+							sql = getAssetRescoreSql();
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
-								var payload = JsonConvert.DeserializeObject<AssetRescoreRequestModel>(info.Payload.ToString());
-								sql = "exec metrics.GenerateScore @AssetUid, @EffectiveDate, @scoreType";
-								companyConnectionString = getCompanyConnectionString(info.CompanyID);
-								using (var companyConnection = new SqlConnection(companyConnectionString))
-								{
-									await companyConnection.OpenIfClosed();
-									await companyConnection.ExecuteAsync(sql, new { payload.AssetUid, EffectiveDate = payload.EffectiveDate.Date, ScoreType = (int)payload.ScoreType }, commandTimeout: 600);
-								}
+								await companyConnection.OpenIfClosed();
+								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+									rescorePayload.AssetUid, 
+									effectiveDate = rescorePayload.EffectiveDate.Date, 
+									scoreType = (int)rescorePayload.ScoreType 
+								}, commandTimeout: 600);
+								updatedAssets = response.ToList();
+								
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", rescorePayload.ScoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.PatchCatalogExecution:
-							if (info.UseUpdatedScoringEngine)
+							sql = getPatchExecutionSql();
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
-								sql = getPatchExecutionSql();
-								companyConnectionString = getCompanyConnectionString(info.CompanyID);
-								using (var companyConnection = new SqlConnection(companyConnectionString))
-								{
-									await companyConnection.OpenIfClosed();
-									await companyConnection.ExecuteAsync(sql, new { info.ExecutionUid }, commandTimeout: 18000);
-								}
+								await companyConnection.OpenIfClosed();
+								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+									info.ExecutionUid 
+								}, commandTimeout: 18000);
+								updatedAssets = response.ToList();
+								
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.Governance, updatedAssets, log);
 							}
-							break;
-						case ScoreQueueChangeType.AssetMeasures:
-							process = new AssetMeasuresProcess();
-							break;
-						case ScoreQueueChangeType.CheckTypeDependencyRemoved:
-							process = new CheckTypeDependencyRemovedProcess();
 							break;
 						case ScoreQueueChangeType.MeasureChanged:
-							if (info.UseUpdatedScoringEngine)
+							var measureChangedPayload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
+							sql = getMeasureChangedSql();
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
-								var payload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
-								sql = getMeasureChangedSql();
-								companyConnectionString = getCompanyConnectionString(info.CompanyID);
-								using (var companyConnection = new SqlConnection(companyConnectionString))
-								{
-									await companyConnection.OpenIfClosed();
-									await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
-								}
-							}
-							else
-							{
-								process = new MeasureChangedProcess();
+								await companyConnection.OpenIfClosed();
+								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+									versionUid = measureChangedPayload.MetricAssetVersionUid 
+								}, commandTimeout: 18000);
+								updatedAssets = response.ToList();
+								
+								//Get the score type for this deleted measure, which will be sent to workflow.
+								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureChangedPayload.MetricAssetVersionUid });
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.MeasureRemoved:
-							if (info.UseUpdatedScoringEngine)
+							var measureRemovedPayload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
+							sql = getMeasureChangedSql();
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
-								var payload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
-								sql = getMeasureChangedSql();
-								companyConnectionString = getCompanyConnectionString(info.CompanyID);
-								using (var companyConnection = new SqlConnection(companyConnectionString))
-								{
-									await companyConnection.OpenIfClosed();
-									await companyConnection.ExecuteAsync(sql, new { versionUid = payload.MetricAssetVersionUid }, commandTimeout: 18000);
-								}
-							}
-							else 
-							{
-								process = new MeasureRemovedProcess();
+								await companyConnection.OpenIfClosed();
+								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+									versionUid = measureRemovedPayload.MetricAssetVersionUid 
+								}, commandTimeout: 18000);
+								updatedAssets = response.ToList();
+
+								//Get the score type for this deleted measure, which will be sent to workflow.
+								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureRemovedPayload.MetricAssetVersionUid });
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
 							}
 							break;
 						case ScoreQueueChangeType.RollupPathChanged:
-							process = new RollupPathChangedProcess();
+							sql = "exec metrics.CalculateRollups";
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
+							{
+								await companyConnection.OpenIfClosed();
+								await companyConnection.ExecuteAsync(sql, commandTimeout: 600);
+							}
 							break;
 						case ScoreQueueChangeType.RuleAssetRemoved:
-							if (info.UseUpdatedScoringEngine)
-							{ 
-								var payload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
-								sql = getRuleRemovedSql();
-								companyConnectionString = getCompanyConnectionString(info.CompanyID);
-								using (var companyConnection = new SqlConnection(companyConnectionString))
-								{
-									await companyConnection.OpenIfClosed();
-									await companyConnection.ExecuteAsync(sql, new { assetUid = payload.AssetUid }, commandTimeout: 18000);
-								}
-							}
-							else
+							var ruleRemovedPayload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
+							sql = getRuleRemovedSql();
+							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+							using (var companyConnection = new SqlConnection(companyConnectionString))
 							{
-								process = new RuleAssetRemovedProcess();
+								await companyConnection.OpenIfClosed();
+								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+									assetUid = ruleRemovedPayload.AssetUid 
+								}, commandTimeout: 18000);
+								updatedAssets = response.ToList();
+								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log);
 							}
-							break;
-						case ScoreQueueChangeType.WorkflowCheck:
-							process = new WorkflowCheckProcess();
 							break;
 						default:
 							// no action found.
 							break;
-					}		
-
-					if (process != null)
-					{
-						process.Info = info;
-						await process.Run();
 					}
 				}
 				catch (ArgumentNullException ex)
@@ -159,64 +165,46 @@ namespace igx.jobs.scoreprocessor
 					log.LogError(ex, ex.Message);
 				}
 			}
-
-			CoreFunction.AIFlush();
 		}
 
-
-		static string getCompanyConnectionString(int companyID)
-		{
-			string communityConnectionString = "";
-#if DEBUG
-			communityConnectionString = ConfigurationManager.AppSettings["CommunityContext"];
-#else
-			communityConnectionString = Environment.GetEnvironmentVariable("CommunityContext");
-#endif
-			string connectionString = "";
-
-			using (var cnn = new SqlConnection(communityConnectionString))
-			{
-				if (cnn.State != System.Data.ConnectionState.Open)
-				{
-					cnn.Open();
-				}
-
-				var company = cnn.Query<dynamic>(
-					@"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
-					new { companyID }
-				).FirstOrDefault();
-
-				if (company != null)
-				{
-					connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
-				}
-			}
-
-			return connectionString;
-		}
-
-		static string getCommonTempTable()
-		{
-			return "create table #ids (RowId int identity, AssetUid uniqueidentifier);";
-		}
-
-		static string getCommonLookupSql()
-		{
-			return @"
+		const string SCORE_TYPE_SQL = "select al.ScoreType " +
+									  "from metrics.Asset a " +
+									  "inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @MetricAssetVersionUid " +
+									  "inner join metrics.Allocation al on al.Uid = a.AllocationUid ";
+		const string COMMON_TEMP_TABLE_SQL = "create table #ids (RowId int identity, AssetUid uniqueidentifier, Score decimal(8,6));";
+		const string COMMON_LOOP_SQL = @"
 declare @current int = 1,
 		@max int,
-		@currentAssetUid uniqueidentifier;
+		@currentAssetUid uniqueidentifier,
+		@responseScore decimal(8,6);
 
 select @max = max(RowId) from #ids
 while @current <= @max
 begin
 	select @currentAssetUid = AssetUid from #ids where RowId = @current
-	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType
+
+	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType, @responseScore
+	update #ids set Score = @responseScore where RowId = @current
+	set @responseScore = null
+
 	set @current = @current + 1
 end";
+		const string COMMON_WORKFLOW_ASSET_SQL = "select t.Object as ObjectType, t.ObjectID as ObjectTypeID, a.Object, a.ObjectID " +
+												 "from #ids i " +
+												 "inner join Asset a on a.Uid = i.AssetUid and i.Score is not null " +
+												 "inner join AssetType t on t.ID = a.AssetTypeID " +
+												 "inner join workflow.EventRegistration W on W.Object = t.Object and W.ObjectID = t.ObjectID and W.ChangeType = 5;";
+
+		string getAssetRescoreSql()
+		{
+			return $@"
+{COMMON_TEMP_TABLE_SQL}
+insert into #ids (AssetUid) values (@AssetUid);
+{COMMON_LOOP_SQL}
+{COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		static string getMeasureChangedSql()
+		string getMeasureChangedSql()
 		{
 			return $@"
 declare @effectiveDate date = getutcdate(),
@@ -225,7 +213,7 @@ declare @effectiveDate date = getutcdate(),
 		@matchConditionsOnly bit,
 		@assetTypeId int;
 
-{getCommonTempTable()}
+{COMMON_TEMP_TABLE_SQL}
 
 select	@scoreType = al.ScoreType,
 		@matchConditionsOnly = v.MatchConditionsOnly,
@@ -236,23 +224,24 @@ from	metrics.Asset a
 		inner join metrics.Allocation al on al.Uid = a.AllocationUid
 		inner join AssetType t on t.Uid = al.AssetTypeUid;
 
-insert into #ids
+insert into #ids (AssetUid) 
 	select	a.Uid
 	from	Asset a
 			cross apply metrics.ConditionsFiltering(a.Id, @conditionsJson, @matchConditionsOnly) cm
 	where	a.AssetTypeID = @assetTypeId 
 			and cm.[Include] = 1;
 
-{getCommonLookupSql()}";
+{COMMON_LOOP_SQL}
+{COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		static string getPatchExecutionSql()
+		string getPatchExecutionSql()
 		{
 			return $@"
 declare @effectiveDate date = getutcdate(),
 		@scoreType int = 1; 
 
-{getCommonTempTable()}
+{COMMON_TEMP_TABLE_SQL}
 
 insert into #ids (AssetUid)
 	select	i.[Uid]
@@ -261,18 +250,19 @@ insert into #ids (AssetUid)
 			inner join AssetType t on t.ID = i.TypeId
 			inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = @scoreType; 
 
-{getCommonLookupSql()}";
+{COMMON_LOOP_SQL}
+{COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		static string getRuleRemovedSql()
+		string getRuleRemovedSql()
 		{
 			return $@"
 declare @effectiveDate date = getutcdate(),
 		@scoreType int = 2;
 
-{getCommonTempTable()}
+{COMMON_TEMP_TABLE_SQL}
 
-insert into #ids
+insert into #ids (AssetUid) 
 	select	distinct 
 			S.AssetUid
 	from	metrics.ScoreItem I
@@ -290,56 +280,33 @@ insert into #ids
 			and Rp.[key] = 'RollupPath' 
 			and P.Uid = @assetUid;
 
-{getCommonLookupSql()}";
+{COMMON_LOOP_SQL}
+{COMMON_WORKFLOW_ASSET_SQL}";
 		}
 
-		static async Task handleError(Exception ex, ScoreQueueInfo scoreInfo, ILogger log)
+		void processWorkflowCalls(int companyId, int resourceId, string companyDomainPrefix, ScoreType scoreType, List<WorkflowScoredAsset> updatedAssets, ILogger log)
 		{
-			bool warningOnly = false;
-			if (scoreInfo.ChangeType == ScoreQueueChangeType.RollupPathChanged)
+			var context = new UriSecurityContextProvider
 			{
-				if (ex is SqlException && ex.Message.Contains("deadlock"))
-				{
-					warningOnly = true;
-				}
-			}
+				CompanyID = companyId,
+				ResourceID = resourceId,
+				CompanyPrefix = companyDomainPrefix,
+				IsAdministrator = false
+			};
+			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-			int minuteDelay = 5;
-			bool shouldRequeue = true;
-			if (warningOnly)
+			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
+
+			assetGroups.ForEach(ag =>
 			{
-				log.LogWarning(ex, ex.Message);
-
-				// Only requeue 1 out of 3 times as there are rapid changes that will put many messages on the queue.
-				Random random = new Random();
-				int ans = random.Next(1, 12);
-				if (ans % 3 > 0)
-				{
-					shouldRequeue = false;
-				}
-
-				minuteDelay = random.Next(15, 45);
-			}
-			else
-			{
-				log.LogError(ex, ex.Message);
-			}
-
-
-			var execUpdater = new ExecutionUpdater { Info = scoreInfo };
-			var closedExecution = await execUpdater.UpdateAsync(ex);
-
-			if (!closedExecution && shouldRequeue)
-			{
-				var queue = new AzureQueueSource();
-				await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, minuteDelay, 0));
-			}
+				company.SendWorkflowEvents(ag.Key.ObjectType, ag.Key.ObjectTypeID, ag.ToList(), scoreType: scoreType);
+			});
 		}
 
-		static async Task handleScoreProcessingError(ScoreQueueInfo scoreInfo)
+		async Task handleScoreProcessingError(ScoreQueueInfo scoreInfo)
 		{
-			var queue = new AzureQueueSource();
-			await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));
+			await Queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));
 		}
 	}
 }

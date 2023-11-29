@@ -7,6 +7,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
@@ -31,18 +32,17 @@ namespace d360.model.DataAccessLayer
 	{
 		#region Properties/Ctor
 
-		internal ICompanyContext Company;
-		internal IQueueSource QueueSource;
-		internal IStorageProvider StorageProvider;
-		internal LdClient Ld;
+		internal IQueueSource Queue;
+		internal IStorageProvider Storage;
 
 		public MetricsRepository(
-			ICompanyContext context, LdClient ld, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
+			ICompanyContext context, 
+			IQueueSource queue, 
+			IStorageProvider storage, 
+			IFeatureFlagService ff) : base(context, ff)
 		{
-			Company = context;
-			Ld = ld;
-			QueueSource = queueSource;
-			StorageProvider = storageProvider;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		#endregion
@@ -143,11 +143,11 @@ namespace d360.model.DataAccessLayer
 
 			model.State = State.Deleted;
 			model.UpdatedOn = now;
-			var children = Company.Filter<MetricAsset>(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
+			var children = CompanyContext.Filter<MetricAsset>(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
 			
 			if (children.Count > 0)
 			{
-				var childVersions = Company.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
+				var childVersions = CompanyContext.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
 				childVersions.ForEach(v =>
 				{
 					v.EffectiveEndDate = now.AddDays(-1);
@@ -155,43 +155,34 @@ namespace d360.model.DataAccessLayer
 				children.ForEach(c => c.State = State.Deleted);
 			}
 
-			var olderVersions = Company.MetricAssetVersions.Where(x => x.Uid == currentAssetVersion.Uid).ToList();
+			var olderVersions = CompanyContext.MetricAssetVersions.Where(x => x.Uid == currentAssetVersion.Uid).ToList();
 			
 			if (olderVersions.Count > 0)
 			{
 				olderVersions.ForEach(x => x.State = State.Deleted);
 			}
 
-			Company.SaveChanges();
+			CompanyContext.SaveChanges();
 
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, Company.GetSdkFeatureFlagUser(), false);
-			if (isUpdatedScoring)
+			var info = new ScoreQueueInfo
 			{
-				var info = new ScoreQueueInfo
-				{
-					CompanyID = Company.CurrentCompanyID,
-					ResourceID = Company.CurrentResourceID,
-					ChangeType = ScoreQueueChangeType.MeasureRemoved,
-					UseUpdatedScoringEngine = true,
-					Payload = new MeasureRemovedModel {
-						EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
-						MetricAssetUid = currentAssetVersion.AssetUid,
-						MetricAssetVersionUid = currentAssetVersion.Uid
-					},
-					StartedOn = DateTime.UtcNow
-				};
-				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-			}
-			else 
-			{
-				Company.CreateMeasureRemovedNotificationExecution(currentAssetVersion);
-			}
+				CompanyID = CompanyContext.CurrentCompanyID,
+				ResourceID = CompanyContext.CurrentResourceID,
+				ChangeType = ScoreQueueChangeType.MeasureRemoved,
+				Payload = new MeasureRemovedModel {
+					EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
+					MetricAssetUid = currentAssetVersion.AssetUid,
+					MetricAssetVersionUid = currentAssetVersion.Uid
+				},
+				StartedOn = DateTime.UtcNow
+			};
+			Queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
 		}
 
 		public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
 		{
 			var model = (
-						from a in Company.MetricAssets
+						from a in CompanyContext.MetricAssets
 							.Include("Allocation")
 							.Include("Versions.RollupPaths.Filters.AssetType")
 							.Include("Versions.RollupPaths.Filters.FieldType")
@@ -286,12 +277,12 @@ namespace d360.model.DataAccessLayer
 
 		public MetricAsset GetMetricByUid(Guid uid)
 		{
-			return Company.GetByUid<MetricAsset>(uid, i => i.Children);
+			return CompanyContext.GetByUid<MetricAsset>(uid, i => i.Children);
 		}
 
 		public MetricAsset GetActiveMetric(Guid uid)
 		{
-			return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active, i => i.Versions).SingleOrDefault();
+			return CompanyContext.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active, i => i.Versions).SingleOrDefault();
 		}
 
 		public WorkHttpStatus AddOrUpdateMetrics(MetricAssetEditModel model)
@@ -320,21 +311,21 @@ namespace d360.model.DataAccessLayer
 			if (model.Uid != null && model.Uid != Guid.Empty)
 			{
 				isNew = false;
-				metricAsset = Company.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
+				metricAsset = CompanyContext.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
 				if (metricAsset == null)
 				{
 					return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, string.Format(MetricsErrors.MetricUidNotExists, model.Uid.ToString()));
 				}
 				Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
-				targetAssetType = Company.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
+				targetAssetType = CompanyContext.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
 			}
 			else
 			{
 				if (model.AllocationUid != null && model.AllocationUid != Guid.Empty)
 				{
 					targetAssetType = (
-									  from al in Company.MetricAllocations
-									  join assettype in Company.AssetTypes on al.AssetTypeUid equals assettype.uid
+									  from al in CompanyContext.MetricAllocations
+									  join assettype in CompanyContext.AssetTypes on al.AssetTypeUid equals assettype.uid
 									  where al.Uid == model.AllocationUid
 									  select assettype
 									  ).SingleOrDefault();
@@ -441,7 +432,7 @@ namespace d360.model.DataAccessLayer
 									sb.Append("Type");
 									string ot = sb.ToString();
 									
-									if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+									if (!CompanyContext.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
 									{
 										validForType = false;
 									}
@@ -450,7 +441,7 @@ namespace d360.model.DataAccessLayer
 								{
 									sb.Append("Type");
 									string ot = sb.ToString();
-									if (!Company.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
+									if (!CompanyContext.Filter<AssetDetail>(i => i.Type == ot && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
 									{
 										validForType = false;
 									}
@@ -549,7 +540,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							if (!Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID and [State] = 1", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
+							if (!CompanyContext.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID and [State] = 1", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
 							{
 								return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, string.Format(MetricsErrors.ResultPathUidNotValid, model.Definition.DataQuality.ResultPathUid.ToString()));
 							}
@@ -586,7 +577,7 @@ namespace d360.model.DataAccessLayer
 												inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and P.Uid = @ResultPathUid
 												inner join AssetType A on A.ID = S.AssetTypeID
 												inner join FieldType F on F.AssetTypeID = S.AssetTypeID";
-								var dqFilterFieldTypes = Company.Query<dynamic>(query, new { dq.ResultPathUid }).ToList();
+								var dqFilterFieldTypes = CompanyContext.Query<dynamic>(query, new { dq.ResultPathUid }).ToList();
 
 								bool isSuccess = true;
 								var dqFilterErrorMessage = "";
@@ -678,7 +669,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else if (gov.Field != null)
 						{
-							var governanceCheckFieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == gov.Field.FieldTypeName);
+							var governanceCheckFieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == gov.Field.FieldTypeName);
 							
 							if (governanceCheckFieldType == null)
 							{
@@ -716,7 +707,7 @@ namespace d360.model.DataAccessLayer
 						else if (gov.Owner != null)
 						{
 							var governanceCheckResponsibilityTypeExists = (
-																			from r in Company.ResponsibilityTypes
+																			from r in CompanyContext.ResponsibilityTypes
 																			from a in r.ResponsibilityTypeRelations
 																			where r.UID == gov.Owner.ResponsibilityTypeUid
 																			where a.ObjectType == targetAssetType.Object
@@ -738,8 +729,8 @@ namespace d360.model.DataAccessLayer
 						else if (gov.Predicate != null)
 						{
 							var governanceCheckPredicateExists = (
-																	from p in Company.Predicates
-																	join r in Company.IntersectTypeDetails on p.ID equals r.PredicateID
+																	from p in CompanyContext.Predicates
+																	join r in CompanyContext.IntersectTypeDetails on p.ID equals r.PredicateID
 																	where p.UID == gov.Predicate.PredicateUid
 																	where r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID
 																	select r
@@ -759,7 +750,7 @@ namespace d360.model.DataAccessLayer
 						else if (gov.Relation != null)
 						{
 							var governanceCheckIntersectTypeExists = (
-																		from r in Company.IntersectTypeDetails
+																		from r in CompanyContext.IntersectTypeDetails
 																		where r.Uid == gov.Relation.IntersectTypeUid
 																		where r.SubjectAssetTypeID == targetAssetType.ID || r.ObjectAssetTypeID == targetAssetType.ID
 																		select r
@@ -849,7 +840,7 @@ namespace d360.model.DataAccessLayer
 						if (!string.IsNullOrEmpty(condition.ConditionFieldTypeName))
 						{
 							condition.ConditionFieldTypeName = condition.ConditionFieldTypeName.Trim();
-							fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == condition.ConditionFieldTypeName);
+							fieldType = CompanyContext.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == condition.ConditionFieldTypeName);
 						}
 
 						if (fieldType == null)
@@ -897,7 +888,7 @@ namespace d360.model.DataAccessLayer
 			var metricCountSql = $@"select count(1) from (
 									select A.Uid, max(V.EffectiveDate) as EffectiveDate
 									from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and A.State = 1 and A.AllocationUid = @AllocationUid {(model.Uid != Guid.Empty ? "and A.Uid <> @Uid" : "")} and lower(V.Name) = @n and {(model.ParentUid.HasValue && model.ParentUid != Guid.Empty ? "A.ParentUid = @p" : "A.ParentUid is null")} group by A.Uid) O";
-			metricExistsCount = Company.Query<int>(metricCountSql, new { n = model.Name.Trim().ToLower(), p = model.ParentUid, model.AllocationUid, model.Uid }).Single();
+			metricExistsCount = CompanyContext.Query<int>(metricCountSql, new { n = model.Name.Trim().ToLower(), p = model.ParentUid, model.AllocationUid, model.Uid }).Single();
 
 			if (metricExistsCount > 0)
 			{
@@ -907,12 +898,12 @@ namespace d360.model.DataAccessLayer
 					string.Format(MetricsErrors.MeasureNameAlreadyExists, model.Name));
 			}
 
-			if (Company.Connection.State != ConnectionState.Open)
+			if (CompanyContext.Connection.State != ConnectionState.Open)
 			{
-				Company.Connection.Open();
+				CompanyContext.Connection.Open();
 			}
 
-			using (var trans = Company.Connection.BeginTransaction())
+			using (var trans = CompanyContext.Connection.BeginTransaction())
 			{
 				try
 				{
@@ -926,15 +917,15 @@ namespace d360.model.DataAccessLayer
 							AllocationUid = model.AllocationUid,
 							IsGroup = model.IsGroup,
 							State = State.Active,
-							CreatedBy = Company.CurrentResourceID,
+							CreatedBy = CompanyContext.CurrentResourceID,
 							CreatedOn = DateTime.UtcNow,
-							UpdatedBy = Company.CurrentResourceID,
+							UpdatedBy = CompanyContext.CurrentResourceID,
 							UpdatedOn = DateTime.UtcNow
 						};
 
 						if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
 						{
-							var parentExists = Company.Connection
+							var parentExists = CompanyContext.Connection
 								.Query<bool>(
 									"select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and Uid = @p",
 									new { a = model.AllocationUid, p = model.ParentUid.Value }, transaction: trans)
@@ -948,21 +939,21 @@ namespace d360.model.DataAccessLayer
 							metricAsset.ParentUid = model.ParentUid;
 						}
 
-						Company.Connection.Execute(
+						CompanyContext.Connection.Execute(
 							"insert into metrics.Asset (Uid, ParentUid, IsGroup, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, AllocationUid) values (@Uid, @ParentUid, @IsGroup, @CreatedOn, @CreatedBy, @UpdatedOn, @UpdatedBy, @AllocationUid)",
 							metricAsset, transaction: trans
 						);
 					}
 					else
 					{
-						metricAsset.UpdatedBy = Company.CurrentResourceID;
+						metricAsset.UpdatedBy = CompanyContext.CurrentResourceID;
 						metricAsset.UpdatedOn = DateTime.Now;
 
-						var childMetricCount = Company.Connection.Query<int>(
+						var childMetricCount = CompanyContext.Connection.Query<int>(
 							"select count(1) from metrics.Asset where ParentUid = @Uid and State = 1",
 							new { model.Uid }, transaction: trans).Single();
 
-						var existingAllVersionsResultCount = Company.Connection.Query<int>(
+						var existingAllVersionsResultCount = CompanyContext.Connection.Query<int>(
 							"select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid",
 							new { metricAsset.Uid }, transaction: trans).Single();
 
@@ -981,7 +972,7 @@ namespace d360.model.DataAccessLayer
 						// If made it past above, then we can save the grouping change.
 						metricAsset.IsGroup = model.IsGroup;
 
-						Company.Connection.Execute(
+						CompanyContext.Connection.Execute(
 							"update metrics.Asset set IsGroup = @IsGroup, UpdatedOn = @UpdatedOn, UpdatedBy = @UpdatedBy where Uid = @Uid",
 							metricAsset, transaction: trans
 						);
@@ -992,7 +983,7 @@ namespace d360.model.DataAccessLayer
 					#region Validation -> No Backdating EffectiveDate
 
 					var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
-					var maxEffectiveDate = Company.Connection
+					var maxEffectiveDate = CompanyContext.Connection
 						.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where AssetUid = @Uid", new { model.Uid }, transaction: trans)
 						.SingleOrDefault();
 
@@ -1009,7 +1000,7 @@ namespace d360.model.DataAccessLayer
 					#region Version
 
 					var metricAssetVersionJsonFragments = 
-						Company.Connection.Query<string>(@"
+						CompanyContext.Connection.Query<string>(@"
 															select	*,
 																(
 																	select	G.*,
@@ -1089,7 +1080,7 @@ namespace d360.model.DataAccessLayer
 							AssetUid = metricAsset.Uid,
 							Name = model.Name,
 							Description = model.Description.SanitizeHtml(),
-							CreatedBy = Company.CurrentResourceID,
+							CreatedBy = CompanyContext.CurrentResourceID,
 							CreatedOn = DateTime.UtcNow,
 							MatchConditionsOnly = model.MatchConditionsOnly,
 							EffectiveDate = effectiveDate,
@@ -1103,13 +1094,13 @@ namespace d360.model.DataAccessLayer
 
 						setVersionUpdateFrequency();
 
-						Company.Connection.Execute(
+						CompanyContext.Connection.Execute(
 							"insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)",
 							metricAssetVersion, transaction: trans
 						);
 
 						// End-date the now previous version, if any.
-						var existingAssetVersions = Company.Connection.Query<MetricAssetVersion>(
+						var existingAssetVersions = CompanyContext.Connection.Query<MetricAssetVersion>(
 							"select * from metrics.AssetVersion where AssetUid = @Uid and Uid <> @VersionUid and EffectiveEndDate is null order by EffectiveDate desc",
 							new { metricAsset.Uid, VersionUid = metricAssetVersion.Uid },
 							transaction: trans
@@ -1122,7 +1113,7 @@ namespace d360.model.DataAccessLayer
 								var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
 								endDateToUse = endDateToUse.AddDays(-1);
 								existingAssetVersions[i].EffectiveEndDate = endDateToUse;
-								Company.Connection.Execute("update metrics.AssetVersion set EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
+								CompanyContext.Connection.Execute("update metrics.AssetVersion set EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
 							}
 						}
 
@@ -1130,7 +1121,7 @@ namespace d360.model.DataAccessLayer
 					}
 					else
 					{
-						var existingVersionResultCount = Company.Connection.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans).Single();
+						var existingVersionResultCount = CompanyContext.Connection.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans).Single();
 						var existingDefinition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(metricAssetVersion.Definition ?? "{}");
 						var existingDefinitionHash = existingDefinition.GetHashValue();
 						var newDefinitionHash = model.Definition.GetHashValue();
@@ -1215,7 +1206,7 @@ namespace d360.model.DataAccessLayer
 
 						setVersionUpdateFrequency();
 
-						Company.Connection.Execute(
+						CompanyContext.Connection.Execute(
 							"update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid",
 							metricAssetVersion, transaction: trans);
 					}
@@ -1228,7 +1219,7 @@ namespace d360.model.DataAccessLayer
 					{
 						if (!isNew)
 						{
-							Company.Connection.Execute("delete metrics.AssetVersionRollupPath where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+							CompanyContext.Connection.Execute("delete metrics.AssetVersionRollupPath where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
 						}
 
 						if (!model.IsGroup && model.Definition.DataQuality != null)
@@ -1274,16 +1265,16 @@ namespace d360.model.DataAccessLayer
 								}
 							}
 
-							Company.Connection.Execute("insert into metrics.AssetVersionRollupPath (Uid, RollupPathUid, AssetVersionUid, FilterMatchType) values (@Uid, @RollupPathUid, @AssetVersionUid, @FilterMatchType)", assetVersionRollupPath, transaction: trans);
+							CompanyContext.Connection.Execute("insert into metrics.AssetVersionRollupPath (Uid, RollupPathUid, AssetVersionUid, FilterMatchType) values (@Uid, @RollupPathUid, @AssetVersionUid, @FilterMatchType)", assetVersionRollupPath, transaction: trans);
 
 							assetVersionRollupPathFilters.ForEach(f =>
 							{
-								Company.Connection.Execute("insert into metrics.AssetVersionRollupPathFilter (Uid, AssetVersionRollupPathUid, AssetTypeID, FieldTypeID, Operator) values (@Uid, @AssetVersionRollupPathUid, @AssetTypeID, @FieldTypeID, @Operator)", f, transaction: trans);
+								CompanyContext.Connection.Execute("insert into metrics.AssetVersionRollupPathFilter (Uid, AssetVersionRollupPathUid, AssetTypeID, FieldTypeID, Operator) values (@Uid, @AssetVersionRollupPathUid, @AssetTypeID, @FieldTypeID, @Operator)", f, transaction: trans);
 							});
 
 							assetVersionRollupPathFilterValues.ForEach(v =>
 							{
-								Company.Connection.Execute("insert into metrics.AssetVersionRollupPathFilterValue (AssetVersionRollupPathFilterUid, [Value]) values (@AssetVersionRollupPathFilterUid, @Value)", v, transaction: trans);
+								CompanyContext.Connection.Execute("insert into metrics.AssetVersionRollupPathFilterValue (AssetVersionRollupPathFilterUid, [Value]) values (@AssetVersionRollupPathFilterUid, @Value)", v, transaction: trans);
 							});
 						}
 					}
@@ -1296,7 +1287,7 @@ namespace d360.model.DataAccessLayer
 					{
 						if (!isNew)
 						{
-							Company.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+							CompanyContext.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
 						}
 					}
 					else
@@ -1461,13 +1452,13 @@ namespace d360.model.DataAccessLayer
 
 							if (groups.Rows.Count > 0)
 							{
-								Company.Connection.Execute(
+								CompanyContext.Connection.Execute(
 									@"create table #Groups (AssetVersionUid uniqueidentifier not null, Uid uniqueidentifier not null, MatchType int not null, [Position] int not null, Threshold float null, Weight decimal(5,3) null);
 									create table #Items (AssetVersionConditionUid uniqueidentifier not null, Uid uniqueidentifier not null, ConditionType int not null, ConditionFieldTypeID int not null, ConditionIntersectTypeID int null, Operator varchar(10) null );
 									create table #Values ( Uid uniqueidentifier not null, Value nvarchar(250) not null );",
 									transaction: trans);
 
-								using (var bulkCopy = Company.Connection.CreateBulkCopy("#Groups", trans: trans))
+								using (var bulkCopy = CompanyContext.Connection.CreateBulkCopy("#Groups", trans: trans))
 								{
 									bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
 									bulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -1478,7 +1469,7 @@ namespace d360.model.DataAccessLayer
 									bulkCopy.WriteToServer(groups);
 								}
 
-								using (var bulkCopy = Company.Connection.CreateBulkCopy("#Items", trans: trans))
+								using (var bulkCopy = CompanyContext.Connection.CreateBulkCopy("#Items", trans: trans))
 								{
 									bulkCopy.ColumnMappings.Add("AssetVersionConditionUid", "AssetVersionConditionUid");
 									bulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -1488,14 +1479,14 @@ namespace d360.model.DataAccessLayer
 									bulkCopy.ColumnMappings.Add("Operator", "Operator");
 									bulkCopy.WriteToServer(items);
 								}
-								using (var bulkCopy = Company.Connection.CreateBulkCopy("#Values", trans: trans))
+								using (var bulkCopy = CompanyContext.Connection.CreateBulkCopy("#Values", trans: trans))
 								{
 									bulkCopy.ColumnMappings.Add("Uid", "Uid");
 									bulkCopy.ColumnMappings.Add("Value", "Value");
 									bulkCopy.WriteToServer(values);
 								}
 
-								Company.Connection.Execute(
+								CompanyContext.Connection.Execute(
 									@"delete  T
 									from    metrics.AssetVersionCondition T
 										left join #Groups S on S.AssetVersionUid = T.AssetVersionUid and S.Uid = T.Uid
@@ -1553,7 +1544,7 @@ namespace d360.model.DataAccessLayer
 						{
 							if (!isNew)
 							{
-								Company.Connection.Execute(
+								CompanyContext.Connection.Execute(
 									@"update  T
 									set     T.ConditionUid = null
 									from    metrics.ScoreItem T
@@ -1603,29 +1594,20 @@ namespace d360.model.DataAccessLayer
 
 			if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
 			{
-				var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, Company.GetSdkFeatureFlagUser(), false);
-				if (isUpdatedScoring)
+				var info = new ScoreQueueInfo
 				{
-					var info = new ScoreQueueInfo
+					CompanyID = CompanyContext.CurrentCompanyID,
+					ResourceID = CompanyContext.CurrentResourceID,
+					ChangeType = ScoreQueueChangeType.MeasureChanged,
+					Payload = new MeasureChangedModel
 					{
-						CompanyID = Company.CurrentCompanyID,
-						ResourceID = Company.CurrentResourceID,
-						ChangeType = ScoreQueueChangeType.MeasureChanged,
-						UseUpdatedScoringEngine = true,
-						Payload = new MeasureChangedModel
-						{
-							EffectiveDate = metricAssetVersion.EffectiveDate,
-							MetricAssetUid = metricAssetVersion.AssetUid,
-							MetricAssetVersionUid = metricAssetVersion.Uid
-						},
-						StartedOn = DateTime.UtcNow
-					};
-					QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-				}
-				else
-				{
-					Company.CreateMeasureChangedNotificationExecution(metricAssetVersion, model.EffectiveDate);
-				}
+						EffectiveDate = metricAssetVersion.EffectiveDate,
+						MetricAssetUid = metricAssetVersion.AssetUid,
+						MetricAssetVersionUid = metricAssetVersion.Uid
+					},
+					StartedOn = DateTime.UtcNow
+				};
+				Queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
 			}
 
 			return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
@@ -1634,7 +1616,7 @@ namespace d360.model.DataAccessLayer
 		[Obsolete]
 		public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
 		{
-			SqlConnection cnn = Company.Database.Connection as SqlConnection;
+			SqlConnection cnn = CompanyContext.Database.Connection as SqlConnection;
 			if (!effectiveDate.HasValue)
 			{
 				effectiveDate = DateTime.UtcNow.Date;
@@ -1710,7 +1692,7 @@ namespace d360.model.DataAccessLayer
 
 		public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null)
 		{
-			SqlConnection cnn = Company.Database.Connection as SqlConnection;
+			SqlConnection cnn = CompanyContext.Database.Connection as SqlConnection;
 
 			if (!effectiveDate.HasValue)
 			{
@@ -1908,7 +1890,7 @@ namespace d360.model.DataAccessLayer
 					order by A.ParentUid, V.Name
 					for		json path";
 
-			var fragments = Company.Query<string>(sql, new { allocationUid, states }, ApiTimeout).ToList();
+			var fragments = CompanyContext.Query<string>(sql, new { allocationUid, states }, ApiTimeout).ToList();
 
 			var jsonString = string.Join("", fragments);
 			JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
@@ -1930,7 +1912,7 @@ namespace d360.model.DataAccessLayer
 
 		public List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid)
 		{
-			return Company.Query<MetricFieldTypeViewModel>($@"
+			return CompanyContext.Query<MetricFieldTypeViewModel>($@"
 							select	A.Uid as AssetTypeUid,
 									A.Name as AssetTypeName,
 									F.ID,
@@ -1976,7 +1958,7 @@ namespace d360.model.DataAccessLayer
 									and SE.[Position] > 1
 									and F.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Lookup', 'Number', 'Text')
 						order by    SE.[Position], F.FriendlyName";
-			var results = await Company.QueryAsync<MetricFieldTypeViewModel>(sql, new { ruleResultPathUid }, ApiTimeout);
+			var results = await CompanyContext.QueryAsync<MetricFieldTypeViewModel>(sql, new { ruleResultPathUid }, ApiTimeout);
 			
 			return results.ToList();
 		}
@@ -2007,7 +1989,7 @@ namespace d360.model.DataAccessLayer
 								) P
 						order by P.[Path]";
 
-			return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType }, ApiTimeout);
+			return await CompanyContext.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType }, ApiTimeout);
 		}
 
 		public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -2027,7 +2009,7 @@ namespace d360.model.DataAccessLayer
 			if (!queryParams.Any(x => x.Key.ToLower() == "_scoretype") && !queryParams.Any(x => x.Key.ToLower() == "_allocationuid"))
 			{
 				// Look up default Governance score allocation.
-				allocation = Company.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == ScoreType.Governance && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+				allocation = CompanyContext.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == ScoreType.Governance && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
 				if (allocation == null)
 				{
 					return (null, $"Allocation for {ScoreType.Governance} score type and asset type does not exist");
@@ -2093,7 +2075,7 @@ namespace d360.model.DataAccessLayer
 							return (null, "Invalid '_assetUid' parameter value");
 						}
 
-						var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
+						var assetTypeId = CompanyContext.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
 
 						if (assetTypeId != at.ID)
 						{
@@ -2120,7 +2102,7 @@ namespace d360.model.DataAccessLayer
 							return (null, "'_allocationUid' AND '_scoreType' are exclusive filters and may not be combined.");
 						}
 
-						allocation = Company.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == scoretype && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+						allocation = CompanyContext.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == scoretype && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
 
 						if (allocation == null)
 						{
@@ -2136,7 +2118,7 @@ namespace d360.model.DataAccessLayer
 							return (null, "Invalid '_allocationUid' parameter value");
 						}
 
-						allocation = Company.GetByUid<MetricAllocation>(allocationUid);
+						allocation = CompanyContext.GetByUid<MetricAllocation>(allocationUid);
 
 						if (allocation == null)
 						{
@@ -2161,7 +2143,7 @@ namespace d360.model.DataAccessLayer
 						customFieldsCounter++;
 
 						int? filterFieldTypeId = null;
-						filterFieldTypeId = Company.FieldTypes.Where(x => x.AssetTypeID == at.ID && x.Name.ToLower() == param.Key.ToLower()).FirstOrDefault()?.ID;
+						filterFieldTypeId = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == at.ID && x.Name.ToLower() == param.Key.ToLower()).FirstOrDefault()?.ID;
 						if (filterFieldTypeId == null)
 						{
 							return (null, $"Invalid custom field parameter. Field type with name '{param.Key}' does not exists");
@@ -2195,9 +2177,9 @@ namespace d360.model.DataAccessLayer
 			parameters.Add("@pageSize", result.pageSize);
 			parameters.Add("@pageNum", result.pageNum);
 
-			if (!Company.CurrentResourceIsAdmin)
+			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
-				outerFilters.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
+				outerFilters.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
 			}
 
 			outerFilters.Add("MS.AllocationUid = @allocationUid");
@@ -2218,7 +2200,7 @@ namespace d360.model.DataAccessLayer
 									{fieldJoinStatement} 
 									{outerWhere}";
 
-			result.total = Company.Query<int>(countSql, parameters, ApiTimeout).FirstOrDefault();
+			result.total = CompanyContext.Query<int>(countSql, parameters, ApiTimeout).FirstOrDefault();
 
 			var sql = $@"
 						select      MS.AssetUid,
@@ -2241,7 +2223,7 @@ namespace d360.model.DataAccessLayer
 						offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
 						for json path";
 
-			var itemsJson = string.Join("", Company.Query<string>(sql, parameters, ApiTimeout).ToList());
+			var itemsJson = string.Join("", CompanyContext.Query<string>(sql, parameters, ApiTimeout).ToList());
 
 			result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
 			
@@ -2260,54 +2242,26 @@ namespace d360.model.DataAccessLayer
 				.ToList()
 				.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" });
 
-			var isUpdatedScoring = Ld.BoolVariation(FeatureFlags.TEMP_SCORE_ENGINE_UPDATE, Company.GetSdkFeatureFlagUser(), false);
-
-			if (isUpdatedScoring)
-			{
-				var requests = Company.Query<AssetRescoreRequestModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
-				requests.ForEach(request => {
-					request.ScoreType = ScoreType.DataQuality;
-					var info = new ScoreQueueInfo
-					{
-						CompanyID = Company.CurrentCompanyID,
-						ResourceID = Company.CurrentResourceID,
-						ChangeType = ScoreQueueChangeType.RescoreRequest,
-						UseUpdatedScoringEngine = true,
-						Payload = request,
-						StartedOn = DateTime.UtcNow
-					};
-					QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-				});
-			}
-			else
-			{
-				var rawChanges = Company.Query<RuleResultChangedRawModel>("metrics.GetImpactedAssetsForAssetResults @isUpdatedScoring, @resultUids", new { isUpdatedScoring, resultUids }).ToList();
-				var assetMeasures = rawChanges
-					.GroupBy(o => new { o.AssetUid, o.EffectiveDate })
-					.Select(o => new AssetMeasureModel
-					{
-						AssetUid = o.Key.AssetUid,
-						EffectiveDate = o.Key.EffectiveDate,
-						Measures = o.Select(m => new AssetMeasureChildModel
-						{
-							AllocationUid = m.AllocationUid,
-							MetricAssetUid = m.MetricAssetUid,
-							MetricAssetVersionUid = m.MetricAssetVersionUid
-						})
-						.ToList()
-					}).ToList();
-				if (assetMeasures.Count > 0)
+			var requests = CompanyContext.Query<AssetRescoreRequestModel>("metrics.GetImpactedAssetsForAssetResults 1, @resultUids", new { resultUids }).ToList();
+			requests.ForEach(request => {
+				request.ScoreType = ScoreType.DataQuality;
+				var info = new ScoreQueueInfo
 				{
-					Company.CreateMeasureChangedResultExecution(assetMeasures);
-				}
-			}
+					CompanyID = CompanyContext.CurrentCompanyID,
+					ResourceID = CompanyContext.CurrentResourceID,
+					ChangeType = ScoreQueueChangeType.RescoreRequest,
+					Payload = request,
+					StartedOn = DateTime.UtcNow
+				};
+				Queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+			});
 		}
 
 		public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution, bool executionInDb = false)
 		{
 			if (!executionInDb)
 			{
-				Company.Add(execution);
+				CompanyContext.Add(execution);
 			}
 
 			List<DataQualityResponseModel> results = null;
@@ -2316,13 +2270,13 @@ namespace d360.model.DataAccessLayer
 			{
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
-				results = Company.UpsertAssetResults(upsert, execution);
+				results = CompanyContext.UpsertAssetResults(upsert, execution);
 				processRescoreOnRuleResultChanges(results);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostDataQualityResults);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostDataQualityResults);
 			}
 			catch (Exception ex)
 			{
-				Company.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -2353,7 +2307,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(_filter))
 			{
-				var filterDataProvider = new FilterDataProvider(Company);
+				var filterDataProvider = new FilterDataProvider(CompanyContext);
 
 				var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RuleResults);
 				Dictionary<string, object> sqlParams;
@@ -2368,7 +2322,7 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(_simpleFilter))
 			{
-				parameters.Add("@simpleFilterLike", Company.GetEscapedFilterString(_simpleFilter, true), DbType.String, ParameterDirection.Input);
+				parameters.Add("@simpleFilterLike", CompanyContext.GetEscapedFilterString(_simpleFilter, true), DbType.String, ParameterDirection.Input);
 				parameters.Add("@simpleFilter", _simpleFilter.ToLower(), DbType.String, ParameterDirection.Input);
 
 				simpleFilterWhereConditions.Add("R.EffectiveDate like @simpleFilterLike");
@@ -2508,7 +2462,7 @@ namespace d360.model.DataAccessLayer
 										outer apply dbo.GetAssetTypeTextPathById(E.EvaluatedAssetTypeId, ' > ') P
 								{whereStatement}";
 
-			result.total = Company.Query<int>(countQuery, parameters).Single();
+			result.total = CompanyContext.Query<int>(countQuery, parameters).Single();
 
 			var dupeColumnReference = "";
 			
@@ -2542,7 +2496,7 @@ namespace d360.model.DataAccessLayer
 								{orderSql} 
 								offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
-			result.items = Company.Query<DataQualityGetResultItem>(itemsQuery, parameters, ApiTimeout).ToList();
+			result.items = CompanyContext.Query<DataQualityGetResultItem>(itemsQuery, parameters, ApiTimeout).ToList();
 
 			if (result.items == null)
 			{
@@ -2568,27 +2522,27 @@ namespace d360.model.DataAccessLayer
 										where 
 											AR.Uid = @Uid";
 
-			return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters, ApiTimeout).ToList();
+			return CompanyContext.Query<DataQualityAssetResultModel>(assetResultSQL, parameters, ApiTimeout).ToList();
 		}
 
 		public List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> request, ApiExecution execution)
 		{
-			Company.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<DataQualityDeleteResponseModel> results = null;
 			try
 			{
-				results = Company.DeleteAssetResults(request, execution);
+				results = CompanyContext.DeleteAssetResults(request, execution);
 
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
-				Company.Update(execution);
+				CompanyContext.Update(execution);
 			}
 			catch (Exception ex)
 			{
-				Company.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -2596,20 +2550,20 @@ namespace d360.model.DataAccessLayer
 
 		public List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution)
 		{
-			Company.Add(execution);
+			CompanyContext.Add(execution);
 
 			List<DataQualityResponseModel> results = null;
 			try
 			{
 				List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
 				upsert.AddRange(request);
-				results = Company.UpsertAssetResults(upsert, execution);
+				results = CompanyContext.UpsertAssetResults(upsert, execution);
 				processRescoreOnRuleResultChanges(results);
-				Company.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutDataQualityResults);
+				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PutDataQualityResults);
 			}
 			catch (Exception ex)
 			{
-				Company.UpdateExecutionWithErrorFromException(execution, ex);
+				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
 			return results;
@@ -2619,23 +2573,23 @@ namespace d360.model.DataAccessLayer
 		{
 			var executionInfo = new ApiExecutionInfo
 			{
-				CompanyID = Company.CurrentCompanyID,
-				CompanyDomainPrefix = Company.CurrentCompanyDomain,
+				CompanyID = CompanyContext.CurrentCompanyID,
+				CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
 				ExecutionID = execution.ExecutionID,
 				ResourceID = execution.ResourceID,
 				SendWorkflowEvents = sendWorkflowEvents
 			};
 
 			// Save to storage container.
-			await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
+			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
 
 			// Save to the database.
 			execution.ExecutionID = executionInfo.ExecutionID;
 
-			Company.Add(execution);
+			CompanyContext.Add(execution);
 
 			// Save to queue.
-			if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+			if (!await Queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
 			{
 				throw new ArgumentException(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}
@@ -2645,7 +2599,7 @@ namespace d360.model.DataAccessLayer
 
 		public List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid)
 		{
-			var fragments = Company.Query<string>($@"                    
+			var fragments = CompanyContext.Query<string>($@"                    
 					select ROW_NUMBER() over (Order by V.EffectiveDate asc, ISNULL(V.EffectiveEndDate, GETDATE()) asc) as version, 
 							A.Uid as MeasureUid,
 							V.Name,
@@ -2691,12 +2645,12 @@ namespace d360.model.DataAccessLayer
 
 		public Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
 		{
-			if (!Company.CurrentResourceIsAdmin)
+			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
 				throw new StatusCodeException(HttpStatusCode.Forbidden);
 			}
 
-			var measure = Company.GetByUid<MetricAsset>(measureUid, a => a.Versions, a => a.Allocation);
+			var measure = CompanyContext.GetByUid<MetricAsset>(measureUid, a => a.Versions, a => a.Allocation);
 
 			if (measure == null)
 			{
@@ -2726,14 +2680,14 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var startedOnLimit = DateTime.UtcNow.AddHours(-2);
-			var existingExecutions = Company.Any<ScoreExecution>(e => !e.CompletedOn.HasValue && e.TriggeredByMeasureUid == measureUid);
+			var existingExecutions = CompanyContext.Any<ScoreExecution>(e => !e.CompletedOn.HasValue && e.TriggeredByMeasureUid == measureUid);
 
 			if (existingExecutions)
 			{
 				throw new GenericException(HttpStatusCode.BadRequest, MetricsErrors.MeasureRecalculated);
 			}
 
-			return Company.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
+			return CompanyContext.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
 		}
 	}
 }

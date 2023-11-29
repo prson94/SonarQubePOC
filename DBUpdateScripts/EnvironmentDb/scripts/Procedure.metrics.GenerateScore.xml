@@ -5,13 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.08">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.11">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
+
 create or alter procedure [metrics].[GenerateScore]
 	@assetUid uniqueidentifier,
 	@effectiveDate date,
-	@scoreType int
+	@scoreType int,
+	@responseScore decimal(8,6) output
 as
 begin
 	set nocount on;
@@ -253,6 +255,8 @@ begin
 
 	if @shouldAddScore = 1
 	begin
+		set @responseScore = coalesce(@Score, 0);
+		
 		merge into	metrics.ScoreItem as t
 		using		(
 					select	ItemUid

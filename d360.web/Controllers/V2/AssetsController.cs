@@ -1,3 +1,28 @@
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.Models;
+using d360.core.queue;
+using d360.core.resources;
+using d360.core.validators;
+using d360.extensions;
+using d360.featureflags;
+using d360.model;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Services;
+using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using repositories;
+using Resources;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,43 +33,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Web.Http.Results;
-using System.Windows.Forms.VisualStyles;
-using AngleSharp.Text;
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.Models;
-using d360.core.queue;
-using d360.core.resources;
-using d360.core.validators;
-using d360.extensions;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.model.helpers;
-using d360.model.helpers.filters;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-
-using Dapper;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.Web.Http;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
+using DataType = d360.core.DataType;
 
 namespace d360.web.Controllers.V2
 {
@@ -58,19 +51,30 @@ namespace d360.web.Controllers.V2
 	]
 	public partial class AssetsController : BaseV2ApiController
 	{
+		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
+
+		private ICatalog EnvironmentCatalog { 
+			get 
+			{ 
+				return UseCatalogMicroservice ? 
+					Catalogs.Single(c => c.Platform  == Platform.Dis) :
+					Catalogs.Single(c => c.Platform == Platform.Azure);
+			}
+		}
+
+
 		#region DI
-		
+
 		private readonly ICachingProvider Cache;
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
 
 		private readonly IAssetRepository AssetRepository;
-		private readonly IAssetTypeRepository AssetTypeRepository;
 		private readonly IExecutionsRepository ExecutionsRepository;
 		private readonly IFieldsRepository FieldsRepository;
 		private readonly IRelationshipRepository RelationshipRepository;
 		private readonly ITagRepository TagRepository;
-
+		private readonly IList<ICatalog> Catalogs;
 
 		public AssetsController(
 			ICachingProvider cache,
@@ -78,18 +82,19 @@ namespace d360.web.Controllers.V2
 			IStorageProvider storage,
 			IQueueSource queueSource,
 			IAssetRepository assetRepository,
-			IAssetTypeRepository assetTypeRepository,
 			IExecutionsRepository executionsRepository,
 			IFieldsRepository fieldsRepository,
 			IRelationshipRepository relationshipRepository,
-			ITagRepository tagRepository
+			ITagRepository tagRepository,
+			IEnumerable<ICatalog> catalogs
 		) : base(set)
 		{
+			Catalogs = catalogs.ToList();
+
 			Cache = cache;
 			QueueSource = queueSource;
 			Storage = storage;
 			AssetRepository = assetRepository;
-			AssetTypeRepository = assetTypeRepository;
 			ExecutionsRepository = executionsRepository;
 			FieldsRepository = fieldsRepository;
 			RelationshipRepository = relationshipRepository;
@@ -2171,7 +2176,7 @@ namespace d360.web.Controllers.V2
 				FieldTypeLookup ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
 
 				List<dynamic> Values = new List<dynamic>();
-				List<GridColumn> Columns = new List<GridColumn>();
+				List<core.Models.GridColumn> Columns = new List<core.Models.GridColumn>();
 				List<GridField> Fields = new List<GridField>();
 				List<dynamic> scoringInfo = new List<dynamic>();
 
@@ -3184,7 +3189,7 @@ namespace d360.web.Controllers.V2
 		public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
 		{
 			List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
-			Tag currentTag;
+            core.entities.Tag currentTag;
 			foreach (var assetTagApi in assetTags)
 			{
 				AssetTagSuccessApiModel result;
@@ -3552,8 +3557,6 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssetUids(Guid assetTypeUid)
 		{
-			var prefix = "Assets.GetAssetUids => ";
-			var errorMessage = "";
 			var queryParams = Request.GetQueryNameValuePairs();
 
 			const int maxPageSize = 100000;
@@ -3570,6 +3573,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, ActionApiMessages.InvalidAssetTypeUid)));
 			}
 
+			int pageSize = 500;
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
 			{
 				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
@@ -3578,6 +3582,10 @@ namespace d360.web.Controllers.V2
 					{
 						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, AssetsApiMessages.PageSizeRange)));
 					}
+					else 
+					{
+						pageSize = res;
+					}
 				}
 				else
 				{
@@ -3585,6 +3593,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			int pageNum = 0;
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
 			{
 				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
@@ -3593,6 +3602,10 @@ namespace d360.web.Controllers.V2
 					{
 						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, AssetsApiMessages.InvalidPageNumberGT0)));
 					}
+					else
+					{
+						pageNum = res;
+					}
 				}
 				else
 				{
@@ -3600,32 +3613,23 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+			bool includeTotal = false;
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
 			{
-				if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+				if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+				{
+					includeTotal = res;
+				}
+				else
 				{
 					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, AssetsApiMessages.InvalidParameterIncludeTotal)));
 				}
 			}
 
-			try
-			{
-				var results = await AssetRepository.GetAssetPaths(assetType, queryParams);
-				HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
+			AssetPathResults results = await EnvironmentCatalog.ReadAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
 
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
-
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
-			}
+			HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
 		}
 
 
@@ -4272,7 +4276,7 @@ namespace d360.web.Controllers.V2
 
 			ValidateParameters();
 
-			var results = await AssetTypeRepository.GetAncestryAsync(assetTypeID, cancellationToken);
+			var results = await EnvironmentCatalog.ReadAncestryAsync(assetTypeID, cancellationToken);
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{

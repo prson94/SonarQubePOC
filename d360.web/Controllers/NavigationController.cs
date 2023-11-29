@@ -13,6 +13,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
@@ -81,12 +82,12 @@ namespace d360.web.Controllers
 				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
 			}
 
-			if (!Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser(), false))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
 
-			if (!Ld.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, GetSdkFeatureFlagUser(), false))
+			if (!FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser(), false))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#Assignments").Where(x => x.MenuID != "#Requests").ToList(); 
 			}
@@ -213,7 +214,7 @@ namespace d360.web.Controllers
 		[HttpGet, Route("GetSiteNavItems")]
 		public JsonNetResult GetSiteNavItems()
 		{
-			var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);			
+			var allowSemantics = FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser());			
 
 			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
 				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
@@ -246,7 +247,7 @@ namespace d360.web.Controllers
 				data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
 			}
 
-			if (!Ld.BoolVariation(FeatureFlags.TEMP_ASSIGNMENTS, GetSdkFeatureFlagUser(), false))
+			if (!FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser()))
 			{
 				data.RemoveAll(x => x.Name == "#Assignments" || x.Name == "#Requests");
 			}
@@ -1472,7 +1473,7 @@ namespace d360.web.Controllers
 				responseModel.Uid = model.AssetUid.Value;
 			}
 
-			if (model.ObjectType == SystemObjects.SemanticType.ToString() && Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
+			if (model.ObjectType == SystemObjects.SemanticType.ToString() && FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser()))
 			{
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();

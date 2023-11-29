@@ -4,6 +4,7 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
+using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -19,15 +20,20 @@ namespace d360.model.DataAccessLayer
 	public class DataProfileRepository : BaseRepository, IDataProfileRepository
 	{
 		internal ICommunityContext Community;
-		internal IStorageProvider StorageProvider;
-		internal IQueueSource QueueSource;
+		internal IStorageProvider Storage;
+		internal IQueueSource Queue;
 
-		public DataProfileRepository(ICompanyContext companyContext, ICommunityContext community, IStorageProvider storageProvider, IQueueSource queueSource)
-			: base(companyContext)
+		public DataProfileRepository(
+			ICompanyContext companyContext, 
+			ICommunityContext community, 
+			IStorageProvider storage, 
+			IQueueSource queue, 
+			IFeatureFlagService ff)
+			: base(companyContext, ff)
 		{
 			Community = community;
-			StorageProvider = storageProvider;
-			QueueSource = queueSource;
+			Queue = queue;
+			Storage = storage;
 		}
 
 		public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -568,7 +574,7 @@ namespace d360.model.DataAccessLayer
 				ResourceID = execution.ResourceID
 			};
 
-			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+			return await CreateApiBatchJob(executionInfo, execution, models, Storage, Queue).ConfigureAwait(false);
 		}
 
 		public async Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution)
@@ -581,7 +587,7 @@ namespace d360.model.DataAccessLayer
 				ResourceID = execution.ResourceID
 			};
 
-			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+			return await CreateApiBatchJob(executionInfo, execution, models, Storage, Queue).ConfigureAwait(false);
 		}
 
 		public async Task<ApiExecutionInfo> DeleteBatchDataProfiles(List<AssetDataProfileDeleteModel> models, ApiExecution execution)
@@ -594,7 +600,7 @@ namespace d360.model.DataAccessLayer
 				ResourceID = execution.ResourceID
 			};
 
-			return await CreateApiBatchJob(executionInfo, execution, models, StorageProvider, QueueSource).ConfigureAwait(false);
+			return await CreateApiBatchJob(executionInfo, execution, models, Storage, Queue).ConfigureAwait(false);
 		}
 
 		public async Task<AssetDataProfilesMatchingAssetsApiViewModel> GetMatchingAssets(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams, bool onlyTotal = false)
