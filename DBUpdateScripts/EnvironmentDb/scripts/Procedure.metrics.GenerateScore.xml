@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v1.11">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 
@@ -65,6 +65,13 @@ begin
 			from	metrics.GetDataQualityScore(@assetUid, @effectiveDate)
 	end;
 
+	-- Determines if there are any measures present that are NOT measure groups. If ONLY measure groups, then no measure was relevant, meaning - a dead score.
+	declare @IsScoreDead bit = 0;
+	select	@IsScoreDead = iif(count(1) > 0, 0, 1)
+	from	@measures m
+			inner join metrics.AssetVersion v on v.Uid = m.VersionUid 
+			inner join metrics.Asset a on a.Uid = v.AssetUid and a.IsGroup = 0;
+	  
 	-- Common logic to determine weight rebalancing, within each measure group, or at root.
 	update	m
 	set		m.AdjustedWeight = m.Weight / [level].Total
@@ -215,93 +222,126 @@ begin
 
 	--select @Hash, @CurrentHash, @shouldAddScore
 
-	if exists(select 1 from metrics.Score where AllocationUid = @allocationUid and AssetUid = @assetUid and EffectiveDate = @effectiveDate)
+	if @IsScoreDead = 1
 	begin
-		select	@NewScoreUid = Uid 
+		declare @mostRecentDate date;
+
+	  	select	@mostRecentDate = max(EffectiveDate) 
+		from	metrics.Score 
+		where	AllocationUid = @allocationUid 
+				and AssetUid = @assetUid;
+
+	  	select	@NewScoreUid = Uid 
 		from	metrics.Score 
 		where	AllocationUid = @allocationUid 
 				and AssetUid = @assetUid 
 				and EffectiveDate = @effectiveDate;
+				and EffectiveDate = @mostRecentDate;
 
 		update	metrics.Score
 		set		[Value] = coalesce(@Score, 0),
 				RunDate = @runDate,
 				VersionValueHash = @Hash
 		where	Uid = @NewScoreUid;
-	end
-	else
-	begin
-		if @shouldAddScore = 1
+
+		if @NewScoreUid is not null
 		begin
-			insert into metrics.Score (AssetUid, EffectiveDate, [Value], RunDate, Uid, AllocationUid, [Log], VersionValueHash)
-			values (@assetUid, @effectiveDate, coalesce(@Score, 0), @runDate, @NewScoreUid, @allocationUid, '{}', @Hash);
+			update	metrics.Score
+			set		RunDate = @runDate,
+					EndDate = @runDate
+			where	Uid = @NewScoreUid;
 		end
 	end
-
-	-- End-date older scores that do not yet have an end date.
-	update	t 
-	set		t.EndDate = iif(e.NextEffectiveDate is null, null, DATEADD(d, -1, e.NextEffectiveDate))
-	from	metrics.Score t
-			outer apply (
-				select	min(EffectiveDate) as NextEffectiveDate
-				from	metrics.Score 
-				where	AllocationUid = t.AllocationUid
-						and AssetUid = t.AssetUid
-						and EffectiveDate > t.EffectiveDate
-			) e
-	where	t.AllocationUid = @allocationUid
-			and t.AssetUid = @assetUid
-			and t.EndDate is null;
-
-	if @shouldAddScore = 1
+	else -- Score is ALIVE.
 	begin
-		set @responseScore = coalesce(@Score, 0);
-		
-		merge into	metrics.ScoreItem as t
-		using		(
-					select	ItemUid
-							, VersionUid
-							, @runDate as [UpdatedOn]
-							, @runDate as RunDate
-							, MatchUid as ConditionUid
-							, OtherMatches as OtherConditions
-							, Evidence
-							, [RawValue] as DecimalValue
-							, iif([Value] = 1, 1, 0) as [Value]
-							, AdjustedWeight
-							, ContributionWeight as AdjustedMaxWeight
-							, AdjustedValue as DisplayWeight
-							, ContributionWeight as DisplayMaxWeight
-					from	@measures
-					) as s
-		on			(t.Uid = s.ItemUid)
-		when		matched then
-		update		set 		
-					t.RunDate  = s.RunDate
-					, t.UpdatedOn = s.UpdatedOn
-					, t.ConditionUid = s.ConditionUid
-					, t.OtherConditions = s.OtherConditions
-					, t.[Evidence] = s.[Evidence]
-					, t.[Value] = s.[Value]
-					, t.[DecimalValue] = s.[DecimalValue]
-					, t.[AdjustedWeight] = s.[AdjustedWeight]
-					, t.[AdjustedMaxWeight] = s.[AdjustedMaxWeight]
-					, t.[DisplayWeight] = s.[DisplayWeight]
-					, t.[DisplayMaxWeight] = s.[DisplayMaxWeight]
-		when		not matched then
-		insert		([Uid], [AssetVersionUid], [UpdatedOn], [RunDate]
-					, [ConditionUid], [OtherConditions], [Evidence]
-					, [Value], [DecimalValue], [AdjustedWeight], [AdjustedMaxWeight], [DisplayWeight], [DisplayMaxWeight])
-		values		(s.ItemUid, s.VersionUid, s.UpdatedOn, s.RunDate
-					, s.ConditionUid, s.OtherConditions, s.[Evidence]
-					, s.[Value], s.DecimalValue, s.AdjustedWeight, s.AdjustedMaxWeight, s.DisplayWeight, s.DisplayMaxWeight);
+		if exists(select 1 from metrics.Score where AllocationUid = @allocationUid and AssetUid = @assetUid and EffectiveDate = @effectiveDate)
+		begin
+			select	@NewScoreUid = Uid 
+			from	metrics.Score 
+			where	AllocationUid = @allocationUid 
+					and AssetUid = @assetUid 
+					and EffectiveDate = @effectiveDate;
 
-		delete	metrics.ScoreItemLink
-		where	ScoreUid = @NewScoreUid;
+			update	metrics.Score
+			set		[Value] = coalesce(@Score, 0),
+					RunDate = @runDate,
+					VersionValueHash = @Hash
+			where	Uid = @NewScoreUid;
+		end
+		else
+		begin
+			if @shouldAddScore = 1
+			begin
+				insert into metrics.Score (AssetUid, EffectiveDate, [Value], RunDate, Uid, AllocationUid, [Log], VersionValueHash)
+				values (@assetUid, @effectiveDate, coalesce(@Score, 0), @runDate, @NewScoreUid, @allocationUid, '{}', @Hash);
+			end
+		end
 
-		insert into metrics.ScoreItemLink 
-			select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
-			from	@measures;
+		-- End-date older scores that do not yet have an end date.
+		update	t 
+		set		t.EndDate = iif(e.NextEffectiveDate is null, null, DATEADD(d, -1, e.NextEffectiveDate))
+		from	metrics.Score t
+				outer apply (
+					select	min(EffectiveDate) as NextEffectiveDate
+					from	metrics.Score 
+					where	AllocationUid = t.AllocationUid
+							and AssetUid = t.AssetUid
+							and EffectiveDate > t.EffectiveDate
+				) e
+		where	t.AllocationUid = @allocationUid
+				and t.AssetUid = @assetUid
+				and t.EndDate is null;
+
+		if @shouldAddScore = 1
+		begin
+			set @responseScore = coalesce(@Score, 0);
+			
+			merge into	metrics.ScoreItem as t
+			using		(
+						select	ItemUid
+								, VersionUid
+								, @runDate as [UpdatedOn]
+								, @runDate as RunDate
+								, MatchUid as ConditionUid
+								, OtherMatches as OtherConditions
+								, Evidence
+								, [RawValue] as DecimalValue
+								, iif([Value] = 1, 1, 0) as [Value]
+								, AdjustedWeight
+								, ContributionWeight as AdjustedMaxWeight
+								, AdjustedValue as DisplayWeight
+								, ContributionWeight as DisplayMaxWeight
+						from	@measures
+						) as s
+			on			(t.Uid = s.ItemUid)
+			when		matched then
+			update		set 		
+						t.RunDate  = s.RunDate
+						, t.UpdatedOn = s.UpdatedOn
+						, t.ConditionUid = s.ConditionUid
+						, t.OtherConditions = s.OtherConditions
+						, t.[Evidence] = s.[Evidence]
+						, t.[Value] = s.[Value]
+						, t.[DecimalValue] = s.[DecimalValue]
+						, t.[AdjustedWeight] = s.[AdjustedWeight]
+						, t.[AdjustedMaxWeight] = s.[AdjustedMaxWeight]
+						, t.[DisplayWeight] = s.[DisplayWeight]
+						, t.[DisplayMaxWeight] = s.[DisplayMaxWeight]
+			when		not matched then
+			insert		([Uid], [AssetVersionUid], [UpdatedOn], [RunDate]
+						, [ConditionUid], [OtherConditions], [Evidence]
+						, [Value], [DecimalValue], [AdjustedWeight], [AdjustedMaxWeight], [DisplayWeight], [DisplayMaxWeight])
+			values		(s.ItemUid, s.VersionUid, s.UpdatedOn, s.RunDate
+						, s.ConditionUid, s.OtherConditions, s.[Evidence]
+						, s.[Value], s.DecimalValue, s.AdjustedWeight, s.AdjustedMaxWeight, s.DisplayWeight, s.DisplayMaxWeight);
+	
+			delete	metrics.ScoreItemLink
+			where	ScoreUid = @NewScoreUid;
+	
+			insert into metrics.ScoreItemLink 
+				select	@NewScoreUid as ScoreUid, ItemUid as ScoreItemUid
+				from	@measures;
+		end
 	end
 
 --	select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
