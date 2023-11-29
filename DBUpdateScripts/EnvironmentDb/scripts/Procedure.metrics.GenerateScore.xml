@@ -236,12 +236,6 @@ begin
 				and AssetUid = @assetUid 
 				and EffectiveDate = @mostRecentDate;
 
-		update	metrics.Score
-		set		[Value] = coalesce(@Score, 0),
-				RunDate = @runDate,
-				VersionValueHash = @Hash
-		where	Uid = @NewScoreUid;
-
 		if @NewScoreUid is not null
 		begin
 			update	metrics.Score
