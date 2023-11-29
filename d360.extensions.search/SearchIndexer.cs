@@ -442,9 +442,9 @@ namespace d360.extensions.search
 		public bool CanCreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid, bool force = false)
 		{
 			object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
-			var pending = _context.QuerySingle<int>(@"SELECT COUNT(1) FROM [queue].[Search]
+			var pending = _context.QuerySingle<int>(@$"SELECT COUNT(1) FROM [queue].[Search]
 				WHERE Class = @assetClass AND AssetTypeUid = @AssetTypeUid
-				AND (Active = 1 OR status = @status)
+				AND ((Active = 1 AND status <> {(int)SearchJobStatus.Completed}) OR status = @status)
 				AND LastUpdate > DATEADD(MINUTE, -5, GETUTCDATE())
 			", param) > 0;
 
@@ -459,6 +459,7 @@ namespace d360.extensions.search
 		private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
         {
             object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
+			var assetTypeEmpty = assetTypeUid == null || assetTypeUid == Guid.Empty;
 
             //clean table, remove x days old records
             _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid = @AssetTypeUid", param);
@@ -502,23 +503,23 @@ namespace d360.extensions.search
 				_context.Execute($@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
                     SELECT @assetClass, @assetTypeUid, @status, count(1)
                     FROM [dbo].[assettype] at
-                    where at.class = {(int)AssetTypeClass.Reference}" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
+                    where at.class = {(int)AssetTypeClass.Reference}" + (assetTypeEmpty ? "" : " and at.uid = @assetTypeUid"), param);
 			}
 			else
 			{
 				_context.Execute(@"INSERT INTO [queue].[Search] (Class, AssetTypeUid, Status, TargetCount)
                     SELECT @assetClass, @assetTypeUid, @status, count(1)
                     FROM [dbo].[asset] a INNER JOIN  [dbo].[assettype] at ON a.assettypeid = at.id
-                    where at.class = @assetClass" + (assetTypeUid == null ? "" : " and at.uid = @assetTypeUid"), param);
+                    where at.class = @assetClass" + (assetTypeEmpty ? "" : " and at.uid = @assetTypeUid"), param);
 			}
 
-			if (assetTypeUid == null)
+			if (assetTypeEmpty)
             {
                 //When pending a Class/Categroy, archive all asset types under that category
                 _context.Execute("UPDATE [queue].[Search] SET Active=0 WHERE Active=1 and Class = @assetClass and AssetTypeUid <> @AssetTypeUid", param);
             }
 
-            int count = _context.Query<int>("SELECT TargetCount FROM [queue].[Search] where Class=@assetClass and AssetTypeUid=@assetTypeUid and status=@status", param).FirstOrDefault();
+            int count = _context.Query<int>("SELECT TargetCount FROM [queue].[Search] where Class=@assetClass and AssetTypeUid=@assetTypeUid and status=@status and Active=1", param).FirstOrDefault();
             return count;
         }
 
@@ -540,13 +541,13 @@ namespace d360.extensions.search
                   INSERT (Class, AssetTypeUid, Status, Message, LastUpdate)
                   VALUES (src.Class, src.AssetTypeUid, src.Status, src.Message, getutcdate());", param);
 
-            if (new List<SearchJobStatus> { SearchJobStatus.Processing, SearchJobStatus.ProcessingAsType }.Contains(status))
-            {
-                _context.Execute("UPDATE [queue].[Search] SET Start = getutcdate() WHERE Active=1 AND Class=@assetClass AND AssetTypeUid=@assetTypeUid", param);
-            }
-        }
+			if (new List<SearchJobStatus> { SearchJobStatus.Processing, SearchJobStatus.ProcessingAsType }.Contains(status))
+			{
+				_context.Execute("UPDATE [queue].[Search] SET Start = getutcdate() WHERE Active=1 AND Class=@assetClass AND AssetTypeUid=@assetTypeUid", param);
+			}
+		}
 
-        private string[] GetPathArrayFromSegments(string segments)
+		private string[] GetPathArrayFromSegments(string segments)
         {
             if (string.IsNullOrWhiteSpace(segments) || segments.IndexOf('<') < 0)
             {

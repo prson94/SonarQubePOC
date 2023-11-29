@@ -444,15 +444,15 @@ namespace d360.web.Controllers.V2
 			var response = new ConfirmResponse();
 			SearchIndexer indexer = new SearchIndexer(Company.Connection, Company.CurrentCompanyID, SearchSource);
 			rebuildRequests.ForEach(r => {
-				var origin = "QueueRebuildRequest, class: " + r.Class.ToString();
-				ReindexModel model = new ReindexModel { CompanyID = Company.CurrentCompanyID, Category = r.Class.ToString() };
+				AssetTypeClass assetTypeClass = (AssetTypeClass)r.Class;
+				var origin = "QueueRebuildRequest, class: " + assetTypeClass.ToString();
+				ReindexModel model = new ReindexModel { CompanyID = Company.CurrentCompanyID, Category = assetTypeClass.ToString() };
 				if (r.AssetTypeUid != Guid.Empty)
 				{
 					model.AssetTypeUid = r.AssetTypeUid;
 					origin += ", asset type uid: " + r.AssetTypeUid.ToString();
 				}
 				model.Origin = origin;
-				AssetTypeClass assetTypeClass = (AssetTypeClass)r.Class;
 				if (indexer.CanCreatePendingDBLog(assetTypeClass, r.AssetTypeUid))
 				{
 					Queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
