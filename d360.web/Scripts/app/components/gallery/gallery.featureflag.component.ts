@@ -32,7 +32,7 @@ export class GalleryFeatureflagComponent implements OnInit {
 	ngOnInit(): void {
 		const allFlags = this.featureFlagService.client.allFlags();
 		this.featureFlags = Object.keys(allFlags)
-			.filter((key) => key.startsWith("Govern"))
+			.filter((key) => key.startsWith("Govern") || key.startsWith("govern-"))
 			.reduce((obj, key) => {
 				obj.push({
 					flag: key,
