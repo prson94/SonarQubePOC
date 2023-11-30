@@ -50,6 +50,6 @@ namespace repositories
         
         List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid);
         
-        Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
+        void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid);
     }
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Newtonsoft.Json;
-
 namespace d360.core.queue
 {
-    public enum ScoreQueueChangeType
+	public enum ScoreQueueChangeType
     {
         AssetMeasures = 0,
         MeasureChanged = 3,
@@ -21,27 +19,16 @@ namespace d360.core.queue
     public class ScoreQueueInfo
     {
         public int CompanyID { get; set; }
+
         public int? ResourceID { get; set; }
 
-        public Guid ExecutionUid { get; set; }
+		public int? ExecutionId { get; set; }
 
-        public DateTime StartedOn { get; set; }
+		public DateTime StartedOn { get; set; }
 
         public ScoreQueueChangeType ChangeType { get; set; }
 
 		public object Payload { get; set; }
-
-        [JsonIgnore]
-        private string StartedOnDateString { get { return StartedOn.ToString("yyyyMMdd"); } }
-
-        [JsonIgnore]
-        public string StorageFolder { get { return $"scoring"; } }
-
-        [JsonIgnore]
-        public string StorageFile { get { return $"{StorageFilePrefix}.json"; } }
-
-        [JsonIgnore]
-        public string StorageFilePrefix { get { return $"{CompanyID}/{StartedOnDateString}_{ExecutionUid}_{ChangeType}"; } }
     }
 
     public class CheckTypeDependencyRemovedModel

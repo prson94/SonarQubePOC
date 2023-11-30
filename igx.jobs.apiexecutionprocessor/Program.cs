@@ -386,7 +386,7 @@ namespace igx.jobs.apiexecutionprocessor
 										{
 											ChangeType = ScoreQueueChangeType.PatchCatalogExecution,
 											CompanyID = info.CompanyID,
-											ExecutionUid = dbExecutionItem.ExecutionID,
+											ExecutionId = dbExecutionItem.Id,
 											ResourceID = info.ResourceID,
 											StartedOn = DateTime.UtcNow
 										});

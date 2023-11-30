@@ -41,9 +41,5 @@ namespace repositories
         List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
         
         List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results);
-        
-        ScoreExecution GetExecutionById(Guid uid);
-        
-        IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber);
     }
 }
