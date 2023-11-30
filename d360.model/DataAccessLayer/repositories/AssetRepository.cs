@@ -1833,6 +1833,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
+
+				{fieldJoins.JoinFieldTempTable}
+
 				select 
 					{(useTempTableForResults ? $"row_number() over (order by TempA.ID) as _rowid," : "")}
 					A.ID as AssetId,
@@ -1862,7 +1865,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				left join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{fieldJoins.SQLJoinStatement}
+				{fieldJoins.SQLJoinStatementWithTempTable}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
