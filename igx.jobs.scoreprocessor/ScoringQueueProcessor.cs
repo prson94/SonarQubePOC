@@ -41,7 +41,6 @@ namespace igx.jobs.scoreprocessor
 			var logProperties = new Dictionary<string, object> {
 				{ "Function", FUNCTION_NAME },
 				{ "CompanyID", info.CompanyID },
-				{ "ExecutionId", info.ExecutionUid },
 				{ "ChangeType", info.ChangeType.ToString() }
 			};
 
@@ -79,7 +78,7 @@ namespace igx.jobs.scoreprocessor
 							{
 								await companyConnection.OpenIfClosed();
 								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
-									info.ExecutionUid 
+									info.ExecutionId
 								}, commandTimeout: 18000);
 								updatedAssets = response.ToList();
 								
@@ -246,8 +245,7 @@ declare @effectiveDate date = getutcdate(),
 insert into #ids (AssetUid)
 	select	i.[Uid]
 	from	api.ExecutionCatalogItem i
-			inner join api.Execution e on e.Id = i.ExecutionId and e.ExecutionID = @ExecutionUid and i.[Type] = 'A' and i.Success = 1
-			inner join AssetType t on t.ID = i.TypeId
+			inner join AssetType t on t.ID = i.TypeId and i.ExecutionId = @ExecutionId and i.[Type] = 'A' and i.Success = 1
 			inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = @scoreType; 
 
 {COMMON_LOOP_SQL}

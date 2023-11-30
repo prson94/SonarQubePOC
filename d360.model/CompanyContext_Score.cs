@@ -52,8 +52,6 @@ namespace d360.model
 
 		DbSet<Score> Scores { get; set; }
 
-		DbSet<ScoreExecution> ScoreExecutions { get; set; }
-
 		#endregion
 
 		#region Methods
@@ -85,7 +83,7 @@ namespace d360.model
 		/// <summary>
 		/// A Score Engine method that is called when a measure is updated in Govern, and a notification is sent to the Score Engine to determine what needs to be recalculated.
 		/// </summary>
-		Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null);
+		void CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null);
 
 		/// <summary>
 		/// A Score Engine method that is called when a parent asset is (un)assigned a child.
@@ -165,28 +163,9 @@ namespace d360.model
 
 		public DbSet<Score> Scores { get; set; }
 
-		public DbSet<ScoreExecution> ScoreExecutions { get; set; }
-
-
 		#endregion
 
 		#region Utility
-		
-		private ScoreExecution createScoreExecution(Guid? triggeredByApiExecutionUid = null, Guid? triggeredMeasureUid = null)
-		{
-			ScoreExecution execution = new ScoreExecution
-			{
-				Uid = Guid.NewGuid(),
-				StartedOn = DateTime.UtcNow,
-				PercentComplete = 0,
-				TriggeredByExecutionUid = triggeredByApiExecutionUid,
-				TriggeredByMeasureUid = triggeredMeasureUid
-			};
-
-			Add(execution);
-
-			return execution;
-		}	
 		
 		private List<ExternalScoreResultApiResponseModel> BulkExternalResultsImport(List<ExternalScoreResultApiRequestModel> model, ApiExecution execution, bool isSpecificAllocation)
 		{
@@ -657,17 +636,17 @@ namespace d360.model
 			return present;
 		}	
 		
-		private void sendScoreQueueMessage(ScoreExecution execution, ScoreQueueChangeType changeType)
+		private void sendScoreQueueMessage(ScoreQueueChangeType changeType, int? executionId = null, object payload = null)
 		{
 			ScoreQueueInfo info = new ScoreQueueInfo
 			{
 				CompanyID = CurrentCompanyID,
 				ResourceID = CurrentResourceID,
 				ChangeType = changeType,
-				ExecutionUid = execution.Uid,
-				StartedOn = execution.StartedOn
+				ExecutionId = executionId,
+				StartedOn = DateTime.UtcNow,
+				Payload = (payload != null ? JsonConvert.SerializeObject(payload) : "{}")
 			};
-
 			QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
 		}
 
@@ -721,36 +700,22 @@ where   V.Uid in @versionUids";
 		public void CreateExternalScoreWorkflowCheckExecution(Guid apiExecutionUid)
 		{
 			string sql = @"
-insert into metrics.ExecutionItem (ExecutionID, ChangeType, RowNumber, Payload, [State])
-	select  @ID as ExecutionID, 
-			@changeType as ChangeType,
-			E.ItemNumber as RowNumber,
-			(
-			select	E.AllocationUid,
-					E.AssetUid, 
-					E.EffectiveDate
-			for json path, WITHOUT_ARRAY_WRAPPER
-			) as Payload,
-			0 as [State]
-	from    api.ExecutionScore E
-	where   E.ExecutionID = @apiExecutionUid ";
+	select  t.Object as ObjectType,
+			t.ObjectID as ObjectTypeID
+			a.Object,
+			a.ObjectID
+	from    api.ExecutionScore s
+			inner join Asset a on a.uid = s.AssetUid and s.ExecutionID = @apiExecutionUid and s.Success = 1
+			inner join AssetType t on t.Id = a.AssetTypeId
+	where	exists (select 1 from workflow.EventRegistration where AssetTypeID = t.Id and ChangeType = 5)";
 
-			ScoreExecution execution = createScoreExecution();
-
-			Connection.OpenIfClosed().Wait();
-
-			int rowsImpacted = Connection.Execute(
-				sql,
-				new
-				{
-					execution.ID,
-					apiExecutionUid,
-					changeType = (int)ScoreQueueChangeType.WorkflowCheck
-				});
-
-			if (rowsImpacted > 0)
+			var items = Query<WorkflowScoredAsset>(sql, new { apiExecutionUid }).ToList();
+			if (items.Count > 0)
 			{
-				sendScoreQueueMessage(execution, ScoreQueueChangeType.WorkflowCheck);
+				var groupedItems = items.GroupBy(i => new { i.ObjectType, i.ObjectTypeID }).ToList();
+				groupedItems.ForEach(g => {
+					SendWorkflowEvents(g.Key.ObjectType, g.Key.ObjectTypeID, g.ToList(), core.enums.Workflow.ChangeType.ScoreUpdate);
+				});
 			}
 		}
 
@@ -818,31 +783,16 @@ where	exists (
 			}
 		}
 
-		public Guid CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null)
+		public void CreateMeasureChangedNotificationExecution(MetricAssetVersion version, DateTime effectiveDate, Guid? triggeredByMeasureUid = null)
 		{
-			ScoreExecution execution = createScoreExecution(triggeredMeasureUid: triggeredByMeasureUid);
-
-			ScoreExecutionItem executionItem = new ScoreExecutionItem
+			var payload = new MeasureChangedModel
 			{
-				ChangeType = ScoreQueueChangeType.MeasureChanged,
-				ExecutionID = execution.ID,
-				State = ScoreExecutionItemState.NotProcessed,
-				RowNumber = 1,
-				Payload = JsonConvert.SerializeObject(
-					new MeasureChangedModel
-					{
-						EffectiveDate = effectiveDate,
-						MetricAssetUid = version.AssetUid,
-						MetricAssetVersionUid = version.Uid
-					}
-				)
+				EffectiveDate = effectiveDate,
+				MetricAssetUid = version.AssetUid,
+				MetricAssetVersionUid = version.Uid
 			};
 
-			Add(executionItem);
-
-			sendScoreQueueMessage(execution, ScoreQueueChangeType.MeasureChanged);
-
-			return execution.Uid;
+			sendScoreQueueMessage(ScoreQueueChangeType.MeasureChanged, null, payload);
 		}
 
 		public void CreateParentAssetGovernanceRescoreExecution(Guid apiExecutionUid)
@@ -963,32 +913,7 @@ group by	a.Uid",
 
 		public void CreateRollupPathChangedExecution(int? intersectTypeId = null, int? assetTypeId = null, Guid? triggeredByApiExecutionUid = null)
 		{
-			int count = Query<int>(@"
-									select	count(1) as [Count] 
-									from	metrics.Execution E
-											inner join metrics.ExecutionItem I on I.ExecutionID = E.ID 
-												and I.ChangeType = 5 
-												and E.StartedOn > dateadd(day, -1, getutcdate()) 
-												and E.CompletedOn is null 
-												and (E.Failures = 0 
-												and E.ErrorMessage is null)").Single();
-
-			if (count == 0)
-			{
-				ScoreExecution execution = createScoreExecution(triggeredByApiExecutionUid);
-
-				ScoreExecutionItem executionItem = new ScoreExecutionItem
-				{
-					ExecutionID = execution.ID,
-					ChangeType = ScoreQueueChangeType.RollupPathChanged,
-					RowNumber = 1,
-					State = ScoreExecutionItemState.NotProcessed,
-					Payload = JsonConvert.SerializeObject(new RollupPathChangedModel { IntersectTypeId = intersectTypeId, AssetTypeId = assetTypeId })
-				};
-				Add(executionItem);
-
-				sendScoreQueueMessage(execution, ScoreQueueChangeType.RollupPathChanged);
-			}
+			sendScoreQueueMessage(ScoreQueueChangeType.RollupPathChanged);
 		}
 
 		public List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> import, ApiExecution execution, int timeout = 3600)

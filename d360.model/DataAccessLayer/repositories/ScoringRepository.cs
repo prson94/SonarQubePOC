@@ -883,29 +883,5 @@ drop table #TempDataProcess
 
 			return evidenceModel;
 		}
-
-		public ScoreExecution GetExecutionById(Guid uid)
-		{
-			return CompanyContext.Filter<ScoreExecution>(i => i.Uid == uid).SingleOrDefault();
-		}
-
-		public IQueryable<ScoreExecution> GetExecutions(int pageSize, int pageNumber)
-		{
-			if (pageNumber > 0)
-			{
-				pageNumber -= 1;
-			}
-			else
-			{
-				pageNumber = 0;
-			}
-
-			if (pageSize > 200 || pageSize < 0)
-			{
-				pageSize = 200;
-			}
-
-			return CompanyContext.ScoreExecutions.OrderByDescending(i => i.StartedOn).Skip(pageSize * pageNumber).Take(pageSize);
-		}
 	}
 }

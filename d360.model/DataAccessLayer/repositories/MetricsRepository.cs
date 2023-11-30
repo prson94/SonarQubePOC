@@ -2643,7 +2643,7 @@ namespace d360.model.DataAccessLayer
 			return models;
 		}
 
-		public Guid RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
+		public void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
 		{
 			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
@@ -2679,15 +2679,7 @@ namespace d360.model.DataAccessLayer
 				throw new GenericException(HttpStatusCode.Conflict, MetricsErrors.MeasureWithNoVersion);
 			}
 
-			var startedOnLimit = DateTime.UtcNow.AddHours(-2);
-			var existingExecutions = CompanyContext.Any<ScoreExecution>(e => !e.CompletedOn.HasValue && e.TriggeredByMeasureUid == measureUid);
-
-			if (existingExecutions)
-			{
-				throw new GenericException(HttpStatusCode.BadRequest, MetricsErrors.MeasureRecalculated);
-			}
-
-			return CompanyContext.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
+			CompanyContext.CreateMeasureChangedNotificationExecution(latestVersion, latestVersion.EffectiveDate, measureUid);
 		}
 	}
 }

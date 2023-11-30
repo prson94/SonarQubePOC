@@ -971,16 +971,15 @@ namespace d360.web.Controllers.V2
 		{
 			try
 			{
-				var executionUid = MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
+				MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
 
 				return ResponseMessage(
 					Request.CreateResponse(
 						HttpStatusCode.OK,
 						new ApiExecutionRecievedResponse
 						{
-							ExecutionID = executionUid,
 							Message = ApiMessages.ExecutionIDStatus,
-							Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{executionUid}/status"
+							Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/scoring/executions/{Guid.Empty}/status" //so as not to break automation.
 						}
 					)
 				);
@@ -1013,21 +1012,21 @@ namespace d360.web.Controllers.V2
 		/// <returns></returns>
 		[
 			HttpGet,
+			Obsolete,
 			Route("executions"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(List<ScoreExecution>))
+			SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(List<ScoreExecution>)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> GetExecutions(int _pageSize = 200, int _pageNum = 1)
+		public async Task<IHttpActionResult> GetExecutions()
 		{
-			var executions = ScoringRepository.GetExecutions(_pageSize, _pageNum);
-
 			return await Task.FromResult<IHttpActionResult>(
 					ResponseMessage(
 						Request.CreateResponse(
 							HttpStatusCode.OK,
-							executions
+							new List<ScoreExecution>()
 						)
 					)
 				).ConfigureAwait(false);
@@ -1048,42 +1047,12 @@ namespace d360.web.Controllers.V2
 			Route("executions/{uid:Guid}/status"),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A scoring execution status.", typeof(ScoreExecution)),
-			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetExecutionStatus(Guid uid)
 		{
-			try
-			{
-				var res = ScoringRepository.GetExecutionById(uid);
-				if (res == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
-				}
-
-				return await Task.FromResult<IHttpActionResult>(
-					ResponseMessage(
-						Request.CreateResponse(
-							HttpStatusCode.OK,
-							res
-						)
-					)
-				).ConfigureAwait(false);
-			}
-			catch (ArgumentException)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", "Scoring.GetExecutionStatus => " },
-					{ "ExecutionID", uid.ToString() },
-					{ "ExecutionUid", uid.ToString() }, //left to prevent a breaking change
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1100,7 +1069,8 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.OK, "A list of all execution items.", typeof(List<ScoreExecutionItemViewModel>))
+			SwaggerResponse(HttpStatusCode.OK, "A list of all execution items.", typeof(List<ScoreExecutionItemViewModel>)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetExecutionItems()
 		{
