@@ -1703,7 +1703,14 @@ namespace d360.model.DataAccessLayer
 				effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
 			}
 
-			string dateLimitWhereQuery = @"and S.EffectiveDate = @effectiveDate";// @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
+			string effectivedateQuery = @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
+
+			if (startDate.HasValue)
+			{
+				effectivedateQuery = @"and S.EffectiveDate >= @startDate";
+			}
+
+			string dateLimitWhereQuery = @"and S.EffectiveDate = @latesteffectiveDate";// @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
 
 			if (startDate.HasValue)
 			{
@@ -1711,6 +1718,15 @@ namespace d360.model.DataAccessLayer
 			}
 
 			string sql = $@"
+							declare @latesteffectiveDate datetime = @effectiveDate;
+							
+							select @latesteffectiveDate = coalesce(max(effectivedate),@effectiveDate)
+							from metrics.Score S
+							where S.AllocationUid = @allocationUid 
+							and S.AssetUid = @assetUid 
+							{effectivedateQuery};
+
+
 							drop table if exists #results;
 							select	*
 							into    #results
