@@ -1,8 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="DatabaseTaskProcessor.cs" />
+    <Compile Remove="DisplayValueChecker.cs" />
+    <Compile Remove="DisplayValueUpdateProcessor.cs" />
+    <Compile Remove="IndexMaintainance.cs" />
+    <Compile Remove="PostExecutionJobProcessor.cs" />
+    <Compile Remove="ResourceCache.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.21" />
     <PackageReference Include="EntityFramework" Version="6.4.4" />
@@ -10,7 +18,9 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="5.13.4" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.21.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />

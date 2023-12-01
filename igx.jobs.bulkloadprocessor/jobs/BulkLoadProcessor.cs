@@ -29,7 +29,7 @@ namespace igx.jobs.bulkloadprocessor
 
 	public class BulkLoadProcessor: BaseWebJob
 	{
-		const string FUNCTION_NAME = "BulkLoad_Process";
+		const string FUNCTION_NAME = "BulkLoadProcessor";
 		const int SqlBulkBatchSize = 5000;
 
 		readonly ICachingProvider Cache;
@@ -47,6 +47,7 @@ namespace igx.jobs.bulkloadprocessor
 			Storage = storage;
 		}
 
+		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
 		{
 			var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);

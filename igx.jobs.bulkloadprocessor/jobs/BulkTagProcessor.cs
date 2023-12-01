@@ -18,7 +18,7 @@ namespace igx.jobs.bulkloadprocessor
 {
 	public class BulkLoadTagProcessor: BaseWebJob
 	{
-		const string FUNCTION_NAME = "BulkLoadTag_Process";
+		const string FUNCTION_NAME = "BulkLoadTagProcessor";
 
 		readonly ICachingProvider Cache;
 		readonly IMailProvider Mail;
@@ -33,6 +33,7 @@ namespace igx.jobs.bulkloadprocessor
 			Queue = queue;
 		}
 
+		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
 		{
 			string messageString;
