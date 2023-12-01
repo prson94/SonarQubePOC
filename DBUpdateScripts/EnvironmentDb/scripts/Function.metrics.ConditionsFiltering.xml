@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.ConditionsFiltering-v1.0">
+ <changeSet author="Pappas" id="Function.metrics.ConditionsFiltering-v2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.ConditionsFiltering
@@ -85,6 +85,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Boolean'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and lower(f.FormattedValue) = lower(c.SingleValue) then 1								-- Equals
@@ -101,16 +102,17 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Date'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as date) = try_cast(c.SingleValue as date) then 1		-- Equals
 									when c.Operator = 2 and try_cast(f.FormattedValue as date) <> try_cast(c.SingleValue as date) then 1	-- NotEquals
 									when c.Operator = 9 and try_cast(f.FormattedValue as date) between 
 										try_cast(c.StartRangeValue as date) and try_cast(c.EndRangeValue as date) then 1					-- Between
-									when c.Operator = 12 and try_cast(f.FormattedValue as date) > try_cast(c.SingleValue as date) then 1	-- GreaterThan
-									when c.Operator = 13 and try_cast(f.FormattedValue as date) <= try_cast(c.SingleValue as date) then 1	-- LessThanOrEquals
-									when c.Operator = 14 and try_cast(f.FormattedValue as date) < try_cast(c.SingleValue as date) then 1	-- LessThan
-									when c.Operator = 15 and try_cast(f.FormattedValue as date) >= try_cast(c.SingleValue as date) then 1	-- GreaterThanOrEquals
+									when c.Operator in (8, 12) and try_cast(f.FormattedValue as date) > try_cast(c.SingleValue as date) then 1	-- GreaterThan
+									when c.Operator in (13, 20) and try_cast(f.FormattedValue as date) <= try_cast(c.SingleValue as date) then 1	-- LessThanOrEquals
+									when c.Operator in (7, 14) and try_cast(f.FormattedValue as date) < try_cast(c.SingleValue as date) then 1	-- LessThan
+									when c.Operator in (15, 21) and try_cast(f.FormattedValue as date) >= try_cast(c.SingleValue as date) then 1	-- GreaterThanOrEquals
 									else 0
 								end = 1
 			end
@@ -121,6 +123,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'DateTime'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as datetime) = try_cast(c.SingleValue as datetime) then 1				-- Equals
@@ -141,6 +144,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Decimal'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as decimal) = try_cast(c.SingleValue as decimal) then 1		-- Equals
@@ -161,6 +165,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Number'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as bigint) = try_cast(c.SingleValue as bigint) then 1				-- Equals
@@ -181,6 +186,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Text'
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and f.FormattedValue = c.SingleValue then 1							-- Equals
@@ -206,20 +212,29 @@ BEGIN
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
-						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId 
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId and c.[Type] = 'Lookup'
+						inner join dbo.FieldType ft on ft.ID = f.FieldTypeID
 						inner join dbo.AssetType t on t.Object = c.LookupObjectType+'Type' and t.ObjectId = c.LookupObjectID
-						inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = f.Value and
-							case 
-								when c.Operator = 1 and a.Uid = c.SingleValue then 1						-- Equals
-								when c.Operator = 2 and a.Uid <> c.SingleValue then 1						-- NotEquals
-								when c.Operator = 16 and a.Uid in (
-									select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
-								) then 1																	-- In
-								when c.Operator = 17 and a.Uid not in (
-									select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
-								) then 1																	-- NotIn
-								else 0
-							end = 1
+				where	exists (
+							select	1
+							from	dbo.Asset a
+									cross apply (
+										select	try_parse(value as int) as ObjectID
+										from	string_split(coalesce(f.Value,'0'), ',')
+									) vals
+							where	a.AssetTypeID = t.ID and a.ObjectID = vals.ObjectID and
+									case 
+										when c.Operator = 1 and a.Uid = try_cast(c.SingleValue as uniqueidentifier) then 1						-- Equals
+										when c.Operator = 2 and a.Uid <> try_cast(c.SingleValue as uniqueidentifier) then 1						-- NotEquals
+										when c.Operator = 16 and a.Uid in (
+											select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+										) then 1																	-- In
+										when c.Operator = 17 and a.Uid not in (
+											select [Value] from openjson(c.[Values]) with ([Value] nvarchar(max)) v
+										) then 1																	-- NotIn
+										else 0
+									end = 1
+						);
 			end
 
 			-- finally, check if all criteria for the group are matched.
