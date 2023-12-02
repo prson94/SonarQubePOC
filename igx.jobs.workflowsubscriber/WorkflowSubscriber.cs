@@ -1,5 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using d360.core.entities.Workflow;
+using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
 using d360.extensions.info;
@@ -90,7 +91,10 @@ namespace igx.jobs.workflowsubscriber
 
 						registrations = company.WorkflowEventRegistrations.Where(i => i.ChangeType == info.Action && i.Object == sObject && i.ObjectID == info.Object.ObjectTypeID && i.Type.State == d360.core.enums.State.Active && i.Type.PublishedVersionID != null).OrderBy(x => x.ID).Include(x => x.Type).ToList();
 
-						if (registrations == null) return;
+						if (registrations == null) 
+						{ 
+							return; 
+						}
 
 						foreach (var registration in registrations)
 						{
@@ -108,12 +112,12 @@ namespace igx.jobs.workflowsubscriber
 
 						if (workflowInstance == null)
 						{
-							throw new Exception("ERROR - CANNOT LOAD SPECIFIED WORKFLOW INSTANCE FROM [WORKFLOW].ITEM TABLE");
+							throw new MissingRecordException("workflow.Item", info.WorkflowItemID.ToString(), "CANNOT LOAD SPECIFIED WORKFLOW INSTANCE");
 						}
 
 						if (workflowInstance.NumberOfEvents > MAX_NUMBER_OF_WORKFLOW_EVENTS)
 						{
-							throw new Exception("ERROR - MAX NUMBER OF EVENT BUS EVENTS PER WORKFLOW EXCEEDED!!!");
+							throw new InfrastructureException("MAX NUMBER OF EVENT BUS EVENTS PER WORKFLOW EXCEEDED.", "Workflow Service Bus");
 						}
 
 						//increment workflow events and update

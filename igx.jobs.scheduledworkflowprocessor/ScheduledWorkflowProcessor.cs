@@ -74,7 +74,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 								}
 							}
 
-							var res = company.ExecuteTimerSteps();
+							company.ExecuteTimerSteps();
 						}
 						catch (Exception ex)
 						{

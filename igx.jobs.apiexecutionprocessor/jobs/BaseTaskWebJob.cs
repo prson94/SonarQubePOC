@@ -6,7 +6,7 @@ namespace igx.jobs.apiexecutionprocessor
 {
 	public abstract class BaseTaskWebJob: BaseWebJob
 	{
-		public BaseTaskWebJob(IConfiguration config) : base(config) { }
+		protected BaseTaskWebJob(IConfiguration config) : base(config) { }
 
 		internal bool HasWork(SqlConnection conn)
 		{
@@ -25,10 +25,6 @@ namespace igx.jobs.apiexecutionprocessor
 			catch (SqlException)
 			{
 				return false;
-			}
-			catch
-			{
-				throw;
 			}
 		}
 	}

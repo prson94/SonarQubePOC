@@ -1,6 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using d360.core;
 using d360.core.entities;
+using d360.core.exceptions;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
@@ -115,17 +116,11 @@ namespace igx.jobs.apiexecutionprocessor
 								}
 								catch (Exception ex)
 								{
-									try
-									{
-										if (trans != null)
-										{
-											trans.Rollback();
-										}
-									}
-									catch
-									{
-									}
 									log.LogError(ex, "Error checking out queue items from table.");
+									if (trans != null)
+									{
+										trans.Rollback();
+									}
 								}
 							}
 
@@ -187,7 +182,7 @@ namespace igx.jobs.apiexecutionprocessor
 
 													if (!parseSuccessful)
 													{
-														throw new ApplicationException("XML field does not have any valid information contained within.");
+														throw new MissingPropertiesException("EventTopicNotification XML Field");
 													}
 													break;
 												case "Notify":
@@ -314,8 +309,14 @@ namespace igx.jobs.apiexecutionprocessor
 																}
 																Queue.CreateMessage(Configuration["SearchIndexQueue"], model);
 																break;
+															default:
+																//Nothing to do.
+																break;
 														}
 													}
+													break;
+												default:
+													// Nothing to do, as this is an unknown action.
 													break;
 											}
 
@@ -371,7 +372,6 @@ namespace igx.jobs.apiexecutionprocessor
 										indexer.IndexUpdateAssetPaths(indexCollectionModel.UpsertPathByAssetId);
 									}
 
-									indexer = null;
 									companyConnection.CloseIfOpened();
 								}
 							}

@@ -69,8 +69,10 @@ namespace igx.jobs.indexer
             if (reindex.AssetUid.HasValue)
             {
                 Guid assetUid = reindex.AssetUid ?? Guid.Empty;
-                if (assetUid != Guid.Empty)
-                    indexer.IndexAsset(assetUid);
+				if (assetUid != Guid.Empty) 
+				{
+					indexer.IndexAsset(assetUid);
+				}
             }
             else if (reindex.AssetTypeUid.HasValue)
             {
@@ -96,8 +98,6 @@ namespace igx.jobs.indexer
                 }
                 if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
                 {
-                    string categoryLabel = reindex.Category == AssetTypeClass.Predicate.ToString() ? "Synonym" : reindex.Category;
-
                     AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
                     if (info != null)
                     {
@@ -217,8 +217,10 @@ namespace igx.jobs.indexer
 
             CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
-            if(currentStatue != status)
-                await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+			if (currentStatue != status) 
+			{
+				await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+			}
         }
 
         private Tuple<byte, byte> GetNGramLimits(SqlConnection context)
