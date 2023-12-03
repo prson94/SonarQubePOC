@@ -1690,7 +1690,7 @@ namespace d360.model.DataAccessLayer
 			return model;
 		}
 
-		public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null)
+		public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null, bool ConvertToUniversalTime = true)
 		{
 			SqlConnection cnn = CompanyContext.Database.Connection as SqlConnection;
 
@@ -1698,7 +1698,7 @@ namespace d360.model.DataAccessLayer
 			{
 				effectiveDate = DateTime.UtcNow.Date;
 			}
-			else
+			else if (ConvertToUniversalTime)
 			{
 				effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
 			}

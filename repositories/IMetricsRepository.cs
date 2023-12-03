@@ -28,7 +28,7 @@ namespace repositories
         
         List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         
-        List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null);
+        List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate, DateTime? startDate = null, bool ConvertToUniversalTime = true);
         
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
         
