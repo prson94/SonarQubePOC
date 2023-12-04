@@ -14,6 +14,8 @@ export class AssignmentInformationComponent {
 	@Input() isCurrentUserAssigned: boolean = false;
 	@Input() showLinks: boolean = false;
 	@Input({ required: true }) set workflowItemUid(value: string) {
+		this.assignmentItem = null;
+		this.workflowStepDetail = null;
 		if (value) {
 			this._workflowItemUid = value;
 			this.loadAssignmentItem(value);
@@ -49,7 +51,6 @@ export class AssignmentInformationComponent {
 
 	loadAssignmentItem(workflowItemUid: string): void {
 		this.isAssignmentItemLoading = true;
-		this.assignmentItem = null;
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
 			this.isAssignmentItemLoading = false;
 			this.assignmentItem = response;
@@ -59,7 +60,6 @@ export class AssignmentInformationComponent {
 
 	private loadAssignmentSteps(workflowItemUid: string) {
 		let assignmentItemSteps: AssignmentItemStep[];
-		this.workflowStepDetail = null;
 		this.isWorkflowStepDetailLoading = true;
 		this.workflowService.getAssignmentItemSteps(workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {

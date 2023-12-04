@@ -58,7 +58,7 @@
 				 [rows]="rowsPerPage || defaultInitialItemsPerPage"
 				 [rowsPerPageOptions]="defaultPagingOptions"
 				 (onLazyLoad)="loadWorkflowAssignmentItems($event)"
-				 [selection]="assignments"
+				 [selection]="selectedAssignments"
 				 (selectionChange)="gridSelectionChange($event)"
 				 (onPage)="setRowsPerPage($event)">
 			<ng-template pTemplate="header">
@@ -112,16 +112,25 @@
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
-				<tr [pSelectableRow]="item" class="assignments-table-data">
+				<tr [pSelectableRow]="item" class="assignments-table-data"
+					(contextmenu)="clickMenuIcon(item);positionContextMenu($event, contextMenuButton, contextMenu)">
 					<ng-container *ngIf="actionFormFields.length === 0">
-						<td *ngIf="!assignmentDetailsAvailable">{{item.workflowName}}</td>
-						<td *ngIf="assignmentDetailsAvailable">
+						<td *ngIf="!canActivateAssignmentDetails">{{item.workflowName}}</td>
+						<td *ngIf="canActivateAssignmentDetails">
 							<a context-link
-							   (click)="openAssignmentDetails(item, false, $event)">{{item.workflowName}}</a>
+							   (click)="openAssignmentDetails(item, $event)">{{item.workflowName}}</a>
 						</td>
 					</ng-container>
-					<td *ngIf="!assetUid">{{item.assetDisplayValue ?? '---'}}</td>
-					<td>{{item.objectType ?? '---'}}</td>
+					<td *ngIf="!assetUid && (!canActivateAssignmentDetails || actionFormFields.length === 0)">{{item.assetDisplayValue ?? '---'}}</td>
+					<td *ngIf="!assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
+						<a context-link
+						   (click)="openAssignmentDetails(item, $event)">{{item.assetDisplayValue ?? '---'}}</a>
+					</td>
+					<td *ngIf="!assetUid || !canActivateAssignmentDetails || actionFormFields.length === 0">{{item.objectType ?? '---'}}</td>
+					<td *ngIf="assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
+						<a context-link
+						   (click)="openAssignmentDetails(item, $event)">{{item.objectType ?? '---'}}</a>
+					</td>
 					<ng-container *ngFor="let field of actionFormFields">
 						<td>
 							<ng-container [ngSwitch]="Object.keys(field.Type)?.[0]">
@@ -191,6 +200,11 @@
 						<ig-popup-menu (onSelect)="clickMenuItem($event)"
 									   [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
 					</td>
+					<button class="ig-float-popup-container" #contextMenuButton>
+						<ig-popup-menu (onSelect)="clickMenuItem($event)"
+									   [items]="item.contextMenuItems" #contextMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="emptymessage">
@@ -204,7 +218,7 @@
 	</div>
 </div>
 <d3s-delete-form [callback]="deleteAssignments"
-				 [items]="assignments"
+				 [items]="selectedAssignments"
 				 [showAsModal]="true"
 				 i18n-modalTitle
 				 modalTitle="Delete Assignments"
@@ -220,8 +234,8 @@
 			</div>
 			<div class="col no-padding">
 				Are you sure you want to delete
-				<span *ngIf="assignments.length === 1"> this assignment?</span>
-				<span *ngIf="assignments.length > 1"> these assignments?</span>
+				<span *ngIf="selectedAssignments.length === 1"> this assignment?</span>
+				<span *ngIf="selectedAssignments.length > 1"> these assignments?</span>
 				<br/>
 				Deleted assignments <b>cannot be retrieved</b>.
 			</div>
