@@ -33,7 +33,7 @@ namespace igx.functions.consumption
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-        public async Task Run([QueueTrigger("%DisplayValueQueue%"), StorageAccount("AzureWebJobsQueueStorageAccount")] string myQueueItem, ILogger log)
+        public async Task Run([QueueTrigger("%DisplayValueQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
         {
             var updateInfo = JsonConvert.DeserializeObject<DisplayUpdateInfo>(myQueueItem);
 

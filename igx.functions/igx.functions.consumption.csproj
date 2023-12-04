@@ -4,6 +4,12 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="models\**" />
+    <EmbeddedResource Remove="models\**" />
+    <None Remove="models\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="BaseFunction.cs" />
     <Compile Remove="DatabaseTaskProcessor.cs" />
     <Compile Remove="DisplayValueChecker.cs" />
     <Compile Remove="DisplayValueUpdateProcessor.cs" />

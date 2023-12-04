@@ -5,6 +5,7 @@ using d360.extensions.mail;
 using LaunchDarkly.Sdk.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor
@@ -18,7 +19,9 @@ namespace igx.jobs.scoreprocessor
 				.SetGovernConfiguration()
 				.ConfigureWebJobs(c => {
 					c.AddTimers()
-					 .AddAzureStorageQueues();
+					 .AddAzureStorageQueues(q => {
+						 q.MaxPollingInterval = TimeSpan.FromSeconds(5);
+					 });
 				})
 				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) => {
