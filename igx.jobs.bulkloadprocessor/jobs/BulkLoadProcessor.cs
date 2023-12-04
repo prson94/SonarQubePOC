@@ -48,7 +48,7 @@ namespace igx.jobs.bulkloadprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
+		public async Task Run([QueueTrigger("%BulkLoadQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
 		{
 			var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
 			Load load = null;

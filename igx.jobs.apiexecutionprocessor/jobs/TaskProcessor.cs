@@ -41,7 +41,7 @@ namespace igx.jobs.apiexecutionprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "DatabaseTask", Connection = "EventServiceBus")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
 		{
 			try
 			{

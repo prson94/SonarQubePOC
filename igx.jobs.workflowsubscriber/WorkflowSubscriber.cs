@@ -37,7 +37,7 @@ namespace igx.jobs.workflowsubscriber
 			Queue = queue;
 		}
 
-		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", Connection = "EventServiceBus")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
 		{
 			string messageString;
 			EventInfo info;

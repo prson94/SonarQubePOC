@@ -35,8 +35,8 @@ namespace igx.jobs.scoreprocessor
 			Queue = queue;
 		}
 
-		public async Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
-        {
+		public async Task Run([QueueTrigger("%ScoringQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+		{
 			var info = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 			var logProperties = new Dictionary<string, object> {
 				{ "Function", FUNCTION_NAME },
@@ -86,37 +86,44 @@ namespace igx.jobs.scoreprocessor
 							}
 							break;
 						case ScoreQueueChangeType.MeasureChanged:
-							var measureChangedPayload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
-							sql = getMeasureChangedSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
-							{
-								await companyConnection.OpenIfClosed();
-								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
-									versionUid = measureChangedPayload.MetricAssetVersionUid 
-								}, commandTimeout: 18000);
-								updatedAssets = response.ToList();
+							if (info.Payload != null)
+							{ 
+								var measureChangedPayload = JsonConvert.DeserializeObject<MeasureChangedModel>(info.Payload.ToString());
+								sql = getMeasureChangedSql();
+								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
+										versionUid = measureChangedPayload.MetricAssetVersionUid 
+									}, commandTimeout: 18000);
+									updatedAssets = response.ToList();
 								
-								//Get the score type for this deleted measure, which will be sent to workflow.
-								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureChangedPayload.MetricAssetVersionUid });
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+									//Get the score type for this deleted measure, which will be sent to workflow.
+									var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureChangedPayload.MetricAssetVersionUid });
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+								}							
 							}
 							break;
 						case ScoreQueueChangeType.MeasureRemoved:
-							var measureRemovedPayload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
-							sql = getMeasureChangedSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
+							if (info.Payload != null)
 							{
-								await companyConnection.OpenIfClosed();
-								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
-									versionUid = measureRemovedPayload.MetricAssetVersionUid 
-								}, commandTimeout: 18000);
-								updatedAssets = response.ToList();
+								var measureRemovedPayload = JsonConvert.DeserializeObject<MeasureRemovedModel>(info.Payload.ToString());
+								sql = getMeasureChangedSql();
+								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new
+									{
+										versionUid = measureRemovedPayload.MetricAssetVersionUid
+									}, commandTimeout: 18000);
+									updatedAssets = response.ToList();
 
-								//Get the score type for this deleted measure, which will be sent to workflow.
-								var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureRemovedPayload.MetricAssetVersionUid });
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+									//Get the score type for this deleted measure, which will be sent to workflow.
+									var scoreType = await companyConnection.QuerySingleAsync<ScoreType>(SCORE_TYPE_SQL, new { measureRemovedPayload.MetricAssetVersionUid });
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", scoreType, updatedAssets, log);
+								}
 							}
 							break;
 						case ScoreQueueChangeType.RollupPathChanged:
@@ -129,17 +136,21 @@ namespace igx.jobs.scoreprocessor
 							}
 							break;
 						case ScoreQueueChangeType.RuleAssetRemoved:
-							var ruleRemovedPayload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
-							sql = getRuleRemovedSql();
-							companyConnectionString = GetCompanyConnectionString(info.CompanyID);
-							using (var companyConnection = new SqlConnection(companyConnectionString))
+							if (info.Payload != null)
 							{
-								await companyConnection.OpenIfClosed();
-								var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new { 
-									assetUid = ruleRemovedPayload.AssetUid 
-								}, commandTimeout: 18000);
-								updatedAssets = response.ToList();
-								processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log);
+								var ruleRemovedPayload = JsonConvert.DeserializeObject<RuleAssetRemovedModel>(info.Payload.ToString());
+								sql = getRuleRemovedSql();
+								companyConnectionString = GetCompanyConnectionString(info.CompanyID);
+								using (var companyConnection = new SqlConnection(companyConnectionString))
+								{
+									await companyConnection.OpenIfClosed();
+									var response = await companyConnection.QueryAsync<WorkflowScoredAsset>(sql, new
+									{
+										assetUid = ruleRemovedPayload.AssetUid
+									}, commandTimeout: 18000);
+									updatedAssets = response.ToList();
+									processWorkflowCalls(info.CompanyID, info.ResourceID ?? 0, "", ScoreType.DataQuality, updatedAssets, log);
+								}
 							}
 							break;
 						default:

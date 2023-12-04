@@ -38,7 +38,7 @@ namespace igx.jobs.indexer
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
+		public async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 

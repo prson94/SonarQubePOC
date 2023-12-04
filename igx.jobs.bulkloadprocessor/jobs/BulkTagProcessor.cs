@@ -34,7 +34,7 @@ namespace igx.jobs.bulkloadprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent", Connection = "EventServiceBus")] ServiceBusReceivedMessage brokeredMessage, ILogger log)
 		{
 			string messageString;
 			BatchApiEvent info;

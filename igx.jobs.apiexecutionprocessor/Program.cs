@@ -7,6 +7,7 @@ using d360.extensions.storage;
 using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
@@ -20,7 +21,9 @@ namespace igx.jobs.apiexecutionprocessor
 				.SetGovernConfiguration()
 				.ConfigureWebJobs(c => {
 					c.AddTimers()
-					 .AddAzureStorageQueues()
+					 .AddAzureStorageQueues(q => {
+						 q.MaxPollingInterval = TimeSpan.FromSeconds(5);
+					 })
 					 .AddServiceBus();
 				})
 				.ConfigureGovernLogging()
@@ -34,7 +37,7 @@ namespace igx.jobs.apiexecutionprocessor
 						};
 					});
 					services.AddScoped<IStorageProvider, AzureStorageProvider>(s => {
-						return new AzureStorageProvider { StorageConnectionString = context.Configuration["MainStorageAccount"] };
+						return new AzureStorageProvider { StorageConnectionString = context.Configuration["AzureStorageConnectionString"] };
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, MandrillMailProvider>(s => {

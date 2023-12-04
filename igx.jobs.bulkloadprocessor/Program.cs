@@ -37,7 +37,7 @@ namespace igx.jobs.bulkloadprocessor
 						};
 					});
 					services.AddScoped<IStorageProvider, AzureStorageProvider>(s => {
-						return new AzureStorageProvider { StorageConnectionString = context.Configuration["MainStorageAccount"] };
+						return new AzureStorageProvider { StorageConnectionString = context.Configuration["AzureStorageConnectionString"] };
 					});
 					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
 						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);

@@ -46,7 +46,7 @@ namespace igx.jobs.apiexecutionprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, ILogger log)
+		public async Task Run([QueueTrigger("%ApiExecutionQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
         {
             var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 

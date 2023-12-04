@@ -37,7 +37,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		[FunctionName(FUNCTION_NAME), ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
-		public async Task Run([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string message, ILogger log)
+		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "QueuesConnectionString")] string message, ILogger log)
         {
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
