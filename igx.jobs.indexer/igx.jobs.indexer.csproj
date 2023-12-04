@@ -64,10 +64,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="jobs\IndexMaintainance.cs" />
     <Compile Include="models\FieldSqlModel.cs" />
     <Compile Include="models\IPagedQuerySqlModel.cs" />
     <Compile Include="models\ResponsibilitySqlModel.cs" />
     <Compile Include="models\TagSqlModel.cs" />
+    <Compile Include="jobs\Indexer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
