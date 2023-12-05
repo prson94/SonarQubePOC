@@ -409,7 +409,7 @@ namespace igx.jobs.bulkloadprocessor
 							case "M":
 								if (load.ObjectID == 0)
 								{
-									BulkLoadMembership(companyConnection, loadInfo.CompanyID, load.ID);
+									BulkLoadMembership(companyConnection, load.ID);
 								}
 								else
 								{
@@ -455,7 +455,7 @@ namespace igx.jobs.bulkloadprocessor
 			}
 		}
 
-		private void BulkLoadMembership(SqlConnection company, int companyID, int loadId)
+		private void BulkLoadMembership(SqlConnection company, int loadId)
 		{
 			var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
 			if (load == null)
