@@ -1294,8 +1294,8 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.UpsertUsers);
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			return results;
 		}

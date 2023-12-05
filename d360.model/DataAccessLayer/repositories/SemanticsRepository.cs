@@ -320,7 +320,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			//Queue semantic for deletion in search index
-			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+			QueueSource.CreateMessage(CompanyContext.SearchIndexQueue, new ReindexModel
 			{
 				CompanyID = CompanyContext.CurrentCompanyID,
 				BatchUids = new List<Guid> { deletes.FirstOrDefault().Uid },
@@ -817,7 +817,7 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
 			var uids = CompanyContext.Query<Guid>(sql, new { transactionId });
 
-			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+			QueueSource.CreateMessage(CompanyContext.SearchIndexQueue, new ReindexModel
 			{
 				CompanyID = CompanyContext.CurrentCompanyID,
 				BatchUids = uids.ToList(),

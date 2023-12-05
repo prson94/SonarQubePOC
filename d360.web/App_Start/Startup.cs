@@ -192,13 +192,30 @@ namespace d360.web
 
 				#region Repositories
 
+				builder.Register(o => {
+					var connectionString = Config.GetValue<string>("CommunityContext");
+					var cache = o.Resolve<ICachingProvider>();
+					var queue = o.Resolve<IQueueSource>();
+					var ctx = o.Resolve<ISecurityContextProvider>();
+					return new CommunityContext(connectionString, cache, queue, ctx);
+					}).As<ICommunityContext>().InstancePerRequest();
+
 				builder.Register(c =>
 				{
 					var community = c.Resolve<ICommunityContext>();
 					var connectionString = community.GetCompanyConnectionString();
 					return new repositories.azure.DapperConnectionProvider { ConnectionString = connectionString };
 				}).InstancePerRequest();
-				
+
+				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest().OnActivating(i => {
+					i.Instance.ApiExecutionQueue = Config.GetValue<string>("ApiExecutionQueue");
+					i.Instance.AssetGraphQueue = Config.GetValue<string>("AssetGraphQueue");
+					i.Instance.BulkLoadQueue = Config.GetValue<string>("BulkLoadQueue");
+					i.Instance.DisplayValueQueue = Config.GetValue<string>("DisplayValueQueue");
+					i.Instance.ScoringQueue = Config.GetValue<string>("ScoringQueue");
+					i.Instance.SearchIndexQueue = Config.GetValue<string>("SearchIndexQueue");
+				});
+
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
 				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>().InstancePerRequest();

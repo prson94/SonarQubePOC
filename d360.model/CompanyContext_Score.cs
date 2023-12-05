@@ -647,7 +647,7 @@ namespace d360.model
 				StartedOn = DateTime.UtcNow,
 				Payload = (payload != null ? JsonConvert.SerializeObject(payload) : "{}")
 			};
-			QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+			QueueSource.CreateMessage(ScoringQueue, info);
 		}
 
 		#endregion
@@ -849,7 +849,7 @@ where	exists(
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
 				};
-				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+				QueueSource.CreateMessage(ScoringQueue, info);
 			});
 		}
 		
@@ -865,7 +865,7 @@ where	exists(
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = scoreType, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
 				};
-				QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+				QueueSource.CreateMessage(ScoringQueue, info);
 			});
 		}
 

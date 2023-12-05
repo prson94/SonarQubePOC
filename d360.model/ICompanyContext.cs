@@ -1,6 +1,17 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Contracts;
+using d360.core.entities.Graph;
+using d360.core.entities.Views;
+using d360.core.entities.Workflow;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.validators;
+using d360.model.helpers.filters;
+using Dapper;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
@@ -9,28 +20,18 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Contracts;
-using d360.core.entities.Graph;
-using d360.core.entities.Membership;
-using d360.core.entities.Metric;
-using d360.core.entities.Views;
-using d360.core.entities.Workflow;
-using d360.core.enums;
-using d360.core.queue;
-using d360.core.validators;
-using d360.model.DataAccessLayer;
-using d360.model.helpers.filters;
-
-using Dapper;
-
-using Newtonsoft.Json.Linq;
-
 namespace d360.model
 {
-    public partial interface ICompanyContext : IBaseContext
+	public partial interface ICompanyContext : IBaseContext
     {
+		string ApiExecutionQueue { get; set; }
+		string AssetGraphQueue { get; set; }
+		string BulkLoadQueue { get; set; }
+		string DisplayValueQueue { get; set; }
+		string EventBusTopicName { get; set; }
+		string ScoringQueue { get; set; }
+		string SearchIndexQueue { get; set; }
+
 		#region DbSets
 
 		DbSet<AuditField> AuditFields { get; set; }

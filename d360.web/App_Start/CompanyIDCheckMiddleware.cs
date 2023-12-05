@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace d360.web
 
 			if (dict == null)
 			{
-				using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.COMMUNITYDB_APPSETTING]))
 				{
 					cnn.Open();
 					dict = (await cnn.QueryAsync<cd>(@"

@@ -45,25 +45,6 @@ namespace d360.utils.company
             return new SqlConnection(GetConnectionString(id, server, username, password));
         }
 
-        public static SqlConnection GetCompanyConnection(int companyID)
-        {
-            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
-            {
-                cnn.Open();
-                var db = cnn.Query<DatabaseServer>(
-                    @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
-                    new { id = companyID }
-                ).SingleOrDefault();
-
-                if (db == null)
-                {
-                    throw new ArgumentNullException(nameof(db), "Invalid company id or database server id.  Cannot load server information.");
-                }
-
-                return new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
-            }
-        }
-
         public static SqlConnection GetCompanyConnection(int companyID, string connectionString)
         {
             using (var cnn = new SqlConnection(connectionString))
@@ -106,11 +87,6 @@ namespace d360.utils.company
             }
 
             return companies;
-        }
-
-        public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
-        {
-            return GetCompaniesWithDatabaseServerSettings(constants.COMMUNITY_DATABASE_CONNECTION);
         }
     }
 }

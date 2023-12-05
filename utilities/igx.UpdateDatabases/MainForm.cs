@@ -116,7 +116,7 @@ namespace igx.UpdateDatabases
                     if (c != null)
                     {
                         var result = new Result { Server = c.Server, DatabaseName = $"D3S_{c.CompanyID}", UrlPrefix = c.UrlPrefix, StartedOn = DateTime.Now, Queries = new List<DatabaseResult>() };
-                        var cnn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID);
+                        var cnn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, ConfigurationManager.AppSettings[constants.COMMUNITYDB_APPSETTING]);
                         try
                         {
                             ix = 1;

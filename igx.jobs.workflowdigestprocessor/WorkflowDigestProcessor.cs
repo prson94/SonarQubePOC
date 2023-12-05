@@ -1,4 +1,5 @@
-﻿using d360.extensions;
+﻿using AngleSharp.Common;
+using d360.extensions;
 using d360.extensions.info;
 using d360.featureflags;
 using d360.model;
@@ -58,7 +59,16 @@ namespace igx.jobs.workflowdigestprocessor
 								IsAdministrator = true
 							};
 							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+							{
+								ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+								AssetGraphQueue = Configuration["AssetGraphQueue"],
+								BulkLoadQueue = Configuration["BulkLoadQueue"],
+								DisplayValueQueue = Configuration["DisplayValueQueue"],
+								EventBusTopicName = Configuration["EventBusTopicName"],
+								ScoringQueue = Configuration["ScoringQueue"],
+								SearchIndexQueue = Configuration["SearchIndexQueue"]
+							};
 							company.FeatureFlags_TEMP_ASSIGNMENTS =  FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser(), false);
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}

@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using AngleSharp.Common;
+using Azure.Messaging.ServiceBus;
 using d360.extensions;
 using d360.extensions.info;
 using d360.featureflags;
@@ -77,7 +78,16 @@ namespace igx.jobs.bulkloadprocessor
 						IsAdministrator = true
 					};
 					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+					{
+						ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+						AssetGraphQueue = Configuration["AssetGraphQueue"],
+						BulkLoadQueue = Configuration["BulkLoadQueue"],
+						DisplayValueQueue = Configuration["DisplayValueQueue"],
+						EventBusTopicName = Configuration["EventBusTopicName"],
+						ScoringQueue = Configuration["ScoringQueue"],
+						SearchIndexQueue = Configuration["SearchIndexQueue"]
+					};
 					var tagRepository = new TagRepository(company, FeatureFlags);
 
 					var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);

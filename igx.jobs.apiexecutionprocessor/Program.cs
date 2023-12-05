@@ -23,6 +23,9 @@ namespace igx.jobs.apiexecutionprocessor
 					c.AddTimers()
 					 .AddAzureStorageQueues(q => {
 						 q.MaxPollingInterval = TimeSpan.FromSeconds(5);
+#if DEBUG
+						 q.BatchSize = 1;
+#endif
 					 })
 					 .AddServiceBus();
 				})

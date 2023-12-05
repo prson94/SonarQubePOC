@@ -1869,8 +1869,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					if (sendWorkflowEvents)
 					{

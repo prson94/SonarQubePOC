@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using AngleSharp.Common;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
@@ -303,7 +304,16 @@ insert into #ids (AssetUid)
 				IsAdministrator = false
 			};
 			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+			{
+				ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+				AssetGraphQueue = Configuration["AssetGraphQueue"],
+				BulkLoadQueue = Configuration["BulkLoadQueue"],
+				DisplayValueQueue = Configuration["DisplayValueQueue"],
+				EventBusTopicName = Configuration["EventBusTopicName"],
+				ScoringQueue = Configuration["ScoringQueue"],
+				SearchIndexQueue = Configuration["SearchIndexQueue"]
+			};
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
 
@@ -315,7 +325,7 @@ insert into #ids (AssetUid)
 
 		async Task handleScoreProcessingError(ScoreQueueInfo scoreInfo)
 		{
-			await Queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));
+			await Queue.CreateMessageAsync(Configuration["ScoringQueue"], scoreInfo, new TimeSpan(0, 0, 30));
 		}
 	}
 }

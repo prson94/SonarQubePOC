@@ -57,7 +57,15 @@ namespace d360.model
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
 		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
-		
+
+		public string ApiExecutionQueue { get; set; }
+		public string AssetGraphQueue { get; set; }
+		public string BulkLoadQueue { get; set; }
+		public string DisplayValueQueue { get; set; }
+		public string EventBusTopicName { get; set; }
+		public string ScoringQueue { get; set; }
+		public string SearchIndexQueue { get; set; }
+
 
 		#region Ctors
 
@@ -92,9 +100,7 @@ namespace d360.model
 				Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 			}
 
-			string eventBusValue = (ConfigurationManager.AppSettings["EventBusTopicEnabled"] ?? "").ToUpper();
-
-			IsEventingEnabled = eventBusValue == "TRUE";
+			IsEventingEnabled = true;
 		}
 
 		#endregion
@@ -530,7 +536,7 @@ from	Field F
 				}
 			}
 
-			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+			Enqueue(DisplayValueQueue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
 		}
 
 		/// <summary>
@@ -2230,12 +2236,12 @@ from	IntersectType I
 
 		public void RebuildDisplayValuesRequest()
 		{
-			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
+			Enqueue(DisplayValueQueue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
 		}
 
 		public void RebuildIndexRequest()
 		{
-			Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
+			Enqueue(SearchIndexQueue, new ReindexModel { CompanyID = CurrentCompanyID });
 		}
 
 		public string RenderTooltip(string action, SystemObjects type, int id)

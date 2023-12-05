@@ -1466,7 +1466,7 @@ namespace d360.web.Controllers.V2
 					Company.Add(load);
 					await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
 					await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(bytes));
-					Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+					Company.Enqueue(Company.BulkLoadQueue, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 					response.message = FormControllerApiMessage.FileUploadedAndQueueProcessing;
 					
 					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);

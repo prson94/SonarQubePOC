@@ -1216,10 +1216,10 @@ order by Sort, title";
 				if (errorMessages.Count == 0)
 				{
 					load.File = null;
-					Company.Add<Load>(load);
+					Company.Add(load);
 					await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
 					await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
-					Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+					Company.Enqueue(Company.BulkLoadQueue, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
 					json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
 				}

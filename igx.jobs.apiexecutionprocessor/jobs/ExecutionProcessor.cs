@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using AngleSharp.Common;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Metric;
@@ -69,7 +70,15 @@ namespace igx.jobs.apiexecutionprocessor
 					IsAdministrator = false
 				};
 				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true) {
+					ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+					AssetGraphQueue = Configuration["AssetGraphQueue"],
+					BulkLoadQueue = Configuration["BulkLoadQueue"],
+					DisplayValueQueue = Configuration["DisplayValueQueue"],
+					EventBusTopicName = Configuration["EventBusTopicName"],
+					ScoringQueue = Configuration["ScoringQueue"],
+					SearchIndexQueue = Configuration["SearchIndexQueue"]
+				};
 
 				var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
 				if (resource != null)
@@ -338,9 +347,9 @@ namespace igx.jobs.apiexecutionprocessor
 									resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
 									markExecutionAsComplete = () =>
 									{
-										Queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-										Queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-										Queue.CreateMessage(Config.GetValue<string>("ScoringQueue"), new ScoreQueueInfo
+										Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+										Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+										Queue.CreateMessage(company.ScoringQueue, new ScoreQueueInfo
 										{
 											ChangeType = ScoreQueueChangeType.PatchCatalogExecution,
 											CompanyID = info.CompanyID,
@@ -400,7 +409,7 @@ namespace igx.jobs.apiexecutionprocessor
 					{
 						log.LogWarning(ex, "Currently on Retry {RetryCount}", dbExecutionItem.RetryCount);
 						TimeSpan delay = new TimeSpan(0, 0, delaySeconds * dbExecutionItem.RetryCount.Value); // Incremental backoff.
-						await Queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);
+						await Queue.CreateMessageAsync(company.ApiExecutionQueue, info, delay);
 					}
 					else
 					{
