@@ -1583,7 +1583,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
 
 			return executionInfo;
 		}
@@ -1605,7 +1605,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
 
 			return executionInfo;
 		}
@@ -1681,7 +1681,7 @@ from	IntersectType I
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteRelationships);
 
 			// Send change log request.
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage
+			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage
 			{ 
 				Action = PostExecutionQueueMessageAction.History, 
 				CompanyID = CompanyContext.CurrentCompanyID, 
@@ -1722,7 +1722,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
 
 			return executionInfo;
 		}
@@ -1732,7 +1732,7 @@ from	IntersectType I
 			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1752,7 +1752,7 @@ from	IntersectType I
 			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1777,7 +1777,7 @@ from	IntersectType I
 				results = CompanyContext.RemovePredicates(execution, predicates);
 				
 				// Send change log request.
-				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 				
 				// Close execution record.
 				execution.Processed = results.Count;

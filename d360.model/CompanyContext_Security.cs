@@ -353,7 +353,7 @@ group by A.Uid";
 							transaction: transaction
 						).SingleOrDefault();
 
-						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+						Enqueue(SearchIndexQueue, new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
 							AssetTypeUid = assetType.uid,
@@ -474,7 +474,7 @@ group by A.Uid";
 							new { rule.Object, rule.ObjectID },
 							transaction: transaction
 						).SingleOrDefault();
-						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+						Enqueue(SearchIndexQueue, new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
 							AssetTypeUid = assetType.uid,
@@ -1072,8 +1072,8 @@ where	EG.Success is null
 					}
 				}
 
-				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 				results.AddRange(
 								Query<GroupResponseResult>(
@@ -2791,8 +2791,8 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 				}
 			}
 

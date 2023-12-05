@@ -58,8 +58,18 @@ namespace igx.functions.consumption
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-						var community = new CommunityContext(Cache, Queue, context);
-						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+						var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
+						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+						{
+							ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+							AssetGraphQueue = Configuration["AssetGraphQueue"],
+							BulkLoadQueue = Configuration["BulkLoadQueue"],
+							DisplayValueQueue = Configuration["DisplayValueQueue"],
+							EventBusTopicName = Configuration["EventBusTopicName"],
+							ScoringQueue = Configuration["ScoringQueue"],
+							SearchIndexQueue = Configuration["SearchIndexQueue"]
+						};
+
 						var rs = await company.UpdateRebuildJobStatus(
 							CompanyRebuildJobToken.DisplayValues, 
 							CompanyRebuildJobStatusState.Active, 

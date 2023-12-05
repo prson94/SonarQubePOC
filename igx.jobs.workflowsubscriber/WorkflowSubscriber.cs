@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using AngleSharp.Common;
+using Azure.Messaging.ServiceBus;
 using d360.core.entities.Workflow;
 using d360.core.exceptions;
 using d360.core.queue;
@@ -74,7 +75,16 @@ namespace igx.jobs.workflowsubscriber
 					IsAdministrator = true
 				};
 				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+				{
+					ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+					AssetGraphQueue = Configuration["AssetGraphQueue"],
+					BulkLoadQueue = Configuration["BulkLoadQueue"],
+					DisplayValueQueue = Configuration["DisplayValueQueue"],
+					EventBusTopicName = Configuration["EventBusTopicName"],
+					ScoringQueue = Configuration["ScoringQueue"],
+					SearchIndexQueue = Configuration["SearchIndexQueue"]
+				};
 
 				try
 				{

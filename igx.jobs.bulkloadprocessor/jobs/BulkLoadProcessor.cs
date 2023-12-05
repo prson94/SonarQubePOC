@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using AngleSharp.Common;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -76,7 +77,16 @@ namespace igx.jobs.bulkloadprocessor
 						IsAdministrator = true
 					};
 					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+					{
+						ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+						AssetGraphQueue = Configuration["AssetGraphQueue"],
+						BulkLoadQueue = Configuration["BulkLoadQueue"],
+						DisplayValueQueue = Configuration["DisplayValueQueue"],
+						EventBusTopicName = Configuration["EventBusTopicName"],
+						ScoringQueue = Configuration["ScoringQueue"],
+						SearchIndexQueue = Configuration["SearchIndexQueue"]
+					};
 					var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
 					var tagRepository = new TagRepository(company, FeatureFlags);
 					var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
@@ -85,7 +95,7 @@ namespace igx.jobs.bulkloadprocessor
 				
 					try
 					{
-						var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);
+						var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID, ConnString);
 
 						#region Create Load Items from Load file
 
@@ -445,7 +455,7 @@ namespace igx.jobs.bulkloadprocessor
 			}
 		}
 
-		private static void BulkLoadMembership(SqlConnection company, int companyID, int loadId)
+		private void BulkLoadMembership(SqlConnection company, int companyID, int loadId)
 		{
 			var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
 			if (load == null)
@@ -636,7 +646,7 @@ from	LoadItem T
 			}
 		}
 
-		private static void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
+		private void BulkLoadUsers(SqlConnection company, int companyID, int loadId)
 		{
 			var load = company.Query<Load>("select * from [Load] where ID = @loadId", new { loadId }).SingleOrDefault();
 			if (load == null)
@@ -710,7 +720,7 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
 
 			#region Process in Community database.
 
-			using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+			using (var community = new SqlConnection(ConnString))
 			{
 				community.Open();
 				using (var trans = community.BeginTransaction())
@@ -1069,7 +1079,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 			#endregion
 		}
 
-		private static async Task BulkLoadOwnership(CompanyContext company, int loadId)
+		private async Task BulkLoadOwnership(CompanyContext company, int loadId)
 		{
 			try
 			{
@@ -1353,12 +1363,12 @@ where LI.LoadID = @loadId"
 			}
 		}
 
-		private static async Task BulkLoadAssets(CompanyContext company, IAssetRepository repository, ITagRepository tagRepository, Load load)
+		private async Task BulkLoadAssets(CompanyContext company, IAssetRepository repository, ITagRepository tagRepository, Load load)
 		{
 			await company.BulkLoadAssets(load, repository, tagRepository);
 		}
 
-		private static async Task BulkRelate(CompanyContext company, IAssetRepository assetRepository, IRelationshipRepository relationshipRepository, Load load, BulkRelationshipOperation operation)
+		private async Task BulkRelate(CompanyContext company, IAssetRepository assetRepository, IRelationshipRepository relationshipRepository, Load load, BulkRelationshipOperation operation)
 		{
 			await company.BulkRelation(load, relationshipRepository, assetRepository, operation);
 		}

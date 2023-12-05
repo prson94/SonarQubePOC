@@ -41,9 +41,6 @@ namespace d360.model
             GetCompanySsoModel();
         }
 
-        public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
-            : this(constants.COMMUNITY_DATABASE_CONNECTION, caching, queueSource, context) { }
-
 		#region DbSets
 		public DbSet<ClaimMapping> ClaimMappings { get; set; }
 

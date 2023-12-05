@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using AngleSharp.Common;
+using d360.core;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
@@ -51,7 +52,7 @@ namespace igx.jobs.indexer
 			{
 				try
 				{
-					using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID))
+					using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID, ConnString))
 					{
 						await ProcessRebuildRequest(Search, company, reindex, log);
 					}
@@ -213,13 +214,23 @@ namespace igx.jobs.indexer
 				IsAdministrator = true
 			};
 			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+			{
+				ApiExecutionQueue = Configuration["ApiExecutionQueue"],
+				AssetGraphQueue = Configuration["AssetGraphQueue"],
+				BulkLoadQueue = Configuration["BulkLoadQueue"],
+				DisplayValueQueue = Configuration["DisplayValueQueue"],
+				EventBusTopicName = Configuration["EventBusTopicName"],
+				ScoringQueue = Configuration["ScoringQueue"],
+				SearchIndexQueue = Configuration["SearchIndexQueue"]
+			};
 
-            CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
-
+			int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);
+			
+            CompanyRebuildJobStatusState currentStatue = await company.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, timeoutHours);
 			if (currentStatue != status) 
 			{
-				await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+				await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, timeoutHours);
 			}
         }
 

@@ -169,19 +169,6 @@ namespace d360.extensions.search
             return $"{INDEX_PREFIX}{companyID}";
         }
 
-        protected virtual IDbConnection GetDBConnection()
-        {
-            if (string.IsNullOrEmpty(CommunityConnectionString))
-            {
-                return new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            }
-            else
-            {
-                return new SqlConnection(CommunityConnectionString);
-            }
-
-        }
-
         protected virtual IElasticClient GetElasticClient(int companyID)
         {
             return new ElasticClient(GetConnectionSettings(companyID));
@@ -189,7 +176,7 @@ namespace d360.extensions.search
 
         private ConnectionSettings GetConnectionSettings(int companyID)
         {
-            using (var community = GetDBConnection())
+            using (var community = new SqlConnection(CommunityConnectionString))
             {
                 var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 

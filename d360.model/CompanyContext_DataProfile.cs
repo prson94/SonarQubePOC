@@ -1684,7 +1684,7 @@ namespace d360.model
 			var profileUidsQuery = await Connection.QueryAsync<Guid>("select AssetUid from api.ExecutionAssetDataProfile where ExecutionID = @ExecutionID and Success = 1", new { execution.ExecutionID });
 			var profileUids = profileUidsQuery.ToList(); 
 			
-			QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+			QueueSource.CreateMessage(SearchIndexQueue, new ReindexModel
 			{
 				CompanyID = CurrentCompanyID,
 				BatchUids = profileUids,

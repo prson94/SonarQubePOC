@@ -4935,7 +4935,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					sw.Restart();
 
@@ -5271,7 +5271,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 				
 		public void SendBatchApiCompletedEvent(ApiExecution execution)
 		{
-			QueueSource.CreateFilteredTopicMessageAsync(Config.GetValue<string>("EventBusTopicName"), new BatchApiEvent()
+			QueueSource.CreateFilteredTopicMessageAsync(EventBusTopicName, new BatchApiEvent()
 			{
 				CompanyID = CurrentCompanyID,
 				CompanyDomainPrefix = CurrentCompanyDomain,
@@ -5666,7 +5666,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						endItemNumber += loopSize;
 					}
 
-					QueueSource.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					Connection.Close();
 				}

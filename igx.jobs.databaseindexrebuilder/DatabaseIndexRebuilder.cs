@@ -1,4 +1,5 @@
-﻿using d360.utils.company;
+﻿using d360.core;
+using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -44,7 +45,7 @@ namespace igx.jobs.databaseindexrebuilder
 						try
 						{
 							var start = DateTime.Now;
-							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
+							using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID, item.Server, item.Username, item.Password))
 							{
 								companyConnection.Open();
 								companyConnection.Execute(

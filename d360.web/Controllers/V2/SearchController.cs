@@ -455,7 +455,7 @@ namespace d360.web.Controllers.V2
 				model.Origin = origin;
 				if (indexer.CanCreatePendingDBLog(assetTypeClass, r.AssetTypeUid))
 				{
-					Queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+					Queue.CreateMessage(Company.SearchIndexQueue, model);
 				}
 			});
 			response.message = "Rebuild queued";

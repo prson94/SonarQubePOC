@@ -21,8 +21,6 @@ namespace d360.model
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
 			builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
             builder.RegisterType<GraphFilterValidator>().InstancePerRequest();
-            builder.RegisterType<CommunityContext>().As<ICommunityContext>().InstancePerRequest();
-            builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
             builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
             builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
