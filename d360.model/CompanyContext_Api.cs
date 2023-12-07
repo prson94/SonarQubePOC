@@ -1082,7 +1082,7 @@ namespace d360.model
 
 			if (!isInsert)
 			{
-				Connection.Execute(@"
+				Connection.Execute($@"
 									update  api.ExecutionRelationshipType 
 									set     Success = 0, Message = 'Uid is missing / incorrect format.' 
 									where   ExecutionID = @ExecutionID and Success is null and (Uid is null or Uid = @emptyUid);
@@ -1161,7 +1161,16 @@ namespace d360.model
 												(T.SubjectCardinality <> 1 and ER.SubjectCardinality = 1) OR
 												(T.ObjectCardinality <> 1 and ER.ObjectCardinality = 1) 
 											)
-											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);",
+											and exists (select 1 from [Intersect] where IntersectTypeId = T.ID);
+
+									update  e 
+									set     Success = 0, 
+											Message = 'Cannot edit relationship type of inter-type Hierarchy.' 
+									from api.ExecutionRelationshipType e
+									inner join [Predicate] p  on p.uid = e.PredicateUid and p.[type] in ({(int)PredicateType.InterTypeHierarchy})
+									where   ExecutionID = @ExecutionID 
+									and Success is null 
+									and PredicateID is null;",
 				new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 			}
 
