@@ -20,7 +20,6 @@ declare var ResourceEmail;
     templateUrl: 'app.component.html',
     providers: [MessageService]
 })
-
 export class AppComponent implements AfterContentInit, OnDestroy {
     public get document(): Document {
         return this._document;
