@@ -11,7 +11,7 @@ namespace igx.jobs
 		{
 			return host.ConfigureAppConfiguration((context, b) =>
 			{
-				b.AddConfiguration(context.Configuration).AddEnvironmentVariables().Build();
+				b.AddConfiguration(context.Configuration).Build();
 			});
 		}
 
