@@ -56,7 +56,7 @@ from	reporting.Global_FieldAudit i_p
 				{
 					await companyConnection.OpenIfClosed();
 				
-					var execution = await companyConnection.QueryFirstAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
+					var execution = await companyConnection.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
 
 					if (execution != null) 
 					{
