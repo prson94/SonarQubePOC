@@ -574,6 +574,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndScoreTypeAsync(ScoreType scoreType, Guid assetUid)
 		{
 			var prefix = "Metrics.GetMetricHierarchyByAssetAndScoreTypeAsync => ";
+			bool convertToUniversalTime = true;
 
 			try
 			{
@@ -603,7 +604,7 @@ namespace d360.web.Controllers.V2
 					{
 						effectiveDate = DateTime.UtcNow;
 					}
-					
+					convertToUniversalTime = false;
 				}
 
 				var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
@@ -623,7 +624,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(MetricsApiMessages.ScoreAllocationCorrespondingAssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
 				}
 
-				var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
+				var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 			}
@@ -654,6 +655,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
 		{
 			var prefix = "Metrics.GetMetricHierarchyByAssetAndAllocationAsync => ";
+			bool convertToUniversalTime = true;
 
 			try
 			{
@@ -687,9 +689,10 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					effectiveDate = DateTime.UtcNow;
+					convertToUniversalTime = false;
 				}
 
-				var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate);
+				var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate, ConvertToUniversalTime : convertToUniversalTime);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
 			}
@@ -1655,6 +1658,7 @@ namespace d360.web.Controllers.V2
 		{
 			try
 			{
+				bool convertToUniversalTime = true;
 				var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
 
 				if (assetDetail == null)
@@ -1681,6 +1685,7 @@ namespace d360.web.Controllers.V2
                                                           from [metrics].[Score]
                                                           where assetuid = @assetUid and AllocationUid = @allocationUid
                                                           order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
+					convertToUniversalTime = false;
 				}
 
 				List<GraphPoints> allPoints = new List<GraphPoints>();
@@ -1692,7 +1697,7 @@ namespace d360.web.Controllers.V2
 
 				if (results.Count > 0 && allocation != null)
 				{
-					dataPoints = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, null, results.Min(x => x.EffectiveDate));
+					dataPoints = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, null, results.Min(x => x.EffectiveDate), ConvertToUniversalTime: convertToUniversalTime);
 				}
 
 				foreach (var measure in dataPoints)
