@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.ConditionsFiltering-v2">
+ <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.ConditionsFiltering
@@ -74,7 +74,9 @@ BEGIN
 				@weight float,
 				@otherMatches nvarchar(500) = '[]';
 
-		select	@maxPosition = max(Position) from @tConditions;
+		select	@maxPosition = max(Position),
+				@currentPosition = coalesce(min(Position),1) 
+		from @tConditions;
 
 		while @currentPosition <= @maxPosition
 		begin
@@ -85,7 +87,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Boolean'
+							and c.[Type] = 'Boolean' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and lower(f.FormattedValue) = lower(c.SingleValue) then 1								-- Equals
@@ -102,7 +104,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Date'
+							and c.[Type] = 'Date' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as date) = try_cast(c.SingleValue as date) then 1		-- Equals
@@ -123,7 +125,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'DateTime'
+							and c.[Type] = 'DateTime' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as datetime) = try_cast(c.SingleValue as datetime) then 1				-- Equals
@@ -144,7 +146,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Decimal'
+							and c.[Type] = 'Decimal' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as decimal) = try_cast(c.SingleValue as decimal) then 1		-- Equals
@@ -165,7 +167,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Number'
+							and c.[Type] = 'Number' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as bigint) = try_cast(c.SingleValue as bigint) then 1				-- Equals
@@ -186,7 +188,7 @@ BEGIN
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Text'
+							and c.[Type] = 'Text' and c.[Position] = @currentPosition
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and f.FormattedValue = c.SingleValue then 1							-- Equals
@@ -212,7 +214,7 @@ BEGIN
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
-						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId and c.[Type] = 'Lookup'
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId and c.[Type] = 'Lookup' and c.[Position] = @currentPosition
 						inner join dbo.FieldType ft on ft.ID = f.FieldTypeID
 						inner join dbo.AssetType t on t.Object = c.LookupObjectType+'Type' and t.ObjectId = c.LookupObjectID
 				where	exists (
