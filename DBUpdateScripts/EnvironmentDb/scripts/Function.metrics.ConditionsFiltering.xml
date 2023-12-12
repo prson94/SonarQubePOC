@@ -219,6 +219,22 @@ BEGIN
 								end = 1
 			end
 
+			if exists (select 1 from @tConditions where Type = 'Html' and Position = @currentPosition)
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
+							and c.[Type] = 'Html' and c.[Position] = @currentPosition
+							and f.AssetID = @assetId 
+							and case 
+									when c.Operator = 10 and f.FormattedValue is not null and f.FormattedValue <> '' then 1	-- Populated
+									when c.Operator = 11 and f.FormattedValue is null then 1								-- NotPopulated		NOTE: WHAT IF FIELD ROW DOES NOT EXIST???
+									else 0
+								end = 1
+			end
+			
+
 			if exists (select 1 from @tConditions where Type = 'Lookup' and Position = @currentPosition)
 			begin
 				update	c
