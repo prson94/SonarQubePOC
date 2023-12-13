@@ -626,9 +626,30 @@ namespace d360.web.Controllers
 								};
 
 			await MembershipRepository.UpsertUsers(execution, users, true, true, false);
+			
+			var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
+			if (companyResource != null)
+			{
+				if (companyResource.State == CompanyResourceState.Active)
+				{
+					companyResource.LastLoggedInOn = DateTime.UtcNow;
+					Community.Update(companyResource);
+				}
+			}
+
+			var globalresource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == resource.ID).FirstOrDefault();
+
+			if (globalresource != null)
+			{
+				if (globalresource.State == CompanyResourceState.Active)
+				{
+					globalresource.LastLoggedInOn = DateTime.UtcNow;
+					Company.Update(globalresource);
+				}
+			}
 		}
 
-		[AllowAnonymous, Route("sso")]
+			[AllowAnonymous, Route("sso")]
         public async Task<ActionResult> Login()
         {
             if (string.Equals(Request?.Browser?.Browser, "internetexplorer", StringComparison.OrdinalIgnoreCase))
