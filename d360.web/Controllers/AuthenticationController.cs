@@ -649,7 +649,7 @@ namespace d360.web.Controllers
 			}
 		}
 
-			[AllowAnonymous, Route("sso")]
+		[AllowAnonymous, Route("sso")]
         public async Task<ActionResult> Login()
         {
             if (string.Equals(Request?.Browser?.Browser, "internetexplorer", StringComparison.OrdinalIgnoreCase))
