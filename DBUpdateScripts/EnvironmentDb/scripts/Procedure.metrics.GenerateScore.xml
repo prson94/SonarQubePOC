@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v3">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v3.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -18,7 +18,9 @@ begin
 	set nocount on;
 
 	-- Get the allocationUid.
-	declare @allocationUid uniqueidentifier;
+	declare @allocationUid uniqueidentifier,
+			@isCurrentDate bit = iif(cast(getutcdate() as date) = @effectiveDate, 1, 0);
+
 	select	@allocationUid = al.Uid
 	from	dbo.Asset a
 			inner join dbo.AssetType t on t.ID = a.AssetTypeID and a.Uid = @assetUid
@@ -257,7 +259,8 @@ begin
 			update	metrics.Score
 			set		[Value] = coalesce(@Score, 0),
 					RunDate = @runDate,
-					VersionValueHash = @Hash
+					VersionValueHash = @Hash,
+					EndDate = iif(@isCurrentDate = 1, null, EndDate)
 			where	Uid = @NewScoreUid;
 		end
 		else

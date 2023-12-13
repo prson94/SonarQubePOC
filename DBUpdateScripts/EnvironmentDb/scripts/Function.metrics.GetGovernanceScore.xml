@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.08">
+ <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.10">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -24,6 +24,7 @@ begin
 	declare @initial table(
 		AssetId bigint, ParentUid uniqueidentifier, AssetUid uniqueidentifier, [Name] nvarchar(250), 
 		EffectiveDate datetime, EffectiveEndDate datetime, 
+		IsGroup bit,
 		[Weight] float, Threshold float, MatchConditionsOnly bit, 
 		[Check] varchar(25),
 		[External] nvarchar(max),
@@ -42,6 +43,7 @@ begin
 				v.Name,
 				v.EffectiveDate,
 				v.EffectiveEndDate,
+				v.IsGroup,
 				v.Weight,
 				v.Threshold,
 				v.MatchConditionsOnly,
@@ -57,6 +59,7 @@ begin
 					select	row_number() over(partition by sv.AssetUid order by sv.EffectiveDate desc) as RowNum,
 							sv.*,
 							svd.*,
+							sa.IsGroup,
 							p.Uid as ParentUid,
 							a.Id as AssetId
 					from	metrics.AssetVersion sv
@@ -92,7 +95,7 @@ begin
 		[External] nvarchar(max), [Field] nvarchar(max), [Owner] nvarchar(max), [Predicate] nvarchar(max), [Relation] nvarchar(max),
 		[Uid] uniqueidentifier, 
 		Conditions nvarchar(max), MatchUid uniqueidentifier, OtherMatches nvarchar(max),
-		
+		IsGroup bit,
 		AssetTypeId int,				-- save on requerying the same tables.
 		FieldTypeId int,				-- save on requerying the same tables.
 		[FieldType] varchar(25),		-- The data type of the field.
@@ -108,7 +111,7 @@ begin
 		Value decimal(8,6)				-- The final measure value.
 	);
 
-	insert into @tbl (AssetId, AssetTypeId, ParentUid, AssetUid, [Name], EffectiveDate, EffectiveEndDate, [Weight], Threshold, MatchConditionsOnly, [Check], [External], [Field], [Owner], [Predicate], [Relation], [Uid], Conditions, MatchUid, OtherMatches)
+	insert into @tbl (AssetId, AssetTypeId, ParentUid, AssetUid, [Name], EffectiveDate, EffectiveEndDate, [Weight], Threshold, MatchConditionsOnly, [Check], [External], [Field], [Owner], [Predicate], [Relation], [Uid], Conditions, MatchUid, OtherMatches, IsGroup)
 		select	m.AssetId, 
 				a.AssetTypeId,
 				m.ParentUid, 
@@ -128,7 +131,8 @@ begin
 				m.[Uid], 
 				m.Conditions, 
 				cm.MatchUid, 
-				cm.OtherMatches
+				cm.OtherMatches,
+				m.IsGroup
 		from	@initial m
 				inner join dbo.Asset a on a.ID = m.AssetId
 				cross apply metrics.ConditionsFiltering(m.AssetId, m.Conditions, m.MatchConditionsOnly) cm
@@ -431,6 +435,9 @@ begin
 						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
 			) o
 	where	m.[Check] = 'Relation'
+
+	-- Remove those measure groups that do not have any representative descendant measures.
+	delete @tbl where IsGroup = 1 and Uid not in (select distinct ParentUid from @tbl where ParentUid is not null);
 
 	insert into @measures (ParentVersionUid, VersionUid, Value, Weight, MatchUid, OtherMatches)
 		select		ParentUid,
