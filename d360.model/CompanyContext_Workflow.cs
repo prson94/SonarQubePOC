@@ -3144,15 +3144,21 @@ namespace d360.model
 					tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
 				}
 
-				if (token == "[WORKFLOW_ID]")
+				if (token == "[WORKFLOW_INSTANCE_UID]")
+				{
+					tokenMap.Add("[WORKFLOW_INSTANCE_UID]", itemStep.Item.UID.ToString());
+				}
+
+				if (token == "[WORKFLOW_ID]" || token == "[WORKFLOW_UID]")
 				{
 					WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
 
 					if (versionStep != null)
 					{
-						WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
+						WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);						
 
 						tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
+						tokenMap.Add("[WORKFLOW_UID]", version?.Type.UID.ToString() ?? "");
 					}
 				}
 
