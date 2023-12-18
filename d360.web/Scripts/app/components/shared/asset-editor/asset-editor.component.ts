@@ -798,6 +798,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 						this.form.value[p] = null;
 					}
 				}
+				else if (field.FieldType === 'Html' && action === 'new' && this.form.value[p] !== null) {
+					this.form.value[p] = this.domPurifyService.sanitize(this.form.value[p]);
+				}
 
 			}
 		}
