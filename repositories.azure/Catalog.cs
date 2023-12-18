@@ -53,7 +53,7 @@ order by	lvl";
 			dbArgs.Add("@assetTypeId", assetTypeId);
 			dbArgs.Add("@pageNum", pageNum);
 			dbArgs.Add("@pageSize", pageSize);
-			dbArgs.Add("@offset", pageSize * pageNum);
+			dbArgs.Add("@offset", pageSize * (pageNum - 1));
 
 			var sql = $@"
 
