@@ -12,6 +12,7 @@ declare var VersionNumber: string;
 declare var ResourceName;
 declare var ResourceEmail;
 
+
 @Component({
     selector: 'd3s-app',
     host: {
