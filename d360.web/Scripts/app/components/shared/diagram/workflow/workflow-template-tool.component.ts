@@ -53,7 +53,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         { value: "[RECIPIENT_RESPONSIBILITY]", label: $localize`Recipient Responsibility` },
         { value: "[WORKFLOW_STEP_ID]", label: $localize`Workflow Step ID` },
         { value: "[WORKFLOW_ID]", label: $localize`Workflow ID` },
-        { value: "[WORKFLOW_INSTANCE_ID]", label: $localize`Workflow Instance ID` },
+		{ value: "[WORKFLOW_INSTANCE_ID]", label: $localize`Workflow Instance ID` },
+		{ value: "[WORKFLOW_UID]", label: $localize`Workflow UID` },
+		{ value: "[WORKFLOW_INSTANCE_UID]", label: $localize`Workflow Instance UID` },
         { value: "[ASSET_UID]", label: $localize`Asset UID` },
     ];
 
