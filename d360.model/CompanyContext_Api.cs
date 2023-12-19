@@ -3927,7 +3927,16 @@ from	#tempexecurelat e
 
                     ValidateRelationshipTypes(true, execution, timeout);
 
-                    Connection.Execute(@"
+					bool runCompleted = false;
+					int retryCount = 0;
+
+					while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+					{
+						using (SqlTransaction trans = Connection.BeginTransaction())
+						{
+							try
+							{
+								Connection.Execute(@"
 										update  api.ExecutionRelationshipType
 										set     [Uid] = Newid()
 										where   ExecutionID = @ExecutionID 
@@ -3949,9 +3958,42 @@ from	#tempexecurelat e
 												Message = 'Added Successfully'
 										where   ExecutionID = @ExecutionID 
 												and Success is null; ",
-                    new { execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow, emptyUid = Guid.Empty }, commandTimeout: timeout);
+									new { execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
 
-                    results = Query<RelationshipTypeResult>(
+								trans.Commit();
+
+								runCompleted = true;
+							}
+							catch (Exception ex)
+							{
+								try
+								{
+									if (trans != null)
+									{
+										trans.Rollback();
+									}
+								}
+								catch
+								{
+
+								}
+
+								retryCount++;
+
+								if (retryCount > API_V2_RETRY_LIMIT)
+								{
+									string msg = ex.GetFullExceptionData(false);
+									LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
+								}
+								else
+								{
+									Thread.Sleep(API_V2_RETRY_INTERVAL * retryCount);
+								}
+							}
+						}
+					}
+
+					results = Query<RelationshipTypeResult>(
                                         $"select ExecutionItemUid,Uid,SourceID,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
                                         new { execution.ExecutionID }
                                         ).ToList();
@@ -4082,30 +4124,72 @@ from	#tempexecurelat e
 
                         ValidateRelationshipTypes(false, execution, timeout);
 
-                        Connection.Execute(@"
-							Update	IT
-							Set		PredicateID = ER.PredicateID,
-									SubjectCardinality = ER.SubjectCardinality, 
-									ObjectCardinality = ER.ObjectCardinality,
-									SubjectClass = coalesce(ER.SubjectClass, IT.SubjectClass),
-									SubjectAssetTypeID = coalesce(ER.SubjectAssetTypeID, IT.SubjectAssetTypeID),
-									ObjectClass = coalesce(ER.ObjectClass, IT.ObjectClass),
-									ObjectAssetTypeID = coalesce(ER.ObjectAssetTypeID, IT.ObjectAssetTypeID),
-									IT.SourceID = coalesce(ER.SourceID, IT.SourceID),
-									UpdatedBy = @resourceId,
-									UpdatedOn = @utcNow
-							from [intersecttype] IT
-							inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
-							where  ER.ExecutionID=@executionID and
-							ER.Success is null
-						   
-							Update	api.ExecutionRelationshipType
-							Set		Success =1,
-									Message ='Updated Successfully'
-							Where	ExecutionID=@executionID and Success is null; ",
-                                new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+						bool runCompleted = false;
+						int retryCount = 0;
 
-                        results = Query<RelationshipTypeResult>(
+						while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+						{
+							using (SqlTransaction trans = Connection.BeginTransaction())
+							{
+								try
+								{
+									Connection.Execute(@"
+									Update	IT
+									Set		PredicateID = ER.PredicateID,
+											SubjectCardinality = ER.SubjectCardinality, 
+											ObjectCardinality = ER.ObjectCardinality,
+											SubjectClass = coalesce(ER.SubjectClass, IT.SubjectClass),
+											SubjectAssetTypeID = coalesce(ER.SubjectAssetTypeID, IT.SubjectAssetTypeID),
+											ObjectClass = coalesce(ER.ObjectClass, IT.ObjectClass),
+											ObjectAssetTypeID = coalesce(ER.ObjectAssetTypeID, IT.ObjectAssetTypeID),
+											IT.SourceID = coalesce(ER.SourceID, IT.SourceID),
+											UpdatedBy = @resourceId,
+											UpdatedOn = @utcNow
+									from [intersecttype] IT
+									inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
+									where  ER.ExecutionID=@executionID and
+									ER.Success is null
+								   
+									Update	api.ExecutionRelationshipType
+									Set		Success =1,
+											Message ='Updated Successfully'
+									Where	ExecutionID=@executionID and Success is null; ",
+											new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout, transaction: trans);
+
+									trans.Commit();
+
+									runCompleted = true;
+								}
+								catch (Exception ex)
+								{
+									try
+									{
+										if (trans != null)
+										{
+											trans.Rollback();
+										}
+									}
+									catch
+									{
+
+									}
+
+									retryCount++;
+
+									if (retryCount > API_V2_RETRY_LIMIT)
+									{
+										string msg = ex.GetFullExceptionData(false);
+										LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
+									}
+									else
+									{
+										Thread.Sleep(API_V2_RETRY_INTERVAL * retryCount);
+									}
+								}
+							}
+						}
+
+						results = Query<RelationshipTypeResult>(
                                             $"select ExecutionItemUid,Uid,SourceID,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
                                             new { execution.ExecutionID }).ToList();
                     }
