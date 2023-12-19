@@ -1016,5 +1016,40 @@ delete from [dbo].[HelpResource] where [Url] = 'Data360-Govern-Release-Notes/Lat
 	]]>
 		</sql>
 	</changeSet>
-  
+<changeSet author="Puneet Gupta" id="Data.Corrections.GOV-30199">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop table if exists #tempdata;
+drop table if exists #temp_positiondata;
+
+select AssetVersionUid,position
+into #tempdata
+from metrics.AssetVersionCondition
+group by AssetVersionUid,position
+having count(1)>1;
+
+select m.AssetVersionUid,m.Uid,
+row_number() over (partition by m.AssetVersionUid order by m.position) as positionauto
+into #temp_positiondata
+from #tempdata t
+inner join metrics.AssetVersionCondition m on m.AssetVersionUid = t.AssetVersionUid;
+
+if exists(select 1 from #temp_positiondata)
+begin
+	update m
+	set m.position = t.positionauto
+	from  metrics.AssetVersionCondition m
+	inner join #temp_positiondata t on m.AssetVersionUid = t.AssetVersionUid 
+	and m.Uid = t.Uid;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+ 
 </databaseChangeLog>

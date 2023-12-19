@@ -156,6 +156,9 @@
   <data name="DescriptionLengthValidation" xml:space="preserve">
     <value>[Description] length({0} characters) is too long . It must be maximum length of 4000 characters or less.</value>
   </data>
+  <data name="DuplicateConditionGroup" xml:space="preserve">
+    <value>Duplicate Condition Group : {0}. Position must be unique.</value>
+  </data>
   <data name="Errorlocatingmetric" xml:space="preserve">
     <value>Error locating metric</value>
   </data>

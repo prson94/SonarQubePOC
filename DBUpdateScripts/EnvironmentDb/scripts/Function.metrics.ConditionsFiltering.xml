@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.2">
+ <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[ConditionsFiltering]
@@ -27,7 +27,7 @@ AS
 BEGIN
     declare @include bit = 0;
 
-	declare @tConditions table (
+	declare @tConditions table (PositionAuto Int IDENTITY(1,1) NOT NULL,
 		Uid uniqueidentifier, MatchType int, Position int, Threshold float, Weight float,
 		ConditionType int, Operator int, [Type] varchar(50), LookupObjectType varchar(250), LookupObjectID int, FieldTypeId int, FieldTypeName nvarchar(250), 
 		StartRangeValue nvarchar(max), EndRangeValue nvarchar(max), SingleValue nvarchar(max), [Values] nvarchar(max),
@@ -59,6 +59,7 @@ BEGIN
 					SingleValue nvarchar(max),
 					[Values] nvarchar(max) as json
 				) i
+				order by g.Position;
 
 	if not exists (select 1 from @tConditions)
 	begin
@@ -74,15 +75,15 @@ BEGIN
 				@weight float,
 				@otherMatches nvarchar(500) = '[]';
 
-		select	@maxPosition = max(Position),
-				@currentPosition = coalesce(min(Position),1) 
+		select	@maxPosition = max(PositionAuto),
+				@currentPosition = coalesce(min(PositionAuto),1) 
 		from @tConditions;
 
 		while @currentPosition <= @maxPosition
 		begin
 
 			-- Populated. These checks must be separate from type-level checks below.
-			if exists (select 1 from @tConditions where Operator = 10 and Position = @currentPosition)
+			if exists (select 1 from @tConditions where Operator = 10 and PositionAuto = @currentPosition)
 			begin
 				update	c
 				set		c.Passed = iif(f.[Count] > 0, 1, 0)
@@ -95,11 +96,11 @@ BEGIN
 									and FormattedValue is not null 
 									and FormattedValue <> ''
 						) f
-				where	c.Operator = 10 and c.[Position] = @currentPosition;
+				where	c.Operator = 10 and c.[PositionAuto] = @currentPosition;
 			end
 
 			-- Not Populated. These checks must be separate from type-level checks below.
-			if exists (select 1 from @tConditions where Operator = 11 and Position = @currentPosition)
+			if exists (select 1 from @tConditions where Operator = 11 and PositionAuto = @currentPosition)
 			begin
 				update	c
 				set		c.Passed = iif(f.[Count] = 0, 1, 0)
@@ -112,16 +113,16 @@ BEGIN
 									and FormattedValue is not null 
 									and FormattedValue <> ''
 						) f
-				where	c.Operator = 11 and c.[Position] = @currentPosition;
+				where	c.Operator = 11 and c.[PositionAuto] = @currentPosition;
 			end
 			
-			if exists (select 1 from @tConditions where Type = 'Boolean' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Boolean' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Boolean' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'Boolean' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and lower(f.FormattedValue) = lower(c.SingleValue) then 1								-- Equals
@@ -132,13 +133,13 @@ BEGIN
 								end = 1
 			end
 
-			if exists (select 1 from @tConditions where Type = 'Date' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Date' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin 
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Date' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'Date' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as date) = try_cast(c.SingleValue as date) then 1		-- Equals
@@ -153,13 +154,13 @@ BEGIN
 								end = 1
 			end
 
-			if exists (select 1 from @tConditions where Type = 'DateTime' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'DateTime' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin 
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'DateTime' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'DateTime' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as datetime) = try_cast(c.SingleValue as datetime) then 1				-- Equals
@@ -174,13 +175,13 @@ BEGIN
 								end = 1
 			end
 
-			if exists (select 1 from @tConditions where Type = 'Decimal' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Decimal' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin 
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Decimal' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'Decimal' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as decimal) = try_cast(c.SingleValue as decimal) then 1		-- Equals
@@ -195,13 +196,13 @@ BEGIN
 								end = 1
 			end
 
-			if exists (select 1 from @tConditions where Type = 'Number' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Number' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin 
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Number' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'Number' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and try_cast(f.FormattedValue as bigint) = try_cast(c.SingleValue as bigint) then 1				-- Equals
@@ -216,13 +217,13 @@ BEGIN
 								end = 1
 			end
 
-			if exists (select 1 from @tConditions where Type = 'Text' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Text' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
 						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId 
-							and c.[Type] = 'Text' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+							and c.[Type] = 'Text' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
 									when c.Operator = 1 and f.FormattedValue = c.SingleValue then 1							-- Equals
@@ -241,12 +242,12 @@ BEGIN
 								end = 1
 			end
 			
-			if exists (select 1 from @tConditions where Type = 'Lookup' and Position = @currentPosition and Operator not in (10, 11))
+			if exists (select 1 from @tConditions where Type = 'Lookup' and PositionAuto = @currentPosition and Operator not in (10, 11))
 			begin
 				update	c
 				set		c.Passed = 1
 				from	@tConditions c
-						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId and c.[Type] = 'Lookup' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
+						inner join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId and c.[Type] = 'Lookup' and c.[PositionAuto] = @currentPosition and c.Operator not in (10, 11)
 						inner join dbo.FieldType ft on ft.ID = f.FieldTypeID
 						inner join dbo.AssetType t on t.Object = c.LookupObjectType+'Type' and t.ObjectId = c.LookupObjectID
 				where	exists (
@@ -272,7 +273,7 @@ BEGIN
 			end
 
 			-- finally, check if all criteria for the group are matched.
-			if not exists(select 1 from @tConditions where Position = @currentPosition and Passed = 0)
+			if not exists(select 1 from @tConditions where PositionAuto = @currentPosition and Passed = 0)
 			begin
 				set @include = 1
 				declare @currentMatchUid uniqueidentifier = null,
@@ -284,7 +285,7 @@ BEGIN
 						@currentThreshold = Threshold,
 						@currentWeight = Weight
 				from	@tConditions 
-				where	Position = @currentPosition
+				where	PositionAuto = @currentPosition
 
 				if @matchUid is null
 				begin

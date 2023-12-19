@@ -178,6 +178,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Duplicate Condition Group : {0}. Position must be unique..
+        /// </summary>
+        public static string DuplicateConditionGroup {
+            get {
+                return ResourceManager.GetString("DuplicateConditionGroup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error locating metric.
         /// </summary>
         public static string Errorlocatingmetric {
