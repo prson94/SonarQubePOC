@@ -3593,7 +3593,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			int pageNum = 0;
+			int pageNum = 1;
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
 			{
 				if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
