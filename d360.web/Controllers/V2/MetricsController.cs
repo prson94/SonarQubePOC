@@ -350,6 +350,13 @@ namespace d360.web.Controllers.V2
 					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.GroupNotHaveCondition);
 				}
 
+				var dupes = model.ConditionGroups.GroupBy(i => i.Position).Where(i => i.Count() > 1).Select(i => new { Position = i.Key, Count = i.Count() }).ToList();
+				if (dupes.Any())
+				{
+					string dupstring = string.Join(", ", dupes.Select(i => i.Position.ToString()));
+					throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsApiMessages.DuplicateConditionGroup, dupstring));
+				}
+
 				foreach (var cond in model.ConditionGroups)
 				{
 					foreach (var item in cond.ConditionItems)
