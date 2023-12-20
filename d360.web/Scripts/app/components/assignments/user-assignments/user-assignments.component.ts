@@ -133,7 +133,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 							});
 					}
 					else if (this.urlWorkflowTypeUid) {
-						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0 });
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0, isAssignee: true }); //parameter isAssignee to be updated after backend implementation
 						this.isLoading = false;
 						this.changeDetectorRef.markForCheck();
 					}
@@ -166,6 +166,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	errorModalTitle: string;
 	errorSubTitle: string;
 	errorModalMessage: string;
+	showSeeAssignmentDetailsLink: boolean = false
 	private handleNoAssignments(res: WorkflowStateForUser) {
 		this.errorSubTitle = res.workflowName;
 		if (!res.exists) {
@@ -177,11 +178,18 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.errorModalTitle = $localize`Assignment Completed`;
 			this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
 			this.modalVisible = true;
+			this.showSeeAssignmentDetailsLink = true
 		}
 		else if (!res.hasAccess) {
 			this.errorModalTitle = $localize`You Cannot View the Assignment`;
 			this.errorModalMessage = $localize`You do not have permissions to view this Assignment. Contact your Administrator to remediate the issue.`;
 			this.modalVisible = true;
+		} 
+		else if (!res.isAssignee) { //parameter to be updated after backend implementation
+			this.errorModalTitle = $localize`Not Assigned to You`;
+			this.errorModalMessage = $localize`You are not an assignee for this form, but you can view the Assignment's details.`;
+			this.modalVisible = true 
+			this.showSeeAssignmentDetailsLink = true 
 		}
 	}
 
@@ -254,5 +262,9 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 
 	onAssignmentMultiPickerClose(): void {
 		this.completeAssignmentComponent?.closeModal();
+	}
+
+	getAssignmentUrl(): string{
+		return '/assignments/'+ this.urlWorkflowTypeUid + '?home=true'
 	}
 }

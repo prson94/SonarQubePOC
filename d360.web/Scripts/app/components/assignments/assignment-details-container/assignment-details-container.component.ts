@@ -36,6 +36,7 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 	protected assignmentItem: AssignmentItem;
 	protected selectedItem: object;
 	protected workflowAssignment: WorkflowAssignmentItem;
+	protected hideFirstBreadcrumb: boolean;
 	protected sidePanelButtons: SidePanelButton[] = [
 		new SidePanelButton({
 			label: $localize`Information`,
@@ -77,6 +78,10 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 			this.isRequestDetailsFlow = true;
 		}
 		this.setHeaderButton();
+		this.route.queryParams
+		.subscribe((params: { home: boolean }) => {
+			this.hideFirstBreadcrumb = params.home ?? false 
+		});
 	}
 
 	ngOnInit(): void {
@@ -158,7 +163,9 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);
 		} else {
 			const pageTitle: string = $localize`Assignment Progress and Information`;
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT));
+			if(!this.hideFirstBreadcrumb){
+				this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT));
+			}
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(pageTitle, null));
 			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), pageTitle);
 			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);
