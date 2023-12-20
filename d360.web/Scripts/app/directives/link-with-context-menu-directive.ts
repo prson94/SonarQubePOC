@@ -216,7 +216,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
 
         if (htmlEl && this.hoverElement) {
             box = htmlEl.getBoundingClientRect();
-            this.hoverElement.style.top = (box.top - this.hoverElement.getBoundingClientRect().height) + "px";
+            this.hoverElement.style.top = (box.top - this.hoverElement.getBoundingClientRect().height - 1) + "px";
 
             if (this.isTagTooltip) {
                 this.hoverElement.style.top = (box.top - 86) + "px";

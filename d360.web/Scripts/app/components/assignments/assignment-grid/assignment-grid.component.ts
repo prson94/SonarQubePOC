@@ -125,7 +125,6 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 			this.isAdmin = res;
 			this.populateMenuItems();
 		});
-		this.loadData();
 	}
 
 	ngOnInit(): void {
