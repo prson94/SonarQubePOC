@@ -12,7 +12,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetTypeApiModel, AssetTypeClass, AssetTypeClassApiModel } from '../../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../../models/asset.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
