@@ -1830,20 +1830,21 @@ namespace d360.web.Controllers.V2
 									group by IntersectTypeUid,IsSubject
 
 									;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
-									from Asset a
-									inner join assettype at on at.id = a.assettypeid and at.class = {(int)AssetTypeClass.Reference}
-									inner join intersecttype it on it.SubjectAssetTypeID = at.ID
-									inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
-									where a.uid = @assetuid
-									group by it.uid
+										from Asset a
+											inner join [Intersect] i on i.subjectAssetID = a.id and i.ObjectAssetID = 0
+											inner join IntersectType it on it.ID = i.IntersectTypeID
+											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = 9
+										where a.uid = @assetuid
+										group by it.uid
 									union 
 									select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
-									from Asset a
-									inner join assettype at on at.id = a.assettypeid and at.class = {(int)AssetTypeClass.Reference}
-									inner join intersecttype it on it.ObjectAssetTypeID = at.ID
-									inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
-									where a.uid = @assetuid
-									group by it.uid)
+										from Asset a
+											inner join [Intersect] i on i.objectAssetID = a.id and i.SubjectAssetID = 0
+											inner join IntersectType it on it.ID = i.IntersectTypeID
+											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = 9
+										where a.uid = @assetuid
+										group by it.uid
+									)
 									insert into #relationshipCountMap
 									select IntersectTypeUid, IsSubject,Count from cte
 

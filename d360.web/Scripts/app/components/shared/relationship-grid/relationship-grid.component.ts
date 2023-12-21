@@ -498,8 +498,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     selectRow(row: any) {
         this.selectedRelationship = row;
-        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-        var isSubject = this.selectedRelationship.Subject.Uid.toLowerCase() === this.assetUid.toLowerCase();
+		this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+		const isSubject = (this.selectedRelationship.Subject.Uid ?? this.selectedRelationship.Subject.AssetTypeUid).toLowerCase() === this.assetUid.toLowerCase();
 
         if (isSubject) {
             this.selectedRelAsset = {
