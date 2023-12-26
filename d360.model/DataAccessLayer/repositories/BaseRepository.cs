@@ -621,7 +621,15 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else if (f.Type == "Score")
 				 {
-					 fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}", f.ID.ToString());
+					 var sqlscore = $@"(select top 1 S.[Value],
+										case when S.Value is null then ' ' 
+										else cast(cast((round(S.[Value] * 100, 1)) as float) as nvarchar) + '%'
+										end as FormattedValue
+										from metrics.Score S
+										inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {f.ScoreType} and Al.OverrideName is null
+										where S.AssetUid = A.Uid and S.EndDate is null)";
+
+					 fieldJoins.Add($"{joinPrefix} apply {sqlscore} {tableAlias}", f.ID.ToString());
 				 }
 				 else if (f.Type == "Counter")
 				 {
