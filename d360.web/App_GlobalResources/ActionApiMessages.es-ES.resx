@@ -193,6 +193,9 @@
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Dirección pasada en la solicitud no válida.</value>
   </data>
+  <data name="InvalidHasAnyAssignments" xml:space="preserve">
+    <value>El valor [_hasAnyAssignments] proporcionado no es válido.</value>
+  </data>
   <data name="InvalidHasAssignments" xml:space="preserve">
     <value>El valor [_hasAssignments] proporcionado no es válido.</value>
   </data>

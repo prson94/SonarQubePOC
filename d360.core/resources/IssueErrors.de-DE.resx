@@ -118,6 +118,18 @@
   <data name="InvalidActionUid" xml:space="preserve">
     <value>Ungültiger [actionTypeUid]-Wert angegeben</value>
   </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Ungültiger [_hasAssetTypeUid]-Wert angegeben.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>Ungültiger [_hasAssetUid]-Wert angegeben.</value>
+  </data>
+  <data name="InvalidHasAnyAssignments" xml:space="preserve">
+    <value>Ungültiger [_hasAnyAssignments]-Wert angegeben.</value>
+  </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>Ungültiger [_hasAssignments]-Wert angegeben</value>
+  </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
     <value>Ungültiger [_limitToActiveWorkflows]-Wert angegeben</value>
   </data>

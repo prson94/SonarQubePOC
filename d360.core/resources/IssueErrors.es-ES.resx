@@ -118,6 +118,18 @@
   <data name="InvalidActionUid" xml:space="preserve">
     <value>Valor [actionTypeUid] proporcionado no válido</value>
   </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Valor [_hasAssetTypeUid] proporcionado no válido</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>Valor [_hasAssetUid] proporcionado no válido</value>
+  </data>
+  <data name="InvalidHasAnyAssignments" xml:space="preserve">
+    <value>Valor [_hasAnyAssignments] proporcionado no válido</value>
+  </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>Valor [_hasAssignments] proporcionado no válido</value>
+  </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
     <value>Valor [_limitToActiveWorkflows] proporcionado no válido</value>
   </data>

@@ -125,7 +125,7 @@
     <value>Der Gruppe, die entfernt werden soll, ist mindestens eine Verantwortung zugewiesen. Entfernen Sie diese Verantwortungen, bevor Sie fortfahren.</value>
   </data>
   <data name="Error_ResponsibilityType_ExistingResponsibilities" xml:space="preserve">
-    <value>Es gibt vorhandene Zuordnungen basierend auf diesem Verantwortungstyp. Entfernen Sie diese Zuordnungen, bevor Sie fortfahren.</value>
+    <value>Es sind Zuweisungen basierend auf diesem Verantwortungstyp vorhanden. Entfernen Sie diese Zuweisungen, bevor Sie fortfahren.</value>
   </data>
   <data name="Error_Name_Required" xml:space="preserve">
     <value>Der Name ist erforderlich.</value>

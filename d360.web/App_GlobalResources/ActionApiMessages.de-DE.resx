@@ -193,6 +193,9 @@
   <data name="InvalidDirectionPassed" xml:space="preserve">
     <value>Ungültige Richtung in der Anforderung übergeben.</value>
   </data>
+  <data name="InvalidHasAnyAssignments" xml:space="preserve">
+    <value>Angegebener [_hasAnyAssignments]-Wert ist nicht gültig.</value>
+  </data>
   <data name="InvalidHasAssignments" xml:space="preserve">
     <value>Angegebener [_hasAssignments]-Wert ist nicht gültig.</value>
   </data>
