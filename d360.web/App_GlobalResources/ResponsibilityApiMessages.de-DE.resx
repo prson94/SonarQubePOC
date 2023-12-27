@@ -154,6 +154,9 @@
   <data name="ResourceUidNotEmpty" xml:space="preserve">
     <value>Liste der Ressourcen-UIDs darf nicht leer sein.</value>
   </data>
+  <data name="ResponsibilityOverrideNotExist" xml:space="preserve">
+    <value>Verantwortungsüberschreibung nicht vorhanden.</value>
+  </data>
   <data name="ResponsibilitySuccessAddMessage" xml:space="preserve">
     <value>Verantwortungen hinzugefügt</value>
   </data>
@@ -161,7 +164,7 @@
     <value>Verantwortung gelöscht</value>
   </data>
   <data name="ResponsibilityTypeHasAssetAssigments" xml:space="preserve">
-    <value>Der Verantwortungstyp hat Asset-Zuordnungen und kann nicht gelöscht werden. Zum Löschen aller Zuordnungen und Regeln [cascade]=true verwenden</value>
+    <value>Der Verantwortungstyp kann nicht gelöscht werden, da Asset-Zuweisungen vorhanden sind. Zum Löschen aller Zuweisungen und Regeln [cascade]=true verwenden</value>
   </data>
   <data name="ResponsibilityTypeUidNotExist" xml:space="preserve">
     <value>Verantwortungstyp mit UID '{0}' nicht vorhanden.</value>

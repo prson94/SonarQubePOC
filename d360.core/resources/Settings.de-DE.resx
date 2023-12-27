@@ -374,10 +374,10 @@
     <value>Aktivitätskachel auf der Startseite einblenden</value>
   </data>
   <data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
-    <value>Mit dieser Einstellung wird die Zuweisungskachel auf der Startseite ein-/ausgeblendet.</value>
+    <value>Mit dieser Einstellung wird die Kachel mit Zuweisungen auf der Startseite ein-/ausgeblendet.</value>
   </data>
   <data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
-    <value>Zuweisungskachel auf der Startseite einblenden</value>
+    <value>Kachel mit Zuweisungen auf der Startseite einblenden</value>
   </data>
   <data name="ShowHomeBoardTile_Desc" xml:space="preserve">
     <value>Mit dieser Einstellung wird die Board-Kachel auf der Startseite ein-/ausgeblendet.</value>

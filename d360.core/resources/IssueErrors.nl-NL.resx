@@ -118,6 +118,18 @@
   <data name="InvalidActionUid" xml:space="preserve">
     <value>Ongeldige [actionTypeUid] waarde opgegeven</value>
   </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Ongeldige[_hasAssetTypeUid] waarde opgegeven.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>Ongeldige[_hasAssetUid] waarde opgegeven.</value>
+  </data>
+  <data name="InvalidHasAnyAssignments" xml:space="preserve">
+    <value>Ongeldige[_hasAnyAssignments] waarde opgegeven.</value>
+  </data>
+  <data name="InvalidHasAssignments" xml:space="preserve">
+    <value>Ongeldige [_hasAssignments] waarde opgegeven</value>
+  </data>
   <data name="InvalidLimitProvided" xml:space="preserve">
     <value>Ongeldige [_limitToActiveWorkflows] waarde opgegeven</value>
   </data>

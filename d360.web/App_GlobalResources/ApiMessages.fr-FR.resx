@@ -236,7 +236,7 @@
     <value>Échec de l’enregistrement</value>
   </data>
   <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
-    <value>Asset, Type Asset, Tag, Type Workflow, RelationshipType ou Type Responsability introuvable pour l’UID</value>
+    <value>Asset, Asset Type, Tag, Workflow Type, RelationshipType ou Responsibility Type introuvable pour l’UID</value>
   </data>
   <data name="ApiEntryNotFound" xml:space="preserve">
     <value>Entité d’API introuvable</value>

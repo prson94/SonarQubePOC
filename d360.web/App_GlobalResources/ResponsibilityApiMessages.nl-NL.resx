@@ -154,6 +154,9 @@
   <data name="ResourceUidNotEmpty" xml:space="preserve">
     <value>Lijst met resource-UID's mag niet leeg zijn.</value>
   </data>
+  <data name="ResponsibilityOverrideNotExist" xml:space="preserve">
+    <value>Verantwoordelijkheid overschrijven bestaat niet.</value>
+  </data>
   <data name="ResponsibilitySuccessAddMessage" xml:space="preserve">
     <value>Verantwoordelijkheid is toegevoegd</value>
   </data>

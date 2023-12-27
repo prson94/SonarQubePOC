@@ -154,6 +154,9 @@
   <data name="ResourceUidNotEmpty" xml:space="preserve">
     <value>La liste des UID des ressources ne peut pas être vide.</value>
   </data>
+  <data name="ResponsibilityOverrideNotExist" xml:space="preserve">
+    <value>Le remplacement de la responsabilité n’existe pas.</value>
+  </data>
   <data name="ResponsibilitySuccessAddMessage" xml:space="preserve">
     <value>Responsabilité correctement ajoutée</value>
   </data>

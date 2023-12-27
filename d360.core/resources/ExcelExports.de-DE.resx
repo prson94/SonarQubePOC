@@ -230,7 +230,7 @@
     <value>Zuweisungsempfänger</value>
   </data>
   <data name="WorkflowAssignments_Assignments" xml:space="preserve">
-    <value>Zugewiesene Aufgaben</value>
+    <value>Zuweisungen</value>
   </data>
   <data name="WorkflowAssignments_AssociatedWith" xml:space="preserve">
     <value>Zugeordnet zu</value>
