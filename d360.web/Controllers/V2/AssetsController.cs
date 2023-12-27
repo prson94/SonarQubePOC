@@ -3613,7 +3613,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			bool includeTotal = false;
+			bool includeTotal = true;
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
 			{
 				if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
