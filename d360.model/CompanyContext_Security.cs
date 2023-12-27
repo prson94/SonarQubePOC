@@ -1933,22 +1933,47 @@ where	EG.Success is null
 				inner join fieldtype ft on pd.fieldtypeid = ft.id
 				where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
+				drop table if exists #lookupdata;
+
+				with rsdata as
+				(select distinct pd.FieldTypeId
+				 from #parsedData pd
+				inner join Fieldtype FT on pd.Fieldtypeid = ft.id and ft.type = 'Lookup'
+				where pd.fieldtypeid is not null)
+				select distinct
+					flv.FieldTypeID,
+					flv.Text,
+					cast(flv.Text as nvarchar(255)) Textprefix,
+					flv.Value
+				into #lookupdata
+				from rsdata pd
+				left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId;
+				
+				create Clustered index cx_lookupdata on #lookupdata(FieldTypeID,Textprefix);
+				create NonClustered index Ix_lookupdata on #lookupdata(FieldTypeID,Value);
+
 		        update #parsedData
                 set 
 	                Value = lookupValue.Value
                 from #parsedData pd 
 	                inner join fieldtype ft on pd.fieldtypeid = ft.id
-	                left join (
-		                select distinct
-			                flv.FieldTypeID,
-			                flv.Text,
-                            flv.Value
-		                from #parsedData pd
-		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
-	                ) lookupValue
+	                left join #lookupdata lookupValue
 		                on lookupValue.FieldTypeID = pd.FieldTypeId 
 		                and try_cast(trim(pd.Value) as int) = lookupValue.Value 
                 where pd.fieldtypeid is not null and ft.type = 'Lookup'
+				and ISNUMERIC(pd.Value) = 1;
+
+		        update #parsedData
+                set 
+	                Value = lookupValue.Value
+                from #parsedData pd 
+	                inner join fieldtype ft on pd.fieldtypeid = ft.id
+	                left join #lookupdata lookupValue
+		                on lookupValue.FieldTypeID = pd.FieldTypeId 
+		                and lookupValue.Textprefix  = substring(pd.Value,1,255)
+		                and lookupValue.Text = pd.Value
+                where pd.fieldtypeid is not null and ft.type = 'Lookup'
+				and ISNUMERIC(pd.Value) = 0;
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Field name.'
