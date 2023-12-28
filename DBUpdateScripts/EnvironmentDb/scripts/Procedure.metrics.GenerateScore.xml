@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v3.1">
+ <changeSet author="Pappas,puneet" id="Procedure.metrics.GenerateScore-v3.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
@@ -32,7 +32,7 @@ begin
 	end
 
 	-- Store the value of measures.
-	declare @measures table (
+	declare @measures table (ID Int IDENTITY(1,1) NOT NULL,
 		ParentVersionUid uniqueidentifier, 
 		VersionUid uniqueidentifier, 
 		MatchUid uniqueidentifier,
@@ -45,7 +45,10 @@ begin
 		RawValue decimal(8,6),
 		AdjustedValue decimal(8,6),
 		ItemUid uniqueidentifier null,
-		DoesExist bit null
+		DoesExist bit null,
+		index cx_measure clustered(ID),
+		index ix_measure_ParentVersionUid (ParentVersionUid),
+		index ix_measure_ItemUid (ItemUid)
 	);
 
 	if @scoreType = 1
@@ -176,25 +179,38 @@ begin
 --	select @CurrentScore as [Current], @Score as [New] -- DEBUG PURPOSES
 	
 	-- Determine which "most-recent" measures are already associated with the asset
-	update	m
-	set		m.ItemUid = ex.ItemUid,
-			m.DoesExist = iif(ex.ItemUid is not null, 1, 0)
-	from	@measures m
-			left join (
+	declare @measuresMostRecent table (
+		ItemUid uniqueidentifier, 
+		AssetVersionUid uniqueidentifier, 
+		DecimalValue [float], 
+		ConditionUid uniqueidentifier,
+		AdjustedWeight decimal(8,6),
+		AdjustedMaxWeight decimal(8,6),
+		[Value] [bit] NULL,
+		index cx_measure clustered(AssetVersionUid)
+		);
+
+	insert into @measuresMostRecent(ItemUid,AssetVersionUid,DecimalValue,
+	ConditionUid,AdjustedWeight,AdjustedMaxWeight,[Value])
 				select		i.Uid as ItemUid,
 							i.AssetVersionUid,
+				i.DecimalValue,
 							i.ConditionUid,
 							i.AdjustedWeight,
 							i.AdjustedMaxWeight,
-							i.DecimalValue,
 							i.[Value]
 				from		metrics.Score s
 							inner join metrics.ScoreItemLink l on l.ScoreUid = s.Uid
 							inner join metrics.ScoreItem i on i.Uid = l.ScoreItemUid
 				where		s.AllocationUid = @allocationUid 
 							and s.AssetUid = @assetUid
-							and s.EffectiveDate <= @effectiveDate
-			) ex on ex.AssetVersionUid = m.VersionUid and ex.DecimalValue = m.AdjustedValue;
+				and s.EffectiveDate <= @effectiveDate;
+
+	update	m
+	set		m.ItemUid = ex.ItemUid,
+			m.DoesExist = iif(ex.ItemUid is not null, 1, 0)
+	from	@measures m
+	left join @measuresMostRecent ex on ex.AssetVersionUid = m.VersionUid and ex.DecimalValue = m.AdjustedValue;
 
 --select @Score, @CurrentScore
 

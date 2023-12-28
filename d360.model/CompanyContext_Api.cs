@@ -4213,57 +4213,70 @@ from	#tempexecurelat e
 
             if (sendWorkflowEvents)
             {
-                string changedFieldsSql = $@"select  
+				string changedFieldsSql = $@"
+					Drop table if exists #tempexecution;
+					create table #tempexecution
+					(Object varchar(50),
+					Objectid int,
+					AssetId bigint,
+					FieldTypeID int,
+					IsNew bit,
+					FieldValue nvarchar(max),
+					[type] varchar(25),
+					IgnoreFieldValueLookupValueIsnull bit)
+
+					insert into #tempexecution
+					(Object, Objectid, AssetID,FieldTypeID, IsNew, FieldValue, [type],IgnoreFieldValueLookupValueIsnull)
+					select  
 							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
 							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
-							EF.FieldTypeID AS Id 
+							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} ,
+							EF.FieldTypeID,
+							EA.IsNew,
+							EF.FieldValue,
+							FT.Type,
+							{(!isInsert ? "case when (EF.Ignore = 0 or EF.Ignore is null) and EF.FieldValue is null and EF.LookupValue is null then 1 else 0 end" : "0")}  IgnoreFieldValueLookupValueIsnull
 					from    {tableName} EA 
 							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
 							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
 											and EF.ItemNumber = EA.ItemNumber 
 											and EF.FieldTypeID is not null
-							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
-											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
-							inner join FieldType FT on F.FieldTypeID=FT.ID
+							inner join FieldType FT on EF.FieldTypeID=FT.ID
 					where   EA.ExecutionID = @executionID 
-							and EA.IsNew <> 1 and FT.Type != 'Lookup'
-							{(!isInsert ? "and F.FormattedValue <> EF.FieldValue" : "")} 
 							and EA.ItemNumber between @beginItemNumber and @endItemNumber
+					";
+                
+				changedFieldsSql += $@"select  
+							EA.Object, 
+							EA.ObjectID, 
+							EA.FieldTypeID AS Id
+					from    #tempexecution EA 
+							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
+											and F.AssetID = EA.AssetID
+					where   EA.IsNew <> 1 and EA.Type != 'Lookup'
+							{(!isInsert ? "and F.FormattedValue <> EA.FieldValue" : "")} 
 
 					union all
 
 					select  
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
-							EF.FieldTypeID AS Id 
-					from    {tableName} EA 
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
-							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
-											and EF.ItemNumber = EA.ItemNumber 
-											and EF.FieldTypeID is not null
-					where   EA.ExecutionID = @executionID 
-							and EA.IsNew <> 1 
-							and EA.ItemNumber between @beginItemNumber and @endItemNumber
-							{(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
-							and not exists (select 1 from Field F where FieldTypeID = EF.FieldTypeID 
-								and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} )
+							EA.Object, 
+							EA.ObjectID, 
+							EA.FieldTypeID AS Id 
+					from    #tempexecution EA 
+					where   EA.IsNew <> 1 
+							{(!isInsert ? "and coalesce(EA.FieldValue, '') <> ''" : "")} 
+							and not exists (select 1 from Field F where FieldTypeID = EA.FieldTypeID 
+								and F.AssetID = EA.AssetID)
 					UNION ALL
 					select  
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.Object" : "EA.Object")}, 
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "A.ObjectID" : "EA.ObjectID")}, 
-							EF.FieldTypeID AS Id 
-					from    {tableName} EA 
-							{(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "inner join Asset a on a.id = EA.ObjectAssetID" : " ")}
-							inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
-											and EF.ItemNumber = EA.ItemNumber 
-											and EF.FieldTypeID is not null
-							inner join Field F on F.FieldTypeId = EF.FieldTypeID 
-											and F.AssetID = {(tableName.Equals("api.ExecutionRelationship", StringComparison.InvariantCultureIgnoreCase) ? "EA.ObjectAssetID" : "EA.AssetID")} 
-							inner join FieldType FT on F.FieldTypeID=FT.ID
-					where   EA.ExecutionID = @executionID 
-							and EA.IsNew <> 1 and FT.Type = 'Lookup'
-							{(!isInsert ? "and F.Value <> EF.FieldValue" : "")}
-							and EA.ItemNumber between @beginItemNumber and @endItemNumber";
+							EA.Object, 
+							EA.ObjectID, 
+							EA.FieldTypeID AS Id 
+					from    #tempexecution EA 
+							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
+											and F.AssetID = EA.AssetID 
+					where   EA.IsNew <> 1 and EA.Type = 'Lookup'
+							{(!isInsert ? "and F.Value <> EA.FieldValue" : "")}";
 
                 if (!isInsert)
                 {
@@ -4273,18 +4286,11 @@ from	#tempexecurelat e
 					select  A.[Object], 
 							A.ObjectID, 
 							F.FieldTypeID as Id
-					from    Field F
-							inner join {tableName} E on E.ExecutionID = @executionID 
-							inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
-							inner join Asset A on A.uid = E.Uid                  
-					where   E.ExecutionID = @executionID
-							and EF.ItemNumber between @beginItemNumber and @endItemNumber
-							and EF.Ignore is null
-							and EF.FieldTypeID is not null
-							and F.AssetID = A.Id
-							and F.FieldTypeID = EF.FieldTypeID
-							and EF.FieldValue is null 
-							and EF.LookupValue is null";
+					from    #tempexecution EA
+							inner join Field F on F.FieldTypeId = EA.FieldTypeID 
+											and F.AssetID = EA.AssetID 
+							inner join Asset A on A.id = EA.AssetID
+					where   EA.IgnoreFieldValueLookupValueIsnull = 1";
                 }
 
                 res = Connection.Query<AssetFieldTypeUpdate>(changedFieldsSql, new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
@@ -4294,9 +4300,11 @@ from	#tempexecurelat e
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET" || (tableName ?? "").ToUpper() ==  "API.EXECUTIONUSER");
 			bool hasIntersectID = ((tableName ?? "").ToUpper() == "API.EXECUTIONRELATIONSHIP");
 
-			string fieldValuesSql = $@"
+			string tempfieldValuesSql = $@"
+								drop table if exists #tempmergefield;
 								select 
-										F.FieldTypeID as [FieldTypeID]                                        
+										cast (Null as bigint) FieldID
+										,F.FieldTypeID as [FieldTypeID]
 										,case 
 											when FT.Type = 'Link' then F.FieldValue
 											else F.LookupValue
@@ -4306,6 +4314,7 @@ from	#tempexecurelat e
 										,@resourceId as [UpdatedBy]
 										{(hasAssetID ? ",A.AssetID" : ",null as AssetID")}                                          
 										{(hasIntersectID ? ",A.IntersectID" : ",null as IntersectID")}  
+								into #tempmergefield
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
@@ -4320,15 +4329,34 @@ from	#tempexecurelat e
 										and FT.Type != 'Lookup'
 										and FieldValue is not null";
 
-            string lookupFieldValuesSql = $@"
+			// Merge Field Filter field
+			var mergefieldSQL = $" T.AssetID = S.AssetID";
+			if (hasIntersectID)
+			{
+				mergefieldSQL = $" T.IntersectID = S.IntersectID";
+			}
+
+			string updfieldValuesSql = $@"
+								update t
+								set FieldId = S.Id
+								from #tempmergefield t
+								inner join Field S on t.FieldTypeID = S.FieldTypeId and {mergefieldSQL};
+
+								create clustered index cix_tempmergefield ON #tempmergefield (FieldID)
+								";
+
+            string templookupFieldValuesSql = $@"
+								drop table if exists #tempmergefield;
 								select 
-										F.FieldTypeID as [FieldTypeID]                                        
+										cast (Null as bigint) FieldID
+										,F.FieldTypeID as [FieldTypeID]
 										,F.LookupValue as [Value]
 										,utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.LookupValue, FT.AllowMultipleValues) as [FormattedValue]
 										,getutcdate() as [UpdatedOn]
 										,@resourceId as [UpdatedBy]
 										{(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}
 										{(hasIntersectID ? ",A.IntersectID as IntersectID" : ",null as IntersectID")}  
+								into #tempmergefield
 								from    {tableName} A
 										inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
 											and F.ItemNumber = A.ItemNumber 
@@ -4344,22 +4372,29 @@ from	#tempexecurelat e
             // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
             if (isInsert)
             {
-                Connection.Execute(
-                    $@"
+				string inssql = $@"
+						{tempfieldValuesSql}
 						INSERT INTO 
-						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])                         
-						{fieldValuesSql}
-					"
-                    , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])
+						select FieldTypeID, [Value],[FormattedValue],[UpdatedOn],[UpdatedBy],AssetID,IntersectID
+						from #tempmergefield t
+
+						drop table if exists #tempmergefield;
+								";
+                Connection.Execute(inssql, new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
 				if (hasLookupFieldTypes)
 				{
-					// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
-					Connection.Execute($@"
+					inssql = $@"
+						{templookupFieldValuesSql}
 						INSERT INTO 
-						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])                         
-						{lookupFieldValuesSql};",
-					new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+						dbo.[Field] ([FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID],[IntersectID])
+						select FieldTypeID, [Value],[FormattedValue],[UpdatedOn],[UpdatedBy],AssetID,IntersectID
+						from #tempmergefield t;
+
+						drop table if exists #tempmergefield;";
+						// Insert lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					Connection.Execute(inssql,new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 				}
 
 			}
@@ -4391,43 +4426,47 @@ from	#tempexecurelat e
 					 and EF.LookupValue is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
-				// Merge Field Filter field
-				var mergefieldSQL = $" T.AssetID = S.AssetID";
-				if (hasIntersectID)
-				{
-					mergefieldSQL = $" T.IntersectID = S.IntersectID";
-				}
 
 				// update non-lookup fields
-				Connection.Execute($@"
+				string mrgsql = $@"
+					{tempfieldValuesSql}
+					{updfieldValuesSql}
 					merge       Field as T
 					using       (
-									{fieldValuesSql} and FT.Type != 'Lookup'
+									select * 
+									from #tempmergefield
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
+					on          ( T.ID = S.FieldID )
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
 					update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()                     
 					when		not matched by target then
 					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
-					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, S.IntersectID);",
-                                new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, S.IntersectID);
+
+					drop table if exists #tempmergefield;";
+				Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                 if (hasLookupFieldTypes)
                 {
-                    // update lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
-                    Connection.Execute($@"
+					// update lookup fields, DO NOT SET THE FORMATTED VALUE to the ID only compare on the id since you dont have the formatted value...
+					mrgsql = $@"
+					{templookupFieldValuesSql}
+					{updfieldValuesSql}
 					merge       Field as T
 					using       (
-									{lookupFieldValuesSql}
+									select * 
+									from #tempmergefield
 								) as S 
-					on          ( T.FieldTypeID = S.FieldTypeID and ({mergefieldSQL}) )
+					on          ( T.ID = S.FieldID)
 					when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS or T.Value is null then
 					update set T.Value = S.Value, T.FormattedValue = S.FormattedValue,
 					T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate()
 					when		not matched by target then
 					insert		(FieldTypeID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID, IntersectID)
-					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);",
-                                    new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+					values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID, s.IntersectID);
+
+					drop table if exists #tempmergefield;";
+					Connection.Execute(mrgsql,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
                 }
             }
 

@@ -404,9 +404,9 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 
 			// Get any field types where we use a lookup that relies on any assets from above.
 			commandText += $@"
-select	f.ID,
+select	distinct f.ID,
 		f.Type, 
-		p.ObjectId,
+		cast(p.ObjectId as int) ObjectId,
 		f.LookupDisplayFormat, 
 		f.LookupObjectType, 
 		f.LookupObjectID, 
@@ -422,17 +422,39 @@ where	l.ExecutionId = @Id;";
 			// Calculate any formatted values we will use to update the fields.
 			commandText += $@"
 select	ID as FieldtypeId,
-		ObjectId,
+		cast(ObjectId as nvarchar(255)) ObjectIdPrefix,
+		cast(ObjectId as nvarchar(4000)) ObjectId,
 		utility.GetFormattedFieldLookupValueWithMultiple(Type, LookupDisplayFormat, LookupObjectType, LookupObjectID, ObjectId, AllowMultipleValues) as FormattedValue
 into	#formattedValues
-from	#relyingFieldTypes;";
+from	#relyingFieldTypes;
+
+create clustered index idx_formattedValues on #formattedValues (FieldtypeId,ObjectIdPrefix);
+
+";
+
+			// Get Required Field from Field table.
+			commandText += $@"
+drop table if exists #tempField;
+
+select	fv.FieldtypeId as FieldtypeId,
+		f.AssetID as AssetID,
+		f.ID as FieldID,
+		fv.FormattedValue,
+		case when coalesce(fv.FormattedValue,'') = coalesce(f.FormattedValue,'') then 1 else 0 end IsMatch
+into	#tempField
+from	#formattedValues fv
+inner join Field F on fv.FieldtypeId = F.FieldtypeId and fv.ObjectIdPrefix = substring(F.[Value], 1, 255) and Fv.ObjectId = F.[Value]
+
+create clustered index idx_tempField on #tempField (FieldID);
+
+";
 
 			// Now update the lookup fields themselves.
 			commandText += $@"
 UPDATE	F
 SET		F.FormattedValue = FT.FormattedValue
 from	Field F
-		inner join #formattedValues FT on FT.FieldTypeID = F.FieldTypeID and F.[Value] = FT.ObjectId;";
+		inner join #tempField FT on FT.FieldID = F.ID and FT.IsMatch = 0;";
 
 			// Get the list of asset/field combinations we updated above to record history for them.
 			commandText += $@"
@@ -443,10 +465,9 @@ select	F.AssetID,
 		A.DisplayValue as ObjectName,
 		T.Name as FieldName,
 		F.FieldTypeID,
-		V.FormattedValue as FieldValue
+		F.FormattedValue as FieldValue
 into	#fields
-from	Field F
-		inner join #formattedValues V on V.FieldTypeID = F.FieldTypeID and F.[Value] = V.ObjectId and ISNUMERIC(F.[Value]) = 1
+from	#tempField F
 		inner join FieldType T on T.ID = F.FieldTypeID
 		inner join AssetDetail A on A.ID = F.AssetID;";
 
@@ -486,6 +507,14 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			outer apply {previousValueCrossApplySql("f.Object", "f.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
 	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+
+			// Add the field history records for the assets whose lookup fields we updated.
+			commandText += $@"
+			drop table if exists #relyingFieldTypes;
+			drop table if exists #formattedValues;
+			drop table if exists #tempField;
+			drop table if exists #fields;
+";
 
 			return commandText;
 		}
