@@ -1933,22 +1933,43 @@ where	EG.Success is null
 				inner join fieldtype ft on pd.fieldtypeid = ft.id
 				where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
-		        update #parsedData
-                set 
-	                Value = lookupValue.Value
-                from #parsedData pd 
-	                inner join fieldtype ft on pd.fieldtypeid = ft.id
-	                left join (
-		                select distinct
-			                flv.FieldTypeID,
-			                flv.Text,
-                            flv.Value
-		                from #parsedData pd
-		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
-	                ) lookupValue
-		                on lookupValue.FieldTypeID = pd.FieldTypeId 
-		                and try_cast(trim(pd.Value) as int) = lookupValue.Value 
-                where pd.fieldtypeid is not null and ft.type = 'Lookup'
+				drop table if exists #lookupdata;
+
+				with rsdata as
+				(select distinct pd.FieldTypeId
+				 from #parsedData pd
+				inner join Fieldtype FT on pd.Fieldtypeid = ft.id and ft.type = 'Lookup'
+				where pd.fieldtypeid is not null)
+				select distinct
+					flv.FieldTypeID,
+					flv.Text,
+					cast(flv.Text as nvarchar(255)) Textprefix,
+					flv.Value
+				into #lookupdata
+				from rsdata pd
+				left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId;
+				
+				create Clustered index cx_lookupdata on #lookupdata(FieldTypeID,Textprefix);
+				create NonClustered index Ix_lookupdata on #lookupdata(FieldTypeID,Value);
+
+				update #parsedData
+				set 
+					Value = coalesce(lookupValue_value.Value,lookupValue_text.Value)
+				from #parsedData pd 
+					inner join fieldtype ft on pd.fieldtypeid = ft.id
+					outer apply (select data1.Value as [Value]
+									from #lookupdata data1
+									where data1.FieldTypeID = pd.FieldTypeId
+									and try_cast(trim(pd.Value) as int) = data1.Value 
+									and ISNUMERIC(pd.Value) = 1 
+									)lookupValue_value
+					outer apply (select data2.Value as [Value]
+									from #lookupdata data2
+									where data2.FieldTypeID = pd.FieldTypeId
+									and data2.Textprefix  = cast(pd.Value as nvarchar(255))
+									and data2.Text = pd.Value
+									)lookupValue_text
+				where pd.fieldtypeid is not null and ft.type = 'Lookup';
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Field name.'
