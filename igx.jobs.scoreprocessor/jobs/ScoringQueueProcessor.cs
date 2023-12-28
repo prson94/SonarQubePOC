@@ -182,8 +182,8 @@ namespace igx.jobs.scoreprocessor
 									  "from metrics.Asset a " +
 									  "inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @MetricAssetVersionUid " +
 									  "inner join metrics.Allocation al on al.Uid = a.AllocationUid ";
-		string COMMON_TEMP_TABLE_SQL = $@"create table #ids (RowId int identity, AssetUid uniqueidentifier, Score decimal(8,6));
-										create clustered index cdx_ids on #ids (RowId);";
+		const string COMMON_TEMP_TABLE_SQL = @"create table #ids (RowId int identity, AssetUid uniqueidentifier, Score decimal(8,6));
+												create clustered index cdx_ids on #ids (RowId);";
 		const string COMMON_LOOP_SQL = @"
 declare @current int = 1,
 		@max int,
