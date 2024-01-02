@@ -1,4 +1,5 @@
-﻿using d360.extensions;
+﻿using d360.core;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.mail;
 using d360.extensions.queue;
@@ -26,7 +27,13 @@ namespace igx.jobs.workflowdigestprocessor
 				{
 					services.AddScoped<IQueueSource, DummyQueueSource>();
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
-					services.AddScoped<IMailProvider, MandrillMailProvider>();
+					services.AddScoped<IMailProvider, MandrillMailProvider>(o => {
+						return new MandrillMailProvider()
+						{
+							ApiKey = context.Configuration[constants.MAIL_API_KEY],
+							SubAccount = context.Configuration[constants.MAIL_SUB_ACCOUNT]
+						};
+					});
 					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
 						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
 					});

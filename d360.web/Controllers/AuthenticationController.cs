@@ -758,6 +758,10 @@ namespace d360.web.Controllers
 					if (Request.Params.AllKeys.Contains("domain_hint"))
 					{
 						var domainHint = Request.Params["domain_hint"];
+						if (extraParameters == null)
+						{
+							extraParameters = new Parameters();
+						}
 						extraParameters.Add("domain_hint", domainHint);
 					}
 					var url = ru.CreateAuthorizeUrl(
