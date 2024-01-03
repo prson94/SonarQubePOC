@@ -92,6 +92,47 @@ order by	lvl";
 			return model;
 		}
 
+		public async Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000)
+		{
+			var dbArgs = new DynamicParameters();
+
+			var sql = $@"
+SELECT     A.[Name]
+			,ISNULL(A.[Description],'') as Description
+			,A.[Class] as ClassID
+			,ISNULL(A.[Notes],'') as Notes
+			,A.SourceID
+			,A.[uid]
+			,A.HierarchyMaximumDepth
+			,A.DisplayFormat
+			,A.UseAsTransformation
+			,0 as 'CanOwnFusion'
+			,A.AutoDisplayParent
+			,A.FlowObjectType
+			,A.CanEditParent
+			,A.IsDescriptionEnabled
+			,A.IsDescriptionVisibleByDefault
+			,A.DescriptionButtonName
+			,cast(iif(A.DefaultPermissions = 1, 1, 0) as bit) as IsDefaultReadAccessEnabled
+			,P.[Path]
+			,AT.IconBackColor as BackColor
+			,AT.Icon as Icon
+			,AT.IconForeColor as ForeColor
+FROM        AssetType A
+			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+			left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
+where       A.[State] = 1
+order by    P.[Path];";
+
+			IEnumerable<AssetTypeApiViewModel> model;
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				model = await connection.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
+			}
+
+			return model;
+		}
 		public Task ReadAssetTypeDefinition()
 		{
 			throw new NotImplementedException();
