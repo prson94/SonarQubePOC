@@ -7,7 +7,6 @@ namespace monolith.Server.Utils
 	{
 		public static WebApplicationBuilder AddGovernConfiguration(this WebApplicationBuilder builder)
 		{
-			//builder.Services.AddSingleton(builder.Configuration.Get<AppSettings>());
 			builder.Services.AddSingleton(builder.Configuration.GetSection("AppSettings").Get<AppSettings>());
 
 			return builder;
@@ -55,7 +54,7 @@ namespace monolith.Server.Utils
 					}
 				});
 
-				o.SwaggerDoc("v1", new OpenApiInfo()
+				o.SwaggerDoc("v1", new OpenApiInfo
 				{
 					Description = "Data360 Govern Services",
 					Version = "v1",

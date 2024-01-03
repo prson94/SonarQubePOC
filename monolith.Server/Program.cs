@@ -58,10 +58,8 @@ builder.Services
 	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddCookie(c =>
 	{
-		//c.ClaimsIssuer = "Govern";
 		c.LoginPath = "/login";
 		c.AccessDeniedPath = "/denied";
-		//c.SessionStore = new 
 		c.SlidingExpiration = true;
 	})
 	.AddJwtBearer(options =>
