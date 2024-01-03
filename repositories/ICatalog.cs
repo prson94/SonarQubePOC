@@ -16,6 +16,8 @@ namespace repositories
 
 		Task<AssetPathResults> ReadAssetPaths(int assetTypeId, bool includeTotal = false, int pageNum = 0, int pageSize = 5000);
 
+		Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000);
+
 		Task ReadAssetTypeDefinition();
 
 		Task ReadProfiles();

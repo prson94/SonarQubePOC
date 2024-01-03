@@ -40,6 +40,11 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<IEnumerable<AssetTypeApiViewModel>> ReadAssetTypes(int pageNum = 0, int pageSize = 5000)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task ReadProfiles()
 		{
 			throw new NotImplementedException();
