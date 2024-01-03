@@ -1,0 +1,20 @@
+<h1 id="tableLabel">Asset Types</h1>
+
+<p *ngIf="!assetTypes"><em>Loading... </em></p>
+
+<table *ngIf="assetTypes">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Class</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let o of assetTypes">
+            <td>{{ o.name }}</td>
+            <td [innerHtml]="o.description"></td>
+            <td>{{ o.class.name }}</td>
+        </tr>
+    </tbody>
+</table>
