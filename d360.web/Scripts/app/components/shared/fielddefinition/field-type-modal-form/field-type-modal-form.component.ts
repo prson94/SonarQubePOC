@@ -572,6 +572,12 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			}
 		});
 
+		this.fieldTypeForm.controls["IsEditable"].valueChanges.subscribe((value) => {
+			if (value === false && this.selectedFieldType === 'Relationship') {
+				this.fieldTypeForm.get('FormDescription').setValue(null);
+			}
+		});
+
 		this.setDefaultFormValues();
 		this.isLoading = false;
 		this.cdRef.markForCheck();
@@ -1253,6 +1259,9 @@ count =0;
 	}
 
 	get hasFormDescription(): boolean {
+		if (this.selectedFieldType === 'Relationship') {
+			return this.fieldTypeForm.get('IsEditable').value;
+		}
 		const allowedTypes = ['Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Relationship', 'Text', 'Boolean'];
 		return allowedTypes.indexOf(this.selectedFieldType) > -1;
 	}
