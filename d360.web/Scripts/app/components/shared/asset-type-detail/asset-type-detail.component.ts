@@ -12,7 +12,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetTypeApiModel } from '../../../models/asset.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../../models/asset.model';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -84,11 +84,15 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     }
 
     open(isNewTab: boolean = false) {
-        var url = "/assettype/" + this.uid;
+		let url = "/assettype/" + this.uid;
 
         if (this.baseUrl) {
             url = this.baseUrl;
-        }
+		}
+
+		if (+this.assetType.Class.ID === +AssetTypeClass.Reference) {
+			url = `/reference/${this.uid}/details`
+		}
 
         if (isNewTab) {
             window.open(url, '_blank');
