@@ -1481,29 +1481,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																						create table #ParentChildRelationships([operation] varchar(10), [uid] uniqueidentifier, ItemNumber int);
 																						create index idx_parentchildrelationships on #ParentChildRelationships([uid]);
 
-																						-- Log the parent removals into Dependent Change table
-																						insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-																							select  EA.ExecutionID, EA.ItemNumber, 1, 2, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
-																							from    api.ExecutionAsset EA 
-																									inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.AssetId = I.ObjectAssetId
-																									inner join Asset P on P.Id = I.SubjectAssetId
-																							where    EA.ExecutionID = @ExecutionID 
-																									and Success is null 
-																									and EA.ItemNumber between @beginItemNumber and @endItemNumber
-																									and EA.IntersectTypeID is not null
-																									and EA.ParentAssetID is not null 
-																									and EA.AssetID is not null 
-																									and EA.ParentAssetID <> I.SubjectAssetID;
-
-																						drop table if exists #tempintersectdata;
-	
-																						select  t.*,
-																								P.AssetTypeID as SubjectAssetTypeID,
-																								C.AssetTypeID as ObjectAssetTypeID
-																						into	#tempintersectdata 
+																						drop table if exists #tempExecutionAsset;
+																						
+																						select t.*,cast(0 as int) intersectID
+																						into #tempExecutionAsset
 																						from    api.ExecutionAsset t
-																								inner join Asset C on C.ID = t.AssetID 
-																								inner join Asset P on P.ID = t.ParentAssetID 
 																						where   ExecutionID = @ExecutionID 
 																								and Success is null 
 																								and ItemNumber between @beginItemNumber and @endItemNumber
@@ -1511,12 +1493,36 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																								and ParentAssetID is not null 
 																								and AssetID is not null;
 
-																						merge       [Intersect] as T
-																						using		(
-																									select  * 
-																									from    #tempintersectdata 
-																									) as S
-																						on          ( T.IntersectTypeID = S.IntersectTypeID and S.AssetID = T.ObjectAssetID )
+																						update t
+																						set t.intersectID =  I.ID
+																						from #tempExecutionAsset t
+																						inner join [Intersect] i on I.IntersectTypeID = t.IntersectTypeID and i.ObjectAssetID = t.AssetID;
+
+																						-- Log the parent removals into Dependent Change table
+																						insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
+																							select  EA.ExecutionID, EA.ItemNumber, 1, 2, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
+																							from    #tempExecutionAsset EA 
+																									inner join [Intersect] I on I.ID = EA.intersectID
+																									inner join Asset P on P.Id = I.SubjectAssetId
+																							where   EA.ParentAssetID <> I.SubjectAssetID;
+
+																						drop table if exists #tempintersectdata;
+	
+																						select  t.*,
+																								P.AssetTypeID as SubjectAssetTypeID,
+																								C.AssetTypeID as ObjectAssetTypeID
+																						into	#tempintersectdata 
+																						from    #tempExecutionAsset t
+																								inner join Asset C on C.ID = t.AssetID 
+																								inner join Asset P on P.ID = t.ParentAssetID;
+
+																						
+																						merge	[Intersect] as T
+																						using	(
+																								select  * 
+																								from    #tempintersectdata 
+																								) as S
+																						on	( T.ID = S.intersectID)
 																						when	matched and (T.SubjectAssetID <> S.ParentAssetID) then
 																							update 
 																							set     T.SubjectAssetTypeID = S.SubjectAssetTypeID,
@@ -1526,6 +1532,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 																							insert  (IntersectTypeID, SubjectAssetTypeID, SubjectAssetID, ObjectAssetTypeID, ObjectAssetID, CreatedBy, UpdatedBy)
 																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, S.ObjectAssetTypeID, S.AssetID, @R, @R)
 																						output $action, inserted.[uid], S.ItemNumber into #ParentChildRelationships;
+
+																						drop table if exists #tempExecutionAsset;
+																						drop table if exists #tempintersectdata;
 
 																						-- Log the parent removals into Dependent Change table
 																						insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
@@ -1757,12 +1766,33 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 	if (intersectTypeID.HasValue && parentIntersectGuids != null && parentIntersectGuids.Count()>0)
 	{
 	string logSqlR = @"
-
 		drop table if exists #PCRelationships;
-		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
+		create table #PCRelationships(ID int,Uid uniqueidentifier,Action nvarchar(100));
 		insert into #PCRelationships 
-		select Uid,operation
-		from @TableData;
+		select distinct i.id,t.Uid,t.operation
+		from @TableData t
+		inner join [intersect] i on t.uid = i.uid;
+
+		drop table if exists #tempintersectdetail;
+		select	o.uid,
+				i.Object, 
+				i.ObjectId,
+				i.ObjectName,
+				i.ID,
+				i.Name,
+				i.SubjectTypeName,
+				i.PredicateInverse,
+				o.Action,
+				i.Subject, 
+				i.SubjectId,
+				i.SubjectName,
+				i.ObjectTypeName,
+				i.PredicateName
+		into #tempintersectdetail
+		from	#PCRelationships o
+			inner join IntersectDetail i on i.id = o.id;
+
+		create clustered index cix_tempintersectdetail on #tempintersectdetail (ID);
 
 		insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 		select	@Id,
@@ -1772,12 +1802,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					i.ID as ActionObjectId,
 					i.Name as ActionObjectName,
 					i.SubjectTypeName + ' (' + i.PredicateInverse + ')' as ActionObjectTypeName,
-					case when o.Action = 'INSERT' then 'A' else 'U' end as [Action]
+					case when i.Action = 'INSERT' then 'A' else 'U' end as [Action]
 			for json path
 			) as Payload,
 			'R'
-	from	#PCRelationships o
-			inner join IntersectDetail i on i.Uid = o.uid;
+	from	#tempintersectdetail i;
 
 	insert into api.ExecutionLog (ExecutionId, [Payload], SubTask)
 		select	@Id,
@@ -1787,12 +1816,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						i.ID as ActionObjectId,
 						i.Name as ActionObjectName,
 						i.ObjectTypeName + ' (' + i.PredicateName + ')' as ActionObjectTypeName,
-						case when o.Action = 'INSERT' then 'A' else 'U' end as [Action]
+						case when i.Action = 'INSERT' then 'A' else 'U' end as [Action]
 				for json path
 				) as Payload,
 				'R'
-		from	#PCRelationships o
-				inner join IntersectDetail i on i.Uid = o.uid;
+		from	#tempintersectdetail i;
 ";
 
 		Connection.Execute(logSqlR, new { execution.Id, TableData = getRelationParentChildTable(parentIntersectGuids).AsTableValuedParameter("dbo.ParentIntersect") }, transaction: trans, commandTimeout: timeout);

@@ -374,12 +374,16 @@ namespace d360.core.entities
 				return @$"
 				drop table if exists {fieldJoinTempTableName}
 
-				select f.*
+				select	f.FieldTypeId,
+						f.AssetId,
+						f.FormattedValue,
+						f.[Value],
+						f.ID
 				into {fieldJoinTempTableName}
 				from #tempasset
 				inner join Field f on f.AssetID = #tempasset.AssetId
 				
-				create nonclustered index idx on {fieldJoinTempTableName} (FieldTypeId, AssetId)";
+				create clustered index idx on {fieldJoinTempTableName} (FieldTypeId, AssetId)";
 			}
 		}
 
