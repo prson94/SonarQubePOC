@@ -1833,7 +1833,7 @@ namespace d360.web.Controllers.V2
 										from Asset a
 											inner join [Intersect] i on i.subjectAssetID = a.id and i.ObjectAssetID = 0
 											inner join IntersectType it on it.ID = i.IntersectTypeID
-											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = 9
+											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
 										where a.uid = @assetuid
 										group by it.uid
 									union 
@@ -1841,7 +1841,7 @@ namespace d360.web.Controllers.V2
 										from Asset a
 											inner join [Intersect] i on i.objectAssetID = a.id and i.SubjectAssetID = 0
 											inner join IntersectType it on it.ID = i.IntersectTypeID
-											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = 9
+											inner join assettype at on at.id = i.SubjectAssetTypeID and at.class = {(int)AssetTypeClass.Reference}
 										where a.uid = @assetuid
 										group by it.uid
 									)
