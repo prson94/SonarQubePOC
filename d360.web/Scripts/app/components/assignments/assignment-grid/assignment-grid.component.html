@@ -117,18 +117,18 @@
 					<ng-container *ngIf="actionFormFields.length === 0">
 						<td *ngIf="!canActivateAssignmentDetails">{{item.workflowName}}</td>
 						<td *ngIf="canActivateAssignmentDetails">
-							<a context-link
+							<a context-link [isOpenDefault]="true"
 							   (click)="openAssignmentDetails(item, $event)">{{item.workflowName}}</a>
 						</td>
 					</ng-container>
 					<td *ngIf="!assetUid && (!canActivateAssignmentDetails || actionFormFields.length === 0)">{{item.assetDisplayValue ?? '---'}}</td>
 					<td *ngIf="!assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
-						<a context-link
+						<a context-link [isOpenDefault]="true"
 						   (click)="openAssignmentDetails(item, $event)">{{item.assetDisplayValue ?? '---'}}</a>
 					</td>
 					<td *ngIf="!assetUid || !canActivateAssignmentDetails || actionFormFields.length === 0">{{item.objectType ?? '---'}}</td>
 					<td *ngIf="assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
-						<a context-link
+						<a context-link [isOpenDefault]="true"
 						   (click)="openAssignmentDetails(item, $event)">{{item.objectType ?? '---'}}</a>
 					</td>
 					<ng-container *ngFor="let field of actionFormFields">
