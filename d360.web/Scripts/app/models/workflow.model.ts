@@ -1054,4 +1054,5 @@ export class WorkflowStateForUser {
 	workflowItemUid: string;
 	workflowName: string;
 	assignmentCount: number;
+	isAssignee: boolean; //parameter to be updated after backend implementation
 }

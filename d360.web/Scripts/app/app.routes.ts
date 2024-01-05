@@ -2,6 +2,7 @@
 import { RouterModule, Routes } from "@angular/router";
 import { FeatureFlagGuard } from "./guards/feature-flag.guard";
 import { RedirectGuard } from "./guards/redirect.guard";
+import { AssignmentDetailsGuard } from './guards/feature-flag.service';
 
 
 const routes: Routes = [
@@ -43,6 +44,7 @@ const routes: Routes = [
 	{ path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },
 	{ path: "tag/:uid/log", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "assignments", loadChildren: () => import("./components/assignments/assignments.module").then((m) => m.AssignmentsModule), canActivate: [FeatureFlagGuard] },
+	{ path: "assignmentDetails", loadChildren: () => import("./components/assignments/assignments.module").then((m) => m.AssignmentsModule), canActivate: [AssignmentDetailsGuard] },
 	{ path: "requests", loadChildren: () => import("./components/assignments/assignments.module").then((m) => m.AssignmentsModule), canActivate: [FeatureFlagGuard] },
 	{ path: "tag", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 	{ path: "dataCatalog", loadChildren: () => import("./components/data-catalog/data-catalog.module").then((m) => m.DataCatalogModule) },

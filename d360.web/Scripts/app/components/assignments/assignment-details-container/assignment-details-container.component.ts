@@ -158,7 +158,9 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);
 		} else {
 			const pageTitle: string = $localize`Assignment Progress and Information`;
-			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT));
+			if (!this.router.url.startsWith('/assignmentDetails/')) {
+				this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Assignments`, SiteUrlHelpers.SITE_URL_ASSIGNMENTS_ROOT));
+			}
 			this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(pageTitle, null));
 			this.setBrowserTitle(this.headerBreadcrumbService.getTitleService(), pageTitle);
 			this.secondaryNavService.setCurrentArea(pageTitle, 'fa-list-ul', pageTitle, [this.getStatusBadge()]);

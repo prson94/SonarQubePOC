@@ -90,7 +90,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 	modalSubtitle: string;
-	canActivateAssignmentDetails: boolean;
+	canActivateAssignmentDetails: boolean = false;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
