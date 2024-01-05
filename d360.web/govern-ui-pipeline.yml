@@ -37,7 +37,7 @@ resources:
   - repository: templates
     type: github
     name: Infogix/govern-pipeline-templates
-    ref: refs/heads/main
+    ref: refs/heads/PIPE-712---Switch-to-windows-2022-image-on-govern-UI-builds
     endpoint: 'govern-build - Service Endpoint'
   - repository: global-templates
     type: github
