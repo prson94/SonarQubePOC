@@ -436,7 +436,7 @@ namespace d360.model
 		/// <returns>An active workflow item step model.</returns>
 		private WorkflowItemStep getWorkflowItemStep(long itemStepID, bool isStepCompleted = false)
 		{
-			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Step).SingleOrDefault(i => i.ID == itemStepID);
+			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).SingleOrDefault(i => i.ID == itemStepID);
 
 			if (itemStep == null)
 			{
@@ -806,23 +806,11 @@ namespace d360.model
 
 			string prefix = Community.GetPrimaryUrlPrefix();
 
-			string url = $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
+			string url = $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";			
 
 			if (FeatureFlags_TEMP_ASSIGNMENTS)
 			{
-				string urlPart = (await QueryAsync<string>(@"
-					select 
-					case 
-						when a.id is not null then concat('asset/', lower(cast(a.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
-						when at.id is not null then concat('assets/', lower(cast(at.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
-						else concat('assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max))) 
-					end as [url]
-					from workflow.Item wi
-					inner join workflow.ItemStep wis on wis.StepID = @stepId and wis.ItemID = wi.ID
-					left join asset a on a.Object = wi.Object and a.ObjectID = wi.ObjectID
-					left join asset at on at.Object = wi.Object and at.ObjectID = wi.ObjectID
-					where wi.ID = @itemid", new { itemid = item.ItemID, stepId = item.StepID }))
-					.FirstOrDefault();
+				var urlPart = $"/home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}";				
 
 				url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
 			}
