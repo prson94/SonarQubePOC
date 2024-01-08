@@ -389,29 +389,34 @@ namespace d360.model.DataAccessLayer
 			var sql = @"
 				declare @workflowItemUid uniqueidentifier,
 				@CompletedOn datetime,
-				@id bigint,
-				@Name nvarchar(max);
+				@itemId bigint,
+				@Name nvarchar(max),
+				@itemStepId bigint;
 
 				select top 1 @workflowItemUid = wi.UID,
 				@CompletedOn = wi.CompletedOn,
-				@id = wi.ID
+				@itemId = wi.ID,
+				@itemStepId = wis.ID
 				from workflow.Item wi
 				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
 				where wis.UID = @workflowItemStepUid;
 
-				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @ID and wia.ResourceObjectID = @resourceId);
+				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @itemId and wia.ResourceObjectID = @resourceId);
+
+				declare @isAssignee int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @itemId and wia.ResourceObjectID = @resourceId and wia.itemStepID = @itemStepId);
 
 				select @Name = wt.Name from workflow.Item wi
 				inner join workflow.Version wv on wv.ID = wi.VersionID
 				inner join workflow.Type wt on wt.ID = wv.TypeID
 				where wi.uid = @workflowItemUid
 
-				declare @assignmentCount int = (select count(*) from workflow.ItemAssignment wia where wia.ItemID  = @ID)
+				declare @assignmentCount int = (select count(*) from workflow.ItemAssignment wia where wia.ItemID  = @itemId)
 
 				select 
 				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
 				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
 				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
+				case when @isAssignee is not null then 1 else 0 end as [isAssignee],
 				@workflowItemUid as workflowItemUid,
 				@Name as [workflowName],
 				@assignmentCount as assignmentCount";
