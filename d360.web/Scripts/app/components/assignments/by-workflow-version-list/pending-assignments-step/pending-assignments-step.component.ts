@@ -87,7 +87,7 @@ export class PendingAssignmentsStepComponent extends BaseComponent implements On
 	}
 
 	export() {
-		this.workflowService.exportVersionStepHistory(this.versionStepId);
+		this.workflowService.exportVersionStepHistory(this.versionStepId, null, null, this.simpleFilter);
 	}
 
 	navigate(url: string) {

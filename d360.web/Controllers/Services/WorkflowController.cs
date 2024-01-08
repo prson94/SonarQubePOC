@@ -2949,7 +2949,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
-		public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id, string filteredObject = null, int? filteredObjectId = null)
+		public HttpResponseMessage GetWorkflowVersionStepHistoryExcel(int id, string filteredObject = null, int? filteredObjectId = null, string simpleFilter = null)
 		{
 			var sql = QueryConstants.WorkflowVersionStepHistory;
 
@@ -2969,7 +2969,24 @@ namespace d360.web.Controllers.Services
 				sql = string.Format(sql, "left join workflow.item m on m.id = i.itemid", "left join issue s on m.object = 'Issue' and s.id = m.objectID");
 			}
 
-			var results = Company.Query<dynamic>(sql, new { id }).ToList();
+			if (simpleFilter != null)
+			{
+				string tempsql = sql.Replace("order by IST.StartedOn desc, IST.CompletedOn desc", "");
+				sql = $@"
+						declare @p_simplefilter nvarchar(max) = '%' + @simpleFilter + '%';
+						drop table if exists #temphistorydata;
+						select *
+						into #temphistorydata
+						from ({tempsql}) a;
+
+						select t.*
+						from #temphistorydata t
+						where (name like @p_simplefilter or Assignments like @p_simplefilter
+						or Status like @p_simplefilter)
+						order by StartedOn desc, CompletedOn desc ";
+			}
+
+			var results = Company.Query<dynamic>(sql, new { id, simpleFilter }).ToList();
 
 			#region Header
 
@@ -2977,7 +2994,7 @@ namespace d360.web.Controllers.Services
 			document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "History");
 
 			int index = 1;
-			document.SetCellValue(1, index++, "Object");
+			document.SetCellValue(1, index++, "Associated Asset");
 			document.SetCellValue(1, index++, "Status");
 			document.SetCellValue(1, index++, "Started On");
 			document.SetCellValue(1, index++, "Completed On");
