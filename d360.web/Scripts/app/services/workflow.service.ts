@@ -674,14 +674,18 @@ export class WorkflowService extends BaseObservableService {
 			);
 	}
 
-	exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null) {
+	exportVersionStepHistory(id: number, filteredObject: string = null, filteredObjectId: number = null, simpleFilter: string = null) {
 
 		let uri = `services/workflow/versionstep/history/${id}/excel.xls`;
-
+		let addchar = "?";
 		if (filteredObject != null && filteredObjectId != null) {
-			uri += `?filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+			uri += `${addchar}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
+			addchar = "&";
 		}
 
+		if (simpleFilter) {
+			uri += `${addchar}simpleFilter=${simpleFilter}`;
+		}
 
 		this.http.get(uri, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'excel.xlsx'));
 	}
