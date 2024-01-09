@@ -1767,30 +1767,69 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 	{
 	string logSqlR = @"
 		drop table if exists #PCRelationships;
-		create table #PCRelationships(ID int,Uid uniqueidentifier,Action nvarchar(100));
+		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
 		insert into #PCRelationships 
-		select distinct i.id,t.Uid,t.operation
-		from @TableData t
-		inner join [intersect] i on t.uid = i.uid;
+		select distinct t.Uid,t.operation
+		from @TableData t;
 
 		drop table if exists #tempintersectdetail;
-		select	o.uid,
-				i.Object, 
-				i.ObjectId,
-				i.ObjectName,
-				i.ID,
-				i.Name,
-				i.SubjectTypeName,
-				i.PredicateInverse,
-				o.Action,
-				i.Subject, 
-				i.SubjectId,
-				i.SubjectName,
-				i.ObjectTypeName,
-				i.PredicateName
-		into #tempintersectdetail
-		from	#PCRelationships o
-			inner join IntersectDetail i on i.id = o.id;
+		create table #tempintersectdetail(ID int,Action nvarchar(100),IntersectTypeID int,SubjectAssetID bigint,SubjectAssetTypeID int,ObjectAssetID bigint,ObjectAssetTypeID int,
+		[Object] varchar(50),[ObjectID] int, ObjectName nvarchar(4000),ObjectTypeName nvarchar(1000), 
+		[Subject] varchar(50),[SubjectID] int,SubjectName nvarchar(4000),SubjectTypeName nvarchar(1000),
+		PredicateName varchar(500),PredicateInverse varchar(500),
+		Name Nvarchar(4000));
+
+		insert into #tempintersectdetail(ID,Action,IntersectTypeID,SubjectAssetID,SubjectAssetTypeID,ObjectAssetID,ObjectAssetTypeID)
+		select i.ID,t.Action,i.IntersectTypeID,i.SubjectAssetID,i.SubjectAssetTypeID,i.ObjectAssetID,i.ObjectAssetTypeID
+		from #PCRelationships t
+		inner join [Intersect] I on I.uid = t.Uid;
+
+		update t
+		set t.Subject = a.Object,
+		t.SubjectID = a.ObjectID,
+		t.SubjectName = cast(adv.DisplayValue as nvarchar(4000))
+		from #tempintersectdetail t
+		inner join Asset A on t.SubjectAssetID = a.ID
+		left join AssetDisplayValue ADV on adv.AssetID = a.ID;
+
+		update t
+		set t.SubjectTypeName = att.Name
+		from #tempintersectdetail t
+		inner join AssetType Att on t.SubjectAssetTypeID = att.ID;
+
+		update t
+		set t.Object = a.Object,
+		t.ObjectID = a.ObjectID,
+		t.ObjectName = cast(adv.DisplayValue as nvarchar(4000))
+		from #tempintersectdetail t
+		inner join Asset A on t.ObjectAssetID = a.ID
+		left join AssetDisplayValue ADV on adv.AssetID = a.ID;
+
+		update t
+		set t.Object = a.Object,
+		t.ObjectID = a.ObjectID,
+		t.ObjectName = cast(a.Name as nvarchar(4000)),
+		t.ObjectTypeName = cast(a.Name as nvarchar(4000))
+		from #tempintersectdetail t
+		inner join AssetType A on t.ObjectAssetTypeID = a.ID
+		where t.Object is null and t.ObjectAssetID = 0;
+
+		update t
+		set t.ObjectTypeName = att.Name
+		from #tempintersectdetail t
+		inner join AssetType Att on t.ObjectAssetTypeID = att.ID
+		where t.ObjectTypeName is null;
+
+		update t
+		set t.PredicateName = p.Name,
+		t.PredicateInverse =p.Inverse
+		from #tempintersectdetail t
+		inner join IntersectType it on it.ID = t.IntersectTypeID
+		inner join [Predicate] p on p.id = it.PredicateID;
+
+		update t
+		set Name = coalesce(t.SubjectName,'---') + ' ' + coalesce(t.PredicateName,'---') + ' ' + coalesce(t.ObjectName,'---')
+		from #tempintersectdetail t
 
 		create clustered index cix_tempintersectdetail on #tempintersectdetail (ID);
 
