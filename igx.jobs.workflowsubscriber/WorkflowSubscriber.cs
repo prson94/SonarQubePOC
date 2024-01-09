@@ -89,6 +89,7 @@ namespace igx.jobs.workflowsubscriber
 				try
 				{
 					company.FeatureFlags_TEMP_ASSIGNMENTS = FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser());
+					company.FeatureFlags_TEMP_ASSIGNMENTS_DETAIL = FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS_DETAIL, company.GetFeatureFlagUser());
 
 					//check if this event already has a open workflow instance
 					if (info.WorkflowItemID <= 0)
