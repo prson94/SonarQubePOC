@@ -346,7 +346,7 @@ namespace d360.model
 		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
 			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
-					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
+					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New, wfm.workflowItemUid as WorkflowItemUid
 					into #results
 					from(
 					select 
@@ -356,6 +356,7 @@ namespace d360.model
 					, wvs.name as Step
 					,wvs.Id as StepId
 					,count(1) as Total 
+					,wi.uid as workflowItemUid
 					from
 					[workflow].[type] wt
 					inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -436,7 +437,7 @@ namespace d360.model
 		/// <returns>An active workflow item step model.</returns>
 		private WorkflowItemStep getWorkflowItemStep(long itemStepID, bool isStepCompleted = false)
 		{
-			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).SingleOrDefault(i => i.ID == itemStepID);
+			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Item).Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).SingleOrDefault(i => i.ID == itemStepID);
 
 			if (itemStep == null)
 			{
@@ -810,7 +811,28 @@ namespace d360.model
 
 			if (FeatureFlags_TEMP_ASSIGNMENTS)
 			{
-				var urlPart = $"/home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}";				
+				string urlPart = "";
+				if (FeatureFlags_TEMP_ASSIGNMENTS_DETAIL)
+				{
+					urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
+				}
+				else
+				{
+					urlPart = (await QueryAsync<string>(@"
+					select 
+					case 
+						when a.id is not null then concat('asset/', lower(cast(a.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
+						when at.id is not null then concat('assets/', lower(cast(at.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
+						else concat('assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max))) 
+					end as [url]
+					from workflow.Item wi
+					inner join workflow.ItemStep wis on wis.StepID = @stepId and wis.ItemID = wi.ID
+					left join asset a on a.Object = wi.Object and a.ObjectID = wi.ObjectID
+					left join asset at on at.Object = wi.Object and at.ObjectID = wi.ObjectID
+					where wi.ID = @itemid", new { itemid = item.ItemID, stepId = item.StepID }))
+					.FirstOrDefault();
+				}
+
 
 				url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
 			}
@@ -3462,7 +3484,7 @@ namespace d360.model
 						{
 							if (item.WorkflowItemStepUid.HasValue)
 							{
-								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}&workflowItemUid={item.WorkflowItemUid}";
 							}
 							else
 							{
@@ -3600,12 +3622,20 @@ namespace d360.model
 			string url = $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
 
 			if (FeatureFlags_TEMP_ASSIGNMENTS)
-			{
-				var dbArgs = new DynamicParameters();
-				dbArgs.Add("itemId", itemId);
-				dbArgs.Add("itemStepId", itemStepID);
+			{				
+				if (FeatureFlags_TEMP_ASSIGNMENTS_DETAIL)
+				{
+					var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
 
-				string sql = @$"
+					url = $"https://{prefix}.data3sixty.com/{urlPart}";
+				}
+				else
+				{
+					var dbArgs = new DynamicParameters();
+					dbArgs.Add("itemId", itemId);
+					dbArgs.Add("itemStepId", itemStepID);
+
+					string sql = @$"
 					select uid from workflow.Item where id = @itemId
 
 					select uid from workflow.ItemStep where id = @itemStepId
@@ -3623,23 +3653,24 @@ namespace d360.model
 					select 'Asset', a.uid from workflow.Item wi 
 					inner join Asset A on A.Object = WI.Object AND a.ObjectID = wi.ObjectID
 					where wi.ID = @itemId and wi.Object <> 'Intersect' and wi.Object <> 'Issue'";
-				var urlData = await QueryMultipleAsync(sql, dbArgs);
+					var urlData = await QueryMultipleAsync(sql, dbArgs);
 
-				var itemUid = urlData.Read<Guid>().First();
-				var itemStepUid = urlData.Read<Guid>().First();
-				var objectData = urlData.Read<dynamic>().First();
+					var itemUid = urlData.Read<Guid>().First();
+					var itemStepUid = urlData.Read<Guid>().First();
+					var objectData = urlData.Read<dynamic>().First();
 
-				string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
-				url = $"https://{prefix}.data3sixty.com/assignments";
-				if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
-				{
-					url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
+					string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
+					url = $"https://{prefix}.data3sixty.com/assignments";
+					if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
+					{
+						url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
+					}
+					else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
+					{
+						url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
+					}
+					url += queryParamPart;
 				}
-				else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
-				{
-					url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
-				}
-				url += queryParamPart;
 			}
 
 			string initiatedBy = "(unknown)";

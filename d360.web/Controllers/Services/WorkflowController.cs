@@ -368,7 +368,7 @@ namespace d360.web.Controllers.Services
 		{
 			try
 			{
-				var itemStep = Company.WorkflowItemSteps.FirstOrDefault(x => x.ID == itemStepId);
+				var itemStep = Company.WorkflowItemSteps.Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).FirstOrDefault(x => x.ID == itemStepId);
 
 				if (itemStep == null)
 				{
@@ -4296,7 +4296,7 @@ namespace d360.web.Controllers.Services
 				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
 			}
 
-			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).ToList();
+			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).Include(x => x.Step.Version).Include(x => x.Step.Version.Type).ToList();
 
 			try
 			{
