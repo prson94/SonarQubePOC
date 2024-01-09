@@ -1152,12 +1152,32 @@ where	EG.Success is null
 			return permissions;
 		}
 
+		private string permissionQuery = $@"
+			declare @permissionValues table (val int)
+
+			insert into @permissionValues
+			select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
+
+			insert into @permissionValues
+			select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId
+
+			--check default read access if there are no permissions set and if user is not an administrator
+			if 
+				@CurrentResourceIsAdmin = 0 and
+				(select max(val) from @permissionValues) = 0 and 
+				(select DefaultPermissions from AssetType where id = @assetTypeId) = 0
+			begin
+				select 15854
+				return
+			end
+
+			select distinct val from @permissionValues";
+
 		public List<PermissionInfo> GetPermissions(long assetId, int assetTypeId)
 		{
 			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
 
-			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
-														union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
+			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = CurrentResourceID, assetTypeId, assetId, CurrentResourceIsAdmin });
 
 			if (responsibilityAssignments.Any())
 			{
@@ -1179,8 +1199,7 @@ where	EG.Success is null
 
 		public bool GetPermissionsRead(long assetId, int assetTypeId)
 		{
-			IEnumerable<int> responsibilityAssignments = Query<int>(@"select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
-														union select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId", new { r = CurrentResourceID, assetTypeId, assetId });
+			IEnumerable<int> responsibilityAssignments = Query<int>(permissionQuery, new { r = CurrentResourceID, assetTypeId, assetId, CurrentResourceIsAdmin });
 
 			if (responsibilityAssignments.Any())
 			{
