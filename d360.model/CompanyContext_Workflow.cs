@@ -346,7 +346,7 @@ namespace d360.model
 		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
 			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
-					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
+					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New, wfm.workflowItemUid as WorkflowItemUid
 					into #results
 					from(
 					select 
@@ -356,6 +356,7 @@ namespace d360.model
 					, wvs.name as Step
 					,wvs.Id as StepId
 					,count(1) as Total 
+					,wi.uid as workflowItemUid
 					from
 					[workflow].[type] wt
 					inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -436,7 +437,7 @@ namespace d360.model
 		/// <returns>An active workflow item step model.</returns>
 		private WorkflowItemStep getWorkflowItemStep(long itemStepID, bool isStepCompleted = false)
 		{
-			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).SingleOrDefault(i => i.ID == itemStepID);
+			WorkflowItemStep itemStep = WorkflowItemSteps.Include(i => i.Item).Include(i => i.Step).Include(i => i.Step.Version).Include(i => i.Step.Version.Type).SingleOrDefault(i => i.ID == itemStepID);
 
 			if (itemStep == null)
 			{
@@ -810,7 +811,7 @@ namespace d360.model
 
 			if (FeatureFlags_TEMP_ASSIGNMENTS)
 			{
-				var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}";				
+				var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";				
 
 				url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
 			}
@@ -3462,7 +3463,7 @@ namespace d360.model
 						{
 							if (item.WorkflowItemStepUid.HasValue)
 							{
-								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}";
+								url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&workflowItemStepUid={item.WorkflowItemStepUid.ToString().ToLowerInvariant()}&version={item.Version}&workflowItemUid={item.WorkflowItemUid}";
 							}
 							else
 							{
@@ -3601,7 +3602,7 @@ namespace d360.model
 
 			if (FeatureFlags_TEMP_ASSIGNMENTS)
 			{
-				var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}";
+				var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
 
 				url = $"https://{prefix}.data3sixty.com/{urlPart}";				
 			}
