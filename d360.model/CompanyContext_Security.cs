@@ -151,7 +151,6 @@ namespace d360.model
 		private bool HasAssetDefaultReadPermission(string type, int id)
 		{
 			bool hasPermission = CurrentResourceIsAdmin;
-
 			if (!hasPermission)
 			{
 				int assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
