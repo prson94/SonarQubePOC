@@ -1167,6 +1167,7 @@ where	EG.Success is null
 				(select max(val) from @permissionValues) = 0 and 
 				(select DefaultPermissions from AssetType where id = @assetTypeId) = 0
 			begin
+				--15854 is a permission mask for all permissions except read
 				select 15854
 				return
 			end
