@@ -37,7 +37,7 @@ stages:
     displayName: 'Publish DB Scripts'
     cancelTimeoutInMinutes: 1
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
     - checkout: self
     - task: PublishBuildArtifacts@1

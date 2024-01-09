@@ -47,7 +47,7 @@ stages:
     timeoutInMinutes: 0
     cancelTimeoutInMinutes: 1
     pool:
-      vmImage: windows-2019
+      vmImage: windows-2022
     steps:
     - checkout: self
     - template: build/steps/step-azure-key-vault.yml@templates
