@@ -1,4 +1,15 @@
-﻿<div *ngIf="(objectType && objectID) || (objectType && objectUID)" class="asset-detail">
+﻿<div *ngIf="model && model.AssetID === 0 && model.HasAccess === false">
+    <div class="empty-overlay">
+        <div class="content">
+            <div class="icon-holder">
+                <i class="fa fa-ban"></i>
+            </div>
+            <span i18n>You do not have permission to view asset information for the selected item</span>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="(objectType && objectID) || (objectType && objectUID)" class="asset-detail">
     <div *ngIf="isLoading" style="width:100%; text-align:center;">
         <div style="padding:10px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
     </div>

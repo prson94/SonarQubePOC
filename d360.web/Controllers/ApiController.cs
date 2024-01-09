@@ -1598,9 +1598,11 @@ namespace d360.web.Controllers
 				end
 				select * from @results", new { assetTypeUid, assetUid, Company.CurrentResourceID })).FirstOrDefault();
 
-			return new { 
-				isFollowing = followType != null, 
-				isFollowingParent = followType != null && followType.FollowTypeID == FollowType.Parent };
+			return new
+			{
+				isFollowing = followType != null,
+				isFollowingParent = followType != null && followType.FollowTypeID == FollowType.Parent
+			};
 		}
 
 		#endregion
@@ -2869,7 +2871,7 @@ namespace d360.web.Controllers
 							SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
 							return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
 						}
-						else 
+						else
 						{
 							return null;
 						}
@@ -2900,10 +2902,19 @@ namespace d360.web.Controllers
 					where   A.ObjectID = @id and A.Object = @type", new { type = type.ToString(), id, resourceId = Company.CurrentResourceID });
 			var metadata = metadataResult.FirstOrDefault();
 
-
 			if (metadata != null)
 			{
 				var perms = Company.GetPermissions((long)metadata.AssetID, (int)metadata.AssetTypeID);
+
+				if ((perms.Count > 0 && !perms.Any(x => x.ID == Permission.ReadAsset)) && !Company.CurrentResourceIsAdmin)
+				{
+					return new DetailReadOnlyModel()
+					{
+						HasAccess = false
+					};
+				}
+
+				model.HasAccess = true;
 
 				if (perms.Any(x => x.ID == Permission.ReadResponsibilities) || perms.Count == 0 || Company.CurrentResourceIsAdmin)
 				{
@@ -4322,9 +4333,10 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 
 							var color = string.IsNullOrEmpty(asset.Color) ? "None" : Company.Query<string>($@"SELECT top 1 JSON_VALUE(ACJ.ColorJSON,'$.Name') as name, JSON_VALUE(ACJ.ColorJSON,'$.Value') as color FROM dbo.GetAssetColorJsonByColor({asset.Color}) ACJ FOR JSON PATH").SingleOrDefault();
 
-							dynamicRows.ForEach(r => {
+							dynamicRows.ForEach(r =>
+							{
 								var idx = r.FirstColumnFields.FindIndex(f => f.FieldName == "Code");
-								if(idx > -1)
+								if (idx > -1)
 								{
 									r.FirstColumnFields.Insert(idx + 1, new ReadOnlyField { Name = "Color", FieldName = "Color", Value = color, DataType = "color" });
 								}

@@ -68,6 +68,8 @@ namespace d360.web.Models
 		public CompanyResourceState ResourceState { get; set; }
 
 		public string Url { get; set; }
+
+		public bool HasAccess { get; set; }
     }
 
     public class LookupDataReadOnlyModel
