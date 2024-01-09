@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.4">
+ <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.5">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[ConditionsFiltering]
@@ -25,7 +25,9 @@ RETURNS
 )
 AS
 BEGIN
-    declare @include bit = 0;
+    declare @include bit = 0,
+	@matchtype int,
+	@passed bit;
 
 	declare @tConditions table (
 		Uid uniqueidentifier, MatchType int, Position int, Threshold float, Weight float,
@@ -81,7 +83,7 @@ BEGIN
 
 		while @currentPosition <= @maxPosition
 		begin
-
+			select @matchtype = coalesce(max(matchtype),2) from @tConditions where Position = @currentPosition;
 			-- Populated. These checks must be separate from type-level checks below.
 			if exists (select 1 from @tConditions where Operator = 10 and Position = @currentPosition)
 			begin
@@ -184,14 +186,14 @@ BEGIN
 							and c.[Type] = 'Decimal' and c.[Position] = @currentPosition and c.Operator not in (10, 11)
 							and f.AssetID = @assetId 
 							and case 
-									when c.Operator = 1 and try_cast(f.FormattedValue as decimal) = try_cast(c.SingleValue as decimal) then 1		-- Equals
-									when c.Operator = 2 and try_cast(f.FormattedValue as decimal) <> try_cast(c.SingleValue as decimal) then 1		-- NotEquals
-									when c.Operator = 9 and try_cast(f.FormattedValue as decimal) between 
-										try_cast(c.StartRangeValue as decimal) and try_cast(c.EndRangeValue as decimal) then 1						-- Between
-									when c.Operator = 12 and try_cast(f.FormattedValue as decimal) > try_cast(c.SingleValue as decimal) then 1		-- GreaterThan
-									when c.Operator = 13 and try_cast(f.FormattedValue as decimal) <= try_cast(c.SingleValue as decimal) then 1		-- LessThanOrEquals
-									when c.Operator = 14 and try_cast(f.FormattedValue as decimal) < try_cast(c.SingleValue as decimal) then 1		-- LessThan
-									when c.Operator = 15 and try_cast(f.FormattedValue as decimal) >= try_cast(c.SingleValue as decimal) then 1		-- GreaterThanOrEquals
+									when c.Operator = 1 and try_cast(f.FormattedValue as decimal(30,10)) = try_cast(c.SingleValue as decimal(30,10)) then 1		-- Equals
+									when c.Operator = 2 and try_cast(f.FormattedValue as decimal(30,10)) <> try_cast(c.SingleValue as decimal(30,10)) then 1		-- NotEquals
+									when c.Operator = 9 and try_cast(f.FormattedValue as decimal(30,10)) between 
+										try_cast(c.StartRangeValue as decimal(30,10)) and try_cast(c.EndRangeValue as decimal(30,10)) then 1						-- Between
+									when c.Operator = 12 and try_cast(f.FormattedValue as decimal(30,10)) > try_cast(c.SingleValue as decimal(30,10)) then 1		-- GreaterThan
+									when c.Operator = 13 and try_cast(f.FormattedValue as decimal(30,10)) <= try_cast(c.SingleValue as decimal(30,10)) then 1		-- LessThanOrEquals
+									when c.Operator = 14 and try_cast(f.FormattedValue as decimal(30,10)) < try_cast(c.SingleValue as decimal(30,10)) then 1		-- LessThan
+									when c.Operator = 15 and try_cast(f.FormattedValue as decimal(30,10)) >= try_cast(c.SingleValue as decimal(30,10)) then 1		-- GreaterThanOrEquals
 									else 0
 								end = 1
 			end
@@ -273,7 +275,19 @@ BEGIN
 			end
 
 			-- finally, check if all criteria for the group are matched.
-			if not exists(select 1 from @tConditions where Position = @currentPosition and Passed = 0)
+
+			set @passed = 0;
+
+			if @matchtype = 2 and not exists(select 1 from @tConditions where Position = @currentPosition and Passed = 0) 
+			begin
+				set @passed  = 1;
+			end
+			else if @matchtype = 1 and exists(select 1 from @tConditions where Position = @currentPosition and Passed = 1) 
+			begin
+				set @passed  = 1;
+			end
+
+			if @passed = 1
 			begin
 				set @include = 1
 				declare @currentMatchUid uniqueidentifier = null,
