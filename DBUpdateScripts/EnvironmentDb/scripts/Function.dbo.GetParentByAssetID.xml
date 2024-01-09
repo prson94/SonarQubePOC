@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GetParentByAssetID-v4">
+  <changeSet author="Pappas,puneet" id="Function.dbo.GetParentByAssetID-v5">
   <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -20,16 +20,13 @@ RETURNS TABLE
 AS
 RETURN 
 (
-	SELECT P.ID, 
-				 I.ID as IntersectID, 
-				 Y.ID as IntersectTypeID 
-  from	Asset A
-				inner join AssetType T on T.ID = A.AssetTypeID
-				inner join [IntersectType] Y on Y.ObjectAssetTypeId = T.ID
-				inner join [Predicate] R on R.ID = Y.PredicateID and R.[Type] = case when T.Class IN (6,2) then 4 else 3 end 
-				inner join [Intersect] I on I.IntersectTypeID = Y.ID and I.ObjectAssetID = A.ID
-				inner join Asset P on P.ID = I.SubjectAssetID
-	where A.ID = @id
+  SELECT I.SubjectAssetID ID, 
+		 I.ID as IntersectID, 
+		 Y.ID as IntersectTypeID 
+  from	[Intersect] I
+  inner join [IntersectType] Y on I.IntersectTypeID = Y.ID
+  inner join [Predicate] R on R.ID = Y.PredicateID and R.[Type] = case when Y.ObjectClass IN (6,2) then 4 else 3 end 
+  where I.ObjectAssetID = @id
 )
 		]]>
     </sql>
