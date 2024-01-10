@@ -158,7 +158,6 @@
 					</ng-template>
 				</p-multiSelect>
 			</div>
-
 		</div>
 		<div *ngSwitchCase="fieldType.Link">
 			<input igInput
@@ -168,7 +167,7 @@
 				   style="width: 100%; margin-bottom: 1em"
 				   type="text"
 				   [required]="false" />
-			<div i18n>(Link Name)</div>
+			<div i18n class="field-name">(Link Name)</div>
 			<input igInput
 				   [name]="'input_' + indx"
 				   [attr.name]="'input_' + indx"
