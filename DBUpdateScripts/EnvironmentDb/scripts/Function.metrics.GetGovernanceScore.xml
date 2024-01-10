@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.10">
+ <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.11">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -209,6 +209,13 @@ begin
 	-- Now process each Governance check -------------------------
 
 	-- External measure check.
+	
+	delete m
+	from	@tbl m
+			inner join dbo.Asset a on a.Id = m.AssetId 
+			left join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
+	where	m.[Check] = 'External' and r.AssetUid is null;			
+	
 	update	m
 	set		m.[Value] = iif(r.[Value] = 1, 1, 0)
 	from	@tbl m
