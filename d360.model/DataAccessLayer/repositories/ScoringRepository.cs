@@ -596,6 +596,25 @@ select ID,AssetUid,AssetVersionUid,EffectiveDate,[Value]
 from metrics.ExternalMeasureResult t
 where t.Id between @minId and @maxId;
 
+select AssetUid,MetricAssetUid,EffectiveDate
+into #tempduplicate
+from #TempDataProcess
+group by AssetUid,MetricAssetUid,EffectiveDate
+having count(1)>1;
+
+if exists(select 1 from #tempduplicate)
+begin
+	create clustered index cx_tempduplicate on #tempduplicate(AssetUid,MetricAssetUid);
+
+	update t
+	set IsSuccess = 0,
+	Message = coalesce(Message,'') + 'The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.;'
+	from #TempDataProcess t
+	inner join #tempduplicate d on d.AssetUid = t.AssetUid  and d.MetricAssetUid = t.MetricAssetUid
+	and d.EffectiveDate = t.EffectiveDate;
+end
+
+
 update	t
 set		t.AssetUid = s.Uid,
 		t.AssetVersionUid = m.Uid 
