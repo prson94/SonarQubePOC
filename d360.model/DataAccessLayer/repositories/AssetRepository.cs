@@ -1395,7 +1395,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						simpleFilters.Add(simpleFilterOwnership);
 
 						string simpleFilterOwnership2 = $@"
-								select  ola.assetid
+								select distinct ola.assetid
 								from    #OwnershipLookupAssets ola  
 								left join #TempFilteredAssets tfa on tfa.AssetId = ola.assetid
 								where tfa.AssetId is null and @IsAssetNotZero = 1 and ola.assetid <> 0
