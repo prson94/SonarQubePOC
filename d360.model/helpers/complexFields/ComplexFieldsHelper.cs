@@ -476,7 +476,7 @@ namespace d360.model.helpers
 						continue;
 					}
 
-					var gColumn = new GridColumn { text = ft.FriendlyName, columnWidth = colWidth };
+					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
 					string fieldAlias = $"H{f.RelationIndex + 1}_{f.FieldTypeID}";
 					gField.name = gColumn.datafield = fieldAlias;
 					gField.apiName = gColumn.apiName = ft.Name;
