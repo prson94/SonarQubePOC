@@ -18,7 +18,7 @@
                     {{col.text}}
                     <d3s-sortIcon [field]="col.datafield"></d3s-sortIcon>
                 </th>
-                <th style="width: 215px"></th>
+                <th style="width: 165px"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th *ngFor="let col of columns">
@@ -44,7 +44,6 @@
                         <a style="cursor:pointer;" (click)="cloneWorkflow(item.Uid)"><i class="fa fa-copy"></i></a>
                         <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.Uid)"><i class="fa fa-trash-o"></i></a>
                         <a style="cursor:pointer;" (click)="onViewClick.emit(item.Uid)"><i class="fa fa-eye"></i></a>
-                        <a style="cursor:pointer;" (click)="onNavigate(item.Uid)"><i class="fa fa-usb"></i></a>
                     </div>
                 </td>
             </tr>
