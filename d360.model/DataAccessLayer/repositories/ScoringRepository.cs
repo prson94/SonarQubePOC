@@ -781,11 +781,11 @@ drop table #TempDataProcess
 										select	count(1) as PathItemCount
 										from	openjson(E.value, N'$.RollupPath')
 									) Pc
-									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
+									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath[0].Uid') as uniqueidentifier)
 									inner join AssetPath OAN on OAN.ID = OA.ID
 									cross apply GetAssetTypeTextPathById(OA.AssetTypeID, ' > ') OANTP
 
-									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
+									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
 									inner join AssetPath EAN on EAN.ID = EA.ID 
 									cross apply GetAssetTypeTextPathById(EA.AssetTypeID, ' > ') EANTP 
 
