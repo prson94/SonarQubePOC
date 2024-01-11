@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { FeatureFlagService } from '../../../guards/feature-flag.service';
 import { SortOrder } from '../../../models/enums.model';
-import { AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment } from '../../../models/workflow.model';
+import { AssignmentItemStep, AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -44,12 +44,15 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	urlWorkflowStepUid: string = '';
 	urlWorkflowVersion: number = 0;
 	onlyAdminReassignMode: boolean = false;
+	urlWorkflowItemUid: string = '';
+	redirectToDetails: boolean = false;
 
 	constructor(public settingsService: CompanySettingsService,
 				private workflowService: WorkflowService,
 				private route: ActivatedRoute,
 				private changeDetectorRef: ChangeDetectorRef,
-				private featureFlagService: FeatureFlagService) {
+				private featureFlagService: FeatureFlagService,
+				private router: Router) {
 		super(settingsService);
 		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
 		this.workflowService.assignmentCompletedSubject.subscribe(() => {
@@ -57,11 +60,12 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		});
 
 		this.route.queryParams
-			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid?: string, version: number }) => {
+			.subscribe((params: { workflowTypeUid: string, workflowItemStepUid?: string, version: number, workflowItemUid: string }) => {
 				if (params.workflowTypeUid) {
 					this.urlWorkflowTypeUid = (params.workflowTypeUid ?? "").toLowerCase();
 					this.urlWorkflowStepUid = (params.workflowItemStepUid ?? "").toLowerCase();
 					this.urlWorkflowVersion = +(params.version ?? 0);
+					this.urlWorkflowItemUid = (params.workflowItemUid ?? "").toLowerCase();
 				}
 			});
 	}
@@ -81,6 +85,15 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.loadUserAssignments();
 		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
+		if (this.urlWorkflowItemUid) {
+			this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
+			.subscribe((response: AssignmentItemStep[]): void => {
+				let step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
+				if(step?.ActivityType !== 'Form'){
+					this.redirectToDetails = true
+				}
+			});
+		}	
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
@@ -102,7 +115,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		this.rowsPerPage = rowsPerPageStorage != null ? Number(rowsPerPageStorage) : event?.rows;
 	}
 
-	loadUserAssignments() {
+	loadUserAssignments(forcedRefresh: boolean = false) {
 		if (!this.isMe && this.isAdminPage) {
 			this.onlyAdminReassignMode = true;
 		}
@@ -131,13 +144,13 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 					if (this.urlWorkflowStepUid) {
 						this.workflowService.getWorkflowStateForUser(this.urlWorkflowStepUid)
 							.subscribe((res) => {
-								this.handleWorkflowItemLoad(res);
+								this.handleWorkflowItemLoad(res, forcedRefresh);
 								this.isLoading = false;
 								this.changeDetectorRef.markForCheck();
 							});
 					}
 					else if (this.urlWorkflowTypeUid) {
-						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0, isAssignee: true }); //parameter isAssignee to be updated after backend implementation
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0, isAssignee: true }, forcedRefresh); //parameter isAssignee to be updated after backend implementation
 						this.isLoading = false;
 						this.changeDetectorRef.markForCheck();
 					}
@@ -148,7 +161,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				});
 	}
 
-	private handleWorkflowItemLoad(res: WorkflowStateForUser) {
+	private handleWorkflowItemLoad(res: WorkflowStateForUser, forcedRefresh: boolean) {
 		// check if there is exiting step in assignments
 		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
 		if (assignmentItem) {
@@ -160,7 +173,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			if (assignmentItem) {
 				this.onItemClick(null, assignmentItem);
 			}
-			else {
+			else if (!forcedRefresh) {
 				this.handleNoAssignments(res);
 			}
 		}
@@ -178,7 +191,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.errorModalMessage = $localize`The Assignment cannot be found. It might have been deleted or the link is invalid. Contact your Administrator to remediate the issue.`;
 			this.modalVisible = true;
 		}
-		else if (res.isCompleted) {
+		else if (res.isCompleted && !this.redirectToDetails) {
 			this.errorModalTitle = $localize`Assignment Completed`;
 			this.errorModalMessage = $localize`The form has already been submitted by required assignees.`;
 			this.modalVisible = true;
@@ -193,8 +206,10 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		else if (!res.isAssignee) { //parameter to be updated after backend implementation
 			this.errorModalTitle = $localize`Not Assigned to You`;
 			this.errorModalMessage = $localize`You are not an assignee for this form, but you can view the Assignment's details.`;
-			this.modalVisible = true 
+			this.modalVisible = true; 
 			this.showAssignmentDetailsLink = true;
+		} else if (this.redirectToDetails) {
+			this.router.navigate(['assignmentDetails', this.urlWorkflowItemUid])
 		}
 	}
 
@@ -262,7 +277,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (event.removeSelected) {
 			this.multiAssignComponent.removeSelected();
 		}
-		this.loadUserAssignments();
+		this.loadUserAssignments(true);
 	}
 
 	onAssignmentMultiPickerClose(): void {
@@ -270,6 +285,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	}
 
 	getAssignmentUrl(): string {
-		return '/assignmentDetails/' + this.urlWorkflowTypeUid;
+		return '/assignmentDetails/' + this.urlWorkflowItemUid;
 	}
 }
