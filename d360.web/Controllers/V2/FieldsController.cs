@@ -2392,7 +2392,7 @@ namespace d360.web.Controllers.V2
 					return Request.CreateResponse(HttpStatusCode.OK, data);
 				}
 
-				var fieldType = new FieldType();
+				FieldType fieldType;
 				if (fieldObject == SystemObjects.IssueType.ToString())
 				{
 					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.IssueTypeID == id && ft.Name == fieldName);
