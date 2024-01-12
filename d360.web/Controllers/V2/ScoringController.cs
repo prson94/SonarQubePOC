@@ -693,6 +693,13 @@ namespace d360.web.Controllers.V2
 			{
 				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
 			}
+			else 
+			{
+				if (scoreTypeEnum != ScoreType.Governance)
+				{
+					throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+				}
+			}
 
 			if (model == null || model.Count < 1)
 			{
