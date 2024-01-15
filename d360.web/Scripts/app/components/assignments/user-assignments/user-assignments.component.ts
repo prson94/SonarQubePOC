@@ -88,7 +88,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (this.urlWorkflowItemUid) {
 			this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {
-				let step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
+				const step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
 				if(step?.ActivityType !== 'Form'){
 					this.redirectToDetails = true
 				}
