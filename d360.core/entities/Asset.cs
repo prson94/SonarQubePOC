@@ -314,7 +314,6 @@ namespace d360.core.entities
 	public class DynamicQueryJoins
 	{
 		private List<DynamicQueryJoinData> joins { get; set; } = new List<DynamicQueryJoinData>();
-		private const string fieldJoinTempTableName = "#tempFieldTable";
 		public string GetJoinStatementForFieldTypeId(int id)
 		{
 			return this.joins.Distinct().Where(x => x.FieldIdentifier == id.ToString()).Select(x => x.SQLStatement).FirstOrDefault();
@@ -362,43 +361,6 @@ namespace d360.core.entities
 				foreach (var statement in joins.OrderBy(x => x.Sort).Select(x => x.SimpleStatement ?? x.SQLStatement).Distinct())
 				{
 					sb.AppendLine(statement);
-				}
-				return sb.ToString();
-			}
-		}
-
-		public string JoinFieldTempTable
-		{
-			get
-			{
-				return @$"
-				drop table if exists {fieldJoinTempTableName}
-
-				select	f.FieldTypeId,
-						f.AssetId,
-						f.FormattedValue,
-						f.[Value],
-						f.ID
-				into {fieldJoinTempTableName}
-				from #tempasset
-				inner join Field f on f.AssetID = #tempasset.AssetId
-				
-				create clustered index idx on {fieldJoinTempTableName} (FieldTypeId, AssetId)";
-			}
-		}
-
-		public string SQLJoinStatementWithTempTable
-		{
-			get
-			{
-				var sb = new StringBuilder();
-				var regex = new Regex(Regex.Escape("left join Field"));
-				var tempTable = $"left join {fieldJoinTempTableName}";
-				foreach (var statement in joins.OrderBy(x => x.Sort).Select(x => x.SQLStatement).Distinct())
-				{
-					//replace only first 
-					var replacedJoinStatement = regex.Replace(statement, tempTable, 1);
-					sb.AppendLine(replacedJoinStatement);
 				}
 				return sb.ToString();
 			}
