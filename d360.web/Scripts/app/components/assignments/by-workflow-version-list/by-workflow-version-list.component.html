@@ -56,6 +56,7 @@
 						[selectedItemsCount]="selectedAssignmentVersionItems?.length"
 						[extraButtons]="sidePanelButtons"
 						[setMinMaxWidth]="false"
+						height="calc(100vh - 256px)"
 						[hasDetail]="false">
 				<ng-container *ngIf="sidePanelOpen">
 					<d3s-workflow-version-information *ngIf="selectedAssignmentVersionItems?.length === 1"

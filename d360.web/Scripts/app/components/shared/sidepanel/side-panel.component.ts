@@ -18,6 +18,7 @@ import { SidePanelService } from '../../../services/side-panel.service';
 export class SidePanelComponent extends BaseComponent {
     @Input() height = 'calc(100vh - 270px)';
     @Input() isSecondarySidePanel: boolean = false
+	@Input() shouldBePadded: boolean = true;
     @Input() hasDetail: boolean = false;
     @Input() hasProfiling: boolean = false;
     @Input() hasFilter: boolean = false;
@@ -49,8 +50,6 @@ export class SidePanelComponent extends BaseComponent {
 
     @Input() minWidth = '400px';
     @Input() maxWidth = '400px';
-
-    @Input() sidePanelButtonClass='side-panel-button-container';
 
 	constructor(
 		private sidePanelService: SidePanelService,
