@@ -3682,7 +3682,7 @@ namespace d360.model
 					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
 
 					item.State = StepState.Failed;
-					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail()
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
 						itemStepID = item.ID,
 						Message = "ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.",
@@ -3752,7 +3752,7 @@ namespace d360.model
 			{
 				item.State = StepState.Failed;
 
-				var itemStateDetail = new WorkflowItemStepStateDetail() { 
+				var itemStateDetail = new WorkflowItemStepStateDetail { 
 					itemStepID = item.ID, 
 					Message = "No valid users for assignment.", 
 					State = StepState.Failed 
