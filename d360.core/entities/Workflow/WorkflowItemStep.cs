@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Xml.Linq;
 
 using d360.core.entities.Contracts;
+using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
@@ -51,5 +52,8 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public Guid? UID { get; set; }
-    }
+
+		[DataMember]
+		public StepState? State { get; set; }
+	}
 }
