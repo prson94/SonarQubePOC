@@ -54,6 +54,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 	private sub;
 
 	assignmentFeatureFlag: boolean = false;
+	dashboardingEnabledFeatureFlag: boolean = true;
 
     constructor(
         protected titleService: Title,
@@ -76,6 +77,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 		});
 
 		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
+		this.dashboardingEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled);
     }
 
     ngOnInit() {
@@ -112,17 +114,17 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 				+ (this.showActivityTile ? 1 : 0);
 		}
 
-
         this.colSize = 12.0 / (this.numTiles === 0 ? 1 : this.numTiles);
 
-        this.dashboardService.getHomePageDashboards().subscribe(
-            (r) => {
-                if (r && r.length > 0) {
-                    this.dashboard = r[0];
-                }
-            }
-        );
-
+		if (this.dashboardingEnabledFeatureFlag) {
+			this.dashboardService.getHomePageDashboards().subscribe(
+				(r) => {
+					if (r && r.length > 0) {
+						this.dashboard = r[0];
+					}
+				}
+			);
+		}
     }
 
     ngOnDestroy() {

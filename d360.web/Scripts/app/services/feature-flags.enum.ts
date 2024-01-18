@@ -4,6 +4,7 @@ export enum FeatureFlags {
     DataProfilingUiFlag = "GovernDataProfileUiPerm",
     SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
 	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
+	DashboardingEnabled = "govern-dashboarding-functionality-permanent",
 
 	//temp flags
 	AssignmentsFlag = "GovernAssignmentsTemp20230815",

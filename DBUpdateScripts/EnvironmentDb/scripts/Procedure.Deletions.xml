@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.Deletions-v5">
+  <changeSet author="Pappas" id="Procedure.Deletions-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,6 +14,14 @@
 drop procedure if exists [dbo].[DeleteIntersect]
 GO
 drop procedure if exists [analytics].[AddStatistic]
+GO
+drop procedure if exists metrics.BuildDataQualityMeasureQuery
+GO
+drop procedure if exists metrics.CleanupExecutions
+GO
+drop procedure if exists metrics.LoadFromStaging
+GO
+drop procedure if exists metrics.ProcessAssetScores
 		]]>
     </sql>
     <rollback>

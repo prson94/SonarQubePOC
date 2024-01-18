@@ -79,6 +79,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 	public activeMenu$ = new Subject();
 	private calculatedNavbarTextColor: string;
 
+	dashboardingEnabledFeatureFlag: boolean = true;
+
     constructor(
         private authenticationService: AuthenticationService,
         protected settingsService: CompanySettingsService,
@@ -90,6 +92,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     ) {
 		super(settingsService);
 		this.calculatedNavbarTextColor = getComputedStyle(document.documentElement).getPropertyValue('--calculatedNavbarTextColor');
+		this.dashboardingEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled);
     }
 
     ngAfterContentInit(): void {
@@ -427,7 +430,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.adminMenu.NavigationItems.push({ Name: $localize`Settings`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, count: null });
         this.adminMenu.NavigationItems.push({ Name: $localize`Export Templates`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, count: null });
-        this.adminMenu.NavigationItems.push({ Name: $localize`Dashboards`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, count: null });
+
+		if (this.dashboardingEnabledFeatureFlag) {
+			this.adminMenu.NavigationItems.push({ Name: $localize`Dashboards`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, count: null });
+		}
+
 		this.adminMenu.NavigationItems.push({ Name: $localize`Branding`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BRANDING}`, IsLink: false, count: null });
         this.adminMenu.NavigationItems.push({ Name: $localize`Tags`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, count: null });
     }

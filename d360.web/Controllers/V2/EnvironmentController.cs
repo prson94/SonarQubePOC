@@ -61,6 +61,7 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiUrl = "https://api.powerbi.com";
 
 		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser()); } }
+		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true); } }
 
 		public EnvironmentController(
 			ICoreComponentSet set, 
@@ -2370,9 +2371,15 @@ select	r.uid as ResourceUid,
 					}
 				}
 
-				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+				if (IsDashboardingEnabled)
+				{
+					var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+				}
+				else
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<DashboardApiGetModel>()));
+				}
 			}
 			catch (GenericException ex)
 			{
@@ -2425,8 +2432,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-
-				if (!Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2543,7 +2549,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2639,7 +2645,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2677,7 +2683,7 @@ select	r.uid as ResourceUid,
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				if (!IsDashboardingEnabled || !Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
@@ -2734,7 +2740,7 @@ select	r.uid as ResourceUid,
 				throw new ArgumentNullException(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
 			}
 
-			// Create a user password cradentials.
+			// Create a user password credentials.
 			var credential = new UserPasswordCredential(pbiUsername, pbiPassword);
 
 			// Authenticate using created credentials

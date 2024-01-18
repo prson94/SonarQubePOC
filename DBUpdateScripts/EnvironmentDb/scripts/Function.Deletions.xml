@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKLok" id="Function.Deletions-v8">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+ <changeSet author="Pappas" id="Function.Deletions-v9">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
 drop function if exists dbo.GetIntersectNames
 GO
 drop function if exists utility.DeriveIntersectName
@@ -19,9 +16,10 @@ drop function if exists utility.GetIntersectNames
 GO
 drop function if exists dbo.ArtifactNgSiteNavigation
 GO
-		]]>
-    </sql>
-	<rollback></rollback>
-  </changeSet>
-  
+drop function if exists metrics.CompareConditionValueToFieldValue
+GO
+]]>
+  </sql>
+ </changeSet>
+
 </databaseChangeLog>
