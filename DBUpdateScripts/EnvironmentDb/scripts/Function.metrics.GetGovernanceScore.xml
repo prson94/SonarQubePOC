@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.12">
+ <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.13">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -217,14 +217,14 @@ begin
 	from	@tbl m
 			inner join dbo.Asset a on a.Id = m.AssetId 
 			left join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
-	where	m.[Check] = 'External' and r.AssetUid is null;			
+	where	m.[Check] = 'External' and r.AssetUid is null and m.IsGroup = 0;			
 	
 	update	m
 	set		m.[Value] = iif(r.[Value] = 1, 1, 0)
 	from	@tbl m
 			inner join dbo.Asset a on a.Id = m.AssetId 
 			inner join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
-	where	m.[Check] = 'External';			
+	where	m.[Check] = 'External' and m.IsGroup = 0;					
 	end
 
 	-- Non-lookups, checking Populated/NotPopulated 

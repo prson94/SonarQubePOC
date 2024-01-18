@@ -6,6 +6,7 @@
 
 		public static readonly string PERM_BRANDING_CUSTOM_CSS = "GovernBrandingCustomCssPerm";
 		public static readonly string PERM_IS_DISTRIBUTED_CACHE = "GovernDistributedCachePerm";
+		public static readonly string PERM_IS_DASHBOARDING_ENABLED = "govern-dashboarding-functionality-permanent";
 
 		public static readonly string PERM_DATA_PROFILING = "GovernDataProfilingPerm";
 		public static readonly string PERM_DATA_PROFILING_UI = "GovernDataProfileUiPerm";
