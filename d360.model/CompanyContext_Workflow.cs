@@ -346,7 +346,7 @@ namespace d360.model
 		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
 			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
-					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New, wfm.workflowItemUid as WorkflowItemUid
+					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New
 					into #results
 					from(
 					select 
@@ -355,8 +355,7 @@ namespace d360.model
 					,wv.[version] as Version
 					, wvs.name as Step
 					,wvs.Id as StepId
-					,count(1) as Total 
-					,wi.uid as workflowItemUid
+					,count(1) as Total 					
 					from
 					[workflow].[type] wt
 					inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -390,9 +389,10 @@ namespace d360.model
 					) as Sub on
 					wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
 
-					select wfm.*, wt.uid as WorkflowTypeUid, wis.UID as WorkflowItemStepUid from #results wfm
-					inner join workflow.Type wt on wt.ID = wfm.Id
+					select wfm.*, wt.uid as WorkflowTypeUid, wis.UID as WorkflowItemStepUid, wi.uid as workflowItemUid from #results wfm
+					inner join workflow.Type wt on wt.ID = wfm.Id					
 					left join workflow.[ItemStep] wis on wfm.Total = 1 and wis.StepID = wfm.StepId
+					left join workflow.item wi on wi.ID= wis.itemID
 					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc
 
 					drop table if exists #results", new { r = resourceId, newOffset });
