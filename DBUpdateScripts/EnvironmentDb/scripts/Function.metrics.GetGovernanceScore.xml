@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.11">
+ <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.12">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -139,6 +139,8 @@ begin
 		where	cm.[Include] = 1
 
 	-- Parse the values to validate for testing.
+	if exists(select 1 from @tbl where [Check] = 'Field')
+	begin
 	update	m
 	set		m.SingleValue = sV.SingleValue,
 			m.StartRangeValue = rV.StartRangeValue,
@@ -205,11 +207,12 @@ begin
 				end as [Values]
 			) mV
 	where	m.[Check] = 'Field'
-
+	end
 	-- Now process each Governance check -------------------------
 
 	-- External measure check.
-	
+	if exists(select 1 from @tbl where [Check] = 'External')
+	begin
 	delete m
 	from	@tbl m
 			inner join dbo.Asset a on a.Id = m.AssetId 
@@ -222,8 +225,12 @@ begin
 			inner join dbo.Asset a on a.Id = m.AssetId 
 			inner join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
 	where	m.[Check] = 'External';			
+	end
 
 	-- Non-lookups, checking Populated/NotPopulated 
+	
+	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated'))
+	begin
 	update	m
 	set		m.[Value] = case 
 							when m.Operator = 'Populated' and (f.FormattedValue is not null and f.FormattedValue <> '') then 1
@@ -234,8 +241,11 @@ begin
 			inner join dbo.Asset a on a.ID = m.AssetId
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
 	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated')
-
+	end
 	-- Non-lookups, skipping Populated/NotPopulated 
+	
+	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator not in ('Populated', 'NotPopulated'))
+	begin
 	update	m
 	set		m.[Value] = case 								
 							when m.FieldType = 'Boolean' then
@@ -316,8 +326,11 @@ begin
 			inner join dbo.Asset a on a.ID = m.AssetId
 			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
 	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator not in ('Populated', 'NotPopulated')
-
+	end
 	-- Perform Lookup Populated check
+	
+	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated')
+	begin
 	update	m
 	set		m.[Value] = iif(f.ID is not null and a.Present > 0, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
 	from	@tbl m
@@ -332,8 +345,11 @@ begin
 						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
 			) a
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
-
+	end
 	---- Perform Lookup NotPopulated check
+	
+	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated')
+	begin
 	update	m
 	set		m.[Value] = iif(f.ID is null and a.Present = 0, 1, 0)
 	from	@tbl m
@@ -348,8 +364,11 @@ begin
 						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
 			) a
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated'
-
+	end
 	-- Perform Lookup other check
+	
+	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated'))
+	begin
 	update	m
 	set		m.[Value] = iif(a.Present > 0, 1, 0)
 	from	@tbl m
@@ -377,9 +396,11 @@ begin
 							end = 1
 			) a
 	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated')
-
+	end
 	-- OWNERSHIP -----------------------------------------------
 		
+	if exists(select 1 from @tbl m where m.[Check] = 'Owner')
+	begin
 	declare @ResData table(
 	ResponsibilityTypeID int,
 	AssetID bigint,
@@ -390,7 +411,8 @@ begin
 	);
 	
 	With rs as (select distinct AssetTypeId
-				from @tbl)
+					from @tbl
+					where [Check] = 'Owner')
 	insert into @ResData
 	select distinct rd.ResponsibilityTypeID,rd.AssetID,rd.AssetTypeID,rd.ApplyToType,1 Present
 	from rs 
@@ -408,8 +430,10 @@ begin
 			left join @ResData o on o.ResponsibilityTypeID = rt.ID 
 			and (o.AssetID = m.AssetId or (o.AssetID = 0 and o.AssetTypeID = m.AssetTypeId and o.ApplyToType = 1)) 
 	where	m.[Check] = 'Owner'
-
+	end
 	-- PREDICATE -----------------------------------------------
+	if exists(select 1 from @tbl m where m.[Check] = 'Predicate')
+	begin
 	update	m
 	set		m.[Value] = case 
 							when c.Operator = 'Populated' and o.Present = 1 then 1
@@ -425,8 +449,10 @@ begin
 						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
 			) o
 	where	m.[Check] = 'Predicate'
-
+	end
 	-- RELATION ------------------------------------------------
+	if exists(select 1 from @tbl m where m.[Check] = 'Relation')
+	begin
 	update	m
 	set		m.[Value] = case 
 							when c.Operator = 'Populated' and o.Present = 1 then 1
@@ -442,7 +468,7 @@ begin
 						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
 			) o
 	where	m.[Check] = 'Relation'
-
+	end
 	-- Remove those measure groups that do not have any representative descendant measures.
 	delete @tbl where IsGroup = 1 and Uid not in (select distinct ParentUid from @tbl where ParentUid is not null);
 
