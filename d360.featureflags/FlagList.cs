@@ -19,7 +19,10 @@
 		#region Temporary Feature Flags
 
 		public static readonly string TEMP_ASSIGNMENTS = "GovernAssignmentsTemp20230815";
-		public static readonly string TEMP_ASSIGNMENTS_DETAIL = "govern-workflow-assignments-requests-detail";		
+		public static readonly string TEMP_ASSIGNMENTS_DETAIL = "govern-workflow-assignments-requests-detail";
+		public static readonly string TEMP_CUSTOM_SYNONYMS = "govern-custom-synonyms-temp";
+		public static readonly string TEMP_TAGS_LIMITED_VALUES = "govern-tagging-new-administration-ui-temp";
+		public static readonly string TEMP_TAGS_ADMIN_UI_V2 = "govern-tagging-value-limitation-temp";
 
 		#endregion
 

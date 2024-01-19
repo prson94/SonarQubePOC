@@ -11,5 +11,8 @@ export enum FeatureFlags {
 	AssignmentDetailsFlag = "govern-workflow-assignments-requests-detail",
 	RelationshipCardinalityTempFlag = "GovernRelationshipCardinalityTemp20230901",
 	ReferenceListV2Flag = "GovernReferenceTemp20230901",
-	ScoringEngineUpdate = "GovernScoringEngineUpdateTemp"
+	ScoringEngineUpdate = "GovernScoringEngineUpdateTemp",
+	CustomSynonymsFlag = "govern-custom-synonyms-temp",
+	TagsLimitedValuesFlag = "govern-tagging-new-administration-ui-temp",
+	TagsAdminUIV2Flag = "govern-tagging-value-limitation-temp"
 }
