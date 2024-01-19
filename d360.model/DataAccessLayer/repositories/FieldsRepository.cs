@@ -1567,7 +1567,15 @@ namespace d360.model.DataAccessLayer
 
 					if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
 					{
-						var parentField = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+						FieldType parentField;
+						if (typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
+						{
+							parentField = CompanyContext.Filter<FieldType>(x => x.IssueTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+						}
+						else
+						{
+							parentField = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+						}
 
 						if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
 						{
