@@ -987,6 +987,10 @@ export class RelationLookupFieldTypeEditorComponent implements OnChanges {
 		ddl.placeholder = placeholder;
 		return placeholder;
 	}
+
+	onRowReorder() {
+		this.updateMenuItems()
+	}
 }
 
 

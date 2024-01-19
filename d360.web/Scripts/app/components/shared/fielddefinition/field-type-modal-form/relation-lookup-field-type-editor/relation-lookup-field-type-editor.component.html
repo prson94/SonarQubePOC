@@ -34,6 +34,7 @@
 			<div class="grey-container" [formGroup]="fieldTypeForm">
 
 				<p-table [value]="lookupFields"
+						 (onRowReorder)="onRowReorder()"
 						 [reorderableColumns]="true">
 					<ng-template pTemplate="header">
 						<tr>
