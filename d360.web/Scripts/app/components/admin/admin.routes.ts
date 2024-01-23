@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { AdminComponent } from './admin.component';
+import { FeatureFlagGuard } from '../../guards/feature-flag.guard';
 
 const routes: Routes = [
     {
@@ -20,7 +21,7 @@ const routes: Routes = [
             { path: 'settings', loadChildren: () => import('./settings/admin-settings.module').then((m) => m.AdminSettingsModule) },
 			{ path: "scoring/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
 			{ path: 'scoring', loadChildren: () => import('./scoring/admin-scoring.module').then((m) => m.AdminScoringModule) },
-            { path: 'dashboard', loadChildren: () => import('./dashboards/admin-dashboards.module').then((m) => m.AdminDashboardsModule) },            
+			{ path: 'dashboard', loadChildren: () => import('./dashboards/admin-dashboards.module').then((m) => m.AdminDashboardsModule), canActivate: [FeatureFlagGuard] },            
 			{ path: 'responsibilities', loadChildren: () => import('./responsibilities/admin-responsibilities.module').then((m) => m.AdminResponsibilitiesModule) },
 			{ path: "responsibilities/:uid/log", loadChildren: () => import("../../components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
             { path: 'resources', loadChildren: () => import('./resources/admin-resources.module').then( (m) => m.AdminResourcesModule) },

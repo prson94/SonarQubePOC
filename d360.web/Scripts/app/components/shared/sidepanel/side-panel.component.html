@@ -1,5 +1,5 @@
 ﻿<div *ngIf="expanded === false">
-    <div class="collapsed-panel" [ngClass]="isSecondarySidePanel ? 'side-panel-top-spacing' : 'side-panel-container'">        
+	<div class="side-panel-container collapsed-panel" [class.no-padding]="!shouldBePadded">
         <button *ngFor="let b of visibleButtons"
                 igButton
                 [disabled]="b.disabled"
@@ -16,7 +16,7 @@
         <div [ngClass]="isSecondarySidePanel ? '' : 'side-panel-container'" style="margin: 0;">
             <div class="panel-header">
                 <span class="header-label">{{panelLabel}}</span>
-                <div class="{{sidePanelButtonClass}}">
+				<div class="side-panel-button-container">
                     <ng-container *ngIf="panelMenu.length > 0">
                         <ig-popup-menu [items]="panelMenu" #panelkebab></ig-popup-menu>
                         <button igButton icon="fa-ellipsis-v"
@@ -46,12 +46,12 @@
                             i18n-tooltip
                             tooltip="Hide Side Panel"
                             [igDataCy]="'Sidebar_Hide'"
-                            class="ig-button-secondary side-panel-button">
+                            class="ig-button-secondary side-panel-button no-margin">
                     </button>
                 </div>
             </div>
         </div>
-        <div class="side-panel-content" [style.height]="height">
+        <div class="side-panel-content" [style.height]="height" [class.no-padding]="!shouldBePadded">
             <ng-content></ng-content>
             <ng-container *ngIf="(expanded && selectedItem == null && panelButton?.needsSelection && !multipleItemsSelected && selectedPanel !== 'filters') || showEmptyOverlay">
                 <div class="side-panel-empty-overlay">

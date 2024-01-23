@@ -82,7 +82,8 @@ namespace d360.model.DataAccessLayer.repositories
             IReadOnlyList<OrderByModel> orderByList,
             int pageNum,
             int pageSize,
-            int? commandTimeout = 30
+            int? commandTimeout = 30,
+            bool IncludeTotal = true
         )
         {
             Preconditions.NotNull(whereStatementList, nameof(whereStatementList));
@@ -92,15 +93,29 @@ namespace d360.model.DataAccessLayer.repositories
             var orderBySql = CreateOrderBySql(orderByList);
             var offsetSql = CreatePageOffsetSql(pageNum, pageSize);
             var whereSql = CreateWhereSql(whereStatementList);
+			if (IncludeTotal)
+			{
+				var querycnt = $@"select count(1) from ({source}) A {whereSql} option (recompile)";
+				try
+				{
+					var readercnt = await QueryComposer.QuerySingleOrDefaultAsync<int>(querycnt, dynamicParameters, commandTimeout);
+					result.total = readercnt;
+				}
+				catch (Exception)
+				{
+					result.total = 0;
+				}
+			}
+			else
+			{
+				result.total = 0;
+			}
+			var query = @$"select * from ({source}) A {whereSql} {orderBySql} {offsetSql} option (recompile);";
 
-            var query = $"select count(1) from ({source}) A {whereSql};" +
-                        $"select * from ({source}) A {whereSql} {orderBySql} {offsetSql};";
-
-            var reader = await QueryComposer.QueryMultipleAsync(query, dynamicParameters, commandTimeout);
-            result.total = await reader.ReadSingleAsync<int>();
-            result.pageNum = pageNum;
-            result.pageSize = pageSize;
-            result.items = await reader.ReadListAsync<T>();
+			var reader = await QueryComposer.QueryListAsync<T>(query, dynamicParameters, commandTimeout);
+			result.pageNum = pageNum;
+			result.pageSize = pageSize;
+            result.items = reader;
 
             return result;
         }

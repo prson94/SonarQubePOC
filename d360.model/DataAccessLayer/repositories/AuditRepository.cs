@@ -43,11 +43,18 @@ namespace d360.model.DataAccessLayer.repositories
             int pageSize
         )
         {
-            var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
+			bool IncludeTotal = false;
 
-            var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize, CompanyContext.ApiTimeout);
+			if ((assetUid != null && assetUid != Guid.Empty) ||
+				(assetTypeUid != null && assetTypeUid != Guid.Empty))
+			{
+				IncludeTotal = true;
+			}
+			var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
 
-            result.items = await PostProcessAuditCollectionAsync(result.items);
+			var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize, CompanyContext.ApiTimeout, IncludeTotal);
+
+			result.items = await PostProcessAuditCollectionAsync(result.items);
 
             return result;
         }
@@ -90,8 +97,9 @@ namespace d360.model.DataAccessLayer.repositories
                 new DefaultFilter("class", "A.Class", SqlFieldType.Number),
                 new DefaultFilter("version", "A.Version", SqlFieldType.Number),
                 new DefaultFilter("previousValue", "A.PreviousValue", SqlFieldType.Text),
-                new DefaultFilter("fieldType", "A.FieldType", SqlFieldType.Text)
-            };
+                new DefaultFilter("fieldType", "A.FieldType", SqlFieldType.Text),
+				new DefaultFilter("auditid", "A.AuditID", SqlFieldType.Number)
+			};
 
             if (string.IsNullOrEmpty(filter) == false && filter.Contains("actionObject"))
             {
@@ -128,7 +136,7 @@ namespace d360.model.DataAccessLayer.repositories
 
             if (orderByList.Count == 0)
             {
-                orderByList = new[] { OrderByModel.Create("date", OrderByDirectionEnum.Descending) };
+                orderByList = new[] { OrderByModel.Create("AuditID", OrderByDirectionEnum.Descending) };
             }
 
             foreach (var orderBy in orderByList)

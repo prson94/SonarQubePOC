@@ -17,6 +17,7 @@ import { Table } from 'primeng/table';
 import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering/advanced-filtering.component';
 import { ApiResult } from '../../../models/apiresult.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../../services/href-click-service';
+import * as DOMPurify from 'dompurify';
 
 /*global $localize*/
 
@@ -202,9 +203,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						const displayField = new FieldDisplayModel();
 						const type = this.currentFieldType(field);
 						displayField.AssetTypeUid = field["AssetTypeUid"];
-						displayField.Name = field.Name;
-						displayField.FriendlyName = field.FriendlyName;
-						displayField.Category = field.Category ?? (this.actionTypeUid ? $localize`Form Fields` : $localize`General`);
+						displayField.Name = DOMPurify.sanitize(field.Name);
+						displayField.FriendlyName = DOMPurify.sanitize(field.FriendlyName);
+						displayField.Category = DOMPurify.sanitize(field.Category ?? (this.actionTypeUid ? $localize`Form Fields` : $localize`General`));
 						displayField.FieldType = this.getDisplayTypeName(type);
 						displayField.FieldTypeValue = type;
 						displayField.DisplayInColumn = field.Type[`${type}`].DisplayInColumn ?? false;
@@ -216,8 +217,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 						displayField.ShowIfEmpty = field.Type[`${type}`].ShowIfEmpty ?? false;
 						displayField.IsRequired = field.Type[`${type}`].Validation != null ? field.Type[`${type}`].Validation.IsRequired : false;
 
-						displayField.DisplayDescription = field.Type[`${type}`]?.Description?.Display ?? "";
-						displayField.FormDescription = field.Type[`${type}`]?.Description?.Form ?? "";
+						displayField.DisplayDescription = DOMPurify.sanitize(field.Type[`${type}`]?.Description?.Display ?? "");
+						displayField.FormDescription = DOMPurify.sanitize(field.Type[`${type}`]?.Description?.Form ?? "");
 						displayField.AddToSearchResults = field.Type[`${type}`]?.Search?.AddToResult ?? false;
 						displayField.AllowMultipleItems = field.Type[`${type}`]?.List?.AllowMultipleValues ?? false;
 						displayField.EditableOnUI = field.Type[`${type}`]?.IsEditable ?? false;
@@ -228,8 +229,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
 						if (type === 'Lookup') {
 							displayField.LookupTypeName = field.Type[`${type}`].List.Class + ": " + field.Type[`${type}`].List.TypeName;
-							displayField.LookupDisplayFormat = field.Type[`${type}`].Format.Display;
-							displayField.LookupEditFormat = field.Type[`${type}`].Format.Edit;
+							displayField.LookupDisplayFormat = DOMPurify.sanitize(field.Type[`${type}`].Format.Display);
+							displayField.LookupEditFormat = DOMPurify.sanitize(field.Type[`${type}`].Format.Edit);
 							displayField.ParentFieldTypeName = field.Type[`${type}`].ParentFieldTypeName;
 						}
 						displayField.FieldTypeREF = field;

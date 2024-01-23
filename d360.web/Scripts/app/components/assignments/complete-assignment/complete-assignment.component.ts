@@ -119,7 +119,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 	isAdmin: boolean = false;
 	private receivedFormFields: WorkflowFormField[] = [];
 	isType: boolean = false;
-	private hideSubmitButton: boolean = false;
+	protected hideSubmitButton: boolean = false;
 
 	constructor(protected settingsService: CompanySettingsService,
 		private workflowService: WorkflowService,

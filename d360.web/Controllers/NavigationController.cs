@@ -82,6 +82,11 @@ namespace d360.web.Controllers
 				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
 			}
 
+			if (!FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true))
+			{
+				nodes = nodes.Where(x => x.MenuID != "#Dashboards").ToList();
+			}
+
 			if (!FeatureFlags.IsThisTrue(FlagList.PERM_SEMANTIC_TYPES_UI, GetFeatureFlagUser(), false))
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();

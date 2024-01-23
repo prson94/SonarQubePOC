@@ -596,6 +596,25 @@ select ID,AssetUid,AssetVersionUid,EffectiveDate,[Value]
 from metrics.ExternalMeasureResult t
 where t.Id between @minId and @maxId;
 
+select AssetUid,MetricAssetUid,EffectiveDate
+into #tempduplicate
+from #TempDataProcess
+group by AssetUid,MetricAssetUid,EffectiveDate
+having count(1)>1;
+
+if exists(select 1 from #tempduplicate)
+begin
+	create clustered index cx_tempduplicate on #tempduplicate(AssetUid,MetricAssetUid);
+
+	update t
+	set IsSuccess = 0,
+	Message = coalesce(Message,'') + 'The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.;'
+	from #TempDataProcess t
+	inner join #tempduplicate d on d.AssetUid = t.AssetUid  and d.MetricAssetUid = t.MetricAssetUid
+	and d.EffectiveDate = t.EffectiveDate;
+end
+
+
 update	t
 set		t.AssetUid = s.Uid,
 		t.AssetVersionUid = m.Uid 
@@ -762,11 +781,11 @@ drop table #TempDataProcess
 										select	count(1) as PathItemCount
 										from	openjson(E.value, N'$.RollupPath')
 									) Pc
-									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
+									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath[0].Uid') as uniqueidentifier)
 									inner join AssetPath OAN on OAN.ID = OA.ID
 									cross apply GetAssetTypeTextPathById(OA.AssetTypeID, ' > ') OANTP
 
-									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
+									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
 									inner join AssetPath EAN on EAN.ID = EA.ID 
 									cross apply GetAssetTypeTextPathById(EA.AssetTypeID, ' > ') EANTP 
 

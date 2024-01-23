@@ -1,13 +1,5 @@
-trigger:
-  branches:
-    include:
-    - '*sprint*'
-pr:
-  autoCancel: false
-  drafts: true
-  branches:
-    include:
-    - '*sprint*'
+trigger: none
+pr: none
 name: Function-Consumption-$(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
 resources:
   repositories:

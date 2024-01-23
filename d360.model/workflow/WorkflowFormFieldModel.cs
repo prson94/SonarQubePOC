@@ -38,7 +38,7 @@ namespace d360.model.workflow
 		public int Total { get; set; }
 		public int New { get; set; }
 		public Guid WorkflowTypeUid { get; set; }
-		public Guid WorkflowItemUid { get; set; }
+		public Guid? WorkflowItemUid { get; set; }
 		public Guid? WorkflowItemStepUid { get; set; }		
 	}
 }

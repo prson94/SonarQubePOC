@@ -62,17 +62,6 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     }
 
-
-
-
-
-    onNavigate(uid: string) {
-        this.isLoading = true;
-        this.workflowService.getWorkflowTypeId(uid).subscribe(
-            (x) => this.navigate(x)
-        );
-    }
-
     load() {
         this.isLoading = true;
 
@@ -117,10 +106,6 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 map(() => this.isLoading = false))
             .subscribe();
 
-    }
-
-    navigate(id: number) {
-		this.router.navigateByUrl(this.federateUrl(`/monitor/type/${id}?tab=monitor`));
     }
 }
 
