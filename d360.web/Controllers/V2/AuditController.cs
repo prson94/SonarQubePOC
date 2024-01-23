@@ -201,7 +201,8 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 			int pageSizeLimit = isStreamResponse ? 200000 : 250;
-			bool IsassetUidReqUnion = false;
+			bool IncludeActionAssetTypeUid = false;
+
 
 			var orderBySql = "";
 			var dbArgs = new DynamicParameters();
@@ -271,15 +272,11 @@ namespace d360.web.Controllers.V2
 
 			if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User, AssetTypeClass.Group))
 			{
-				IsassetUidReqUnion = true;
-				dbArgs.Add("uid", assetUid);
-				whereStatements.Add("<uid> = @uid");
+				IncludeActionAssetTypeUid = true;
 			}
-			else 
-			{
-				dbArgs.Add("uid", assetUid);
-				whereStatements.Add("uid = @uid");				
-			}
+			dbArgs.Add("uid", assetUid);
+			dbArgs.Add("IncludeActionAssetTypeUid", IncludeActionAssetTypeUid);
+
 
 			if (advFilterArgs != null && advFilterStatements != null)
 			{
@@ -298,13 +295,25 @@ namespace d360.web.Controllers.V2
 			string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
 			string sql = "";
 
-			string GetBaseQuery(bool PickFromTemptable = false)
-			{
-				return $@"
+			string temptablestr = $@"
+drop table if exists #tempaudit;
+
+select identity(int, 1, 1) ID,
+t.auditid 
+into #tempaudit
+from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
+inner join AuditView V on V.AuditID = t.AuditID
+{whereSql}
+{orderBySql} 
+{(!isStreamResponse ? $"{offsetSql}" : "")}
+option (recompile)
+";
+
+			string GetBaseQuery = $@"
 select 	uid,
 	name,
 	resourceUid,
-	{(!PickFromTemptable ? "resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '')" : "resourceName")}  as resourceName,
+	resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '')  as resourceName,
 	[date],
 	[action],
 	actionAssetUid,
@@ -314,64 +323,34 @@ select 	uid,
 	actionObjectName,
 	actionDescription,
 	Field,
-	{(!PickFromTemptable ? "coalesce(NewValue, '---')" : "NewValue")}  as NewValue,
+	coalesce(NewValue, '---')  as NewValue,
 	[Class],
 	[Version],
-	{(!PickFromTemptable ? "iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---'))" : "PreviousValue")}  as PreviousValue,
+	iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue,
 	fieldType
-from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
-			}
-
-			if (IsassetUidReqUnion)
-			{
-				string tempdata = $@"
-				drop table if exists #tempauditdata;
-				select *
-				into #tempauditdata
-				from 
-				(
-				{GetBaseQuery()} 
-				{whereSql.Replace("<uid>","uid")}
-				union
-				{GetBaseQuery()} 
-				{whereSql.Replace("<uid>", "actionAssetTypeUid")}
-				) a;
-				";
+from	#tempaudit t 
+inner join AuditView V on V.AuditID = t.AuditID";
+			
 				if (isStreamResponse)
 				{
-					sql = $@"
-{tempdata} 
-{GetBaseQuery(true)} 
-{orderBySql}
-drop table if exists #tempauditdata;";
+					sql = $@"{temptablestr} {GetBaseQuery} {whereSql} {orderBySql} option (recompile)";
 				}
 				else
 				{
 					sql = $@"
-{tempdata}
-select count(1) from #tempauditdata;
-{GetBaseQuery(true)}
-{orderBySql} 
-{offsetSql};
-drop table if exists #tempauditdata;";
-				}
-			}
-			else
-			{
-				if (isStreamResponse)
-				{
-					sql = $@"{GetBaseQuery()} {whereSql} {orderBySql}";
-				}
-				else
-				{
-					sql = $@"
-select count(1) from AuditView {whereSql};
-{GetBaseQuery()}
+select count(1) 
+from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
+inner join AuditView V on V.AuditID = t.AuditID
 {whereSql}
-{orderBySql} 
-{offsetSql};";
+option (recompile);
+
+{temptablestr}
+
+{GetBaseQuery}
+order by t.id
+option (recompile);";
 				}
-			}
+			
 			var multiQuery = await Company.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
 
 			int? count = null;
