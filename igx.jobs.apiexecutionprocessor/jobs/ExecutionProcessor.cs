@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Metric;
@@ -10,7 +9,6 @@ using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
-using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
