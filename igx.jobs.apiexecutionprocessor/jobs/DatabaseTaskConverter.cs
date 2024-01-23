@@ -22,7 +22,7 @@ namespace igx.jobs.apiexecutionprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task RunScheduler([TimerTrigger("*/1 * * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+		public async Task RunScheduler([TimerTrigger("*/10 * * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
 		{
 			var companies = GetCompaniesByCurrentSlot();
 			companies.ForEach(async company =>
