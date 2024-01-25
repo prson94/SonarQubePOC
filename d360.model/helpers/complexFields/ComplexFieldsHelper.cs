@@ -444,7 +444,6 @@ namespace d360.model.helpers
 
 			foreach (var f in definition.Fields.OrderBy(x => x.DisplayOrder))
 			{
-				//todo fix column names
 				string fieldName = string.IsNullOrEmpty(f.OverrideDisplayName) ? f.FieldTypeName : f.OverrideDisplayName;
 				int? colWidth = f.Width;
 
