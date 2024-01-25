@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Metric;
@@ -22,14 +21,14 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
 {
-	public class ExecutionProcessor: BaseWebJob
-    {
-        const string FUNCTION_NAME = "ExecutionProcessor";
+	public class ExecutionProcessor : BaseWebJob
+	{
+		const string FUNCTION_NAME = "ExecutionProcessor";
 
-        const int DEFAULT_MERGE_BLOCK_SIZE = 500;
-        const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
-        const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
-        const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
+		const int DEFAULT_MERGE_BLOCK_SIZE = 500;
+		const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
+		const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
+		const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
 
 		readonly ICachingProvider Cache;
 		readonly IMailProvider Mail;
@@ -37,7 +36,7 @@ namespace igx.jobs.apiexecutionprocessor
 		readonly IStorageProvider Storage;
 		readonly IFeatureFlagService FeatureFlags;
 
-		public ExecutionProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff): base(config)
+		public ExecutionProcessor(IConfiguration config, ICachingProvider cache, IMailProvider mail, IQueueSource queue, IStorageProvider storage, IFeatureFlagService ff) : base(config)
 		{
 			Cache = cache;
 			FeatureFlags = ff;
@@ -48,8 +47,8 @@ namespace igx.jobs.apiexecutionprocessor
 
 		[FunctionName(FUNCTION_NAME)]
 		public async Task Run([QueueTrigger("%ApiExecutionQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
-        {
-            var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
+		{
+			var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 
 			var logProperties = new Dictionary<string, object> {
 				{ "Function", FUNCTION_NAME },
@@ -63,14 +62,16 @@ namespace igx.jobs.apiexecutionprocessor
 			{
 				#region More Dependency Injection
 
-				var context = new UriSecurityContextProvider {
+				var context = new UriSecurityContextProvider
+				{
 					CompanyID = info.CompanyID,
 					ResourceID = info.ResourceID ?? 0,
 					CompanyPrefix = info.CompanyDomainPrefix,
 					IsAdministrator = false
 				};
 				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true) {
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
+				{
 					ApiExecutionQueue = Configuration["ApiExecutionQueue"],
 					AssetGraphQueue = Configuration["AssetGraphQueue"],
 					BulkLoadQueue = Configuration["BulkLoadQueue"],
@@ -130,157 +131,129 @@ namespace igx.jobs.apiexecutionprocessor
 						{
 							var action = info.Action ?? dbExecutionItem.Action;
 
-							#region Inline Actions/Funcs
-
-							Action markExecutionAsProcessing = () =>
-							{
-								dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
-								dbExecutionItem.RetryCount = dbExecutionItem.RetryCount.HasValue ? dbExecutionItem.RetryCount.Value + 1 : 0;
-								company.Connection.ExecuteAsync(
-									"update api.Execution set ProcessingStartedOn = @ProcessingStartedOn, RetryCount = @RetryCount, ErrorMessage = null where Id = @Id",
-									dbExecutionItem);
-							};
-
-							Action markExecutionAsCompleteForFieldType = () =>
-							{
-								company.Connection.ExecuteAsync(
-									"update api.Execution set Processed = @Processed, CompletedOn = @CompletedOn where Id = @Id",
-									dbExecutionItem);
-							};
-
-							Action markExecutionAsComplete = () =>
-							{
-								company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
-							};
-
-							Action<string> markExecutionAsErred = (err) =>
-							{
-								dbExecutionItem.ErrorMessage = err;
-								dbExecutionItem.CompletedOn = DateTime.UtcNow;
-								company.Connection.ExecuteAsync(
-									"update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn where Id = @Id",
-									new { dbExecutionItem.ErrorMessage, dbExecutionItem.CompletedOn, dbExecutionItem.Id });
-							};
-
-							Func<AssetType, Task> assetTypeActionLogic = null;
-
-							Func<Guid, Task> assetTypeWrapperAction = async (uid) =>
-							{
-								var type = company.Filter<AssetType>(i => i.uid == uid).SingleOrDefault();
-								if (type != null)
-								{
-									await assetTypeActionLogic(type);
-								}
-								else
-								{
-									markExecutionAsErred($"Asset Type for uid [{uid}] not found.");
-								}
-							};
-
-							Func<IntersectType, Task> intersectTypeActionLogic = null;
-
-							Func<Guid, Task> intersectTypeWrapperAction = async (uid) =>
-							{
-								var type = company.Filter<IntersectType>(i => i.uid == uid).SingleOrDefault();
-								if (type != null)
-								{
-									await intersectTypeActionLogic(type);
-								}
-								else
-								{
-									markExecutionAsErred($"Intersect Type for uid [{uid}] not found.");
-								}
-							};
-
-							#endregion
-
 							string resultsSql = "";
 
-							markExecutionAsProcessing();
+							await markExecutionAsProcessing(dbExecutionItem, company);
+
+							AssetType assetType;
+							IntersectType intersectType;
 
 							switch (action)
 							{
 								case ApiExecutionAction.PostAssets:
 									var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
-									assetTypeActionLogic = async (at) =>
+
+									assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).SingleOrDefault();
+									if (assetType != null)
 									{
 										log.LogTrace($"Get PostAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 										var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.PostAssets(postAssets, at, dbExecutionItem, true, false);
+										assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, true, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await assetTypeWrapperAction(postAssetsFields.AssetTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Asset Type for uid [{postAssetsFields.AssetTypeUid}] not found.", company);
+									}
+
 									break;
 								case ApiExecutionAction.PutAssets:
 									var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
-									assetTypeActionLogic = async (at) =>
+
+									assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).SingleOrDefault();
+									if (assetType != null)
 									{
 										log.LogTrace($"Get PutAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 										var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.PutAssets(putAssets, at, dbExecutionItem, true, false);
+										assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, true, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await assetTypeWrapperAction(putAssetsFields.AssetTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Asset Type for uid [{putAssetsFields.AssetTypeUid}] not found.", company);
+									}
+
 									break;
 								case ApiExecutionAction.DeleteAssets:
 									var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
-									assetTypeActionLogic = async (at) =>
+
+									assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).SingleOrDefault();
+									if (assetType != null)
 									{
 										log.LogTrace($"Get DeleteAssets payload: {DateTime.UtcNow:hh:mm:ss}");
 										var deleteAssets = await Storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"DeleteAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.DeleteAssets(deleteAssets, at, dbExecutionItem, true);
+										assetRepository.DeleteAssets(deleteAssets, assetType, dbExecutionItem, true);
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAsset where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await assetTypeWrapperAction(deleteAssetsFields.AssetTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Asset Type for uid [{deleteAssetsFields.AssetTypeUid}] not found.", company);
+									}
 									break;
 								case ApiExecutionAction.PostRelationships:
 									var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
-									intersectTypeActionLogic = async (it) =>
+
+									intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).SingleOrDefault();
+									if (intersectType != null)
 									{
 										log.LogTrace($"Get PostRelations payload: {DateTime.UtcNow:hh:mm:ss}");
 										var postRelationships = await Storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PostRelationships: {DateTime.UtcNow:hh:mm:ss}");
-										relationshipRepository.PostRelationships(it, dbExecutionItem, postRelationships);
+										relationshipRepository.PostRelationships(intersectType, dbExecutionItem, postRelationships);
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await intersectTypeWrapperAction(postRelationshipsFields.IntersectTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Intersect Type for uid [{postRelationshipsFields.IntersectTypeUid}] not found.", company);
+									}
+
 									break;
 								case ApiExecutionAction.PutRelationships:
 									var putRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutRelationships>(dbExecutionItem.Fields);
-									intersectTypeActionLogic = async (it) =>
+
+									intersectType = company.Filter<IntersectType>(i => i.uid == putRelationshipsFields.IntersectTypeUid).SingleOrDefault();
+									if (intersectType != null)
 									{
 										log.LogTrace($"Get PutRelations payload: {DateTime.UtcNow:hh:mm:ss}");
 										var putRelationships = await Storage.DeserializeJsonObjectFromBlobAsync<RelationshipUpdates>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PutRelationships: {DateTime.UtcNow:hh:mm:ss}");
-										relationshipRepository.PutRelationships(it, dbExecutionItem, putRelationships);
+										relationshipRepository.PutRelationships(intersectType, dbExecutionItem, putRelationships);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from api.ExecutionRelationship where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await intersectTypeWrapperAction(putRelationshipsFields.IntersectTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Intersect Type for uid [{putRelationshipsFields.IntersectTypeUid}] not found.", company);
+									}
 									break;
 								case ApiExecutionAction.DeleteRelationships:
 									var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
-									intersectTypeActionLogic = async (it) =>
+									intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).SingleOrDefault();
+
+									if (intersectType != null)
 									{
 										log.LogTrace($"Get DeleteRelations payload: {DateTime.UtcNow:hh:mm:ss}");
 										var deleteRelationships = await Storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"DeleteRelationships: {DateTime.UtcNow:hh:mm:ss}");
-										relationshipRepository.DeleteRelationships(dbExecutionItem, it, deleteRelationships);
+										relationshipRepository.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedRelationship where ExecutionID = @executionId order by ItemNumber asc";
-									};
-									await intersectTypeWrapperAction(deleteRelationshipsFields.IntersectTypeUid);
+									}
+									else
+									{
+										await markExecutionAsErred(dbExecutionItem, $"Intersect Type for uid [{deleteRelationshipsFields.IntersectTypeUid}] not found.", company);
+									}
 									break;
 								case ApiExecutionAction.DeleteAssetTypes:
 									log.LogTrace($"Get DeleteAssetTypes payload: {DateTime.UtcNow:hh:mm:ss}");
@@ -330,7 +303,7 @@ namespace igx.jobs.apiexecutionprocessor
 									var result = fieldsRepository.DeleteFields(currentFieldTypes, deleteFieldtypes.FieldNamesToDelete);
 									dbExecutionItem.Processed = result;
 									dbExecutionItem.CompletedOn = DateTime.UtcNow;
-									markExecutionAsCompleteForFieldType();
+									await markExecutionAsCompleteForFieldType(dbExecutionItem, company);
 									break;
 								case ApiExecutionAction.UpsertUsers:
 									UserUpsertModel model = await Storage.DeserializeJsonObjectFromBlobAsync<UserUpsertModel>(info.StorageFolder, info.RequestFileName);
@@ -345,20 +318,18 @@ namespace igx.jobs.apiexecutionprocessor
 									log.LogTrace($"PatchCatalog: {DateTime.UtcNow:hh:mm:ss}");
 									await execRepo.PatchCatalog(dbExecutionItem.Id, patchCatalogPayload);
 									resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
-									markExecutionAsComplete = () =>
+
+									Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									Queue.CreateMessage(company.ScoringQueue, new ScoreQueueInfo
 									{
-										Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-										Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-										Queue.CreateMessage(company.ScoringQueue, new ScoreQueueInfo
-										{
-											ChangeType = ScoreQueueChangeType.PatchCatalogExecution,
-											CompanyID = info.CompanyID,
-											ExecutionId = dbExecutionItem.Id,
-											ResourceID = info.ResourceID,
-											StartedOn = DateTime.UtcNow
-										});
-										company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
-									};
+										ChangeType = ScoreQueueChangeType.PatchCatalogExecution,
+										CompanyID = info.CompanyID,
+										ExecutionId = dbExecutionItem.Id,
+										ResourceID = info.ResourceID,
+										StartedOn = DateTime.UtcNow
+									});
+									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
 									break;
 								default:
 									resultsSql = "";
@@ -369,7 +340,7 @@ namespace igx.jobs.apiexecutionprocessor
 							{
 								var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
 								await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, results);
-								markExecutionAsComplete();
+								company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
 							}
 						}
 					}
@@ -420,5 +391,31 @@ namespace igx.jobs.apiexecutionprocessor
 				}
 			}
 		}
+
+		private async Task markExecutionAsProcessing(ApiExecution dbExecutionItem, CompanyContext company)
+		{
+			dbExecutionItem.ProcessingStartedOn = DateTime.UtcNow;
+			dbExecutionItem.RetryCount = dbExecutionItem.RetryCount.HasValue ? dbExecutionItem.RetryCount.Value + 1 : 0;
+			await company.Connection.ExecuteAsync(
+				"update api.Execution set ProcessingStartedOn = @ProcessingStartedOn, RetryCount = @RetryCount, ErrorMessage = null where Id = @Id",
+				dbExecutionItem);
+		}
+
+		private async Task markExecutionAsCompleteForFieldType(ApiExecution dbExecutionItem, CompanyContext company)
+		{
+			await company.Connection.ExecuteAsync(
+				"update api.Execution set Processed = @Processed, CompletedOn = @CompletedOn where Id = @Id",
+				dbExecutionItem);
+		}
+
+		private async Task markExecutionAsErred(ApiExecution dbExecutionItem, string err, CompanyContext company)
+		{
+			dbExecutionItem.ErrorMessage = err;
+			dbExecutionItem.CompletedOn = DateTime.UtcNow;
+			await company.Connection.ExecuteAsync(
+				"update api.Execution set ErrorMessage = @ErrorMessage, CompletedOn = @CompletedOn where Id = @Id",
+				new { dbExecutionItem.ErrorMessage, dbExecutionItem.CompletedOn, dbExecutionItem.Id });
+		}
+
 	}
 }

@@ -5455,7 +5455,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 			execution.ErrorMessage = message;
 			execution.CompletedOn = DateTime.UtcNow;
-			Update(execution);
+			Connection.Execute($@"update api.execution set ErrorMessage = @message, CompletedOn = @date where executionid = @ExecutionID", new { execution.ExecutionID, message, date = DateTime.UtcNow });
 		}
 
 		public void UpdateGroupCounterFields(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
