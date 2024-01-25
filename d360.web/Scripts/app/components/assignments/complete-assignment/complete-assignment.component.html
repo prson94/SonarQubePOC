@@ -43,7 +43,7 @@
 				<div [hidden]="isAssignmentProgressSelected"
 					 class="scrollable-content details-container">
 					<div class="asset-detail">
-						<div class="d-flex column"
+						<div class="d-flex column row bottom-margin"
 							 *ngIf="((allowReassignObject || allowReassignResource) && !isReassign)">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
@@ -64,7 +64,6 @@
 											   (ngModelChange)="tableRadioSelection = undefined">
 								</p-radioButton>
 							</div>
-							<div class="govern-hr"></div>
 						</div>
 						<div class="asset-detail-tabs">
 							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title
@@ -325,7 +324,7 @@
 						minWidth="368px"
 						maxWidth="400px"
 						[hasDetail]="false"
-						height="calc(100vh - 169px)"
+						height="calc(100vh - 163px)"
 						[extraButtons]="sidePanelButtons">
 			<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
