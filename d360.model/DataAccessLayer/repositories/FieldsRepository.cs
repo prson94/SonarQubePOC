@@ -2631,6 +2631,8 @@ namespace d360.model.DataAccessLayer
 
 			string sql = ComplexFieldsHelper.GetComplexRelationLookupSQL(definition, dbArgs, fields, selects, fieldRelationDirectionMapping, fieldtypeRelationshipType);
 
+			int idx = definition.Relations.Count();
+
 			(Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
 			List<string> defaultFilters = new List<string>();
@@ -2704,7 +2706,9 @@ namespace d360.model.DataAccessLayer
 			{
 				permissionSQL = $@"	
 									declare @hasPermission bit = 1,
-									@CheckhasPermission int = 0;
+									@CheckhasPermission int = 0,
+									@PermissionAssetId bit = 0,
+									@PermissionAssetTypeId bit = 0;
 
 									declare @relations table (
 									RowNumber int identity, RN varchar(3), 
@@ -2739,15 +2743,25 @@ namespace d360.model.DataAccessLayer
 									option(recompile);
 
 									drop table if exists #AssetPermission;
-									Create table #AssetPermission (AssetID bigint);
-									Create nonclustered index Ix_PermissAsset_temp on #AssetPermission(AssetID);
+									Create table #AssetPermission (AssetID bigint,AssetTypeId int);
+									Create clustered index Ix_PermissAsset_temp on #AssetPermission(AssetID,AssetTypeID);
 
 									insert into #AssetPermission
-									select distinct P.AssetID
+									select distinct P.AssetID,P.AssetTypeID
 									from @relations r
 									cross apply  dbo.UserAssetPermissions(@resourceId, r.AssetTypeID) P
 									where (PermissionsBitMask & 1) = 0
 									option(recompile);
+
+									if exists(select 1 from #AssetPermission where AssetID > 0)
+									begin
+										set @PermissionAssetId = 1;
+									end 
+
+									if exists(select 1 from #AssetPermission where AssetID = 0)
+									begin
+										set @PermissionAssetTypeId = 1;
+									end 
 
 								-- If resource can't read asset type of one or more hops, there should be no result. Add impossible condition.
 								select	top 1 
@@ -2762,7 +2776,23 @@ namespace d360.model.DataAccessLayer
 								end";
 
 
-				wheres.Add("not exists (select 1 from #AssetPermission p where H1.ID = p.AssetID)");
+				if (idx > 1)
+				{
+					string assetlist = "H1.ID";
+					string assettypelist = "H1.AssetTypeID";
+					for (int item = 2; item <= idx; item++)
+					{
+						assetlist = assetlist + $",H{item}.ID";
+						assettypelist = assettypelist + $",H{item}.AssetTypeID";
+					}
+					wheres.Add($"not exists (select 1 from #AssetPermission p where  p.AssetID in ({assetlist}) and @PermissionAssetId = 1)");
+					wheres.Add($"not exists (select 1 from #AssetPermission p where p.AssetID = 0 and p.AssetTypeID in ({assettypelist}) and @PermissionAssetTypeId = 1)");
+				}
+				else
+				{
+					wheres.Add("not exists (select 1 from #AssetPermission p where H1.ID = p.AssetID and @PermissionAssetId = 1)");
+					wheres.Add("not exists (select 1 from #AssetPermission p where p.AssetID = 0 and H1.AssetTypeID = p.AssetTypeID and @PermissionAssetTypeId = 1)");
+				}
 				wheres.Add("@hasPermission = 1");
 			}
 
