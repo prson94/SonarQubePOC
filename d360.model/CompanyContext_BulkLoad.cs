@@ -221,7 +221,9 @@ namespace d360.model
 					}) : null,
 				Error = 0,
 				Processed = 0,
-				ApplicationId = "Internal/BulkLoad/Promote"
+				ApplicationId = "Internal/BulkLoad/Promote",
+				Method = "BULK"
+
 			};
 
 			return execution;
