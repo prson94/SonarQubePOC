@@ -2685,7 +2685,7 @@ where	T.ExecutionID = @ExecutionID
 						DECLARE @inserted TABLE (id INT);
 						insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
 						output inserted.id into @inserted
-						values (@object, @objectId,@displayValue, 0, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
+						values (@object, @objectId,@displayValue, @resourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
 
 
 						declare @auditId int = (select top 1 id from @inserted)
@@ -2698,7 +2698,8 @@ where	T.ExecutionID = @ExecutionID
 							assetId = asset.ID,
 							fieldTypeId = fieldType.ID,
 							fieldTypeName = fieldType.Name,
-							previousValue
+							previousValue,
+							resourceID = CurrentResourceID
 						});
 				}
 
