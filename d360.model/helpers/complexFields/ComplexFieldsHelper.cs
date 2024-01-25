@@ -444,6 +444,7 @@ namespace d360.model.helpers
 
 			foreach (var f in definition.Fields.OrderBy(x => x.DisplayOrder))
 			{
+				//todo fix column names
 				string fieldName = string.IsNullOrEmpty(f.OverrideDisplayName) ? f.FieldTypeName : f.OverrideDisplayName;
 				int? colWidth = f.Width;
 
@@ -474,6 +475,22 @@ namespace d360.model.helpers
 					if (ft == null)
 					{
 						continue;
+					}
+
+					if (!string.IsNullOrEmpty(f.OverrideDisplayName))
+					{
+						fieldName = f.OverrideDisplayName;
+					}
+					else if (f.FieldTypeName.Contains('.'))
+					{
+						//if fieldtypename contains . its coming from relation so it uses Relation.{fieldName} format
+						string[] parts = f.FieldTypeName.Split('.');
+						parts[1] = ft.FriendlyName;
+						fieldName = string.Join(".", parts);
+					}
+					else
+					{
+						fieldName = ft.FriendlyName;
 					}
 
 					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
@@ -549,7 +566,7 @@ namespace d360.model.helpers
 				}
 				else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
 				{
-					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+					var gColumn = new GridColumn { text = f.OverrideDisplayName ?? "Display Value", columnWidth = colWidth };
 					var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder, isAscending = f.SortByAscending };
 					gField.type = gColumn.columntype = "preview";
 					gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
@@ -565,7 +582,7 @@ namespace d360.model.helpers
 				}
 				else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 				{
-					var gColumn = new GridColumn { text = fieldName, columnWidth = colWidth };
+					var gColumn = new GridColumn { text = f.OverrideDisplayName ?? "Asset Path", columnWidth = colWidth };
 					if (gColumn.text.ToLowerInvariant() == "_assetpath")
 					{
 						gColumn.text = "Asset Path";
