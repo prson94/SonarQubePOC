@@ -5433,7 +5433,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						where ea.ExecutionID = @executionID 
 								and ea.Success is null and ea.assetid is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
-								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.Method = 'BULK' and ea.IsNew = 1));"
+								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.ApplicationID = 'Internal/BulkLoad/Promote' and ea.IsNew = 1));"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
 
             if (sendWorkflowEvents)
@@ -5474,7 +5474,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								and ea.Success is null 
 								and a.id is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
-								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
+								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.ApplicationID = 'Internal/BulkLoad/Promote');"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
         }
 
