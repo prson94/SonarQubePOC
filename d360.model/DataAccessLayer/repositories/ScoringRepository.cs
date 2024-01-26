@@ -583,6 +583,7 @@ ID bigint,
 AssetUid uniqueidentifier,
 AssetVersionUid uniqueidentifier,
 MetricAssetUid uniqueidentifier,
+AssetUidParam uniqueidentifier,
 EffectiveDate date,
 [Value] bit,
 IsSuccess bit,
@@ -591,26 +592,26 @@ Message nvarchar(4000)
 
 create clustered index cx_TempDataProcess on #TempDataProcess(ID);
 
-insert into #TempDataProcess(ID,AssetUid,MetricAssetUid,EffectiveDate,[Value])
+insert into #TempDataProcess(ID,AssetUidParam,MetricAssetUid,EffectiveDate,[Value])
 select ID,AssetUid,AssetVersionUid,EffectiveDate,[Value]
 from metrics.ExternalMeasureResult t
 where t.Id between @minId and @maxId;
 
-select AssetUid,MetricAssetUid,EffectiveDate
+select AssetUidParam,MetricAssetUid,EffectiveDate
 into #tempduplicate
 from #TempDataProcess
-group by AssetUid,MetricAssetUid,EffectiveDate
+group by AssetUidParam,MetricAssetUid,EffectiveDate
 having count(1)>1;
 
 if exists(select 1 from #tempduplicate)
 begin
-	create clustered index cx_tempduplicate on #tempduplicate(AssetUid,MetricAssetUid);
+	create clustered index cx_tempduplicate on #tempduplicate(AssetUidParam,MetricAssetUid);
 
 	update t
 	set IsSuccess = 0,
 	Message = coalesce(Message,'') + 'The request contains duplicate combinations of assetUid, metricAssetUid, and effectiveDate. You must send in unique combinations for those three fields.;'
 	from #TempDataProcess t
-	inner join #tempduplicate d on d.AssetUid = t.AssetUid  and d.MetricAssetUid = t.MetricAssetUid
+	inner join #tempduplicate d on d.AssetUidParam = t.AssetUid  and d.MetricAssetUid = t.MetricAssetUid
 	and d.EffectiveDate = t.EffectiveDate;
 end
 
@@ -623,7 +624,7 @@ from	#TempDataProcess t
 			select	a.Uid,
 					aa.Uid as AssetTypeUid
 			from	Asset a
-					inner join AssetType aa on aa.Id = a.AssetTypeId and a.Uid = t.AssetUid
+					inner join AssetType aa on aa.Id = a.AssetTypeId and a.Uid = t.AssetUidParam
 		) s
 		outer apply (
 			select	v.Uid
@@ -673,7 +674,7 @@ Message = coalesce(Message,'') + 'Invalid measure specified;'
 from #TempDataProcess t
 where AssetVersionUid is null;
 
-select AssetUid,MetricAssetUid,EffectiveDate,coalesce(IsSuccess,1) IsSuccess,Message ErrorMessage,[Value] Result
+select AssetUidParam AssetUid,MetricAssetUid,EffectiveDate,coalesce(IsSuccess,1) IsSuccess,Message ErrorMessage,[Value] Result
 from #TempDataProcess
 order by id;
 
