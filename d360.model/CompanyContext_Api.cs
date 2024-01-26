@@ -1918,6 +1918,7 @@ where   ER.ExecutionID = @ExecutionID
 			}
 			catch (Exception generalEx)
 			{
+				LogExecutionErrorToAppInsights(execution, generalEx);
 				generalChecksCompleted = false;
 				string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 				execution.ErrorMessage = msg;
@@ -2026,6 +2027,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 								if (retryCount > API_V2_RETRY_LIMIT)
 								{
+									LogExecutionErrorToAppInsights(execution, ex);
 									LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
 								}
 							}
@@ -3569,6 +3571,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg + QueryID;
@@ -3790,6 +3793,8 @@ from	#tempexecurelat e
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
+
 										sw.Restart();
 										string msg = ex.GetFullExceptionData(false) + QueryID;
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", msg, timeout);
@@ -3982,6 +3987,7 @@ from	#tempexecurelat e
 
 								if (retryCount > API_V2_RETRY_LIMIT)
 								{
+									LogExecutionErrorToAppInsights(execution, ex);
 									string msg = ex.GetFullExceptionData(false);
 									LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
 								}
@@ -4178,6 +4184,7 @@ from	#tempexecurelat e
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										string msg = ex.GetFullExceptionData(false);
 										LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
 									}
@@ -4920,6 +4927,7 @@ from	#tempexecurelat e
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
@@ -5042,6 +5050,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										sw.Restart();
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
 										addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
@@ -5238,6 +5247,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					}
 					catch (Exception generalEx)
 					{
+						LogExecutionErrorToAppInsights(execution, generalEx);
 						generalChecksCompleted = false;
 						string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 						execution.ErrorMessage = msg;
@@ -5304,6 +5314,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
 										if (retryCount > API_V2_RETRY_LIMIT)
 										{
+											LogExecutionErrorToAppInsights(execution, ex);
 											LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
 										}
 									}
@@ -5645,6 +5656,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false);
 					execution.ErrorMessage = msg.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, msg.Length));
@@ -5781,6 +5793,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionPredicate", ex.GetFullExceptionData(false), timeout);
 									}
 								}

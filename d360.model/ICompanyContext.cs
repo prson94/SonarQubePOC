@@ -351,5 +351,7 @@ namespace d360.model
 		#endregion
 
 		#endregion
+
+		void LogExecutionErrorToAppInsights(ApiExecution execution, Exception ex);
 	}
 }
