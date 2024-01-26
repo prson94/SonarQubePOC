@@ -772,7 +772,9 @@ group by A.Uid";
                 }
                 catch (Exception generalEx)
                 {
-                    generalChecksCompleted = false;
+					LogExecutionErrorToAppInsights(execution, generalEx);
+
+					generalChecksCompleted = false;
                     string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
                     execution.ErrorMessage = msg;
                     execution.Processed = 0;
@@ -876,7 +878,8 @@ group by A.Uid";
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
                                         sw.Restart();
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityTypeRelationOverrideItem", ex.GetFullExceptionData(false), timeout);
+										LogExecutionErrorToAppInsights(execution, ex);
+										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityTypeRelationOverrideItem", ex.GetFullExceptionData(false), timeout);
                                         addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                         sw.Restart();
                                     }
