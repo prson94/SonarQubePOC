@@ -329,7 +329,7 @@ namespace igx.jobs.apiexecutionprocessor
 										ResourceID = info.ResourceID,
 										StartedOn = DateTime.UtcNow
 									});
-									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
+									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
 									break;
 								default:
 									resultsSql = "";
