@@ -576,19 +576,45 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 				}
 			}
 
-			var sql = $"select * from (select * {statusSQL} from Semantic where Qualifier = @qualifier) S order by {order} {direction}";
+			var sql = $@"
+						drop table if exists #tempsemantic;
 
-			var repoModels = await CompanyContext.Database.Connection.QueryAsync<Semantic>(
+						select * 
+						into #tempsemantic
+						from (select * {statusSQL} 
+						from Semantic 
+						where Qualifier = @qualifier) S;
+
+						select * from #tempsemantic S
+						order by {order} {direction};
+
+						with rs_data as
+						(select distinct * 
+						from (
+							select CreatedBy ResourceID from #tempsemantic
+							union all
+							select UpdatedBy ResourceID from #tempsemantic
+							 ) a
+						)
+						select gr.*
+						from rs_data s
+						inner join [reporting].[Global_Resource] gr on gr.ResourceID = s.ResourceID
+						";
+
+			var gridReader = await CompanyContext.Database.Connection.QueryMultipleAsync(
 				  new CommandDefinition(sql,
 				  cancellationToken: cancellationToken.Value,
 				  parameters: dbArgs,
 				  commandTimeout: ApiTimeout
 				));
 
+			var repoModels = gridReader.Read<Semantic>().ToList();
+			var globalresource = gridReader.Read<GlobalReportingResource>().ToList();
+
 			var getModels = (
 							from s in repoModels
-							join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
-							join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
+							join c in globalresource on s.CreatedBy equals c.ResourceID
+							join u in globalresource on s.UpdatedBy equals u.ResourceID
 							select s.ToGetModel(c, u)
 							).ToList();
 
@@ -677,10 +703,12 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "U");
 
+			var globalresource = await GetSemanticCreatorUpdator(transactionId);
+
 			var getModels = (
 							from s in repoModels
-							join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
-							join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
+							join c in globalresource on s.CreatedBy equals c.ResourceID
+							join u in globalresource on s.UpdatedBy equals u.ResourceID
 							select s.ToGetModel(c, u)
 							).ToList();
 
@@ -714,10 +742,13 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 
 
 			var createdSemantics = CompanyContext.Filter<Semantic>(s => qualifiers.Contains(s.Qualifier)).ToList();
+
+			var globalresource = await GetSemanticCreatorUpdator(transactionId);
+
 			var getModels = (
 						  from s in createdSemantics
-						  join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
-						  join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
+						  join c in globalresource on s.CreatedBy equals c.ResourceID
+						  join u in globalresource on s.UpdatedBy equals u.ResourceID
 						  select s.ToGetModel(c, u)
 						  ).ToList();
 
@@ -770,10 +801,12 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "U");
 
+			var globalresource = await GetSemanticCreatorUpdator(transactionId);
+
 			var getModels = (
 							from s in repoModels
-							join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
-							join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
+							join c in globalresource on s.CreatedBy equals c.ResourceID
+							join u in globalresource on s.UpdatedBy equals u.ResourceID
 							select s.ToGetModel(c, u)
 							).ToList();
 
@@ -823,6 +856,29 @@ OFFSET {pageSize * (pageNum - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
 				BatchUids = uids.ToList(),
 				BatchOperation = ReindexBatchOperation.Update
 			});
+		}
+
+		private async Task<List<GlobalReportingResource>> GetSemanticCreatorUpdator(string transactionId)
+		{
+			var qry = $@"
+						with rs_data as
+						(select distinct * 
+						from (
+								select CreatedBy ResourceID from Semantic
+								where transactionId = @transactionId
+								union all
+								select UpdatedBy ResourceID from Semantic
+								where transactionId = @transactionId
+							) a
+						)
+						select gr.*
+						from rs_data s
+						inner join [reporting].[Global_Resource] gr on gr.ResourceID = s.ResourceID
+			";
+
+			var qryresult = await CompanyContext.QueryAsync<GlobalReportingResource>(qry, new { transactionId });
+			var results = qryresult.ToList();
+			return results;
 		}
 
 		public async Task<IEnumerable<dynamic>> GetPossibleCreators()
