@@ -329,7 +329,6 @@ namespace igx.jobs.apiexecutionprocessor
 										ResourceID = info.ResourceID,
 										StartedOn = DateTime.UtcNow
 									});
-									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
 									break;
 								default:
 									resultsSql = "";
@@ -340,7 +339,14 @@ namespace igx.jobs.apiexecutionprocessor
 							{
 								var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
 								await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, results);
-								company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
+								if (action == ApiExecutionAction.PatchCatalog)
+								{
+									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.Id, action);
+								}
+								else
+								{
+									company.CompleteApiExecutionAndGetCounts(dbExecutionItem.ExecutionID, action);
+								}
 							}
 						}
 					}
