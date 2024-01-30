@@ -717,8 +717,25 @@ namespace d360.model
 										 and ItemNumber between @beginItemNumber and @endItemNumber;",
          new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
         }
-        
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+
+		private void LogLoopExecutionErrorAll(Guid executionID, long errorcount, string targetTable, string msg, int timeout = 3600)
+		{
+			int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+			Connection.Execute($@"
+								update	api.Execution
+								set		Processed = 0,
+										Error = @errorcount,
+										[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
+								where	ExecutionID = @executionID; 
+
+								update	{targetTable} 
+								set		Success = 0,
+										[Message] = @msg
+								where	ExecutionID = @executionID ;",
+		 new { executionID, msg, errorcount, characterLimit }, commandTimeout: timeout);
+		}
+		
+		private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
         {
 			var fieldIdSQL = $" and F.AssetID = {IdSqlSyntax}";
 
@@ -3573,10 +3590,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				{
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = msg + QueryID;
-					execution.Processed = 0;
-					execution.Error = import.Count();
+					string msg = generalEx.GetFullExceptionData(false) + QueryID;
+
+					sw.Restart();
+					LogLoopExecutionErrorAll(execution.ExecutionID, import.Count(), "api.ExecutionRelationship", msg, timeout);
+					addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
 
 					results = new List<DatabaseBulkRelationshipResult>();
 					results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
