@@ -170,6 +170,7 @@
 	<include file="scripts/Table.workflow.Item.xml"/>
 	<include file="scripts/Table.workflow.ItemAssignment.xml"/>
 	<include file="scripts/Table.workflow.ItemStep.xml"/>
+	<include file="scripts/Table.workflow.ItemStepStateDetail.xml"/>
 	<include file="scripts/Table.workflow.ItemStepTransition.xml"/>
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
 
@@ -274,7 +275,6 @@
 	<include file="scripts/View.reporting.Workflows.xml"/>
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
-	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
 	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
 
 	<include file="scripts/View.Deletions.xml"/>
@@ -303,6 +303,7 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeID.xml"/>	
 	<include file="scripts/Function.dbo.GetReferenceItemValuesSQL.xml"/>
+	<include file="scripts/Function.dbo.GetAuditIDFromUID.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
@@ -360,11 +361,7 @@
     <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
-	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
-	<include file="scripts/Procedure.metrics.CleanupExecutions.xml"/>
-	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
-	<include file="scripts/Procedure.metrics.ProcessAssetScores.xml"/>
 	
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Procedure.metrics.GenerateScore.xml"/>

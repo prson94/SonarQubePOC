@@ -1,8 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-//import { CompanySettingEnum } from '../models/settings.model';
-//import { CompanySettingsService } from '../services/settings.service';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 import { FeatureFlags } from '../services/feature-flags.enum';
 import { SiteUrlHelpers } from '../static/site-url-helpers';
@@ -30,6 +28,12 @@ export class FeatureFlagGuard  {
 
 		if (state.url.startsWith('/reference')) {
 			if (!this.featureFlagService.variation<boolean>(FeatureFlags.ReferenceListV2Flag)) {
+				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+			}
+		}
+
+		if (state.url.endsWith('/dashboard')) {
+			if (!this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled)) {
 				this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 			}
 		}

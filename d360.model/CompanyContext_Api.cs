@@ -717,8 +717,25 @@ namespace d360.model
 										 and ItemNumber between @beginItemNumber and @endItemNumber;",
          new { executionID, msg, beginItemNumber, endItemNumber, characterLimit }, commandTimeout: timeout);
         }
-        
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+
+		private void LogLoopExecutionErrorAll(Guid executionID, long errorcount, string targetTable, string msg, int timeout = 3600)
+		{
+			int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+			Connection.Execute($@"
+								update	api.Execution
+								set		Processed = 0,
+										Error = @errorcount,
+										[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
+								where	ExecutionID = @executionID; 
+
+								update	{targetTable} 
+								set		Success = 0,
+										[Message] = @msg
+								where	ExecutionID = @executionID ;",
+		 new { executionID, msg, errorcount, characterLimit }, commandTimeout: timeout);
+		}
+		
+		private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldTypeCore> jsonFieldTypes, SystemObjects objectType, string tableName, string IdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
         {
 			var fieldIdSQL = $" and F.AssetID = {IdSqlSyntax}";
 
@@ -1918,6 +1935,7 @@ where   ER.ExecutionID = @ExecutionID
 			}
 			catch (Exception generalEx)
 			{
+				LogExecutionErrorToAppInsights(execution, generalEx);
 				generalChecksCompleted = false;
 				string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 				execution.ErrorMessage = msg;
@@ -2026,6 +2044,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 								if (retryCount > API_V2_RETRY_LIMIT)
 								{
+									LogExecutionErrorToAppInsights(execution, ex);
 									LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
 								}
 							}
@@ -3569,11 +3588,13 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
-					execution.ErrorMessage = msg + QueryID;
-					execution.Processed = 0;
-					execution.Error = import.Count();
+					string msg = generalEx.GetFullExceptionData(false) + QueryID;
+
+					sw.Restart();
+					LogLoopExecutionErrorAll(execution.ExecutionID, import.Count(), "api.ExecutionRelationship", msg, timeout);
+					addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
 
 					results = new List<DatabaseBulkRelationshipResult>();
 					results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
@@ -3790,6 +3811,8 @@ from	#tempexecurelat e
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
+
 										sw.Restart();
 										string msg = ex.GetFullExceptionData(false) + QueryID;
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", msg, timeout);
@@ -3982,6 +4005,7 @@ from	#tempexecurelat e
 
 								if (retryCount > API_V2_RETRY_LIMIT)
 								{
+									LogExecutionErrorToAppInsights(execution, ex);
 									string msg = ex.GetFullExceptionData(false);
 									LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
 								}
@@ -4178,6 +4202,7 @@ from	#tempexecurelat e
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										string msg = ex.GetFullExceptionData(false);
 										LogLoopExecutionError(execution.ExecutionID, 0, 999999999, "api.ExecutionRelationshipType", msg, timeout);
 									}
@@ -4920,6 +4945,7 @@ from	#tempexecurelat e
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
@@ -5042,6 +5068,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										sw.Restart();
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
 										addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
@@ -5238,6 +5265,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					}
 					catch (Exception generalEx)
 					{
+						LogExecutionErrorToAppInsights(execution, generalEx);
 						generalChecksCompleted = false;
 						string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 						execution.ErrorMessage = msg;
@@ -5304,6 +5332,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
 										if (retryCount > API_V2_RETRY_LIMIT)
 										{
+											LogExecutionErrorToAppInsights(execution, ex);
 											LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
 										}
 									}
@@ -5433,7 +5462,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						where ea.ExecutionID = @executionID 
 								and ea.Success is null and ea.assetid is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
-								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.Method = 'BULK' and ea.IsNew = 1));"
+								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or (ex.ApplicationID = 'Internal/BulkLoad/Promote' and ea.IsNew = 1));"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, assetTypeId, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
 
             if (sendWorkflowEvents)
@@ -5455,7 +5484,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 			execution.ErrorMessage = message;
 			execution.CompletedOn = DateTime.UtcNow;
-			Update(execution);
+			Connection.Execute($@"update api.execution set ErrorMessage = @message, CompletedOn = @date where executionid = @ExecutionID", new { execution.ExecutionID, message, date = DateTime.UtcNow });
 		}
 
 		public void UpdateGroupCounterFields(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -5474,7 +5503,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								and ea.Success is null 
 								and a.id is not null
 								and ea.ItemNumber between @beginItemNumber and @endItemNumber
-								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.Method = 'BULK');"
+								and ((ex.Method = 'PUT' and ef.FieldValue is not null and cast(ef.FieldValue as int) <> isnull(FCV.Value,0)) or ex.Method = 'POST' or ex.ApplicationID = 'Internal/BulkLoad/Promote');"
                       , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID, dataType = DataType.Counter.ToString() }, transaction: trans, commandTimeout: timeout);
         }
 
@@ -5645,6 +5674,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false);
 					execution.ErrorMessage = msg.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, msg.Length));
@@ -5781,6 +5811,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionPredicate", ex.GetFullExceptionData(false), timeout);
 									}
 								}

@@ -2392,7 +2392,19 @@ namespace d360.web.Controllers.V2
 					return Request.CreateResponse(HttpStatusCode.OK, data);
 				}
 
-				var fieldType = Company.FieldTypes.FirstOrDefault(ft => ((fieldObject == SystemObjects.IssueType.ToString() && ft.IssueTypeID == id) || (fieldObject == SystemObjects.IntersectType.ToString() && ft.IntersectTypeID == id) || (fieldObject != SystemObjects.IssueType.ToString() && fieldObject != SystemObjects.IntersectType.ToString() && ft.AssetTypeID == id)) && ft.Name == fieldName);
+				FieldType fieldType;
+				if (fieldObject == SystemObjects.IssueType.ToString())
+				{
+					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.IssueTypeID == id && ft.Name == fieldName);
+				}
+				else if(fieldObject == SystemObjects.IntersectType.ToString())
+				{
+					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.IntersectTypeID == id && ft.Name == fieldName);
+				}
+				else
+				{
+					fieldType = Company.FieldTypes.FirstOrDefault(ft =>  ft.AssetTypeID == id && ft.Name == fieldName);
+				}
 
 				//list items for parent field
 				if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
@@ -2705,19 +2717,32 @@ namespace d360.web.Controllers.V2
 				}
 
 				bool hasColor = false;
+				bool UseAssetDisplayValue = false;
 
 				var colorjoin = "";
 
 				string selectStatement = "v.text";
 				string resourceJoin = "";
+				string tempselectlist = "V.*";
 
 				if (fieldType.LookupObjectType == "Resource")
 				{
+					var assetformat = Company.Connection.Query<string>($"select DisplayFormat from assettype where uid = '00000001-0000-0000-0000-A00000000011'").FirstOrDefault();
+					var fieldformat = !string.IsNullOrWhiteSpace(fieldType.LookupEditFormat) ? fieldType.LookupEditFormat : fieldType.LookupDisplayFormat;
 					bool hideData3SixtyUsers = HideData3SixtyUsers();
 					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
-					resourceJoin = $@"
-										inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
-										";
+					if (!string.IsNullOrWhiteSpace(assetformat) && assetformat == fieldformat)
+					{
+						UseAssetDisplayValue = true;
+						resourceJoin = $@" inner join reporting.Global_resource R on R.ResourceID = a.SourceID and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}";
+						whereQuery = whereQuery.Replace("and text like @filter", "and adv.DisplayValue like @filter");
+					}
+					else
+					{
+						tempselectlist = "v.text, v.value";
+						resourceJoin = $@" inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}";
+					}
+
 				}
 
 				if (isForAssetForm)
@@ -2762,6 +2787,18 @@ namespace d360.web.Controllers.V2
 						{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
 						where @fieldTypeId = FieldTypeID {whereQuery};";
 
+				if (UseAssetDisplayValue && fieldType.LookupObjectType == "Resource")
+				{
+					countQuery = $@"
+					select count(1) 
+					from AssetType Att 
+					inner join Asset a on att.id = a.assettypeid
+					inner join AssetDisplayValue adv on adv.AssetID = a.ID
+					{resourceJoin}
+					where att.uid = '00000001-0000-0000-0000-A00000000011'
+					{whereQuery};";
+
+				}
 				if (hasColor)
 				{
 					colorjoin = $@"
@@ -2774,20 +2811,39 @@ namespace d360.web.Controllers.V2
 
 				if (!onlyCount)
 				{
-					query = $@"
-							drop table if exists #tempResults
-							select V.*
-							into #tempResults
-							from FieldLookupValue V
-							{parentFieldJoins}
-							{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
-							where @fieldTypeId = v.FieldTypeID
-							{whereQuery}
-							order by text asc
-							{pagingQuery};
+					if (UseAssetDisplayValue)
+					{
+						query = $@"
+								drop table if exists #tempResults
+								select adv.DisplayValue text, a.SourceID value
+								into #tempResults
+								from AssetType Att 
+								inner join Asset a on a.assettypeid = att.id
+								inner join AssetDisplayValue adv on adv.AssetID = a.ID
+								{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+								where att.uid = '00000001-0000-0000-0000-A00000000011'
+								{whereQuery}
+								order by text asc
+								{pagingQuery};
 
-							select {selectStatement} from #tempResults V {colorjoin};";
+								select {selectStatement} from #tempResults V {colorjoin};";
+					}
+					else
+					{ 
+						query = $@"
+								drop table if exists #tempResults
+								select V.*
+								into #tempResults
+								from FieldLookupValue V
+								{parentFieldJoins}
+								{(fieldType.LookupObjectType == "Resource" ? resourceJoin : "")}
+								where @fieldTypeId = v.FieldTypeID
+								{whereQuery}
+								order by text asc
+								{pagingQuery};
 
+								select {selectStatement} from #tempResults V {colorjoin};";
+					}
 					if (fieldType.LookupObjectType == SystemObjects.ReferenceItem.ToString() || fieldType.LookupObjectType == SystemObjects.ReferenceItemType.ToString())
 					{
 						var refvalues = Company.Connection.Query<dynamic>($"exec [GetReferenceItemValues] {fieldType.LookupObjectID}, 0, 0, 1 ").ToList();
@@ -2804,7 +2860,7 @@ namespace d360.web.Controllers.V2
 
 						query = $@"
 							drop table if exists #tempResults
-							select V.*
+							select {tempselectlist}
 							into #tempResults
 							from FieldLookupValue V
 							{parentFieldJoins}							

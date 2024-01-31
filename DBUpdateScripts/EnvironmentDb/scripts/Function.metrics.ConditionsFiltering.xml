@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.5">
+ <changeSet author="Pappas,puneet" id="Function.metrics.ConditionsFiltering-v3.7">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[ConditionsFiltering]
@@ -273,6 +273,33 @@ BEGIN
 									end = 1
 						);
 			end
+			
+			-- check when not equal and not in for no record in field table.
+			if exists (select 1 from @tConditions where Position = @currentPosition 
+						and Operator = 2
+					  )
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+				left join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId 
+				where c.[Position] = @currentPosition and f.FormattedValue is null
+				and c.Passed = 0 and c.Operator = 2 and c.SingleValue is not null;
+			end
+
+			if exists (select 1 from @tConditions where Type in ('Text', 'Lookup') 
+						and Position = @currentPosition 
+						and Operator = 17
+					  )
+			begin
+				update	c
+				set		c.Passed = 1
+				from	@tConditions c
+				left join dbo.Field f on f.FieldTypeID = c.FieldTypeId and f.AssetID = @assetId 
+				where c.[Type] in ('Text','Lookup') and c.[Position] = @currentPosition and f.Value is null
+				and c.Passed = 0 and c.Operator = 17 and c.[Values] is not null;
+			end
+
 
 			-- finally, check if all criteria for the group are matched.
 

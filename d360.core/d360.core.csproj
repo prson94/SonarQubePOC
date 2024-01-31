@@ -12,6 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="antisamy\antisamy-govern.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="antisamy\antisamy-govern.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="versioning.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

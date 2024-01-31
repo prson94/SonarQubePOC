@@ -24,7 +24,7 @@ using System.Xml.Linq;
 
 namespace igx.jobs.apiexecutionprocessor
 {
-	public class TaskProcessor: BaseTaskWebJob
+	public class TaskProcessor : BaseTaskWebJob
 	{
 		const int DEFAULT_QUEUE_ITEMS = 500;
 		const string FUNCTION_NAME = "TaskProcessor";
@@ -130,79 +130,77 @@ namespace igx.jobs.apiexecutionprocessor
 								{
 									try
 									{
-										using (var companyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
+										await outerCompanyConnection.OpenIfClosed();
+
+										switch (q.Action)
 										{
-											await companyConnection.OpenIfClosed();
+											case "Add":
+												addAuditEntry(outerCompanyConnection, "Created", q);
+												resolveObjectObjectID(q, out var @object, out var objectId);
+												resolveIndexItem(company, indexCollectionModel, outerCompanyConnection, @object, objectId, "A", q.AssetID);
+												break;
+											case "Delete":
+												addAuditEntry(outerCompanyConnection, "Removed", q);
+												resolveObjectObjectID(q, out @object, out objectId);
+												resolveIndexItem(company, indexCollectionModel, outerCompanyConnection, @object, objectId, "D", q.AssetID);
+												break;
+											case "EventTopicNotification":
+												bool parseSuccessful = true;
+												if (!string.IsNullOrEmpty(q.Custom))
+												{
+													var customXml = XElement.Parse(q.Custom);
+													d360.core.enums.Workflow.ChangeType ct;
+													SystemObjects obj;
+													SystemObjects objType;
 
-											switch (q.Action)
-											{
-												case "Add":
-													addAuditEntry(companyConnection, "Created", q);
-													resolveObjectObjectID(q, out var @object, out var objectId);
-													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "A", q.AssetID);
-													break;
-												case "Delete":
-													addAuditEntry(companyConnection, "Removed", q);
-													resolveObjectObjectID(q, out @object, out objectId);
-													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "D", q.AssetID);
-													break;
-												case "EventTopicNotification":
-													bool parseSuccessful = true;
-													if (!string.IsNullOrEmpty(q.Custom))
+													if (!Enum.TryParse(customXml.Element("ChangeType").Value, out ct)) { parseSuccessful = false; }
+													if (!Enum.TryParse(customXml.Element("ObjectType").Value, out objType)) { parseSuccessful = false; }
+													if (!Enum.TryParse(customXml.Element("Object").Value, out obj)) { parseSuccessful = false; }
+													if (!Enum.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID)) { parseSuccessful = false; }
+
+													if (parseSuccessful)
 													{
-														var customXml = XElement.Parse(q.Custom);
-														d360.core.enums.Workflow.ChangeType ct;
-														SystemObjects obj;
-														SystemObjects objType;
-
-														if (!Enum.TryParse(customXml.Element("ChangeType").Value, out ct)) { parseSuccessful = false; }
-														if (!Enum.TryParse(customXml.Element("ObjectType").Value, out objType)) { parseSuccessful = false; }
-														if (!Enum.TryParse(customXml.Element("Object").Value, out obj)) { parseSuccessful = false; }
-														if (!Enum.TryParse(customXml.Element("ObjectTypeID").Value, out int objectTypeID)) { parseSuccessful = false; }
-
-														if (parseSuccessful)
+														var topicName = company.EventTopic;
+														Queue.CreateTopicMessage(topicName, new EventInfo
 														{
-															var topicName = company.EventTopic;
-															Queue.CreateTopicMessage(topicName, new EventInfo
+															Action = ct,
+															CompanyID = company.CompanyID,
+															DomainPrefix = company.UrlPrefix,
+															Object = new EventObjectInfo
 															{
-																Action = ct,
-																CompanyID = company.CompanyID,
-																DomainPrefix = company.UrlPrefix,
-																Object = new EventObjectInfo
-																{
-																	Object = obj,
-																	ObjectID = q.ObjectID,
-																	ObjectType = objType,
-																	ObjectTypeID = objectTypeID
-																},
-																ResourceID = 0
-															});
-														}
+																Object = obj,
+																ObjectID = q.ObjectID,
+																ObjectType = objType,
+																ObjectTypeID = objectTypeID
+															},
+															ResourceID = 0
+														});
 													}
+												}
 
-													if (!parseSuccessful)
-													{
-														throw new MissingPropertiesException("EventTopicNotification XML Field");
-													}
-													break;
-												case "Notify":
-													if (q.Object == "TaggedComment")
-													{
-														var comment = companyConnection.Query<(int AssetID, DateTime? CommentDate)>(
-															@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id",
-															new { id = q.ObjectID }, null, true, 900
-														).FirstOrDefault();
+												if (!parseSuccessful)
+												{
+													throw new MissingPropertiesException("EventTopicNotification XML Field");
+												}
+												break;
+											case "Notify":
+												if (q.Object == "TaggedComment")
+												{
+													var comment = outerCompanyConnection.Query<(int AssetID, DateTime? CommentDate)>(
+														@"select AssetID, isNull(UpdatedOn, CreatedOn) as CommentDate from Comment where ID = @id",
+														new { id = q.ObjectID }, null, true, 900
+													).FirstOrDefault();
 
-														if (comment.AssetID > 0)
+													if (comment.AssetID > 0)
+													{
+														var notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
+														if (notification != null)
 														{
-															var notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
-															if (notification != null)
-															{
-																var displayValue = companyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+															var displayValue = outerCompanyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
 
-																var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
+															var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
 
-																string mailBody = $@"
+															string mailBody = $@"
 																						<html>
 																						<head>
 																							<style>
@@ -271,57 +269,56 @@ namespace igx.jobs.apiexecutionprocessor
 																						</body>
 																						</html>                                                                                        
 																						";
-																Mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
-															}
+															Mail.SendMessage(Notifications.TaggedCommentMailSender, notification.Subject, notification.RecipientEmail, notification.RecipientName, mailBody, notification.IsHtml).Wait();
 														}
 													}
-													break;
-												case "ObjectIndex":
-													resolveIndexItem(company, indexCollectionModel, companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
-													break;
-												case "Update":
-													addAuditEntry(companyConnection, "Updated", q);
-													resolveObjectObjectID(q, out @object, out objectId);
-													resolveIndexItem(company, indexCollectionModel, companyConnection, @object, objectId, "U", q.AssetID);
-													break;
-												case "TagConsolidated":
-													addAuditEntry(companyConnection, "Tag Consolidate", q);
-													break;
-												case "CompanySettingsUpdate":
-													addAuditEntry(companyConnection, "Update settings", q);
-													break;
-												case "QueueRebuild":
-													if (!string.IsNullOrEmpty(q.Custom))
+												}
+												break;
+											case "ObjectIndex":
+												resolveIndexItem(company, indexCollectionModel, outerCompanyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
+												break;
+											case "Update":
+												addAuditEntry(outerCompanyConnection, "Updated", q);
+												resolveObjectObjectID(q, out @object, out objectId);
+												resolveIndexItem(company, indexCollectionModel, outerCompanyConnection, @object, objectId, "U", q.AssetID);
+												break;
+											case "TagConsolidated":
+												addAuditEntry(outerCompanyConnection, "Tag Consolidate", q);
+												break;
+											case "CompanySettingsUpdate":
+												addAuditEntry(outerCompanyConnection, "Update settings", q);
+												break;
+											case "QueueRebuild":
+												if (!string.IsNullOrEmpty(q.Custom))
+												{
+													switch (q.Custom)
 													{
-														switch (q.Custom)
-														{
-															case "AssetGraph":
-																Queue.CreateMessage(Configuration["AssetGraphQueue"], new RebuildAssetGraphModel { CompanyID = company.CompanyID });
-																break;
-															case "DisplayValue":
-																Queue.CreateMessage(Configuration["DisplayValueQueue"], new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
-																break;
-															case "SearchIndex":
-																ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
-																if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
-																{
-																	model.Category = q.Object;
-																}
-																Queue.CreateMessage(Configuration["SearchIndexQueue"], model);
-																break;
-															default:
-																//Nothing to do.
-																break;
-														}
+														case "AssetGraph":
+															Queue.CreateMessage(Configuration["AssetGraphQueue"], new RebuildAssetGraphModel { CompanyID = company.CompanyID });
+															break;
+														case "DisplayValue":
+															Queue.CreateMessage(Configuration["DisplayValueQueue"], new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
+															break;
+														case "SearchIndex":
+															ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
+															if (!string.IsNullOrEmpty(q.Object) && SearchIndexer.IsIndexable(q.Object))
+															{
+																model.Category = q.Object;
+															}
+															Queue.CreateMessage(Configuration["SearchIndexQueue"], model);
+															break;
+														default:
+															//Nothing to do.
+															break;
 													}
-													break;
-												default:
-													// Nothing to do, as this is an unknown action.
-													break;
-											}
-
-											companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
+												}
+												break;
+											default:
+												// Nothing to do, as this is an unknown action.
+												break;
 										}
+
+										outerCompanyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
 									}
 									catch (Exception ex)
 									{

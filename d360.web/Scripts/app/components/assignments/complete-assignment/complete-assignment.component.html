@@ -5,7 +5,7 @@
 		   [zIndex]="'20001 !important'"
 		   [additionalClasses]="'large-dialog modal-form'">
 	<d3s-loading [isLoading]="isLoading"></d3s-loading>
-	<div class="modal-with-side-panel assignment-selector">		
+	<div class="modal-with-side-panel assignment-selector">
 		<div class="modal-dialog-main-panel" *ngIf="!isLoading">
 			<div class="content condensed-table">
 				<div class="modal-edit-form">
@@ -31,19 +31,19 @@
 									class="ig-button-group side-panel-button"></button>
 						</span>
 					</div>
-				</div>
-				<div class="subtitle">
-					{{workflowName}}
-					<ng-container *ngIf="!isBulkRespond && multiSubmitionItems.length <= 1">
-						<span i18n> on </span>
-						<span *ngIf="!isType"><a (click)="onClickAsset($event, assetId)">{{ assetName }}</a></span>
-						<span *ngIf="isType">{{ assetName }}</span>
-					</ng-container>
+					<div class="subtitle">
+						{{workflowName}}
+						<ng-container *ngIf="!isBulkRespond && multiSubmitionItems.length <= 1">
+							<span i18n> on </span>
+							<span *ngIf="!isType"><a (click)="onClickAsset($event, assetId)">{{ assetName }}</a></span>
+							<span *ngIf="isType">{{ assetName }}</span>
+						</ng-container>
+					</div>
 				</div>
 				<div [hidden]="isAssignmentProgressSelected"
 					 class="scrollable-content details-container">
 					<div class="asset-detail">
-						<div class="d-flex column"
+						<div class="d-flex column row bottom-margin"
 							 *ngIf="((allowReassignObject || allowReassignResource) && !isReassign)">
 							<div i18n>What would you like to do?</div>
 							<div class="radio-button">
@@ -64,7 +64,6 @@
 											   (ngModelChange)="tableRadioSelection = undefined">
 								</p-radioButton>
 							</div>
-							<div class="govern-hr"></div>
 						</div>
 						<div class="asset-detail-tabs">
 							<ig-property-group *ngIf="radioSelectionValue === 'completeForm'" i18n-title
@@ -319,15 +318,15 @@
 			</div>
 		</div>
 		<div class="side-panel height-auto" [hidden]="isLoading">
-			<side-panel [isSecondarySidePanel]="true"
+			<side-panel [shouldBePadded]="false"
 						[(expanded)]="sidePanelOpen"
 						[storageKey]="sidePanelStorageKey"
 						minWidth="368px"
-						maxWidth="410px"
+						maxWidth="400px"
 						[hasDetail]="false"
-						height="calc(100vh - 169px)"
+						height="calc(100vh - 163px)"
 						[extraButtons]="sidePanelButtons">
-				<ng-container>
+			<ng-container>
 					<d3s-side-panel-switcher (panelHeaderLabel)="setPanelHeader($event)" [outsideModal]="false"
 											 [hidden]="!sidePanelOpen" [showPanelHeader]="false"
 											 #sidePanelSwitcherComponent></d3s-side-panel-switcher>

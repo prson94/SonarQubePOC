@@ -2,6 +2,7 @@
 using OWASP.AntiSamy.Html;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -149,9 +150,9 @@ namespace d360.core
 		public static string SanitizeHtml(this string text)
 		{
 			if (!string.IsNullOrEmpty(text))
-			{
+			{								
 				var s = new AntiSamy();
-				var results = s.Scan(text);
+				var results = s.Scan(text, GetPolicy());
 				text = results.GetCleanHtml();
 			}
 			return text;
@@ -174,6 +175,15 @@ namespace d360.core
 			doc.LoadHtml(text + "");
 			text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 			return text;
+		}
+
+		private static Policy GetPolicy()
+		{
+			Assembly assembly = Assembly.GetExecutingAssembly();
+
+			string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
+
+			return Policy.GetInstance(assembly.GetManifestResourceStream(resourceName));
 		}
 
 	}

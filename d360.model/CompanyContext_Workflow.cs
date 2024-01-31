@@ -129,10 +129,12 @@ namespace d360.model
 
 		public DbSet<WorkflowTaskProcedure> WorkflowTaskProcedures { get; set; }
 
+		public DbSet<WorkflowItemStepStateDetail> WorkflowItemStepStateDetails { get; set; }
+
 		#endregion
 
 		#region Utility
-		
+
 		private readonly Random randomNumberGenerator = new Random();
 
 		private void ChangeItemState(WorkflowItemStep item)
@@ -346,56 +348,81 @@ namespace d360.model
 		private async Task<IEnumerable<UsersOutstandingWorkflows>> GetUsersOutstandingWorkflows(int resourceId, int newOffset = 1)
 		{
 			return await Database.Connection.QueryAsync<UsersOutstandingWorkflows>(@"
-					Select wfm.Name as Name,wfm.Id as Id,wfm.Version as Version,wfm.Step as Step,wfm.StepId as StepId,wfm.Total as Total,Isnull(Sub.New,0) as New, wfm.workflowItemUid as WorkflowItemUid
-					into #results
+					declare @results table(
+								Name NVARCHAR(500), 
+								Id BIGINT, 
+								Version INT, 
+								Step NVARCHAR(500), 
+								StepId BIGINT, 
+								Total INT, 
+								New INT, 
+								WorkflowTypeUid uniqueidentifier NULL, 
+								WorkflowItemStepUid uniqueidentifier NULL, 
+								WorkflowItemUid uniqueidentifier NULL)
+
+					insert into @results(Name, Id, Version, Step, StepId, Total, New, WorkflowTypeUid)
+					Select 
+						wfm.Name as Name,
+						wfm.Id as Id,						
+						wfm.Version as Version,
+						wfm.Step as Step,
+						wfm.StepId as StepId,
+						wfm.Total as Total,
+						Isnull(Sub.New,0) as New,				
+						wfm.WorkflowTypeUid as WorkflowTypeUid
 					from(
 					select 
-					wt.name as Name
-					,wt.id as Id
-					,wv.[version] as Version
-					, wvs.name as Step
-					,wvs.Id as StepId
-					,count(1) as Total 
-					,wi.uid as workflowItemUid
+						wt.name as Name
+						,wt.id as Id
+						,wt.uid as WorkflowTypeUid
+						,wv.[version] as Version
+						,wvs.name as Step
+						,wvs.Id as StepId
+						,count(1) as Total 					
 					from
 					[workflow].[type] wt
 					inner join [workflow].[version] wv on (wt.id = wv.typeid)
 					inner join [workflow].[item] wi on (wv.id = wi.versionid)	
 					inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-					inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+					inner join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.ItemStepID = wis.ID and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 					inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 					where
 					wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
-					group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id 
+					group by wt.name, wt.id, wt.uid,wv.[version],wvs.name,wvs.Id 
 					) as wfm
 					left join
 					(
-					select 
-	
-					wt.id as Id
-					,wv.[version] as Version
-					, wvs.name as Step
-					,wvs.Id as StepId
-					,count(1) as New
+					select 	
+						wt.id as Id
+						,wt.uid as WorkflowTypeUid
+						,wv.[version] as Version
+						, wvs.name as Step
+						,wvs.Id as StepId
+						,count(1) as New
 					from
 					[workflow].[type] wt
 					inner join [workflow].[version] wv on (wt.id = wv.typeid)
 					inner join [workflow].[item] wi on (wv.id = wi.versionid)	 
 					inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-					inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+					inner join [workflow].[itemassignment] wia on(wia.itemstepid = wis.id and wia.ItemStepID = wis.ID and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 					inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 					where
 					wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3  and wia.CreatedOn > getdate()-@newOffset
-					group by wt.name, wt.id,wv.[version],wvs.name,wvs.Id
+					group by wt.name, wt.id, wt.uid,wv.[version],wvs.name,wvs.Id
 					) as Sub on
 					wfm.Id =Sub.Id and wfm.Version=Sub.Version and wfm.StepId = sub.stepid
 
-					select wfm.*, wt.uid as WorkflowTypeUid, wis.UID as WorkflowItemStepUid from #results wfm
-					inner join workflow.Type wt on wt.ID = wfm.Id
-					left join workflow.[ItemStep] wis on wfm.Total = 1 and wis.StepID = wfm.StepId
-					order by wfm.Name asc,wfm.[version] desc,wfm.Step asc
+					Update wfm
+						set WorkflowItemStepUid = wis.UID,
+							WorkflowItemUid = wi.UID											
+					from @results wfm
+					inner join workflow.[ItemStep] wis on wfm.Total = 1 and wis.StepID = wfm.StepId and wis.CompletedOn is null
+					inner join workflow.item wi on wi.ID= wis.itemID
+					inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.ItemStepID = wis.ID and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
 
-					drop table if exists #results", new { r = resourceId, newOffset });
+					select * from @results
+					order by Name asc, [version] desc, Step asc
+					", new { r = resourceId, newOffset });
 		}
 
 		private async Task<IEnumerable<dynamic>> GetUsersWithOutstandingWorkflows()
@@ -487,6 +514,7 @@ namespace d360.model
 			if (string.IsNullOrEmpty(requestStepBody))
 			{
 				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
+				throw new ArgumentException($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
 			}
 
 			JToken body = null;
@@ -497,6 +525,8 @@ namespace d360.model
 			catch
 			{
 				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
+				throw new ArgumentException($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
+
 			}
 
 			if (!string.IsNullOrEmpty(item.Fields))
@@ -693,7 +723,7 @@ namespace d360.model
 		}
 
 		private async Task SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
-		{
+		{		
 			if (settings == null)
 			{
 				throw new ArgumentNullException(nameof(settings), $"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
@@ -785,6 +815,22 @@ namespace d360.model
 					client.Timeout = new TimeSpan(0, 0, requestSettings.Timeout);
 
 					response = await client.SendAsync(request);
+					if (!response.IsSuccessStatusCode)
+					{
+						item.State = StepState.Failed;
+
+						WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+						{
+							itemStepID = item.ID,
+							Message = $"Http request failed with status code {response.StatusCode}",
+							Details = response.RequestMessage.ToString(),
+							State = StepState.Failed
+						};
+
+						WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+						await SaveChangesAsync();
+					}
 				}
 				catch (Exception ex)
 				{
@@ -1668,6 +1714,7 @@ namespace d360.model
 				fieldElement.Add(reassigned);
 				itemStep.Fields = fieldElement.ToString();
 				itemStep.StartedOn = DateTime.UtcNow;
+				itemStep.State = StepState.Pending;
 
 				List<WorkflowItemAssignment> currentAssignments;
 
@@ -1824,7 +1871,7 @@ namespace d360.model
 				return true;
 			}
 
-			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID };
+			WorkflowItemStep firstItemStep = new WorkflowItemStep { CompletedBy = CurrentResourceID, CompletedOn = DateTime.UtcNow, StartedOn = DateTime.UtcNow, StartedBy = CurrentResourceID, Step = firstVersionStep, Fields = "<fields/>", Settings = "<settings/>", ItemID = item.ID, State = StepState.Complete };
 
 			WorkflowItemSteps.Add(firstItemStep);
 			SaveChanges();
@@ -2091,7 +2138,8 @@ namespace d360.model
 					StepID = transition.ToVersionStepID,
 					Fields = "<fields/>",
 					Settings = "<settings/>",
-					ItemID = itemID
+					ItemID = itemID,
+					State = StepState.Pending
 				};
 
 				WorkflowItemSteps.Add(toItemStep);
@@ -2130,137 +2178,175 @@ namespace d360.model
 
 				//add topic messages for the transitions
 				await QueueSource.CreateTopicMessageAsync(startEvent);
+			} else if (!transitionPassed && transition.TransitionType == TransitionType.Condition) {
+				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
+
+				fromItemStep.State = StepState.Failed;
+
+				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+				{
+					itemStepID = fromItemStep.ID,
+					Message = "Step completed with 0 valid transitions",
+					State = StepState.Failed
+				};
+
+				WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+				SaveChanges();
+
 			}
+
 		}
 
 		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
 		{
-			bool isStepCompleted = false;
-			WorkflowItemStep itemStep = getWorkflowItemStep(itemStepID);
-			EventObjectInfo objectInfo = eventInfo.Object;
-
-			//if the step is already done exit
-			if (itemStep.CompletedOn.HasValue)
+			try
 			{
-				return;
-			}
+				bool isStepCompleted = false;
+				WorkflowItemStep itemStep = getWorkflowItemStep(itemStepID);
+				EventObjectInfo objectInfo = eventInfo.Object;
 
-			if (itemStep.Step == null)
-			{
-				return;
-			}
-
-			WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-			//does the step need to wait for all transitions before running?
-			if (stepSettings.WaitForAllTransitions)
-			{
-				//get count of the number of transitions to this step
-				int expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == itemStep.StepID).Count();
-
-				//get count of the completed transitions to this step                
-				int completedTransitionsCount = Database.Connection.QueryFirstOrDefault<int>(@"select count(1) from
-						workflow.itemsteptransition ist
-						inner join workflow.itemstep iss on (ist.toitemstepid = iss.id)
-					where 
-						iss.stepid = @stepId and iss.itemid = @itemId", new { stepId = itemStep.StepID, itemId = itemStep.ItemID });
-
-				if (expectedTransitionCount != completedTransitionsCount)
+				//if the step is already done exit
+				if (itemStep.CompletedOn.HasValue)
 				{
 					return;
 				}
-			}
 
-
-			StepType stepType = itemStep.Step.StepType;
-
-			if (stepType == StepType.Task)
-			{
-				switch (itemStep.Step.ActivityType)
+				if (itemStep.Step == null)
 				{
-					case WorkflowActivityType.EmailNotification:
-						isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings);
-						break;
-					case WorkflowActivityType.Form:
-						// send form notification to owners
-						await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
-						break;
-					case WorkflowActivityType.StatusChange:
-						// deprecated, just set to true and move on
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.Procedure:
-						// execute proc with specified id
-						ExecuteProc(objectInfo, stepSettings);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.FieldChange:
-						// change the specified field and mark the step complete
-						await UpdateItemField(itemStep, objectInfo, stepSettings);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.RelationshipChange:
-						UpdateItemRelationship(itemStep, objectInfo, stepSettings);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.Delete:
-						DeleteItemWorkflowActivity(objectInfo);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.StateChange:
-						ChangeItemState(itemStep);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.HTTPRequest:
-						await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
-						isStepCompleted = true;
-						break;
-					case WorkflowActivityType.HTTPResponse:
-						await ParseHttpResponseAsync(itemStep, stepSettings);
-						isStepCompleted = true;
-						break;
-					default:
-						isStepCompleted = true;
-						break;
-				}
-			}
-			else if (stepType == StepType.Finish || stepType == StepType.Terminate)
-			{
-
-				// if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
-				isStepCompleted = true;
-
-				WorkflowItem item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
-
-				if (item == null)
-				{
-					throw new ArgumentNullException(nameof(item), "ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
+					return;
 				}
 
-				if (item.Object == SystemObjects.Issue.ToString() && item.ObjectID > 0)
+				WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+				//does the step need to wait for all transitions before running?
+				if (stepSettings.WaitForAllTransitions)
 				{
-					Issue issue = Issues.FirstOrDefault(x => x.ID == item.ObjectID);
-					if (issue != null)
+					//get count of the number of transitions to this step
+					int expectedTransitionCount = WorkflowVersionStepTransitions.Where(x => x.ToVersionStepID == itemStep.StepID).Count();
+
+					//get count of the completed transitions to this step                
+					int completedTransitionsCount = Database.Connection.QueryFirstOrDefault<int>(@"select count(1) from
+							workflow.itemsteptransition ist
+							inner join workflow.itemstep iss on (ist.toitemstepid = iss.id)
+						where 
+							iss.stepid = @stepId and iss.itemid = @itemId", new { stepId = itemStep.StepID, itemId = itemStep.ItemID });
+
+					if (expectedTransitionCount != completedTransitionsCount)
 					{
-						if (issue.CompletedOn == null && issue.CompletedBy == null)
-						{
-							issue.CompletedOn = DateTime.UtcNow;
-							issue.CompletedBy = CurrentResourceID;
-						}
+						return;
 					}
 				}
 
-				item.CompletedBy = CurrentResourceID;
-				item.CompletedOn = DateTime.UtcNow;
-				SaveChanges();
 
-				//Mark any assignments as inactive / update them
-				CompleteItemAssignments(itemID);
+				StepType stepType = itemStep.Step.StepType;
+
+				if (stepType == StepType.Task)
+				{
+					switch (itemStep.Step.ActivityType)
+					{
+						case WorkflowActivityType.EmailNotification:
+							isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings);
+							break;
+						case WorkflowActivityType.Form:
+							// send form notification to owners
+							await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
+							break;
+						case WorkflowActivityType.StatusChange:
+							// deprecated, just set to true and move on
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.Procedure:
+							// execute proc with specified id
+							ExecuteProc(objectInfo, stepSettings);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.FieldChange:
+							// change the specified field and mark the step complete
+							await UpdateItemField(itemStep, objectInfo, stepSettings);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.RelationshipChange:
+							UpdateItemRelationship(itemStep, objectInfo, stepSettings);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.Delete:
+							DeleteItemWorkflowActivity(objectInfo);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.StateChange:
+							ChangeItemState(itemStep);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.HTTPRequest:
+							await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
+							isStepCompleted = true;
+							break;
+						case WorkflowActivityType.HTTPResponse:
+							await ParseHttpResponseAsync(itemStep, stepSettings);
+							isStepCompleted = true;
+							break;
+						default:
+							isStepCompleted = true;
+							break;
+					}
+				}
+				else if (stepType == StepType.Finish || stepType == StepType.Terminate)
+				{
+
+					// if the task is a finish or terminate task we need to mark the workflow instance as completed and the task as completed
+					isStepCompleted = true;
+
+					WorkflowItem item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+
+					if (item == null)
+					{
+						throw new ArgumentNullException(nameof(item), "ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
+					}
+
+					if (item.Object == SystemObjects.Issue.ToString() && item.ObjectID > 0)
+					{
+						Issue issue = Issues.FirstOrDefault(x => x.ID == item.ObjectID);
+						if (issue != null)
+						{
+							if (issue.CompletedOn == null && issue.CompletedBy == null)
+							{
+								issue.CompletedOn = DateTime.UtcNow;
+								issue.CompletedBy = CurrentResourceID;
+							}
+						}
+					}
+
+					item.CompletedBy = CurrentResourceID;
+					item.CompletedOn = DateTime.UtcNow;
+					SaveChanges();
+
+					//Mark any assignments as inactive / update them
+					CompleteItemAssignments(itemID);
+				}
+
+				if (isStepCompleted)
+				{
+					await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+				}
 			}
-
-			if (isStepCompleted)
+			catch (Exception ex)
 			{
-				await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
+				Log.LogError(string.Format("Error executing workflow step. ItemID: {0}, StepID: {1}", itemID, itemStepID));
+
+				WorkflowItemStep itemStep = WorkflowItemSteps.Where(x => x.ID == itemStepID).FirstOrDefault();
+				itemStep.State = StepState.Error;
+
+				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+				{
+					itemStepID = itemStep.ID,
+					Details = ex.StackTrace,
+					Message = ex.InnerException?.Message ?? ex.Message,
+					State = StepState.Error
+				};
+
+				WorkflowItemStepStateDetails.Add(itemStateDetail);
+				SaveChanges();
 			}
 		}
 
@@ -2530,19 +2616,43 @@ namespace d360.model
 			// mark step as completed
 			itemStep.CompletedOn = DateTime.UtcNow;
 			itemStep.CompletedBy = CurrentResourceID;
-			SaveChanges();
+			var transitionCount = 0;
 
-			// get the transitions for this step and add events
-			List<WorkflowVersionStepTransition> transitions = WorkflowVersionStepTransitions
-			.Where(i => i.FromVersionStepID == itemStep.StepID && i.TransitionType != TransitionType.Timer && i.State == State.Active)
-			.ToList();
-
-			if (transitions.Count > 0)
+			if (itemStep.Step.StepType == StepType.Finish || itemStep.Step.StepType == StepType.Terminate)
 			{
-				await StartTransitions(transitions, itemID, objectInfo);
+				itemStep.State = StepState.Complete;
+			}
+			else 
+			{
+				// get the transitions for this step and add events
+				List<WorkflowVersionStepTransition> transitions = WorkflowVersionStepTransitions
+				.Where(i => i.FromVersionStepID == itemStep.StepID && i.TransitionType != TransitionType.Timer && i.State == State.Active)
+				.ToList();
+
+				if (transitions.Count > 0)
+				{
+					transitionCount = transitions.Count;
+					itemStep.State = (itemStep.State == StepState.Pending || itemStep.State == null) ? StepState.Complete : itemStep.State;
+					await StartTransitions(transitions, itemID, objectInfo);					
+				}
+				else
+				{
+					itemStep.State = StepState.Failed;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = itemStep.ID,
+						Message = "Form completed with 0 transitions",
+						State = StepState.Failed
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+				}
 			}
 
-			return transitions.Count;
+			SaveChanges();
+
+			return transitionCount;
 		}
 
 		public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
@@ -2552,6 +2662,7 @@ namespace d360.model
 
 		public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue)
 		{
+						
 			if (string.IsNullOrEmpty(bodyTemplate))
 			{
 				return string.Empty;
@@ -2574,434 +2685,440 @@ namespace d360.model
 
 			Dictionary<string, string> tokenMap = new Dictionary<string, string>();
 
-			
-			foreach(var token in tokens)
+			try
 			{
-				if (tokenMap.ContainsKey(token))
+				foreach (var token in tokens)
 				{
-					continue;
-				}
-
-				if(token == "[OBJECT_NAME]")
-				{
-					ObjectDetail item = null;
-					if (obj == SystemObjects.Issue)
+					if (tokenMap.ContainsKey(token))
 					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
+						continue;
 					}
 
-					string itemLink = "(unknown item)";
-
-					if (item != null)
+					if(token == "[OBJECT_NAME]")
 					{
-						if (supportHtml)
+						ObjectDetail item = null;
+						if (obj == SystemObjects.Issue)
 						{
-							itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							}
 						}
 						else
 						{
-							itemLink = item.Name;
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
 						}
-					}
 
-					tokenMap.Add("[OBJECT_NAME]", itemLink);
-				}
-
-				if (token == "[REL_OBJECT_NAME]")
-				{
-					string itemLink = "";
-
-					if (obj == SystemObjects.Intersect)
-					{
-						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-						if (intersect != null)
-						{
-							var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
-							if (assetDetail != null)
-							{
-								if (supportHtml)
-								{
-									itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
-								}
-								else
-								{
-									itemLink = assetDetail.DisplayValue;
-								}
-							}
-						}
-					}
-
-					tokenMap.Add("[REL_OBJECT_NAME]", itemLink);
-				}
-
-				if (token == "[REL_SUBJECT_NAME]")
-				{
-					string itemLink = "";
-
-					if (obj == SystemObjects.Intersect)
-					{
-						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-						if (intersect != null)
-						{
-							var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
-							if (assetDetail != null)
-							{
-								if (supportHtml)
-								{
-									itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
-								}
-								else
-								{
-									itemLink = assetDetail.DisplayValue;
-								}
-							}
-						}
-					}
-
-					tokenMap.Add("[REL_SUBJECT_NAME]", itemLink);
-				}
-
-				if (token == "[ACTION_DETAILS]")
-				{
-					//get the details of the issue and add them in
-					Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-					var issueInfo = new StringBuilder();
-					issueInfo.Append("(unknown)");
-
-					if (issue != null)
-					{
-						ObjectDetail item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+						string itemLink = "(unknown item)";
 
 						if (item != null)
 						{
-							issueInfo.Clear();
-							issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.");
-						}
-
-						GlobalReportingResource creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
-
-						if (creator != null)
-						{
-							issueInfo.Append($"<br>Created By <b>{creator.FullName}</b>");
-						}
-
-						//get any field values for this issue
-						IOrderedQueryable<FieldType> fieldTypes = FieldTypes
-							.Where(x => x.IssueTypeID == issue.IssueTypeID)
-							.OrderBy(x => x.ColumnOrder)
-							.ThenBy(x => x.FriendlyName);
-
-						IQueryable<Field> fieldValues = Fields.Where(x => x.IssueID == issue.ID);
-
-						foreach (FieldType fieldType in fieldTypes)
-						{
-							Field field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
-
-							if (field != null)
+							if (supportHtml)
 							{
-								string type = fieldType.Type;
-								string ConvertFormattedValue;
-
-								if (type == "Date" || type == "DateTime")
-								{
-									ConvertFormattedValue = GetDisplayDateTimeValue(type, field.FormattedValue);
-								}
-								else
-								{
-									ConvertFormattedValue = field.FormattedValue;
-								}
-
-								issueInfo.Append($"<br><b>{fieldType.FriendlyName}</b>: {ConvertFormattedValue}");
+								itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/{item.Url}\">{item.Name}</a></b>";
+							}
+							else
+							{
+								itemLink = item.Name;
 							}
 						}
+
+						tokenMap.Add("[OBJECT_NAME]", itemLink);
 					}
 
-					tokenMap.Add("[ACTION_DETAILS]", issueInfo.ToString());
-				}
-
-
-				if ((token == "[WORKFLOW_INITIATOR_UID]" || token == "[WORKFLOW_INITIATOR_EMAIL]" || token == "[WORKFLOW_INITIATOR]"))
-				{
-					Guid initiatorUid = Guid.Empty;
-					string initiatorEmail = "";
-					string initiatorName = "unknown user";
-
-					if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+					if (token == "[REL_OBJECT_NAME]")
 					{
-						GlobalReportingResource user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+						string itemLink = "";
 
-						if (user != null)
+						if (obj == SystemObjects.Intersect)
 						{
-							initiatorUid = user.Uid;
-							initiatorEmail = user.Email;
-							initiatorName = user.FullName;
-						}
-					}
+							Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
 
-					tokenMap.Add("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
-					tokenMap.Add("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
-					tokenMap.Add("[WORKFLOW_INITIATOR]", initiatorName);
-				}
-
-				//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
-				if ((token == "[GOV_SCORE]" || token == "[SCORE]"))
-				{
-					ObjectDetail item = null;
-
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
-					}
-					decimal? score = null;
-
-					if (item != null && item.AssetID.HasValue)
-					{
-						score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
-					}
-
-					tokenMap.Add("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-					tokenMap.Add("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-				}
-
-				if (token == "[DQ_SCORE]")
-				{
-					ObjectDetail item = null;
-
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
-					}
-					decimal? score = null;
-
-					if (item != null && item.AssetID.HasValue)
-					{
-						score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
-					}
-
-					tokenMap.Add("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
-				}
-
-				if (token == "[DQ_SCORE_PREV]")
-				{
-					ObjectDetail item = null;
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
-					}
-					decimal? score = null;
-
-					if (item != null && item.AssetID.HasValue)
-					{
-						score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
-					}
-
-					tokenMap.Add("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
-				}
-
-				if (token == "[GOV_SCORE_PREV]")
-				{
-					ObjectDetail item = null;
-
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
-					}
-
-					decimal? score = null;
-
-					if (item != null && item.AssetID.HasValue)
-					{
-						score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
-					}
-
-					tokenMap.Add("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
-				}
-
-				if (Regex.IsMatch(token, "\\[FIELD([0-9.]+)\\]"))
-				{			
-					
-					string item = token;
-
-
-						string fieldIdStringitem = item.Replace("[FIELD", "");
-						fieldIdStringitem = fieldIdStringitem.Replace("]", "");
-
-						int.TryParse(fieldIdStringitem, out int fieldId);
-
-						string fieldValue = "";
-
-						if (fieldId > 0)
-						{
-							//logic still uses objectId and in case of asset we needs to fetch assetid
-							var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x => x.ID).FirstOrDefault();
-							Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
-
-							//If there is no field and type is Issue, this might be asset field
-							if (fieldRecord == null && obj == SystemObjects.Issue)
+							if (intersect != null)
 							{
-								Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
-								if (issue?.AssetID != null)
+								var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+								if (assetDetail != null)
 								{
-									fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-								}
-							}
-
-							if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
-							{
-								Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-								if (intersect != null)
-								{
-									Field ofieldRecord = Fields.Where(x => x.AssetID == intersect.ObjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-
-									if (ofieldRecord != null)
+									if (supportHtml)
 									{
-										fieldValue = ofieldRecord.FormattedValue;
+										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
 									}
-
-									Field sfieldRecord = Fields.Where(x => x.AssetID == intersect.SubjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
-
-									if (!string.IsNullOrEmpty(fieldValue))
+									else
 									{
-										fieldValue += " ";
-									}
-
-									if (sfieldRecord != null)
-									{
-										fieldValue = sfieldRecord.FormattedValue;
+										itemLink = assetDetail.DisplayValue;
 									}
 								}
 							}
+						}
 
-							if (fieldRecord != null)
+						tokenMap.Add("[REL_OBJECT_NAME]", itemLink);
+					}
+
+					if (token == "[REL_SUBJECT_NAME]")
+					{
+						string itemLink = "";
+
+						if (obj == SystemObjects.Intersect)
+						{
+							Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+							if (intersect != null)
 							{
-								FieldType fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
-
-								if (fieldType != null)
+								var assetDetail = AssetDetails.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+								if (assetDetail != null)
 								{
-									DateTime dateValue;
+									if (supportHtml)
+									{
+										itemLink = $"<b><a href=\"https://{prefix}.data3sixty.com/asset/{assetDetail.uid}\">{assetDetail.DisplayValue}</a></b>";
+									}
+									else
+									{
+										itemLink = assetDetail.DisplayValue;
+									}
+								}
+							}
+						}
+
+						tokenMap.Add("[REL_SUBJECT_NAME]", itemLink);
+					}
+
+					if (token == "[ACTION_DETAILS]")
+					{
+						//get the details of the issue and add them in
+						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+						var issueInfo = new StringBuilder();
+						issueInfo.Append("(unknown)");
+
+						if (issue != null)
+						{
+							ObjectDetail item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+
+							if (item != null)
+							{
+								issueInfo.Clear();
+								issueInfo.Append($"New Action Type <b>{issue.IssueType.Name}</b> Raised on <b>{item.Name}</b>.");
+							}
+
+							GlobalReportingResource creator = GlobalReportingResources.Where(x => x.ResourceID == issue.CreatedBy).FirstOrDefault();
+
+							if (creator != null)
+							{
+								issueInfo.Append($"<br>Created By <b>{creator.FullName}</b>");
+							}
+
+							//get any field values for this issue
+							IOrderedQueryable<FieldType> fieldTypes = FieldTypes
+								.Where(x => x.IssueTypeID == issue.IssueTypeID)
+								.OrderBy(x => x.ColumnOrder)
+								.ThenBy(x => x.FriendlyName);
+
+							IQueryable<Field> fieldValues = Fields.Where(x => x.IssueID == issue.ID);
+
+							foreach (FieldType fieldType in fieldTypes)
+							{
+								Field field = fieldValues.Where(x => x.FieldTypeID == fieldType.ID).FirstOrDefault();
+
+								if (field != null)
+								{
 									string type = fieldType.Type;
+									string ConvertFormattedValue;
 
-									if (type == "Date")
+									if (type == "Date" || type == "DateTime")
 									{
-										if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
+										ConvertFormattedValue = GetDisplayDateTimeValue(type, field.FormattedValue);
+									}
+									else
+									{
+										ConvertFormattedValue = field.FormattedValue;
+									}
+
+									issueInfo.Append($"<br><b>{fieldType.FriendlyName}</b>: {ConvertFormattedValue}");
+								}
+							}
+						}
+
+						tokenMap.Add("[ACTION_DETAILS]", issueInfo.ToString());
+					}
+
+
+					if ((token == "[WORKFLOW_INITIATOR_UID]" || token == "[WORKFLOW_INITIATOR_EMAIL]" || token == "[WORKFLOW_INITIATOR]"))
+					{
+						Guid initiatorUid = Guid.Empty;
+						string initiatorEmail = "";
+						string initiatorName = "unknown user";
+
+						if (itemStep.Item != null && itemStep.Item.StartedBy > 0)
+						{
+							GlobalReportingResource user = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+
+							if (user != null)
+							{
+								initiatorUid = user.Uid;
+								initiatorEmail = user.Email;
+								initiatorName = user.FullName;
+							}
+						}
+
+						tokenMap.Add("[WORKFLOW_INITIATOR_UID]", initiatorUid.ToString());
+						tokenMap.Add("[WORKFLOW_INITIATOR_EMAIL]", initiatorEmail);
+						tokenMap.Add("[WORKFLOW_INITIATOR]", initiatorName);
+					}
+
+					//need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
+					if ((token == "[GOV_SCORE]" || token == "[SCORE]"))
+					{
+						ObjectDetail item = null;
+
+						if (obj == SystemObjects.Issue)
+						{
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							}
+						}
+						else
+						{
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
+						}
+						decimal? score = null;
+
+						if (item != null && item.AssetID.HasValue)
+						{
+							score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
+						}
+
+						tokenMap.Add("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+						tokenMap.Add("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+					}
+
+					if (token == "[DQ_SCORE]")
+					{
+						ObjectDetail item = null;
+
+						if (obj == SystemObjects.Issue)
+						{
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							}
+						}
+						else
+						{
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
+						}
+						decimal? score = null;
+
+						if (item != null && item.AssetID.HasValue)
+						{
+							score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+						}
+
+						tokenMap.Add("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+					}
+
+					if (token == "[DQ_SCORE_PREV]")
+					{
+						ObjectDetail item = null;
+						if (obj == SystemObjects.Issue)
+						{
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							}
+						}
+						else
+						{
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
+						}
+						decimal? score = null;
+
+						if (item != null && item.AssetID.HasValue)
+						{
+							score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+						}
+
+						tokenMap.Add("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+					}
+
+					if (token == "[GOV_SCORE_PREV]")
+					{
+						ObjectDetail item = null;
+
+						if (obj == SystemObjects.Issue)
+						{
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+							}
+						}
+						else
+						{
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
+						}
+
+						decimal? score = null;
+
+						if (item != null && item.AssetID.HasValue)
+						{
+							score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
+						}
+
+						tokenMap.Add("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
+					}
+
+					if (Regex.IsMatch(token, "\\[FIELD([0-9.]+)\\]"))
+					{			
+					
+						string item = token;
+
+
+							string fieldIdStringitem = item.Replace("[FIELD", "");
+							fieldIdStringitem = fieldIdStringitem.Replace("]", "");
+
+							int.TryParse(fieldIdStringitem, out int fieldId);
+
+							string fieldValue = "";
+
+							if (fieldId > 0)
+							{
+								//logic still uses objectId and in case of asset we needs to fetch assetid
+								var assetId = Assets.Where(x => x.ObjectID == objectID && x.Object == obj.ToString()).Select(x => x.ID).FirstOrDefault();
+								Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == assetId && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == fieldId).FirstOrDefault();
+
+								//If there is no field and type is Issue, this might be asset field
+								if (fieldRecord == null && obj == SystemObjects.Issue)
+								{
+									Issue issue = Issues.FirstOrDefault(x => x.ID == objectID);
+									if (issue?.AssetID != null)
+									{
+										fieldRecord = Fields.Where(x => x.AssetID == issue.AssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+									}
+								}
+
+								if ((obj.ToString() ?? "").ToUpper() == "INTERSECT")
+								{
+									Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+									if (intersect != null)
+									{
+										Field ofieldRecord = Fields.Where(x => x.AssetID == intersect.ObjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+
+										if (ofieldRecord != null)
 										{
-											string formattedDate = dateValue.ToString("dd MMM yyyy");
-											fieldValue = formattedDate;
+											fieldValue = ofieldRecord.FormattedValue;
 										}
-										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+
+										Field sfieldRecord = Fields.Where(x => x.AssetID == intersect.SubjectAssetID && x.FieldTypeID == fieldId).FirstOrDefault();
+
+										if (!string.IsNullOrEmpty(fieldValue))
 										{
-											string formattedDate = dateValue.ToString("dd MMM yyyy");
-											fieldValue = formattedDate;
+											fieldValue += " ";
 										}
-										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+
+										if (sfieldRecord != null)
 										{
-											string formattedDate = dateValue.ToString("dd MMM yyyy");
-											fieldValue = formattedDate;
-										}
-										else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
-										{
-											string formattedDate = dateValue.ToString("dd MMM yyyy");
-											fieldValue = formattedDate;
-										}
-										else
-										{
-											fieldValue = fieldRecord.FormattedValue;
+											fieldValue = sfieldRecord.FormattedValue;
 										}
 									}
-									else if (type == "DateTime")
+								}
+
+								if (fieldRecord != null)
+								{
+									FieldType fieldType = FieldTypes.Where(x => x.ID == fieldRecord.FieldTypeID).FirstOrDefault();
+
+									if (fieldType != null)
 									{
-										if (DateTime.TryParse(fieldRecord.FormattedValue, out dateValue))
+										DateTime dateValue;
+										string type = fieldType.Type;
+
+										if (type == "Date")
 										{
-											string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
-											fieldValue = formattedDate;
-										}
-										else
-										{
-											fieldValue = fieldRecord.FormattedValue;
-										}
-									}
-									else if (forJson)
-									{
-										string fieldValuetemp = "";
-										if (type == "Lookup")
-										{
-											if (lookupFieldsPassedByValue)
+											if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy h:mm:ss tt", CultureInfo.CurrentCulture, DateTimeStyles.None, out dateValue))
 											{
-												fieldValuetemp = fieldRecord.Value;
+												string formattedDate = dateValue.ToString("dd MMM yyyy");
+												fieldValue = formattedDate;
+											}
+											else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy HH:mm:ss", null, DateTimeStyles.None, out dateValue))
+											{
+												string formattedDate = dateValue.ToString("dd MMM yyyy");
+												fieldValue = formattedDate;
+											}
+											else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "M/d/yyyy", null, DateTimeStyles.None, out dateValue))
+											{
+												string formattedDate = dateValue.ToString("dd MMM yyyy");
+												fieldValue = formattedDate;
+											}
+											else if (DateTime.TryParseExact(fieldRecord.FormattedValue, "MM/dd/yyyy", null, DateTimeStyles.None, out dateValue))
+											{
+												string formattedDate = dateValue.ToString("dd MMM yyyy");
+												fieldValue = formattedDate;
+											}
+											else
+											{
+												fieldValue = fieldRecord.FormattedValue;
+											}
+										}
+										else if (type == "DateTime")
+										{
+											if (DateTime.TryParse(fieldRecord.FormattedValue, out dateValue))
+											{
+												string formattedDate = dateValue.ToString("dd MMM yyyyTHH:mm:ss");
+												fieldValue = formattedDate;
+											}
+											else
+											{
+												fieldValue = fieldRecord.FormattedValue;
+											}
+										}
+										else if (forJson)
+										{
+											string fieldValuetemp = "";
+											if (type == "Lookup")
+											{
+												if (lookupFieldsPassedByValue)
+												{
+													fieldValuetemp = fieldRecord.Value;
+												}
+												else
+												{
+													fieldValuetemp = fieldRecord.FormattedValue;
+												}
+
+												if (string.IsNullOrEmpty(fieldValuetemp))
+												{
+													fieldValuetemp = fieldRecord.FormattedValue;
+												}
 											}
 											else
 											{
 												fieldValuetemp = fieldRecord.FormattedValue;
 											}
+											fieldValue = JsonConvert.ToString(fieldValuetemp);
 
-											if (string.IsNullOrEmpty(fieldValuetemp))
+											if (!string.IsNullOrEmpty(fieldValue))
 											{
-												fieldValuetemp = fieldRecord.FormattedValue;
+												fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
 											}
 										}
 										else
 										{
-											fieldValuetemp = fieldRecord.FormattedValue;
-										}
-										fieldValue = JsonConvert.ToString(fieldValuetemp);
-
-										if (!string.IsNullOrEmpty(fieldValue))
-										{
-											fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
+											fieldValue = fieldRecord.FormattedValue;
 										}
 									}
 									else
@@ -3009,348 +3126,362 @@ namespace d360.model
 										fieldValue = fieldRecord.FormattedValue;
 									}
 								}
-								else
-								{
-									fieldValue = fieldRecord.FormattedValue;
-								}
 							}
-						}
 
-						tokenMap.Add(item, fieldValue);
-				}
-
-				if (Regex.IsMatch(token, "\\[JSON([0-9.]+)\\]"))
-				{
-
-						string item = token;
-						string fieldValue = "";
-
-						string fieldTypeIdStringitem = item.Replace("[JSON", "");
-						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
-
-						int.TryParse(fieldTypeIdStringitem, out int fieldTypeId);
-
-						FieldType fieldType = FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
-
-						FieldTypeDefinition_JsonElement jsonElementDefinition = null;
-
-						if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
-						{
-							jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
-
-							Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
-
-							JObject fielddata = JObject.Parse(fieldRecord.Value);
-
-							fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
-						}
-
-						if (forJson)
-						{
-							fieldValue = JsonConvert.ToString(fieldValue);
-
-							if (!string.IsNullOrEmpty(fieldValue))
-							{
-								fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
-							}
-						}
-
-						tokenMap.Add(item, fieldValue);
-				}
-
-				if (Regex.IsMatch(token, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
-				{
-
-						string item = token;
-
-						string fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
-						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
-
-						int stepId = -1;
-						string property = fieldTypeIdStringitem.Split('|')[1];
-
-						int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
-
-						WorkflowItemStep step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
-
-						if (step != null)
-						{
-							XElement response = step.FieldsDocument;
-							response = response.Element("HTTPResponse");
-
-							if (response != null)
-							{
-								switch (property.ToUpperInvariant())
-								{
-									case "STATUSCODE":
-										tokenMap.Add(item, response.Element("StatusCode")?.Value ?? "");
-										break;
-									case "RESPONSEBODY":
-										tokenMap.Add(item, response.Element("Body")?.Value ?? "");
-										break;
-									default:
-										//Do nothing.
-										break;
-								}
-							}
-						}
-				}
-
-				if (Regex.IsMatch(token, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
-				{
-
-					string item = token;
-
-						string fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
-						fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
-
-						int stepId = -1;
-						string fieldId = fieldTypeIdStringitem.Split('|')[1];
-						int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
-
-						tokenMap.Add(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
-
-				}
-
-				if (token == "[OBJECT_TYPE]")
-				{
-					string path = null;
-
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							var issueObjectDetail = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-							path = issueObjectDetail.TypeName;
-						}
-					}
-					else
-					{
-						//get the objects name
-						path = GetObjectTypePath(obj.ToString(), objectID);
+							tokenMap.Add(item, fieldValue);
 					}
 
-					string itemLink = "(unknown item)";
-
-					if (path != null)
+					if (Regex.IsMatch(token, "\\[JSON([0-9.]+)\\]"))
 					{
-						if (supportHtml)
+
+							string item = token;
+							string fieldValue = "";
+
+							string fieldTypeIdStringitem = item.Replace("[JSON", "");
+							fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+							int.TryParse(fieldTypeIdStringitem, out int fieldTypeId);
+
+							FieldType fieldType = FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
+
+							FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+							if (fieldType != null && fieldType.Type == DataType.JsonElement.ToString())
+							{
+								jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
+
+								Field fieldRecord = Fields.Where(x => ((x.IssueID == objectID && obj == SystemObjects.Issue) || (x.IntersectID == objectID && obj == SystemObjects.Intersect) || (x.AssetID == objectID && obj != SystemObjects.Issue && obj != SystemObjects.Intersect)) && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
+
+								JObject fielddata = JObject.Parse(fieldRecord.Value);
+
+								fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
+							}
+
+							if (forJson)
+							{
+								fieldValue = JsonConvert.ToString(fieldValue);
+
+								if (!string.IsNullOrEmpty(fieldValue))
+								{
+									fieldValue = fieldValue.Substring(1, fieldValue.Length - 2);
+								}
+							}
+
+							tokenMap.Add(item, fieldValue);
+					}
+
+					if (Regex.IsMatch(token, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
+					{
+
+							string item = token;
+
+							string fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
+							fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+							int stepId = -1;
+							string property = fieldTypeIdStringitem.Split('|')[1];
+
+							int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+							WorkflowItemStep step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
+
+							if (step != null)
+							{
+								XElement response = step.FieldsDocument;
+								response = response.Element("HTTPResponse");
+
+								if (response != null)
+								{
+									switch (property.ToUpperInvariant())
+									{
+										case "STATUSCODE":
+											tokenMap.Add(item, response.Element("StatusCode")?.Value ?? "");
+											break;
+										case "RESPONSEBODY":
+											tokenMap.Add(item, response.Element("Body")?.Value ?? "");
+											break;
+										default:
+											//Do nothing.
+											break;
+									}
+								}
+							}
+					}
+
+					if (Regex.IsMatch(token, "\\[HTTPRESPONSE\\|([0-9.]+)\\|([0-9.]+)\\]"))
+					{
+
+						string item = token;
+
+							string fieldTypeIdStringitem = item.Replace("[HTTPRESPONSE|", "");
+							fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+							int stepId = -1;
+							string fieldId = fieldTypeIdStringitem.Split('|')[1];
+							int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+							tokenMap.Add(item, GetOutputFieldValue(stepId, itemStep.ItemID, fieldId));
+
+					}
+
+					if (token == "[OBJECT_TYPE]")
+					{
+						string path = null;
+
+						if (obj == SystemObjects.Issue)
 						{
-							itemLink = $"<b>{path}</b>";
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
+							{
+								var issueObjectDetail = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
+								path = issueObjectDetail.TypeName;
+							}
 						}
 						else
 						{
-							itemLink = path;
-						}
-					}
-
-					tokenMap.Add("[OBJECT_TYPE]", itemLink);
-				}
-
-				if (token == "[WORKFLOW_STEP_ID]")
-				{
-					tokenMap.Add("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
-				}
-
-				if (token == "[WORKFLOW_INSTANCE_ID]")
-				{
-					tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
-				}
-
-				if (token == "[WORKFLOW_INSTANCE_UID]")
-				{
-					tokenMap.Add("[WORKFLOW_INSTANCE_UID]", itemStep.Item.UID.ToString());
-				}
-
-				if (token == "[WORKFLOW_ID]" || token == "[WORKFLOW_UID]")
-				{
-					WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
-
-					if (versionStep != null)
-					{
-						WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);						
-						tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
-						tokenMap.Add("[WORKFLOW_UID]", version?.Type.UID.ToString() ?? "");
-					}
-				}
-
-				if (token == "[RECIPIENT_RESPONSIBILITY]")
-				{
-					string recipientResponsibility = "";
-					if (itemStep != null && itemStep.Step != null)
-					{
-						WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-						if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
-						{
-							recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
+							//get the objects name
+							path = GetObjectTypePath(obj.ToString(), objectID);
 						}
 
-						tokenMap.Add("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
-					}
-				}
+						string itemLink = "(unknown item)";
 
-				if (token == "[RECIPIENT_TYPE]")
-				{
-					string recipientType = "";
-					if (itemStep != null && itemStep.Step != null)
-					{
-						WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
-						switch (stepSettings.RecipientType)
+						if (path != null)
 						{
-							case EmailTaskRecipientType.Initiator:
-								recipientType = "Initiator";
-								break;
-							case EmailTaskRecipientType.Responsibility:
-								recipientType = "Responsibility";
-								break;
-							case EmailTaskRecipientType.SpecificUser:
-								recipientType = "Specific User";
-								break;
-							default:
-								//Nothing to do here.
-								break;
-						}
-
-						//check how many users would recieve this if responsibility
-						if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
-						{
-							int adminGroupId = GetWorkflowAdminGroup();
-
-							if (adminGroupId <= 0)
+							if (supportHtml)
 							{
-								recipientType = "Default - Administrators";
+								itemLink = $"<b>{path}</b>";
 							}
 							else
 							{
-								AssetDetail group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+								itemLink = path;
+							}
+						}
 
-								if (group != null)
+						tokenMap.Add("[OBJECT_TYPE]", itemLink);
+					}
+
+					if (token == "[WORKFLOW_STEP_ID]")
+					{
+						tokenMap.Add("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
+					}
+
+					if (token == "[WORKFLOW_INSTANCE_ID]")
+					{
+						tokenMap.Add("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
+					}
+
+					if (token == "[WORKFLOW_INSTANCE_UID]")
+					{
+						tokenMap.Add("[WORKFLOW_INSTANCE_UID]", itemStep.Item.UID.ToString());
+					}
+
+					if (token == "[WORKFLOW_ID]" || token == "[WORKFLOW_UID]")
+					{
+						WorkflowVersionStep versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
+
+						if (versionStep != null)
+						{
+							WorkflowVersion version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);						
+							tokenMap.Add("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
+							tokenMap.Add("[WORKFLOW_UID]", version?.Type.UID.ToString() ?? "");
+						}
+					}
+
+					if (token == "[RECIPIENT_RESPONSIBILITY]")
+					{
+						string recipientResponsibility = "";
+						if (itemStep != null && itemStep.Step != null)
+						{
+							WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+							if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
+							{
+								recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
+							}
+
+							tokenMap.Add("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
+						}
+					}
+
+					if (token == "[RECIPIENT_TYPE]")
+					{
+						string recipientType = "";
+						if (itemStep != null && itemStep.Step != null)
+						{
+							WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+
+							switch (stepSettings.RecipientType)
+							{
+								case EmailTaskRecipientType.Initiator:
+									recipientType = "Initiator";
+									break;
+								case EmailTaskRecipientType.Responsibility:
+									recipientType = "Responsibility";
+									break;
+								case EmailTaskRecipientType.SpecificUser:
+									recipientType = "Specific User";
+									break;
+								default:
+									//Nothing to do here.
+									break;
+							}
+
+							//check how many users would recieve this if responsibility
+							if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility && !GetWorkflowResponsibilityHasUsers(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID))
+							{
+								int adminGroupId = GetWorkflowAdminGroup();
+
+								if (adminGroupId <= 0)
 								{
-									recipientType = $"Default - {group.DisplayValue}";
+									recipientType = "Default - Administrators";
 								}
 								else
 								{
-									recipientType = $"Default - (unknown group)";
+									AssetDetail group = AssetDetails.FirstOrDefault(a => a.ObjectID == adminGroupId && a.Object == "Group");
+
+									if (group != null)
+									{
+										recipientType = $"Default - {group.DisplayValue}";
+									}
+									else
+									{
+										recipientType = $"Default - (unknown group)";
+									}
 								}
 							}
 						}
+
+						tokenMap.Add("[RECIPIENT_TYPE]", recipientType);
 					}
 
-					tokenMap.Add("[RECIPIENT_TYPE]", recipientType);
-				}
-
-				if (token == "[ASSET_PATH]")
-				{
-
-					ObjectDetail item = null;
-
-					if (obj == SystemObjects.Issue)
+					if (token == "[ASSET_PATH]")
 					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-						if (issue != null)
+						ObjectDetail item = null;
+
+						if (obj == SystemObjects.Issue)
 						{
-							item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
-						}
-					}
-					else
-					{
-						//get the objects name
-						item = GetObjectDetail(obj.ToString(), objectID);
-					}
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-					string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
-
-					tokenMap.Add("[ASSET_PATH]", path ?? "(unknown)");
-				}
-
-				if (token == "[ASSET_UID]")
-				{
-					string uid = null;
-
-					if (obj == SystemObjects.Issue)
-					{
-						Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
-
-						if (issue != null)
-						{
-							Asset issueAsset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
-
-							if (issueAsset != null)
+							if (issue != null)
 							{
-								uid = issueAsset.uid.ToString();
+								item = GetObjectDetailByAssetAssetTypeId(issue.AssetID, issue.AssetTypeID);
 							}
 						}
-					}
-					else if (obj == SystemObjects.Intersect)
-					{
-						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-
-						if (intersect != null)
+						else
 						{
-							uid = intersect.uid.ToString();
+							//get the objects name
+							item = GetObjectDetail(obj.ToString(), objectID);
 						}
-					}
-					else
-					{
-						Asset asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
 
-						if (asset != null)
-						{
-							uid = asset.uid.ToString();
-						}
+						string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
+
+						tokenMap.Add("[ASSET_PATH]", path ?? "(unknown)");
 					}
 
-					tokenMap.Add("[ASSET_UID]", (uid ?? "(unknown item)"));
-				}
-
-				if (token == "[REL_SUBJECT_UID]")
-				{
-					string uid = null;
-
-					if (obj == SystemObjects.Intersect)
+					if (token == "[ASSET_UID]")
 					{
-						Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+						string uid = null;
 
-						if (intersect != null)
+						if (obj == SystemObjects.Issue)
 						{
-							var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
-							if (assetDetail != null)
+							Issue issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+							if (issue != null)
 							{
-								uid = assetDetail.uid.ToString();
+								Asset issueAsset = Assets.Where(x => x.ID == issue.AssetID).FirstOrDefault();
+
+								if (issueAsset != null)
+								{
+									uid = issueAsset.uid.ToString();
+								}
 							}
 						}
-					}
-
-					tokenMap.Add("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
-				}
-
-				if (token == "[REL_OBJECT_UID]")
-				{
-					string uid = null;
-					if (obj == SystemObjects.Intersect)
-					{
-						var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
-						if (intersect != null)
+						else if (obj == SystemObjects.Intersect)
 						{
-							var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
-							if (assetDetail != null)
+							Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+							if (intersect != null)
 							{
-								uid = assetDetail.uid.ToString();
+								uid = intersect.uid.ToString();
 							}
 						}
+						else
+						{
+							Asset asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
+
+							if (asset != null)
+							{
+								uid = asset.uid.ToString();
+							}
+						}
+
+						tokenMap.Add("[ASSET_UID]", (uid ?? "(unknown item)"));
 					}
 
-					tokenMap.Add("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+					if (token == "[REL_SUBJECT_UID]")
+					{
+						string uid = null;
+
+						if (obj == SystemObjects.Intersect)
+						{
+							Intersect intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+							if (intersect != null)
+							{
+								var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.SubjectAssetID);
+								if (assetDetail != null)
+								{
+									uid = assetDetail.uid.ToString();
+								}
+							}
+						}
+
+						tokenMap.Add("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
+					}
+
+					if (token == "[REL_OBJECT_UID]")
+					{
+						string uid = null;
+						if (obj == SystemObjects.Intersect)
+						{
+							var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+							if (intersect != null)
+							{
+								var assetDetail = Assets.SingleOrDefault(a => a.ID == intersect.ObjectAssetID);
+								if (assetDetail != null)
+								{
+									uid = assetDetail.uid.ToString();
+								}
+							}
+						}
+
+						tokenMap.Add("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+					}
+				}
+				foreach (string k in tokenMap.Keys)
+				{
+					sb.Replace(k, tokenMap[k]);
 				}
 			}
-			foreach (string k in tokenMap.Keys)
-			{
-				sb.Replace(k, tokenMap[k]);
+			catch (Exception ex) { 
+				if(itemStep != null)
+				{
+					itemStep.State = StepState.Error;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = itemStep.ID,
+						Details = ex.StackTrace,
+						Message = ex.InnerException?.Message ?? ex.Message,
+						State = StepState.Error
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
+				}					
 			}
 
 			return sb.ToString();
@@ -3554,6 +3685,18 @@ namespace d360.model
 				{
 					Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
 
+					item.State = StepState.Failed;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,						
+						Message = "ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.",
+						State = StepState.Failed
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+					SaveChanges();
+
 					return true;
 				}
 
@@ -3562,6 +3705,18 @@ namespace d360.model
 				if (res == null)
 				{
 					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
+
+					item.State = StepState.Failed;
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,
+						Message = "ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.",
+						State = StepState.Failed,
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
 
 					return true;
 				}
@@ -3616,6 +3771,21 @@ namespace d360.model
 				}
 
 				users = GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
+			}
+
+			if (users.Count == 0)
+			{
+				item.State = StepState.Failed;
+
+				var itemStateDetail = new WorkflowItemStepStateDetail { 
+					itemStepID = item.ID, 
+					Message = "No valid users for assignment.", 
+					State = StepState.Failed 
+				};
+
+				WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+				await SaveChangesAsync();
 			}
 
 			string prefix = Community.GetPrimaryUrlPrefix();

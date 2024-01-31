@@ -1274,6 +1274,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
@@ -1907,6 +1908,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
+										LogExecutionErrorToAppInsights(execution, ex);
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAsset", ex.GetFullExceptionData(false), timeout);
 										addMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
@@ -2177,6 +2179,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					}
 					catch (Exception generalEx)
 					{
+						LogExecutionErrorToAppInsights(execution, generalEx);
 						generalChecksCompleted = false;
 						string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 						execution.ErrorMessage = msg;
@@ -2375,6 +2378,7 @@ where	T.ExecutionID = @ExecutionID
 
 											if (retryCount > API_V2_RETRY_LIMIT)
 											{
+												LogExecutionErrorToAppInsights(execution, ex);
 												sw.Restart();
 												LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedAsset", ex.GetFullExceptionData(false), timeout);
 												addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -2482,6 +2486,7 @@ where	T.ExecutionID = @ExecutionID
 
 												if (chunkDeletionRetryCount > API_V2_RETRY_LIMIT)
 												{
+													LogExecutionErrorToAppInsights(execution, ex);
 													sw.Restart();
 
 													int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
@@ -2685,7 +2690,7 @@ where	T.ExecutionID = @ExecutionID
 						DECLARE @inserted TABLE (id INT);
 						insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
 						output inserted.id into @inserted
-						values (@object, @objectId,@displayValue, 0, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
+						values (@object, @objectId,@displayValue, @resourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
 
 
 						declare @auditId int = (select top 1 id from @inserted)
@@ -2698,7 +2703,8 @@ where	T.ExecutionID = @ExecutionID
 							assetId = asset.ID,
 							fieldTypeId = fieldType.ID,
 							fieldTypeName = fieldType.Name,
-							previousValue
+							previousValue,
+							resourceID = CurrentResourceID
 						});
 				}
 

@@ -69,6 +69,7 @@ export class DynamicButton {
     text: string;
     disabled: boolean = false;
     isLoading: boolean = false;
+    iconClass: string;
     dynamicCallback: Function;
 }
 

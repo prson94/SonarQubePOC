@@ -252,9 +252,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 			
         } else {
             //requires initialising as some parameters like isRequired will be null from the DB
-            const intiialisedType = new FieldType(this.currentType);
-            responseGetFieldTypeEditor.Type[this.currentType] = { ...(intiialisedType[this.currentType]), ...responseGetFieldTypeEditor.Type[this.currentType] };
+            const initialisedType = new FieldType(this.currentType);
+            responseGetFieldTypeEditor.Type[this.currentType] = { ...(initialisedType[this.currentType]), ...responseGetFieldTypeEditor.Type[this.currentType] };
         }
+
+		// Handle DOM purification.
+		responseGetFieldTypeEditor.Category = DOMPurify.sanitize(responseGetFieldTypeEditor.Category);
+		responseGetFieldTypeEditor.FriendlyName = DOMPurify.sanitize(responseGetFieldTypeEditor.FriendlyName);
+		responseGetFieldTypeEditor.Name = DOMPurify.sanitize(responseGetFieldTypeEditor.Name);
 
         this.model.FieldType = responseGetFieldTypeEditor;
         this.model.cardinalRelationship = null;
@@ -584,7 +589,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 		}
 
         if (this.currentType === 'Link' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
-            this.defaultLinkName = this.model.FieldType.Type[this.currentType].DefaultValue.Text;
+			this.defaultLinkName = DOMPurify.sanitize(this.model.FieldType.Type[this.currentType].DefaultValue.Text);
             this.defaultLinkAdress = this.model.FieldType.Type[this.currentType].DefaultValue.Url;
         }
 
@@ -859,14 +864,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         (this.model.FieldType.Type[this.currentType].Format.Display == null
                             || this.model.FieldType.Type[this.currentType].Format.Display.length === 0)
                     ) {
-                        this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
+						this.model.FieldType.Type[this.currentType].Format.Display = DOMPurify.sanitize(this.model.LookupTokens[0].value);
                     }
 
                     if (
                         (this.model.FieldType.Type[this.currentType].Format.Edit == null
                             || this.model.FieldType.Type[this.currentType].Format.Edit.length === 0)
                     ) {
-                        this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
+						this.model.FieldType.Type[this.currentType].Format.Edit = DOMPurify.sanitize(this.model.LookupTokens[0].value);
                     }
                 }
 				this.cdRef.markForCheck();

@@ -2888,5 +2888,10 @@ from	IntersectType I
 		}
 
 		#endregion
+
+		public void LogExecutionErrorToAppInsights(ApiExecution execution, Exception ex)
+		{
+			Log.LogError(exception: ex, "Execution error: {ExecutionID}", execution.ExecutionID);
+		}
 	}
 }
