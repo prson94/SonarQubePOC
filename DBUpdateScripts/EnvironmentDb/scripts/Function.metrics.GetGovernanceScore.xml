@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GetGovernanceScore-v1.16">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.17">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -260,7 +260,7 @@ begin
 								when m.FieldType = 'Date' then
 									case 
 										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) = try_parse(m.SingleValue as date) then 1
-										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) <> try_parse(m.SingleValue as date) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue,'1900-01-01') as date) <> try_parse(m.SingleValue as date) then 1
 										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) between try_parse(m.StartRangeValue as date) and try_parse(m.EndRangeValue as date) then 1
 										when m.Operator in ('After', 'GreaterThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) > try_parse(m.SingleValue as date) then 1
 										when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) >= try_parse(m.SingleValue as date) then 1
@@ -272,7 +272,7 @@ begin
 								when m.FieldType = 'DateTime' then
 									case 
 										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) = try_parse(m.SingleValue as datetime) then 1
-										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) <> try_parse(m.SingleValue as datetime) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue,'1900-01-01') as datetime) <> try_parse(m.SingleValue as datetime) then 1
 										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) between try_parse(m.StartRangeValue as datetime) and try_parse(m.EndRangeValue as datetime) then 1
 										when m.Operator in ('After', 'GreaterThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) > try_parse(m.SingleValue as datetime) then 1
 										when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) >= try_parse(m.SingleValue as datetime) then 1
@@ -284,7 +284,7 @@ begin
 								when m.FieldType = 'Decimal' then
 									case 
 										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) = try_parse(m.SingleValue as decimal) then 1
-										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) <> try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue, '-1') as decimal) <> try_parse(m.SingleValue as decimal) then 1
 										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) between try_parse(m.StartRangeValue as decimal) and try_parse(m.EndRangeValue as decimal) then 1
 										when m.Operator = 'GreaterThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) > try_parse(m.SingleValue as decimal) then 1
 										when m.Operator = 'GreaterThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) >= try_parse(m.SingleValue as decimal) then 1
@@ -296,7 +296,7 @@ begin
 								when m.FieldType = 'Number' then
 									case 
 										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) = try_parse(m.SingleValue as bigint) then 1
-										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) <> try_parse(m.SingleValue as bigint) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue, '-1') as bigint) <> try_parse(m.SingleValue as bigint) then 1
 										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) between try_parse(m.StartRangeValue as bigint) and try_parse(m.EndRangeValue as bigint) then 1
 										when m.Operator = 'GreaterThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) > try_parse(m.SingleValue as bigint) then 1
 										when m.Operator = 'GreaterThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) >= try_parse(m.SingleValue as bigint)then 1
@@ -308,7 +308,7 @@ begin
 								when m.FieldType = 'Text' then
 									case 
 										when m.Operator = 'Equals' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) = m.SingleValue then 1
-										when m.Operator = 'NotEquals' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) <> m.SingleValue then 1
+										when m.Operator = 'NotEquals' and coalesce(f.FormattedValue, ft.DefaultFormattedValue,'') <> m.SingleValue then 1
 										when m.Operator = 'Contains' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) like '%' + m.SingleValue + '%' then 1
 										when m.Operator = 'NotContains' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) not like '%' + m.SingleValue + '%' then 1
 										when m.Operator = 'StartsWith' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) like m.SingleValue + '%' then 1
@@ -316,7 +316,7 @@ begin
 										when m.Operator = 'In' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) in (
 											select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
 										) then 1
-										when m.Operator = 'NotIn' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) not in (
+										when m.Operator = 'NotIn' and coalesce(f.FormattedValue, ft.DefaultFormattedValue,'') not in (
 											select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
 										) then 1
 										else 0
