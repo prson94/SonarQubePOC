@@ -5,14 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,puneet" id="Procedure.metrics.GenerateScore-v3.2">
+ <changeSet author="Pappas" id="Procedure.metrics.GenerateScore-v4.01">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [metrics].[GenerateScore]
 	@assetUid uniqueidentifier,
 	@effectiveDate date,
 	@scoreType int,
-	@responseScore decimal(8,6) output
+	@responseScore decimal(8,6) output,
+	@scoreChanged bit output
 as
 begin
 	set nocount on;
@@ -241,26 +242,30 @@ begin
 
 	if @IsScoreDead = 1
 	begin
-		declare @mostRecentDate date;
+		declare @mostRecentDate date,
+				@endDate date;
 
-	  	select	@mostRecentDate = max(EffectiveDate) 
+	  	select	@mostRecentDate = max(EffectiveDate)
 		from	metrics.Score 
 		where	AllocationUid = @allocationUid 
 				and AssetUid = @assetUid;
 
-	  	select	@NewScoreUid = Uid 
+	  	select	@NewScoreUid = Uid,
+				@endDate = EndDate
 		from	metrics.Score 
 		where	AllocationUid = @allocationUid 
 				and AssetUid = @assetUid 
 				and EffectiveDate = @mostRecentDate;
 
-		if @NewScoreUid is not null
+		if @NewScoreUid is not null and @endDate is null
 		begin
 			update	metrics.Score
 			set		RunDate = @runDate,
 					EndDate = @runDate
 			where	Uid = @NewScoreUid;
 		end
+
+		set @scoreChanged = 0;
 	end
 	else -- Score is ALIVE.
 	begin
@@ -306,7 +311,8 @@ begin
 		if @shouldAddScore = 1
 		begin
 			set @responseScore = coalesce(@Score, 0);
-			
+			set @scoreChanged = 1;
+
 			merge into	metrics.ScoreItem as t
 			using		(
 						select	ItemUid
@@ -356,6 +362,7 @@ begin
 	end
 
 --	select * from @measures order by ParentVersionUid -- DEBUG PURPOSES
+	return; -- needed for output parameters
 end
 ]]>
   </sql>
