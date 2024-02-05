@@ -24,6 +24,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { Subscription } from 'rxjs';
 import { GenericMessageService } from '../../../services/generic-message.service';
 import { GenericMessageType } from '../../../models/generic-message.model';
+import { escape } from "lodash-es";
 
 @Component({
     selector: 'd3s-tag-view',
@@ -573,7 +574,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
                 this.isTooltipLoaded = true;
                 let addedString = $localize`Tag added by ${this.tagTooltip.CreatedBy} on`;
-                this.tooltipValue = `<span class="span-break">${this.tagTooltip.Value}</span>
+                this.tooltipValue = `<span class="span-break">${escape(this.tagTooltip.Value)}</span>
                             <span>${addedString} ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
 
                 if (this.interceptLinkClick) {
