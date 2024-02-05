@@ -198,139 +198,141 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
 		{
+			var prefix = "Audit.GetAuditByAssetAsync => ";
+
 			var queryParams = Request.GetQueryNameValuePairs();
 			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 			int pageSizeLimit = isStreamResponse ? 200000 : 250;
 			bool IncludeActionAssetTypeUid = false;
 
-
 			var orderBySql = "";
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
+			try 
+			{ 
+				string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
 
-			string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
-
-			if (!string.IsNullOrEmpty(isValid))
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-			}
-
-			List<DefaultFilter> fieldList = new List<DefaultFilter>
-			{
-				new DefaultFilter("uid", "uid", SqlFieldType.Guid),
-				new DefaultFilter("name", "name", SqlFieldType.Text),
-				new DefaultFilter("resourceUid", "resourceUid", SqlFieldType.Guid),
-				new DefaultFilter("resourceName", "resourceName", SqlFieldType.Text),
-				new DefaultFilter("date", "date", SqlFieldType.DateTime),
-				new DefaultFilter("action", "action", SqlFieldType.Text),
-				new DefaultFilter("actionAssetUid", "actionAssetUid", SqlFieldType.Guid),
-				new DefaultFilter("actionAssetTypeUid", "actionAssetTypeUid", SqlFieldType.Guid),
-				new DefaultFilter("actionObject", "actionObject", SqlFieldType.Text),
-				new DefaultFilter("actionObjectTypeName", "actionObjectTypeName", SqlFieldType.Text),
-				new DefaultFilter("actionObjectName", "actionObjectName", SqlFieldType.Text),
-				new DefaultFilter("actionDescription", "actionDescription", SqlFieldType.Text),
-				new DefaultFilter("field", "field", SqlFieldType.Text),
-				new DefaultFilter("newValue", "newValue", SqlFieldType.Text),
-				new DefaultFilter("class", "class", SqlFieldType.Number),
-				new DefaultFilter("version", "[version]", SqlFieldType.Number),
-				new DefaultFilter("previousValue", "previousValue", SqlFieldType.Text)
-			};
-
-			var orderColumn = Company.ParseOrderColumn(queryParams, fieldList, "Date");
-			var orderDirection = Company.ParseOrderDirection(queryParams, "desc");
-			orderBySql = $" order by {orderColumn} {orderDirection} ";
-
-			//some actionObject values are translated using ActionObjectDictionary, so incoming filters for actionObject
-			//must have the values translated back
-			List<KeyValuePair<string, string>> modifiedQueryParams = new List<KeyValuePair<string, string>>();
-			foreach (KeyValuePair<string, string> kp in queryParams)
-			{
-				string currentValue = kp.Value;
-
-				if (kp.Key.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "_filter" && currentValue.Contains("actionObject"))
+				if (!string.IsNullOrEmpty(isValid))
 				{
-					List<string> operators = new List<string>
-					{
-						"eq",
-						"ne"
-					};
-					Dictionary<string, string> lookups = ActionObjectDictionary.ToDictionary(d => d.Value, d => d.Key);
-					lookups.Add("Business Asset", "Artifact");
-					lookups.Add("Technical Asset", "Artifact");
-
-					currentValue = lookups.SelectMany(l => operators, (l, o) => new { l, o })
-						.ToDictionary(s => $"actionObject {s.o} '{s.l.Key}'", s => $"actionObject {s.o} '{s.l.Value}'")
-						.Aggregate(currentValue, (current, value) => current.Replace(value.Key, value.Value));
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
 				}
 
-				modifiedQueryParams.Add(new KeyValuePair<string, string>(kp.Key, currentValue));
-			}
+				List<DefaultFilter> fieldList = new List<DefaultFilter>
+				{
+					new DefaultFilter("uid", "uid", SqlFieldType.Guid),
+					new DefaultFilter("name", "name", SqlFieldType.Text),
+					new DefaultFilter("resourceUid", "resourceUid", SqlFieldType.Guid),
+					new DefaultFilter("resourceName", "resourceName", SqlFieldType.Text),
+					new DefaultFilter("date", "date", SqlFieldType.DateTime),
+					new DefaultFilter("action", "action", SqlFieldType.Text),
+					new DefaultFilter("actionAssetUid", "actionAssetUid", SqlFieldType.Guid),
+					new DefaultFilter("actionAssetTypeUid", "actionAssetTypeUid", SqlFieldType.Guid),
+					new DefaultFilter("actionObject", "actionObject", SqlFieldType.Text),
+					new DefaultFilter("actionObjectTypeName", "actionObjectTypeName", SqlFieldType.Text),
+					new DefaultFilter("actionObjectName", "actionObjectName", SqlFieldType.Text),
+					new DefaultFilter("actionDescription", "actionDescription", SqlFieldType.Text),
+					new DefaultFilter("field", "field", SqlFieldType.Text),
+					new DefaultFilter("newValue", "newValue", SqlFieldType.Text),
+					new DefaultFilter("class", "class", SqlFieldType.Number),
+					new DefaultFilter("version", "[version]", SqlFieldType.Number),
+					new DefaultFilter("previousValue", "previousValue", SqlFieldType.Text)
+				};
 
-			Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+				var orderColumn = Company.ParseOrderColumn(queryParams, fieldList, "Date");
+				var orderDirection = Company.ParseOrderDirection(queryParams, "desc");
+				orderBySql = $" order by {orderColumn} {orderDirection} ";
 
-			var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
+				//some actionObject values are translated using ActionObjectDictionary, so incoming filters for actionObject
+				//must have the values translated back
+				List<KeyValuePair<string, string>> modifiedQueryParams = new List<KeyValuePair<string, string>>();
+				foreach (KeyValuePair<string, string> kp in queryParams)
+				{
+					string currentValue = kp.Value;
 
-			if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User, AssetTypeClass.Group))
-			{
-				IncludeActionAssetTypeUid = true;
-			}
-			dbArgs.Add("uid", assetUid);
-			dbArgs.Add("IncludeActionAssetTypeUid", IncludeActionAssetTypeUid);
+					if (kp.Key.ToLower(System.Globalization.CultureInfo.InvariantCulture) == "_filter" && currentValue.Contains("actionObject"))
+					{
+						List<string> operators = new List<string>
+						{
+							"eq",
+							"ne"
+						};
+						Dictionary<string, string> lookups = ActionObjectDictionary.ToDictionary(d => d.Value, d => d.Key);
+						lookups.Add("Business Asset", "Artifact");
+						lookups.Add("Technical Asset", "Artifact");
+
+						currentValue = lookups.SelectMany(l => operators, (l, o) => new { l, o })
+							.ToDictionary(s => $"actionObject {s.o} '{s.l.Key}'", s => $"actionObject {s.o} '{s.l.Value}'")
+							.Aggregate(currentValue, (current, value) => current.Replace(value.Key, value.Value));
+					}
+
+					modifiedQueryParams.Add(new KeyValuePair<string, string>(kp.Key, currentValue));
+				}
+
+				Company.ParseAdvancedFilterQueryParameter(modifiedQueryParams, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
+
+				var assetType = Company.AssetTypes.SingleOrDefault(o => o.uid == assetUid);
+
+				if (assetType != null && assetType.Class.In(AssetTypeClass.Reference, AssetTypeClass.User, AssetTypeClass.Group))
+				{
+					IncludeActionAssetTypeUid = true;
+				}
+				dbArgs.Add("uid", assetUid);
+				dbArgs.Add("IncludeActionAssetTypeUid", IncludeActionAssetTypeUid);
 
 
-			if (advFilterArgs != null && advFilterStatements != null)
-			{
-				dbArgs.AddDynamicParams(advFilterArgs);
-				whereStatements.AddRange(advFilterStatements);
-			}
+				if (advFilterArgs != null && advFilterStatements != null)
+				{
+					dbArgs.AddDynamicParams(advFilterArgs);
+					whereStatements.AddRange(advFilterStatements);
+				}
 
-			string whereSql = "";
-			if (whereStatements.Any())
-			{
-				whereSql = $" where {string.Join(" and ", whereStatements)}";
-			}
+				string whereSql = "";
+				if (whereStatements.Any())
+				{
+					whereSql = $" where {string.Join(" and ", whereStatements)}";
+				}
 
-			int pageNum = Company.ParsePageNumber(queryParams, 1);
-			int pageSize = Company.ParsePageSize(queryParams);
-			string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
-			string sql = "";
+				int pageNum = Company.ParsePageNumber(queryParams, 1);
+				int pageSize = Company.ParsePageSize(queryParams);
+				string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
+				string sql = "";
 
-			string temptablestr = $@"
-drop table if exists #tempaudit;
+				string temptablestr = $@"
+	drop table if exists #tempaudit;
 
-select identity(int, 1, 1) ID,
-t.auditid 
-into #tempaudit
-from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
-inner join AuditView V on V.AuditID = t.AuditID
-{whereSql}
-{orderBySql} 
-{(!isStreamResponse ? $"{offsetSql}" : "")}
-option (recompile)
-";
+	select identity(int, 1, 1) ID,
+	t.auditid 
+	into #tempaudit
+	from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
+	inner join AuditView V on V.AuditID = t.AuditID
+	{whereSql}
+	{orderBySql} 
+	{(!isStreamResponse ? $"{offsetSql}" : "")}
+	option (recompile)
+	";
 
-			string GetBaseQuery = $@"
-select 	uid,
-	name,
-	resourceUid,
-	resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '')  as resourceName,
-	[date],
-	[action],
-	actionAssetUid,
-	actionAssetTypeUid,
-	ActionObject,
-	actionObjectTypeName,
-	actionObjectName,
-	actionDescription,
-	Field,
-	coalesce(NewValue, '---')  as NewValue,
-	[Class],
-	[Version],
-	iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue,
-	fieldType
-from	#tempaudit t 
-inner join AuditView V on V.AuditID = t.AuditID";
-			
+				string GetBaseQuery = $@"
+	select 	uid,
+		name,
+		resourceUid,
+		resourceName + iif(ResourceIsDeleted = 1, ' (deleted)', '')  as resourceName,
+		[date],
+		[action],
+		actionAssetUid,
+		actionAssetTypeUid,
+		ActionObject,
+		actionObjectTypeName,
+		actionObjectName,
+		actionDescription,
+		Field,
+		coalesce(NewValue, '---')  as NewValue,
+		[Class],
+		[Version],
+		iif([action] = 'Created', PreviousValue, coalesce(PreviousValue, '---')) as PreviousValue,
+		fieldType
+	from	#tempaudit t 
+	inner join AuditView V on V.AuditID = t.AuditID";
+
 				if (isStreamResponse)
 				{
 					sql = $@"{temptablestr} {GetBaseQuery} {whereSql} {orderBySql} option (recompile)";
@@ -338,76 +340,100 @@ inner join AuditView V on V.AuditID = t.AuditID";
 				else
 				{
 					sql = $@"
-select count(1) 
-from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
-inner join AuditView V on V.AuditID = t.AuditID
-{whereSql}
-option (recompile);
+	select count(1) 
+	from [dbo].[GetAuditIDFromUID](@uid,@IncludeActionAssetTypeUid) t 
+	inner join AuditView V on V.AuditID = t.AuditID
+	{whereSql}
+	option (recompile);
 
-{temptablestr}
+	{temptablestr}
 
-{GetBaseQuery}
-order by t.id
-option (recompile);";
+	{GetBaseQuery}
+	order by t.id
+	option (recompile);";
 				}
-			
-			var multiQuery = await Company.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
 
-			int? count = null;
+				var multiQuery = await Company.QueryMultipleAsync(sql, dbArgs, ApiTimeout);
 
-			if (!isStreamResponse)
-			{
-				count = multiQuery.Read<int?>().FirstOrDefault();
-			}
+				int? count = null;
 
-			var items = multiQuery.Read<AssetAuditApiItemModel>().ToList();
-
-			//Translate actionObject values
-			items.ForEach(r =>
-			{
-				if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
+				if (!isStreamResponse)
 				{
-					if (r.@class == 1)
+					count = multiQuery.Read<int?>().FirstOrDefault();
+				}
+
+				var items = multiQuery.Read<AssetAuditApiItemModel>().ToList();
+
+				//Translate actionObject values
+				items.ForEach(r =>
+				{
+					if (new[] { "Artifact", "ArtifactType" }.Contains(r.actionObject))
 					{
-						r.actionObject = "Business Asset";
-						r.actionDescription = r.actionDescription.Replace("Artifact", "Business Asset");
+						if (r.@class == 1)
+						{
+							r.actionObject = "Business Asset";
+							r.actionDescription = r.actionDescription.Replace("Artifact", "Business Asset");
+						}
+						else if (r.@class == 8)
+						{
+							r.actionObject = "Technical Asset";
+							r.actionDescription = r.actionDescription.Replace("Artifact", "Technical Asset");
+						}
 					}
-					else if (r.@class == 8)
+					else if (ActionObjectDictionary.ContainsKey(r.actionObject))
 					{
-						r.actionObject = "Technical Asset";
-						r.actionDescription = r.actionDescription.Replace("Artifact", "Technical Asset");
+						r.actionObject = ActionObjectDictionary[r.actionObject];
 					}
-				}
-				else if (ActionObjectDictionary.ContainsKey(r.actionObject))
-				{
-					r.actionObject = ActionObjectDictionary[r.actionObject];
-				}
 
-				//this logic is moved from procedure due to performance issues 
-				//https://github.com/Infogix/govern/pull/9091/files
-				//although, Relationship was created, from perspective of an asset, its relationship property was Updated
-				if (r.actionObject == "Relationship")
-				{
-					r.action = "Updated";
-				}
-			});
+					//this logic is moved from procedure due to performance issues 
+					//https://github.com/Infogix/govern/pull/9091/files
+					//although, Relationship was created, from perspective of an asset, its relationship property was Updated
+					if (r.actionObject == "Relationship")
+					{
+						r.action = "Updated";
+					}
+				});
 
-			if (isStreamResponse)
-			{
-				return Excel(GetExcelDocumentFromQuery(items), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+				if (isStreamResponse)
+				{
+					return Excel(GetExcelDocumentFromQuery(items), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+				}
+				else
+				{
+					var model = new AssetsApiViewModel
+					{
+						total = count,
+						pageNum = pageNum,
+						pageSize = pageSize,
+						items = items
+					};
+
+					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+				}
 			}
-			else
+			catch (ArgumentException ex)
 			{
-				var model = new AssetsApiViewModel
-				{
-					total = count,
-					pageNum = pageNum,
-					pageSize = pageSize,
-					items = items
-				};
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage));
 			}
+			catch (FilterExpressionParserException ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+					SendException(ex, new Dictionary<string, string>() {
+					{ApiMessages.EndpointMethod, prefix },
+					{ AssetsApiMessages.AssetUid, assetUid.ToString() }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+			}
+
 		}
 
 		/// <summary>

@@ -141,6 +141,9 @@
   <data name="AssetTypeUid" xml:space="preserve">
     <value>AssetTypeUid</value>
   </data>
+  <data name="AssetUid" xml:space="preserve">
+    <value>AssetUid</value>
+  </data>
   <data name="AutoDisplayParent" xml:space="preserve">
     <value>Auto Display Parent</value>
   </data>
