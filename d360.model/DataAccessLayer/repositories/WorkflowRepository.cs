@@ -380,7 +380,7 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
 		}
 
-		public async Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
+		public async Task<WorkflowItemStepStateAPIModel> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid)
 		{
 			var dbArgs = new DynamicParameters();
 			dbArgs.Add("resourceId", CompanyContext.CurrentResourceID);
@@ -401,10 +401,6 @@ namespace d360.model.DataAccessLayer
 				inner join workflow.ItemStep wis on wis.ItemID = wi.ID
 				where wis.UID = @workflowItemStepUid;
 
-				declare @hasAccess int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @itemId and wia.ResourceObjectID = @resourceId);
-
-				declare @isAssignee int = (select top 1 wia.ItemID from workflow.ItemAssignment wia where wia.ItemID  = @itemId and wia.ResourceObjectID = @resourceId and wia.itemStepID = @itemStepId);
-
 				select @Name = wt.Name from workflow.Item wi
 				inner join workflow.Version wv on wv.ID = wi.VersionID
 				inner join workflow.Type wt on wt.ID = wv.TypeID
@@ -414,14 +410,16 @@ namespace d360.model.DataAccessLayer
 
 				select 
 				case when @workflowItemUid is not null then 1 else 0 end as [exists], 
-				case when @CompletedOn is not null then 1 else 0 end as [isCompleted], 
-				case when @hasAccess is not null then 1 else 0 end as [hasAccess],
-				case when @isAssignee is not null then 1 else 0 end as [isAssignee],
+				case when @CompletedOn is not null then 1 else 0 end as [isCompleted],
 				@workflowItemUid as workflowItemUid,
 				@Name as [workflowName],
-				@assignmentCount as assignmentCount";
+				@assignmentCount as assignmentCount,
+				@itemId as itemId,
+				@itemStepId as itemStepId";
 
-			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
+			var result = (await CompanyContext.QueryAsync<WorkflowItemStepStateAPIModel>(sql, dbArgs, ApiTimeout)).FirstOrDefault();						
+
+			return CheckAccessAndAssigneeStatus(result, CompanyContext.CurrentResourceID);
 		}
 
 		public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
@@ -1284,7 +1282,7 @@ namespace d360.model.DataAccessLayer
 										GR.uid as initiatorUid,		
 										WI.StartedOn,
 										WI.CompletedOn,
-										case 
+										case 											
 											when WI.CompletedOn is null 
 												then 'Pending'            
 											else        
@@ -1984,5 +1982,24 @@ namespace d360.model.DataAccessLayer
 			return userAssignments;
 		}
 
+		private WorkflowItemStepStateAPIModel CheckAccessAndAssigneeStatus(WorkflowItemStepStateAPIModel state, long resourceID)
+		{			
+			var steps = CompanyContext.WorkflowItemSteps.Where(x => x.ItemID == state.ItemId).ToList();
+
+			foreach (var step in steps)
+			{
+				List<GlobalReportingResource> assignees = CompanyContext.GetWorkflowStepUsers(step).ToList();
+				if(assignees.Count >0 && assignees.Any(x => x.ResourceID == resourceID))
+				{
+					state.HasAccess = true;
+					if(step.ID == state.ItemStepId)
+					{
+						state.IsAssignee = true;
+						break;// No need to check further
+					}
+				}				
+			}
+			return state;
+		}
 	}
 }
