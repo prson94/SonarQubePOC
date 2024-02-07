@@ -42,7 +42,7 @@ namespace repositories
 		Task<long> GetAssetAssignmentCount(string type, Guid uid);
 		Task<WorkflowUserGroupedAssignments> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null);
 
-		Task<dynamic> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid);
+		Task<WorkflowItemStepStateAPIModel> GetAssignmentStateForCurrentUser(Guid workflowItemStepUid);
 
 	}
 }
