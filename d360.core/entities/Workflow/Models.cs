@@ -695,10 +695,10 @@ namespace d360.core.entities.Workflow
 		public bool IsCompleted { get; set; }
 
 		[JsonProperty("hasAccess")]
-		public bool HasAccess { get; set; } = false;
+		public bool HasAccess { get; set; }
 
 		[JsonProperty("isAssignee")]
-		public bool IsAssignee { get; set; } = false;
+		public bool IsAssignee { get; set; }
 
 		[JsonProperty("workflowItemUid")]
 		public Guid WorkflowItemUid { get; set; }
