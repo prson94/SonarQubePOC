@@ -70,7 +70,7 @@ namespace d360.model.DataAccessLayer.repositories
         )
         {
             var viewName = "SELECT * " +
-                           "  FROM dbo.AuditView" +
+						   "  FROM dbo.AuditViewCustomFilter" +
                            " WHERE (@assetUid IS NULL OR ActionAssetUid = @assetUid)" +
                            "   AND (@assetTypeUid IS NULL OR ActionAssetTypeUid = @assetTypeUid)" +
                            "   AND (@action IS NULL OR Action = @action)" +
