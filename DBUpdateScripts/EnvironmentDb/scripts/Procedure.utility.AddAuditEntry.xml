@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Procedure.utility.AddAuditEntry-v30">
+ <changeSet author="Pappas,Puneet" id="Procedure.utility.AddAuditEntry-v31">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -28,7 +28,13 @@ begin
 			@ActionDescription nvarchar(max),
 			@ConvertMainObjectTypeName nvarchar(250),
 			@auditID bigint,
-			@Version int
+			@Version int,
+			@IScheckUpdated bit = 0;
+			
+	declare @MainObject_Temp varchar(50),
+		@MainObjectID_Temp int,
+		@ObjectName_temp nvarchar(250);
+
 
 	select	@Version = coalesce(max([Version]),0) + 1 
 	from	reporting.Global_Audit
@@ -305,7 +311,7 @@ begin
 
 	end
 
-	if @MainObject = 'Tag'
+	if @MainObject = 'Tag' and @MainObjectID > 0
 	begin
 		select	@ActionObjectTypeName = 'Tag',
 				@ObjectName = T.Value
@@ -321,6 +327,19 @@ begin
 					  ('Name', cast(Value as nvarchar(max)))
 					) c (FieldName, NewValue)
 			where	ID = @MainObjectID;
+			
+		set @MainObject_Temp = @MainObject;
+		set @MainObjectID_Temp = @MainObjectID;
+		set @ObjectName_temp = @ObjectName;
+
+		set @MainObject = @DependentObject;
+		set @MainObjectID = @DependentObjectID;
+		set @ObjectName = @ActionObjectName;
+
+		set @DependentObject = @MainObject_Temp;
+		set @DependentObjectID = @MainObjectID_Temp;
+		set @ActionObjectName = @ObjectName_temp;
+			
 	end
 	
 	if @MainObject = 'ResponsibilityType'
@@ -422,6 +441,19 @@ begin
 	
 		set @ActionObjectTypeName = 'Tags'
 		set @ObjectName = 'Tag'
+		
+		set @MainObject_Temp = @MainObject;
+		set @MainObjectID_Temp = @MainObjectID;
+		set @ObjectName_temp = @ObjectName;
+
+		set @MainObject = @DependentObject;
+		set @MainObjectID = @DependentObjectID;
+		set @ObjectName = @ActionObjectName;
+
+		set @DependentObject = @MainObject_Temp;
+		set @DependentObjectID = @MainObjectID_Temp;
+		set @ActionObjectName = @ObjectName_temp;
+		Set @IScheckUpdated = 1;
 	end
 
 	-- this is the case where the last value of a field was removed and the asset remains its not the asset being deleted just an update.
@@ -466,12 +498,12 @@ begin
 									)
 							) S
 
-		if @ActionObjectTypeName = 'Tag'
+		if @ActionObjectTypeName in ('Tag','Tags')
 		begin
-			set @ActionDescription = @ActionObjectTypeName + ' updated'
+			set @ActionDescription = 'Tag updated'
 		end
 		
-		if exists(select 1 from @tbl where Updated = 1)
+		if exists(select 1 from @tbl where Updated = 1) or @IScheckUpdated = 1
 		begin
 			set @ShouldAudit = 1;
 		end
