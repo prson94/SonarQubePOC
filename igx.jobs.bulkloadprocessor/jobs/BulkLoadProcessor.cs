@@ -112,7 +112,7 @@ namespace igx.jobs.bulkloadprocessor
 							{
 								using (MemoryStream stream = new MemoryStream())
 								{
-									await Storage.GetFileStream($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
+									await Storage.GetFileStream("bulk-loads", $"{loadInfo.CompanyID}/load_{load.ID}.{load.Extension}", stream);
 
 									xls = new SLDocument(stream);
 								}
