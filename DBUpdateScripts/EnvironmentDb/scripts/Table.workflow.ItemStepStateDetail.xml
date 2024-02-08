@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+<changeSet author="bquinlivan" id="Table.workflow.ItemStepStateDetail-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		CREATE TABLE [workflow].[ItemStepStateDetail](
+			[ID] [int] IDENTITY(1,1) NOT NULL,
+			[ItemStepId] [bigint] NOT NULL,
+			[State] [int] NOT NULL,
+			[Message] [nvarchar](250) NOT NULL,
+			[Details] [nvarchar](max) NULL,
+		 CONSTRAINT [PK_WorkflowItemStepStateDetail] PRIMARY KEY CLUSTERED ([ID] ASC )
+		) 		
+
+		ALTER TABLE [workflow].[ItemStepStateDetail]  WITH CHECK ADD CONSTRAINT [FK_WorkflowItemStepStateDetail_WorkflowItemStep] FOREIGN KEY([ItemStepId])
+		REFERENCES [workflow].[ItemStep] ([ID])
+		ON DELETE CASCADE		
+
+		ALTER TABLE [workflow].[ItemStepStateDetail] CHECK CONSTRAINT [FK_WorkflowItemStepStateDetail_WorkflowItemStep]
+		
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>  
+</databaseChangeLog>

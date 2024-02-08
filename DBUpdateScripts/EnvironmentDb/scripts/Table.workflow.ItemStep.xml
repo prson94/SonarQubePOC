@@ -87,4 +87,25 @@ END
 		]]>
 	</rollback>
   </changeSet> 
+  
+  <changeSet author="bquinlivan" id="Table.workflow.ItemStep-v3">
+   <comment>GOV-30843</comment>
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF COL_LENGTH('[workflow].[ItemStep]','State') IS NULL
+BEGIN
+	ALTER TABLE [workflow].[ItemStep] 
+	ADD State [int] CONSTRAINT [df__workflow_itemstep_state] DEFAULT (1) NULL
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>

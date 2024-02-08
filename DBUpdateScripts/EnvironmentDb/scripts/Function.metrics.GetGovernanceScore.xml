@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas, Gupta" id="Function.metrics.GetGovernanceScore-v1.13">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.17">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -213,190 +213,200 @@ begin
 	-- External measure check.
 	if exists(select 1 from @tbl where [Check] = 'External')
 	begin
-	delete m
-	from	@tbl m
-			inner join dbo.Asset a on a.Id = m.AssetId 
-			left join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
-	where	m.[Check] = 'External' and r.AssetUid is null and m.IsGroup = 0;			
-	
-	update	m
-	set		m.[Value] = iif(r.[Value] = 1, 1, 0)
-	from	@tbl m
-			inner join dbo.Asset a on a.Id = m.AssetId 
-			inner join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
-	where	m.[Check] = 'External' and m.IsGroup = 0;					
+		delete 	m
+		from	@tbl m
+				inner join dbo.Asset a on a.Id = m.AssetId 
+				left join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
+		where	m.[Check] = 'External' and r.AssetUid is null and m.IsGroup = 0;			
+		
+		update	m
+		set		m.[Value] = iif(r.[Value] = 1, 1, 0)
+		from	@tbl m
+				inner join dbo.Asset a on a.Id = m.AssetId 
+				inner join metrics.ExternalMeasureResult r on r.AssetUid = a.[Uid] and r.AssetVersionUid = m.Uid and r.EffectiveDate = @effectiveDate
+		where	m.[Check] = 'External' and m.IsGroup = 0;			
 	end
 
 	-- Non-lookups, checking Populated/NotPopulated 
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated'))
 	begin
-	update	m
-	set		m.[Value] = case 
-							when m.Operator = 'Populated' and (f.FormattedValue is not null and f.FormattedValue <> '') then 1
-							when m.Operator = 'NotPopulated' and (f.FormattedValue is null or f.FormattedValue = '') then 1
-							else 0
-						end
-	from	@tbl m
-			inner join dbo.Asset a on a.ID = m.AssetId
-			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated')
+		update	m
+		set		m.[Value] = case 
+								when m.Operator = 'Populated' and (coalesce(f.FormattedValue, ft.DefaultFormattedValue) is not null and coalesce(f.FormattedValue, ft.DefaultFormattedValue) <> '') then 1
+								when m.Operator = 'NotPopulated' and (coalesce(f.FormattedValue, ft.DefaultFormattedValue) is null or coalesce(f.FormattedValue, ft.DefaultFormattedValue) = '') then 1
+								else 0
+							end
+		from	@tbl m
+				inner join dbo.Asset a on a.ID = m.AssetId
+				inner join dbo.FieldType ft on ft.AssetTypeID = a.AssetTypeID and ft.ID = m.FieldTypeId
+				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+		where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Operator in ('Populated', 'NotPopulated')
 	end
+
 	-- Non-lookups, skipping Populated/NotPopulated 
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator not in ('Populated', 'NotPopulated'))
 	begin
-	update	m
-	set		m.[Value] = case 								
-							when m.FieldType = 'Boolean' then
-								case 
-									when m.Operator = 'IsTrue' and lower(f.FormattedValue) in ('true', '1') then 1
-									when m.Operator = 'IsFalse' and lower(f.FormattedValue) in ('false', '0') then 1
-									else 0
-								end
+		update	m
+		set		m.[Value] = case 								
+								when m.FieldType = 'Boolean' then
+									case 
+										when m.Operator = 'IsTrue' and lower(coalesce(f.FormattedValue, ft.DefaultFormattedValue)) in ('true', '1') then 1
+										when m.Operator = 'IsFalse' and lower(coalesce(f.FormattedValue, ft.DefaultFormattedValue)) in ('false', '0') then 1
+										else 0
+									end
 
-							when m.FieldType = 'Date' then
-								case 
-									when m.Operator = 'Equals' and try_parse(f.FormattedValue as date) = try_parse(m.SingleValue as date) then 1
-									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as date) <> try_parse(m.SingleValue as date) then 1
-									when m.Operator = 'Between' and try_parse(f.FormattedValue as date) between try_parse(m.StartRangeValue as date) and try_parse(m.EndRangeValue as date) then 1
-									when m.Operator in ('After', 'GreaterThan') and try_parse(f.FormattedValue as date) > try_parse(m.SingleValue as date) then 1
-									when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(f.FormattedValue as date) >= try_parse(m.SingleValue as date) then 1
-									when m.Operator in ('Before', 'LessThan') and try_parse(f.FormattedValue as date) < try_parse(m.SingleValue as date) then 1
-									when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(f.FormattedValue as date) <= try_parse(m.SingleValue as date) then 1
-									else 0
-								end
+								when m.FieldType = 'Date' then
+									case 
+										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) = try_parse(m.SingleValue as date) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue,'1900-01-01') as date) <> try_parse(m.SingleValue as date) then 1
+										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) between try_parse(m.StartRangeValue as date) and try_parse(m.EndRangeValue as date) then 1
+										when m.Operator in ('After', 'GreaterThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) > try_parse(m.SingleValue as date) then 1
+										when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) >= try_parse(m.SingleValue as date) then 1
+										when m.Operator in ('Before', 'LessThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) < try_parse(m.SingleValue as date) then 1
+										when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as date) <= try_parse(m.SingleValue as date) then 1
+										else 0
+									end
 
-							when m.FieldType = 'DateTime' then
-								case 
-									when m.Operator = 'Equals' and try_parse(f.FormattedValue as datetime) = try_parse(m.SingleValue as datetime) then 1
-									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as datetime) <> try_parse(m.SingleValue as datetime) then 1
-									when m.Operator = 'Between' and try_parse(f.FormattedValue as datetime) between try_parse(m.StartRangeValue as datetime) and try_parse(m.EndRangeValue as datetime) then 1
-									when m.Operator in ('After', 'GreaterThan') and try_parse(f.FormattedValue as datetime) > try_parse(m.SingleValue as datetime) then 1
-									when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(f.FormattedValue as datetime) >= try_parse(m.SingleValue as datetime) then 1
-									when m.Operator in ('Before', 'LessThan') and try_parse(f.FormattedValue as datetime) < try_parse(m.SingleValue as datetime) then 1
-									when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(f.FormattedValue as datetime) <= try_parse(m.SingleValue as datetime) then 1
-									else 0
-								end
+								when m.FieldType = 'DateTime' then
+									case 
+										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) = try_parse(m.SingleValue as datetime) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue,'1900-01-01') as datetime) <> try_parse(m.SingleValue as datetime) then 1
+										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) between try_parse(m.StartRangeValue as datetime) and try_parse(m.EndRangeValue as datetime) then 1
+										when m.Operator in ('After', 'GreaterThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) > try_parse(m.SingleValue as datetime) then 1
+										when m.Operator in ('OnOrAfter', 'GreaterThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) >= try_parse(m.SingleValue as datetime) then 1
+										when m.Operator in ('Before', 'LessThan') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) < try_parse(m.SingleValue as datetime) then 1
+										when m.Operator in ('OnOrBefore', 'LessThanOrEquals') and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as datetime) <= try_parse(m.SingleValue as datetime) then 1
+										else 0
+									end
 
-							when m.FieldType = 'Decimal' then
-								case 
-									when m.Operator = 'Equals' and try_parse(f.FormattedValue as decimal) = try_parse(m.SingleValue as decimal) then 1
-									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as decimal) <> try_parse(m.SingleValue as decimal) then 1
-									when m.Operator = 'Between' and try_parse(f.FormattedValue as decimal) between try_parse(m.StartRangeValue as decimal) and try_parse(m.EndRangeValue as decimal) then 1
-									when m.Operator = 'GreaterThan' and try_parse(f.FormattedValue as decimal) > try_parse(m.SingleValue as decimal) then 1
-									when m.Operator = 'GreaterThanOrEquals' and try_parse(f.FormattedValue as decimal) >= try_parse(m.SingleValue as decimal) then 1
-									when m.Operator = 'LessThan' and try_parse(f.FormattedValue as decimal) < try_parse(m.SingleValue as decimal) then 1
-									when m.Operator = 'LessThanOrEquals' and try_parse(f.FormattedValue as decimal) <= try_parse(m.SingleValue as decimal) then 1
-									else 0
-								end
+								when m.FieldType = 'Decimal' then
+									case 
+										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) = try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue, '-1') as decimal) <> try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) between try_parse(m.StartRangeValue as decimal) and try_parse(m.EndRangeValue as decimal) then 1
+										when m.Operator = 'GreaterThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) > try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'GreaterThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) >= try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'LessThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) < try_parse(m.SingleValue as decimal) then 1
+										when m.Operator = 'LessThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as decimal) <= try_parse(m.SingleValue as decimal) then 1
+										else 0
+									end
 
-							when m.FieldType = 'Number' then
-								case 
-									when m.Operator = 'Equals' and try_parse(f.FormattedValue as bigint) = try_parse(m.SingleValue as bigint) then 1
-									when m.Operator = 'NotEquals' and try_parse(f.FormattedValue as bigint) <> try_parse(m.SingleValue as bigint) then 1
-									when m.Operator = 'Between' and try_parse(f.FormattedValue as bigint) between try_parse(m.StartRangeValue as bigint) and try_parse(m.EndRangeValue as bigint) then 1
-									when m.Operator = 'GreaterThan' and try_parse(f.FormattedValue as bigint) > try_parse(m.SingleValue as bigint) then 1
-									when m.Operator = 'GreaterThanOrEquals' and try_parse(f.FormattedValue as bigint) >= try_parse(m.SingleValue as bigint)then 1
-									when m.Operator = 'LessThan' and try_parse(f.FormattedValue as bigint) < try_parse(m.SingleValue as bigint)then 1
-									when m.Operator = 'LessThanOrEquals' and try_parse(f.FormattedValue as bigint) <= try_parse(m.SingleValue as bigint) then 1
-									else 0
-								end
+								when m.FieldType = 'Number' then
+									case 
+										when m.Operator = 'Equals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) = try_parse(m.SingleValue as bigint) then 1
+										when m.Operator = 'NotEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue, '-1') as bigint) <> try_parse(m.SingleValue as bigint) then 1
+										when m.Operator = 'Between' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) between try_parse(m.StartRangeValue as bigint) and try_parse(m.EndRangeValue as bigint) then 1
+										when m.Operator = 'GreaterThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) > try_parse(m.SingleValue as bigint) then 1
+										when m.Operator = 'GreaterThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) >= try_parse(m.SingleValue as bigint)then 1
+										when m.Operator = 'LessThan' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) < try_parse(m.SingleValue as bigint)then 1
+										when m.Operator = 'LessThanOrEquals' and try_parse(coalesce(f.FormattedValue, ft.DefaultFormattedValue) as bigint) <= try_parse(m.SingleValue as bigint) then 1
+										else 0
+									end
 
-							when m.FieldType = 'Text' then
-								case 
-									when m.Operator = 'Equals' and f.FormattedValue = m.SingleValue then 1
-									when m.Operator = 'NotEquals' and f.FormattedValue <> m.SingleValue then 1
-									when m.Operator = 'Contains' and f.FormattedValue like '%' + m.SingleValue + '%' then 1
-									when m.Operator = 'NotContains' and f.FormattedValue not like '%' + m.SingleValue + '%' then 1
-									when m.Operator = 'StartsWith' and f.FormattedValue like m.SingleValue + '%' then 1
-									when m.Operator = 'EndsWith' and f.FormattedValue like '%' + m.SingleValue then 1
-									when m.Operator = 'In' and f.FormattedValue in (
-										select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
-									) then 1
-									when m.Operator = 'NotIn' and f.FormattedValue not in (
-										select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
-									) then 1
-									else 0
-								end
+								when m.FieldType = 'Text' then
+									case 
+										when m.Operator = 'Equals' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) = m.SingleValue then 1
+										when m.Operator = 'NotEquals' and coalesce(f.FormattedValue, ft.DefaultFormattedValue,'') <> m.SingleValue then 1
+										when m.Operator = 'Contains' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) like '%' + m.SingleValue + '%' then 1
+										when m.Operator = 'NotContains' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) not like '%' + m.SingleValue + '%' then 1
+										when m.Operator = 'StartsWith' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) like m.SingleValue + '%' then 1
+										when m.Operator = 'EndsWith' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) like '%' + m.SingleValue then 1
+										when m.Operator = 'In' and coalesce(f.FormattedValue, ft.DefaultFormattedValue) in (
+											select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
+										) then 1
+										when m.Operator = 'NotIn' and coalesce(f.FormattedValue, ft.DefaultFormattedValue,'') not in (
+											select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
+										) then 1
+										else 0
+									end
 
-							else 0
-						end
-	from	@tbl m
-			inner join dbo.Asset a on a.ID = m.AssetId
-			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-	where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator not in ('Populated', 'NotPopulated')
+								else 0
+							end
+		from	@tbl m
+				inner join dbo.Asset a on a.ID = m.AssetId
+				inner join dbo.FieldType ft on ft.AssetTypeID = a.AssetTypeID and ft.ID = m.FieldTypeId
+				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+		where	m.[Check] = 'Field' and m.FieldType <> 'Lookup' and m.Value is null and m.Operator not in ('Populated', 'NotPopulated')
 	end
+
 	-- Perform Lookup Populated check
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated')
 	begin
-	update	m
-	set		m.[Value] = iif(f.ID is not null and a.Present > 0, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
-	from	@tbl m
-			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-			cross apply (
-				select	count(1) as Present
-				from	dbo.AssetType lt
-						cross apply (
-							select	try_parse(value as int) as ObjectID
-							from	string_split(coalesce(f.Value,'0'), ',')
-						) vals
-						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
-			) a
-	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
+		update	m
+		set		m.[Value] = iif(a.Present > 0, 1, 0) -- we are not validating the specific value - just that the field value is not null and it does point to a valid asset.
+		from	@tbl m
+				inner join dbo.FieldType ft on ft.ID = m.FieldTypeId
+				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+				cross apply (
+					select	count(1) as Present
+					from	dbo.AssetType lt
+							cross apply (
+								select	try_parse(value as int) as ObjectID
+								from	string_split(coalesce(f.Value, ft.DefaultValue, '0'), ',')
+							) vals
+							inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
+				) a
+		where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'Populated'
 	end
+
 	---- Perform Lookup NotPopulated check
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated')
 	begin
-	update	m
-	set		m.[Value] = iif(f.ID is null and a.Present = 0, 1, 0)
-	from	@tbl m
-			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-			outer apply (
-				select	count(1) as Present
-				from	dbo.AssetType lt
-						cross apply (
-							select	try_parse(value as int) as ObjectID
-							from	string_split(coalesce(f.Value,'0'), ',')
-						) vals
-						inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
-			) a
-	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated'
+		update	m
+		set		m.[Value] = iif(a.Present = 0, 1, 0)
+		from	@tbl m
+				inner join dbo.FieldType ft on ft.ID = m.FieldTypeId
+				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+				outer apply (
+					select	count(1) as Present
+					from	dbo.AssetType lt
+							cross apply (
+								select	try_parse(value as int) as ObjectID
+								from	string_split(coalesce(f.Value, ft.DefaultValue, '0'), ',')
+							) vals
+							inner join dbo.Asset la on la.AssetTypeID = lt.ID and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId and la.ObjectID = vals.ObjectID
+				) a
+		where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator = 'NotPopulated'
 	end
+
 	-- Perform Lookup other check
 	
 	if exists(select 1 from @tbl m where m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated'))
 	begin
-	update	m
-	set		m.[Value] = iif(a.Present > 0, 1, 0)
-	from	@tbl m
-			left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
-			outer apply (
-				select	count(1) as Present
-				from	dbo.AssetType lt
-						cross apply (
-							select	try_parse(value as int) as ObjectID
-							from	string_split(coalesce(f.Value,'0'), ',')
-						) vals
-						inner join dbo.Asset la on la.AssetTypeID = lt.ID 
-							and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId 
-							and la.ObjectID = vals.ObjectID
-							and case 
-								when m.Operator = 'Equals' and la.Uid = m.SingleValue then 1
-								when m.Operator = 'NotEquals' and la.Uid <> m.SingleValue then 1
-								when m.Operator = 'In' and la.Uid in (
-									select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
-								) then 1
-								when m.Operator = 'NotIn' and la.Uid not in (
-									select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
-								) then 1
-								else 0
-							end = 1
-			) a
-	where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated')
+		update	m
+		set		m.[Value] = iif(a.Present > 0, 1, 0)
+		from	@tbl m
+				inner join dbo.FieldType ft on ft.ID = m.FieldTypeId
+				left join dbo.Field f on f.AssetID = m.AssetId and f.FieldTypeID = m.FieldTypeId
+				outer apply (
+					select	count(1) as Present
+					from	dbo.AssetType lt
+							cross apply (
+								select	try_parse(value as int) as ObjectID
+								from	string_split(coalesce(f.Value, ft.DefaultValue, '0'), ',')
+							) vals
+							inner join dbo.Asset la on la.AssetTypeID = lt.ID 
+								and lt.Object = m.LookupObject and lt.ObjectID = m.LookupObjectId 
+								and la.ObjectID = vals.ObjectID
+								and case 
+									when m.Operator = 'Equals' and la.Uid = m.SingleValue then 1
+									when m.Operator = 'NotEquals' and la.Uid <> m.SingleValue then 1
+									when m.Operator = 'In' and la.Uid in (
+										select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
+									) then 1
+									when m.Operator = 'NotIn' and la.Uid not in (
+										select v.[Value] from openjson(m.[ListValues]) with ([Value] nvarchar(max)) v
+									) then 1
+									else 0
+								end = 1
+				) a
+		where	m.[Check] = 'Field' and m.FieldType = 'Lookup' and m.[Value] is null and m.Operator not in ('Populated', 'NotPopulated')
 	end
+
 	-- OWNERSHIP -----------------------------------------------
 		
 	if exists(select 1 from @tbl m where m.[Check] = 'Owner')
@@ -431,6 +441,7 @@ begin
 			and (o.AssetID = m.AssetId or (o.AssetID = 0 and o.AssetTypeID = m.AssetTypeId and o.ApplyToType = 1)) 
 	where	m.[Check] = 'Owner'
 	end
+
 	-- PREDICATE -----------------------------------------------
 	if exists(select 1 from @tbl m where m.[Check] = 'Predicate')
 	begin
@@ -450,6 +461,7 @@ begin
 			) o
 	where	m.[Check] = 'Predicate'
 	end
+
 	-- RELATION ------------------------------------------------
 	if exists(select 1 from @tbl m where m.[Check] = 'Relation')
 	begin
@@ -469,6 +481,7 @@ begin
 			) o
 	where	m.[Check] = 'Relation'
 	end
+
 	-- Remove those measure groups that do not have any representative descendant measures.
 	delete @tbl where IsGroup = 1 and Uid not in (select distinct ParentUid from @tbl where ParentUid is not null);
 

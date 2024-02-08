@@ -24,6 +24,7 @@
         <button igButton class="ig-button-primary" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
         <button igButton class="ig-button-primary" *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" [disabled]="button.disabled">
             <span class="content">{{button.text}}</span>
+            <span *ngIf="button.iconClass" [ngClass]="'fa '+ button.iconClass"></span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
         </button>
         <div [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.display]="'flex'" *ngIf="assetAction && assetAction.isVisible">

@@ -50,9 +50,6 @@ namespace igx.jobs.databasecleaner
 								//remove any old data profile records
 								await company.ExecuteAsync("[DeleteAssetDataProfileRecords] @dataProfileLifespan", new { dataProfileLifespan = (int)(Convert.ChangeType(settingInfo.Value, typeof(int))) }, commandTimeout: 1800);
 
-								//remove any old score execution data
-								await company.ExecuteAsync("metrics.CleanupExecutions", commandTimeout: 1800);
-
 								//remove any old queue task data
 								await company.ExecuteAsync("Queue.DeleteQueueTaskRecords", commandTimeout: 1800);
 

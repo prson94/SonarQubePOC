@@ -369,6 +369,7 @@ namespace d360.model
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
@@ -660,6 +661,7 @@ namespace d360.model
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
 										sw.Restart();
+										LogExecutionErrorToAppInsights(execution, ex);
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeleteAssetDataProfile", ex.GetFullExceptionData(false), timeout);
 										addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();
@@ -1377,6 +1379,7 @@ namespace d360.model
 				}
 				catch (Exception generalEx)
 				{
+					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
@@ -1666,6 +1669,7 @@ namespace d360.model
 									if (retryCount > API_V2_RETRY_LIMIT)
 									{
 										sw.Restart();
+										LogExecutionErrorToAppInsights(execution, ex);
 										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAssetDataProfile", ex.GetFullExceptionData(false), timeout);
 										addMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 										sw.Restart();

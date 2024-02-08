@@ -2292,6 +2292,7 @@ namespace d360.model.DataAccessLayer
 			}
 			catch (Exception ex)
 			{
+				CompanyContext.LogExecutionErrorToAppInsights(execution, ex);
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 

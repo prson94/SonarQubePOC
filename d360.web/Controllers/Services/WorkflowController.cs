@@ -498,6 +498,7 @@ namespace d360.web.Controllers.Services
 
 				workflowItemStep.CompletedBy = Company.CurrentResourceID;
 				workflowItemStep.CompletedOn = DateTime.UtcNow;
+				workflowItemStep.State = StepState.Complete;
 
 				Company.SaveChanges();
 
@@ -688,6 +689,7 @@ namespace d360.web.Controllers.Services
 				{
 					itemStepsModel.CompletedOn = DateTime.UtcNow;
 					itemStepsModel.CompletedBy = Company.CurrentResourceID;
+					itemStepsModel.State = StepState.Complete;
 				}
 
 				Company.Entry(itemStepsModel).State = EntityState.Modified;
@@ -722,7 +724,7 @@ namespace d360.web.Controllers.Services
 					if (transitionsCount == 0)
 					{
 						//log that a form was submited that had 0 transitions
-						SendEvent("Form completed with 0 transitions");
+						SendEvent("Form completed with 0 transitions");						
 					}
 
 					Company.SaveChanges();

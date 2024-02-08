@@ -206,7 +206,8 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 	private setHeaderButton(): void {
 		this.secondaryNavService.clearButtons();
 		if (!this.isRequestDetailsFlow && this.workflowStepDetail?.ItemSettings?.hasPendingForms && this.workflowStepDetail?.IsAssignedLoginUser && !(this.workflowStepDetail?.CompletedOn) && this.workflowAssignment.isCurrentUserAssigned) {
-			const completeAssignmentButton: DynamicButton = new DynamicButton($localize`Complete Assignment`);
+			const completeAssignmentButton: DynamicButton = new DynamicButton($localize`Complete the Assignment`);
+			completeAssignmentButton.iconClass = 'fa-pencil';						
 			this.secondaryNavService.showButton(completeAssignmentButton);
 			completeAssignmentButton.dynamicCallback = () => {
 				completeAssignmentButton.isLoading = true;

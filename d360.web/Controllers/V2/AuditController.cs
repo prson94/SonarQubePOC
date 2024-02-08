@@ -203,6 +203,7 @@ namespace d360.web.Controllers.V2
 			int pageSizeLimit = isStreamResponse ? 200000 : 250;
 			bool IsassetUidReqUnion = false;
 
+
 			var orderBySql = "";
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
@@ -275,10 +276,10 @@ namespace d360.web.Controllers.V2
 				dbArgs.Add("uid", assetUid);
 				whereStatements.Add("<uid> = @uid");
 			}
-			else 
+			else
 			{
 				dbArgs.Add("uid", assetUid);
-				whereStatements.Add("uid = @uid");				
+				whereStatements.Add("uid = @uid");
 			}
 
 			if (advFilterArgs != null && advFilterStatements != null)
@@ -331,7 +332,7 @@ from	{(!PickFromTemptable ? "AuditView" : "#tempauditdata")}";
 				from 
 				(
 				{GetBaseQuery()} 
-				{whereSql.Replace("<uid>","uid")}
+				{whereSql.Replace("<uid>", "uid")}
 				union
 				{GetBaseQuery()} 
 				{whereSql.Replace("<uid>", "actionAssetTypeUid")}

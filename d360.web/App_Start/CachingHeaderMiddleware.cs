@@ -21,8 +21,7 @@ namespace d360.web
 
             if (context.Response.ContentType == "application/json")
             {
-                context.Response.Headers.Add("Cache-Control", new string[] { "no-cache, no-store, must-revalidate" });
-                context.Response.Headers.Add("Pragma", new string[] { "no-cache" });
+                context.Response.Headers.Add("Cache-Control", new string[] { "no-store" });
             }
 
             // Remove the server version number from being sent with every response.

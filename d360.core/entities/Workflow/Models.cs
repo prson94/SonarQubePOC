@@ -686,6 +686,36 @@ namespace d360.core.entities.Workflow
 		}
 	}
 
+	public class WorkflowItemStepStateAPIModel
+	{
+		[JsonProperty("exists")]
+		public bool Exists { get; set; }
+
+		[JsonProperty("isCompleted")]
+		public bool IsCompleted { get; set; }
+
+		[JsonProperty("hasAccess")]
+		public bool HasAccess { get; set; }
+
+		[JsonProperty("isAssignee")]
+		public bool IsAssignee { get; set; }
+
+		[JsonProperty("workflowItemUid")]
+		public Guid WorkflowItemUid { get; set; }
+
+		[JsonProperty("workflowName")]
+		public string WorkflowName { get; set; }
+
+		[JsonProperty("assignmentCount")]
+		public int AssignmentCount { get; set; }
+
+		[JsonIgnore]
+		public long ItemId { get; set; }
+
+		[JsonIgnore]
+		public long ItemStepId { get; set; }
+	}
+
 	public class AssociatedItems
 	{
 		public Guid WorkflowItemUid { get; set; }

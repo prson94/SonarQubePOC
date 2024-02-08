@@ -3559,6 +3559,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			catch (Exception ex)
 			{
+				CompanyContext.LogExecutionErrorToAppInsights(execution, ex);
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
@@ -3621,6 +3622,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			catch (Exception ex)
 			{
+				CompanyContext.LogExecutionErrorToAppInsights(execution, ex);
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
@@ -3692,6 +3694,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			catch (Exception ex)
 			{
+				CompanyContext.LogExecutionErrorToAppInsights(execution, ex);
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
@@ -3738,6 +3741,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 			}
 			catch (Exception ex)
 			{
+				CompanyContext.LogExecutionErrorToAppInsights(execution, ex);
 				CompanyContext.UpdateExecutionWithErrorFromException(execution, ex);
 			}
 
