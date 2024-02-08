@@ -85,15 +85,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.loadUserAssignments();
 		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
-		if (this.urlWorkflowItemUid) {
-			this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
-			.subscribe((response: AssignmentItemStep[]): void => {
-				const step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
-				if(step?.ActivityType !== 'Form'){
-					this.redirectToDetails = true
-				}
-			});
-		}	
+	
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
@@ -163,20 +155,32 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 
 	private handleWorkflowItemLoad(res: WorkflowStateForUser, forcedRefresh: boolean) {
 		// check if there is exiting step in assignments
-		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
-		if (assignmentItem) {
-			this.onItemClick(null, assignmentItem);
-		}
-		else {
-			// check if there is exiting workflow type + version combination to open form
-			assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
-			if (assignmentItem) {
-				this.onItemClick(null, assignmentItem);
-			}
-			else if (!forcedRefresh) {
-				this.handleNoAssignments(res);
-			}
-		}
+		// if (this.urlWorkflowItemUid) {
+		// 	this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
+		// 	.subscribe((response: AssignmentItemStep[]): void => {
+		// 		const step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
+		// 		if(step?.ActivityType !== 'Form'){
+		// 			this.redirectToDetails = true;
+		// 		} else {
+		// 			this.redirectToDetails = false;
+		// 		}
+				let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
+				if (assignmentItem && !this.redirectToDetails) {
+					this.onItemClick(null, assignmentItem);
+				}
+				else {
+					// check if there is exiting workflow type + version combination to open form
+					assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
+					if (assignmentItem && !this.redirectToDetails) {
+						this.onItemClick(null, assignmentItem);
+					}
+					else if (!forcedRefresh) {
+						this.handleNoAssignments(res);
+					}
+				}
+		// 	});
+		// }	
+		
 	}
 
 	modalVisible: boolean = false;
