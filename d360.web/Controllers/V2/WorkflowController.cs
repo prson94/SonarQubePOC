@@ -547,6 +547,8 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are StartedOn, CompletedOn, Initiator, AssetDisplayValue, Status, DisplayPath, WorkflowName and AssigneesJson . By default the results are ordered by StartedOn.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_workflowTypeUid", "Returns assignments filtered by workflow type UID", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_workflowVersion", "Returns assignments filtered by workflow version", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(WorkflowUserGroupedAssignments)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Initiator not found based on initiatorUid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve the workflow assignments is invalid, possibly due to an incorrectly formatted identifier/parameter.", typeof(ErrorResponse)),

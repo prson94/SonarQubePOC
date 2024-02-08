@@ -1853,6 +1853,8 @@ namespace d360.model.DataAccessLayer
 		public async Task<WorkflowUserGroupedAssignments> GetWorkflowAssignmentListGroupedForUser(Guid resourceUid, IEnumerable<KeyValuePair<string, string>> queryParams, CancellationToken? cancellationToken = null)
 		{
 			StringBuilder classQuery = new StringBuilder();
+			var dbArgs = new DynamicParameters();
+			List<string> whereConditions = new List<string>();
 
 			if (cancellationToken == null)
 			{
@@ -1862,6 +1864,33 @@ namespace d360.model.DataAccessLayer
 			int pageNum = CompanyContext.ParsePageNumber(queryParams, 1);
 			int pageSize = CompanyContext.ParsePageSize(queryParams);
 			string offset = CompanyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+			dbArgs.Add("@resourceUid", resourceUid);
+
+			if (queryParams != null)
+			{
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_workflowtypeuid")) 
+				{
+					Guid workflowTypeUid;
+					var workflowTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_workflowtypeuid").Value;
+					if ((Guid.TryParse(workflowTypeUidString, out workflowTypeUid)) && (workflowTypeUid != Guid.Empty))
+					{
+						dbArgs.Add("@workflowTypeUid", workflowTypeUid);
+						whereConditions.Add("wt.uid = @workflowTypeUid");
+					}
+				}
+
+				if (queryParams.ToList().Any(q => q.Key.ToLower() == "_workflowversion"))
+				{
+					int workflowVersion;
+					var workflowVersionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_workflowversion").Value;
+					if (int.TryParse(workflowVersionString, out workflowVersion))
+					{
+						dbArgs.Add("@workflowVersion", workflowVersion);
+						whereConditions.Add("[wv].[Version] = @workflowVersion");
+					}
+				}
+			}
 
 			var orderFieldOptions = new List<DefaultFilter>
 			{
@@ -1908,6 +1937,7 @@ namespace d360.model.DataAccessLayer
 							inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
 						where
 						wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3
+						{(whereConditions.Count >0 ? $"and {string.Join(" and ", whereConditions.ToArray())}": "")}
 						group by wt.name, wt.uid,wv.[version],wvs.name,wvs.Id
 
 						select
@@ -1955,7 +1985,7 @@ namespace d360.model.DataAccessLayer
 						 where A.ObjectID = wi.ObjectID AND A.Object = wi.Object AND wi.Object <> 'Intersect' AND wi.Object <> 'Issue'
 						)ObjectData(Name, AssetId, AssetUid, ObjectType, AssetTypeName, AssetTypePath)
 						where wia.ID in (select value from STRING_SPLIT(ua.WorkflowAssignments,',')) for json path
-						)AssociatedWith(json)
+						)AssociatedWith(json)						
 						{orderBySql}
 						{offset}
 
@@ -1969,7 +1999,7 @@ namespace d360.model.DataAccessLayer
 			using (var multi = await CompanyContext.Database.Connection.QueryMultipleAsync(
 				  new CommandDefinition(sql,
 				  cancellationToken: cancellationToken.Value,
-				  parameters: new { resourceUid },
+				  parameters: dbArgs,
 				  commandTimeout: ApiTimeout
 				)))
 			{

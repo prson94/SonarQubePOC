@@ -161,7 +161,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				});
 	}
 
-	private handleWorkflowItemLoad(res: WorkflowStateForUser, forcedRefresh: boolean) {
+	private handleWorkflowItemLoad(workflowState: WorkflowStateForUser, forcedRefresh: boolean) {
 		// check if there is exiting step in assignments
 		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
 		if (assignmentItem) {
@@ -172,10 +172,16 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
 			if (assignmentItem) {
 				this.onItemClick(null, assignmentItem);
-			}
-			else if (!forcedRefresh) {
-				this.handleNoAssignments(res);
-			}
+			} else {
+				const params = { _workflowTypeUid: this.urlWorkflowTypeUid.toLowerCase(), _workflowVersion: this.urlWorkflowVersion };
+				this.workflowService.getUserAssignments(this.userUid, params).subscribe((res) => {
+					if (res.items[0]) {
+						this.onItemClick(null, res.items[0]);
+					} else if (!forcedRefresh) {
+						this.handleNoAssignments(workflowState);
+					}
+				});				
+			}			
 		}
 	}
 
