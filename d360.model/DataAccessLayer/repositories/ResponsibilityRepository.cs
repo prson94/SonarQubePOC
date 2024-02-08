@@ -64,12 +64,18 @@ namespace d360.model.DataAccessLayer
 		{
 			var res = new AssetResponsibilitiesApiModel();
 
-			var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
-
 			var sql = $@"
-				select 
+				declare @AssettypeId int,
+				@Assetid bigint;
+
+				select Top 1 @AssettypeId = AssetTypeID,
+							 @Assetid = ID
+				from Asset 
+				where Uid = @assetUid;
+
+				select distinct
 					  R.ResponsibilityTypeName as Responsibility, 
-					  RT.uid as ResponsibilityUid,
+					  R.ResponsibilityUid,
 					  R.ResourceName as Resource,
 					  R.SecurityAssetUid as ResourceUid,
 					  CASE R.SecurityAsset
@@ -78,7 +84,8 @@ namespace d360.model.DataAccessLayer
 						ELSE Null
 						END as GroupResourceUid,
 					  R.Context as 'Description',
-					  G.Name as 'Group',
+					  CASE R.SecurityAsset
+					  WHEN 'G' then R.SecurityAssetName else null end as 'Group',
 					  CASE
 						WHEN R.RuleID = 0 THEN 'User'
 						ELSE 'Rule'
@@ -89,31 +96,22 @@ namespace d360.model.DataAccessLayer
 						WHEN 'G' THEN 'Group'
 						ELSE ''
 						END as ResourceType
-					  from (
-						select * from [dbo].[ResponsibilityDetail]
-								where AssetID = @id
-								union all
-								select * from [dbo].[ResponsibilityDetail]
-								where AssetID = 0 and AssetTypeID = @typeId
-						) R
-					  inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
-					  left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'";
+					  from [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](@AssettypeId,@Assetid) R
+					  option (recompile)";
 
-			return await CompanyContext.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID });
+			return await CompanyContext.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { assetUid });
 		}
 
 		public async Task<bool> HasOwnership(Guid assetUid)
 		{
-			var asset = CompanyContext.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
-
 			var sql = $@"
-				select  CASE WHEN EXISTS (
-						select  1 
-						from    [dbo].[ResponsibilityDetail] R
-						where   R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)) THEN 1
-						ELSE 0 END";
+				select  CASE WHEN count(R.AssetID) > 0 THEN 1 ELSE 0 END
+				from Asset A
+				cross apply (select top 1 AssetID
+							from ResponsibilityDetailByAssetTypeIDAssetID(A.AssetTypeId,A.ID)) R
+				where A.uid = @assetUid";
 
-			return await CompanyContext.Database.Connection.QueryFirstAsync<bool>(sql, new { id = asset.ID, typeId = asset.AssetTypeID });
+			return await CompanyContext.Database.Connection.QueryFirstAsync<bool>(sql, new { assetUid });
 		}
 
 		public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)

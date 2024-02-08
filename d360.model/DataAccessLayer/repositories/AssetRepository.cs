@@ -1083,6 +1083,22 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					Parent.DisplayValue as ParentDisplayName,";
 			string parentApplySQL = $@"outer apply GetParentByAssetID(A.ID)AAP
 				left join AssetDetail Parent on Parent.ID = AAP.Id";
+			string parentApplyDetailSQL = $@"left join #ParentData Parent on Parent.AssetID = A.ID";
+
+			string parentApplyTempTableSQL = $@"
+												Drop Table if exists #ParentData; 
+												select  TempA.AssetID,
+														PA.Uid Uid,
+														PV.DisplayValue
+												into #ParentData
+												From #tempasset TempA
+												cross apply GetParentByAssetID(TempA.AssetId) AAP  
+												inner join asset PA on PA.ID = AAP.ID
+												inner join assetdisplayvalue PV on PV.AssetID = AAP.ID
+												
+												create clustered index ix_ParentData on #ParentData(AssetID);
+												";
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
 			{
 				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
@@ -1102,6 +1118,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 									inner join AssetDetail AD on AD.ID = I.SubjectAssetID
 								where IT.ObjectAssetTypeID = T.ID and P.Type = {(int)PredicateType.InterTypeHierarchy}
 							)Parent";
+						parentApplyDetailSQL = parentApplySQL;
+						parentApplyTempTableSQL = "";
 					}
 				}
 
@@ -1860,7 +1878,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(useTempTableForResults ? " into #results " : "")}
 				from #tempasset TempA
 				inner join Asset A on TempA.AssetId = A.ID
-				left join AssetPath Node on Node.ID = a.ID
+				left join AssetPath Node on Node.ID = A.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{fieldJoins.SQLJoinStatement}
@@ -1870,7 +1888,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
 				{hierarchyChildUidSelect}
-				{(includeParent ? parentApplySQL : "")}							
+				{(includeParent ? parentApplyDetailSQL : "")}							
 				Order By {orderByFields}				
 				{(useTempTableForResults ? "select * from #results order by _rowid " : "")}
 			";
@@ -1880,7 +1898,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				model.total = null;
 			}
 
-			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {sql} OPTION(RECOMPILE)";
+			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {parentApplyTempTableSQL} {sql} OPTION(RECOMPILE)";
 
 			if (!string.IsNullOrEmpty(selectOwnershipSQL))
 			{
