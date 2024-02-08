@@ -1658,7 +1658,8 @@ where	EG.Success is null
 		
 							select AssetId 
 							into #resourceResponsibilities
-							from dbo.ResponsibilityDetail where ResourceID = cast(@{userParam} as int)
+							from dbo.ResponsibilityDetailByAssetTypeID(cast(@{typeParam} as int))
+							where ResourceID = cast(@{userParam} as int)
 
 							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
 
