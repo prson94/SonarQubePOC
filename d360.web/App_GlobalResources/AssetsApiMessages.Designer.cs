@@ -133,6 +133,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to AssetUid.
+        /// </summary>
+        public static string AssetUid {
+            get {
+                return ResourceManager.GetString("AssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Auto Display Parent.
         /// </summary>
         public static string AutoDisplayParent {

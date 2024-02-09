@@ -196,17 +196,21 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
 		]
-		public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
+			public async Task<IHttpActionResult> GetAuditByAssetAsync(Guid assetUid)
+	{
+		var prefix = "Audit.GetAuditByAssetAsync => ";
+
+		var queryParams = Request.GetQueryNameValuePairs();
+		bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+		int pageSizeLimit = isStreamResponse ? 200000 : 250;
+		bool IsassetUidReqUnion = false;
+
+
+		var orderBySql = "";
+		var dbArgs = new DynamicParameters();
+		List<string> whereStatements = new List<string>();
+		try
 		{
-			var queryParams = Request.GetQueryNameValuePairs();
-			bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-			int pageSizeLimit = isStreamResponse ? 200000 : 250;
-			bool IsassetUidReqUnion = false;
-
-
-			var orderBySql = "";
-			var dbArgs = new DynamicParameters();
-			List<string> whereStatements = new List<string>();
 
 			string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
 
@@ -431,6 +435,29 @@ select count(1) from AuditView {whereSql};
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
 		}
+		catch (ArgumentException ex)
+		{
+			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage));
+		}
+		catch (FilterExpressionParserException ex)
+		{
+			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+		}
+		catch (Exception ex)
+		{
+			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+			SendException(ex, new Dictionary<string, string> {
+				{ApiMessages.EndpointMethod, prefix },
+				{ AssetsApiMessages.AssetUid, assetUid.ToString() }
+			});
+
+			return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+		}
+	}
 
 		/// <summary>
 		/// Gets displayname, object and objectid from Uid regardless of whether the UID is Asset, AssetType or Tag
