@@ -450,7 +450,7 @@ select count(1) from AuditView {whereSql};
 		catch (Exception ex)
 		{
 			string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-			SendException(ex, new Dictionary<string, string>() {
+			SendException(ex, new Dictionary<string, string> {
 				{ApiMessages.EndpointMethod, prefix },
 				{ AssetsApiMessages.AssetUid, assetUid.ToString() }
 			});
