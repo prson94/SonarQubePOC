@@ -183,12 +183,13 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			} else {
 				const params = { _workflowTypeUid: this.urlWorkflowTypeUid.toLowerCase(), _workflowVersion: this.urlWorkflowVersion };
 				this.workflowService.getUserAssignments(this.userUid, params).subscribe((res) => {
-					if (res?.items.length > 0) {
+					if (res?.items.length > 0 && !this.redirectToDetails) {
 						this.onItemClick(null, res.items[0]);
 					} else if (!forcedRefresh) {
 						this.handleNoAssignments(workflowState);
 					}
 					this.isLoading = false;
+					this.changeDetectorRef.markForCheck();
 				});
 			}
 		}
