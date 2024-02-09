@@ -4458,8 +4458,8 @@ namespace d360.web.Controllers.Services
 
 			return settingsString;
 		}
-
-		private void MapWorkflowHttpSettings(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
+	
+		private void MapWorkflowHttpTokens(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping, string token, bool formDescription = false)
 		{
 			var parts = field.Split('|');
 			int.TryParse(parts[1], out int httpKey);
@@ -4471,23 +4471,14 @@ namespace d360.web.Controllers.Services
 					httpKey = keyMapping[httpKey];
 				}
 
-				node.Settings = node.Settings.Replace(field, $"[HTTPREQUEST|{httpKey}|{parts[2]}");
-			}
-		}
-
-		private void MapWorkflowHttpResponseTokens(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
-		{
-			var parts = field.Split('|');
-			int.TryParse(parts[1], out int httpKey);
-
-			if (key != 0 && httpKey != 0)
-			{
-				if (keyMapping.ContainsKey(httpKey))
+				if (formDescription)
 				{
-					httpKey = keyMapping[httpKey];
+					node.Fields = node.Fields.Replace(field, $"[{token}|{httpKey}|{parts[2]}");
 				}
-
-				node.Settings = node.Settings.Replace(field, $"[HTTPRESPONSE|{httpKey}|{parts[2]}");
+				else
+				{
+					node.Settings = node.Settings.Replace(field, $"[{token}|{httpKey}|{parts[2]}");
+				}
 			}
 		}
 
@@ -4610,7 +4601,7 @@ namespace d360.web.Controllers.Services
 					}
 
 					var node = Company.GetById<WorkflowVersionStep>(key);
-					MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
+					MapWorkflowHttpTokens(node, key, field.ToString(), keyMapping, "HTTPREQUEST");
 				}
 
 				fields = Regex.Matches(n.Settings, "\\[HTTPRESPONSE\\|(-?)([0-9.]+)\\|([0-9.]+)\\]");
@@ -4628,7 +4619,46 @@ namespace d360.web.Controllers.Services
 					}
 
 					var node = Company.GetById<WorkflowVersionStep>(key);
-					MapWorkflowHttpResponseTokens(node, key, field.ToString(), keyMapping);
+					MapWorkflowHttpTokens(node, key, field.ToString(), keyMapping, "HTTPRESPONSE");
+				}
+
+				if(n.ActivityType == WorkflowActivityType.Form)
+				{
+					fields = Regex.Matches(n.Fields, "\\[HTTPRESPONSE\\|(-?)([0-9.]+)\\|([0-9.]+)\\]");
+
+					foreach (var field in fields)
+					{
+						if (!int.TryParse(n.Key, out int key))
+						{
+							return;
+						}
+
+						if (keyMapping.ContainsKey(key))
+						{
+							key = keyMapping[key];
+						}
+
+						var node = Company.GetById<WorkflowVersionStep>(key);
+						MapWorkflowHttpTokens(node, key, field.ToString(), keyMapping, "HTTPRESPONSE", true);
+					}
+
+					fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+					foreach (var field in fields)
+					{
+						if (!int.TryParse(n.Key, out int key))
+						{
+							return;
+						}
+
+						if (keyMapping.ContainsKey(key))
+						{
+							key = keyMapping[key];
+						}
+
+						var node = Company.GetById<WorkflowVersionStep>(key);
+						MapWorkflowHttpTokens(node, key, field.ToString(), keyMapping, "HTTPREQUEST", true);
+					}
 				}
 			}
 		}
