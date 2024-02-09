@@ -244,6 +244,7 @@
 	<include file="scripts/View.workflow.ItemAsset.xml"/>
 	<include file="scripts/View.workflow.ItemIssue.xml"/>
     <include file="scripts/View.dbo.AuditView.xml"/>
+    <include file="scripts/View.dbo.AuditViewCustomFilter.xml"/>
 	
 	<include file="scripts/View.dbo.CatalogBrowseSubject.xml"/>
     <include file="scripts/View.dbo.CatalogBrowseObject.xml"/>
@@ -302,8 +303,8 @@
 	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissions.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeID.xml"/>	
+	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetReferenceItemValuesSQL.xml"/>
-	<include file="scripts/Function.dbo.GetAuditIDFromUID.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>

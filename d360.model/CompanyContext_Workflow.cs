@@ -102,6 +102,7 @@ namespace d360.model
 
 		void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
 
+		List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep);
 		#endregion
 	}
 
@@ -2667,12 +2668,12 @@ namespace d360.model
 			{
 				return string.Empty;
 			}
-
+			
 			if (supportHtml)
 			{
 				bodyTemplate = bodyTemplate.SanitizeHtml();
 			}
-			
+						
 			List<string> tokens = Regex.Matches(bodyTemplate, "\\[([A-Z]+_?\\|?)+([0-9.]*)\\|?([0-9a-zA-Z]*)\\]").OfType<Match>().Select(m => m.Value).Distinct().ToList();			
 
 			//if we don't have any tokens return the body
@@ -3666,12 +3667,12 @@ namespace d360.model
 			}
 		}
 
-		public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
+		public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep itemStep, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
 		{
 			List<string> emailedUsers = new List<string>();
 			List<GlobalReportingResource> users = new List<GlobalReportingResource>();
-			int typeId = item?.Step?.Version?.TypeID ?? 0;
-			string typeName = item?.Step?.Version?.Type?.Name ?? "";
+			int typeId = itemStep?.Step?.Version?.TypeID ?? 0;
+			string typeName = itemStep?.Step?.Version?.Type?.Name ?? "";
 			EventObjectInfo objectInfo = eventInfo.Object;
 			//based on the step settings get the users
 
@@ -3681,15 +3682,15 @@ namespace d360.model
 
 			if (settings.RecipientType == EmailTaskRecipientType.Initiator)
 			{
-				if (item.Item.StartedBy <= 0)
+				if (itemStep.Item.StartedBy <= 0)
 				{
 					Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
 
-					item.State = StepState.Failed;
+					itemStep.State = StepState.Failed;
 
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
-						itemStepID = item.ID,						
+						itemStepID = itemStep.ID,						
 						Message = "ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.",
 						State = StepState.Failed
 					};
@@ -3700,16 +3701,16 @@ namespace d360.model
 					return true;
 				}
 
-				GlobalReportingResource res = GlobalReportingResources.Where(x => x.ResourceID == item.Item.StartedBy).FirstOrDefault();
+				GlobalReportingResource res = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
 
 				if (res == null)
 				{
 					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
 
-					item.State = StepState.Failed;
+					itemStep.State = StepState.Failed;
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
-						itemStepID = item.ID,
+						itemStepID = itemStep.ID,
 						Message = "ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.",
 						State = StepState.Failed,
 					};
@@ -3727,13 +3728,13 @@ namespace d360.model
 			{
 				if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
 				{
-					if (await ShouldWaitForResponsibilityRuleToRun(item, settings, itemStepID, eventInfo))
+					if (await ShouldWaitForResponsibilityRuleToRun(itemStep, settings, itemStepID, eventInfo))
 					{
 						return false;
 					}
 				}
 
-				users = GetWorkflowUsersBasedOnResponsibility(typeId, item.Step.ID, item.ItemID).ToList();
+				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID).ToList();
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
 			{
@@ -3775,10 +3776,10 @@ namespace d360.model
 
 			if (users.Count == 0)
 			{
-				item.State = StepState.Failed;
+				itemStep.State = StepState.Failed;
 
 				var itemStateDetail = new WorkflowItemStepStateDetail { 
-					itemStepID = item.ID, 
+					itemStepID = itemStep.ID, 
 					Message = "No valid users for assignment.", 
 					State = StepState.Failed 
 				};
@@ -3795,7 +3796,7 @@ namespace d360.model
 			{				
 				if (FeatureFlags_TEMP_ASSIGNMENTS_DETAIL)
 				{
-					var urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
+					var urlPart = $"home?workflowTypeUid={itemStep.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={itemStep.UID.ToString().ToLowerInvariant()}&version={itemStep.Step.Version.Version}&workflowItemUid={itemStep.Item.UID}";
 
 					url = $"https://{prefix}.data3sixty.com/{urlPart}";
 				}
@@ -3845,9 +3846,9 @@ namespace d360.model
 
 			string initiatedBy = "(unknown)";
 
-			if (item.StartedBy > 0)
+			if (itemStep.StartedBy > 0)
 			{
-				GlobalReportingResource res = GlobalReportingResources.Where(x => x.ResourceID == item.StartedBy).FirstOrDefault();
+				GlobalReportingResource res = GlobalReportingResources.Where(x => x.ResourceID == itemStep.StartedBy).FirstOrDefault();
 
 				if (res != null)
 				{
@@ -3856,14 +3857,14 @@ namespace d360.model
 			}
 
 			//update the xml for the number of users sent the form
-			XElement xml = XElement.Parse(item.Fields);
+			XElement xml = XElement.Parse(itemStep.Fields);
 
 			if (!xml.Attributes("TotalResources").Any())
 			{
 				xml.Add(new XAttribute("TotalResources", users.Count()));
 			}
 
-			item.Fields = xml.ToString();
+			itemStep.Fields = xml.ToString();
 			await SaveChangesAsync();
 
 			if (settings.FormShouldSendEmail)
@@ -3875,7 +3876,7 @@ namespace d360.model
 
 				if (!string.IsNullOrEmpty(settings.SubjectTemplate))
 				{
-					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false);
+					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, itemStep, false);
 				}
 				else
 				{
@@ -3884,7 +3885,7 @@ namespace d360.model
 
 				string emailBody = $"<p>The Data3Sixty workflow <b>{typeName}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
-				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
+				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, itemStep);
 
 				if (!string.IsNullOrEmpty(customBody))
 				{
@@ -3893,7 +3894,7 @@ namespace d360.model
 
 				if (settings.ShouldIncludeFormResponses)
 				{
-					emailBody += GenerateFormResponsesEmailContent(item.ItemID);
+					emailBody += GenerateFormResponsesEmailContent(itemStep.ItemID);
 				}
 
 				string emailBase = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{emailBody}</body></html>";
@@ -3912,7 +3913,7 @@ namespace d360.model
 					}
 				}
 
-				SaveItemStepEmailedUsers(item, emailedUsers);
+				SaveItemStepEmailedUsers(itemStep, emailedUsers);
 			}
 
 			SaveItemAssignments(users, itemId, itemStepID);
@@ -3978,6 +3979,83 @@ namespace d360.model
 				events.Clear();
 			}
 		}
+
+		public List<GlobalReportingResource> GetWorkflowStepUsers(WorkflowItemStep itemStep)
+		{
+
+			WorkflowItemStepSettingModel settings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
+			List<GlobalReportingResource> users = new List<GlobalReportingResource>();
+
+			if (settings.RecipientType == EmailTaskRecipientType.Initiator)
+			{
+				if (itemStep.Item.StartedBy <= 0)
+				{
+					Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
+				}
+				else
+				{
+					GlobalReportingResource res = GlobalReportingResources.Where(x => x.ResourceID == itemStep.Item.StartedBy).FirstOrDefault();
+
+					if (res == null)
+					{
+						Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
+					}
+					else
+					{
+						users.Add(res);
+					}					
+				}
+			}
+			else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
+			{
+				int typeId = itemStep?.Step?.Version?.TypeID ?? 0;
+				users = GetWorkflowUsersBasedOnResponsibility(typeId, itemStep.Step.ID, itemStep.ItemID).ToList();
+			}
+			else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
+			{
+				if (string.IsNullOrEmpty(settings.SpecificUser))
+				{
+					Log.LogError("ERROR - NO USER SPECIFIED FOR THE SPECIFIC USER FORM TASK.");
+				}
+				else
+				{
+					foreach (string email in settings.SpecificUser.Split(';'))
+					{
+						GlobalReportingResource res = GlobalReportingResources.Where(x => string.Compare(x.Email, email.Trim(), true) == 0).FirstOrDefault();
+						if (res == null)
+						{
+							Log.LogWarning("FORM EMAIL SPECIFIC USER SET HOWEVER THE USER EMAIL IS NOT A VALID D3S EMAIL ACCOUNT.  WONT BE ABLE TO ASSIGN FORM TO USER..");
+							continue;
+						}
+
+						users.Add(res);
+					}
+				}				
+			}
+			else if (settings.RecipientType == EmailTaskRecipientType.Group)
+			{
+				if (settings.RecipientGroup == Guid.Empty)
+				{
+					Log.LogError("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
+				}
+				else
+				{
+					int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
+					if (recipientGroup <= 0)
+					{
+						Log.LogError("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
+
+					}
+					else
+					{
+						users = GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
+					}					
+				}
+			}
+
+			return users;
+		}
+
 
 		#endregion
 	}

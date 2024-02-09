@@ -182,28 +182,30 @@ namespace igx.jobs.scoreprocessor
 									  "from metrics.Asset a " +
 									  "inner join metrics.AssetVersion v on v.AssetUid = a.Uid and v.Uid = @MetricAssetVersionUid " +
 									  "inner join metrics.Allocation al on al.Uid = a.AllocationUid ";
-		const string COMMON_TEMP_TABLE_SQL = @"create table #ids (RowId int identity, AssetUid uniqueidentifier, Score decimal(8,6));
+		const string COMMON_TEMP_TABLE_SQL = @"create table #ids (RowId int identity, AssetUid uniqueidentifier, Score decimal(8,6), ScoreChanged bit);
 												create clustered index cdx_ids on #ids (RowId);";
 		const string COMMON_LOOP_SQL = @"
 declare @current int = 1,
 		@max int,
 		@currentAssetUid uniqueidentifier,
-		@responseScore decimal(8,6);
+		@responseScore decimal(8,6),
+		@scoreChanged bit;
 
 select @max = max(RowId) from #ids
 while @current <= @max
 begin
 	select @currentAssetUid = AssetUid from #ids where RowId = @current
 
-	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType, @responseScore
-	update #ids set Score = @responseScore where RowId = @current
+	exec metrics.GenerateScore @currentAssetUid, @effectiveDate, @scoreType, @responseScore= @responseScore output, @scoreChanged = @scoreChanged output
+	update #ids set Score = @responseScore, ScoreChanged = @scoreChanged where RowId = @current
 	set @responseScore = null
+	set @scoreChanged = null
 
 	set @current = @current + 1
 end";
 		const string COMMON_WORKFLOW_ASSET_SQL = "select t.Object as ObjectType, t.ObjectID as ObjectTypeID, a.Object, a.ObjectID " +
 												 "from #ids i " +
-												 "inner join Asset a on a.Uid = i.AssetUid and i.Score is not null " +
+												 "inner join Asset a on a.Uid = i.AssetUid and i.Score is not null and i.ScoreChanged = 1 " +
 												 "inner join AssetType t on t.ID = a.AssetTypeID " +
 												 "inner join workflow.EventRegistration W on W.Object = t.Object and W.ObjectID = t.ObjectID and W.ChangeType = 5;";
 

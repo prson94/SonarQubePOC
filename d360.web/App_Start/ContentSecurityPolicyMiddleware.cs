@@ -89,7 +89,9 @@ namespace d360.web
 				string directiveString = string.Join("; ", directives
 					.Where(d => d.Value.Any())
 					.Select(d => d.Key + " " + string.Join(" ", d.Value.ToArray())).ToArray());
-
+#if !DEBUG
+				directiveString = "upgrade-insecure-requests; " + directiveString;
+#endif
 				res.Headers.Add("Content-Security-Policy", new[] { directiveString });
 			}, response);
 

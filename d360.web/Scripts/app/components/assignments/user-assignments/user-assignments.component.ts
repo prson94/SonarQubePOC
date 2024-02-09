@@ -85,15 +85,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 		this.loadUserAssignments();
 		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
-		if (this.urlWorkflowItemUid) {
-			this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
-			.subscribe((response: AssignmentItemStep[]): void => {
-				const step = response.find(step=> step.Uid === this.urlWorkflowStepUid);
-				if(step?.ActivityType !== 'Form'){
-					this.redirectToDetails = true
-				}
-			});
-		}	
+	
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {
@@ -144,15 +136,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 					if (this.urlWorkflowStepUid) {
 						this.workflowService.getWorkflowStateForUser(this.urlWorkflowStepUid)
 							.subscribe((res) => {
-								this.handleWorkflowItemLoad(res, forcedRefresh);
-								this.isLoading = false;
-								this.changeDetectorRef.markForCheck();
+								this.handleWorkflowItemLoad(res, forcedRefresh);			
 							});
 					}
 					else if (this.urlWorkflowTypeUid) {
-						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0, isAssignee: true }, forcedRefresh); //parameter isAssignee to be updated after backend implementation
-						this.isLoading = false;
-						this.changeDetectorRef.markForCheck();
+						this.handleWorkflowItemLoad({ exists: false, hasAccess: true, isCompleted: true, workflowItemUid: null, workflowName: null, assignmentCount: 0, isAssignee: true }, forcedRefresh);
 					}
 					else {
 						this.isLoading = false;
@@ -161,24 +149,52 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				});
 	}
 
-	private handleWorkflowItemLoad(res: WorkflowStateForUser, forcedRefresh: boolean) {
+	private handleWorkflowItemLoad(workflowState: WorkflowStateForUser, forcedRefresh: boolean) {
 		// check if there is exiting step in assignments
+		if (this.urlWorkflowItemUid) {
+			this.workflowService.getAssignmentItemSteps(this.urlWorkflowItemUid)
+				.subscribe((response: AssignmentItemStep[]): void => {
+					const step = response.find(step => step.Uid === this.urlWorkflowStepUid);
+					if (step?.ActivityType !== 'Form') {
+						this.redirectToDetails = true;
+					} else {
+						this.redirectToDetails = false;
+					}
+					this.handleFormDialogLoad(workflowState, forcedRefresh);
+				});
+		} else {
+			this.handleFormDialogLoad(workflowState, forcedRefresh);
+		}	
+		
+	}
+
+	private handleFormDialogLoad(workflowState: WorkflowStateForUser, forcedRefresh: boolean) {
 		let assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.AssociatedItems.some((ai) => ai.ItemStepUid.toLowerCase() === this.urlWorkflowStepUid.toLowerCase()));
-		if (assignmentItem) {
+		if (assignmentItem && !this.redirectToDetails) {
 			this.onItemClick(null, assignmentItem);
+			this.isLoading = false;			
 		}
 		else {
 			// check if there is exiting workflow type + version combination to open form
 			assignmentItem = this.assignments.find((x) => x.Version === this.urlWorkflowVersion && x.WorkflowTypeUid.toLowerCase() === this.urlWorkflowTypeUid.toLowerCase());
-			if (assignmentItem) {
+			if (assignmentItem && !this.redirectToDetails) {
 				this.onItemClick(null, assignmentItem);
-			}
-			else if (!forcedRefresh) {
-				this.handleNoAssignments(res);
+				this.isLoading = false;				
+			} else {
+				const params = { _workflowTypeUid: this.urlWorkflowTypeUid.toLowerCase(), _workflowVersion: this.urlWorkflowVersion };
+				this.workflowService.getUserAssignments(this.userUid, params).subscribe((res) => {
+					if (res?.items.length > 0) {
+						this.onItemClick(null, res.items[0]);
+					} else if (!forcedRefresh) {
+						this.handleNoAssignments(workflowState);
+					}
+					this.isLoading = false;
+				});
 			}
 		}
+		this.changeDetectorRef.markForCheck();
 	}
-
+	
 	modalVisible: boolean = false;
 	errorModalTitle: string;
 	errorSubTitle: string;
@@ -203,7 +219,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 			this.modalVisible = true;
 			this.showAssignmentDetailsLink = false;
 		}
-		else if (!res.isAssignee) { //parameter to be updated after backend implementation
+		else if (!res.isAssignee && !this.redirectToDetails) {
 			this.errorModalTitle = $localize`Not Assigned to You`;
 			this.errorModalMessage = $localize`You are not an assignee for this form, but you can view the Assignment's details.`;
 			this.modalVisible = true; 

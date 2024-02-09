@@ -679,7 +679,7 @@ namespace d360.web.Controllers
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
 				}
 
-				if (Company.SiteNav.Any(x => x.ID != folder.Id && x.Title == folder.Title))
+				if (Company.SiteNav.Any(x => x.ID != folder.Id && x.Title == folder.Title && x.ParentID != folder.Id))
 				{
 					return new JsonNetResult
 					{
