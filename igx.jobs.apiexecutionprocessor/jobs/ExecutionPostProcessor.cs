@@ -476,7 +476,17 @@ from	#tempField F
 delete @tbl;";
 
 			// Add the audit history header records for the asset that rely on the first set of assets.
+			// Only when updated field type affected display value of lookup field on target asset
 			commandText += $@"
+select distinct ft.ID, ft.Name
+into #updatedFieldTypeIds
+from api.Execution e
+	inner join api.ExecutionAsset ea on ea.ExecutionID = e.ExecutionID
+	inner join api.ExecutionField ef on e.ExecutionID = ef.ExecutionID
+	inner join Field f on f.AssetID = ea.AssetID and f.FieldTypeID = ef.FieldTypeID
+	inner join FieldType ft on ft.ID = f.FieldTypeID
+where e.Id = @id and f.UpdatedOn > e.StartedOn
+
 {INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	F.Object,
@@ -492,6 +502,8 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			F.ObjectName, 
 			'Underlying asset from lookup was updated.' 
 	from	#fields F
+			inner join FieldType ft on ft.ID = F.FieldtypeId
+			inner join #updatedFieldTypeIds uft on ft.LookupDisplayFormat like '%'+uft.Name+'%'
 			{maxVersionSql("F.Object", "F.ObjectId")};";
 
 			// Add the field history records for the assets whose lookup fields we updated.
@@ -514,6 +526,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			drop table if exists #formattedValues;
 			drop table if exists #tempField;
 			drop table if exists #fields;
+			drop table if exists #updatedFieldTypeIds;
 ";
 
 			return commandText;
