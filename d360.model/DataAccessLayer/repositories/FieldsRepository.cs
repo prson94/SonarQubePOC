@@ -3015,7 +3015,6 @@ namespace d360.model.DataAccessLayer
 			}
 
 			wheres.Add("r.isvisible = 1");
-			wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
 
 			var dbArgs = new DynamicParameters();
 			filters.Keys.ForEach(k => { dbArgs.Add(k, filters[k]); });
@@ -3065,18 +3064,19 @@ namespace d360.model.DataAccessLayer
 
 			var itemsSQL = $@"select distinct 
 							{(string.Join(", ", selects))}
-						FROM[dbo].[ResponsibilityDetail] R
-						inner join asset a on a.uid = @assetuid
-						{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}
+						FROM asset a 
+						inner join asset a [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
+						where a.uid = @assetuid
+						{(wheres.Count == 0 ? "" : string.Join(" and ", wheres))}
 						{orderByClause} {direction}
 						offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 
-			var countSQL = $@"select distinct 
-							count(*)
-						FROM [dbo].[ResponsibilityDetail] R
-						inner join asset a on a.uid = @assetuid
-						{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+			var countSQL = $@"select count(1)
+						FROM asset a 
+						inner join asset a [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
+						where a.uid = @assetuid
+						{(wheres.Count == 0 ? "" : string.Join(" and ", wheres))}";
 
 
 			if (countOnly)

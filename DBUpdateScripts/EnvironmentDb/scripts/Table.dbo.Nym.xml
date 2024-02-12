@@ -47,7 +47,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Nym-Nym_AfterDelete-v1">
+  <changeSet author="Core,Puneet" id="Table.dbo.Nym-Nym_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -62,7 +62,7 @@ BEGIN
 	declare @ot varchar(50) = 'Synonym'
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select	'ObjectIndex',
+        select Distinct 'ObjectIndex',
 				'D', 
 				@ot, 
 				ID
@@ -77,7 +77,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Nym-Nym_AfterUpsert-v1">
+  <changeSet author="Core,Puneet" id="Table.dbo.Nym-Nym_AfterUpsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -92,7 +92,7 @@ BEGIN
 	declare @ot varchar(50) = 'Synonym'
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select	'ObjectIndex',
+        select	 Distinct 'ObjectIndex',
 				case 
 					when D.ID is not null then 'U'
 					else 'A'

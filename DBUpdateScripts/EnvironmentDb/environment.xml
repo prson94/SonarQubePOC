@@ -282,6 +282,10 @@
 	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
+	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeID.xml"/>	
+	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
+	<include file="scripts/Function.dbo.ResponsibilityTypeIDByResourceID.xml"/>
+	<include file="scripts/Function.dbo.UserAssetPermissionsByAssetID.xml"/>
 	<include file="scripts/Function.dbo.ArtifactSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
@@ -302,8 +306,6 @@
 	<include file="scripts/Function.dbo.HasSiteNavPermission.xml"/>
 	<include file="scripts/Function.dbo.GetAssetsOfDefaultPermissions.xml"/>
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
-	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeID.xml"/>	
-	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeIDAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetReferenceItemValuesSQL.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>

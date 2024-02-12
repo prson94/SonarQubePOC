@@ -409,6 +409,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			bool useCachedFilters = false;
 			bool IsModelPolicyHasLevelFilter = false;
 			var simpleFilterTempTables = new StringBuilder();
+			List<string> tempTablelist = new List<string>();
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -566,7 +567,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList, fieldSorts: fieldSorts, referenceListTempQryList: referenceListTempQryList);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Id]", listColorsAsJSON, true, TempTableScriptList, fieldSorts: fieldSorts, referenceListTempQryList: referenceListTempQryList, temptablelist: tempTablelist);
 			var countJoins = fieldJoins.Clone();
 
 			if (includeProfilingCheck)
@@ -1482,8 +1483,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					dbArgs.Add("ownerUids", ownerUids);
 					var ownershipSQL = $@"EXISTS(
 											SELECT 1 
-											FROM 
-												[dbo].[ResponsibilityDetail] rd 
+											FROM [dbo].[ResponsibilityDetailByAssetTypeID](a.AssetTypeId) rd 
 											WHERE 
 												rd.SecurityAssetUid in @ownerUids 
 												and 
@@ -1493,7 +1493,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 											UNION
 											SELECT 1 
 											FROM 
-												[dbo].[ResponsibilityDetail] rd 
+												[dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeId, 0) rd 
 											WHERE 
 												rd.SecurityAssetUid in @ownerUids 
 												and 
@@ -1530,7 +1530,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					var ownershipSQL = $@"NOT EXISTS(
 											SELECT 1 
 											FROM 
-												[dbo].[ResponsibilityDetail] rd 
+												[dbo].[ResponsibilityDetailByAssetTypeID](a.AssetTypeId) rd 
 											WHERE 
 												rd.SecurityAssetUid in @notOwnerUids 
 												and 
@@ -1540,7 +1540,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 											UNION
 											SELECT 1 
 											FROM 
-												[dbo].[ResponsibilityDetail] rd 
+												[dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeId, 0) rd 
 											WHERE 
 												rd.SecurityAssetUid in @notOwnerUids 
 												and 
@@ -1849,6 +1849,24 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				orderByFields = $"{string.Join(",", fieldSorts.OrderBy(x => x.order).Select(y => y.sql))}";
 			}
 
+			string droptempdtable = $@"
+								drop table if exists #InclPredFilterIds;
+								drop table if exists #tempInclRela;
+								drop table if exists #resolvedAssetPermissions;
+								drop table if exists #OwnershipLookupAssets;
+								drop table if exists #ParentData;
+								drop table if exists #parent_relationships_simple_filter;
+								drop table if exists #TempFilteredAssets;
+								drop table if exists #filtered_results;
+								drop table if exists #tempasset;
+								drop table if exists #filtered_parents_simple_filter;
+								";
+
+			foreach (string var in tempTablelist)
+			{
+				droptempdtable += $"drop table if exists {var};" + System.Environment.NewLine;
+			}
+
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 
@@ -1898,7 +1916,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				model.total = null;
 			}
 
-			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {parentApplyTempTableSQL} {sql} OPTION(RECOMPILE)";
+			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {parentApplyTempTableSQL} {sql} OPTION(RECOMPILE) {droptempdtable}";
 
 			if (!string.IsNullOrEmpty(selectOwnershipSQL))
 			{
@@ -3024,8 +3042,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		and (
 			[AT].DefaultPermissions = 1 or 
 			@isAdmin = 1 or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) ) or
-			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
+			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
+			( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
 		)";
 
 			var sql = $@"
@@ -3042,8 +3060,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 									and (
 										[AT].DefaultPermissions = 1 or 
 										@isAdmin = 1 or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where AssetID = A.ID and ResourceID = @userId) ) or
-										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetail where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
+										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeID([AT].Id) where AssetID = A.ID and ResourceID = @userId) ) or
+										( [AT].DefaultPermissions = 0 and exists(select 1 from ResponsibilityDetailByAssetTypeIDAssetID([AT].Id, 0) where ApplyToType = 1 and AssetTypeID = [AT].ID and ResourceID = @userId) )
 									)
 							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
@@ -4958,6 +4976,13 @@ where	N.DisplayPath like @phrase {prefilterSql}
 		public IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType)
 		{
 			var sql = $@"
+			declare @AssetTypeID int;
+
+			select @AssetTypeID = ID
+			from AssetType 
+			where Object = @Object
+			and ObjectID = @id;
+
 			; with owners as (select distinct
 					responsibilityTypeId,
 					securityAssetid,
@@ -4965,20 +4990,18 @@ where	N.DisplayPath like @phrase {prefilterSql}
 					case 
 						when SecurityAsset = 'R' then 'Resource'
 						when SecurityAsset = 'G' then 'Group'
-						else [Type]
+						else @Object
 					end as [Type],
 					SecurityAssetName
-							from ResponsibilityDetail
-			where TypeID = @id
-					and[Type] = @Object
-					and IsVisible = 1)
+							from ResponsibilityDetailByAssetTypeID(@AssetTypeID)
+			where IsVisible = 1)
 			select Res.SecurityAssetUid as Uid, o.Name, o.Type, o.SecurityAssetName, o.ResponsibilityTypeId
 			from owners o
 			cross apply(
 			select top 1 * from
-			ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
-
-												and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
+			ResponsibilityDetailByAssetTypeID(@AssetTypeID) rd 
+			where rd.ResponsibilityTypeID = o.responsibilityTypeId
+			and rd.SecurityAssetID = o.SecurityAssetID
 			)Res
 			order by o.[Name]";
 

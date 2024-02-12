@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.utility.GetOwnersForWorkflow-v4">
+  <changeSet author="Pappas" id="Procedure.utility.GetOwnersForWorkflow-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -91,13 +91,9 @@ begin
 						R.Email, 
 						R.LastLoggedInOn as DateLastLoggedIn, 
 						case R.State when 1 then 'Active' else 'Inactive' end as [Status]
-				from	ResponsibilityDetail RD
+				from	ResponsibilityDetailByAssetTypeIDAssetID(@assetTypeId,@assetId) RD
 						inner join reporting.Global_Resource R on 
-								(
-									(RD.AssetID = @assetId) 
-									or (@assetTypeId != 0 and RD.AssetID = 0 and RD.AssetTypeID = @assetTypeId)
-								)
-								and RD.ResponsibilityTypeID = @responsibilityTypeID
+								RD.ResponsibilityTypeID = @responsibilityTypeID
 								and RD.ResourceID = R.ResourceID
 								and R.Email not like '%?subject=%' and R.State = 1
 		end		

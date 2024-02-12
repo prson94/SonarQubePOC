@@ -55,7 +55,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v2">
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -67,7 +67,7 @@ CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterDelete]
 AS 
 	SET NOCOUNT ON;
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT 'ObjectIndex', 
+		SELECT Distinct 'ObjectIndex', 
 				'U',
 				A.Object, 
 				A.ObjectID,
@@ -82,7 +82,7 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v2">
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -94,7 +94,7 @@ CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterUpsert]
 AS 
 	SET NOCOUNT ON;
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT 'ObjectIndex', 
+		SELECT Distinct 'ObjectIndex', 
 				'U',
 				A.Object, 
 				A.ObjectID,

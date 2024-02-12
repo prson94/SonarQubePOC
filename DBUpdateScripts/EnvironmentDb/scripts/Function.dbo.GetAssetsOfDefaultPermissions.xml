@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.dbo.GetAssetsOfDefaultPermissions-v1.0">
-    <comment>GOV-28157</comment>
+  <changeSet author="PuneetGupta" id="Function.dbo.GetAssetsOfDefaultPermissions-v2.0">
+    <comment>GOV-31148</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,15 +40,15 @@ Begin
 	begin
 		-- check entire assettypeid rule exists
 		select top 1 @IsResposibilyFortypeID = 1
-		from ResponsibilityDetail
-		where ResourceID = @ResourceID and AssetTypeID = @AssetTypeID and AssetID = 0 and ApplyToType = 1;
+		from ResponsibilityDetailByAssetTypeID(@AssetTypeID)
+		where ResourceID = @ResourceID and AssetID = 0 and ApplyToType = 1;
 		
 		if (@IsResposibilyFortypeID = 0)
 		begin
 			insert into @RespAssets
-			select R.assetid
-			from ResponsibilityDetail R
-			inner join Asset A on R.assetid = A.ID and abs(A.AssetTypeID) = @AssetTypeID
+			select distinct R.assetid
+			from ResponsibilityDetailByAssetTypeID(@AssetTypeID) R
+			inner join Asset A on R.assetid = A.ID 
 			where r.ResourceID = @ResourceID;
 			
 			if exists (select 1 from @RespAssets)

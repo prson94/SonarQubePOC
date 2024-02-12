@@ -108,4 +108,26 @@ END
 		]]>
 	</rollback>
   </changeSet> 
+  
+  <changeSet author="Puneet Gupta" id="Index.workflow.ItemStep-v2">
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_workflow_ItemStep_UID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_workflow_ItemStep_UID] ON [workflow].[ItemStep] ([Uid])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_workflow_ItemStep_UID')
+BEGIN
+	DROP INDEX [IX_workflow_ItemStep_UID] ON [workflow].[ItemStep]
+END
+		]]>
+	</rollback>
+  </changeSet> 
 </databaseChangeLog>

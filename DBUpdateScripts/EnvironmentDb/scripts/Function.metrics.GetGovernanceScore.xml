@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.17">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GetGovernanceScore-v1.18">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function [metrics].[GetGovernanceScore] ( @assetUid uniqueidentifier, @effectiveDate date )
@@ -454,10 +454,17 @@ begin
 	from	@tbl m
 			cross apply openjson([Predicate]) with (PredicateUid uniqueidentifier, [Operator] varchar(25)) c
 			outer apply (
-				select	1 as Present
-				from	[dbo].[PredicateIntersect]
-				where	[PredicateUid] = c.PredicateUid
-						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
+				select	top 1 1 as Present
+				from	[dbo].[Intersect] I
+				inner join [IntersectType] IT on I.IntersectTypeID = IT.ID
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.[Uid] = c.PredicateUid
+				where	(I.SubjectAssetID = m.AssetId)
+				union 
+				select	top 1 1 as Present
+				from	[dbo].[Intersect] I
+				inner join [IntersectType] IT on I.IntersectTypeID = IT.ID
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.[Uid] = c.PredicateUid
+				where (I.ObjectAssetID = m.AssetId)
 			) o
 	where	m.[Check] = 'Predicate'
 	end
@@ -474,10 +481,15 @@ begin
 	from	@tbl m
 			cross apply openjson([Relation]) with (IntersectTypeUid uniqueidentifier, [Operator] varchar(25)) c
 			outer apply (
-				select	1 as Present
-				from	[dbo].[PredicateIntersect]
-				where	IntersectTypeUid = c.IntersectTypeUid
-						and (SubjectAssetID = m.AssetId or ObjectAssetID = m.AssetId)
+				select	top 1 1 as Present
+				from	[dbo].[IntersectType] IT
+				inner join [intersect] I on I.IntersectTypeID = IT.ID and I.SubjectAssetID = m.AssetId
+				where	IT.[Uid] = c.IntersectTypeUid
+				union 
+				select	top 1 1 as Present
+				from	[dbo].[IntersectType] IT
+				inner join [intersect] I on I.IntersectTypeID = IT.ID and I.ObjectAssetID = m.AssetId
+				where	IT.[Uid]= c.IntersectTypeUid
 			) o
 	where	m.[Check] = 'Relation'
 	end

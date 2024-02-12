@@ -1,0 +1,55 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityTypeIDByResourceID-v1.0">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[ResponsibilityTypeIDByResourceID] 
+(	
+	@ResourceID int
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+	With RS_Resource as (
+					Select 'R' SecurityAsset, ResourceID SecurityAssetID
+					from reporting.Global_Resource RES 
+					where RES.ResourceID = @ResourceID and RES.[State] = 1
+					union all
+					Select distinct 'G' SecurityAsset, RG.GroupID SecurityAssetID
+					from reporting.Global_Resource RES 
+					inner join ResourceGroup RG on RG.ResourceID = RES.ResourceID
+					where RES.ResourceID = @ResourceID and RES.[State] = 1
+					)
+
+select	r.ResponsibilityTypeID as ResponsibilityTypeID
+from	RS_Resource RES 
+		inner join [ResponsibilityRuleResultSecurityAsset] rresource on RES.SecurityAssetID = rresource.SecurityAssetID and rresource.SecurityAsset = RES.SecurityAsset
+		inner join responsibilitytyperelationrule r on (r.ID = rresource.RuleID)
+union
+select	rr.ResponsibilityTypeID as ResponsibilityTypeID 
+from	RS_Resource RES 
+		inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride
+		on RES.SecurityAssetID = oride.SecurityAssetID and oride.SecurityAsset = RES.SecurityAsset
+		inner join [dbo].asset a on (a.id = oride.assetID)
+		inner join [dbo].assettype att on (att.id = a.assettypeid)
+		inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

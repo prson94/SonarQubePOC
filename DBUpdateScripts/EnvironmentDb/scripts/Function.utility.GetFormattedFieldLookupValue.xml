@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.utility.GetFormattedFieldLookupValue-v9">
-   <comment>GOV-29748</comment>
+  <changeSet author="PuneetGupta" id="Function.utility.GetFormattedFieldLookupValue-v10">
+   <comment>GOV-31148</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,6 +24,8 @@ returns nvarchar(max)
 as
 begin
 	declare @formattedValue nvarchar(max)
+	declare @AssetTypeID int;
+	declare @AssetID BigInt;
 	
 	if @Value is null
 	begin
@@ -49,6 +51,24 @@ begin
 				begin
 					select @formattedValue = Name from AssetType where Objectid = @Value and [Object] = 'TaxonomyType';		
 				end
+			else if (@LookupObjectType = 'ReferenceItem' and @DisplayFormat = '{code}')
+				begin
+					select @formattedValue = Code from Asset A
+					where A.[Object] = @LookupObjectType and A.Objectid = TRY_CAST(@Value AS int);		
+				end
+			else if (@LookupObjectType = 'Artifact' and @DisplayFormat = '{name}')
+				begin
+					select top 1 @AssetID = ID,
+					@AssetTypeID = AssetTypeID
+					from Asset A
+					Where [A].Object = @LookupObjectType
+					and [A].ObjectID = TRY_CAST(@Value AS int);
+
+					select top 1 @formattedValue = [F].FormattedValue 
+					from FieldType FT 
+					inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = @AssetID
+					where FT.AssetTypeID = @AssetTypeID and FT.Name = 'Name';		
+				end
 		else
 			begin
 				declare @tokens table(ID int identity(1,1), 
@@ -73,8 +93,6 @@ begin
 				LookupObjectType nvarchar(250), LookupObjectID int, 
 				LookupDisplayFormat nvarchar(250), AllowMultipleValues bit,
 				index ix_fieldtype clustered (FieldTypeID))
-				declare @AssetTypeID int;
-				declare @AssetID BigInt;
 				
 				set @valueint = TRY_CAST(@Value AS int)
 				

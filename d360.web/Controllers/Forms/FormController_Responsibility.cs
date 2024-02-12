@@ -121,11 +121,17 @@ namespace d360.web.Controllers
 			{
 				querySql = @"
 							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
-							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id) 
+							where   not exists   (select 1 
+												  from Asset a
+												  cross apply ResponsibilityDetailByAssetTypeIDAssetID (a.AssetTypeID,a.ID) rdaa
+												  where a.ID=@assetId and rdaa.AssetID = @assetId and rdaa.SecurityAsset='G' and rdaa.SecurityAssetID= g.Id) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
 							where   r.[State] = 1 
-									and not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID)";
+									and not exists   (select 1 
+													  from Asset a
+													  cross apply ResponsibilityDetailByAssetTypeIDAssetID (a.AssetTypeID,a.ID) rdaa
+													  where a.ID =@assetId and rdaa.AssetID = @assetId and rdaa.SecurityAsset='R' and rdaa.ResourceID= r.ResourceID)";
 				querySql += hideUsersSql;
 			}
 			else
@@ -143,12 +149,18 @@ namespace d360.web.Controllers
 
 				querySql = @"
 							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
-							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID
-								and SecurityAssetId <> @groupId) 
+							where   not exists   (select 1 
+												 from Asset a
+												 cross apply ResponsibilityDetailByAssetTypeIDAssetID (a.AssetTypeID,a.ID) rdaa
+												 where a.Id =@assetId and rdaa.AssetID = @assetId and rdaa.SecurityAsset='G' and rdaa.SecurityAssetID= g.Id and rdaa.ResponsibilityTypeID=@responsibilityTypeID
+								and rdaa.SecurityAssetId <> @groupId) 
 							union all
 							select  r.LastName + ', ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
-							where r.[State] = 1 and  not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='R' and ResourceID= r.ResourceID and ResponsibilityTypeID=@responsibilityTypeID
-							and ResourceID <> @resourceId)";
+							where r.[State] = 1 and  not exists   (select 1 
+												 from Asset a
+												 cross apply ResponsibilityDetailByAssetTypeIDAssetID (a.AssetTypeID,a.ID) rdaa
+												 where a.Id =@assetId and rdaa.AssetId =@assetId and rdaa.SecurityAsset='R' and rdaa.ResourceID= r.ResourceID and rdaa.ResponsibilityTypeID=@responsibilityTypeID
+							and rdaa.ResourceID <> @resourceId)";
 				querySql += hideUsersSql;
 				dbArgs.Add("responsibilityTypeID", resTypeId);
 			}

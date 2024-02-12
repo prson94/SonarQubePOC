@@ -48,5 +48,35 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Puneet Gupta" id="Index.workflow.VersionStepTransition-v1">
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_workflow_VersionStepTransition_FromVersionStepID_State_TransitionType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_workflow_VersionStepTransition_FromVersionStepID_State_TransitionType] ON [workflow].[VersionStepTransition] ([FromVersionStepID], [State], [TransitionType])
+END
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_workflow_VersionStepTransition_ToVersionStepID_State_TransitionType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_workflow_VersionStepTransition_ToVersionStepID_State_TransitionType] ON [workflow].[VersionStepTransition] ([ToVersionStepID], [State], [TransitionType])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_workflow_VersionStepTransition_FromVersionStepID_State_TransitionType')
+BEGIN
+	DROP INDEX [IX_workflow_VersionStepTransition_FromVersionStepID_State_TransitionType] ON [workflow].[VersionStepTransition]
+END
+IF EXISTS (select * from sys.indexes where name = 'IX_workflow_VersionStepTransition_ToVersionStepID_State_TransitionType')
+BEGIN
+	DROP INDEX [IX_workflow_VersionStepTransition_ToVersionStepID_State_TransitionType] ON [workflow].[VersionStepTransition]
+END
+		]]>
+	</rollback>
+  </changeSet> 
 
 </databaseChangeLog>

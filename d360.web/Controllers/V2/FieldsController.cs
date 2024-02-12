@@ -3068,8 +3068,8 @@ namespace d360.web.Controllers.V2
 							  ,[ResourceUid]
 							  ,[SecurityAssetId]
 							  ,[SecurityAssetUid]
-						FROM [dbo].[ResponsibilityDetail] rd
-						where rd.assetid <> 0 and IsVisible = 1 and rd.[AssetTypeID] = @id and rd.AssetID = @assetId
+						FROM [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](@id,@assetId) rd
+						where rd.assetid <> 0 and IsVisible = 1
 						union all
 						select a.[ID] as AssetID
 							 ,rd.[ResponsibilityTypeID]
@@ -3082,26 +3082,12 @@ namespace d360.web.Controllers.V2
 							 ,rd.[ResourceUid]
 							 ,rd.[SecurityAssetId]
 							 ,rd.[SecurityAssetUid]
-						from ResponsibilityDetail rd
-						inner join asset a on rd.assettypeid = a.assettypeid
-						where rd.assetid = 0 and IsVisible = 1 and rd.assettypeid = @id and a.id = @assetId
-						union all
-						select a.[ID] as AssetID
-							 ,rd.[ResponsibilityTypeID]
-							 ,rd.[ResponsibilityTypeName]
-							 ,rd.[ResourceName]
-							 ,rd.[SecurityAsset]
-							 ,rd.[SecurityAssetName]
-							 ,rd.[Context]
-							 ,rd.[ResourceId]
-							 ,rd.[ResourceUid]
-							 ,rd.[SecurityAssetId]
-							 ,rd.[SecurityAssetUid]
-						from ResponsibilityDetail rd
-						inner join asset a on rd.assetid = a.id
-						where rd.AssetTypeID = 0 and IsVisible = 1 and a.AssetTypeID = @id and a.id = @assetId;
+						from ResponsibilityDetailByAssetTypeIDAssetID(@id,0) rd
+						inner join asset a on rd.assettypeid = a.assettypeid and a.id = @assetId
+						where rd.assetid = 0 and IsVisible = 1;
 
-					create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);                            
+
+						create index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);                            
 						{selectSqlStatement}
 						";
 
@@ -3150,25 +3136,25 @@ namespace d360.web.Controllers.V2
 													case 
 														when SecurityAsset = 'R' then 'Resource'
 														when SecurityAsset = 'G' then 'Group'
-														else[Type]
+														else @Object
 															end as [Type],
 													SecurityAssetName
-															from ResponsibilityDetail
-											where TypeID = @id
-													and[Type] = @Object and SecurityAsset <> 'R'
+													from ResponsibilityDetailByAssetTypeID(@AssetTypeID)
+													where SecurityAsset <> 'R'
 													and IsVisible = 1)
 											select o.Name as 'title', o.SecurityAssetName as 'value'
 											from owners o
 											cross apply(
-											select top 1 * from
-											ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
-
-																				and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
+											select top 1 * 
+											from ResponsibilityDetail rd 
+											where rd.ResponsibilityTypeID = o.responsibilityTypeId
+											and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
 											)Res
 											order by o.[Name]";
 
 						dbArgs.Add("id", assetType.ObjectID);
 						dbArgs.Add("Object", assetType.Object);
+						dbArgs.Add("AssetTypeID", assetType.ID);
 						var gridReader = await Company.Database.Connection.QueryMultipleAsync(
 						  new CommandDefinition(viaResources,
 						  parameters: dbArgs,

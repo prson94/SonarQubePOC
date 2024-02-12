@@ -33,8 +33,7 @@ namespace d360.model.helpers.filters
 
             string querySql = $@"EXISTS(
                                             SELECT 1 
-                                            FROM 
-                                                [dbo].[ResponsibilityDetail] rd 
+                                            FROM [dbo].[ResponsibilityDetailByAssetTypeID](a.AssetTypeId) rd 
                                             WHERE 
                                                 rd.SecurityAssetUid = @filter_{parameterIdx}
                                                 and 
@@ -46,7 +45,7 @@ namespace d360.model.helpers.filters
                                             UNION
                                             SELECT 1 
                                             FROM 
-                                                [dbo].[ResponsibilityDetail] rd 
+                                                [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeId, 0) rd 
                                             WHERE 
                                                 rd.SecurityAssetUid = @filter_{parameterIdx} 
                                                 and 
