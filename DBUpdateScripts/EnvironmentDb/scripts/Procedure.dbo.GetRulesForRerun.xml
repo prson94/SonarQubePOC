@@ -5,8 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetRulesForRerun-v1.4">
-  <comment>GOV-20738</comment>
+  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v1.5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,47 +18,160 @@ create or alter procedure [dbo].[GetRulesForRerun]
 as
 begin
 
-declare @ruleIds table (id int)
+declare @ruleIds table 
+(
+	id 			int,
+	Object 		varchar(50),
+	Objectid 	int,
+	[UpdatedOn] [datetime],
+	[LastRunOn] [datetime], 
+	Definition 	[nvarchar](max),
+	IsProcess 	int default 0,
+	index cx_ruleIds clustered (id),
+	index ix_ruleIds (IsProcess)
+)
 
 if @ruleId is null
 begin
-	insert into @ruleIds
-	select ID from ResponsibilityTypeRelationRule
+		insert into @ruleIds (ID,Object,ObjectID,UpdatedOn,LastRunOn,Definition,IsProcess)
+		select ID,Object,ObjectID,UpdatedOn,coalesce(LastRunOn, '1/1/2000'),Definition,0 
+		from ResponsibilityTypeRelationRule
 end
 else
 begin
-	insert into @ruleIds 
-	select @ruleId
+		insert into @ruleIds (ID,Object,ObjectID,UpdatedOn,LastRunOn,Definition,IsProcess)
+		select ID,Object,ObjectID,UpdatedOn,coalesce(LastRunOn, '1/1/2000'),Definition,0 
+		from ResponsibilityTypeRelationRule
+		where id = @ruleId
+	end
+	
+--ThenCondition
+delete RTRR
+from @ruleIds RTRR
+cross apply OPENJSON(RTRR.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as ThenCondition
+where ISNULL(ThenCondition.Object,'') = 'OrganizationType';
+
+---WasRuleUpdated
+update RTRR
+SET IsProcess = 1
+from @ruleIds RTRR
+where RTRR.UpdatedOn > RTRR.LastRunOn;
+
+---HasNewUsers
+update RTRR
+SET IsProcess = 1
+from @ruleIds RTRR
+where IsProcess = 0
+and exists(select 1	from reporting.Global_Resource
+		   where CreatedOn > RTRR.LastRunOn);
+
+--GroupUpdated
+update RTRR
+SET IsProcess = 1
+from @ruleIds RTRR
+cross apply OPENJSON(RTRR.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as ThenCondition
+cross apply (select g.UpdatedOn from [group] g where g.id = ThenCondition.ObjectId and ThenCondition.Object = 'GroupType')GroupUpdated(Value)
+where IsProcess = 0 and GroupUpdated.Value > RTRR.LastRunOn;
+
+--AssetMax(CreatedOn,UpdatedOn)
+if exists (select 1 from @ruleIds where IsProcess = 0)
+begin
+
+	--find all AssetType updates on when conditions
+	declare @AssetTypeIDUpdates table (AssetTypeID int, ResponsibilityRuleId int, 
+	LastRunOn datetime,
+	MaxDate datetime,
+	index ix_AssetTypeIDUpdates clustered(AssetTypeID))
+
+	insert into @AssetTypeIDUpdates (AssetTypeID, ResponsibilityRuleId, LastRunOn)
+	select	distinct ATT.ID, RTRR.ID, RTRR.LastRunOn
+	from	@ruleIds RTRR
+	inner join AssetType ATT WITH (NOLOCK) on ATT.Object = RTRR.Object AND ATT.ObjectID = RTRR.ObjectID
+	where	RTRR.IsProcess = 0;
+
+	drop table if exists #AssetTypeUpdatesMap
+	;with cte as (select AssetTypeID,min(LastRunOn) LastRunOn 
+				  from @AssetTypeIDUpdates
+				  group by AssetTypeID)
+	select cte.AssetTypeID,Greatest(MaxDateC.CreatedOn,coalesce(MaxDateU.UpdatedOn, '1/1/2000')) UpdatedOn
+	into #AssetTypeUpdatesMap
+	from cte
+	outer apply (
+				select MAX(A.CreatedOn) 
+				from Asset A  WITH (NOLOCK)
+				where A.AssetTypeID = cte.AssetTypeID and A.CreatedOn > cte.LastRunOn
+				)MaxDateC(CreatedOn)
+	outer apply (
+				select MAX(A.UpdatedOn) 
+				from Asset A  WITH (NOLOCK)
+				where A.AssetTypeID = cte.AssetTypeID and A.UpdatedOn > cte.LastRunOn
+				)MaxDateU(UpdatedOn)
+	option(recompile);
+				
+	create clustered index cx_AssetTypeUpdatesMap on #AssetTypeUpdatesMap(AssetTypeID);
+				
+
+	merge @AssetTypeIDUpdates as target
+	using (select * from #AssetTypeUpdatesMap)source
+	on source.AssetTypeID = target.AssetTypeID
+	when matched then update
+	set MaxDate = source.UpdatedOn;
+
+	update RTRR
+	SET IsProcess = 1
+	from @ruleIds RTRR
+	inner join @AssetTypeIDUpdates au on au.ResponsibilityRuleId = RTRR.ID
+		and au.MaxDate > RTRR.LastRunOn
+	where IsProcess = 0;	
+	
+	
+	drop table if exists #AssetTypeUpdatesMap;
+	delete from @AssetTypeIDUpdates;
 end
 
+---AssetFieldMaxDate
+if exists (select 1 from @ruleIds where IsProcess = 0)
+begin
 	--find all field updates on when conditions
-	declare @fieldUpdates table (FieldTypeID int, ResponsibilityRuleId int, MaxDate datetime)
-	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId)
-	select	WF.FieldTypeID, R.ID
-	from	ResponsibilityTypeRelationRule R
-			cross apply OPENJSON(R.Definition, '$.When') D
+	declare @fieldUpdates table (FieldTypeID int, ResponsibilityRuleId int, 
+	LastRunOn datetime,
+	MaxDate datetime,
+	index ix_fieldupdate clustered(FieldTypeID))
+	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId, LastRunOn)
+	select	distinct WF.FieldTypeID, RTRR.ID, RTRR.LastRunOn
+	from	@ruleIds RTRR
+			cross apply OPENJSON(RTRR.Definition, '$.When') D
 			cross apply OPENJSON(D.value) with (
 					CheckType nvarchar(1) '$.CheckType',
 					FieldTypeID int '$.FieldTypeID'
 				) WF
-	where	WF.CheckType = 'F' and R.ID in (select id from @ruleIds) 
+	where	RTRR.IsProcess = 0 and WF.CheckType = 'F'; 
 
 	--find all field updates on then conditions
-	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId)
-	select	WF.FieldTypeID, R.ID
-	from	ResponsibilityTypeRelationRule R
-			cross apply OPENJSON(R.Definition, '$.Then.Conditions') D
+	insert into @fieldUpdates (FieldTypeID, ResponsibilityRuleId,LastRunOn)
+	select	distinct WF.FieldTypeID, RTRR.ID,RTRR.LastRunOn
+	from	@ruleIds RTRR
+			cross apply OPENJSON(RTRR.Definition, '$.Then.Conditions') D
 			cross apply OPENJSON(D.value) with (
 					FieldTypeID int '$.FieldTypeID'
 				) WF
-	where WF.FieldTypeID is not null and R.ID in (select id from @ruleIds)
+	where RTRR.IsProcess = 0 and WF.FieldTypeID is not null;
 
 	drop table if exists #fieldTypeUpdatesMap
-	;with cte as (select distinct FieldTypeId from @fieldUpdates)
-	select *
+	;with cte as (select FieldTypeId,min(LastRunOn) LastRunOn 
+				  from @fieldUpdates
+				  group by FieldTypeId)
+	select cte.FieldTypeId,MaxDate.UpdatedOn
 	into #fieldTypeUpdatesMap
 	from cte
-	outer apply (select MAX(F.UpdatedOn) from Field F where F.FieldTypeID = cte.FieldTypeID)MaxDate(UpdatedOn)
+	cross apply (
+				select MAX(F.UpdatedOn) 
+				from Field F  WITH (NOLOCK)
+				where F.FieldTypeID = cte.FieldTypeID and F.UpdatedOn > cte.LastRunOn
+				)MaxDate(UpdatedOn)
+	option(recompile);
+				
+	create clustered index cx_fieldTypeUpdatesMap on #fieldTypeUpdatesMap(FieldTypeId);
 
 	merge @fieldUpdates as target
 	using (select * from #fieldTypeUpdatesMap)source
@@ -67,26 +179,50 @@ end
 	when matched then update
 	set MaxDate = source.UpdatedOn;
 
+	update RTRR
+	SET IsProcess = 1
+	from @ruleIds RTRR
+	inner join @fieldUpdates fu on fu.ResponsibilityRuleId = RTRR.ID
+		and fu.MaxDate > RTRR.LastRunOn
+	where IsProcess = 0;
+	
+	drop table if exists #fieldTypeUpdatesMap;
+	delete from @fieldUpdates;
+end
 
+--IntersectMaxDate
+if exists (select 1 from @ruleIds where IsProcess = 0)
+begin
 	--find all relationship updates
-	declare @relationshipUpdates table (IntersectTypeID int, ResponsibilityRuleId int, MaxDate datetime)
-	insert into @relationshipUpdates (IntersectTypeID, ResponsibilityRuleId)
-	select	WF.IntersectTypeID, R.ID
-	from	ResponsibilityTypeRelationRule R
-			cross apply OPENJSON(R.Definition, '$.When') D
+	declare @relationshipUpdates table 
+	(IntersectTypeID int, 
+	 ResponsibilityRuleId int, 
+	 LastRunOn datetime,
+	 MaxDate datetime
+	)
+	insert into @relationshipUpdates (IntersectTypeID, ResponsibilityRuleId,LastRunOn)
+	select	distinct WF.IntersectTypeID, RTRR.ID, RTRR.LastRunOn
+	from	@ruleIds RTRR
+			cross apply OPENJSON(RTRR.Definition, '$.When') D
 			cross apply OPENJSON(D.value) with (
 					CheckType nvarchar(1) '$.CheckType',
 					IntersectTypeID int '$.IntersectTypeID'
 					
 				) WF
-	where	 WF.CheckType = 'R' and R.ID in (select id from @ruleIds)
+	where RTRR.IsProcess = 0 and WF.CheckType = 'R';
 
 	drop table if exists #relationshipUpdatesMap
-	;with cte as (select distinct IntersectTypeID from @relationshipUpdates)
-	select *
+	;with cte as (select IntersectTypeID,min(LastRunOn) LastRunOn
+				  from @relationshipUpdates
+				  group by IntersectTypeID)
+	select cte.IntersectTypeID,MaxDate.UpdatedOn
 	into #relationshipUpdatesMap
 	from cte
-	outer apply (select MAX(I.UpdatedOn) from [Intersect] I where I.IntersectTypeID = cte.IntersectTypeID)MaxDate(UpdatedOn)
+	cross apply (select MAX(I.UpdatedOn) 
+				from [Intersect] I WITH (NOLOCK)
+				where I.IntersectTypeID = cte.IntersectTypeID
+				and I.UpdatedOn > cte.LastRunOn)MaxDate(UpdatedOn)
+	option(recompile);
 
 	merge @relationshipUpdates as target
 	using (select * from #relationshipUpdatesMap)source
@@ -94,33 +230,22 @@ end
 	when matched then update
 	set MaxDate = source.UpdatedOn;
 
+	update RTRR
+	SET IsProcess = 1
+	from @ruleIds RTRR
+	inner join @relationshipUpdates fu on fu.ResponsibilityRuleId = RTRR.ID
+		and fu.MaxDate > RTRR.LastRunOn
+	where IsProcess = 0;
+	
+	delete from @relationshipUpdates;
+	drop table if exists #relationshipUpdatesMap;
+	
+end
 
-	select 
-		RTRR.*
-	from ResponsibilityTypeRelationRule RTRR
-		inner join AssetType AT on AT.Object = RTRR.Object AND AT.ObjectID = RTRR.ObjectID
-		outer apply (select case when RTRR.UpdatedOn > coalesce(RTRR.LastRunOn, '1/1/2000') then 1 else 0 end as Value)WasRuleUpdated
-		outer apply (select IIF(count(1) > 0, 1, 0)
-			from	reporting.Global_Resource
-			where	CreatedOn > coalesce(RTRR.LastRunOn, '1/1/2000'))HasNewUsers(Value)
-		outer apply (select	max(A.CreatedOn), max(A.UpdatedOn)
-			from	Asset A
-			Where AssetTypeID = AT.Id)AssetMax(AssetMaxCreatedOn, AssetMaxUpdatedOn)
-		outer apply (select	max(MaxDate)
-					from	@fieldUpdates where ResponsibilityRuleId = RTRR.ID)AssetFieldMaxDate(Value)
-		outer apply (select  max(MaxDate)
-					from	@relationshipUpdates where ResponsibilityRuleId = RTRR.ID)IntersectMaxDate(Value)
-		outer apply OPENJSON(RTRR.Definition, '$.Then') WITH ([Object] varchar(20), ObjectID int) as ThenCondition
-		outer apply (select g.UpdatedOn from [group] g where g.id = ThenCondition.ObjectId and ThenCondition.Object = 'GroupType')GroupUpdated(Value)
-		outer apply (	SELECT MAX(D) 
-				FROM 
-				(VALUES (AssetMax.AssetMaxCreatedOn), (AssetMax.AssetMaxUpdatedOn), (AssetFieldMaxDate.Value), (IntersectMaxDate.Value),(GroupUpdated.Value)) 
-				AS RelevantUpdateDates(D))AggregatedDates(MaxDate)
-	where 
-	rtrr.ID in (select id from @ruleIds) 
-	and ISNULL(ThenCondition.Object,'') <> 'OrganizationType'
-	and
-	(WasRuleUpdated.Value = 1 or HasNewUsers.Value = 1 or AggregatedDates.MaxDate > coalesce(RTRR.LastRunOn, '1/1/2000'))
+select RTRR.*
+from @ruleIds R
+inner join ResponsibilityTypeRelationRule RTRR on RTRR.ID = R.ID
+where IsProcess = 1
 	option(recompile)
 
 end

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityDetailByAssetTypeID-v1">
+  <changeSet author="PuneetGupta" id="Function.dbo.ResponsibilityDetailByAssetTypeID-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,7 +32,8 @@ CREATE OR ALTER FUNCTION [dbo].[ResponsibilityDetailByAssetTypeID]
 			rasset.AssetID,
 			rasset.RuleID
 			from  [dbo].[ResponsibilityRuleResultAsset] rasset
-			where (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID)
+			inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+			where (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID and r.ApplyToType = 1)
 		)
 		select	r.id as RuleID,
 				r.ResponsibilityTypeID as ResponsibilityTypeID,

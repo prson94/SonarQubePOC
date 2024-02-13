@@ -83,7 +83,7 @@ END
   </changeSet>
 
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v1">
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -97,7 +97,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
+	SELECT Distinct 'ObjectIndex', 
 			'U',
 			A.Object, 
 			A.ObjectID,
@@ -107,7 +107,7 @@ BEGIN
 		WHERE D.AssetTypeID = 0;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
+	SELECT Distinct 'ObjectIndex', 
 			'U',
 			A.Object, 
 			A.ObjectID,
@@ -125,8 +125,8 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v3">
-  <comment>GOV-17603</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v4">
+  <comment>GOV-17603,GOV-31148</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -140,7 +140,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
+	SELECT Distinct 'ObjectIndex', 
 			'U',
 			A.Object, 
 			A.ObjectID,
@@ -152,7 +152,7 @@ BEGIN
 	AND I.AssetTypeID = 0;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-	SELECT 'ObjectIndex', 
+	SELECT Distinct 'ObjectIndex', 
 			'U',
 			A.Object, 
 			A.ObjectID,

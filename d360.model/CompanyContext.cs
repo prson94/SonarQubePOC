@@ -1295,16 +1295,17 @@ from	Field F
 			string sql = $@"SELECT T.* 
 							FROM utility.ObjectDetail(@type, @id) T
 							inner join AssetType ATT on ATT.ID = T.AssetTypeID
-							where not exists (select 1 from ResponsibilityDetail R
+							where not exists (select 1 
+											from [ResponsibilityDetailByAssetTypeIDAssetID](T.AssetTypeID,T.AssetID) R
 											where R.PermissionsBitMask & 1 = 0 
-											and R.ResourceID = @rid and ( (R.AssetID = T.AssetID) OR (R.AssetTypeID = T.AssetTypeID and R.AssetID = 0)))
+											and R.ResourceID = @rid)
 							and (
 									ATT.DefaultPermissions = 1
 									or
 									(
 										ATT.DefaultPermissions = 0 and (
 											exists (select 1 from reporting.Global_Resource where ResourceID = @rid and IsAdministrator = 1)
-											or exists (select 1 from ResponsibilityDetail R where R.PermissionsBitMask & 1 = 1 and R.ResourceID = @rid and ( (R.AssetID = T.AssetID) OR (R.AssetTypeID = T.AssetTypeID and R.AssetID = 0)))
+											or exists (select 1 from [ResponsibilityDetailByAssetTypeIDAssetID](T.AssetTypeID,T.AssetID) R where R.PermissionsBitMask & 1 = 1 and R.ResourceID = @rid)
 										)
 									)
 								)";

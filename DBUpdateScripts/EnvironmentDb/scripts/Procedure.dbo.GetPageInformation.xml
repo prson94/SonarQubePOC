@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.dbo.GetPageInformation-v8.3">
+  <changeSet author="TKlok" id="Procedure.dbo.GetPageInformation-v8.4">
     <comment>GOV-21592</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -98,14 +98,14 @@ begin
 						where	(IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID)
 						) Hier
 	where   O.Uid = @assetUid
-			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+			and not exists (select 1 from ResponsibilityDetailByAssetTypeIDAssetID(O.AssetTypeID, O.ID) where PermissionsBitMask & 1 = 0 and ResourceID = @rid)
 			and (
 					t.DefaultPermissions = 1
 					or
 					(
 						t.DefaultPermissions = 0 and (
 							exists (select 1 from reporting.Global_Resource where ResourceID = @rid and IsAdministrator = 1)
-							or exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 1 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+							or exists (select 1 from ResponsibilityDetailByAssetTypeIDAssetID(O.AssetTypeID, O.ID) where PermissionsBitMask & 1 = 1 and ResourceID = @rid)
 						)
 					)
 				)
@@ -201,7 +201,7 @@ begin
 						where	(IT.SubjectAssetTypeID = T.ID OR IT.ObjectAssetTypeID = T.ID)
 						) Hier
 	where   O.Uid = @assetUid
-			and not exists (select 1 from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = @rid and ( (AssetID = O.ID) OR (AssetTypeID = O.AssetTypeID and AssetID = 0)))
+			and not exists (select 1 from ResponsibilityDetailByAssetTypeIDAssetID(O.AssetTypeID, O.ID) where PermissionsBitMask & 1 = 0 and ResourceID = @rid )
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
 		]]>

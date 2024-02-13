@@ -530,8 +530,9 @@ namespace igx.UnitTests.FilterExpressionTests
             var sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
 
             Assert.Contains("rd.SecurityAssetUid = @filter_1", sql);
-            Assert.Contains("[dbo].[ResponsibilityDetail]", sql);
-            if (!string.IsNullOrEmpty(additionalExpectation))
+            Assert.Contains("[dbo].[ResponsibilityDetailByAssetTypeID](a.AssetTypeId)", sql);
+			Assert.Contains("[dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeId, 0)", sql);
+			if (!string.IsNullOrEmpty(additionalExpectation))
             {
                 Assert.Contains(additionalExpectation.ToLower(), sql.ToLower());
             }

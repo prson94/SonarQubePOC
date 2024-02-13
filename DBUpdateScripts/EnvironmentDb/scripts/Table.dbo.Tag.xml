@@ -81,7 +81,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Tag-Tag_AfterUpdate-v2">
+  <changeSet author="Core,Puneet" id="Table.dbo.Tag-Tag_AfterUpdate-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -94,7 +94,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
-		SELECT 'ObjectIndex', 
+		SELECT Distinct 'ObjectIndex', 
 				'U',
 				A.Object, 
 				A.ObjectID,

@@ -1493,15 +1493,13 @@ from    Asset A
 
 			var nonApplyToTypeResponsibilityDetailsSql = $@"
 			SELECT responsibilityDetail.AssetID
-			  FROM ResponsibilityDetail responsibilityDetail
+			  FROM AssetType assetType
+			 cross apply ResponsibilityDetailByAssetTypeID(assetType.ID) responsibilityDetail
 			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
 			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
-			 INNER JOIN AssetType assetType
-			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
-			       AND assetType.Object = responsibilityDetail.[Type]
-			       AND assetType.[ObjectID] = C.[TypeID]
-			       AND assetType.Object = C.[Type]       
-			 WHERE responsibilityDetail.ApplyToType = 0
+			 WHERE assetType.[ObjectID] = C.[TypeID]
+			   AND assetType.Object = C.[Type]
+			   and responsibilityDetail.ApplyToType = 0
 			   AND responsibilityDetail.IsVisible = 1   
 			   AND responsibilityDetail.ResourceUid = @resourceUid
 			   AND {responsibilityTypeUidFilter}
@@ -1510,17 +1508,15 @@ from    Asset A
 
 			var applyToTypeResponsibilityDetailsSql = $@"
 			SELECT responsibilityDetail.AssetID
-			  FROM [dbo].[ResponsibilityDetail] responsibilityDetail
+			  FROM [dbo].[AssetType] assetType
+			 cross apply ResponsibilityDetailByAssetTypeIDAssetID(assetType.ID, 0) responsibilityDetail
 			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
 			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
-			 INNER JOIN [dbo].[AssetType] assetType
-			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
-			       AND assetType.Object = responsibilityDetail.[Type]
-			       AND assetType.[ObjectID] = C.[TypeID]
-			       AND assetType.Object = C.[Type]
 			 INNER JOIN Asset asset
 			    ON asset.[AssetTypeID] = assetType.[ID]
-			 WHERE responsibilityDetail.[AssetID] = 0
+			 WHERE assetType.[ObjectID] = C.[TypeID]
+			   AND assetType.Object = C.[Type]
+			   and responsibilityDetail.[AssetID] = 0
 			   AND responsibilityDetail.[ApplyToType] = 1
 			   AND responsibilityDetail.[IsVisible] = 1
 			   AND responsibilityDetail.ResourceUid = @resourceUid
@@ -1530,6 +1526,7 @@ from    Asset A
 				  {nonApplyToTypeResponsibilityDetailsSql}
 			   )
 			";
+
 
 			var detailsCountSql = $@"
 			SELECT C.[Type]

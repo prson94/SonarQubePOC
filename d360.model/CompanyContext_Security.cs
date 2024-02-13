@@ -165,7 +165,7 @@ namespace d360.model
 
 			return hasPermission;
 		}
-		
+
 		/// <summary>
 		/// Used to determine if a user has read permissions on a given asset type.  Read is assumed to be present unless denied.
 		/// </summary>        
@@ -175,7 +175,7 @@ namespace d360.model
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t and ua.AssetID = 0)
+			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,0) ua where ua.PermissionsBitMask & {(int)permission} = 0)
 																						begin
 																							select 0;
 																						end				                                                                        
@@ -184,7 +184,7 @@ namespace d360.model
 																							select 1;
 																						end", new { t = assetTypeId, r = CurrentResourceID });
 		}
-		
+
 		private bool HasPermission(long assetId, int assetTypeId, Permission permission)
 		{
 			bool isReadPermission = new List<Permission> { Permission.ReadAsset, Permission.ReadRelationships, Permission.ReadResponsibilities }.Contains(permission);
@@ -202,35 +202,31 @@ namespace d360.model
 			}
 			else
 			{
-				return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t and ua.AssetId = 0)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetID = @assetId)
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { assetId, t = assetTypeId, r = CurrentResourceID });
+				return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissionsByAssetID(@r,@t,@assetId) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
+																	begin
+																		select 1;
+																	end
+																else
+																	begin
+																		select 0;
+																end", new { assetId, t = assetTypeId, r = CurrentResourceID });
 			}
 		}
 		
 		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
 		{
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																							end
-																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																						begin
-																							select 1;
-																							end
-																						else
-																						begin
-																							select 0;
-																						end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
+			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 
+																		from asset a 
+																		cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua 
+																		where a.Object = @type and a.ObjectID = @id
+																		and ua.PermissionsBitMask & {(int)permission} = {(int)permission})
+																begin
+																	select 1;
+																	end
+																else
+																begin
+																	select 0;
+																end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
 		}
 
 		/// <summary>
@@ -1130,11 +1126,19 @@ where	EG.Success is null
 		{
 			List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
 
-			List<int> responsibilityAssignments = Filter<ResponsibilityDetail>(i =>
-				i.Type == type && i.TypeID == typeID &&
-				i.AssetID == 0 &&
-				i.ResourceID == CurrentResourceID
-			).Select(i => i.PermissionsBitMask).Distinct().ToList();
+			string qry = $@"
+							declare @AssetTypeID int;
+							select @AssetTypeID = ID
+							from AssetType 
+							where Object = @type
+							and ObjectID = @typeID;
+
+							select distinct R.PermissionsBitMask
+							from [dbo].ResponsibilityDetailByAssetTypeIDAssetID(@AssetTypeID,0) R
+							where ResourceID = @CurrentResourceID;
+							";
+
+			List<int> responsibilityAssignments = Query<int>(qry, new { type, typeID, CurrentResourceID }).ToList();
 
 			permissions.ForEach(p =>
 			{
@@ -1158,10 +1162,7 @@ where	EG.Success is null
 			declare @permissionValues table (val int)
 
 			insert into @permissionValues
-			select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = 0
-
-			insert into @permissionValues
-			select PermissionsBitMask from UserAssetPermissions(@r,@assetTypeId) where AssetID = @assetId
+			select PermissionsBitMask from UserAssetPermissionsByAssetID(@r,@assetTypeId,@assetId)
 
 			--check default read access if there are no permissions set and if user is not an administrator
 			if 
@@ -1713,33 +1714,18 @@ where	EG.Success is null
 		{
 			Permission permission = Permission.ReadAsset;
 
-			return Database.Connection.QuerySingle<bool>(
-				$@"
-if exists(select top 1 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & @p = 1)
-begin
-	select 1
-end
-else
-begin
-	if exists(
-		select top 1 1 from UserAssetPermissions(@r, @t) ua where ua.PermissionsBitMask & @p = 0 and ua.AssetTypeID = @t and ua.AssetID is not null
-		)
-	begin
-		select 0;
-	end
-	else if exists(
-		select top 1 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & @p = 0
-		)
-	begin
-		select 0;
-	end
-	else
-	begin
-		select 1;
-	end
-end", 
-				new { p = (int)permission, type, id = objectId, t = assetTypeId, r = resourceId }
-			);
+			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 
+																		 from asset a
+																		 cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua
+																		 where a.Object = @type and a.ObjectID = @id 
+																		 and ua.PermissionsBitMask & {(int)permission} = 0)
+																	begin
+																		select 0;
+																		end
+																	else
+																	begin
+																		select 1;
+																	end", new { type, id = objectId, t = assetTypeId, r = resourceId });
 		}
 
 		public bool HasAssetPermission(long id, Permission permission)
@@ -1787,15 +1773,18 @@ end",
 				}
 				else
 				{
-					int assetTypeID = Query<int>("select ID from AssetType where [Object] = @type and [ObjectID] = @id", new { id, type }).Single();
-					hasPermission = Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
-																						begin
-																							select 1;
-																						end				                                                                        
-																						else
-																						begin
-																							select 0;
-																						end", new { t = assetTypeID, r = CurrentResourceID });
+					hasPermission = Database.Connection.QuerySingle<bool>($@"
+																			declare @t int;
+																			select @t = ID from AssetType where [Object] = @type and [ObjectID] = @id;
+
+																			if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+																				begin
+																					select 1;
+																				end				                                                                        
+																			else
+																				begin
+																					select 0;
+																				end", new { id, type, r = CurrentResourceID });
 				}
 			}
 

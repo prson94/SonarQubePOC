@@ -468,7 +468,7 @@ namespace d360.model
                 Connection.Execute($@"
 									declare @hasAssetTypePermission bit = 0
 
-									select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(@resourceID, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+									select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissionsByAssetID(@resourceID, @assetTypeID, 0) where PermissionsBitMask & @p = @p) then 1 else 0 end
 
 									if @hasAssetTypePermission = 0
 									begin

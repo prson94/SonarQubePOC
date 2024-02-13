@@ -1590,7 +1590,7 @@ select distinct AssetUid from #Items", transaction: trans, commandTimeout: timeo
 			var impactedAssets = Query<Guid>(@"
 select	distinct 
 		A.Uid
-from    ResponsibilityDetail O 
+from    ResponsibilityDetailByAssetTypeID (@ID) O 
 		inner join Asset A on ((A.ID = O.AssetID) or O.AssetID = 0 and O.AssetTypeID = A.AssetTypeID) and O.ResponsibilityTypeID = @ResponsibilityTypeID
 		inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
 		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 

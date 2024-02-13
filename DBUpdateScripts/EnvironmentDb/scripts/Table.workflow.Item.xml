@@ -83,4 +83,29 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.workflow.Item-v2">
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'Item')
+BEGIN
+	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_WorkflowItem_Uid' and object_id = object_id(N'workflow.Item'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_WorkflowItem_Uid] ON [workflow].[Item] ([Uid] ASC)
+	END
+
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'Item')
+BEGIN
+	IF EXISTS (select * from sys.indexes where name = 'IX_WorkflowItem_Uid')
+	BEGIN
+		DROP INDEX [IX_WorkflowItem_Uid] ON [workflow].[Item] 
+	END
+END
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

@@ -124,7 +124,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return "";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null, List<FieldTypesReferenceListQry> referenceListTempQryList = null)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null, List<FieldTypesReferenceListQry> referenceListTempQryList = null, List<string> temptablelist = null)
 		{
 			List<string> TempTableNameList = new List<string>();
 			
@@ -391,12 +391,13 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 
 						 temptableScript += @$"
-								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
+								create clustered index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
 
 						 if (!TempTableNameList.Contains(temptablename))
 						 {
 							 TempTableNameList.Add(temptablename);
 							 TempTableScriptList.Add(temptableScript);
+							 temptablelist.Add(temptablename);
 						 }
 
 						 assetIdBackwardQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
@@ -429,7 +430,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 {
 						 fieldJoins.Add($@"outer apply (
 							select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-							from    dbo.AssetPath
+							from    dbo.AssetPath WITH (NOWAIT)
 							where   ID IN ({assetIdFinalQuery})
 							having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
 						) {tableAlias}", f.ID.ToString());
@@ -543,12 +544,13 @@ namespace d360.model.DataAccessLayer.repositories
 							 }
 
 							 temptableScript += @$"
-								create index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
+								create clustered index ix_TempGraphFwd on {temptablename} (SourceAssetID);";
 
 							 if (!TempTableNameList.Contains(temptablename))
 							 {
 								 TempTableNameList.Add(temptablename);
 								 TempTableScriptList.Add(temptableScript);
+								 temptablelist.Add(temptablename);
 							 }
 							 assetIdQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
 						 }
@@ -584,7 +586,7 @@ namespace d360.model.DataAccessLayer.repositories
 								select
 									STRING_AGG(TRY_CAST(DisplayValue as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue									
 								from 
-									AssetDisplayValue ADV	
+									AssetDisplayValue ADV
 								where 
 									assetid in ({assetIdQuery})"
 							: 
@@ -592,7 +594,7 @@ namespace d360.model.DataAccessLayer.repositories
 								select 
 									STRING_AGG(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
 								from 
-									AssetPath where ID in ({assetIdQuery})
+									AssetPath WITH (NOWAIT) where ID in ({assetIdQuery})
 								having 
 									string_agg(TRY_CAST(DisplayPath as nvarchar(max)),'{RELATIONSHIP_DELIMITER}') is not null")}							
 							) {tableAlias} ";
@@ -716,6 +718,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 								create clustered index ix_{temptablename} on {temptablename}(object,objectid);
 								";
+
 							 }
 							 else
 							 {
@@ -759,6 +762,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 TempTableNameList.Add(temptablename);
 								 TempTableScriptList.Add(temptableScript);
+								 temptablelist.Add(temptablename);
 							 }
 						 }
 						 else
