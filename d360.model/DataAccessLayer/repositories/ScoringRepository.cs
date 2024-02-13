@@ -720,6 +720,10 @@ drop table #TempDataProcess
 			var evidenceModel = new DataQualityScoreItemEvidenceViewModel { };
 
 			var dbArgs = new DynamicParameters();
+			Guid? OwningAssetUid = null;
+			Guid? EvaluatedAssetUid = null;
+			int? MaxPosition = null;
+
 			List<string> whereStatements = new List<string>();
 			var queryFieldOptions = new List<DefaultFilter>
 			{
@@ -775,18 +779,56 @@ drop table #TempDataProcess
 			evidenceModel.pageNum = pageNum;
 			evidenceModel.pageSize = pageSize;
 
+
+			#region "Getting OwningAssetUid and EvaluatedAssetUid"
+			string OEQuery = $@"
+declare @AssetTypeUid uniqueidentifier
+
+
+select @AssetTypeUid =  max(al.AssetTypeUid)
+from metrics.ScoreItem I
+inner join metrics.AssetVersion v on I.AssetVersionUid = v.Uid
+inner join metrics.Asset a on v.AssetUid = a.Uid
+inner join metrics.Allocation al on a.AllocationUid = al.Uid
+where i.Uid = cast(@scoreItemUid as uniqueidentifier);
+
+With Rs_Data as (
+select e.uid ,e.Position
+from metrics.ScoreItem I
+cross apply openjson(I.Evidence) F
+outer apply openjson(F.Value, N'$.RollupPath') With (Position int,
+													 Uid uniqueidentifier) e
+where I.Uid = cast(@scoreItemUid as uniqueidentifier)
+)
+select max(case when att.Class = {(int)AssetTypeClass.Rule} then u.uid else null end) OwningAssetUid,
+max(case when att.uid = @AssetTypeUid then u.uid else null end) EvaluatedAssetUid,
+max(Position) MaxPosition
+from Rs_Data u
+inner join asset a on a.uid = u.Uid 
+inner join AssetType att on att.ID = a.AssetTypeID
+							";
+			var OEObj = CompanyContext.Query<dynamic>(OEQuery, new {scoreItemUid}, ApiTimeout).FirstOrDefault();
+
+			if (OEObj != null)
+			{
+				OwningAssetUid = OEObj?.OwningAssetUid;
+				EvaluatedAssetUid = OEObj?.EvaluatedAssetUid;
+				MaxPosition = (OEObj?.MaxPosition == null ? 0 : OEObj?.MaxPosition);
+				dbArgs.Add("@OwningAssetUid", OwningAssetUid);
+				dbArgs.Add("@EvaluatedAssetUid", EvaluatedAssetUid);
+				dbArgs.Add("@MaxPosition", MaxPosition);
+			}
+
+			#endregion
+
 			var tables = $@"
 							from	metrics.ScoreItem I
 									cross apply openjson(I.Evidence) E
-									cross apply (
-										select	count(1) as PathItemCount
-										from	openjson(E.value, N'$.RollupPath')
-									) Pc
-									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath[0].Uid') as uniqueidentifier)
+									inner join Asset OA on OA.Uid = {(OwningAssetUid == null ? "cast(JSON_VALUE(E.value, N'$.RollupPath[0].Uid') as uniqueidentifier)" : "cast(@OwningAssetUid as uniqueidentifier)")}
 									inner join AssetPath OAN on OAN.ID = OA.ID
 									cross apply GetAssetTypeTextPathById(OA.AssetTypeID, ' > ') OANTP
 
-									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
+									inner join Asset EA on EA.Uid = {(EvaluatedAssetUid == null ? "cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(@MaxPositionInt-1 as varchar)+'].Uid') as uniqueidentifier)" : "cast(@EvaluatedAssetUid as uniqueidentifier)")}
 									inner join AssetPath EAN on EAN.ID = EA.ID 
 									cross apply GetAssetTypeTextPathById(EA.AssetTypeID, ' > ') EANTP 
 
@@ -798,7 +840,8 @@ drop table #TempDataProcess
 						declare @exists bit = 0,
 								@visible bit = 0,
 								@isDq bit = 0,
-								@total int = 0
+								@total int = 0,
+								@MaxPositionInt as int = cast(@MaxPosition as int);
 
 						select	@exists = cast(iif(count(1) > 0, 1, 0) as bit)
 						from	metrics.ScoreItem I
@@ -833,7 +876,7 @@ drop table #TempDataProcess
 												TP.Path as AssetTypePath,
 												case ERP.PathPosition
 													when 1 then null 
-													when MP.Position then PR.Inverse
+													when @MaxPositionInt then PR.Inverse
 													else PR.Name 
 												end as [Predicate],
 												ERP.PathPosition as [Position]
@@ -849,10 +892,6 @@ drop table #TempDataProcess
 												inner join metrics.RollupPathLink PL on PL.RollupPathUid = VR.RollupPathUid and ( (ERP.PathPosition = 1 and ERP.PathPosition = PL.StartPosition) or (ERP.PathPosition > 1 and ERP.PathPosition = PL.EndPosition) )
 												inner join IntersectType IT on IT.ID = PL.IntersectTypeID
 												inner join [Predicate] as PR on PR.ID = IT.PredicateID
-												cross apply (
-													select	max(P) as [Position]
-													from	openjson(E.value, '$.RollupPath') with ([P] int '$.Position')
-												) MP
 										order by ERP.PathPosition
 										for json path
 									) as RollupPathJson,
