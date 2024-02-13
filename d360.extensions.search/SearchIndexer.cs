@@ -280,10 +280,10 @@ namespace d360.extensions.search
             {
                 long assetCount = CreatePendingDBLog(assetClass, null);
                 UpdateDBLog(assetClass, null, SearchJobStatus.Processing);
-                IndexObjectType("Intersect");
-                IndexObjectType("Synonym", false);
-            }
-            else
+                IndexObjectType("Synonym");
+				IndexObjectType("Intersect", false);
+			}
+			else
             {
 				var skip = false;
 				try
