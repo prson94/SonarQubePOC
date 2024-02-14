@@ -1553,6 +1553,28 @@ where	EG.Success is null
 						PermissionsBitMask int
 					)
 
+					drop table if exists #ResourceRule;
+					create table #ResourceRule
+					(
+						RuleId int
+					);
+					Create Clustered index cx_ResourceRule on #ResourceRule(RuleId);
+
+					insert into #ResourceRule
+					select RuleID 
+					from (
+					select rresource.RuleID
+					from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource  
+					where rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = cast(@userId as int)
+					union
+					select rresource.RuleID
+					from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource  
+					inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
+					inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+					where RG.ResourceID = cast(@userId as int)
+					) a;
+
+
 					drop table if exists #AssetRule;
 					with cte as (
 					select a.AssetTypeID,
@@ -1561,6 +1583,7 @@ where	EG.Success is null
 							from  [dbo].[asset] a
 							inner join [dbo].[ResponsibilityRuleResultAsset] rasset 
 							on (rasset.AssetID = a.ID)
+							inner join #ResourceRule RR on RR.RuleID = rasset.RuleID
 							where a.AssetTypeID = cast(@{typeParam} as int)
 							union all 
 							select att.ID as AssetTypeID,
@@ -1569,6 +1592,7 @@ where	EG.Success is null
 							from  [dbo].[assettype] att
 							inner join [dbo].[ResponsibilityRuleResultAsset] rasset
 							on (rasset.AssetID = 0 and rasset.AssetTypeID = cast(@{typeParam} as int))
+							inner join #ResourceRule RR on RR.RuleID = rasset.RuleID
 							where att.ID = cast(@{typeParam} as int)
 					)
 					select * into #AssetRule from cte;
@@ -1657,10 +1681,11 @@ where	EG.Success is null
 						begin
 							drop table if exists #resourceResponsibilities
 		
-							select AssetId 
+							select distinct A.Id as AssetId 
 							into #resourceResponsibilities
-							from dbo.ResponsibilityDetailByAssetTypeID(cast(@{typeParam} as int))
-							where ResourceID = cast(@{userParam} as int)
+							from Asset a
+							inner join ResponsibilityDetail R on R.AssetID = A.ID and R.ResourceID = cast(@{userParam} as int)
+							where a.AssetTypeId = cast(@{typeParam} as int)
 
 							create nonclustered index ix_resourceResponsibilities_assetid on #resourceResponsibilities(AssetId)
 
