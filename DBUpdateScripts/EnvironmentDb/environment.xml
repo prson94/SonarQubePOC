@@ -237,6 +237,7 @@
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
 	<include file="scripts/View.dbo.Relationship.xml"/>
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
+	<include file="scripts/View.dbo.ResponsibilitySummary.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
