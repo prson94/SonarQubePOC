@@ -397,7 +397,10 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 TempTableNameList.Add(temptablename);
 							 TempTableScriptList.Add(temptableScript);
-							 temptablelist.Add(temptablename);
+							 if (temptablelist != null)
+							 {
+								 temptablelist.Add(temptablename);
+							 }
 						 }
 
 						 assetIdBackwardQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
@@ -550,7 +553,10 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 TempTableNameList.Add(temptablename);
 								 TempTableScriptList.Add(temptableScript);
-								 temptablelist.Add(temptablename);
+								 if (temptablelist != null)
+								 {
+									 temptablelist.Add(temptablename);
+								 }
 							 }
 							 assetIdQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
 						 }
@@ -762,7 +768,10 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 TempTableNameList.Add(temptablename);
 								 TempTableScriptList.Add(temptableScript);
-								 temptablelist.Add(temptablename);
+								 if (temptablelist != null)
+								 {
+									 temptablelist.Add(temptablename);
+								 }
 							 }
 						 }
 						 else
