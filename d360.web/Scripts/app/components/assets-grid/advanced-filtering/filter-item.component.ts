@@ -237,7 +237,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 	}
 
 	filterTable($event: any) {
-		this.currentField.Values = [];
 		this.dataTable.filterGlobal($event, 'contains');
 	}
 
