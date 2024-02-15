@@ -67,25 +67,25 @@ namespace igx.jobs.indexer
         public async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex, ILogger log)
         {
             SearchIndexer indexer = new SearchIndexer(company, reindex.CompanyID, source);
-            if (reindex.AssetUid.HasValue)
-            {
-                Guid assetUid = reindex.AssetUid ?? Guid.Empty;
-				if (assetUid != Guid.Empty) 
+			if (reindex.AssetUid.HasValue)
+			{
+				Guid assetUid = reindex.AssetUid ?? Guid.Empty;
+				if (assetUid != Guid.Empty)
 				{
 					indexer.IndexAsset(assetUid);
 				}
-            }
-            else if (reindex.AssetTypeUid.HasValue)
-            {
-                Guid assetTypeUid = reindex.AssetTypeUid ?? Guid.Empty;
-                if (assetTypeUid != Guid.Empty)
-                {
+			}
+			else if (reindex.AssetTypeUid.HasValue)
+			{
+				Guid assetTypeUid = reindex.AssetTypeUid ?? Guid.Empty;
+				if (assetTypeUid != Guid.Empty)
+				{
 					log.LogTrace($"Indexing asset type {assetTypeUid} for company {reindex.CompanyID}, origin: {reindex.Origin}");
 					indexer.IndexAssetType(assetTypeUid);
-                }
-            }
-            else if (!string.IsNullOrEmpty(reindex.Category))
-            {
+				}
+			}
+			else if (!string.IsNullOrEmpty(reindex.Category))
+			{
 				if (reindex.Category == "UpdateMapping")
 				{
 					log.LogTrace($"Updating mapping for company {reindex.CompanyID}");
@@ -93,35 +93,47 @@ namespace igx.jobs.indexer
 				}
 
 				if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
-                {
-                    //Class "Predicate" is overloaded to be used for synonyms and intersects
-                    reindex.Category = AssetTypeClass.Predicate.ToString();
-                }
-                if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
-                {
-                    AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
-                    if (info != null)
-                    {
-                        indexer.IndexAssetClass(info.ID);
-                    }
-                }
-            }
-            else if (reindex.BatchUids != null && reindex.BatchUids.Any())
-            {
-                ConcurrentBag<Guid> uids = new ConcurrentBag<Guid>(reindex.BatchUids);
-                if (reindex.BatchOperation == ReindexBatchOperation.Update)
-                {
-                    indexer.IndexAssets(uids);
-                }
-                else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
-                {
-                    indexer.RemoveAssets(uids);
-                }
-            }
-            else
-            {
-                await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
-            }
+				{
+					//Class "Predicate" is overloaded to be used for synonyms and intersects
+					reindex.Category = AssetTypeClass.Predicate.ToString();
+				}
+				if (SearchIndexer.IsIndexable(reindex.Category) || reindex.Category == AssetTypeClass.Predicate.ToString())
+				{
+					AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
+					if (info != null)
+					{
+						indexer.IndexAssetClass(info.ID);
+					}
+				}
+			}
+			else if (reindex.BatchUids != null && reindex.BatchUids.Any())
+			{
+				ConcurrentBag<Guid> uids = new ConcurrentBag<Guid>(reindex.BatchUids);
+				if (reindex.BatchOperation == ReindexBatchOperation.Update)
+				{
+					indexer.IndexAssets(uids);
+				}
+				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
+				{
+					indexer.RemoveAssets(uids);
+				}
+			}
+			else if (reindex.IntersectIDs != null && reindex.IntersectIDs.Any())
+			{
+				ConcurrentBag<int> intersects = new ConcurrentBag<int>(reindex.IntersectIDs);
+				if (reindex.BatchOperation == ReindexBatchOperation.Update)
+				{
+					indexer.IndexIntersects(intersects);
+				}
+				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
+				{
+					indexer.RemoveIntersects(intersects);
+				}
+			}
+			else
+			{
+				await RebuildAllIndex(source, company, reindex.CompanyID, indexer, log);
+			}
         }
 
         public async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer, ILogger log)

@@ -1660,6 +1660,24 @@ from	IntersectType I
 			return CompanyContext.Any<Predicate>(i => i.UID == uid);
 		}
 
+		public void QueueSearchIndexing(Guid executionID, bool IsDelete = false)
+		{
+			var table = IsDelete ? "api.ExecutionDeletedRelationship" : "api.ExecutionRelationship";
+
+			var intersects = CompanyContext.Query<int>(
+				"select	r.IntersectID " +
+				$"from	{table} r " +
+				"where	r.ExecutionId = @ExecutionID and r.Success = 1", new { executionID }).ToList();
+
+			QueueSource.CreateMessage(CompanyContext.SearchIndexQueue, new ReindexModel
+			{
+				CompanyID = CompanyContext.CurrentCompanyID,
+				IntersectIDs = intersects,
+				BatchOperation = IsDelete ? ReindexBatchOperation.Delete : ReindexBatchOperation.Update
+			});
+
+		}
+
 		public async Task<List<DatabaseBulkAssetResult>> GetBulkResults(ApiExecutionInfo info)
 		{
 			List<DatabaseBulkAssetResult> results = null;
@@ -1700,6 +1718,11 @@ from	IntersectType I
 				"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
 
 			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+
+			if (intersectType.Predicate.Type == PredicateType.Grammar)
+			{
+				QueueSearchIndexing(execution.ExecutionID, true);
+			}
 
 			return results;
 		}
@@ -1744,6 +1767,11 @@ from	IntersectType I
 
 			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
 
+			if (intersectType.Predicate.Type == PredicateType.Grammar)
+			{
+				QueueSearchIndexing(execution.ExecutionID);
+			}
+
 			return results;
 		}
 
@@ -1763,6 +1791,11 @@ from	IntersectType I
 				"		inner join metrics.Allocation al on al.AssetTypeUid = t.Uid and al.ScoreType = 1", new { execution.ExecutionID }).ToList();
 
 			CompanyContext.CreateRescoreRequests(assets, ScoreType.Governance);
+
+			if (intersectType.Predicate.Type == PredicateType.Grammar)
+			{
+				QueueSearchIndexing(execution.ExecutionID);
+			}
 
 			return results;
 		}
