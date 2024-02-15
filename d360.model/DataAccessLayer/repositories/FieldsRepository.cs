@@ -3065,18 +3065,18 @@ namespace d360.model.DataAccessLayer
 			var itemsSQL = $@"select distinct 
 							{(string.Join(", ", selects))}
 						FROM asset a 
-						inner join asset a [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
+						cross apply [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
 						where a.uid = @assetuid
-						{(wheres.Count == 0 ? "" : string.Join(" and ", wheres))}
+						{(wheres.Count == 0 ? "" : " and " + string.Join(" and ", wheres))}
 						{orderByClause} {direction}
 						offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";
 
 
 			var countSQL = $@"select count(1)
 						FROM asset a 
-						inner join asset a [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
+						cross apply [dbo].[ResponsibilityDetailByAssetTypeIDAssetID](a.AssetTypeID,A.ID) R 
 						where a.uid = @assetuid
-						{(wheres.Count == 0 ? "" : string.Join(" and ", wheres))}";
+						{(wheres.Count == 0 ? "" : " and " + string.Join(" and ", wheres))}";
 
 
 			if (countOnly)
