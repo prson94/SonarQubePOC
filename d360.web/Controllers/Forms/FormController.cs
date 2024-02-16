@@ -548,7 +548,7 @@ namespace d360.web.Controllers
 
 			foreach (var item in jsonObject)
 			{
-				form.Add(item.Key, item.Value.ToString());
+				form.Add(item.Key, item.Value.ToString().SanitizeHtml());
 			}
 
 			switch ((objectType ?? "").ToUpper())
@@ -593,7 +593,7 @@ namespace d360.web.Controllers
 
 			foreach (var item in jsonObject)
 			{
-				form.Add(item.Key, item.Value.ToString());
+				form.Add(item.Key, item.Value.ToString().SanitizeHtml());
 			}
 
 			switch ((objectType ?? "").ToUpper())
@@ -1456,7 +1456,6 @@ order by Sort, title";
 		}
 
 		/// <param name="id">LookupID</param>
-		[Route("ReferenceItem_EditFields"), NonNullableParameters]
 		public JsonResult ReferenceItem_EditFields(int id)
 		{
 			var list = new List<EditableField>();
@@ -2076,8 +2075,7 @@ order by Sort, title";
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
 
-		[Route("Group_EditFields")]
-		public JsonResult Group_EditFields(int groupId)
+		private JsonResult Group_EditFields(int groupId)
 		{
 			var list = new List<EditableField>();
 
@@ -2221,7 +2219,6 @@ order by Sort, title";
 			}
 		}
 
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("AddCustomSynonym")]
 		public JsonResult AddCustomSynonym(FormCollection form)
 		{
 			try

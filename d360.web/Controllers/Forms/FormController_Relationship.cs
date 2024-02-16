@@ -183,8 +183,7 @@ namespace d360.web.Controllers
 		}
 
 		/// <param name="id">RelationshipID</param>
-		[Route("Relationship_EditFields"), NonNullableParameters]
-		public JsonResult Relationship_EditFields(int id)
+		private JsonResult Relationship_EditFields(int id)
 		{
 			var relationship = Company.IntersectDetails.FirstOrDefault(x => x.ID == id);
 
@@ -226,7 +225,6 @@ namespace d360.web.Controllers
 
 		#region Form Get/Post
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
 		public JsonResult AddRelationship(FormCollection form)
 		{
 			try
@@ -329,7 +327,6 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpPut, ValidateInput(false), Route("EditRelationship")]
 		public JsonResult EditRelationship(FormCollection form)
 		{
 			try

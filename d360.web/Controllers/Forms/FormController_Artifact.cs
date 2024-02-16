@@ -19,8 +19,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        [Route("Diagram_AddFields"), NonNullableParameters]
-        public JsonResult Diagram_AddFields(int at, int p)
+        private JsonResult Diagram_AddFields(int at, int p)
         {
             var list = new List<EditableField>();
 
@@ -30,8 +29,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Diagram_EditFields"), NonNullableParameters]
-        public JsonResult Diagram_EditFields(int id)
+        private JsonResult Diagram_EditFields(int id)
         {
             var list = new List<EditableField>();
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == "Task").Include(x => x.AssetType).FirstOrDefault();
@@ -57,8 +55,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        [Route("Asset_AddFields"), NonNullableParameters]
-        public JsonResult Asset_AddFields(SystemObjects type, int at, int p)
+        private JsonResult Asset_AddFields(SystemObjects type, int at, int p)
         {
             var sType = type.ToString();
 
@@ -88,8 +85,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        [Route("Asset_EditFields"), NonNullableParameters]
-        public JsonResult Asset_EditFields(SystemObjects type, SystemObjects obj, int id)
+        private JsonResult Asset_EditFields(SystemObjects type, SystemObjects obj, int id)
         {
             if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {

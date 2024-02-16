@@ -1166,7 +1166,7 @@ namespace d360.web.Controllers
 				return string.Empty;
 			}
 			// Return char and concat substring.  
-			return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type");
+			return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type").SanitizeHtml();
 		}
 
 		#endregion
@@ -1634,7 +1634,7 @@ namespace d360.web.Controllers
 
 		public string parseNavDescription(string description)
 		{
-			return description== null || string.IsNullOrWhiteSpace(Regex.Replace(description, "<.*?>", String.Empty)) ? null : description;					
+			return description == null || string.IsNullOrWhiteSpace(Regex.Replace(description, "<.*?>", String.Empty)) ? null : description.SanitizeHtml();					
 		}
 	}
 }

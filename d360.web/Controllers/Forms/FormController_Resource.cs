@@ -117,7 +117,6 @@ namespace d360.web.Controllers
 		}
 
 		/// <param name="id">ResourceID</param>
-		[Route("Resource_EditFields"), NonNullableParameters]
 		public JsonResult Resource_EditFields(int id)
 		{
 			if (!Company.CurrentResourceIsAdmin)

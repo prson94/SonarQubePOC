@@ -58,8 +58,8 @@ namespace d360.web.Controllers
 
             if (res != null)
             {
-                ViewData.Add("ResourceName", res.FullName);
-                ViewData.Add("ResourceEmail", res.Email);
+                ViewData.Add("ResourceName", res.FullName.SanitizeHtml());
+                ViewData.Add("ResourceEmail", res.Email.SanitizeHtml());
                 ViewData.Add("ResourceUid", res.Uid);
             }
             else
