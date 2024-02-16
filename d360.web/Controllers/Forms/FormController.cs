@@ -339,10 +339,10 @@ namespace d360.web.Controllers
 			switch ((o ?? "").ToUpper())
 			{
 				case "ARTIFACT":
-					res = Asset_EditFields(SystemObjects.ArtifactType, SystemObjects.Artifact, oid);
+					res = Asset_EditFields(SystemObjects.Artifact, oid);
 					break;
 				case "RULE":
-					res = Asset_EditFields(SystemObjects.RuleType, SystemObjects.Rule, oid);
+					res = Asset_EditFields(SystemObjects.Rule, oid);
 					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_EditFields(oid);
@@ -522,7 +522,7 @@ namespace d360.web.Controllers
 					res = Group_AddFields();
 					break;
 				case "TASK":
-					res = Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = Diagram_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "TAXONOMY":
 					res = Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());

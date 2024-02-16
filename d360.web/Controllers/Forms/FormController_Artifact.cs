@@ -19,7 +19,7 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        private JsonResult Diagram_AddFields(int at, int p)
+        private JsonResult Diagram_AddFields(int at)
         {
             var list = new List<EditableField>();
 
@@ -85,7 +85,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        private JsonResult Asset_EditFields(SystemObjects type, SystemObjects obj, int id)
+        private JsonResult Asset_EditFields(SystemObjects obj, int id)
         {
             if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {
