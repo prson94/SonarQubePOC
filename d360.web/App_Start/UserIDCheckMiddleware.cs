@@ -214,21 +214,6 @@ namespace d360.web
 				{
 					try
 					{
-						if (!string.IsNullOrEmpty(apiCredentials))
-						{
-							Log.LogWarning("Could not locate the user with API credentials of: {0}", apiCredentials);
-						}
-
-						if (!string.IsNullOrEmpty(token))
-						{
-							Log.LogWarning("Could not locate the user with API token of: {0}", token);
-						}
-
-						if (context.Request.User.Identity.IsAuthenticated)
-						{
-							Log.LogWarning("Could not locate the user with name of: {0}", context.Request.User.Identity.Name);
-						}
-
 						if (!string.IsNullOrEmpty(apiCredentials) || !string.IsNullOrEmpty(token) || context.Request.User.Identity.IsAuthenticated)
 						{
 							System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
