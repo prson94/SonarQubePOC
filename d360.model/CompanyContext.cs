@@ -1892,7 +1892,7 @@ from	IntersectType I
 		{
 			Favorite homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
 
-			return homePage?.Route ?? "";
+			return homePage?.Route.SanitizeHtml() ?? "";
 		}
 
 		public async Task<TypeIdentifierInfoModel> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid)

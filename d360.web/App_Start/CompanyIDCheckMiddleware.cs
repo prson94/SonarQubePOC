@@ -73,7 +73,7 @@ namespace d360.web
 		public async Task Invoke(IDictionary<string, object> environment)
 		{
 			IOwinContext context = new OwinContext(environment);
-			var host = context.Request.Headers["Host"];
+			var host = context.Request.Headers["Host"].SanitizeHtml();
 			try
 			{
 				var dict = await loadCache();
@@ -87,7 +87,7 @@ namespace d360.web
 				{
 					if (!string.IsNullOrEmpty(context.Request.Headers["CompanyID"]))
 					{
-						host = context.Request.Headers["CompanyID"].ToLower();
+						host = context.Request.Headers["CompanyID"].ToLower().SanitizeHtml();
 					}
 				}
 

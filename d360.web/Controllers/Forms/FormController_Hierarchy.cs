@@ -24,7 +24,7 @@ namespace d360.web.Controllers
 		/// <param name="hierarchyType">TaxonomyType or PolicyType</param>
 		/// <param name="t">TaxonomyTypeID</param>
 		/// <param name="p">ParentID</param>        
-		public JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
+		private JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
 		{
 			if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
 			{
@@ -48,7 +48,7 @@ namespace d360.web.Controllers
 
 		/// <param name="hierarchy">Policy or Taxonomy type</param>
 		/// <param name="id">TaxonomyID or PolicyID</param>        
-		public JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
+		private JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
 		{
 			if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
 			{
@@ -163,8 +163,7 @@ namespace d360.web.Controllers
 
 		#region Form Get/Post
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomyTypeLevel")]
-		public JsonResult AddTaxonomyTypeLevel(FormCollection form)
+		private JsonResult AddTaxonomyTypeLevel(FormCollection form)
 		{
 			try
 			{
@@ -263,7 +262,6 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpPut, ValidateInput(false), Route("EditTaxonomyTypeLevel")]
 		public JsonResult EditTaxonomyTypeLevel(FormCollection form)
 		{
 			try
@@ -315,7 +313,6 @@ namespace d360.web.Controllers
 
 		#region Form Get/Post
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPolicyTypeLevel")]
 		public JsonResult AddPolicyTypeLevel(FormCollection form)
 		{
 			try
@@ -417,7 +414,6 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpPut, ValidateInput(false), Route("EditPolicyTypeLevel")]
 		public JsonResult EditPolicyTypeLevel(FormCollection form)
 		{
 			try

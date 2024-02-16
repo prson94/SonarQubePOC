@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using d360.core;
 using d360.core.enums;
 using d360.model;
 using Microsoft.Owin;
@@ -25,7 +26,7 @@ namespace d360.web
 
 			if (companyID.HasValue && context.Request.Headers.ContainsKey("Origin"))
 			{
-				var acceptOrigin = context.Request.Headers["Origin"];
+				var acceptOrigin = context.Request.Headers["Origin"].SanitizeHtml();
 
 				if (companyID.HasValue)
 				{

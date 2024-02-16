@@ -1609,22 +1609,6 @@ namespace d360.web.Controllers
 
 		#region Groups
 
-		[HttpGet, Route("groups")]
-		public async Task<HttpResponseMessage> GetGroups()
-		{
-			string sql = $"select g.*, a.[uid] from [group] g inner join [asset] a on g.id = a.ObjectID and a.[object] = 'Group'";
-
-			var results = await Company.QueryAsync<dynamic>(sql);
-			var orderedResults = results.OrderBy(i => i.Name);
-			return Request.CreateResponse(HttpStatusCode.OK, orderedResults);
-		}
-
-		[Route("{type}/{id:int}/groups")]
-		public IQueryable<Group> GetGroupsByObject(SystemObjects type, int id)
-		{
-			return Company.Filter<ResourceGroup>(i => i.ResourceID == id, i => i.Group).Select(i => i.Group);
-		}
-
 		[Route("groups/{id:int}/resources")]
 		public IQueryable<GroupResourceInfo> GetResourcesByGroup(int id)
 		{
