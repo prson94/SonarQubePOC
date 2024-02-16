@@ -1051,5 +1051,19 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
- 
+
+	<changeSet author="TKlok" id="Data.Corrections.GOV-31250">
+		<comment>GOV-31250 - Queue reindexing of synonyms</comment>
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
+			<![CDATA[
+		INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+		SELECT 'QueueRebuild', 'SearchIndex', DATEADD(hour, 1, getdate()), 'Synonym', 0;
+	]]>
+		</sql>
+	</changeSet>
+
+
 </databaseChangeLog>

@@ -109,6 +109,8 @@ namespace d360.core.queue
         public Guid? AssetUid { get; set; }
         
         public List<Guid> BatchUids { get; set; }
+
+		public List<int> IntersectIDs { get; set; }
         
         public ReindexBatchOperation BatchOperation { get; set; } = ReindexBatchOperation.Update;
         public string Origin { get; set; }

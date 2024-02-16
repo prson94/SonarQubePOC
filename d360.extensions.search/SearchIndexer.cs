@@ -384,7 +384,71 @@ namespace d360.extensions.search
             _source.AddToIndex(models);
         }
 
-        public void IndexUpdateAssetPaths(ConcurrentBag<long> AssetIds)
+		public void IndexIntersects(ConcurrentBag<int> intersectIds)
+		{
+			string batchUid = Guid.NewGuid().ToString().Replace('-', '_');
+			string batchTableName = $"##searcindexintersectbatch_{batchUid}";
+
+			var batchTable = new DataTable();
+			batchTable.Columns.Add("IntersectID", typeof(int));
+			intersectIds.Distinct().ForEach(g =>
+			{
+				var batchRow = batchTable.NewRow();
+				batchRow["IntersectID"] = g;
+				batchTable.Rows.Add(batchRow);
+			});
+
+			if (_context.State != ConnectionState.Open)
+			{
+				_context.Open();
+			}
+
+			_context.Execute($@"DROP TABLE IF EXISTS {batchTableName};
+            CREATE TABLE {batchTableName} (IntersectID int);");
+
+			using (SqlBulkCopy bulkCopy = new SqlBulkCopy(_context))
+			{
+				bulkCopy.DestinationTableName = batchTableName;
+				bulkCopy.ColumnMappings.Add("IntersectID", "IntersectID");
+				bulkCopy.WriteToServer(batchTable);
+			}
+
+			_context.Execute($"CREATE NONCLUSTERED INDEX IX_searcindexintersectbatch_{batchUid} ON {batchTableName} (IntersectID);");
+
+			IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, "Intersect", null, batchTableName);
+			if (models.Any())
+			{
+				_source.RemoveFromIndex(models);
+				_source.AddToIndex(models);
+			}
+
+			_context.Execute($@"DROP TABLE IF EXISTS {batchTableName};");
+		}
+
+		public void RemoveIntersects(ConcurrentBag<int> intersectIds)
+		{
+			var deletes = new ConcurrentBag<IndexObjectModel>();
+			intersectIds.ForEach((i) =>
+			{
+				//Intersects have two search documents, se we need to delete both
+				deletes.Add(new IndexObjectModel
+				{
+					CompanyID = _companyID,
+					Category = "Synonym",
+					ItemUniqueID = $"intersect|{i}|O"
+				});
+				deletes.Add(new IndexObjectModel
+				{
+					CompanyID = _companyID,
+					Category = "Synonym",
+					ItemUniqueID = $"intersect|{i}|S"
+				});
+			});
+
+			_source.RemoveFromIndex(deletes);
+		}
+
+		public void IndexUpdateAssetPaths(ConcurrentBag<long> AssetIds)
         {
             string sql = @"select
 	            att.Class as assetclass,
@@ -886,21 +950,24 @@ namespace d360.extensions.search
             return getData(context, sql, parameters, mode, shaper, useTempTable);
         }
 
-        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, string Object, long? ObjectID = null)
+        private IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, string Object, long? ObjectID = null, string? batchTable = null)
         {
             string sql = "";
             string where = "";
-            Func<dynamic, IndexObjectModel> shaper = null;
+            Func<dynamic, IndexObjectModel>? shaper = null;
             DynamicParameters parameters = new DynamicParameters();
 
             switch (Object)
             {
                 case "Intersect":
-                    if (ObjectID != null)
-                    {
-                        where = "WHERE I.ID = @ObjectID";
-                        parameters.Add("ObjectID", ObjectID);
-                    }
+					if (ObjectID != null)
+					{
+						where = "WHERE I.ID = @ObjectID";
+						parameters.Add("ObjectID", ObjectID);
+					}
+					else if (batchTable != null) {
+						where = $" inner join {batchTable} bt on bt.IntersectID = i.ID ";
+					}
                     sql = $@"select 
                 I.ID,
                 'S' as 'Direction',
@@ -913,7 +980,7 @@ namespace d360.extensions.search
                 P.Name as 'PredicateName' 
             from [intersect] I 
                 inner join IntersectType T on T.ID = I.IntersectTypeID
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+                inner join Predicate P on P.ID = T.PredicateID and P.Type = {(int)PredicateType.Grammar}
                 inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = I.SubjectAssetID 
                 inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = I.ObjectAssetID 
                 inner join Asset ObjectAsset on ObjectAsset.ID = I.ObjectAssetID
@@ -932,7 +999,7 @@ namespace d360.extensions.search
                 P.Name as 'PredicateName'
             from [intersect] I
                 inner join IntersectType T on T.ID = I.IntersectTypeID 
-                inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 
+                inner join Predicate P on P.ID = T.PredicateID and P.Type = {(int)PredicateType.Grammar} 
                 inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = I.ObjectAssetID
                 inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = I.SubjectAssetID
                 inner join Asset ObjectAsset on ObjectAsset.ID = I.SubjectAssetID
