@@ -286,7 +286,7 @@ namespace d360.model.DataAccessLayer
 				if (!string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
 				{
 					err.Add(dbExecutionItem.ErrorMessage);
-				};
+				}
 
 				dbExecutionItem.Total += errors.Count;
 				dbExecutionItem.Error += errors.Count;
