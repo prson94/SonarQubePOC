@@ -26,6 +26,7 @@ using d360.featureflags;
 using d360.model;
 using d360.model.workflow;
 using d360.web.Controllers.V2;
+using d360.web.Filters;
 using d360.web.Models;
 
 using Dapper;
@@ -340,7 +341,7 @@ namespace d360.web.Controllers.Services
 			};
 		}
 
-		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUID:Guid}/{resourceUid:Guid}/{clearAssignments:bool}/{sendFormEmails:bool}")]
+		[HttpPost, Route("ReassignWorkflowResourceByUid/{itemStepUID:Guid}/{resourceUid:Guid}/{clearAssignments:bool}/{sendFormEmails:bool}"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> ReassignWorkflowResourceByUid(Guid itemStepUID, Guid resourceUid, bool clearAssignments, bool sendFormEmails)
 		{
 
@@ -363,7 +364,7 @@ namespace d360.web.Controllers.Services
 			return response;
 		}
 
-		[HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
+		[HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> ReassignWorkflowResource(long itemStepId, int resourceId, bool clearAssignments, bool sendFormEmails = true)
 		{
 			try
@@ -388,7 +389,7 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
-		[HttpPost, Route("ReassignWorkflowObjectByUid/{itemUID:Guid}/{workflowTypeUID:Guid}/{objectId:int}/{objectType}/{itemStepUID:Guid}")]
+		[HttpPost, Route("ReassignWorkflowObjectByUid/{itemUID:Guid}/{workflowTypeUID:Guid}/{objectId:int}/{objectType}/{itemStepUID:Guid}"), AjaxValidateAntiForgeryToken]
 		public HttpResponseMessage ReassignWorkflowObjectByUid(Guid itemUID, Guid workflowTypeUID, int objectId, string objectType, Guid itemStepUID, Guid? resourceUID = null)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == workflowTypeUID).FirstOrDefault();
@@ -436,7 +437,7 @@ namespace d360.web.Controllers.Services
 			return ReassignWorkflowObject(item.ID, type.ID, objectId, objectType, itemStep.ID, resourceId);
 		}
 
-		[HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}/{itemStepId:int}")]
+		[HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}/{itemStepId:int}"), AjaxValidateAntiForgeryToken]
 		public HttpResponseMessage ReassignWorkflowObject(long itemId, int workflowId, int objectId, string objectType, long itemStepId, int? resourceId)
 		{
 			try
@@ -510,7 +511,7 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
-		[HttpPost, Route("SubmitWorkflowFormByUid/{itemUID:Guid}/{itemStepUID:Guid}")]
+		[HttpPost, Route("SubmitWorkflowFormByUid/{itemUID:Guid}/{itemStepUID:Guid}"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> SubmitWorkflowFormByUid(Guid itemUID, Guid itemStepUID, List<WorkflowFormModelField> model)
 		{
 			var item = Company.WorkflowItems.Where(x => x.UID == itemUID).FirstOrDefault();
@@ -532,7 +533,7 @@ namespace d360.web.Controllers.Services
 			return response;
 		}
 
-		[HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}")]
+		[HttpPost, Route("SubmitWorkflowForm/{itemId:int}/{itemStepId:int}"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> SubmitWorkflowForm(long itemId, long itemStepId, List<WorkflowFormModelField> model)
 		{
 			try
@@ -742,7 +743,7 @@ namespace d360.web.Controllers.Services
 			}
 		}
 
-		[HttpPost, Route("SubmitWorkflowFormByUid/bulk")]
+		[HttpPost, Route("SubmitWorkflowFormByUid/bulk"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> SubmitBulkWorkflowFormByUid(BulkWorkflowFormModel model)
 		{
 
@@ -758,7 +759,7 @@ namespace d360.web.Controllers.Services
 			return response;
 		}
 
-		[HttpPost, Route("SubmitWorkflowForm/bulk")]
+		[HttpPost, Route("SubmitWorkflowForm/bulk"), AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> SubmitBulkWorkflowForm(BulkWorkflowFormModel model)
 		{
 			//model validation
@@ -1189,7 +1190,7 @@ namespace d360.web.Controllers.Services
 			});
 		}
 
-		[Route("formbyUid/bulk"), HttpPost]
+		[Route("formbyUid/bulk"), HttpPost, AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> GetBulkWorkflowFormByUid(BulkWorkflowFormModel model)
 		{
 			if (model == null || model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1)
@@ -1204,7 +1205,7 @@ namespace d360.web.Controllers.Services
 			return response;
 		}
 
-		[Route("form/bulk"), HttpPost]
+		[Route("form/bulk"), HttpPost, AjaxValidateAntiForgeryToken]
 		public async Task<HttpResponseMessage> GetBulkWorkflowForm(BulkWorkflowFormModel model)
 		{
 			try
