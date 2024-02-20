@@ -314,7 +314,11 @@ export class ReferenceItemsComponent extends BaseComponent implements OnInit, On
 			}
 
 			if (event.globalFilter && event.globalFilter.length > 0) {
-				this.loadParams['_simpleFilter'] = event.globalFilter;
+				let simpleFilter: string = event.globalFilter;
+				if (!simpleFilter.startsWith('*')) {
+					simpleFilter = '*' + simpleFilter;
+				}
+				this.loadParams['_simpleFilter'] = simpleFilter;
 			}
 			else {
 				delete this.loadParams['_simpleFilter'];
