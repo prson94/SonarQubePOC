@@ -212,22 +212,23 @@ namespace d360.model
 																end", new { assetId, t = assetTypeId, r = CurrentResourceID });
 			}
 		}
-		
+
 		private bool HasPermission(string type, int objectId, int assetTypeId, Permission permission)
 		{
-			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 
-																		from asset a 
-																		cross apply UserAssetPermissionsByAssetID(@r, @t, a.id) ua 
-																		where a.Object = @type and a.ObjectID = @id
-																		and ua.PermissionsBitMask & {(int)permission} = {(int)permission})
-																begin
-																	select 1;
-																	end
-																else
-																begin
-																	select 0;
-																end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
+			return Database.Connection.QuerySingle<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+																						begin
+																							select 1;
+																							end
+																						else if exists(select 1 from UserAssetPermissions(@r, @t) ua inner join asset a on(ua.AssetID = a.id and a.Object = @type and a.ObjectID = @id) where ua.PermissionsBitMask & {(int)permission} = {(int)permission})
+																						begin
+																							select 1;
+																							end
+																						else
+																						begin
+																							select 0;
+																						end", new { type, id = objectId, t = assetTypeId, r = CurrentResourceID });
 		}
+
 
 		/// <summary>
 		/// Used to get if a user has read permissions on a given item.  Read is assumed to be present unless denied.

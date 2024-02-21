@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v1.0">
+  <changeSet author="PuneetGupta" id="Function.dbo.UserAssetPermissionsByAssetID-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -81,30 +81,6 @@ RETURN
 			inner join dbo.[Group] G on G.ID = oride.SecurityAssetID and oride.SecurityAsset = 'G'
 			inner join dbo.ResourceGroup RG on RG.GroupID = G.ID and a.AssetTypeID = @AssetTypeID		
 	where	oride.assetID = @AssetID and a.AssetTypeID = @AssetTypeID and RG.ResourceID = @ResourceID
-	union all
-	--The following two select statements mimics AssetType-wide AddAsset permissions where the responsibility relation does not ApplyToType
-	--AssetID is NULL to prevent these virtual rules from blocking read permissions
-	select	2 as PermissionsBitMask,
-			null as AssetID,
-			att.id as AssetTypeID
-	from	[dbo].[responsibilitytyperelationrule] r
-			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
-			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
-	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
-			and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID and att.id = @AssetTypeID
-	union all
-	select	2 as PermissionsBitMask,
-			null as AssetID,
-			att.id as AssetTypeID
-	from	[dbo].[responsibilitytyperelationrule] r
-			inner join [dbo].[ResponsibilityTypeRelation] rel on (r.ResponsibilityTypeID = rel.ResponsibilityTypeID and r.[Object] = rel.[ObjectType] and r.ObjectID = rel.ObjectID)
-			inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
-			inner join [dbo].[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G'
-			inner join [dbo].[ResourceGroup] RG on RG.GroupID = G.ID 	
-			inner join [dbo].[AssetType] att on att.[Object] = rel.ObjectType and att.objectid = rel.objectid
-	where	r.ApplyToType = 0 and rel.PermissionsBitMask & 2 = 2
-			and RG.ResourceID = @ResourceID and att.id = @AssetTypeID
 	union all
 	select	
 		A.PermissionsBitMask,
