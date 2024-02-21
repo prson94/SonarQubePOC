@@ -87,7 +87,12 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Database.Connection.Query<APIExecutionErrorApiModel>(
 				@$"select * from api.ExecutionAssetError EAE where ExecutionID = @executionUid
 				union
-				select * from api.ExecutionRelationshipError ERE where ExecutionID = @executionUid", dbArgs).ToList();
+				select * from api.ExecutionRelationshipError ERE where ExecutionID = @executionUid
+				union
+				select ExecutionId,ItemNumber, ExecutionItemUid, Uid,Message from api.ExecutionAsset ERE where ExecutionID = @executionUid and Success = 0 and Message is not null
+				union
+				select ExecutionId,ItemNumber, ExecutionItemUid, Uid,Message from api.ExecutionRelationship ERE where ExecutionID = @executionUid and Success = 0 and Message is not null"
+				, dbArgs).ToList();
 		}
 
 		public async Task<APIExecutionAPIModelResult> GetExecutions(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -282,10 +287,10 @@ namespace d360.model.DataAccessLayer
 				{
 					err.Add(dbExecutionItem.ErrorMessage);
 				}
-				err.AddRange(errors.Select(x => x.Message));
+
 				dbExecutionItem.Total += errors.Count;
 				dbExecutionItem.Error += errors.Count;
-				dbExecutionItem.ErrorMessage = string.Join("; ", err);
+				dbExecutionItem.ErrorMessage = string.Join("; ", errors.Select(x => x.Message));
 			}
 
 
