@@ -36,7 +36,7 @@ END
   </sql>
  </changeSet>
 
- <changeSet author="TDuric" id="Indices.dbo.Field-v1.9" runInTransaction="false">
+ <changeSet author="TDuric" id="Indices.dbo.Field-v2" runInTransaction="false">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 	IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
