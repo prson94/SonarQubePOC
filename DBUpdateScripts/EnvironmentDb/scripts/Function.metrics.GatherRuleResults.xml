@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.GatherRuleResults-v1.2">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GatherRuleResults-v1.3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.GatherRuleResults 
@@ -76,7 +76,7 @@ BEGIN
 				o.[Path], --o.EffectiveDate, o.PassCount, o.FailCount,
 				o.PassFraction
 		from	(
-				select	row_number() over(partition by re.OwningAssetUid, re.EvaluatedAssetUid  order by re.EffectiveDate desc, re.RunDate desc) as RowNum,
+				select	row_number() over(partition by re.OwningAssetUid, re.EvaluatedAssetUid  order by re.EffectiveDate desc, re.RunDate desc, re.updatedon desc) as RowNum,
 						r.[Path],
 						re.*
 				from	@tbl r
