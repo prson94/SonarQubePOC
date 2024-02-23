@@ -725,18 +725,25 @@ select count(1) from AuditView {whereSql};
 
 				document.SetCellValue(rowIndex, 3, row.action);
 				document.SetCellValue(rowIndex, 4, row.field ?? "");
-				document.SetCellValue(rowIndex, 5, row.newValue ?? "");
-				document.SetCellValue(rowIndex, 6, row.previousValue ?? "");
-				document.SetCellValue(rowIndex, 7, row.actionObject);
-				document.SetCellValue(rowIndex, 8, row.actionObjectTypeName);
-				document.SetCellValue(rowIndex, 9, row.actionObjectName);
-				document.SetCellValue(rowIndex, 10, row.actionDescription);
+				document.SetCellValue(rowIndex, 4, SafeExcelValue(row.field));
+				document.SetCellValue(rowIndex, 5, SafeExcelValue(row.newValue));
+				document.SetCellValue(rowIndex, 6, SafeExcelValue(row.previousValue));
+				document.SetCellValue(rowIndex, 7, SafeExcelValue(row.actionObject));
+				document.SetCellValue(rowIndex, 8, SafeExcelValue(row.actionObjectTypeName));
+				document.SetCellValue(rowIndex, 9, SafeExcelValue(row.actionObjectName));
+				document.SetCellValue(rowIndex, 10, SafeExcelValue(row.actionDescription));
 				document.SetCellValue(rowIndex, 11, row.version ?? "");
 			}
 
 			#endregion
 
 			return document;
+		}
+
+		private dynamic SafeExcelValue(dynamic value)
+		{
+			string stringValue = Convert.ToString(value);
+			return stringValue.GetSafeXLSColumnValue();
 		}
 
 		private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)

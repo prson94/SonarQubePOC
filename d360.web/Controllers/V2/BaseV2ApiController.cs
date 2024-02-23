@@ -471,7 +471,7 @@ namespace d360.web.Controllers.V2
 			{
 				SetColumnStyles(document, index, styles);
 
-				document.SetCellValue(1, index++, field.FriendlyName);
+				document.SetCellValue(1, index++, field.FriendlyName.GetSafeXLSColumnValue());
 			}
 
 			#endregion

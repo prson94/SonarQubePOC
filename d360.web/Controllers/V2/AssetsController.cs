@@ -2421,7 +2421,7 @@ namespace d360.web.Controllers.V2
 							}
 						}
 
-						document.SetCellValue(1, colIndex, Columns[i].text);
+						document.SetCellValue(1, colIndex, Columns[i].text.GetSafeXLSColumnValue());
 
 						int rowIndex = 2;
 

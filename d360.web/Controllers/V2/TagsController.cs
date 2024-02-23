@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.model.DataAccessLayer;
@@ -578,7 +578,7 @@ namespace d360.web.Controllers.V2
                 index = 1;
                 rowNumber++;
                 var tagDetails = row.Tags.SingleOrDefault(t => t.uid == uid);
-                document.SetCellValue(rowNumber, index++, row.DisplayValue);
+                document.SetCellValue(rowNumber, index++, row.DisplayValue.GetSafeXLSColumnValue());
                 document.SetCellValue(rowNumber, index++, $"{row.AssetType}");
                 document.SetCellValue(rowNumber, index++, $"{string.Join("|", row.Tags.Select(x => x.Value))}");
                 document.SetCellValue(rowNumber, index++, $"{tagDetails.CreatedByFirstName} {tagDetails.CreatedByLastName}");
