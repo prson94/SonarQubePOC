@@ -127,7 +127,16 @@ namespace d360.core
 
 		public static string GetSafeXLSColumnValue(this string value)
 		{
-			return (value ?? "").RemoveInvalidXmlChars().UpdateValueToMaxColumnSize();
+			return (value ?? "").RemoveInvalidXmlChars().EscapeXLSFormula().UpdateValueToMaxColumnSize();
+		}
+
+		private static string EscapeXLSFormula(this string value)
+		{
+			if (value.StartsWith("="))
+			{
+				return "'" + value;
+			}
+			return value;
 		}
 
 		private static string UpdateValueToMaxColumnSize(this string rowFieldValue)

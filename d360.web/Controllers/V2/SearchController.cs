@@ -1015,7 +1015,7 @@ namespace d360.web.Controllers.V2
 
 			fieldTypes?.ToList().ForEach(ft =>
 			{
-				document.SetCellValue(1, index++, ft.FriendlyName);
+				document.SetCellValue(1, index++, ft.FriendlyName.GetSafeXLSColumnValue());
 			});
 
 			document.SetCellValue(1, index++, "Asset UID");
@@ -1026,9 +1026,9 @@ namespace d360.web.Controllers.V2
 			{
 				rownum++;
 				index = 1;
-				document.SetCellValue(rownum, index++, res.Group);
-				document.SetCellValue(rownum, index++, res.Type);
-				document.SetCellValue(rownum, index++, res.DisplayName);
+				document.SetCellValue(rownum, index++, res.Group.GetSafeXLSColumnValue());
+				document.SetCellValue(rownum, index++, res.Type.GetSafeXLSColumnValue());
+				document.SetCellValue(rownum, index++, res.DisplayName.GetSafeXLSColumnValue());
 				string status = null;
 
 				try
@@ -1045,12 +1045,12 @@ namespace d360.web.Controllers.V2
 				document.SetCellValue(rownum, index++, res.Scores.Exists(s => s.ScoreType == "Governance") ? res.Scores.Where(s => s.ScoreType == "Governance").Select(s => s.Value).FirstOrDefault().ToString() : null);
 				document.SetCellValue(rownum, index++, res.AssetPath == null ? "" : string.Join(" > ", res.AssetPath.Select(p => string.Join(" / ", p.Key))));
 				document.SetCellValue(rownum, index++, res.AssetPath == null ? "" : string.Join(" > ", res.AssetPath.Select(p => p.AssetType)));
-				document.SetCellValue(rownum, index++, res.Tags == null ? "" : string.Join("|", res.Tags?.Select(t => t.Value)));
+				document.SetCellValue(rownum, index++, res.Tags == null ? "" : string.Join("|", res.Tags?.Select(t => t.Value)).GetSafeXLSColumnValue());
 
 				fieldTypes?.ToList().ForEach(ft =>
 				{
 					var field = res.Fields.Where(f => f.Name == ft.Name).FirstOrDefault();
-					document.SetCellValue(rownum, index++, field?.Value);
+					document.SetCellValue(rownum, index++, field?.Value.GetSafeXLSColumnValue());
 				});
 
 				document.SetCellValue(rownum, index++, res.Uid.ToString());

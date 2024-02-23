@@ -489,7 +489,7 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var field in fields)
 			{
-				document.SetCellValue(1, index++, field.FriendlyName);
+				document.SetCellValue(1, index++, field.FriendlyName.GetSafeXLSColumnValue());
 			}
 
 			int rowNumber = 1;
