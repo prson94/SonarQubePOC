@@ -2074,7 +2074,47 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 										WHEN EAR.PassCount is not null and EAR.FailCount is null and (9223372036854775807 - AR.FailCount - EAR.PassCount)<0 THEN 1
 										WHEN EAR.PassCount is not null and EAR.FailCount is not null and (9223372036854775807 - EAR.Passcount - EAR.FailCount)<0 THEN 1
 										ELSE 0
-									END)=1";
+									END)=1
+
+								-- check Duplicate Record
+									drop table if exists #tempduplicate;
+
+									select OwningAssetUid,
+											EffectiveDate,
+											EvaluatedAssetUid
+									into #tempduplicate
+									from api.[ExecutionAssetResult] EAR
+									where success is null
+									group by OwningAssetUid,
+											EffectiveDate,
+											EvaluatedAssetUid
+									having count(1) > 1;
+
+									create clustered index cx_tempduplicate on #tempduplicate(OwningAssetUid,EvaluatedAssetUid,EffectiveDate)
+
+									update EAR
+									set		Success = 0,
+											[Message] = coalesce([Message] + '; ', '') + 'Duplicate data quality result for an asset/Rule in payload.'
+									from api.[ExecutionAssetResult] EAR
+									inner join #tempduplicate AR on AR.OwningAssetUid = EAR.OwningAssetUid
+													and AR.EffectiveDate = EAR.EffectiveDate
+													and AR.EvaluatedAssetUid = EAR.EvaluatedAssetUid
+									where EAR.ExecutionID = @ExecutionID
+										and EAR.success is null;
+
+									update EAR
+									set		Success = 0,
+											[Message] = coalesce([Message] + '; ', '') + 'Duplicate data quality result for an asset/Rule already in records.'
+									from api.[ExecutionAssetResult] EAR
+										inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
+										inner join AssetResult AR on AR.OwningAssetUid = EAR.OwningAssetUid
+													and AR.EffectiveDate = EAR.EffectiveDate
+													and AR.EvaluatedAssetUid = EAR.EvaluatedAssetUid
+									where 
+										AE.Method = 'POST'
+										and EAR.ExecutionID = @ExecutionID
+										and success is null;
+";
 
 					Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
 
