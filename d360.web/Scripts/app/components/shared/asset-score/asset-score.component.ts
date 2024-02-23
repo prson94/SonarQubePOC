@@ -144,9 +144,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 arr.forEach((metric) => {
                     if (metric['Uid'] === this.selectedPoint.Uid) {
                         this.selectedMetric = null;
-                        var effDate = new Date(metric.EffectiveDate);
+                        const effDate = this.dateRemoveTimeZone(new Date(metric.EffectiveDate));
                         var selectedDate = new Date(this.scoreDate);
-                        if (effDate < selectedDate) {
+                        if (effDate <= selectedDate) {
                             this.selectedMetric = metric;
                             this.selectedMetric.AdjustedWeight = this.selectedPoint.DisplayMaxWeight;
                         }
@@ -155,7 +155,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             this.metricService.getMetricsVersionHistory(metric['Uid']).subscribe((res) => {
                                 res.forEach((item) => {
                                     if (!isMetricSet) {
-                                        var date = new Date(item.EffectiveDate);
+										const date = this.dateRemoveTimeZone(new Date(item.EffectiveDate));
                                         if (selectedDate > date) {
                                             this.selectedMetric = item;
                                             this.selectedMetric['Uid'] = this.selectedMetric['MeasureUid'];
@@ -341,6 +341,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     round(value: number) {
         return Math.round(value * 1000) / 1000;
+    }
+
+    dateRemoveTimeZone(datevalue: Date) {
+		const tzoffset = datevalue.getTimezoneOffset() * 60000;
+		const effDate = new Date(datevalue.valueOf() + tzoffset);
+        return effDate;
     }
 
     private loadPoints(isTabChange: boolean = false) {
