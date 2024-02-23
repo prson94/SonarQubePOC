@@ -24,6 +24,7 @@ import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../../services/settings.service';
 import * as DOMPurify from 'dompurify';
+import { escape } from "lodash-es";
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {
@@ -145,13 +146,15 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
             {this.searchSub.unsubscribe();}
     }
 
-    private highlight(item, input) {
-        if (!input) {
-            return item;
-        }
-        return item.replace(new RegExp(input, "gi"), (match) => {
+	private highlight(item, input) {
+		const inputEscaped = escape(input);
+		const itemEscaped = escape(item);
+		if (!input) {
+			return itemEscaped;
+		}
+		return itemEscaped.replace(new RegExp(inputEscaped, "gi"), (match) => {
             return '<span style="background: #F5FF57;">' + match + '</span>';
-        });
+		});
     }
 
     resetValue() {

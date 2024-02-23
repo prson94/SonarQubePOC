@@ -544,14 +544,16 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         event.stopPropagation();
     }
 
-    public highlight(item, input) {
-        if (!input) {
-            return item;
-        }
-        return item.replace(new RegExp(input, "gi"), (match) => {
-            return '<span style="background: #F5FF57;">' + match + '</span>';
-        });
-    }
+	public highlight(item, input) {
+		const inputEscaped = escape(input);
+		const itemEscaped = escape(item);
+		if (!input) {
+			return itemEscaped;
+		}
+		return itemEscaped.replace(new RegExp(inputEscaped, "gi"), (match) => {
+			return '<span style="background: #F5FF57;">' + match + '</span>';
+		});
+	}
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
