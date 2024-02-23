@@ -720,9 +720,6 @@ drop table #TempDataProcess
 			var evidenceModel = new DataQualityScoreItemEvidenceViewModel { };
 
 			var dbArgs = new DynamicParameters();
-			Guid? OwningAssetUid = null;
-			Guid? EvaluatedAssetUid = null;
-			int? MaxPosition = null;
 
 			List<string> whereStatements = new List<string>();
 			var queryFieldOptions = new List<DefaultFilter>
@@ -766,7 +763,7 @@ drop table #TempDataProcess
 			//Add the default query items
 			dbArgs.Add("@scoreItemUid", scoreItemUid);
 			dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
-			whereStatements.Insert(0, "I.Uid = @scoreItemUid");
+			whereStatements.Insert(0, "E.scoreItemUid = @scoreItemUid");
 
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "OAN.DisplayPath");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
@@ -779,69 +776,115 @@ drop table #TempDataProcess
 			evidenceModel.pageNum = pageNum;
 			evidenceModel.pageSize = pageSize;
 
+			var temptable = $@"
+declare @RollupPathUid uniqueidentifier,
+@IntersectTypeID int,
+@EvaluatedAssetTypeID int;
 
-			#region "Getting OwningAssetUid and EvaluatedAssetUid"
-			string OEQuery = $@"
-declare @AssetTypeUid uniqueidentifier
+drop table if exists #tempEvidenceData;
+
+create table #tempEvidenceData (ID int identity(1,1),
+								scoreItemUid uniqueidentifier,
+								ResultResultUid Uniqueidentifier,OwningAssetUid Uniqueidentifier,
+								EvaluatedAssetUid Uniqueidentifier, MaxPosition int,
+								[Value] nvarchar(max),
+								AssetVersionUid Uniqueidentifier);
+
+create clustered index cx_tempEvidenceData on #tempEvidenceData(ID);
+create index ix_OwningAssetUid on #tempEvidenceData(OwningAssetUid);
+create index ix_EvaluatedAssetUid on #tempEvidenceData(EvaluatedAssetUid);
 
 
-select @AssetTypeUid =  max(al.AssetTypeUid)
-from metrics.ScoreItem I
-inner join metrics.AssetVersion v on I.AssetVersionUid = v.Uid
-inner join metrics.Asset a on v.AssetUid = a.Uid
-inner join metrics.Allocation al on a.AllocationUid = al.Uid
-where i.Uid = cast(@scoreItemUid as uniqueidentifier);
+drop table if exists #temprolluppath
 
-With Rs_Data as (
-select e.uid ,e.Position
+select distinct I.Uid scoreItemUid, e.uid RollupPathUid ,
+e.Position,R.value ResultResultUid,F.[Value],I.AssetVersionUid
+into #temprolluppath
 from metrics.ScoreItem I
 cross apply openjson(I.Evidence) F
 outer apply openjson(F.Value, N'$.RollupPath') With (Position int,
 													 Uid uniqueidentifier) e
+outer apply openjson(F.Value, N'$.ResultResultUids') r
 where I.Uid = cast(@scoreItemUid as uniqueidentifier)
-)
-select max(case when att.Class = {(int)AssetTypeClass.Rule} then u.uid else null end) OwningAssetUid,
-max(case when att.uid = @AssetTypeUid then u.uid else null end) EvaluatedAssetUid,
-max(Position) MaxPosition
-from Rs_Data u
-inner join asset a on a.uid = u.Uid 
+and JSON_VALUE(I.Evidence, N'$.IsError') is null;
+
+
+insert into #tempEvidenceData(scoreItemUid,ResultResultUid,[Value],AssetVersionUid)
+select distinct scoreItemUid,ResultResultUid,[Value],AssetVersionUid
+from #temprolluppath;
+
+update t
+set OwningAssetUid = u.RollupPathUid
+from #tempEvidenceData t
+inner join #temprolluppath u on t.ResultResultUid = u.ResultResultUid
+inner join asset a on a.uid = u.RollupPathUid 
 inner join AssetType att on att.ID = a.AssetTypeID
-							";
-			var OEObj = CompanyContext.Query<dynamic>(OEQuery, new {scoreItemUid}, ApiTimeout).FirstOrDefault();
+where att.Class = {(int)AssetTypeClass.Rule} 
 
-			if (OEObj != null)
-			{
-				OwningAssetUid = OEObj?.OwningAssetUid;
-				EvaluatedAssetUid = OEObj?.EvaluatedAssetUid;
-				MaxPosition = (OEObj?.MaxPosition == null ? 0 : OEObj?.MaxPosition);
-				dbArgs.Add("@OwningAssetUid", OwningAssetUid);
-				dbArgs.Add("@EvaluatedAssetUid", EvaluatedAssetUid);
-				dbArgs.Add("@MaxPosition", MaxPosition);
-			}
+update t
+set MaxPosition = (select max(Position) 
+				from #temprolluppath u 
+				where t.ResultResultUid = u.ResultResultUid)
+from #tempEvidenceData t;
 
-			#endregion
+
+select   @RollupPathUid = avrp.RollupPathUid 
+from metrics.ScoreItem I
+inner join [metrics].[AssetVersionRollupPath] avrp 
+on i.AssetVersionUid = avrp.AssetVersionUid
+where i.uid = cast(@scoreItemUid as uniqueidentifier);
+
+select top 1@IntersectTypeID =  pl.IntersectTypeID 
+from	[metrics].RollupPath p
+		inner join [metrics].[RollupPathLink] pl on pl.RollupPathUid = p.Uid and p.Uid = @RollupPathUid
+		and p.ScoreType = 2 and p.State = 1 and p.Uid = @RollupPathUid
+		inner join dbo.IntersectType it on it.ID = pl.IntersectTypeID
+		inner join dbo.[Predicate] itp on itp.ID = it.PredicateID
+order by pl.StartPosition desc;
+
+select @EvaluatedAssetTypeID = case when SubjectClass = {(int)AssetTypeClass.Rule}  then ObjectAssetTypeID 
+								else SubjectAssetTypeID end 
+from IntersectType where id =  @IntersectTypeID;
+
+
+if (@EvaluatedAssetTypeID is not null)
+begin
+	update t
+	set t.EvaluatedAssetUid = u.RollupPathUid 
+	from #tempEvidenceData t
+	inner join #temprolluppath u on t.ResultResultUid = u.ResultResultUid
+	inner join asset a on a.uid = u.RollupPathUid and a.AssetTypeID = @EvaluatedAssetTypeID
+end
+
+update t
+set t.EvaluatedAssetUid = ar.EvaluatedAssetUid
+from #tempEvidenceData t
+inner join #temprolluppath u on t.ResultResultUid = u.ResultResultUid
+inner join AssetResult ar on u.RollupPathUid = ar.EvaluatedAssetUid and ar.OwningAssetUid = t.OwningAssetUid
+where t.EvaluatedAssetUid is null;
+";
+
 
 			var tables = $@"
-							from	metrics.ScoreItem I
-									cross apply openjson(I.Evidence) E
-									inner join Asset OA on OA.Uid = {(OwningAssetUid == null ? "cast(JSON_VALUE(E.value, N'$.RollupPath[0].Uid') as uniqueidentifier)" : "cast(@OwningAssetUid as uniqueidentifier)")}
+							from	#tempEvidenceData E
+									inner join Asset OA on OA.Uid = E.OwningAssetUid
 									inner join AssetPath OAN on OAN.ID = OA.ID
 									cross apply GetAssetTypeTextPathById(OA.AssetTypeID, ' > ') OANTP
 
-									inner join Asset EA on EA.Uid = {(EvaluatedAssetUid == null ? "cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(@MaxPositionInt-1 as varchar)+'].Uid') as uniqueidentifier)" : "cast(@EvaluatedAssetUid as uniqueidentifier)")}
+									inner join Asset EA on EA.Uid = E.EvaluatedAssetUid
 									inner join AssetPath EAN on EAN.ID = EA.ID 
 									cross apply GetAssetTypeTextPathById(EA.AssetTypeID, ' > ') EANTP 
 
-									outer apply openjson(E.value, '$.ResultResultUids') R
-									left join AssetResult AR on AR.Uid = R.value
-							where   {string.Join(" and ", whereStatements)} {simpleWhere} and JSON_VALUE(I.Evidence, N'$.IsError') is null ";
+									left join AssetResult AR on AR.Uid = E.ResultResultUid
+							where   {string.Join(" and ", whereStatements)} {simpleWhere}";
 
 			var sql = $@"
+						{temptable}
+
 						declare @exists bit = 0,
 								@visible bit = 0,
 								@isDq bit = 0,
-								@total int = 0,
-								@MaxPositionInt as int = cast(@MaxPosition as int);
+								@total int = 0;
 
 						select	@exists = cast(iif(count(1) > 0, 1, 0) as bit)
 						from	metrics.ScoreItem I
@@ -876,18 +919,18 @@ inner join AssetType att on att.ID = a.AssetTypeID
 												TP.Path as AssetTypePath,
 												case ERP.PathPosition
 													when 1 then null 
-													when @MaxPositionInt then PR.Inverse
+													when E.MaxPosition then PR.Inverse
 													else PR.Name 
 												end as [Predicate],
 												ERP.PathPosition as [Position]
-										from	openjson(E.value, '$.RollupPath') with (
+										from	openjson(E.[value], '$.RollupPath') with (
 													[PathAssetUid] uniqueidentifier '$.Uid',
 													[PathPosition] int '$.Position'
 												) ERP
 												inner join Asset A on A.Uid = ERP.PathAssetUid 
 												inner join AssetPath P on P.ID = A.ID 
 												cross apply GetAssetTypeTextPathById(A.AssetTypeID, ' > ') TP
-												inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+												inner join metrics.AssetVersion V on V.Uid = E.AssetVersionUid
 												inner join metrics.AssetVersionRollupPath VR on VR.AssetVersionUid = V.Uid
 												inner join metrics.RollupPathLink PL on PL.RollupPathUid = VR.RollupPathUid and ( (ERP.PathPosition = 1 and ERP.PathPosition = PL.StartPosition) or (ERP.PathPosition > 1 and ERP.PathPosition = PL.EndPosition) )
 												inner join IntersectType IT on IT.ID = PL.IntersectTypeID
@@ -911,6 +954,7 @@ inner join AssetType att on att.ID = a.AssetTypeID
 									AR.PassCount,
 									AR.FailCount
 							 {tables} {orderBySql} {offset} 
+							 option (recompile);
 						end";
 
 			// I've setup 120 seconds timeout as a hot fix for GOV-18554. 
