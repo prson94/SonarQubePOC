@@ -94,7 +94,8 @@ end
 	</rollback>
   </changeSet>
 
-  <changeSet author="bquinlivan" id="Data.Initial.SiteNav-v3">
+  <changeSet author="bquinlivan" id="Data.Initial.SiteNav-v4">
+  <comment>GOV-31341</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -103,10 +104,6 @@ end
 if not exists (select 1 from SiteNav where Name = '#Data Quality')
 begin
 	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Data Quality',8,'fa-check-square','Rules')
-end
-if not exists (select 1 from SiteNav where Name = '#Monitor')
-begin
-	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Monitor',5,'fa-usb','Workflow')
 end
 if not exists (select 1 from SiteNav where Name = '#Business')
 begin

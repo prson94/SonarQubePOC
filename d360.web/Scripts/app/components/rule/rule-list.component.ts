@@ -25,8 +25,6 @@ import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.compon
 import { SidePanelService } from '../../services/side-panel.service';
 import { IOutputData } from 'angular-split';
 import { UsageAction } from '../../models/web-analytics-activity.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../services/feature-flags.enum';
 
 @Component({
 	selector: 'd3s-rule-list',
@@ -77,8 +75,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 		secondaryNavService: SecondaryNavService,
 		protected settingsService: CompanySettingsService,
 		webAnalyticsService: WebAnalyticsService,
-		private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: LaunchDarklyService
+		private linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
 		this.webAnalyticsService = webAnalyticsService;
@@ -132,14 +129,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.ruleType.HasDashboards });
 
 						if (this.assetTypeApiModel.HasV2Workflows) {
-							if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
-								this.secondaryNavService.showItem(
-									new SecondaryNavItem($localize`Assignments`,
-										'assetTypeAssignments',
-										['fa-usb'],
-										`/assets/${this.baseAssetTypeUid}/assignments`)
-								);
-							}
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Assignments`,
+									'assetTypeAssignments',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/assignments`)
+							);							
 						}
 
 					});

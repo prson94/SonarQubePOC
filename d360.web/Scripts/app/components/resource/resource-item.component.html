@@ -20,15 +20,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    <ng-container *ngIf="!assignmentFeatureFlag">
-        <div class="col s12 m6 l6">
-            <div>
-                <d3s-assignments *ngIf="!isMe" [resourceId]="resourceId" (showItemDetail)="showAssignment($event)"></d3s-assignments>
-                <d3s-assignments *ngIf="isMe" (showItemDetail)="showAssignment($event)"></d3s-assignments>
-            </div>
-        </div>
-    </ng-container>
+    </div>    
 
     <div *ngSwitchCase="PageMode.EditingInfo">
         <div class="col s12">
@@ -61,7 +53,7 @@
         </div>
     </div>
 </div>
-<ng-container *ngIf="assignmentFeatureFlag">
+<ng-container>
     <div class="row" *ngIf="!isLoading">
         <div class="col s12 m12 l">
             <div>

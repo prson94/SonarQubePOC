@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
-import { FeatureFlagService } from '../../../guards/feature-flag.service';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -39,14 +38,11 @@ export class AssignmentInformationComponent {
 	isWorkflowStepDetailLoading: boolean = false;
 	workflowStepDetail: WorkflowStepDetail;
 
-	protected canActivateAssignmentDetails: boolean = false;
-
 	private assignmentItemStep: AssignmentItemStep;
 	private _workflowItemUid: string;
 
 	constructor(private workflowService: WorkflowService,
-		private cdRef: ChangeDetectorRef, featureFlagService: FeatureFlagService) {
-		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
+		private cdRef: ChangeDetectorRef) {		
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy
 import { ActivatedRoute, Router } from '@angular/router';
 import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
-import { FeatureFlagService } from '../../../guards/feature-flag.service';
 import { SortOrder } from '../../../models/enums.model';
 import { AssignmentItemStep, AssignmentSelection, WorkflowStateForUser, WorkflowUserGroupedAssignment } from '../../../models/workflow.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -35,7 +34,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 	sortField: string = "workflowName";
 	sortOrder: SortOrder = SortOrder.Descending;
 	storageKey = 'userAssignmentGrid' + this.settingsService.CurrentResourceID;
-	canActivateAssignmentDetails: boolean = false;
 
 	@ViewChild('completeAssignmentComponent') completeAssignmentComponent: CompleteAssignmentComponent;
 	@ViewChild('multiAssignComponent') multiAssignComponent: AssignmentsMultiPickerComponent;
@@ -51,7 +49,6 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 				private workflowService: WorkflowService,
 				private route: ActivatedRoute,
 				private changeDetectorRef: ChangeDetectorRef,
-				private featureFlagService: FeatureFlagService,
 				private router: Router) {
 		super(settingsService);
 		this.urlWorkflowTypeUid = this.urlWorkflowStepUid = '';
@@ -83,9 +80,7 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		if (this.userUid.toLowerCase() === this.settingsService.CurrentResourceUid.toLowerCase()) {
 			this.isMe = true;
 		}
-		this.loadUserAssignments();
-		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
-	
+		this.loadUserAssignments();			
 	}
 
 	loadWorkflowAssignmentItems(event: LazyLoadEvent): void {

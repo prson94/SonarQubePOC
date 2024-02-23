@@ -1066,4 +1066,24 @@ end
 	</changeSet>
 
 
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-31341">
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		if exists (select 1 from SiteNav where Name = '#Monitor')
+		BEGIN
+			declare @monitorID bigint
+			select @monitorID = ID from sitenav where Name = '#Monitor'
+			delete from siteNavPermission where SiteNavID = @monitorID
+			delete from SiteNav where ID = @monitorID
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+ 
 </databaseChangeLog>
