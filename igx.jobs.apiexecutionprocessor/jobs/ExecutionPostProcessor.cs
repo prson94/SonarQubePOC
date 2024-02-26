@@ -326,6 +326,36 @@ where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)
 		{
 			string commandText = "";
 
+			//Temp table for all updated fields
+			commandText += $@"
+	select	
+			coalesce(f.FieldTypeID, 0) as FieldTypeId,
+			f.FieldName,
+			coalesce(fv.FormattedValue, f.FieldValue) as FieldValue,
+			pv.[Value] as PreviousValue,
+			p.Object,
+			P.ObjectId
+	into #updatedFieldsMap
+	from	api.ExecutionLog a
+			cross apply openjson(a.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
+			inner join api.Execution e on e.Id = a.ExecutionId and e.Id = @Id and a.SubTask is null
+			inner join api.ExecutionField f on f.ExecutionID = e.ExecutionID and f.ItemNumber = p.ItemNumber and f.FieldTypeID not in (select ID from FieldType where ID = f.FieldTypeID and [Type] in ('Relationship'))
+			outer apply (
+						select	utility.GetFormattedFieldLookupValueWithMultiple([Type], LookupDisplayFormat, LookupObjectType, LookupObjectID, f.LookupValue, AllowMultipleValues) as FormattedValue
+						from	FieldType
+						where	ID = f.FieldTypeID
+								and [Type] = 'Lookup'
+								and ISNUMERIC(f.LookupValue) = 1
+						) fv
+			outer apply (select top 1
+		ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) ) ORDER BY i_p.[AuditId] DESC) as RowNum,
+		[Value]
+from	reporting.Global_FieldAudit i_p
+		inner join reporting.Global_Audit i_a on i_a.ID = i_p.AuditID and i_a.Object = p.Object and i_a.ObjectID = p.ObjectId and ( (i_p.FieldTypeID = f.FieldTypeID and f.FieldTypeID <> 0) or (i_p.FieldName = f.FieldName and f.FieldTypeID = 0))
+		order by RowNum asc) pv
+	where	((coalesce(pv.Value,'') = '' and  coalesce(fv.FormattedValue, f.FieldValue,'') != '') 
+			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+
 			// Record history for assets we are creating/updating.
 			commandText += $@"
 declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
@@ -346,31 +376,23 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	from	api.ExecutionLog l
 			inner join api.Execution e on e.Id = l.ExecutionId and e.Id = @Id and l.SubTask is null
 			cross apply openjson(l.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p 
-			{maxVersionSql("p.Object", "p.ObjectId")};";
+			{maxVersionSql("p.Object", "p.ObjectId")}
+			where exists(select top 1 1 from #updatedFieldsMap where Object = p.Object and ObjectId = p.ObjectId);";
 
 			// Record field history using the audit Ids garnered above.
 			commandText += $@"
 {INSERT_FIELD_SQL}
-	select	tt.ID as AuditID,
-			coalesce(f.FieldTypeID, 0),
-			f.FieldName,
-			coalesce(fv.FormattedValue, f.FieldValue),
-			pv.[Value] as PreviousValue
+	select distinct	tt.ID as AuditID,
+			fields.FieldTypeId,
+			fields.FieldName,
+			fields.FieldValue,
+			fields.PreviousValue
 	from	api.ExecutionLog a
 			cross apply openjson(a.Payload) with (ItemNumber int, AssetId bigint, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
 			inner join @tbl tt on tt.Object = p.Object and tt.ObjectID = p.ObjectID
 			inner join api.Execution e on e.Id = a.ExecutionId and e.Id = @Id and a.SubTask is null
 			inner join api.ExecutionField f on f.ExecutionID = e.ExecutionID and f.ItemNumber = p.ItemNumber and f.FieldTypeID not in (select ID from FieldType where ID = f.FieldTypeID and [Type] in ('Relationship'))
-			outer apply (
-						select	utility.GetFormattedFieldLookupValueWithMultiple([Type], LookupDisplayFormat, LookupObjectType, LookupObjectID, f.LookupValue, AllowMultipleValues) as FormattedValue
-						from	FieldType
-						where	ID = f.FieldTypeID
-								and [Type] = 'Lookup'
-								and ISNUMERIC(f.LookupValue) = 1
-						) fv
-			outer apply {previousValueCrossApplySql("p.Object", "p.ObjectId", "f.FieldName")} pv
-	where	((coalesce(pv.Value,'') = '' and  coalesce(fv.FormattedValue, f.FieldValue,'') != '') 
-			or (coalesce(fv.FormattedValue, f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+            inner join #updatedFieldsMap fields on fields.Object = p.Object and fields.ObjectId = p.ObjectId and f.FieldTypeID = fields.FieldTypeId";
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
@@ -522,6 +544,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 
 			// Add the field history records for the assets whose lookup fields we updated.
 			commandText += $@"
+			drop table if exists #updatedFieldsMap;
 			drop table if exists #relyingFieldTypes;
 			drop table if exists #formattedValues;
 			drop table if exists #tempField;
