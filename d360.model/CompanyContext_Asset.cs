@@ -2687,15 +2687,18 @@ where	T.ExecutionID = @ExecutionID
 						inner join AssetType at on at.ID = a.AssetTypeID
 						where a.ID = @assetId
 
-						DECLARE @inserted TABLE (id INT);
-						insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
-						output inserted.id into @inserted
-						values (@object, @objectId,@displayValue, @resourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated.', @nextVersion)
+						if @value <> previousValue
+						begin
+							DECLARE @inserted TABLE (id INT);
+							insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
+							output inserted.id into @inserted
+							values (@object, @objectId,@displayValue, @resourceID, GETUTCDATE(),'Updated', @object, @objectId, @assetTypeName, @displayValue, 'This asset has been updated by workflow.', @nextVersion)
 
 
-						declare @auditId int = (select top 1 id from @inserted)
-						insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, Value, PreviousValue)
-						values (@auditId, @fieldTypeId, @fieldTypeName, @value, @previousValue)"
+							declare @auditId int = (select top 1 id from @inserted)
+							insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, Value, PreviousValue)
+							values (@auditId, @fieldTypeId, @fieldTypeName, @value, @previousValue)
+						end"
 						, new
 						{
 							@object = asset.Object,
