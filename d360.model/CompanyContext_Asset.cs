@@ -2687,7 +2687,7 @@ where	T.ExecutionID = @ExecutionID
 						inner join AssetType at on at.ID = a.AssetTypeID
 						where a.ID = @assetId
 
-						if @value <> previousValue
+						if @value <> @previousValue
 						begin
 							DECLARE @inserted TABLE (id INT);
 							insert into reporting.Global_Audit(Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, Version)
