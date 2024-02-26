@@ -196,7 +196,7 @@ namespace igx.jobs.apiexecutionprocessor
 														var notification = JsonConvert.DeserializeObject<CommentNotification>(q.Custom);
 														if (notification != null)
 														{
-															var displayValue = outerCompanyConnection.Query<string>("Select DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
+															var encodedDisplayValue = outerCompanyConnection.Query<string>("Select (SELECT DisplayValue AS [text()] FOR XML PATH('')) as DisplayValue from AssetDetail A where A.ID = @AssetID", new { AssetID = notification.CommentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
 
 															var rootUrl = $"https://{company.UrlPrefix}.data3sixty.com";
 
@@ -258,7 +258,7 @@ namespace igx.jobs.apiexecutionprocessor
 																								{string.Format(Notifications.TaggedCommentMailHeader, notification.CommenterName)}
 																							</div>
 																							<div class='content'>
-																								{string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, displayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
+																								{string.Format(Notifications.TaggedCommentMailBody, notification.CommenterName, rootUrl, notification.AssetUrl, encodedDisplayValue, comment.CommentDate.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy"))}                                                                                            
 																							<br />
 																							<br />
 																							<a href='{rootUrl}{notification.CommentUrl}' class='button'>&nbsp;&nbsp;{Notifications.TaggedCommentMailCommentLink}&nbsp;&nbsp;</a>
