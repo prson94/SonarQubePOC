@@ -1209,7 +1209,7 @@ namespace d360.model
 							FormattedValue = @formattedValue,
 							UpdatedBy = @updatedBy,
 							UpdatedOn = GETUTCDATE()
-						where ID = @fieldId
+						where ID = @fieldId and value <> @value
 					end
 					else
 					begin
@@ -1265,7 +1265,7 @@ namespace d360.model
 						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
 					    from FieldType ft where ft.ID = @fieldTypeID)
 
-						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL}"
+						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and value <> @value"
 					, new
 					{
 						value = updateValue,
