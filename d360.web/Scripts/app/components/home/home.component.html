@@ -34,7 +34,24 @@
 	<span><d3s-shortcut-display *ngIf="!showActivityDetails && !showBoardDetails"></d3s-shortcut-display></span>
 </div>
 
-<ng-container>
+<ng-container *ngIf="!assignmentFeatureFlag">
+	<div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"
+		 class="row home-tiles">
+		<div [class]="'col s12 l' + colSize"
+			 *ngIf="showAssignmentTile">
+			<d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
+		</div>
+		<div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
+			<d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
+							[(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
+		</div>
+		<div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
+			<d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
+							   [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
+		</div>
+	</div>
+</ng-container>
+<ng-container *ngIf="assignmentFeatureFlag">
 	<div *ngIf="showAssignmentTile" class="row home-tiles">
 		<div class="col s12 l12">
 			<d3s-user-assignments></d3s-user-assignments>

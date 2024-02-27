@@ -37,6 +37,7 @@ import { PopupMenu, PopupMenuItem } from '../../shared/controls/popup-menu/popup
 import { CompleteAssignmentComponent } from '../complete-assignment/complete-assignment.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { State } from '../../../models/asset.model';
+import { FeatureFlagService } from '../../../guards/feature-flag.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 
@@ -89,6 +90,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	urlShowDetails: boolean;
 	areTypesLoaded: boolean = false;
 	modalSubtitle: string;
+	canActivateAssignmentDetails: boolean = false;
 
 	@ViewChild('completeAssignmentComponent', { static: true }) completeAssignmentComponent: CompleteAssignmentComponent;
 	private actionTypeCount: number = 0;
@@ -102,6 +104,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 				private fieldsService: FieldsObservableService,
 				private authenticationService: AuthenticationService,
 				private router: Router,
+				private featureFlagService: FeatureFlagService,
 				public linkClickInterceptor: LinkClickInterceptor
 	) {
 		super(settingsService);
@@ -130,6 +133,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		}
 		this.emptyGridMessage = this.isRequestsFlow ? $localize`No requests found` : $localize`No assignments found`;
 		this.loadActionTypeCount();
+		this.canActivateAssignmentDetails = this.featureFlagService.canActivateAssignmentDetails();
 	}
 
 	loadRowsPerPage(event: LazyLoadEvent): void {
@@ -451,11 +455,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 		filterFieldsSubject.complete();
 	}
 
-	protected positionContextMenu($event: MouseEvent, htmlButtonElement: HTMLButtonElement, popupMenu: PopupMenu): void {		
-		htmlButtonElement.style.top = `${$event['layerY']}px`;
-		htmlButtonElement.style.left = `${$event['layerX']}px`;
-		popupMenu.toggle($event);
-		$event.preventDefault();		
+	protected positionContextMenu($event: MouseEvent, htmlButtonElement: HTMLButtonElement, popupMenu: PopupMenu): void {
+		if (this.canActivateAssignmentDetails) {
+			htmlButtonElement.style.top = `${$event['layerY']}px`;
+			htmlButtonElement.style.left = `${$event['layerX']}px`;
+			popupMenu.toggle($event);
+			$event.preventDefault();
+		}
 	}
 
 	protected openAssignmentDetails(item: WorkflowAssignmentGrid, mouseEvent: MouseEvent): void {
@@ -668,13 +674,13 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 
 	private populateMenuItems(): void {
 		this.menuItems = [];
-		
-		this.menuItems = [new PopupMenuItem({
-			title: $localize`Open`
-		}), new PopupMenuItem({
-			title: $localize`Open in New Tab`
-		})];
-		
+		if (this.featureFlagService.canActivateAssignmentDetails()) {
+			this.menuItems = [new PopupMenuItem({
+				title: $localize`Open`
+			}), new PopupMenuItem({
+				title: $localize`Open in New Tab`
+			})];
+		}
 		if (this.isAdmin) {
 			this.menuItems.push(new PopupMenuItem({
 				title: $localize`Delete`
@@ -685,18 +691,20 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	private setContextMenuItems(): void {
 		for (const item of this.items) {
 			item.contextMenuItems = [];
-			item.contextMenuItems.push(new PopupMenuItem({
-				title: $localize`View Information`
-			}), new PopupMenuItem({
-				title: $localize`Open`
-			}), new PopupMenuItem({
-				title: $localize`Open in New Tab`
-			}));
-			if (this.isAdmin) {
+			if (this.canActivateAssignmentDetails) {
 				item.contextMenuItems.push(new PopupMenuItem({
-					title: $localize`Delete`
+					title: $localize`View Information`
+				}), new PopupMenuItem({
+					title: $localize`Open`
+				}), new PopupMenuItem({
+					title: $localize`Open in New Tab`
 				}));
-			}			
+				if (this.isAdmin) {
+					item.contextMenuItems.push(new PopupMenuItem({
+						title: $localize`Delete`
+					}));
+				}
+			}
 		}
 	}
 }

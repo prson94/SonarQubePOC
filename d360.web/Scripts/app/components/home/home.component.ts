@@ -53,6 +53,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public dashboard: DashboardModel = null;
 	private sub;
 
+	assignmentFeatureFlag: boolean = false;
 	dashboardingEnabledFeatureFlag: boolean = true;
 
     constructor(
@@ -75,6 +76,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             }
 		});
 
+		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
 		this.dashboardingEnabledFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.DashboardingEnabled);
     }
 
@@ -102,10 +104,15 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             this.backgroundImage = bgImage;
         }
 
-		
-		this.numTiles = (this.showBoardTile ? 1 : 0)
-			+ (this.showActivityTile ? 1 : 0);
-		
+		if (this.assignmentFeatureFlag) {
+			this.numTiles = (this.showBoardTile ? 1 : 0)
+				+ (this.showActivityTile ? 1 : 0);
+		}
+		else {
+			this.numTiles = (this.showAssignmentTile ? 1 : 0)
+				+ (this.showBoardTile ? 1 : 0)
+				+ (this.showActivityTile ? 1 : 0);
+		}
 
         this.colSize = 12.0 / (this.numTiles === 0 ? 1 : this.numTiles);
 

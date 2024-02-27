@@ -45,7 +45,8 @@ namespace d360.web.Controllers.Services
 	[ApiVersionNeutral, RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
 	public class WorkflowController : BaseV2ApiController
 	{
-		
+		private bool IsNewAssignments { get { return FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser()); } }
+
 		public WorkflowController(CoreComponentSet set) : base(set) { }
 
 		private IEnumerable<dynamic> getIssues(int? resourceID)
@@ -595,8 +596,15 @@ namespace d360.web.Controllers.Services
 						{
 							List<string> values = new List<string>();
 
-							//new ui elements return different value object
-							values = field.Values.Select(x => x.Value).ToList();
+							if (IsNewAssignments)
+							{
+								//new ui elements return different value object
+								values = field.Values.Select(x => x.Value).ToList();
+							}
+							else
+							{
+								values = val.Split(',').ToList();
+							}
 							displayVal = "";
 							foreach (var v in values)
 							{
@@ -618,7 +626,7 @@ namespace d360.web.Controllers.Services
 						}
 						else
 						{
-							if (field.Value != null)
+							if (IsNewAssignments && field.Value != null)
 							{
 								//new ui elements return different value object
 								val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;

@@ -463,12 +463,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 					}
 
 					if (this.assetTypeApiModel.HasV2Workflows) {
-						this.secondaryNavService.showItem(
-							new SecondaryNavItem($localize`Assignments`,
-								'assetTypeAssignments',
-								['fa-usb'],
-								`/assets/${this.baseAssetTypeUid}/assignments`)
-						);						
+						if (this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+							this.secondaryNavService.showItem(
+								new SecondaryNavItem($localize`Assignments`,
+									'assetTypeAssignments',
+									['fa-usb'],
+									`/assets/${this.baseAssetTypeUid}/assignments`)
+							);
+						}
 					}
 
 					this.secondaryNavService.showHeader(true);

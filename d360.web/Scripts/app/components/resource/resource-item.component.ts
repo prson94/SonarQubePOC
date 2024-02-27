@@ -14,6 +14,7 @@ import { ResourceApiModel } from '../../models/resource.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
+import { FeatureFlags } from '../../services/feature-flags.enum';
 
 declare var SingleSignOn;
 
@@ -55,7 +56,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     itemsFollow: SecondaryNavItem;
     memberGroups: SecondaryNavItem;
     comments: SecondaryNavItem;
-    hasRelations: SecondaryNavItem;	
+    hasRelations: SecondaryNavItem;
+	assignmentFeatureFlag: boolean = false;
 
     constructor(
         protected router: Router,
@@ -72,7 +74,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
-		this.launchDarklyService = featureFlagService;		
+		this.launchDarklyService = featureFlagService;
+		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
     }
 
     ngOnInit() {

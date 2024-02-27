@@ -91,8 +91,15 @@ namespace d360.web.Controllers
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
-			
-			nodes = nodes.Where(x => x.MenuID != "#Monitor").ToList();			
+
+			if (!FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser(), false))
+			{
+				nodes = nodes.Where(x => x.MenuID != "#Assignments").Where(x => x.MenuID != "#Requests").ToList(); 
+			}
+			else
+			{
+				nodes = nodes.Where(x => x.MenuID != "#Monitor").ToList();
+			}
 
 			if (nodes != null)
 			{
@@ -244,8 +251,15 @@ namespace d360.web.Controllers
 			{
 				data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
 			}
-			
-			data.RemoveAll(x => x.Name == "#Monitor");			
+
+			if (!FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, GetFeatureFlagUser()))
+			{
+				data.RemoveAll(x => x.Name == "#Assignments" || x.Name == "#Requests");
+			}
+			else
+			{
+				data.RemoveAll(x => x.Name == "#Monitor");
+			}
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record

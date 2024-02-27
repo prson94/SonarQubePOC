@@ -40,7 +40,6 @@ namespace igx.jobs.workflowdigestprocessor
 			try
 			{
 				var companies = GetCompaniesByCurrentSlot();
-
 				foreach (var c in companies)
 				{
 					var logProperties = new Dictionary<string, object> {
@@ -70,7 +69,7 @@ namespace igx.jobs.workflowdigestprocessor
 								ScoringQueue = Configuration["ScoringQueue"],
 								SearchIndexQueue = Configuration["SearchIndexQueue"]
 							};
-							
+							company.FeatureFlags_TEMP_ASSIGNMENTS =  FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser(), false);
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}
 						catch (Exception ex)

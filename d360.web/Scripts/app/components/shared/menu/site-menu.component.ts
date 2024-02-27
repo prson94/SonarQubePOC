@@ -220,7 +220,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
 				}
 
-				result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#Monitor'));					
+				if (!this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
+					result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#Assignments')).filter((y) => (y.MenuID !== '#Requests'));
+				} else {
+					result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#Monitor'));					
+				}
 
                 // add properties we need to add to the burned in menus
                 for (const menu of result.MenuItems) {

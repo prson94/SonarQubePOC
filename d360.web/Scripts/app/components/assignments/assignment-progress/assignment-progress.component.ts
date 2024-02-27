@@ -3,6 +3,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItemStep } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { FeatureFlagService } from '../../../guards/feature-flag.service';
 
 @Component({
 	selector: 'd3s-assignment-progress',
@@ -43,10 +44,14 @@ export class AssignmentProgressComponent {
 	protected isLoading: boolean = false;
 	protected assignmentItemSteps: AssignmentItemStep[];
 
+	protected canActivateAssignmentDetails: boolean = false;
+
 	private _workflowItemUid: string;
 
 	constructor(private workflowService: WorkflowService,
-				public linkClickInterceptor: LinkClickInterceptor) {		
+				public linkClickInterceptor: LinkClickInterceptor,
+				featureFlagService: FeatureFlagService) {
+		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
 	}
 
 	private loadAssignmentSteps() {
