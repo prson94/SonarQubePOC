@@ -29,6 +29,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using d360.featureflags;
 
 namespace d360.model
 {
@@ -317,7 +318,7 @@ namespace d360.model
 					addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
 				}
 			}
-
+						
 			if (events.Any())
 			{
 				QueueSource.CreateTopicMessages(events);

@@ -546,20 +546,7 @@ export class BaseComponent {
 			}
 
 			if (opts.hasMonitor) {
-				let url = ``;
-				if (!this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
-					if (this.baseAssetUid) {
-						url = `/asset/${this.baseAssetUid}/workflowmonitor`;
-					} else if (this.baseAssetTypeUid) {
-						url = `/assets/${this.baseAssetTypeUid}/workflowmonitor`;
-					}
-					this.monitorSidebar = new SecondaryNavItem(
-						$localize`Workflow`,
-						'monitor',
-						['fa-usb'],
-						url, null, 30
-					);
-				} else {
+				let url = ``;				
 					if (this.baseAssetUid) {
 						url = `/asset/${this.baseAssetUid}/assignments`;
 					} else if (this.baseAssetTypeUid) {
@@ -570,8 +557,7 @@ export class BaseComponent {
 						'assetAssignments',
 						['fa-usb'],
 						url, null, 30
-					);
-				}
+					);				
 				this.secondaryNavService.showItem(this.monitorSidebar);
 			}
 
@@ -617,15 +603,7 @@ export class BaseComponent {
 				this.scoreSidebar.subTabsUrl.push(`/asset/${this.uid}/score/Governance`);
 				this.scoreSidebar.subTabsUrl.push(`/asset/${this.uid}/score/DataQuality`);
 
-				this.secondaryNavService.showItem(this.scoreSidebar);
-
-				if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement) && !this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag)) {
-					this.actionsSidebar = new SecondaryNavItem(
-						$localize`Actions`, 'Actions', null,
-						`/asset/${this.uid}/actions`, null, 27
-					);
-					this.secondaryNavService.showItem(this.actionsSidebar);
-				}
+				this.secondaryNavService.showItem(this.scoreSidebar);				
 			}
 
 			const goodAssetTypeForComments = isCommonAsset || this.objectType === 'Resource';

@@ -79,9 +79,7 @@ namespace d360.model
         
         public bool CurrentResourceIsAdmin { get; set; }
 
-        public string CompanyConnectionString { get; set; }
-
-		public bool FeatureFlags_TEMP_ASSIGNMENTS { get; set; }
+        public string CompanyConnectionString { get; set; }		
 
 		public bool FeatureFlags_TEMP_ASSIGNMENTS_DETAIL { get; set; }
 

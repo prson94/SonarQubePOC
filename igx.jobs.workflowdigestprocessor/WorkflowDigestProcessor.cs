@@ -1,7 +1,6 @@
 ﻿using AngleSharp.Common;
 using d360.extensions;
 using d360.extensions.info;
-using d360.featureflags;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -24,13 +23,11 @@ namespace igx.jobs.workflowdigestprocessor
 
 		readonly ICachingProvider Cache;
 		readonly IMailProvider Mail;
-		readonly IQueueSource Queue;
-		readonly IFeatureFlagService FeatureFlags;
+		readonly IQueueSource Queue;		
 
-		public WorkflowDigestProcessor(ICachingProvider cache, IConfiguration config, IFeatureFlagService ff, IMailProvider mail, IQueueSource queue): base(config)
+		public WorkflowDigestProcessor(ICachingProvider cache, IConfiguration config, IMailProvider mail, IQueueSource queue): base(config)
 		{
 			Cache = cache;
-			FeatureFlags = ff;
 			Mail = mail;
 			Queue = queue;
 		}
@@ -69,7 +66,7 @@ namespace igx.jobs.workflowdigestprocessor
 								ScoringQueue = Configuration["ScoringQueue"],
 								SearchIndexQueue = Configuration["SearchIndexQueue"]
 							};
-							company.FeatureFlags_TEMP_ASSIGNMENTS =  FeatureFlags.IsThisTrue(FlagList.TEMP_ASSIGNMENTS, company.GetFeatureFlagUser(), false);
+							
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}
 						catch (Exception ex)

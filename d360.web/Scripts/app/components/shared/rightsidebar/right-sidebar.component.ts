@@ -118,8 +118,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     dataClassification: string;
     showDataClassification: boolean = false;
     assetActionWidth: number = 0;
-	assignmentCount: number;
-	assignmentFeatureFlag: boolean = false;
+	assignmentCount: number;	
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
     private previousUrl: string = '';
@@ -168,9 +167,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             this.isScoringScreen = false;
                         }
                     }
-				});
-
-		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
+				});		
     }
 
     ngOnInit(): void {
@@ -284,7 +281,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             } else {
-				if (this.currentObject?.hasWorkFlow && this.assignmentFeatureFlag) {
+				if (this.currentObject?.hasWorkFlow) {
                   this.loadAssetTypeAssignmentCount(); 
                 }
                 this.showStatus = false;

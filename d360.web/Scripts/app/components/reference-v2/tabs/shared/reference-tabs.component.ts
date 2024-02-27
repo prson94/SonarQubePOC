@@ -63,7 +63,7 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 				tag: "relationship",
 				isVisible: () => this.isAdmin || this.typePermission.ReadRelationships,
 			},
-			this.launchDarklyService?.variation<boolean>(FeatureFlags.AssignmentsFlag) ? this.assignmentTab(baseUrl): this.workflowTab(baseUrl),
+			this.assignmentTab(baseUrl),
 			{
 				url: `${baseUrl}/log`,
 				title: $localize`Change Log`,

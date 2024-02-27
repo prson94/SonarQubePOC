@@ -57,7 +57,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     memberGroups: SecondaryNavItem;
     comments: SecondaryNavItem;
     hasRelations: SecondaryNavItem;
-	assignmentFeatureFlag: boolean = false;
+	//assignmentFeatureFlag: boolean = false;
 
     constructor(
         protected router: Router,
@@ -74,8 +74,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
 		this.breadcrumbsService = headerBreadcrumbService;
-		this.launchDarklyService = featureFlagService;
-		this.assignmentFeatureFlag = this.featureFlagService.variation<boolean>(FeatureFlags.AssignmentsFlag);
+		this.launchDarklyService = featureFlagService;		
     }
 
     ngOnInit() {
