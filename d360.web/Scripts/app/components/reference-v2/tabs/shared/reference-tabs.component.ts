@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, OnDestroy } from "@angular/core";
+import { LaunchDarklyService } from "@precisely/prism-ng/launch-darkly";
 import { Subscription } from "rxjs";
 import { AssetService } from '../../../../services/asset.service';
 import { AuthenticationService } from '../../../../services/authentication.service';
@@ -26,7 +27,8 @@ export class ReferenceItemTypeTabsComponent implements OnInit, OnDestroy {
 		private cdRef: ChangeDetectorRef,
 		private assetService: AssetService,
 		private authenticationService: AuthenticationService,
-		private permissionsService: PermissionsService
+		private permissionsService: PermissionsService,
+		private launchDarklyService:LaunchDarklyService
 	) { }
 
 	get tabs(): Tab[] {

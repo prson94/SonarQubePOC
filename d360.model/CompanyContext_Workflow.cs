@@ -853,11 +853,10 @@ namespace d360.model
 			}
 
 			string prefix = Community.GetPrimaryUrlPrefix();
-
+				
 			string urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
 
-
-			string url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";
+			string url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";			
 
 			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
 			settings.SubjectTemplate = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false);
@@ -3595,6 +3594,7 @@ namespace d360.model
 						{
 							url = $"{rootUrl}/home?workflowTypeUid={item.WorkflowTypeUid.ToString().ToLowerInvariant()}&version={item.Version}";
 						}
+												
 						sb.Append($"<td style='text-align: left;padding-left:5px;'><a style='font-size:12px;font-family: Trebuchet MS, Arial, Helvetica, sans - serif;'  href='{url}'>{item.Name}</a></td>");
 						sb.Append($"<td style='text-align: center'>{span}{item.Version}</span></td>");
 						sb.Append($"<td style='text-align: left'>{span}{item.Step}</span></td>");
@@ -3613,7 +3613,7 @@ namespace d360.model
 					}
 
 					sb.Append("</tbody></table>");
-
+				
 					sb.Append($"<p style='margin-top:20px;'><a href='{rootUrl}/assignments' style='padding-left:5px;font-size:12px;font-weight:700;font-family: Trebuchet MS, Arial, Helvetica, sans-serif'>View all workflow assignments</a></p>");					
 
 					subject = $"{environment}{totalNew} new workflow items require your attention";
@@ -3750,11 +3750,12 @@ namespace d360.model
 				await SaveChangesAsync();
 			}
 
-			string prefix = Community.GetPrimaryUrlPrefix();
-						
+			string prefix = Community.GetPrimaryUrlPrefix();			
+
+
 			var urlPart = $"home?workflowTypeUid={itemStep.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={itemStep.UID.ToString().ToLowerInvariant()}&version={itemStep.Step.Version.Version}&workflowItemUid={itemStep.Item.UID}";
 
-			string url = $"https://{prefix}.data3sixty.com/{urlPart}";				
+			string url = $"https://{prefix}.data3sixty.com/{urlPart}";
 
 			string initiatedBy = "(unknown)";
 

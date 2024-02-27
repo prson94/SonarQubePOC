@@ -87,8 +87,7 @@ namespace igx.jobs.workflowsubscriber
 				};
 
 				try
-				{
-
+				{										
 					//check if this event already has a open workflow instance
 					if (info.WorkflowItemID <= 0)
 					{

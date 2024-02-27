@@ -545,20 +545,18 @@ export class BaseComponent {
 			}
 
 			if (opts.hasMonitor) {
-				let url = ``;
-				
-				if (this.baseAssetUid) {
-					url = `/asset/${this.baseAssetUid}/assignments`;
-				} else if (this.baseAssetTypeUid) {
-					url = `/assets/${this.baseAssetTypeUid}/assignments`;
-				}
-				this.monitorSidebar = new SecondaryNavItem(
-					$localize`Assignments`,
-					'assetAssignments',
-					['fa-usb'],
-					url, null, 30
-				);
-				
+				let url = ``;				
+					if (this.baseAssetUid) {
+						url = `/asset/${this.baseAssetUid}/assignments`;
+					} else if (this.baseAssetTypeUid) {
+						url = `/assets/${this.baseAssetTypeUid}/assignments`;
+					}
+					this.monitorSidebar = new SecondaryNavItem(
+						$localize`Assignments`,
+						'assetAssignments',
+						['fa-usb'],
+						url, null, 30
+					);				
 				this.secondaryNavService.showItem(this.monitorSidebar);
 			}
 

@@ -79,7 +79,7 @@ namespace d360.model
         
         public bool CurrentResourceIsAdmin { get; set; }
 
-        public string CompanyConnectionString { get; set; }
+        public string CompanyConnectionString { get; set; }		
 
 		internal ICachingProvider Caching;
 

@@ -115,18 +115,19 @@
 				<tr [pSelectableRow]="item" class="assignments-table-data"
 					(contextmenu)="clickMenuIcon(item);positionContextMenu($event, contextMenuButton, contextMenu)">
 					<ng-container *ngIf="actionFormFields.length === 0">
-						<td >
+						<td *ngIf="!canActivateAssignmentDetails">{{item.workflowName}}</td>
+						<td *ngIf="canActivateAssignmentDetails">
 							<a context-link [isOpenDefault]="true"
 							   (click)="openAssignmentDetails(item, $event)">{{item.workflowName}}</a>
 						</td>
 					</ng-container>
-					<td *ngIf="!assetUid && actionFormFields.length === 0">{{item.assetDisplayValue ?? '---'}}</td>
-					<td *ngIf="!assetUid && actionFormFields.length > 0">
+					<td *ngIf="!assetUid && (!canActivateAssignmentDetails || actionFormFields.length === 0)">{{item.assetDisplayValue ?? '---'}}</td>
+					<td *ngIf="!assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
 						<a context-link [isOpenDefault]="true"
 						   (click)="openAssignmentDetails(item, $event)">{{item.assetDisplayValue ?? '---'}}</a>
 					</td>
-					<td *ngIf="!assetUid || actionFormFields.length === 0">{{item.objectType ?? '---'}}</td>
-					<td *ngIf="assetUid && actionFormFields.length > 0">
+					<td *ngIf="!assetUid || !canActivateAssignmentDetails || actionFormFields.length === 0">{{item.objectType ?? '---'}}</td>
+					<td *ngIf="assetUid && canActivateAssignmentDetails && actionFormFields.length > 0">
 						<a context-link [isOpenDefault]="true"
 						   (click)="openAssignmentDetails(item, $event)">{{item.objectType ?? '---'}}</a>
 					</td>

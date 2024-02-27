@@ -1,6 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -323,7 +321,7 @@ insert into #ids (AssetUid)
 			assetGroups.ForEach(ag =>
 			{
 				company.SendWorkflowEvents(ag.Key.ObjectType, ag.Key.ObjectTypeID, ag.ToList(), scoreType: scoreType);
-			});
+			});		
 		}
 
 		async Task handleScoreProcessingError(ScoreQueueInfo scoreInfo)

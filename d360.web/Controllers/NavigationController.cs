@@ -91,8 +91,8 @@ namespace d360.web.Controllers
 			{
 				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
 			}
-			
-			nodes = nodes.Where(x => x.MenuID != "#Monitor").ToList();			
+
+			nodes = nodes.Where(x => x.MenuID != "#Monitor").ToList();
 
 			if (nodes != null)
 			{

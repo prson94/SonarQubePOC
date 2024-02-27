@@ -462,13 +462,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 						this.auditSidebar.url = `/assets/${this.baseAssetTypeUid}/log`;
 					}
 
-					if (this.assetTypeApiModel.HasV2Workflows) {
+					if (this.assetTypeApiModel.HasV2Workflows) {						
 						this.secondaryNavService.showItem(
 							new SecondaryNavItem($localize`Assignments`,
 								'assetTypeAssignments',
 								['fa-usb'],
 								`/assets/${this.baseAssetTypeUid}/assignments`)
-						);						
+						);
 					}
 
 					this.secondaryNavService.showHeader(true);

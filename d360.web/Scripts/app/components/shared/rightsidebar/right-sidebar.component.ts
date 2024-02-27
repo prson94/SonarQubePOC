@@ -164,7 +164,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                             this.isScoringScreen = false;
                         }
                     }
-				});
+				});		
     }
 
     ngOnInit(): void {

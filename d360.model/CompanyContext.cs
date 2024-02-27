@@ -317,7 +317,7 @@ namespace d360.model
 					addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
 				}
 			}
-
+						
 			if (events.Any())
 			{
 				QueueSource.CreateTopicMessages(events);

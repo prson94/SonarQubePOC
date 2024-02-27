@@ -15,7 +15,7 @@ export class FeatureFlagGuard  {
 	canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
 
 		if (state.url.startsWith('/monitor') || state.url.endsWith('/workflowmonitor') || state.url.endsWith('/workflow')) {
-			this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+			this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);		
 		}
 
 		if (state.url.startsWith('/reference')) {

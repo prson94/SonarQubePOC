@@ -92,7 +92,7 @@
 			<div class="row">
 				{{errorModalMessage}}
 			</div>
-			<div *ngIf="showAssignmentDetailsLink"
+			<div *ngIf="showAssignmentDetailsLink && canActivateAssignmentDetails"
 				 class="row assignment-details-link-row">
 				<a [href]="getAssignmentUrl()" class="assignment-details-link" i18n>See Assignment Details <i
 					class="fa fa-long-arrow-right" aria-hidden="true"></i></a>
