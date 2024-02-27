@@ -235,11 +235,11 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 						this.assignmentItemStep = assignmentItemSteps[stepCounter];
 						this.workflowService.getAssignmentStepDetail(assignmentItemSteps[stepCounter].Uid).subscribe((response: WorkflowStepDetail) => {
 							this.workflowStepDetail = response;
+							this.setHeaderButton();
 						});
 						break;
 					}
 				}
-				this.setHeaderButton();
 			});
 	}
 
