@@ -13,8 +13,6 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { ResourceApiModel } from '../../models/resource.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../services/feature-flags.enum';
 
 declare var SingleSignOn;
 
@@ -68,12 +66,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         protected settingsService: CompanySettingsService,
         private socialService: SocialService,
         secondaryNavService: SecondaryNavService,
-		protected messagesService: MessagesObservableService,
-		private featureFlagService: LaunchDarklyService	) {
+		protected messagesService: MessagesObservableService) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
-		this.breadcrumbsService = headerBreadcrumbService;
-		this.launchDarklyService = featureFlagService;		
+		this.breadcrumbsService = headerBreadcrumbService;	
     }
 
     ngOnInit() {

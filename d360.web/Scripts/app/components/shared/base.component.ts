@@ -27,7 +27,6 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AppConstants } from '../../static/constants';
 import { UsageAction, UsageBrowser } from '../../models/web-analytics-activity.model';
-import { FeatureFlags } from '../../services/feature-flags.enum';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 /*global $localize*/

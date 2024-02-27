@@ -46,7 +46,6 @@ import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { DirectivesModule } from "../../../directives/directives.module";
 import { TabsModule } from '../tabs/tabs.module';
 import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
-import { FeatureFlags } from '../../../services/feature-flags.enum';
 
 @Component({
 	standalone: true,
@@ -132,8 +131,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private workflowService: WorkflowService,
         protected settingsService: CompanySettingsService,
         private router: Router,
-		private route: ActivatedRoute,
-		private featureFlagService?: LaunchDarklyService
+		private route: ActivatedRoute
     ) {
         router.events
             .pipe(
