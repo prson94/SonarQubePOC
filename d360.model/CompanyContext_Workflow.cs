@@ -854,29 +854,8 @@ namespace d360.model
 			}
 
 			string prefix = Community.GetPrimaryUrlPrefix();
-						
-			string urlPart = "";
-			if (FeatureFlags_TEMP_ASSIGNMENTS_DETAIL)
-			{
-				urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
-			}
-			else
-			{
-				urlPart = (await QueryAsync<string>(@"
-				select 
-				case 
-					when a.id is not null then concat('asset/', lower(cast(a.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
-					when at.id is not null then concat('assets/', lower(cast(at.uid as nvarchar(max))), '/assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max)))
-					else concat('assignments?loadAssignment=', cast(wi.uid as nvarchar(max)),'|',cast(wis.uid as nvarchar(max))) 
-				end as [url]
-				from workflow.Item wi
-				inner join workflow.ItemStep wis on wis.StepID = @stepId and wis.ItemID = wi.ID
-				left join asset a on a.Object = wi.Object and a.ObjectID = wi.ObjectID
-				left join asset at on at.Object = wi.Object and at.ObjectID = wi.ObjectID
-				where wi.ID = @itemid", new { itemid = item.ItemID, stepId = item.StepID }))
-				.FirstOrDefault();
-			}
-
+				
+			string urlPart = $"home?workflowTypeUid={item.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={item.UID.ToString().ToLowerInvariant()}&version={item.Step.Version.Version}&workflowItemUid={item.Item.UID}";
 
 			string url = $"https://{prefix}.data3sixty.com/{urlPart}&details=true";			
 
@@ -3772,57 +3751,12 @@ namespace d360.model
 				await SaveChangesAsync();
 			}
 
-			string prefix = Community.GetPrimaryUrlPrefix();
-			string url = $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
+			string prefix = Community.GetPrimaryUrlPrefix();			
 
-			if (FeatureFlags_TEMP_ASSIGNMENTS_DETAIL)
-			{
-				var urlPart = $"home?workflowTypeUid={itemStep.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={itemStep.UID.ToString().ToLowerInvariant()}&version={itemStep.Step.Version.Version}&workflowItemUid={itemStep.Item.UID}";
 
-				url = $"https://{prefix}.data3sixty.com/{urlPart}";
-			}
-			else
-			{
-				var dbArgs = new DynamicParameters();
-				dbArgs.Add("itemId", itemId);
-				dbArgs.Add("itemStepId", itemStepID);
+			var urlPart = $"home?workflowTypeUid={itemStep.Step.Version.Type.UID.ToString().ToLowerInvariant()}&workflowItemStepUid={itemStep.UID.ToString().ToLowerInvariant()}&version={itemStep.Step.Version.Version}&workflowItemUid={itemStep.Item.UID}";
 
-				string sql = @$"
-				select uid from workflow.Item where id = @itemId
-
-				select uid from workflow.ItemStep where id = @itemStepId
-
-				select case when i.AssetID is not null then 'Asset' else 'AssetType' end as [Type],
-				coalesce(a.uid, atp.uid) as uid
-				from workflow.Item wi
-				inner join Issue I on i.ID = wi.ObjectID 
-				left join Asset a on a.id = i.AssetID
-				left join AssetType atp on atp.ID = i.AssetTypeID
-				where wi.object = 'Issue' and wi.id = @itemId
-				union
-				select 'Relationship', null from workflow.Item wi where wi.ID = @itemId and wi.Object = 'Intersect'
-				union
-				select 'Asset', a.uid from workflow.Item wi 
-				inner join Asset A on A.Object = WI.Object AND a.ObjectID = wi.ObjectID
-				where wi.ID = @itemId and wi.Object <> 'Intersect' and wi.Object <> 'Issue'";
-				var urlData = await QueryMultipleAsync(sql, dbArgs);
-
-				var itemUid = urlData.Read<Guid>().First();
-				var itemStepUid = urlData.Read<Guid>().First();
-				var objectData = urlData.Read<dynamic>().First();
-
-				string queryParamPart = $"?loadAssignment={itemUid}|{itemStepUid}";
-				url = $"https://{prefix}.data3sixty.com/assignments";
-				if (objectData != null && objectData.Type == "Asset" && objectData.uid != null)
-				{
-					url = $"https://{prefix}.data3sixty.com/asset/{objectData.uid}/assignments";
-				}
-				else if (objectData != null && objectData.Type == "AssetType" && objectData.uid != null)
-				{
-					url = $"https://{prefix}.data3sixty.com/assets/{objectData.uid}/assignments";
-				}
-				url += queryParamPart;
-			}			
+			string url = $"https://{prefix}.data3sixty.com/{urlPart}";
 
 			string initiatedBy = "(unknown)";
 
