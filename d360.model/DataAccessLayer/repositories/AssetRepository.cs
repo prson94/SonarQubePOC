@@ -1916,7 +1916,13 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				model.total = null;
 			}
 
-			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {parentApplyTempTableSQL} {sql} OPTION(RECOMPILE)";
+			var getAllQuery = @$"{populatePremissionAssetTableSQL} 
+								 {populateOwnershipLookupTableSQL} 
+								 {baseSQL} 
+								 {countSQL} 
+								 {(includeParent ? parentApplyTempTableSQL : "")} 
+								 {sql} 
+								  OPTION(RECOMPILE)";
 
 			if (!string.IsNullOrEmpty(selectOwnershipSQL))
 			{

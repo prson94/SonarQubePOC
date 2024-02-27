@@ -1702,6 +1702,10 @@ namespace d360.model.DataAccessLayer
 			{
 				effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
 			}
+			else
+			{
+				effectiveDate = effectiveDate.Value.Date;
+			}
 
 			string effectivedateQuery = @"and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)";
 
