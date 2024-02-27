@@ -53,7 +53,6 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public dashboard: DashboardModel = null;
 	private sub;
 
-	//assignmentFeatureFlag: boolean = false;
 	dashboardingEnabledFeatureFlag: boolean = true;
 
     constructor(

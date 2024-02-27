@@ -57,7 +57,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     memberGroups: SecondaryNavItem;
     comments: SecondaryNavItem;
     hasRelations: SecondaryNavItem;
-	//assignmentFeatureFlag: boolean = false;
 
     constructor(
         protected router: Router,

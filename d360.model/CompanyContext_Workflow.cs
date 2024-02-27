@@ -4,7 +4,6 @@ using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.queue;
-using d360.featureflags;
 using d360.model.workflow;
 using Dapper;
 using Microsoft.ApplicationInsights;

@@ -618,7 +618,11 @@ namespace d360.web.Controllers.Services
 						else
 						{
 
-							val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;
+							if (field.Value != null)
+							{
+								//new ui elements return different value object
+								val = (JsonConvert.DeserializeObject<System.Web.Mvc.SelectListItem>(field.Value.ToString())).Value;
+							}
 
 
 							if (fieldType != null && int.TryParse(val, out intVal))
