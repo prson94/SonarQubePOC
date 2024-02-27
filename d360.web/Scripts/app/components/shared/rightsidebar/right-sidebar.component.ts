@@ -45,7 +45,6 @@ import { PortalsModule } from '../portals/portals.module';
 import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 import { DirectivesModule } from "../../../directives/directives.module";
 import { TabsModule } from '../tabs/tabs.module';
-import { LaunchDarklyService } from '@precisely/prism-ng/launch-darkly';
 
 @Component({
 	standalone: true,
