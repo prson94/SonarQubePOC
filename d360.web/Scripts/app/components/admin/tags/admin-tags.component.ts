@@ -1,4 +1,4 @@
-﻿import { Component, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -87,7 +87,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         },
     ]);
 
-    constructor(
+	constructor(
+		private cdRef: ChangeDetectorRef,
         private uiAdvancedFiltering: UiAdvancedFiltering,
         private searchService: SearchService,
         private router: Router,
@@ -196,7 +197,45 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.selected = this.selected.slice();
     }
 
-    selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+	selectCheckBox(event: MouseEvent, item: TagType, element: ElementRef = null) {
+		this.editPopupTitle = $localize`Edit Tag`;
+
+		//p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+		if (event && element) {
+			if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+				this.lastSelectedElement = item;
+				return;
+			}
+			if (event.shiftKey) {
+				this.cdRef.detectChanges();
+				var lastIndex = this.tags.indexOf(this.lastSelectedElement);
+				if (lastIndex === -1 && this.selected.length === 1) {
+					lastIndex = this.tags.indexOf(this.selected[0]);
+				}
+				var currentIndex = this.tags.indexOf(item);
+
+				if (lastIndex > currentIndex) {
+					lastIndex += currentIndex;
+					currentIndex = lastIndex - currentIndex;
+					lastIndex -= currentIndex;
+				}
+				var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+				for (var i = lastIndex; i <= currentIndex; i++) {
+					if (!tableRows[i].classList.contains('p-highlight')) {
+						this.selected.push(this.tags[i]);
+					}
+				}
+				this.triggerRerenderOfSelection();
+				this.lastSelectedElement = item;
+
+				this.cdRef.markForCheck();
+				return;
+			}
+			this.lastSelectedElement = item;
+		}
+	}
+
+	selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
         this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
@@ -240,23 +279,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }
 
         }
-        const target = (<any>(event.target));
-        if (element && target.nodeName !== "P-TABLECHECKBOX") {
-            this.selected = [];
-            this.selected.push(item);
-            this.triggerRerenderOfSelection();
-            this.lastSelectedElement = item;
-        } else {
-            if (this.selected.filter((x) => x.uid === item.uid).length > 0) {
-                this.selected = this.selected.filter((x) => x.uid !== item.uid);
-                this.triggerRerenderOfSelection();
-            }
-            else {
-                this.selected.push(item);
-                this.triggerRerenderOfSelection();
-            }
-            this.lastSelectedElement = item;
-        }
+        this.selected = [];
+        this.selected.push(item);
+        this.triggerRerenderOfSelection();
+        this.lastSelectedElement = item;
     }
 
 
