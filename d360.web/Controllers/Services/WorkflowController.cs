@@ -35,7 +35,7 @@ using Microsoft.Web.Http;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using repositories;
 using Resources;
 
 using SpreadsheetLight;
@@ -3291,10 +3291,10 @@ namespace d360.web.Controllers.Services
 			return relChange;
 		}
 
-		private List<EmailedResourceResponsibility> GetEmailResources(int assetId, List<int> responsiblities, List<string> emails)
+		private async Task<List<EmailedResourceResponsibility>> GetEmailResources(int assetId, List<int> responsiblities, List<string> emails)
 		{
 			string sql;
-			var asset = Company.GetAssetDetail(assetId);
+			var asset = (await Catalog.ReadAssetDetail(assetId));
 
 			if (responsiblities.Count != 0 && asset != null)
 			{
@@ -3885,7 +3885,7 @@ namespace d360.web.Controllers.Services
 						}
 
 						//get all relevant resource info
-						var emailResources = GetEmailResources(assetId, responsiblities, resourceEmails);
+						var emailResources = await GetEmailResources(assetId, responsiblities, resourceEmails);
 						for (int i = 0; i < emails.email.Count; i++)
 						{
 							var e = emails.email[i];

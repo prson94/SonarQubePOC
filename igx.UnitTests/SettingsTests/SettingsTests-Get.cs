@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace igx.UnitTests.SettingsTests
@@ -7,27 +8,27 @@ namespace igx.UnitTests.SettingsTests
     public class SettingsTestsGet : BaseTest
     {
         [Fact]
-        public void Settings_CountGreaterThanZero()
+        public async Task Settings_CountGreaterThanZero()
         {
-            var repo = GetSettingsRepository();
-            var settings = repo.GetSettings();
+            var repo = GetWorkspacesRepository();
+            var settings = await repo.ReadSettingsAsync();
             Assert.True(settings.Count > 0);
         }
 
         [Fact]
-        public void Settings_DescriptionsPopulated()
+        public async Task Settings_DescriptionsPopulated()
         {
-            var repo = GetSettingsRepository();
-            var settings = repo.GetSettings();
-            Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Description)));
+            var repo = GetWorkspacesRepository();
+			var settings = await repo.ReadSettingsAsync();
+			Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Description)));
         }
 
         [Fact]
-        public void Settings_NamesPopulated()
+        public async Task Settings_NamesPopulated()
         {
-            var repo = GetSettingsRepository();
-            var settings = repo.GetSettings();
-            Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Name)));
+            var repo = GetWorkspacesRepository();
+			var settings = await repo.ReadSettingsAsync();
+			Assert.True(!settings.Any(s => string.IsNullOrEmpty(s.Name)));
         }
     }
 }

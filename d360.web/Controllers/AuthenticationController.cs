@@ -155,7 +155,7 @@ namespace d360.web.Controllers
                 resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
                 
                 //If there is a domain whitelist, make sure the user has access
-                string domainWhitelistString = SettingsRepository.GetSetting(Setting.EmailDomainWhitelist).Value;
+                string domainWhitelistString = await GetCachedSettingValueById<string>(Setting.EmailDomainWhitelist);
                 bool isDomainWhitelisted;
                 
                 //For internal use, bypass the whitelist
@@ -383,7 +383,7 @@ namespace d360.web.Controllers
 
 				if (resource.ID > 0)
                 {
-                    var sessionLengthMinutes = SettingsRepository.GetSettingValue<double>(Setting.SessionTimeout);
+                    var sessionLengthMinutes = await GetCachedSettingValueById<double>(Setting.SessionTimeout);
 
                     // Create a login context for the asserted identity.
 

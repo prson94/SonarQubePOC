@@ -1,34 +1,15 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using d360.core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.extensions;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
-    [HandleError(View = "Error")]
+	[HandleError(View = "Error")]
     public class HomeController : BaseController
     {
-        #region DI
-
-        private readonly ICachingProvider Cache;
-
-        public HomeController(ICoreComponentSet set, ICachingProvider cache)
-            : base(set)
-        {
-            Cache = cache;
-        }
-
-        #endregion
+        public HomeController(ICoreComponentSet set) : base(set) { }
 
         [AllowAnonymous, Route("unsupported")]
         public async Task<ActionResult> Unsupported()

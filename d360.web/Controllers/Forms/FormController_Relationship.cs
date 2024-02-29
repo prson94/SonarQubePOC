@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 using d360.core;
@@ -183,7 +184,7 @@ namespace d360.web.Controllers
 		}
 
 		/// <param name="id">RelationshipID</param>
-		private JsonResult Relationship_EditFields(int id)
+		private async Task<JsonResult> Relationship_EditFields(int id)
 		{
 			var relationship = Company.IntersectDetails.FirstOrDefault(x => x.ID == id);
 
@@ -207,7 +208,7 @@ namespace d360.web.Controllers
 			var fieldTypes = Company.Filter<FieldType>(i => i.IntersectTypeID == relationship.IntersectTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.IntersectID == relationship.ID).ToList();
 
-			list = loadDynamicFields(
+			list = await loadDynamicFields(
 				SystemObjects.Intersect.ToString(),
 				id,
 				list,

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
-
+using d360.core.resources;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -83,6 +83,47 @@ namespace d360.core.entities
 
 		[DataMember]
 		public int DefaultPermissions { get; set; } = (int)Permission.ReadAsset;
+
+		public string GetNameWithPrefix()
+		{
+			string prefix = string.Empty;
+
+			switch (Object)
+			{
+				case "ArtifactType":
+					switch (Class)
+					{
+						case AssetTypeClass.BusinessAsset:
+							prefix = CommonNames.AssetTypeClass_Business;
+							break;
+						case AssetTypeClass.TechnicalAsset:
+							prefix = CommonNames.AssetTypeClass_Technical;
+							break;
+					}
+					break;
+				case "PolicyType":
+					prefix = CommonNames.AssetTypeClass_Policy;
+					break;
+				case "ReferenceItemType":
+					prefix = "Reference";
+					break;
+				case "RuleType":
+					prefix = CommonNames.AssetTypeClass_Rule;
+					break;
+				case "TaxonomyType":
+					prefix = CommonNames.AssetTypeClass_Model;
+					break;
+				case "GroupType":
+					prefix = "Group";
+					break;
+				case "ResourceType":
+					prefix = "Resource";
+					break;
+			}
+
+			return string.IsNullOrWhiteSpace(prefix) ? Name : $"{prefix}: {Name}";
+		}
+
 	}
 
 	[DataContract(Namespace = NAMESPACE)]

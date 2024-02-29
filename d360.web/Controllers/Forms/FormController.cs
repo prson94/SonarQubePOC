@@ -240,7 +240,7 @@ namespace d360.web.Controllers
 			Route("dynamiceditor/assets/{assetTypeUid}"),
 			Route("dynamiceditor/assets/{assetTypeUid}/{assetUid}")
 		]
-		public JsonResult GetUidAssetEditor(Guid assetTypeUid, Guid? assetUid = null, Guid? parentUid = null)
+		public async Task<JsonResult> GetUidAssetEditor(Guid assetTypeUid, Guid? assetUid = null, Guid? parentUid = null)
 		{
 			Asset parentAsset = null;
 			int? parentId = null;
@@ -266,7 +266,7 @@ namespace d360.web.Controllers
 					return jsonException(string.Format(ActionApiMessages.AssetNotFound, assetUid.Value), HttpStatusCode.NotFound);
 				}
 
-				return DynamicEditorEditFields(asset.Object, assetUid.Value);
+				return await DynamicEditorEditFields(asset.Object, assetUid.Value);
 			}
 			else
 			{
@@ -277,23 +277,23 @@ namespace d360.web.Controllers
 					return jsonException(string.Format(ActionApiMessages.AssetTypeNotFound, assetUid.Value), HttpStatusCode.NotFound);
 				}
 
-				return DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
+				return await DynamicEditorAddFields(assetType.Object, null, parentId, assetType.ObjectID);
 			}
 		}
 
 		[HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
-		public JsonResult DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
+		public async Task<JsonResult> DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
 		{
 			var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
 			var o = assetType.Object;
 
-			return DynamicEditorEditFields(o, assetUid);
+			return await DynamicEditorEditFields(o, assetUid);
 
 			throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 		}
 
 		[HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
-		public JsonResult DynamicEditorEditFields(string o, Guid? uid)
+		public async Task<JsonResult> DynamicEditorEditFields(string o, Guid? uid)
 		{
 			int objectId = -1;
 
@@ -301,22 +301,22 @@ namespace d360.web.Controllers
 			{
 				case "TAG":
 					objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				case "INTERSECTTYPE":
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				case "PREDICATE":
 					objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				case "EXPORTTEMPLATE":
 					objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				case "ISSUETYPE":
 					objectId = Company.IssueTypes.FirstOrDefault(x => x.uid == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				case "SURVEYTYPE":
 					objectId = Company.SurveyTypes.FirstOrDefault(x => x.Uid == uid).ID;
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 				default:
 					foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
 					{
@@ -326,47 +326,47 @@ namespace d360.web.Controllers
 						}
 					}
 
-					return DynamicEditorEditFields(o, objectId);
+					return await DynamicEditorEditFields(o, objectId);
 			}
 
 			throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
 		}
 
 		[HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
-		public JsonResult DynamicEditorEditFields(string o, int oid)
+		public async Task<JsonResult> DynamicEditorEditFields(string o, int oid)
 		{
 			JsonResult res;
 			switch ((o ?? "").ToUpper())
 			{
 				case "ARTIFACT":
-					res = Asset_EditFields(SystemObjects.Artifact, oid);
+					res = await Asset_EditFields(SystemObjects.Artifact, oid);
 					break;
 				case "RULE":
-					res = Asset_EditFields(SystemObjects.Rule, oid);
+					res = await Asset_EditFields(SystemObjects.Rule, oid);
 					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_EditFields(oid);
 					break;
 				case "INTERSECTTYPE":
-					res = Relationship_EditFields(oid);
+					res = await Relationship_EditFields(oid);
 					break;
 				case "ISSUETYPE":
 					res = IssueType_EditFields(oid);
 					break;
 				case "POLICY":
-					res = Hierarchy_EditFields(SystemObjects.Policy, oid);
+					res = await Hierarchy_EditFields(SystemObjects.Policy, oid);
 					break;
 				case "PREDICATE":
 					res = Predicate_EditFields(oid);
 					break;
 				case "REFERENCEITEM":
-					res = ReferenceItem_EditFields(oid);
+					res = await ReferenceItem_EditFields(oid);
 					break;
 				case "RESOURCESELF":
-					res = Resource_EditMyInfoFields();
+					res = await Resource_EditMyInfoFields();
 					break;
 				case "RESOURCETYPE":
-					res = Resource_EditFields(oid);
+					res = await Resource_EditFields(oid);
 					break;
 				case "SURVEYTYPE":
 					res = SurveyType_EditFields(oid);
@@ -375,14 +375,14 @@ namespace d360.web.Controllers
 					res = Tag_EditFields(oid);
 					break;
 				case "GROUP":
-					res = Group_EditFields(oid);
+					res = await Group_EditFields(oid);
 					break;
 				case "TASKTYPE":
-					res = Diagram_EditFields(oid);
+					res = await Diagram_EditFields(oid);
 					break;
 				case "TAXONOMY":
 				case "TAXONOMYTYPE":
-					res = Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
+					res = await Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
 					break;
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
@@ -398,7 +398,7 @@ namespace d360.web.Controllers
 			Route("dynamiceditor/new/uid/{uid}/type/{objectType?}"),
 			Route("dynamiceditor/new/uid/{uid}/type/{objectType?}/target/{targetTypeUid?}")
 		]
-		public JsonResult DynamicEditorAddFieldsByUid(string uid, string objectType, string targetTypeUid)
+		public async Task<JsonResult> DynamicEditorAddFieldsByUid(string uid, string objectType, string targetTypeUid)
 		{
 			Guid guid = Guid.Empty;
 
@@ -410,7 +410,7 @@ namespace d360.web.Controllers
 
 					if (issueType != null)
 					{
-						return DynamicEditorAddFields(SystemObjects.Issue.ToString(), issueType.ID, null, null);
+						return await DynamicEditorAddFields(SystemObjects.Issue.ToString(), issueType.ID, null, null);
 					}
 					else
 					{
@@ -423,7 +423,7 @@ namespace d360.web.Controllers
 
 					if (issueType != null)
 					{
-						return DynamicEditorAddFields(SystemObjects.IssueTypeRelation.ToString(), issueType.ID, null, null);
+						return await DynamicEditorAddFields(SystemObjects.IssueTypeRelation.ToString(), issueType.ID, null, null);
 					}
 					else
 					{
@@ -449,7 +449,7 @@ namespace d360.web.Controllers
 
 					if (asset != null)
 					{
-						return DynamicEditorAddFields(asset.Object.Replace("Type", ""), asset.ObjectID, null, null);
+						return await DynamicEditorAddFields(asset.Object.Replace("Type", ""), asset.ObjectID, null, null);
 					}
 					else
 					{
@@ -462,19 +462,19 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("dynamiceditor/new/objectUid/{objectType}")]
-		public JsonResult DynamicEditorAddFieldsByObjectUid(string objectType)
+		public async Task<JsonResult> DynamicEditorAddFieldsByObjectUid(string objectType)
 		{
 			switch ((objectType ?? "").ToUpper())
 			{
 				case "SURVEYTYPE":
-					return this.DynamicEditorAddFields(objectType, objectID: null, parentID: null, typeID: null);
+					return await DynamicEditorAddFields(objectType, objectID: null, parentID: null, typeID: null);
 				default:
 					throw new ArgumentException(FormControllerApiMessage.InvalidEditorType);
 			}
 		}
 
 		[HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
-		public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
+		public async Task<JsonResult> DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
 		{
 			JsonResult res;
 			switch ((objectType ?? "").ToUpper())
@@ -498,10 +498,10 @@ namespace d360.web.Controllers
 					res = IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "POLICY":
-					res = Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				case "POLICYTYPE":
-					res = Hierarchy_AddFields(SystemObjects.PolicyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Hierarchy_AddFields(SystemObjects.PolicyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				case "PREDICATE":
 					res = Predicate_AddFields();
@@ -525,10 +525,10 @@ namespace d360.web.Controllers
 					res = Diagram_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "TAXONOMY":
-					res = Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				case "TAXONOMYTYPE":
-					res = Hierarchy_AddFields(SystemObjects.TaxonomyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Hierarchy_AddFields(SystemObjects.TaxonomyType, typeID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				default:
 					throw new ArgumentNullException(FormControllerApiMessage.InvalidEditorType);
@@ -1456,7 +1456,7 @@ order by Sort, title";
 		}
 
 		/// <param name="id">LookupID</param>
-		public JsonResult ReferenceItem_EditFields(int id)
+		public async Task<JsonResult> ReferenceItem_EditFields(int id)
 		{
 			var list = new List<EditableField>();
 			var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
@@ -1496,7 +1496,7 @@ order by Sort, title";
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
-			list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, fieldTypes, fields, row, false, false);
+			list = await loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, fieldTypes, fields, row, false, false);
 			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
 
 			list.ForEach(f =>
@@ -2075,7 +2075,7 @@ order by Sort, title";
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
 
-		private JsonResult Group_EditFields(int groupId)
+		private async Task<JsonResult> Group_EditFields(int groupId)
 		{
 			var list = new List<EditableField>();
 
@@ -2120,7 +2120,7 @@ order by Sort, title";
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
 			list =
-			   loadDynamicFields(
+			   await loadDynamicFields(
 				   SystemObjects.Group.ToString(),
 				   groupId,
 				   list,

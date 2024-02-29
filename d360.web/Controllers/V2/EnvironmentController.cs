@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using ComponentSpace.SAML2.Data;
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -62,6 +63,7 @@ namespace d360.web.Controllers.V2
 
 		private bool IsCustomCssEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_BRANDING_CUSTOM_CSS, GetFeatureFlagUser()); } }
 		private bool IsDashboardingEnabled { get { return FeatureFlags.IsThisTrue(FlagList.PERM_IS_DASHBOARDING_ENABLED, GetFeatureFlagUser(), true); } }
+
 
 		public EnvironmentController(
 			ICoreComponentSet set, 
@@ -214,12 +216,12 @@ namespace d360.web.Controllers.V2
 			{
 				if (!string.IsNullOrWhiteSpace(UpdateCss.css))
 				{
-					SettingsRepository.UpsertSetting(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
+					await Workspace.UpsertSettingAsync(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
 					await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
 				}
 				else
 				{
-					SettingsRepository.DeleteSetting(Setting.CustomCSSLocation);
+					await Workspace.RemoveSettingAsync(Setting.CustomCSSLocation);
 				}
 			}
 			catch
@@ -240,22 +242,15 @@ namespace d360.web.Controllers.V2
 			Route("appsettings"),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage GetAppSettings()
+		public IHttpActionResult GetAppSettings()
 		{
-			try
+			var settings = new List<ApplicationSetting>
 			{
-				var settings = new List<ApplicationSetting>();
+				new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("FluidTopicBaseUri") },
+				new ApplicationSetting { Name = "AppInsightsInstrumentationKey", Value = Config.GetValue<string>("AppInsightsInstrumentationKey") }
+			};
 
-				settings.Add(new ApplicationSetting { Name = "HelpBaseUri", Value = Config.GetValue<string>("FluidTopicBaseUri") });
-				settings.Add(new ApplicationSetting { Name = "AppInsightsInstrumentationKey", Value = Config.GetValue<string>("AppInsightsInstrumentationKey") });
-
-				return Request.CreateResponse(HttpStatusCode.OK, settings);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
-
+			return Ok(settings);
 		}
 
 
@@ -269,7 +264,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_settingId", "Optional parameter to filter by setting ID.", DataType = "integer", ParameterType = "query", Required = false),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage Settings()
+		public async Task<IHttpActionResult> GetSettings()
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 			var _settingId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_settingid").Value;
@@ -278,7 +273,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!int.TryParse(_settingId, out int val) || val <= 0)
 				{
-					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.SettingIDNotValid);
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.SettingIDNotValid);
 				}
 				else
 				{
@@ -286,28 +281,20 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			try
+			var settings = await GetCachedSettings();
+			
+			if (settingId.HasValue)
 			{
-				var settings = SettingsRepository.GetSettings();
-				if (settingId.HasValue)
-				{
-					settings = settings.Where(s => (int)s.ID == settingId.Value).ToList();
-				}
-
-				if (settingId.HasValue && settings.Count() == 0)
-				{
-					return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
-				}
-
-				var response = settings.Select(s => new CompanySettingApiModel(s, s.Value));
-
-				return Request.CreateResponse(HttpStatusCode.OK, response);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+				settings = settings.Where(s => (int)s.ID == settingId.Value).ToList();
 			}
 
+			if (settingId.HasValue && settings.Count() == 0)
+			{
+				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
+			}
+
+			var response = settings.Select(s => new CompanySettingApiModel(s, s.Value));
+			return Ok(response);
 		}
 
 		private async Task<string> updateSingleSettingImageFile(string folder, string url, string data)
@@ -331,7 +318,7 @@ namespace d360.web.Controllers.V2
 			return data;
 		}
 
-		private void updateSingleSetting(SettingInfo setting, CompanySettingApiUpdateModel model)
+		private async Task updateSingleSettingAsync(SettingInfo setting, CompanySettingApiUpdateModel model)
 		{
 			if (setting == null)
 			{
@@ -514,11 +501,11 @@ namespace d360.web.Controllers.V2
 
 			if (clearSetting)
 			{
-				SettingsRepository.DeleteSetting(setting.ID);
+				await Workspace.RemoveSettingAsync(setting.ID);
 			}
 			else
 			{
-				SettingsRepository.UpsertSetting(setting.ID, value);
+				await Workspace.UpsertSettingAsync(setting.ID, value);
 			}
 		}
 
@@ -531,32 +518,22 @@ namespace d360.web.Controllers.V2
 			Route("settings"),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
+		public async Task<IHttpActionResult> UpdateSetting(CompanySettingApiUpdateModel model)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
 			if (model == null)
 			{
-				return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
-			try
-			{
-				var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
-				updateSingleSetting(setting, model);
-				return Request.CreateResponse(HttpStatusCode.OK);
-			}
-			catch (GenericException ex)
-			{
-				return ReturnApiError(ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
+			var setting = Setting.ActionMessage.GetAsList().SingleOrDefault(s => (int)s.ID == model.SettingID);
+			await updateSingleSettingAsync(setting, model);
+
+			return Ok();
 		}
 
 		/// <summary>
@@ -568,36 +545,29 @@ namespace d360.web.Controllers.V2
 			Route("settings/batch"),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage UpdateSettings(List<CompanySettingApiUpdateModel> models)
+		public async Task<IHttpActionResult> UpdateSettings(List<CompanySettingApiUpdateModel> models)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
 			if (models == null || models.Count == 0)
 			{
-				return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
-			try
+			var list = Setting.ActionMessage.GetAsList();
+			await Task.Run(() =>
 			{
-				var list = Setting.ActionMessage.GetAsList();
-				models.ForEach(model =>
+				models.ForEach(async model =>
 				{
 					var setting = list.SingleOrDefault(s => (int)s.ID == model.SettingID);
-					updateSingleSetting(setting, model);
+					await updateSingleSettingAsync(setting, model);
 				});
-				return Request.CreateResponse(HttpStatusCode.OK);
-			}
-			catch (GenericException ex)
-			{
-				return ReturnApiError(ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
+			});
+
+			return Ok();
 		}
 
 		/// <summary>
@@ -2693,7 +2663,7 @@ select	r.uid as ResourceUid,
 					throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
 				}
 
-				var companySettings = SettingsRepository.GetSettings();
+				var companySettings = await GetCachedSettings();
 				var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
 				var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
 
@@ -2731,7 +2701,7 @@ select	r.uid as ResourceUid,
 			Route("dashboards/{reportId}/powerbi-tokens")]
 		public async Task<IHttpActionResult> GetPowerBITokens(string reportId)
 		{
-			var companySettings = SettingsRepository.GetSettings();
+			var companySettings = await GetCachedSettings();
 			var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
 			var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
 
@@ -2905,7 +2875,7 @@ select	r.uid as ResourceUid,
 			{
 				var groupName = Guid.NewGuid().ToString();//$"D3S{Company.CurrentCompanyID}";
 				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
-				SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
+				await Workspace.UpsertSettingAsync(Setting.PowerBIGroupId, res.Id.ToString());
 
 				return res.Id.ToString();
 			}
@@ -2935,7 +2905,7 @@ select	r.uid as ResourceUid,
 
 		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(Stream fileStream, string name, string datasetId = "")
 		{
-			var companySettings = SettingsRepository.GetSettings();
+			var companySettings = await GetCachedSettings();
 			var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
 			var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 

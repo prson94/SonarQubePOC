@@ -51,21 +51,8 @@ namespace d360.web.Controllers.V2
 	]
 	public partial class AssetsController : BaseV2ApiController
 	{
-		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
-
-		private ICatalog EnvironmentCatalog { 
-			get 
-			{ 
-				return UseCatalogMicroservice ? 
-					Catalogs.Single(c => c.Platform  == Platform.Dis) :
-					Catalogs.Single(c => c.Platform == Platform.Azure);
-			}
-		}
-
-
 		#region DI
 
-		private readonly ICachingProvider Cache;
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
 
@@ -74,10 +61,8 @@ namespace d360.web.Controllers.V2
 		private readonly IFieldsRepository FieldsRepository;
 		private readonly IRelationshipRepository RelationshipRepository;
 		private readonly ITagRepository TagRepository;
-		private readonly IList<ICatalog> Catalogs;
 
 		public AssetsController(
-			ICachingProvider cache,
 			ICoreComponentSet set,
 			IStorageProvider storage,
 			IQueueSource queueSource,
@@ -85,13 +70,9 @@ namespace d360.web.Controllers.V2
 			IExecutionsRepository executionsRepository,
 			IFieldsRepository fieldsRepository,
 			IRelationshipRepository relationshipRepository,
-			ITagRepository tagRepository,
-			IEnumerable<ICatalog> catalogs
+			ITagRepository tagRepository
 		) : base(set)
 		{
-			Catalogs = catalogs.ToList();
-
-			Cache = cache;
 			QueueSource = queueSource;
 			Storage = storage;
 			AssetRepository = assetRepository;
@@ -114,26 +95,10 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes. The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.", typeof(List<AssetTypeClassInfo>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public HttpResponseMessage GetAssetTypeClassesAsync()
+		public IHttpActionResult GetAssetTypeClassesAsync()
 		{
-			var prefix = "Assets.GetAssetTypeClassesAsync => ";
-			string errorMessage;
-
-			try
-			{
-				var classes = AssetRepository.GetAssetTypeList();
-
-				return Request.CreateResponse(HttpStatusCode.OK, classes);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			var classes = AssetRepository.GetAssetTypeList();
+			return Ok(classes);
 		}
 
 		/// <summary>
@@ -159,7 +124,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
+		public async Task<IHttpActionResult> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
@@ -170,12 +135,12 @@ namespace d360.web.Controllers.V2
 				{
 					if (!Company.Any<AssetType>(x => x.uid == assetTypeUid.Value))
 					{
-						throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
+						return errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.NotFoundGeneric);
 					}
 				}
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
+			return Ok(assetTypes);
 		}
 
 		string calculateCacheKeyForGetAssetsTotal(int assetTypeId, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -770,6 +735,7 @@ namespace d360.web.Controllers.V2
 			document.SelectWorksheet(assettypeNameSheet);
 			return document;
 		}
+		
 		/// <summary>
 		/// Retrieves assets for the given asset type unique identifier.
 		/// </summary>
@@ -1240,7 +1206,7 @@ namespace d360.web.Controllers.V2
 					model.Class = AssetTypeClass.BusinessAsset;
 				}
 
-				var governanceRoleReferenceListUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+				var governanceRoleReferenceListUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 
 				var validator = new AssetTypeValidator(Company, governanceRoleReferenceListUid);
 
@@ -1501,7 +1467,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 				}
 
-				var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+				var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 				var validator = new AssetTypeValidator(Company, govRoleUid);
 
 				if (model.Class == AssetTypeClass.Glossary)
@@ -1962,29 +1928,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetEnvironmentAssetCountsAsync()
+		public async Task<IHttpActionResult> GetEnvironmentAssetCountsAsync()
 		{
-			var prefix = "Assets.GetEnvironmentAssetCountsAsync => ";
-			string errorMessage;
-
-			try
+			if (!Company.CurrentResourceIsAdmin)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return Request.CreateErrorResponse(HttpStatusCode.Forbidden, AssetsApiMessages.EnvironmentLevelAssetCountNotAllowed);
-				};
+				return errorMessageResponse(HttpStatusCode.Forbidden, AssetsApiMessages.EnvironmentLevelAssetCountNotAllowed);
+			};
 
-				return Request.CreateResponse(HttpStatusCode.OK, await AssetRepository.GetAssetsCounts());
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Ok(await AssetRepository.GetAssetsCounts());
 		}
 
 		/// <summary>
@@ -2001,39 +1952,23 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type Uid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 		]
-		public async Task<HttpResponseMessage> GetAssetCountOfArtifactTypeUid(Guid assetTypeUid)
+		public async Task<IHttpActionResult> GetAssetCountOfArtifactTypeUid(Guid assetTypeUid)
 		{
-			var prefix = "Assets.GetAssetCountOfArtifactTypeUid => ";
-			string errorMessage;
-
-			try
+			if (assetTypeUid == null || assetTypeUid == Guid.Empty)
 			{
-				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, ActionApiMessages.AssetTypeUidIsNotValid);
-				}
-				else
-				{
-					var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-					if (assetType == null)
-					{
-						return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
-					}
-				}
-
-				var assettypecount = await AssetRepository.GetAssetCountOfAssetTypeUid(assetTypeUid);
-				return Request.CreateResponse(HttpStatusCode.OK, assettypecount);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ActionApiMessages.AssetTypeUidIsNotValid);
 			}
-			catch (Exception ex)
+			else
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>()
+				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+				if (assetType == null)
 				{
-					{ "Endpoint Method", prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+					return errorMessageResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
+				}
 			}
+
+			var assettypecount = await AssetRepository.GetAssetCountOfAssetTypeUid(assetTypeUid);
+			return Ok(assettypecount);
 		}
 
 
@@ -2051,67 +1986,51 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("returncount", "Allows you to include or exclude the count of the asset type. The default is true which means the count is included.", DataType = "boolean", ParameterType = "query", Required = false)
 		]
-		public async Task<HttpResponseMessage> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
+		public async Task<IHttpActionResult> GetAssetTypeCountsAsync(Guid? assetTypeUid = null)
 		{
-			var prefix = "Assets.GetAssetTypeCountsAsync => ";
-			string errorMessage;
+			List<AssetTypeClass> classFilters = new List<AssetTypeClass>() {
+				AssetTypeClass.BusinessAsset,
+				AssetTypeClass.TechnicalAsset,
+				AssetTypeClass.Model,
+				AssetTypeClass.Policy,
+				AssetTypeClass.Rule,
+				AssetTypeClass.Diagram,
+				AssetTypeClass.Group,
+				AssetTypeClass.Reference
+			};
 
-			try
+			List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();
+
+			var param = Request.GetQueryNameValuePairs();
+
+			if (param.Any(x => x.Key.ToLower() == "class"))
 			{
-				List<AssetTypeClass> classFilters = new List<AssetTypeClass>() {
-					AssetTypeClass.BusinessAsset,
-					AssetTypeClass.TechnicalAsset,
-					AssetTypeClass.Model,
-					AssetTypeClass.Policy,
-					AssetTypeClass.Rule,
-					AssetTypeClass.Diagram,
-					AssetTypeClass.Group,
-					AssetTypeClass.Reference
-				};
+				var value = param.FirstOrDefault(x => x.Key.ToLower() == "class").Value;
+				var values = value.Split(',');
 
-				List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();
-
-				var param = Request.GetQueryNameValuePairs();
-
-				if (param.Any(x => x.Key.ToLower() == "class"))
+				if (values.Count() > 0)
 				{
-					var value = param.FirstOrDefault(x => x.Key.ToLower() == "class").Value;
-					var values = value.Split(',');
-
-					if (values.Count() > 0)
+					classFilters.Clear();
+					foreach (var cs in values.Select(x => x.Trim()))
 					{
-						classFilters.Clear();
-						foreach (var cs in values.Select(x => x.Trim()))
+						if (Enum.TryParse(cs, true, out AssetTypeClass assetTypeClass))
 						{
-							if (Enum.TryParse(cs, true, out AssetTypeClass assetTypeClass))
+							if (!allowedClasses.Any(x => x == assetTypeClass))
 							{
-								if (!allowedClasses.Any(x => x == assetTypeClass))
-								{
-									return ReturnApiError(HttpStatusCode.BadRequest, string.Format(AssetsApiMessages.ClassNotSupport, assetTypeClass.ToString()));
-								}
-								classFilters.Add(assetTypeClass);
+								return errorMessageResponse(HttpStatusCode.BadRequest, string.Format(AssetsApiMessages.ClassNotSupport, assetTypeClass.ToString()));
 							}
-							else
-							{
-								return ReturnApiError(HttpStatusCode.BadRequest, string.Format(AssetsApiMessages.InvalidAssetTypeClass, cs));
-							}
+							classFilters.Add(assetTypeClass);
+						}
+						else
+						{
+							return errorMessageResponse(HttpStatusCode.BadRequest, string.Format(AssetsApiMessages.InvalidAssetTypeClass, cs));
 						}
 					}
 				}
-
-				var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), param, assetTypeUid);
-
-				return Request.CreateResponse(HttpStatusCode.OK, classes);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray(), param, assetTypeUid);
+			return Ok(classes);
 		}
 
 		/// <summary>
@@ -2496,16 +2415,14 @@ namespace d360.web.Controllers.V2
 						}
 					}
 
-					var response = Request.CreateResponse(HttpStatusCode.OK, result);
-
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+					return Ok(result);
 				}
 			}
 			catch (FilterExpressionParserException ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage));
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage);
 			}
 			catch (Exception ex)
 			{
@@ -2514,7 +2431,7 @@ namespace d360.web.Controllers.V2
 					{ ApiMessages.EndpointMethod, prefix }
 				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, ApiMessages.UnknownError));
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, ApiMessages.UnknownError);
 			}
 		}
 
@@ -2959,7 +2876,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 				foreach (var asset in assetTypes)
 				{
 					if (governanceRole == asset.Uid)
@@ -3036,7 +2953,7 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var governanceRole = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+				var governanceRole = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 
 				if (governanceRole == assetType.Uid)
 				{
@@ -3626,7 +3543,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			AssetPathResults results = await EnvironmentCatalog.ReadAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
+			AssetPathResults results = await Catalog.ReadAssetPaths(assetType.ID, includeTotal, pageNum, pageSize);
 
 			HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
@@ -4004,59 +3921,47 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
+		public async Task<IHttpActionResult> GetAssetLookupValues(Guid assetTypeUid, int? skip = null, int? take = 0, string filter = null)
 		{
-			var prefix = "Assets.GetAssetLookupValues => ";
-			var errorMessage = "";
-
 			if (skip == null)
 			{
-				return ReturnApiError(HttpStatusCode.BadRequest, "Skip cannot be null");
+				return errorMessageResponse(HttpStatusCode.BadRequest, "Skip cannot be null");
 			}
 			if (take < 1)
 			{
-				return ReturnApiError(HttpStatusCode.BadRequest, "Take must be greater than 0");
+				return errorMessageResponse(HttpStatusCode.BadRequest, "Take must be greater than 0");
 			}
 			if(skip < 0)
 			{
 				skip = 0;
 			}
 
-			try
+
+			var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+
+			if (assetType.Object == "ReferenceItemType" && assetType.ObjectID == 0)
 			{
+				//handle reference lists
+				IQueryable<AssetType> query = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID != 0);
 
-				var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
-
-				if (assetType.Object == "ReferenceItemType" && assetType.ObjectID == 0)
+				if (!string.IsNullOrEmpty(filter))
 				{
-					//handle reference lists
-					IQueryable<AssetType> query = Company.AssetTypes.Where(x => x.Object == "ReferenceItemType" && x.ObjectID != 0);
-
-					if (!string.IsNullOrEmpty(filter))
-					{
-						query = query.Where(x => x.Name.Contains(filter));
-					}
-
-					var refListResults = query.OrderBy(x => x.Name)
-						.Skip(skip.Value)
-						.Take(take.Value)
-						.Select(x => new { value = x.uid, label = x.Name }).ToList();
-
-					return Request.CreateResponse(HttpStatusCode.OK, refListResults);
+					query = query.Where(x => x.Name.Contains(filter));
 				}
 
-				filter = "%" + (filter ?? "") + "%";
-				var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
+				var refListResults = query.OrderBy(x => x.Name)
+					.Skip(skip.Value)
+					.Take(take.Value)
+					.Select(x => new { value = x.uid, label = x.Name }).ToList();
 
-				return Request.CreateResponse(HttpStatusCode.OK, results);
+				return Ok(refListResults);
 			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			filter = "%" + (filter ?? "") + "%";
+			var results = await Company.QueryAsync<dynamic>($@"exec [SimpleAssetSearch] @assetTypeId, @filter,@skip,@take", new { assetTypeId = assetType.ID, skip, take, filter });
+
+			return Ok(results);
+
 		}
 
 		/// <summary>
@@ -4072,45 +3977,32 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetAssetTypeLevels(Guid assetTypeUid)
+		public async Task<IHttpActionResult> GetAssetTypeLevels(Guid assetTypeUid)
 		{
-			var prefix = "Assets.GetAssetTypeLevels => ";
-			string errorMessage;
+			var query = $@"
+						drop table if exists #levelNameMapping
+						create table #levelNameMapping (Level int, Name nvarchar(250), Description nvarchar(4000))
 
-			try
-			{
-				var query = $@"
-							drop table if exists #levelNameMapping
-							create table #levelNameMapping (Level int, Name nvarchar(250), Description nvarchar(4000))
+						declare @levelCount int = (select top 1 HierarchyMaximumDepth from AssetType at where at.uid = @assetTypeUid)
+							while @levelCount > 0
+							begin
+								insert into #levelNameMapping (Level) values (@levelCount)
 
-							declare @levelCount int = (select top 1 HierarchyMaximumDepth from AssetType at where at.uid = @assetTypeUid)
-							   while @levelCount > 0
-								begin
-									insert into #levelNameMapping (Level) values (@levelCount)
+								set @levelCount = @levelCount - 1
+							end
 
-									set @levelCount = @levelCount - 1
-								end
+						update T
+						set T.Name = ATL.Name,
+							T.Description = ATL.Description
+						from #levelNameMapping T
+						inner join AssetType at on at.uid = @assetTypeUid
+						inner join AssetTypeLevel ATL on atl.assettypeid = at.id and atl.level = T.Level
 
-							update T
-							set T.Name = ATL.Name,
-								T.Description = ATL.Description
-							from #levelNameMapping T
-							inner join AssetType at on at.uid = @assetTypeUid
-							inner join AssetTypeLevel ATL on atl.assettypeid = at.id and atl.level = T.Level
+						select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Description from #levelNameMapping order by [Level] asc";
 
-							select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Description from #levelNameMapping order by [Level] asc";
+			var results = await Company.QueryAsync<dynamic>(query, new { assetTypeUid });
 
-				var results = await Company.QueryAsync<dynamic>(query, new { assetTypeUid });
-
-				return Request.CreateResponse(HttpStatusCode.OK, results);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -4126,27 +4018,11 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<HttpResponseMessage> GetAssetPathByUid(Guid assetUid)
+		public async Task<IHttpActionResult> GetAssetPathByUid(Guid assetUid)
 		{
-			var prefix = "Assets.GetAssetPathByUid => ";
-			string errorMessage;
-
-			try
-			{
-				var query = $@" select ap.DisplayPath from Asset a inner join assetpath ap on ap.id = a.id 
-						where a.Uid = @assetuid";
-
-				var results = await Company.QueryAsync<dynamic>(query, new { assetUid });
-
-				return Request.CreateResponse(HttpStatusCode.OK, results);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			var query = $@" select ap.DisplayPath from Asset a inner join assetpath ap on ap.id = a.id where a.Uid = @assetuid";
+			var results = await Company.QueryAsync<dynamic>(query, new { assetUid });
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -4170,32 +4046,18 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAssetDescendents(Guid assetUid)
 		{
-			var prefix = "Assets.GetAssetDescendent => ";
+			var queryParams = Request.GetQueryNameValuePairs();
 
-			try
+			var validationResult = ValidateGetDescendentParameters(assetUid, queryParams);
+
+			if (validationResult.StatusCode != HttpStatusCode.OK)
 			{
-				var queryParams = Request.GetQueryNameValuePairs();
-
-				var validationResult = ValidateGetDescendentParameters(assetUid, queryParams);
-
-				if (validationResult.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message)).ConfigureAwait(false);
-				}
-
-				var results = await AssetRepository.GetAssetDescendants(assetUid, queryParams);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+				return errorMessageResponse(validationResult.StatusCode, validationResult.Error, validationResult.Message);
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
-			}
+			var results = await AssetRepository.GetAssetDescendants(assetUid, queryParams);
+
+			return Ok(results);
 		}
 
 		private WorkHttpStatus ValidateGetDescendentParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -4276,7 +4138,7 @@ namespace d360.web.Controllers.V2
 
 			ValidateParameters();
 
-			var results = await EnvironmentCatalog.ReadAncestryAsync(assetTypeID, cancellationToken);
+			var results = await Catalog.ReadAncestryAsync(assetTypeID, cancellationToken);
 			var entities = results.ToList();
 			if (entities.Count == 0)
 			{

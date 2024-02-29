@@ -1,7 +1,6 @@
 ﻿using d360.core.entities;
 using d360.web.Controllers.V2;
 using igx.UnitTests.Core;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -17,7 +16,7 @@ namespace igx.UnitTests.V2ControllerTests
         internal CrossReferencesController crossReferencesController;
         public CrossReferenceControllerTest()
         {
-            crossReferencesController = new CrossReferencesController(GetCoreComponentSet(), GetAssetRepository(), GetCrossReferencesRepository(), GetExecutionsRepository())
+            crossReferencesController = new CrossReferencesController(GetCoreComponentSet(), GetQueue(), GetStorage())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -27,62 +26,52 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Get()
         {
-            var res = await crossReferencesController.Get();
-            var data = res.Content.ReadAsStringAsync().Result;
-
-            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
-            Assert.True(data != null, XMsg.InvalidJSON);
-
-            var parsedData = JsonConvert.DeserializeObject<List<AssetCrossReference>>(data);
-
-            Assert.True(parsedData != null && parsedData.Count > 0, XMsg.InvalidJSON);
+            var res = await (await crossReferencesController.Get()).ExecuteAsync(new System.Threading.CancellationToken());
+			var parsedData = await res.Content.ReadAsAsync<List<AssetCrossReference>>();
+			Assert.True(parsedData != null, XMsg.InvalidJSON);
         }
 
         [Fact]
         public async void GetByAssetUid()
         {
-            var res = await crossReferencesController.GetByUid("");
-            var data = res.Content.ReadAsStringAsync().Result;
+            var res = await (await crossReferencesController.GetByUid("")).ExecuteAsync(new System.Threading.CancellationToken());
+			var data = res.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(data != null, XMsg.InvalidJSON);
-
             AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
         public async void GetByTypeID()
         {
-            var res = await crossReferencesController.GetByTypeID("", "");
-            var data = res.Content.ReadAsStringAsync().Result;
+            var res = await (await crossReferencesController.GetByTypeID("", "")).ExecuteAsync(new System.Threading.CancellationToken());
+			var data = res.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(data != null, XMsg.InvalidJSON);
-
             AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
         public async void GetByType()
         {
-            var res = await crossReferencesController.GetByType("");
-            var data = res.Content.ReadAsStringAsync().Result;
+            var res = await (await crossReferencesController.GetByType("")).ExecuteAsync(new System.Threading.CancellationToken());
+			var data = res.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(data != null, XMsg.InvalidJSON);
-
             AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
         [Fact]
         public async void GetByDataSource()
         {
-            var res = await crossReferencesController.GetByDataSource("");
-            var data = res.Content.ReadAsStringAsync().Result;
+            var res = await (await crossReferencesController.GetByDataSource("")).ExecuteAsync(new System.Threading.CancellationToken());
+			var data = res.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(data != null, XMsg.InvalidJSON);
-
             AssertJSON.True<List<AssetCrossReference>>(data);
         }
 
@@ -90,45 +79,20 @@ namespace igx.UnitTests.V2ControllerTests
         public async void Post()
         {
             var myAssetCrossReference = new AssetCrossReference();
-            var res = new AssetCrossReference();
 
-            try
-            {
-                res = await crossReferencesController.Post(myAssetCrossReference);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-            myAssetCrossReference.DataSource = "non-empty";
-            myAssetCrossReference.ExternalID = "non-empty";
-            myAssetCrossReference.Type = "non-empty";
-
-            try
-            {
-                myAssetCrossReference.uid = Guid.Parse(DataConstants.InvalidGUID);
-                res = await crossReferencesController.Post(myAssetCrossReference);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict, XMsg.BadResponseCode);
-            }
-
-            myAssetCrossReference.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.Post(myAssetCrossReference);
-
-            Assert.True(res != null, XMsg.NoContent);
-
+            var res = await (await crossReferencesController.Post(myAssetCrossReference)).ExecuteAsync(new System.Threading.CancellationToken()); 
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.Created);
         }
 
         [Fact]
         public async void PostBulk()
         {
             var xRef = new AssetCrossReference();
-            var xRefList = new List<AssetCrossReference>() { new AssetCrossReference() { uid = Guid.Parse(DataConstants.ValidGUID) } };
-            xRefList.Add(xRef);
+            var xRefList = new List<AssetCrossReference>
+			{
+				new AssetCrossReference() { uid = Guid.Parse(DataConstants.ValidGUID) },
+				xRef
+			};
 
             IHttpActionResult actionResult;
             Task<HttpResponseMessage> responseMessageResult;
@@ -149,7 +113,8 @@ namespace igx.UnitTests.V2ControllerTests
             }
 
         }
-        [Fact]
+        
+		[Fact]
         public async void PutByParams()
         {
             Guid uid = Guid.Parse(DataConstants.InvalidGUID);
@@ -158,27 +123,8 @@ namespace igx.UnitTests.V2ControllerTests
             string externalId = string.Empty;
             var xRef = new AssetCrossReference();
 
-            HttpResponseMessage res;
-
-            try
-            {
-                res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-
-
-            dataSource = type = externalId = "not-empty";
-            xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
-            res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            xRef.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef);
-            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            var res = await (await crossReferencesController.PutByXrefUid(uid, dataSource, type, externalId, xRef)).ExecuteAsync(new System.Threading.CancellationToken());
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
         }
 
         [Fact]
@@ -186,112 +132,47 @@ namespace igx.UnitTests.V2ControllerTests
         {
             Guid uid = Guid.Parse(DataConstants.InvalidGUID);
             var xRef = new AssetCrossReference();
-            xRef.DataSource = xRef.Type = xRef.ExternalID = String.Empty;
+            xRef.DataSource = xRef.Type = xRef.ExternalID = string.Empty;
             HttpResponseMessage res;
 
-            try
-            {
-                res = await crossReferencesController.PutByUid(uid, xRef);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-            xRef.DataSource = xRef.Type = xRef.ExternalID = "not-empty";
-
-            xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
-            res = await crossReferencesController.PutByUid(uid, xRef);
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            xRef.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.PutByUid(uid, xRef);
-            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            res = await (await crossReferencesController.PutByUid(uid, xRef)).ExecuteAsync(new System.Threading.CancellationToken());
+            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK);
         }
-        [Fact]
+
+		[Fact]
         public async void DeleteByUid()
         {
-            HttpResponseMessage res;
-
-            res = await crossReferencesController.DeleteByUid(Guid.Parse(DataConstants.InvalidGUID));
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            res = await crossReferencesController.DeleteByUid(Guid.Parse(DataConstants.ValidGUID));
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            var res = await (await crossReferencesController.DeleteByUid(Guid.Parse(DataConstants.ValidGUID))).ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
         public async void DeleteByDataSource()
         {
-            HttpResponseMessage res;
+			var res = await (await crossReferencesController.DeleteByDataSource(string.Empty)).ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
 
-            try
-            {
-                res = await crossReferencesController.DeleteByDataSource(string.Empty);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-
-            res = await crossReferencesController.DeleteByDataSource("random invalid string");
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            res = await crossReferencesController.DeleteByDataSource(DataConstants.ValidDataSource);
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            res = await (await crossReferencesController.DeleteByDataSource(DataConstants.ValidDataSource)).ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
         public async void DeleteByDataSourceAndType()
         {
-            HttpResponseMessage res;
-            string type = string.Empty;
+			var res = await (await crossReferencesController.DeleteByDataSourceAndType(string.Empty, string.Empty)).ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
 
-            try
-            {
-                res = await crossReferencesController.DeleteByDataSourceAndType(string.Empty, type);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-
-            res = await crossReferencesController.DeleteByDataSourceAndType("random invalid string", "type");
-
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            res = await crossReferencesController.DeleteByDataSourceAndType(DataConstants.ValidDataSource, "type");
-
+            res = await (await crossReferencesController.DeleteByDataSourceAndType(DataConstants.ValidDataSource, "type")).ExecuteAsync(new System.Threading.CancellationToken());
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }
 
         [Fact]
         public async void DeleteByType()
         {
-            HttpResponseMessage res;
+			var res = await (await crossReferencesController.DeleteByType(string.Empty)).ExecuteAsync(new System.Threading.CancellationToken());
+			Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
 
-            try
-            {
-                res = await crossReferencesController.DeleteByType(string.Empty);
-                Assert.True(false, XMsg.ExceptionExpected);
-            }
-            catch (HttpResponseException ex)
-            {
-                Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.NotAcceptable, XMsg.BadResponseCode);
-            }
-
-            res = await crossReferencesController.DeleteByType("random invalid string");
-            Assert.True(!res.IsSuccessStatusCode);
-            Assert.True(res.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-
-            res = await crossReferencesController.DeleteByType(DataConstants.ValidType);
+            res = await (await crossReferencesController.DeleteByType(DataConstants.ValidType)).ExecuteAsync(new System.Threading.CancellationToken());
             Assert.True(res.IsSuccessStatusCode);
             Assert.True(res.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
         }

@@ -13,6 +13,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using repositories;
+using repositories.azure;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -265,8 +267,10 @@ namespace igx.jobs.apiexecutionprocessor
 									resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAssetType where ExecutionID = @executionId order by ItemNumber asc";
 									break;
 								case ApiExecutionAction.PostCrossReferences:
+									var connectionString = community.GetCompanyConnectionString();
+									ICatalog catalog = new Catalog(new DapperConnectionProvider { ConnectionString = connectionString });
 									var postCrossReferences = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(info.StorageFolder, info.RequestFileName);
-									await company.ImportCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
+									await catalog.CreateCrossReferencesAsync(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
 									resultsSql = @"select [ItemNumber], [uid], [Message], [Success] from api.ExecutionAssetCrossReference where ExecutionID = @executionId order by ItemNumber asc";
 									break;
 								case ApiExecutionAction.PostDataQualityResults:

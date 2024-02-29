@@ -1,28 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
-
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
 using d360.core.queue;
-using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-
 using Microsoft.Web.Http;
-
 using Newtonsoft.Json;
 using repositories;
 using Resources;
-
 using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -40,7 +34,10 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository AssetRepository;
 		private readonly IProcessRepository ProcessRepository;
 
-		public ProcessController(ICoreComponentSet set, IAssetRepository assetRepository, IProcessRepository processRepository) : base(set)
+		public ProcessController(
+			ICoreComponentSet set, 
+			IAssetRepository assetRepository, 
+			IProcessRepository processRepository) : base(set)
 		{
 			AssetRepository = assetRepository;
 			ProcessRepository = processRepository;
@@ -64,7 +61,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes(Guid assetUid)
 		{
-			var governanceRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+			var governanceRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 			var results = await Company.QueryAsync<dynamic>($@"
 					drop table if exists #govRoles
 					create table #govRoles(
@@ -146,7 +143,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult GetProcessDiagram(Guid assetUid)
+		public async Task<IHttpActionResult> GetProcessDiagram(Guid assetUid)
 		{
 			if (assetUid == null || assetUid == Guid.Empty)
 			{
@@ -161,7 +158,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-			var assetDetail = Company.GetAssetDetail(asset.ID);
+			var assetDetail = (await Catalog.ReadAssetDetail(asset.ID));
 			var result = new { model, assetDetail };
 
 			return Ok(result);
@@ -516,7 +513,7 @@ namespace d360.web.Controllers.V2
 			result = result.Replace("data:image/png;base64,", "");
 			byte[] image = Convert.FromBase64String(result);
 			byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
-			var detail = Company.GetAssetDetail(asset.ID);
+			var detail = await Catalog.ReadAssetDetail(asset.ID);
 			var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now:MMM dd yyyy}.xlsx", bytes);
 
 			return ResponseMessage(response);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 using d360.core;
@@ -117,7 +118,7 @@ namespace d360.web.Controllers
 		}
 
 		/// <param name="id">ResourceID</param>
-		public JsonResult Resource_EditFields(int id)
+		public async Task<JsonResult> Resource_EditFields(int id)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -213,7 +214,7 @@ namespace d360.web.Controllers
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
-			list = loadDynamicFields(
+			list = await loadDynamicFields(
 					SystemObjects.Resource.ToString(),
 					id,
 					list,
@@ -228,7 +229,7 @@ namespace d360.web.Controllers
 		}
 
 		[Route("Resource_EditMyInfoFields")]
-		public JsonResult Resource_EditMyInfoFields()
+		public async Task<JsonResult> Resource_EditMyInfoFields()
 		{
 			var list = new List<EditableField>();
 			var id = Company.CurrentResourceID;
@@ -272,7 +273,7 @@ namespace d360.web.Controllers
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == asset.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == asset.ID).ToList();
 
-			list = loadDynamicFields(
+			list = await loadDynamicFields(
 					SystemObjects.Resource.ToString(),
 					id,
 					list,

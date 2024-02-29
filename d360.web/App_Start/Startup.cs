@@ -101,7 +101,6 @@ namespace d360.web
 				builder.RegisterType<Int64Service>().As<IInt64Service>().SingleInstance();
 				builder.RegisterType<Int32TypeService>().As<IInt32TypeService>().SingleInstance();
 				builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
-				builder.RegisterType<AssetService>().As<IAssetService>().SingleInstance();
 				builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
 				builder.RegisterType<RequestValidator>().As<IRequestValidator>().InstancePerRequest();
 				builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().InstancePerRequest();
@@ -220,6 +219,13 @@ namespace d360.web
 				
 				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>().InstancePerRequest();
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.RegisterType<repositories.azure.Workspaces>().As<IWorkspaces>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+
+						i.Instance.CompanyId = sec.CompanyID;
+						i.Instance.WorkspaceId = "";
+					});
 
 				#endregion
 

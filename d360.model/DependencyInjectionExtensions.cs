@@ -23,7 +23,6 @@ namespace d360.model
             builder.RegisterType<GraphFilterValidator>().InstancePerRequest();
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
             builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
-            builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
 			builder.RegisterType<ExecutionsRepository>().As<IExecutionsRepository>().InstancePerRequest();
 			builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
@@ -33,7 +32,6 @@ namespace d360.model
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
-            builder.RegisterType<SettingsRepository>().As<ISettingsRepository>().InstancePerRequest();
             builder.RegisterType<SurveyRepository>().As<ISurveyRepository>().InstancePerRequest();
             builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();

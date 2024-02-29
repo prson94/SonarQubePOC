@@ -95,7 +95,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 
                 var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = model.uid } };
 
@@ -143,7 +143,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 
 				if (hopModel.assets == null)
 				{
@@ -200,7 +200,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 
                 var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeHierarchyBadges, @includeOwnershipBadges, @includeRelationshipBadges, @direction, null, null, @isAdmin";
                 var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = request.uid } };
@@ -257,7 +257,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 				if (hopModel.assets == null)
 				{
 					hopModel.assets = new List<AssetBrowserApiHopAssetRequestModel>();
@@ -323,7 +323,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
                 if (!showResources)
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Environment Conflict", "Your environment does not allow retrieval of owners in Asset Browser.");
@@ -714,8 +714,8 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 			var items = new List<dynamic>();
 			int? initial = (int)AssetBrowserDiagramType.Lineage;
 
-			var includeImpact = SettingsRepository.GetSettingValue<bool>(Setting.ShowImpactSidebar);
-			var includeLineage = SettingsRepository.GetSettingValue<bool>(Setting.ShowLineageSidebar) && assetType.Class != AssetTypeClass.ReferenceItemType;
+			var includeImpact = await GetCachedSettingValueById<bool>(Setting.ShowImpactSidebar);
+			var includeLineage = await GetCachedSettingValueById<bool>(Setting.ShowLineageSidebar) && assetType.Class != AssetTypeClass.ReferenceItemType;
 			var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
 			bool anyProcessDiagram = false;
 

@@ -1,48 +1,36 @@
-﻿using System;
+﻿using d360.core.entities;
+using d360.core.queue;
+using d360.extensions;
+using d360.web.Extensions;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Resources;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Description;
-
-using d360.core.entities;
-using d360.core.queue;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-
-using Microsoft.Web.Http;
-using repositories;
-using Resources;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
-    [
+	[
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/crossreferences"), Authorize
     ]
     public class CrossReferencesController : BaseV2ApiController
     {
-        private const int DEFAULT_DELETE_TIMEOUT = 90;
-        private readonly IAssetRepository AssetRepository;
-		private readonly ICrossReferencesRepository CrossReferencesRepository;
-		private readonly IExecutionsRepository ExecutionsRepository;
+		private readonly IQueueSource Queue;
+		private readonly IStorageProvider Storage;
 
-		#region DI
-
-		public CrossReferencesController(ICoreComponentSet set, IAssetRepository assetRepository, ICrossReferencesRepository crossReferencesRepository, IExecutionsRepository executionsRepository)
-            : base(set)
-        {
-			this.AssetRepository = assetRepository;
-			this.CrossReferencesRepository = crossReferencesRepository;
-			this.ExecutionsRepository = executionsRepository;
-        }
-
-        #endregion
+		public CrossReferencesController(ICoreComponentSet set, IQueueSource queue, IStorageProvider storage) : base(set) 
+		{
+			Queue = queue;
+			Storage = storage;
+		}
 
         /// <summary>
         /// Returns all asset cross references.  Optional parameters are also supported, in the case where the optional parameters are specified only records matching that criteria are returned.
@@ -58,17 +46,17 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_dataSource", "The data source of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_type", "The type of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
         ]
-        public async Task<HttpResponseMessage> Get()
+        public async Task<IHttpActionResult> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
             var queryParams = Request.GetQueryNameValuePairs();
-            var assetCrossReferences = await CrossReferencesRepository.GetCrossReferences(queryParams);
+            var assetCrossReferences = await Catalog.ReadCrossReferencesAsync(queryParams);
 
-            return Request.CreateResponse(assetCrossReferences);
+            return Ok(assetCrossReferences);
         }
 
         /// <summary>
@@ -84,16 +72,21 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the public unique identifier (assetUid) of the asset.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
-        public async Task<HttpResponseMessage> GetByUid(string assetUid)
+        public async Task<IHttpActionResult> GetByUid(string assetUid)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
-            var result = await CrossReferencesRepository.GetByAssetUid(assetUid);
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_assetuid", assetUid.ToString())
+			};
 
-            return Request.CreateResponse(result);
+			var result = await Catalog.ReadCrossReferencesAsync(queryParams);
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -110,16 +103,22 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
-        public async Task<HttpResponseMessage> GetByTypeID(string type, string externalId)
+        public async Task<IHttpActionResult> GetByTypeID(string type, string externalId)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
-            var result = await CrossReferencesRepository.GetCrossReferenceByTypeId(type, externalId);
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_type", type),
+				new KeyValuePair<string, string>("_externalid", externalId)
+			};
 
-            return Request.CreateResponse(result);
+			var result = await Catalog.ReadCrossReferencesAsync(queryParams);
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -135,16 +134,21 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
         ]
-        public async Task<HttpResponseMessage> GetByType(string type)
+        public async Task<IHttpActionResult> GetByType(string type)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
-            var result = await CrossReferencesRepository.GetCrossReferenceByType(type);
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_type", type)
+			};
 
-            return Request.CreateResponse(result);
+			var result = await Catalog.ReadCrossReferencesAsync(queryParams);
+
+			return Ok(result);
         }
 
         /// <summary>
@@ -160,16 +164,21 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the data source.", typeof(List<AssetCrossReference>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access Denied", typeof(List<AssetCrossReference>))
         ]
-        public async Task<HttpResponseMessage> GetByDataSource(string dataSource)
+        public async Task<IHttpActionResult> GetByDataSource(string dataSource)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
-            var result = await CrossReferencesRepository.GetCrossReferenceByDataSource(dataSource);
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_datasource", dataSource)
+			};
 
-            return Request.CreateResponse(result);
+			var result = await Catalog.ReadCrossReferencesAsync(queryParams);
+
+			return Ok(result);
         }
 
         /// <summary>
@@ -186,51 +195,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.Conflict, "Asset cross reference already exists.", typeof(AssetCrossReference))
         ]
-        public async Task<AssetCrossReference> Post(AssetCrossReference model)
+        public async Task<IHttpActionResult> Post(AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
             }
 
-            //validate the model input
-            if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.ExternalID) || string.IsNullOrEmpty(model.Type))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ModelNotContainFields));
-            }
-
-			if (model?.DataSource.Length > 250)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.DataSourceLengthMax));
-			}
-
-			if (model?.Type.Length > 50)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.TypeLengthMax));
-			}
-
-			if (model?.ExternalID.Length > 250)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.ExternalIDLengthMax));
-			}
-
-			//check if the item already exists   
-			bool exists = await CrossReferencesRepository.XrefExists(model);
-
-            if (exists)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, ApiMessages.AssetCorssRefAlreadyExists));
-            }
-
-            //create the new record
-            int res = await CrossReferencesRepository.CreateNewCrossReference(model);
-
-            if (res <= 0)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, ApiMessages.AssetCorssRefAlreadyExists));
-            }
-
-            return model;
+			var response = await Catalog.CreateCrossReferenceAsync(model);
+			return (response.IsSuccess) ?
+				ResponseMessage(Request.CreateResponse(response.GetHttpStatusCode(), response.Data)) :
+				errorMessageResponse(response.GetHttpStatusCode(), response.Message);
         }
 
         /// <summary>
@@ -248,31 +223,16 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulk(List<AssetCrossReference> models)
         {
-            var prefix = "CrossReferences.PostBulk => ";
-            string errorMessage;
-
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
             }
 
-            try
-            {
-                var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostCrossReferences);
-                var results = await CrossReferencesRepository.PostBulkCrossReferenceAsync(models, execution);
+            var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostCrossReferences);
+            await Catalog.CreateCrossReferencesAsync(execution, models);
+			var results = await Catalog.ReadCrossReferenceResultsAsync(execution.ExecutionID);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>()
-                {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -293,28 +253,27 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> PutByXrefUid(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
+        public async Task<IHttpActionResult> PutByXrefUid(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
 
-            //validate the model input
-            if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type) || string.IsNullOrEmpty(externalId))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.AssetCrossReferenceNotHaveRequiredField));
-            }
+			model.DataSource = dataSource;
+			model.Type = type;
+			model.ExternalID = externalId;
+			model.uid = uid;
+            var response = await Catalog.UpdateCrossReferenceAsync(model);
 
-            //create the new record
-            int res = await CrossReferencesRepository.PutCrossReference(uid, dataSource, type, model);
-
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // updated
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else 
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
         }
 
         /// <summary>
@@ -332,29 +291,25 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> PutByUid(Guid uid, AssetCrossReference model)
+        public async Task<IHttpActionResult> PutByUid(Guid uid, AssetCrossReference model)
         {
             if (!Company.CurrentResourceIsAdmin)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
 
-            //validate the model input
-            if (string.IsNullOrEmpty(model.DataSource) || string.IsNullOrEmpty(model.Type) || string.IsNullOrEmpty(model.ExternalID))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.AssetCrossReferenceNotHaveRequiredField));
-            }
+			model.uid = uid;
+			var response = await Catalog.UpdateCrossReferenceAsync(model);
 
-            //create the new record
-            int res = await CrossReferencesRepository.PutCrossReference(uid, model);
-
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // updated
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing updated
-        }
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
+		}
 
         /// <summary>
         /// Deletes all asset cross reference records by the specified unique identifier.  Asset cross reference records with the same uid and different datasource and or type will also be deleted.
@@ -369,22 +324,27 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByUid(Guid uid)
+        public async Task<IHttpActionResult> DeleteByUid(Guid uid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
-            }
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+			}
 
-            //deletes the new record
-            int res = await CrossReferencesRepository.DeleteCrossReferenceByUid(uid);
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_assetuid", uid.ToString())
+			};
+			var response = await Catalog.RemoveCrossReferencesAsync(queryParams);
 
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // deleted
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
         }
 
         /// <summary>
@@ -402,28 +362,34 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByDataSourceAndType(string dataSource, string type)
+        public async Task<IHttpActionResult> DeleteByDataSourceAndType(string dataSource, string type)
         {
-            if (!Company.CurrentResourceIsAdmin)
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
+
+			if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasourceType);
             }
+			
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_datasource", dataSource),
+				new KeyValuePair<string, string>("_type", type)
+			};
+			var response = await Catalog.RemoveCrossReferencesAsync(queryParams);
 
-            if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasourceType));
-            }
-
-            //deletes the new record
-            int res = await CrossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
-
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // deleted
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
+		}
 
         /// <summary>
         /// Deletes any asset cross references with the specified type.
@@ -439,28 +405,33 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByType(string type)
+        public async Task<IHttpActionResult> DeleteByType(string type)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
 
-            if (string.IsNullOrEmpty(type))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingType));
-            }
+			if (string.IsNullOrEmpty(type))
+			{
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingType);
+			}
 
-            //deletes the new record
-            int res = await CrossReferencesRepository.DeleteCrossReferenceByType(type, GetTimeoutFromQueryString());
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_type", type)
+			};
+			var response = await Catalog.RemoveCrossReferencesAsync(queryParams);
 
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // deleted
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
+		}
 
         /// <summary>
         /// Deletes any asset cross references with the specified datasource.
@@ -476,28 +447,33 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
         ]
-        public async Task<HttpResponseMessage> DeleteByDataSource(string dataSource)
+        public async Task<IHttpActionResult> DeleteByDataSource(string dataSource)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
 
-            if (string.IsNullOrEmpty(dataSource))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasource));
-            }
+			if (string.IsNullOrEmpty(dataSource))
+			{
+				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasource);
+			}
 
-            //deletes the new record
-            int res = await CrossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, GetTimeoutFromQueryString());
+			var queryParams = new List<KeyValuePair<string, string>>
+			{
+				new KeyValuePair<string, string>("_datasource", dataSource)
+			};
+			var response = await Catalog.RemoveCrossReferencesAsync(queryParams);
 
-            if (res > 0)
-            {
-                return Request.CreateResponse(HttpStatusCode.OK); // deleted
-            }
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
+			if (response.IsSuccess)
+			{
+				return Ok();
+			}
+			else
+			{
+				return errorMessageResponse(response.GetHttpStatusCode(), response.Message);
+			}
+		}
 
         /// <summary>
         /// Creates new asset cross references.  This endpoint is meant for batch processing.
@@ -510,110 +486,49 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("batch"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add Asset Cross Reference", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add Asset Cross Reference", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> PostBatchCrossReferenceAsync(List<AssetCrossReference> crossReferences)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
-            }
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
+			}
 
-            if (crossReferences == null)
+			if (crossReferences == null)
             {
                 crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;
             }
 
             if (crossReferences == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.ErrorInvalidDatasetMessage);
             }
 
             var execution = getApiExecution(crossReferences.Count, action: ApiExecutionAction.PostCrossReferences);
 
-            ApiExecutionInfo executionInfo = await CrossReferencesRepository.PostBatchCrossReference(crossReferences, execution);
+			var executionInfo = new ApiExecutionInfo
+			{
+				CompanyID = Company.CurrentCompanyID,
+				CompanyDomainPrefix = Company.CurrentCompanyDomain,
+				ExecutionID = Guid.NewGuid(),
+				ResourceID = Company.CurrentResourceID,
+				SendWorkflowEvents = false
+			};
+
+			// Save to storage container.
+			await Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
+
+			// Save to the database.
+			execution.ExecutionID = executionInfo.ExecutionID;
+			Company.Add(execution);
+
+			// Save to queue.
+			await Queue.CreateMessageAsync(Company.ApiExecutionQueue, executionInfo);
+
 			return await sendExecutionProcessingResponse(executionInfo);
         }
-
-        /// <summary>
-        /// GETs the status of an execution record, including the results for the execution.
-        /// </summary>
-        /// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
-        /// <returns></returns>
-        [
-			Obsolete, ApiExplorerSettings(IgnoreApi = true),
-			HttpGet, Route("executions/{executionID:Guid}/status"),
-            MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json", "application/xml"),
-            SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
-        ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
-        {
-            var prefix = "CrossReferences.GetExecutionStatus => ";
-            string errorMessage;
-
-            try
-            {
-                ApiExecution execution = ExecutionsRepository.GetExecutionItemByUid(executionID);
-
-                if (execution == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionIDNotFound)).ConfigureAwait(false);
-                }
-
-                var bulkResult = CrossReferencesRepository.GetExecutionStatus(execution);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, bulkResult))).ConfigureAwait(false);
-            }
-            catch (ArgumentException)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionIDNotFound)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix },
-                    { "ExecutionUid", executionID.ToString() }, //left to avoid breaking change
-                    { "ExecutionID", executionID.ToString() }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
-
-        private int GetTimeoutFromQueryString()
-        {
-            var queryParams = Request.GetQueryNameValuePairs();
-            var timeout = DEFAULT_DELETE_TIMEOUT;
-
-            queryParams.ToList().ForEach(q =>
-            {
-                var key = q.Key.ToLower();
-
-                if (key.StartsWith("_"))
-                {
-                    switch (key)
-                    {
-                        case "_timeout":
-                            if (int.TryParse(q.Value, out timeout))
-                            {
-                                if (timeout < 1)
-                                {
-                                    timeout = 30;// min timeout
-                                }
-                            }
-                            break;
-                    }
-                }
-            });
-
-            return timeout;
-        }
-
     }
 }

@@ -1,4 +1,23 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.core.entities.Views;
+using d360.core.enums;
+using d360.core.queue;
+using d360.model.helpers;
+using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Services;
+using d360.web.Services.Favorites;
+using Dapper;
+using MediatR;
+using Microsoft.Web.Http;
+using repositories;
+using Resources;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -12,34 +31,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.core.entities.Views;
-using d360.core.enums;
-using d360.core.queue;
-using d360.extensions;
-using d360.model.DataAccessLayer;
-using d360.model.helpers;
-using d360.model.helpers.filters;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Services;
-using d360.web.Services.Favorites;
-
-using Dapper;
-
-using MediatR;
-
-using Microsoft.Web.Http;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
-
 using static d360.core.entities.Resource;
 using static d360.web.UserIDCheckMiddleware;
 
@@ -53,7 +44,6 @@ namespace d360.web.Controllers.V2
 	]
 	public class MembershipController : BaseV2ApiController
 	{
-		private readonly ICachingProvider Cache;
 		private readonly IMediator mediator;
 		private readonly IMembershipRepository membershipRepository;
 		private readonly IAssetRepository assetRepository;
@@ -62,10 +52,8 @@ namespace d360.web.Controllers.V2
 			ICoreComponentSet set,
 			IMembershipRepository membershipRepository,
 			IAssetRepository assetRepository,
-			ICachingProvider cache,
 			IMediator mediator) : base(set)
 		{
-			Cache = cache;
 			this.mediator = mediator;
 			this.membershipRepository = membershipRepository;
 			this.assetRepository = assetRepository;
@@ -126,7 +114,7 @@ namespace d360.web.Controllers.V2
 					Cancellationtoken = CancellationToken.None;
 				}
 
-				var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+				var showResources = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 				bool IsCurrentUser = false;
 
 				var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -424,7 +412,7 @@ namespace d360.web.Controllers.V2
 					queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
 				}
 
-				var hide = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+				var hide = await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
 
 				if (hide && !IsCurrentUser)
 				{
@@ -1727,7 +1715,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetApikey()
 		{
 			var prefix = "Membership.GetApikey => ";
-			var showAllUsersAPIKey = SettingsRepository.GetSettingValue<bool>(Setting.ShowAllUsersAPIKey);
+			var showAllUsersAPIKey = await GetCachedSettingValueById<bool>(Setting.ShowAllUsersAPIKey);
 
 			if (!Company.CurrentResourceIsAdmin && !showAllUsersAPIKey)
 			{
