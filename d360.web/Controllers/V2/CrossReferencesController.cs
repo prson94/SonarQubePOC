@@ -81,7 +81,7 @@ namespace d360.web.Controllers.V2
 
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
-				new KeyValuePair<string, string>("_assetuid", assetUid.ToString())
+				new KeyValuePair<string, string>("_assetuid", assetUid)
 			};
 
 			var result = await Catalog.ReadCrossReferencesAsync(queryParams);

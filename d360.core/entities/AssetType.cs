@@ -91,15 +91,9 @@ namespace d360.core.entities
 			switch (Object)
 			{
 				case "ArtifactType":
-					switch (Class)
-					{
-						case AssetTypeClass.BusinessAsset:
-							prefix = CommonNames.AssetTypeClass_Business;
-							break;
-						case AssetTypeClass.TechnicalAsset:
-							prefix = CommonNames.AssetTypeClass_Technical;
-							break;
-					}
+					prefix = (Class == AssetTypeClass.TechnicalAsset) ? 
+						CommonNames.AssetTypeClass_Technical : 
+						CommonNames.AssetTypeClass_Business;
 					break;
 				case "PolicyType":
 					prefix = CommonNames.AssetTypeClass_Policy;
@@ -118,6 +112,9 @@ namespace d360.core.entities
 					break;
 				case "ResourceType":
 					prefix = "Resource";
+					break;
+				default:
+					prefix = string.Empty;
 					break;
 			}
 
