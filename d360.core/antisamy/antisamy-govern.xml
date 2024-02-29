@@ -52,7 +52,7 @@ http://www.w3.org/TR/html401/struct/global.html
 
 		<regexp name="onsiteURL" value="^(?!//)(?![\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*(&amp;colon))[\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*"/>
 		<regexp name="anchoredURL" value="#(\w)+"/>
-		<regexp name="base64ImageURL" value="^data:image/png;base64,[-A-Za-z0-9+/]*={0,3}$"/>
+		<regexp name="base64ImageURL" value="^data:image/(jpg|png|jpeg|bmp);base64,[-A-Za-z0-9+/]*={0,3}$"/>
 		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[\p{L}\p{N}\p{Zs}\.\#@\$%\+&amp;;:\-_~,\?=/!\(\)]*(\s)*"/>
 
 		<regexp name="boolean" value="(true|false)"/>
