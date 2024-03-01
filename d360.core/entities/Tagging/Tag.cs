@@ -19,5 +19,8 @@ namespace d360.core.entities
 
         [DataMember]
         public State State { get; set; } = State.Active;
+
+		[DataMember]
+		public int TagTypeID { get; set; }
     }
 }

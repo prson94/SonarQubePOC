@@ -180,6 +180,9 @@ namespace d360.core.entities
 		[DataMember]
 		public bool IsSubject { get; set; }
 
+		[DataMember]
+		public int? TagTypeID { get; set; }
+
 		public bool IsPathSegment
 		{
 			get
@@ -878,6 +881,9 @@ namespace d360.core.entities
 
 		[DataMember]
 		public bool IsPrimaryFilter { get; set; }
+
+		[DataMember]
+		public Guid? TagTypeUID { get; set; }
 	}
 
 	public class FieldTypeCounterApiViewModel : FieldTypeEditableApiViewModel

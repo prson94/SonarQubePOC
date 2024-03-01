@@ -198,7 +198,9 @@ namespace d360.model
 		public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
 		public DbSet<Tag> Tags { get; set; }
-		
+
+		public DbSet<TagType> TagTypes { get; set; }
+
 		public DbSet<ConnectorLabel> ConnectorLabels { get; set; }
 		
 		public DbSet<AssetTag> AssetTags { get; set; }
@@ -2580,7 +2582,7 @@ from	IntersectType I
 
 					if (entry.State == EntityState.Added)
 					{
-						if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
+						if (Any<Tag>(i => i.Value == o.Value && i.TagTypeID == o.TagTypeID && i.State == State.Active))
 						{
 							throw new ArgumentException(Messages.Error_NameTaken);
 						}
@@ -2588,7 +2590,7 @@ from	IntersectType I
 
 					if (entry.State == EntityState.Modified)
 					{
-						if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
+						if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.TagTypeID == o.TagTypeID && i.State == State.Active))
 						{
 							throw new ArgumentException(Messages.Error_NameTaken);
 						}

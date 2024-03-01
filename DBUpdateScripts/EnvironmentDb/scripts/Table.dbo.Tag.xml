@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Tag-v1">
+  <changeSet author="TKlok" id="Table.dbo.Tag-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,6 +17,7 @@ BEGIN
 		[ID] [int] IDENTITY(1,1) NOT NULL,
 		[uid] [uniqueidentifier] CONSTRAINT [DF_Tag_uid] DEFAULT (newid()) NOT NULL,
 		[Value] [nvarchar](250) NOT NULL,
+		[TagTypeId] [int] NOT NULL,
 		[CreatedOn] [datetime] CONSTRAINT [DF_Tag_createdOn] DEFAULT (getutcdate()) NOT NULL,
 		[CreatedBy] [int] CONSTRAINT [DF_Tag_createdBy] DEFAULT (0) NOT NULL,
 		[UpdatedOn] [datetime] CONSTRAINT [DF_Tag_updatedOn] DEFAULT (getutcdate()) NOT NULL,
@@ -31,6 +32,32 @@ END
 	<rollback>
 		<![CDATA[	
 
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Tklok" id="Table.dbo.Tag-TagTypeID">
+    <comment>By adding the TagTypeID column with a constraint to set the default value, we can impose NOT NULL from the start. The constraint is immediately dropped as we don't want it for regular use.</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="false"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Tag]') AND name = 'TagTypeID')
+BEGIN
+	ALTER TABLE [dbo].[Tag] ADD [TagTypeId] INT NOT NULL CONSTRAINT tag_tagtypeid_default DEFAULT 1
+
+	ALTER TABLE [dbo].[Tag] DROP CONSTRAINT tag_tagtypeid_default 
+
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Tag]') AND name = 'TagTypeID')
+BEGIN
+	ALTER TABLE [dbo].[Tag] drop column [TagTypeId]
+END
 		]]>
 	</rollback>
   </changeSet>

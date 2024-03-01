@@ -19,7 +19,7 @@ namespace repositories
         
         TagApiModel UpdateTag(Guid uid, TagApiUpsertModel model, Tag tag);
         
-        bool DoesTagExists(string value);
+        bool DoesTagExists(string value, Guid? tagTypeUid);
         
         bool DoesTagExists(Guid tagUid);
         
@@ -59,5 +59,20 @@ namespace repositories
 
 		Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId);
 
+		Task<List<TagTypeApiModel>> GetTagTypes();
+
+		TagTypeApiModel CreateTagType(TagTypeApiUpsertModel model);
+
+		TagTypeApiModel UpdateTagType(Guid uid, TagTypeApiUpsertModel model, TagType tagType);
+
+		bool DeleteTagTypes(List<TagTypeApiDeleteModel> models);
+
+		TagType GetTagTypeByUid(Guid? uid);
+
+		bool DoesTagTypeExists(string value);
+
+		bool DoesTagTypeExists(Guid uid);
+
+		bool DoesTagTypeExists(Guid existingTagTypeUid, TagTypeApiUpsertModel model);
 	}
 }

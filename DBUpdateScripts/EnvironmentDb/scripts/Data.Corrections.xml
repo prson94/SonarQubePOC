@@ -1051,6 +1051,23 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-GOV-30989">
+		<sql dbms="mssql"
+			  endDelimiter="\nGO"
+			  splitStatements="true"
+			  stripComments="false">
+			<![CDATA[
+		UPDATE dbo.fieldtype
+		SET TagTypeID = (SELECT ID FROM [dbo].[TagType] WHERE Value = 'General' AND Uid = '00000001-0000-0000-0000-b00000000011')
+		where Type = 'Tag'
+		and TagTypeID is null
+	]]>
+		</sql>
+		<rollback>
+			<![CDATA[]]>
+		</rollback>
+	</changeSet>
+
 
 	<changeSet author="TKlok" id="Data.Corrections.GOV-31250">
 		<comment>GOV-31250 - Queue reindexing of synonyms</comment>

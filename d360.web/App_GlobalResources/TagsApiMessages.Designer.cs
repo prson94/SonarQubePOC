@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error while creating tag type.
+        /// </summary>
+        public static string ErrorCreateTagType {
+            get {
+                return ResourceManager.GetString("ErrorCreateTagType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error while deleting tag.
         /// </summary>
         public static string ErrorDeleteTag {
@@ -111,6 +120,15 @@ namespace Resources {
         public static string ErrorFetchTags {
             get {
                 return ResourceManager.GetString("ErrorFetchTags", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while fetching tag types..
+        /// </summary>
+        public static string ErrorFetchTagTypes {
+            get {
+                return ResourceManager.GetString("ErrorFetchTagTypes", resourceCulture);
             }
         }
         
@@ -210,6 +228,51 @@ namespace Resources {
         public static string TagRemoveTitle {
             get {
                 return ResourceManager.GetString("TagRemoveTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag type specified (same tag type already exists)..
+        /// </summary>
+        public static string TagTypeExists {
+            get {
+                return ResourceManager.GetString("TagTypeExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag Type not found..
+        /// </summary>
+        public static string TagTypeNotFound {
+            get {
+                return ResourceManager.GetString("TagTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag Type removed..
+        /// </summary>
+        public static string TagTypeRemoved {
+            get {
+                return ResourceManager.GetString("TagTypeRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag Type successfully removed..
+        /// </summary>
+        public static string TagTypeRemoveMessage {
+            get {
+                return ResourceManager.GetString("TagTypeRemoveMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag Type with uid {0} not found..
+        /// </summary>
+        public static string TagTypeUidNotFound {
+            get {
+                return ResourceManager.GetString("TagTypeUidNotFound", resourceCulture);
             }
         }
         

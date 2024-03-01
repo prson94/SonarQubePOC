@@ -241,6 +241,9 @@ namespace d360.model.DataAccessLayer
 				additionalApply.AppendLine(@"outer apply (
 											select top 1 Name from AssetType where uid = JSON_VALUE(FT.Definition,'$.AssetTypeUid') and FT.Type = 'Path'
 										)PathType ");
+				additionalApply.AppendLine(@$"outer apply (
+											select	top 1 Uid from	TagType where FT.[Type] = 'Tag' and ID = FT.TagTypeID
+										) TagType ");
 			}
 
 			if (pageNumber < 0)
@@ -636,6 +639,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Tag' then FT.IsPartOfKey else null end as 'Type.Tag.IsPartOfKey',
 										case when FT.Type = 'Tag' then FT.IsPrimaryFilter else null end as 'Type.Tag.IsPrimaryFilter',
 										case when FT.Type = 'Tag' then FT.ShowIfEmpty else null end as 'Type.Tag.ShowIfEmpty',
+										{(resolveUIDetails ? "case when FT.Type = 'Tag' then TagType.UID else null end as 'Type.Tag.TagTypeUID'," : "")}
 
 										case when FT.Type = 'Score' then FT.ScoreType else null end as 'Type.Score.ScoreType',
 										case when FT.Type = 'Score' then FT.ColumnOrder else null end as 'Type.Score.ColumnOrder',
@@ -1926,6 +1930,9 @@ namespace d360.model.DataAccessLayer
 						newFieldType.DisplayDescription = f.Type.Tag.Description.Display.SanitizeHtml();
 					}
 
+					var tagTypeUid = f.Type.Tag.TagTypeUID ?? new Guid("00000001-0000-0000-0000-b00000000011");
+					var tagType = CompanyContext.TagTypes.FirstOrDefault(x => x.uid == tagTypeUid);
+
 					newFieldType.IsDisplayable = true;
 					newFieldType.IsEditable = false;
 					newFieldType.IsListable = f.Type.Tag.IsListable;
@@ -1934,6 +1941,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.SortOrder = f.Type.Tag.SortOrder;
 					newFieldType.SortByAscending = f.Type.Tag.SortByAscending;
 					newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
+					newFieldType.TagTypeID = tagType.ID;
 				}
 				else if (f.Type.Counter != null)
 				{

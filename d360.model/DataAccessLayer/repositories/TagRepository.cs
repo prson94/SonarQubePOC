@@ -99,8 +99,10 @@ namespace d360.model.DataAccessLayer
                             grc.FirstName CreatedByFirstName, 
                             grc.LastName CreatedByLastName,
 							t.UpdatedOn,
-							gru.uid as UpdatedByUid
+							gru.uid as UpdatedByUid,
+							tt.uid as TagTypeUID
 						 from [tag] t
+							inner join dbo.[TagType] tt on t.TagTypeID = tt.id
 							left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
 							left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
 							cross apply (select count(*) from AssetTag where TagId = t.Id)Tags (count)";
@@ -135,6 +137,28 @@ namespace d360.model.DataAccessLayer
 					throw new ArgumentException(string.Format(TagErrors.InvalidTagUid, tagUidString), "uid");
 				}
 			}
+
+			var tagTypeId = 0;
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == "tagtypeuid"))
+			{
+				var tagtypeuid = new Guid();
+
+				var tagUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "tagtypeuid").Value;
+				if (Guid.TryParse(tagUidString, out tagtypeuid))
+				{
+					tagTypeId = GetTagTypeByUid(tagtypeuid).ID;
+				}
+
+				if (tagtypeuid == null || tagtypeuid == Guid.Empty)
+				{
+					throw new ArgumentException(string.Format(TagErrors.InvalidTagUid, tagUidString), "tagtypeuid");
+				}
+			} else
+			{
+				tagTypeId = GetTagTypeByUid(null).ID;
+			}
+			dbArgs.Add("@tagtypeid", tagTypeId);
+			queryFilters.Add($"t.[TagTypeID] = @tagtypeid");
 
 			if (queryParams.ToList().Any(q => q.Key.ToLower() == "id"))
 			{
@@ -394,7 +418,9 @@ namespace d360.model.DataAccessLayer
 				Value = model.Value
 			};
 
-			var tag = new Tag { Value = model.Value };
+			var tagType = GetTagTypeByUid(model.TagTypeUid);
+
+			var tag = new Tag { Value = model.Value, TagTypeID = tagType.ID };
 			CompanyContext.Add(tag);
 			AddTagAudit(tag, "Add");
 
@@ -407,6 +433,7 @@ namespace d360.model.DataAccessLayer
 			result.CreatedByUid = user.Uid;
 			result.CreatedByFirstName = user.FirstName;
 			result.CreatedByLastName = user.LastName;
+			result.TagTypeUID = tagType.uid;
 
 			return result;
 		}
@@ -471,9 +498,10 @@ namespace d360.model.DataAccessLayer
 			return CompanyContext.Tags.Any(x => x.uid == tagUid);
 		}
 
-		public bool DoesTagExists(string value)
+		public bool DoesTagExists(string value, Guid? tagTypeUid)
 		{
-			return CompanyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
+			var tagTypeId = GetTagTypeByUid(tagTypeUid).ID;
+			return CompanyContext.Tags.Any(x => x.Value == value && x.TagTypeID == tagTypeId && x.State == State.Active);
 		}
 
 		public bool DoesTagExists(Guid existingTagUid, TagApiUpsertModel model)
@@ -624,6 +652,7 @@ namespace d360.model.DataAccessLayer
 			Guid exceptUid = Guid.Empty;
 			int maxNumberOfResults = 200;
 			bool ignoreCounts = false;
+			Guid tagTypeUid = Guid.Empty;
 			foreach (var queryitem in queryParams)
 			{
 				switch (queryitem.Key.ToLower())
@@ -636,6 +665,16 @@ namespace d360.model.DataAccessLayer
 						catch
 						{
 							exceptUid = Guid.Empty;
+						}
+						break;
+					case "tagtypeuid":
+						try
+						{
+							tagTypeUid = Guid.Parse(queryitem.Value);
+						}
+						catch
+						{
+							tagTypeUid = Guid.Empty;
 						}
 						break;
 					case "ignorecounts":
@@ -661,21 +700,23 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			var tagTypeID = GetTagTypeByUid(tagTypeUid).ID;
+
 			string sql;
 
 			if (!ignoreCounts)
 			{
 				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code, Results.count from Tag T 
 							cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
-							where State = 1 and T.Value like @value and T.uid != @exceptUid";
+							where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeID = @tagTypeID";
 			}
 			else
 			{
 				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
-						where State = 1 and T.Value like @value and T.uid != @exceptUid";
+						where State = 1 and T.Value like @value and T.uid != @exceptUid and T.TagTypeID = @tagTypeID";
 			}
 
-			return CompanyContext.Query<dynamic>(sql, new { value, exceptUid }, ApiTimeout).ToList();
+			return CompanyContext.Query<dynamic>(sql, new { value, exceptUid, tagTypeID }, ApiTimeout).ToList();
 		}
 
 
@@ -1264,5 +1305,122 @@ namespace d360.model.DataAccessLayer
 				", new { resourceId, activeState = State.Active });
 		}
 
+		public async Task<List<TagTypeApiModel>> GetTagTypes()
+		{
+			var sql = @"select tt.uid,
+							tt.Value,
+							tt.CreatedOn,
+							grc.uid as CreatedByUid,
+                            grc.FirstName CreatedByFirstName, 
+                            grc.LastName CreatedByLastName,
+							tt.UpdatedOn,
+							gru.uid as UpdatedByUid
+						 from dbo.[TagType] tt
+							left join reporting.Global_Resource grc on tt.CreatedBy = grc.ResourceID
+							left join reporting.Global_Resource gru on tt.UpdatedBy = gru.ResourceID";
+
+			var tagTypes = await CompanyContext.QueryAsync<TagTypeApiModel>(sql);
+
+			return tagTypes.ToList();
+		}
+
+
+		public TagTypeApiModel CreateTagType(TagTypeApiUpsertModel model)
+		{
+			var result = new TagTypeApiModel
+			{
+				Value = model.Value
+			};
+
+			var tagType = new TagType { Value = model.Value };
+			CompanyContext.Add(tagType);
+
+			var user = CompanyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == CompanyContext.CurrentResourceID);
+
+			result.uid = tagType.uid;
+			result.UpdatedOn = tagType.UpdatedOn.GetValueOrDefault();
+			result.UpdatedByUid = user.Uid;
+			result.CreatedOn = tagType.CreatedOn.GetValueOrDefault();
+			result.CreatedByUid = user.Uid;
+
+			return result;
+		}
+
+		public TagTypeApiModel UpdateTagType(Guid uid, TagTypeApiUpsertModel model, TagType existingTagType)
+		{
+			var result = new TagTypeApiModel();
+			existingTagType.Value = model.Value;
+			CompanyContext.Update(existingTagType);
+
+			result.Value = model.Value;
+			result.uid = existingTagType.uid;
+			result.UpdatedOn = existingTagType.UpdatedOn.GetValueOrDefault();
+			result.CreatedOn = existingTagType.CreatedOn.GetValueOrDefault();
+
+			return result;
+		}
+
+		public bool DeleteTagTypes(List<TagTypeApiDeleteModel> model)
+		{
+			var success = true;
+
+			foreach (var item in model)
+			{
+				success &= DeleteTagType(item);
+			}
+
+			return success;
+		}
+
+		private bool DeleteTagType(TagTypeApiDeleteModel model)
+		{
+			if(model.uid == new Guid("00000001-0000-0000-0000-b00000000011"))
+			{
+				throw new ArgumentException(string.Format(TagErrors.TagTypeNotDeletable, model.uid.ToString()));
+			}
+
+			var tagType = CompanyContext.TagTypes.Where(x => x.uid == model.uid).FirstOrDefault();
+			var tagsToDelete = CompanyContext.Tags.Where(x => tagType.ID ==  x.TagTypeID).ToList();
+			var tags = tagsToDelete.CloneThis();
+
+			foreach (var item in tags)
+			{
+				DeleteTag(item.uid, model.cascade, ref tagsToDelete);
+			}
+
+			tagType.State = State.Deleted;
+
+			var result = CompanyContext.SaveChanges() > 0;
+			if (result)
+			{
+				AddTagAudit(tagsToDelete, "Delete");
+			}
+
+			return result;
+		}
+
+		public bool DoesTagTypeExists(string value)
+		{
+			return CompanyContext.TagTypes.Any(x => x.Value == value && x.State == State.Active);
+		}
+
+		public bool DoesTagTypeExists(Guid uid)
+		{
+			return CompanyContext.TagTypes.Any(x => x.uid == uid && x.State == State.Active);
+		}
+
+		public bool DoesTagTypeExists(Guid existingTagTypeUid, TagTypeApiUpsertModel model)
+		{
+			return CompanyContext.TagTypes.Any(x => x.Value == model.Value && x.uid != existingTagTypeUid && x.State == State.Active);
+		}
+
+		public TagType GetTagTypeByUid(Guid? uid)
+		{
+			if (!uid.HasValue || uid == Guid.Empty)
+			{
+				uid = new Guid("00000001-0000-0000-0000-b00000000011");
+			}
+			return CompanyContext.TagTypes.FirstOrDefault(x => x.uid == uid);
+		}
 	}
 }

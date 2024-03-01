@@ -160,6 +160,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tag Type with uid &apos;{0}&apos; cannot be deleted..
+        /// </summary>
+        public static string TagTypeNotDeletable {
+            get {
+                return ResourceManager.GetString("TagTypeNotDeletable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tag with uid &apos;{0}&apos; does not exists!.
         /// </summary>
         public static string TagUidNotExists {
