@@ -16,7 +16,7 @@ namespace igx.jobs.apiexecutionprocessor
 	public class UserProcessor : BaseWebJob
 	{
 		private const string FUNCTION_NAME = "UserProcessor";
-		private const string TIMER_SETTINGS = "*/2 * * * * *";
+		private const string TIMER_SETTINGS = "0 */2 * * * *";
 
 		public UserProcessor(IConfiguration config) : base(config) { }
 
