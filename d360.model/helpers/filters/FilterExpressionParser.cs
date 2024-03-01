@@ -632,6 +632,7 @@ namespace d360.model.helpers
 				}
 			}
 
+			List<int> scoreFieldtypeIDList  = new List<int>();
 			foreach (var token in filterTokens)
 			{
 				if (token is TempTableFieldToken)
@@ -640,7 +641,9 @@ namespace d360.model.helpers
 					if (tokenConvert.CurrentFieldType == DataType.Score.ToString().ToLower(CultureInfo.InvariantCulture))
 					{
 						var scoreField = fieldTypes.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture) == tokenConvert.Field.ToLower(CultureInfo.InvariantCulture)).FirstOrDefault();
-						string aggregatedDataSQL = @$"
+						if (scoreField != null && !scoreFieldtypeIDList.Contains(scoreField.ID))
+						{
+							string aggregatedDataSQL = @$"
 								drop table if exists #scoreTempValues{scoreField.ID}
 								create table #scoreTempValues{scoreField.ID} (AssetId int, FormattedValue decimal(8,3))
 								create index ix_scoreTempValues{scoreField.ID} on #scoreTempValues{scoreField.ID}	(AssetId);
@@ -651,7 +654,9 @@ namespace d360.model.helpers
 								inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {(int)scoreField.ScoreType} and Al.OverrideName is null
 								where A.AssetTypeID = @assettypeid";
 
-						data.Add(new AdvancedFilterTempTableInfo { TempTableQuery = aggregatedDataSQL });
+							data.Add(new AdvancedFilterTempTableInfo { TempTableQuery = aggregatedDataSQL });
+							scoreFieldtypeIDList.Add(scoreField.ID);
+						}
 					}
 				}
 			}
