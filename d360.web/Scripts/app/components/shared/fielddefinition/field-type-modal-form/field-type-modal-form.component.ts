@@ -662,7 +662,6 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		this.cdRef.markForCheck();
 	}
 
-count =0;
 	updateForm() {
 		this.subTitle = this.assetTypeName;
 
@@ -787,6 +786,12 @@ count =0;
 
 				if (this.selectedFieldType === 'Score') {
 					this.fieldTypeForm.controls["ScoreType"].setValue(type?.ScoreType ?? null);
+				}
+
+				if (this.selectedFieldType === 'Tag') {
+					//The API doesn't set or get these two properties for Tag, so on edit it appears they aren't true
+					this.fieldTypeForm.controls["IsDisplayable"].setValue(true);
+					this.fieldTypeForm.controls["ShowIfEmpty"].setValue(true);
 				}
 
 				if (this.selectedFieldType === 'Text') {
@@ -1001,7 +1006,7 @@ count =0;
 
 		switch (val) {
 			case 'IsDisplayable':
-				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'System'].indexOf(this.selectedFieldType) > -1);
+				return (['ComputedRelationshipLookup', 'ComputedRelationshipReferenceList', 'Tag', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsEditable':
 				return (['ComputedRelationshipLookup', 'ComputedRelationshipField', 'Json', 'JSON', 'JsonElement', 'ComputedOwnershipLookup', 'Path', 'ComputedRelationshipReferenceList', 'Tag', 'Score', 'Counter', 'System'].indexOf(this.selectedFieldType) > -1);
 			case 'IsListable':
