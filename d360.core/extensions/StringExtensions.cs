@@ -12,7 +12,26 @@ namespace d360.core
 {
 	public static class StringExtensions
     {
-        public static bool In<T>(this T t, params T[] values)
+		private readonly static AntiSamy sanatizer = new AntiSamy();
+
+		private static Policy _antiSamyPolicy;
+		public static Policy AntiSamyPolicy
+		{
+			get
+			{
+				if (_antiSamyPolicy == null)
+				{
+					Assembly assembly = Assembly.GetExecutingAssembly();
+
+					string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
+
+					_antiSamyPolicy = Policy.GetInstance(assembly.GetManifestResourceStream(resourceName));
+				}
+				return _antiSamyPolicy;
+			}
+		}
+
+		public static bool In<T>(this T t, params T[] values)
         {
             return values.Contains(t);
         }
@@ -160,8 +179,7 @@ namespace d360.core
 		{
 			if (!string.IsNullOrEmpty(text))
 			{								
-				var s = new AntiSamy();
-				var results = s.Scan(text, GetPolicy());
+				var results = sanatizer.Scan(text, AntiSamyPolicy);
 				text = results.GetCleanHtml();
 			}
 			return text;
@@ -185,15 +203,5 @@ namespace d360.core
 			text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 			return text;
 		}
-
-		private static Policy GetPolicy()
-		{
-			Assembly assembly = Assembly.GetExecutingAssembly();
-
-			string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
-
-			return Policy.GetInstance(assembly.GetManifestResourceStream(resourceName));
-		}
-
 	}
 }
