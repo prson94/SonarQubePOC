@@ -34,5 +34,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string? CreatedByLastName { get; set; }
+
+		[DataMember]
+		public Guid TagTypeUID { get; set; }
     }
 }

@@ -572,6 +572,7 @@ export class Tag implements ICommonOptions {
 	Description: DisplayOnlyDescription = new DisplayOnlyDescription();
 	IsListable: boolean = true;
 	IsPrimaryFilter: boolean = false;
+	TagTypeUID: string = null;
 	Search: Search = new Search();
 }
 

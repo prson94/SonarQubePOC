@@ -124,6 +124,7 @@
 	<include file="scripts/Table.dbo.QuestionTypeOption.xml"/>
 	<include file="scripts/Table.dbo.Question.xml"/>
 	<include file="scripts/Table.dbo.QuestionOption.xml"/>
+	<include file="scripts/Table.dbo.TagType.xml"/>
 	<include file="scripts/Table.dbo.Tag.xml"/>
 	<include file="scripts/Table.dbo.AssetTag.xml"/>
 	<include file="scripts/Table.dbo.Theme.xml"/>

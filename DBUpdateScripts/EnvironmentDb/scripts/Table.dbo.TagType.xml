@@ -1,0 +1,60 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.TagType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'TagType')
+BEGIN
+	CREATE TABLE [dbo].[TagType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_TagType_uid] DEFAULT (newid()) NOT NULL,
+		[Value] [nvarchar](250) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_TagType_createdOn] DEFAULT (getutcdate()) NOT NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_TagType_createdBy] DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_TagType_updatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_TagType_updatedBy] DEFAULT (0) NOT NULL,
+		[State] [int] CONSTRAINT [DF_Tag_State] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_TagType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+    <changeSet author="TKlok" id="Table.dbo.TagType-InitialData-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from TagType where Value = 'General' and id = 1)
+begin
+	SET IDENTITY_INSERT TagType on
+	insert into [TagType] (id, Value, Uid, CreatedOn, UpdatedOn, CreatedBy, UpdatedBy)
+	values (1, 'General', '00000001-0000-0000-0000-b00000000011', getutcdate(), getutcdate(), 0, 0)
+	SET IDENTITY_INSERT TagType off
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+using d360.core.exceptions;
+using HtmlAgilityPack;
 using OWASP.AntiSamy.Html;
 using System.Collections.Generic;
 using System.Linq;
@@ -202,6 +203,21 @@ namespace d360.core
 			doc.LoadHtml(text + "");
 			text = HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
 			return text;
+		}
+    
+		public static bool IsValidForTag(this string text)
+		{
+			string pattern = "^[A-Za-zÀ-ú0-9ა-ჰ一-蠼赋]+$";
+			return Regex.IsMatch(text, pattern);
+		}
+
+		private static Policy GetPolicy()
+		{
+			Assembly assembly = Assembly.GetExecutingAssembly();
+
+			string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
+
+			return Policy.GetInstance(assembly.GetManifestResourceStream(resourceName));
 		}
 	}
 }

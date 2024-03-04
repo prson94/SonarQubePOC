@@ -113,10 +113,12 @@ namespace d360.model
         DbSet<Survey> Surveys { get; set; }
         
         DbSet<SurveyType> SurveyTypes { get; set; }
-        
-        DbSet<Tag> Tags { get; set; }
 
-        DbSet<Theme> Themes { get; set; }
+		DbSet<Tag> Tags { get; set; }
+
+		DbSet<TagType> TagTypes { get; set; }
+
+		DbSet<Theme> Themes { get; set; }
         
         DbSet<ConnectorLabel> ConnectorLabels { get; set; }
         

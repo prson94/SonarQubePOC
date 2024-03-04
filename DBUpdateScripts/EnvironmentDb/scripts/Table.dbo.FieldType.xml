@@ -4,8 +4,7 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
-
-  <changeSet author="Pappas" id="Table.dbo.FieldType-v11">
+  <changeSet author="Pappas" id="Table.dbo.FieldType-v12">
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldType')
@@ -67,14 +66,37 @@ BEGIN
 		IntersectTypeID int sparse,
 		IssueTypeID int sparse,
 		UseDisplayFormat bit constraint DF_FieldType_UseDisplayFormat default(0) not null,
-		IsSubject bit constraint DF_FieldType_IsSubject default(1) not null
+		IsSubject bit constraint DF_FieldType_IsSubject default(1) not null,
+		TagTypeID int sparse
 		constraint [PK_FieldType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
 ]]>
     </sql>
   </changeSet>
-   
+    <changeSet author="TKlok" id="Table.dbo.FieldType-to-v12">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'TagTypeID')
+		BEGIN
+			alter table dbo.FieldType
+			add [TagTypeID] int sparse
+		END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+		IF  EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[FieldType]') AND name = 'TagTypeID')
+		BEGIN
+			DROP COLUMN IF EXISTS
+				TagTypeID
+		END
+	  ]]>
+    </rollback>
+  </changeSet>   
  <changeSet author="Pappas" id="Index.dbo.FieldType-v11">
   <comment>GOV-28372</comment>
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">

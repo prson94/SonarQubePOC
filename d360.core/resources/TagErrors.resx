@@ -135,11 +135,32 @@
   <data name="InvalidParaMeter" xml:space="preserve">
     <value>Invalid parameters supplied. Parameter [DisplayValue], [AssetType], [TagsAsString] not allowed to used when [globalSearch] parameter is present.</value>
   </data>
+  <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
+    <value>Invalid request</value>
+  </data>
   <data name="InvalidSortBy" xml:space="preserve">
     <value>Invalid [sortby] value provided in the request.</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
     <value>Invalid [sortorder] value provided in the request.</value>
+  </data>
+  <data name="InvalidTagTypeCharacters" xml:space="preserve">
+    <value>Invalid tag type specified [invalid characters]</value>
+  </data>
+  <data name="InvalidTagTypeLong" xml:space="preserve">
+    <value>Invalid tag type specified [too long].</value>
+  </data>
+  <data name="InvalidTagTypeShort" xml:space="preserve">
+    <value>Tag type must be as least 1 character long in length.</value>
+  </data>
+  <data name="InvalidTagTypeSpecified" xml:space="preserve">
+    <value>Invalid tag type specified [null model].</value>
+  </data>
+  <data name="InvalidTagTypeSpecifiedNoValue" xml:space="preserve">
+    <value>Invalid tag type specified [no value].</value>
+  </data>
+  <data name="InvalidTagTypeUid" xml:space="preserve">
+    <value>Invalid uid specified.</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request.</value>
@@ -149,6 +170,9 @@
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request.</value>
+  </data>
+  <data name="TagTypeNotDeletable" xml:space="preserve">
+    <value>Tag Type with uid '{0}' cannot be deleted.</value>
   </data>
   <data name="TagUidNotExists" xml:space="preserve">
     <value>Tag with uid '{0}' does not exists!</value>

@@ -129,11 +129,17 @@
   <data name="ErrorCreateTag" xml:space="preserve">
     <value>Error while creating tag</value>
   </data>
+  <data name="ErrorCreateTagType" xml:space="preserve">
+    <value>Error while creating tag type</value>
+  </data>
   <data name="ErrorDeleteTag" xml:space="preserve">
     <value>Error while deleting tag</value>
   </data>
   <data name="ErrorFetchTags" xml:space="preserve">
     <value>Error while fetching tags</value>
+  </data>
+  <data name="ErrorFetchTagTypes" xml:space="preserve">
+    <value>Error while fetching tag types.</value>
   </data>
   <data name="ErrorRemoveTag" xml:space="preserve">
     <value>Error removing tag</value>
@@ -167,6 +173,21 @@
   </data>
   <data name="TagRemoveTitle" xml:space="preserve">
     <value>Tags removed.</value>
+  </data>
+  <data name="TagTypeExists" xml:space="preserve">
+    <value>Invalid tag type specified (same tag type already exists).</value>
+  </data>
+  <data name="TagTypeNotFound" xml:space="preserve">
+    <value>Tag Type not found.</value>
+  </data>
+  <data name="TagTypeRemoved" xml:space="preserve">
+    <value>Tag Type removed.</value>
+  </data>
+  <data name="TagTypeRemoveMessage" xml:space="preserve">
+    <value>Tag Type successfully removed.</value>
+  </data>
+  <data name="TagTypeUidNotFound" xml:space="preserve">
+    <value>Tag Type with uid {0} not found.</value>
   </data>
   <data name="TagUidNotFound" xml:space="preserve">
     <value>Tag with uid {0} not found.</value>
