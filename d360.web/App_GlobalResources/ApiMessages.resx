@@ -609,17 +609,11 @@
   <data name="TargetAssetType" xml:space="preserve">
     <value>target asset type</value>
   </data>
-  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
-    <value>Asset cross reference already exists.</value>
-  </data>
   <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
     <value>Asset cross reference model does not contain required fields.</value>
   </data>
   <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
     <value>Invalid [_includeChildAssets] provided</value>
-  </data>
-  <data name="ModelNotContainFields" xml:space="preserve">
-    <value>Model does not contain required fields</value>
   </data>
   <data name="RequestMissingDatasource" xml:space="preserve">
     <value>Request does not contain required parameter dataSource.</value>
@@ -767,14 +761,5 @@
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
     <value>AssetTypeuid {0} is invalid</value>
-  </data>
-  <data name="DataSourceLengthMax" xml:space="preserve">
-    <value>Maximum length allowed for DataSource is 250.</value>
-  </data>
-  <data name="ExternalIDLengthMax" xml:space="preserve">
-    <value>Maximum length allowed for ExternalID is 250.</value>
-  </data>
-  <data name="TypeLengthMax" xml:space="preserve">
-    <value>Maximum length allowed for Type is 50.</value>
   </data>
 </root>

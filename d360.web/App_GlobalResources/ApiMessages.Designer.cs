@@ -142,15 +142,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset cross reference already exists..
-        /// </summary>
-        public static string AssetCorssRefAlreadyExists {
-            get {
-                return ResourceManager.GetString("AssetCorssRefAlreadyExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Asset cross reference model does not contain required fields..
         /// </summary>
         public static string AssetCrossReferenceNotHaveRequiredField {
@@ -309,15 +300,6 @@ namespace Resources {
         public static string CustomUidNotValid {
             get {
                 return ResourceManager.GetString("CustomUidNotValid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum length allowed for DataSource is 250..
-        /// </summary>
-        public static string DataSourceLengthMax {
-            get {
-                return ResourceManager.GetString("DataSourceLengthMax", resourceCulture);
             }
         }
         
@@ -642,15 +624,6 @@ namespace Resources {
         public static string ExportViewMessage {
             get {
                 return ResourceManager.GetString("ExportViewMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum length allowed for ExternalID is 250..
-        /// </summary>
-        public static string ExternalIDLengthMax {
-            get {
-                return ResourceManager.GetString("ExternalIDLengthMax", resourceCulture);
             }
         }
         
@@ -1465,15 +1438,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Model does not contain required fields.
-        /// </summary>
-        public static string ModelNotContainFields {
-            get {
-                return ResourceManager.GetString("ModelNotContainFields", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Name is missing in one or more of the groups in the payload. Name must be provided..
         /// </summary>
         public static string NameMissingInGroupPayload {
@@ -1929,15 +1893,6 @@ namespace Resources {
         public static string Type {
             get {
                 return ResourceManager.GetString("Type", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Maximum length allowed for Type is 50..
-        /// </summary>
-        public static string TypeLengthMax {
-            get {
-                return ResourceManager.GetString("TypeLengthMax", resourceCulture);
             }
         }
         

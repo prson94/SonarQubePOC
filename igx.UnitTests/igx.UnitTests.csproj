@@ -94,7 +94,6 @@
     <Compile Include="ScoringTests\OperatorTests-DateCompares.cs" />
     <Compile Include="SearchTests\ElasticSourceTests.cs" />
     <Compile Include="SearchTests\SearchIndexerTests.cs" />
-    <Compile Include="ServicesTests\AssetServiceTests.cs" />
     <Compile Include="ServicesTests\CommonExceptionHandlerTests.cs" />
     <Compile Include="ServicesTests\Exceptions\ExceptionTestBase.cs" />
     <Compile Include="ServicesTests\Exceptions\ExceptionWithDefaultConstructorsTestBase.cs" />

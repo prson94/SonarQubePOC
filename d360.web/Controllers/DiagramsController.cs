@@ -11,13 +11,7 @@ namespace d360.web.Controllers
     [RoutePrefix("diagrams"), Authorize]
     public class DiagramsController : BaseController
     {
-        #region DI
-
         public DiagramsController(CoreComponentSet set) : base(set) { }
-
-        #endregion
-
-        #region Model Diagram
 
         [Route("{uid:Guid}/InformationCatalogDiagramData")]
         public JsonNetResult InformationCatalogDiagramData(Guid uid)
@@ -47,7 +41,5 @@ namespace d360.web.Controllers
                 return null;
             }
         }
-
-        #endregion
     }
 }

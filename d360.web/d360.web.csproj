@@ -1018,6 +1018,7 @@
     <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="Controllers\V2\AssetController_Simplified.cs" />
     <Compile Include="Controllers\V2\NavigationController.cs" />
+    <Compile Include="Extensions\RepositoryExtensions.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionLogger.cs" />
@@ -1142,7 +1143,6 @@
     <Compile Include="Models\ModelMetadataExtensions.cs" />
     <Compile Include="Models\Workflow Models.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\AssetService.cs" />
     <Compile Include="Services\Exceptions\InvalidRequestException.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcher.cs" />
     <Compile Include="Services\Favorites\FavoriteRouteMatcherService.cs" />
@@ -1154,7 +1154,6 @@
     <Compile Include="Services\CommonExceptionHandler.cs" />
     <Compile Include="Services\Exceptions\BusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\ForbiddenBusinessLayerException.cs" />
-    <Compile Include="Services\IAssetService.cs" />
     <Compile Include="Services\Exceptions\NotFoundBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\RecoverableBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\UnauthorizedBusinessLayerException.cs" />

@@ -1,18 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
-using System.Web.Http.Results;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
-using d360.model.DataAccessLayer;
-using d360.model.DataAccessLayer.repositories;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
@@ -21,6 +10,15 @@ using Microsoft.Web.Http;
 using repositories;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
+using System.Web.Http.Results;
 
 namespace d360.web.Controllers.V2
 {
@@ -37,20 +35,17 @@ namespace d360.web.Controllers.V2
 		private readonly IAssetRepository AssetRepository;
 		private readonly IResponsibilityRepository ResponsibilityRepository;
 		private readonly IResourceRepository ResourceRepository;
-		private readonly IAssetService AssetService;
 
 		public ResponsibilitiesController(ICoreComponentSet set,
 			IAssetRepository assetRepository,
 			IResponsibilityRepository responsibilityRepository,
-			IResourceRepository resourceRepository,
-			IAssetService assetService
+			IResourceRepository resourceRepository
 			)
 			: base(set)
 		{
 			ResponsibilityRepository = responsibilityRepository;
 			ResourceRepository = resourceRepository;
 			AssetRepository = assetRepository;
-			AssetService = assetService;
 		}
 
 		/// <summary>
@@ -1023,13 +1018,13 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> BulkAddResponsibilitiesOverride(List<BulkResponsibilityOverridePostModel> models)
 		{
 			var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostResponsibilityOverride);
-			ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
+			await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
 
 			var result = new ApiExecutionRecievedResponse
 			{
-				ExecutionID = executionInfo.ExecutionID,
+				ExecutionID = execution.ExecutionID,
 				Message = ApiMessages.ExecutionIDStatus,
-				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{execution.ExecutionID}"
 			};
 
 			return Ok(result);
@@ -1337,7 +1332,7 @@ namespace d360.web.Controllers.V2
 			{
 				var model = new ResponsibilityGetBreakdownByResourceModel
 				{
-					Name = AssetService.GetAssetName(aggregate.AssetType),
+					Name = aggregate.AssetType.GetNameWithPrefix(),
 					Class = aggregate.AssetType.Class.ToString(),
 					AssetTypeUid = aggregate.AssetType.uid,
 					AssetCount = aggregate.AssetCount
@@ -1405,7 +1400,7 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(ResponsibilityApiMessages.InvalidTestType);
 			}
 
-			var hideD3SUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+			var hideD3SUsers = await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
 			var queryParams = Request.GetQueryNameValuePairs();
 			var includeThen = testType.ToLower() == "then";
 

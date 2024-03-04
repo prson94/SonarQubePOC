@@ -1,4 +1,19 @@
-﻿using System;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Metric;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.queue;
+using d360.core.resources;
+using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+using Microsoft.Web.Http;
+using repositories;
+using Resources;
+using SpreadsheetLight;
+using Swashbuckle.Swagger.Annotations;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,27 +22,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
-using d360.core;
-using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.queue;
-using d360.core.resources;
-using d360.extensions;
-using d360.model.DataAccessLayer;
-using d360.model.helpers.filters;
-using d360.web.Filters;
-using d360.web.Models;
-
-using Microsoft.Web.Http;
-using repositories;
-using Resources;
-
-using SpreadsheetLight;
-
-using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -1149,7 +1143,7 @@ namespace d360.web.Controllers.V2
 			if (isRequestAnExport)
 			{
 				_pageNum = 1;
-				_pageSize = SettingsRepository.GetSettingValue<int>(Setting.MaxExcelExportRows);
+				_pageSize = await GetCachedSettingValueById<int>(Setting.MaxExcelExportRows);
 			}
 			else
 			{

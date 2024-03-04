@@ -141,9 +141,9 @@ namespace d360.web.Controllers
 
 
 		[Route("sitemenu")]
-		public JsonNetResult SiteMenu()
+		public async Task<JsonNetResult> SiteMenu()
 		{
-			var additionalMenuItems = Company.Query<(bool hasTechAssets, bool hasDataCatalog)>($@"
+			var additionalMenuItems = (await Company.QueryAsync<(bool hasTechAssets, bool hasDataCatalog)>($@"
 				declare @hasTechAssets bit = 0;
 				declare @hasDataCatalog bit = 0;
 
@@ -152,9 +152,9 @@ namespace d360.web.Controllers
 				select @hasDataCatalog = iif(count(*) > 0,1,0) from IntersectType IT 
 				inner join [Predicate] P on P.ID = IT.PredicateID AND P.Type =  {(int)PredicateType.CatalogBrowse};
 
-				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;").First();
+				select @hasTechAssets as hasTechAssets, @hasDataCatalog as hasDataCatalog;")).First();
 
-			var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
+			var showChildren = await GetCachedSettingValueById<bool>(Setting.ShowNavigationChildren);
 			var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), additionalMenuItems.hasTechAssets, showChildren, additionalMenuItems.hasDataCatalog);
 
 			//if db Titles are still defaults ones than load translation for them
@@ -1158,7 +1158,7 @@ namespace d360.web.Controllers
 		#endregion
 
 		[HttpPost, Route("secondaryNavigationSettings")]
-		public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
+		public async Task<JsonNetResult> GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
 		{
 			bool execProcedure = true;
 			SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
@@ -1218,7 +1218,7 @@ namespace d360.web.Controllers
 					responseModel.Object = SystemObjects.TaskType.ToString();
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
 
-					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 
 					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 				}
@@ -1311,7 +1311,7 @@ namespace d360.web.Controllers
 					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 					responseModel.AssetTypeClass = AssetTypeClass.Diagram;
-					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+					var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 
 					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
 					{

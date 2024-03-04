@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using d360.core;
 using d360.core.entities;
@@ -29,7 +30,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        private JsonResult Diagram_EditFields(int id)
+        private async Task<JsonResult> Diagram_EditFields(int id)
         {
             var list = new List<EditableField>();
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == "Task").Include(x => x.AssetType).FirstOrDefault();
@@ -40,7 +41,7 @@ namespace d360.web.Controllers
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
-			list = loadDynamicFields(
+			list = await loadDynamicFields(
                     SystemObjects.Task.ToString(),
                     id,
                     list,
@@ -85,7 +86,7 @@ namespace d360.web.Controllers
         }
 
         /// <param name="id">ArtifactID</param>
-        private JsonResult Asset_EditFields(SystemObjects obj, int id)
+        private async Task<JsonResult> Asset_EditFields(SystemObjects obj, int id)
         {
             if (!Company.HasAssetPermission(obj, id, Permission.EditAsset))
             {
@@ -133,7 +134,7 @@ namespace d360.web.Controllers
 			var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == a.AssetTypeID).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 			var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == a.ID).ToList();
 
-			list = loadDynamicFields(
+			list = await loadDynamicFields(
                     obj.ToString(),
                     id,
                     list,

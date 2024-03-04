@@ -46,7 +46,6 @@ namespace igx.UnitTests
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
 			assetsController = new AssetsController(
-				GetCache(),
 				GetCoreComponentSet(),
 				GetStorage(),
 				GetQueue(),
@@ -54,8 +53,7 @@ namespace igx.UnitTests
 				GetExecutionsRepository(),
 				GetFieldsRepository(),
 				GetRelationshipRepository(),
-				GetTagRepository(),
-				GetCatalogs())
+				GetTagRepository())
 			{
 				Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -65,23 +63,22 @@ namespace igx.UnitTests
         [Fact]
         public async void GetAssetTypesAsync()
         {
-            var results = await assetsController.GetAssetTypesAsync();
-            var list = new List<AssetTypeApiViewModel>();
-            var res = results.TryGetContentValue(out list);
+            var results = await (await assetsController.GetAssetTypesAsync()).ExecuteAsync(new CancellationToken());
+            List<AssetTypeApiViewModel> list;
+            results.TryGetContentValue(out list);
 
             Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.True(list != null, XMsg.NoContent);
-
         }
 
         [Fact]
-        public void GetAssetTypeClasses()
+        public async Task GetAssetTypeClasses()
         {
-            var result = assetsController.GetAssetTypeClassesAsync();
-            var list = new List<AssetTypeClassInfo>();
-            var listOfAssets = result.TryGetContentValue(out list);
+            var result = await assetsController.GetAssetTypeClassesAsync().ExecuteAsync(new CancellationToken());
+			List<AssetTypeClassInfo> list;
+			result.TryGetContentValue(out list);
 
-            Assert.True(list.Count > 0, XMsg.NoContent);
+			Assert.True(list.Count > 0, XMsg.NoContent);
             Assert.True(result.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
 
@@ -588,9 +585,7 @@ namespace igx.UnitTests
         [Fact]
         public async void PostAssetTypeAsync()
         {
-
-
-            var insertItem = new AssetTypeUpsert() {
+			var insertItem = new AssetTypeUpsert() {
                 IconStyle = new IconStyleInsert()
             };
 
@@ -633,8 +628,6 @@ namespace igx.UnitTests
             Assert.True(data.GetValue("Uid") != null, "Uid field missing from response!");
             Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
             Assert.True(data.GetValue("Success") != null, "Success field missing from response!");
-
-
         }
 
         [Fact]
@@ -851,7 +844,6 @@ namespace igx.UnitTests
             });
 
             var assetsControllerTemp = new AssetsController(
-				GetCache(), 
 				GetCoreComponentSet(), 
 				GetStorage(), 
 				GetQueue(), 
@@ -859,8 +851,7 @@ namespace igx.UnitTests
 				GetExecutionsRepository(), 
 				GetFieldsRepository(), 
 				GetRelationshipRepository(), 
-				GetTagRepository(), 
-				GetCatalogs()
+				GetTagRepository()
 				)
             {
                 Request = new HttpRequestMessage(),

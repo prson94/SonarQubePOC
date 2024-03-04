@@ -12,12 +12,32 @@ namespace repositories.dis
 	{
 		public string BaseUrl { get { return "https://data-catalog-dev.govern.cloud.precisely.services"; } }
 
+		public Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task CreateSemanticType()
 		{
 			throw new NotImplementedException();
 		}
 
 		public Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<AssetDetail> ReadAssetDetail(long id)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<AssetDetail> ReadAssetDetail(string @object, int objectId)
 		{
 			throw new NotImplementedException();
 		}
@@ -45,6 +65,16 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<IEnumerable<AssetCrossReferenceResult>> ReadCrossReferenceResultsAsync(Guid executionId)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IEnumerable<AssetCrossReference>> ReadCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task ReadProfiles()
 		{
 			throw new NotImplementedException();
@@ -60,12 +90,22 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
-		public Task RemoveSemanticType()
+		public Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task UpdateSemanticType()
+		public Task<RepositoryResponse<string>> RemoveSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<Semantic>> UpdateSemanticType()
 		{
 			throw new NotImplementedException();
 		}

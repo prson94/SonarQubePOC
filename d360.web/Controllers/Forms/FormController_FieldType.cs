@@ -26,7 +26,7 @@ namespace d360.web.Controllers
 			string exceptionMessage = "";
 			bool useTypeahead = false;
 
-			int typeaheadThreshold = 1 + SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
+			int typeaheadThreshold = 1 + GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
 
 			try
 			{

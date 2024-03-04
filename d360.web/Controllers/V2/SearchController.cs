@@ -1077,7 +1077,7 @@ namespace d360.web.Controllers.V2
 
 			if (Company.CurrentResourceIsAdmin)
 			{
-				limits.HideData3SixtyUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+				limits.HideData3SixtyUsers = GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
 			}
 			else
 			{

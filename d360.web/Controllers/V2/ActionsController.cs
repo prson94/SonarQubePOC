@@ -799,7 +799,7 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
 		{
-			bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
+			bool isWriteActionDescriptionEnabled = await IsWriteActionDescriptionEnabled();
 
 			List<ApiStatusResponse> response = new List<ApiStatusResponse>();
 
@@ -1135,11 +1135,9 @@ namespace d360.web.Controllers.V2
 			return fieldList;
 		}
 
-		private bool IsWriteActionDescriptionEnabled()
+		private async Task<bool> IsWriteActionDescriptionEnabled()
 		{
-			var setting = SettingsRepository.GetSettings().Single(s => s.ID == Setting.WriteActionDescription);
-
-			return setting.Value == "true";
+			return await GetCachedSettingValueById<bool>(Setting.WriteActionDescription);
 		}
 
 		/// <summary>

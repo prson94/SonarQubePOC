@@ -47,15 +47,9 @@ namespace d360.model
 
 		Task<AssetsQueryResults> ExecuteGetAssetsQuery(string getAllQuery, CancellationToken cancellationToken, DynamicParameters dbArgs, bool includeTotal, bool includeOwnershipData);
 
-		AssetDetail GetAssetDetail(long id);
-
-		AssetDetail GetAssetDetail(string objectType, long objectId);
-
 		AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
 
 		AssetTypeStyle GetAssetTypeStyle(string type, int id);
-
-		Guid GetAssetUid(int objectId, SystemObjects assetType);
 
 		List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
 
@@ -746,59 +740,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			}
 
 			return model;
-		}
-
-		public AssetDetail GetAssetDetail(long id)
-		{
-			AssetDetail model = Query<AssetDetail>(@"
-													select	ID,
-															DisplayValue,
-															AssetTypeID,
-															State,
-															Object,
-															ObjectID,
-															TypeName,
-															Type,
-															TypeID,
-															uid
-													from	AssetDetail
-													where   ID = @id", new { id }).SingleOrDefault();
-
-			return model;
-		}
-
-		public AssetDetail GetAssetDetail(string objectType, long objectId)
-		{
-			AssetDetail model = Query<AssetDetail>(@"
-													select	ID,
-															DisplayValue,
-															AssetTypeID,
-															State,
-															Object,
-															ObjectID,
-															TypeName as AssetTypeName,
-															Type,
-															TypeID,
-															uid,
-															assetTypeUid
-													from	AssetDetail
-													where   [ObjectID] = @id and [Object] = @type",
-													new { id = objectId, type = new DbString { Value = objectType, IsFixedLength = true, Length = 20, IsAnsi = true } }
-													).SingleOrDefault();
-
-			return model;
-		}
-
-		public Guid GetAssetUid(int objectId, SystemObjects assetType)
-		{
-			try
-			{
-				return Assets.FirstOrDefault(x => x.Object == assetType.ToString() && x.ObjectID == objectId).uid;
-			}
-			catch
-			{
-				throw new ArgumentNullException(CompanyContextErrors.ObjectNotPartAssetTable);
-			}
 		}
 
 		public string GetEscapedFilterString(string filter, bool isContains = false)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 using d360.core;
@@ -24,7 +25,7 @@ namespace d360.web.Controllers
 		/// <param name="hierarchyType">TaxonomyType or PolicyType</param>
 		/// <param name="t">TaxonomyTypeID</param>
 		/// <param name="p">ParentID</param>        
-		private JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
+		private async Task<JsonResult> Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
 		{
 			if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
 			{
@@ -38,8 +39,17 @@ namespace d360.web.Controllers
 
 			var list = new List<EditableField>();
 
-			var parentUid = p > 0 ? Company.GetAssetUid(p, hierarchyType == SystemObjects.TaxonomyType ? SystemObjects.Taxonomy : SystemObjects.Policy).ToString() : "";
-			list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid.ToString() });
+			string parentUid = "";
+			if (p > 0)
+			{
+				string obj = (hierarchyType == SystemObjects.TaxonomyType ? SystemObjects.Taxonomy : SystemObjects.Policy).ToString();
+				var parentAsset = await Catalog.ReadAssetDetail(obj, p);
+				if (parentAsset != null)
+				{
+					parentUid = parentAsset.uid.ToString();
+				}
+			}
+			list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid });
 
 			list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1, loadLookupValues: false);
 
@@ -48,7 +58,7 @@ namespace d360.web.Controllers
 
 		/// <param name="hierarchy">Policy or Taxonomy type</param>
 		/// <param name="id">TaxonomyID or PolicyID</param>        
-		private JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
+		private async Task<JsonResult> Hierarchy_EditFields(SystemObjects hierarchy, int id)
 		{
 			if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
 			{
@@ -141,7 +151,7 @@ namespace d360.web.Controllers
 				var fieldTypes = Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 				var fields = Company.Filter<FieldWithRelation>(i => i.AssetID == assetId).ToList();
 
-				list = loadDynamicFields(
+				list = await loadDynamicFields(
 						 hierarchy.ToString(),
 						 id,
 						 list,

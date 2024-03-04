@@ -43,7 +43,12 @@ namespace d360.web.Controllers
 		private readonly IConnectorLabelRepository connectorLabelRepository;
 		private readonly IFieldsRepository fieldsRepository;
 
-		public D3SApiController(ICoreComponentSet set, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider, IFieldsRepository fieldsRepository)
+		public D3SApiController(ICoreComponentSet set, 
+			ICommentRepository comments, 
+			ITagRepository tagRepository, 
+			IConnectorLabelRepository connectorLabelRepository, 
+			ISecurityContextProvider secProvider, 
+			IFieldsRepository fieldsRepository)
 			: base(set)
 		{
 #if DEBUG
@@ -2101,9 +2106,9 @@ namespace d360.web.Controllers
 		}
 
 		[Route("relationships/field/{fieldTypeID:int}"), HttpGet]
-		public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
+		public async Task<HttpResponseMessage> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
 		{
-			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
+			var asset = await Catalog.ReadAssetDetail(@object, objectID.GetValueOrDefault());
 			var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
 
 			if (selected.ContainsKey("RelationshipError"))
@@ -2414,14 +2419,14 @@ namespace d360.web.Controllers
 		#region Resources
 
 		[HttpGet, Route("resources/{typeID:int}")]
-		public HttpResponseMessage GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
+		public async Task<IHttpActionResult> GetResourcesByType(int typeID, string filter = "", bool includeInactive = true)
 		{
-			var showUsers = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+			var showUsers = await GetCachedSettingValueById<bool>(Setting.ShowResources);
 
 			//check that current user is an admin or the company settings allow users to be listed
 			if (!Company.CurrentResourceIsAdmin && !showUsers)
 			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+				return errorMessageResponse(HttpStatusCode.NotFound, "");
 			}
 
 			var filterSql = "";
@@ -2478,7 +2483,7 @@ namespace d360.web.Controllers
 
 			var sql = string.Format(@"select * from ({0}) B {1} order by FirstName", querySql, filterSql);
 
-			return Request.CreateResponse(HttpStatusCode.OK, Company.Query<dynamic>(sql, dbArgs));
+			return Ok(Company.Query<dynamic>(sql, dbArgs));
 		}
 
 
@@ -2511,14 +2516,14 @@ namespace d360.web.Controllers
 		}
 
 		[Route("resources/{typeID:int}/{id:int}")]
-		public Resource GetResource(int typeID, int id)
+		public async Task<IHttpActionResult> GetResource(int typeID, int id)
 		{
 			// See if user can see other users profiles by checking that current user is an admin or the company settings allow users to be listed.
 			if (id != Company.CurrentResourceID)
 			{
-				if (!SettingsRepository.GetSettingValue<bool>(Setting.ShowResources))
+				if (!(await GetCachedSettingValueById<bool>(Setting.ShowResources)))
 				{
-					throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+					return errorMessageResponse(HttpStatusCode.NotFound, "");
 				}
 			}
 
@@ -2526,17 +2531,16 @@ namespace d360.web.Controllers
 			if (!Company.GlobalReportingResources.Where(x => x.ResourceID == id).Any())
 			{
 				// user is not a user of this environment get them outa here!
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+				return errorMessageResponse(HttpStatusCode.NotFound, "");
 			}
 
 			var model = Community.GetById<Resource>(id);
-
 			if (model == null)
 			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
+				return errorMessageResponse(HttpStatusCode.NotFound, "");
 			}
 
-			return model;
+			return Ok(model);
 		}
 
 		#endregion
@@ -2615,9 +2619,9 @@ namespace d360.web.Controllers
 		#region Type/ID Endpoints
 
 		[Route("asset/{id:long}")]
-		public AssetDetail GetAssetDetail(long id)
+		public async Task<AssetDetail> GetAssetDetail(long id)
 		{
-			return Company.GetAssetDetail(id);
+			return await Catalog.ReadAssetDetail(id);
 		}
 
 		[Route("{type}/{uid}")]
@@ -3000,7 +3004,7 @@ namespace d360.web.Controllers
 
 								if (parent != null)
 								{
-									var parentAsset = Company.GetAssetDetail("Artifact", parent.ObjectID);
+									var parentAsset = await Catalog.ReadAssetDetail("Artifact", parent.ObjectID);
 									var parentUrl = Company.Query<string>($"select dbo.GenerateAssetUrl({parentAsset.ID})").First();
 
 									var checkReadPermission = Company.GetPermissionsRead(parentAsset.ID, parentAsset.AssetTypeID);
@@ -5027,15 +5031,14 @@ where v.id = {0}", id)).FirstOrDefault();
 
 
 		[Route("{id:int}/permissionsbyid")]
-		public List<PermissionInfo> GetPermissionsObject(int id)
+		public async Task<List<PermissionInfo>> GetPermissionsObject(int id)
 		{
 			var isAdmin = Company.CurrentResourceIsAdmin;
 			AssetDetail asset = null;
 
 			if (!isAdmin)
 			{
-				asset = Company.GetAssetDetail(id);
-
+				asset = (await Catalog.ReadAssetDetail(id));
 				if (asset == null)
 				{
 					throw new ArgumentNullException(ApiMessages.AssetNotfound);

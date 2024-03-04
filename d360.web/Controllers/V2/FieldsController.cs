@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
@@ -17,9 +6,7 @@ using d360.core.queue;
 using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
-using d360.featureflags;
 using d360.model;
-using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
@@ -30,6 +17,17 @@ using Newtonsoft.Json;
 using repositories;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -44,21 +42,9 @@ namespace d360.web.Controllers.V2
 	]
 	public class FieldsController : BaseV2ApiController
 	{
-		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
-		private ICatalog EnvironmentCatalog
-		{
-			get
-			{
-				return UseCatalogMicroservice ?
-					Catalogs.Single(c => c.Platform == Platform.Dis) :
-					Catalogs.Single(c => c.Platform == Platform.Azure);
-			}
-		}
-
 		#region DI
 
 		private readonly IAssetRepository AssetRepository;
-		private readonly IList<ICatalog> Catalogs;
 		private readonly IFieldsRepository FieldsRepository;
 		private readonly IQueueSource Queue;
 		private readonly IStorageProvider Storage;
@@ -68,12 +54,10 @@ namespace d360.web.Controllers.V2
 			IStorageProvider storage,
 			IQueueSource queue,
 			IFieldsRepository fieldsRepository,
-			IAssetRepository assetRepository,
-			IEnumerable<ICatalog> catalogs
+			IAssetRepository assetRepository
 		) : base(set)
 		{
 			AssetRepository = assetRepository;
-			Catalogs = catalogs.ToList();
 			FieldsRepository = fieldsRepository;
 			Queue = queue;
 			Storage = storage;
@@ -363,7 +347,7 @@ namespace d360.web.Controllers.V2
 									$"Path field could not change selected segment if asset type is not technical or business class.");
 						}
 						var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
-						var ancestryCollection = await EnvironmentCatalog.ReadAncestryAsync(model.AssetTypeUid.Value);
+						var ancestryCollection = await Catalog.ReadAncestryAsync(model.AssetTypeUid.Value);
 						if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
 						{
 							throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
@@ -796,7 +780,7 @@ namespace d360.web.Controllers.V2
 
 				try
 				{
-					enableJsonAttributes = SettingsRepository.GetSettingValue<bool>(Setting.EnableJsonAttribute);
+					enableJsonAttributes = await GetCachedSettingValueById<bool>(Setting.EnableJsonAttribute);
 				}
 				catch
 				{

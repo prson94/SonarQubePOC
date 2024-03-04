@@ -228,9 +228,11 @@ namespace igx.UnitTests
         {
             //var mock = new Mock<CoreComponentSet>(GetCommunity(), GetCompany(), GetSettingsRepository(), new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
             var mock = new Mock<ICoreComponentSet>();
+			mock.Setup(s => s.Cache).Returns(GetCache());
+			mock.Setup(s => s.Catalogs).Returns(GetCatalogs());
             mock.Setup(s => s.Community).Returns(GetCommunity());
             mock.Setup(s => s.Company).Returns(GetCompany());
-            mock.Setup(s => s.SettingsRepository).Returns(GetSettingsRepository());
+            mock.Setup(s => s.Workspace).Returns(GetWorkspacesRepository());
 			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
 			mock.Setup(s => s.FeatureFlags).Returns(GetFeatureFlagService());
 			return mock.Object;
@@ -429,7 +431,9 @@ namespace igx.UnitTests
 		public IEnumerable<ICatalog> GetCatalogs()
 		{
 			var mock = new Mock<ICatalog>();
-			mock.SetupGet(p => p.Platform).Returns(Platform.Dis);
+
+			mock.SetupGet(p => p.Platform).Returns(Platform.Azure);
+
 			mock.Setup(x =>
 				x.ReadAssetPaths(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>())
 			).Returns(Task.FromResult(new AssetPathResults { items = new List<AssetPathResult> { new AssetPathResult { path = "" } }, total = 1 }));
@@ -438,64 +442,35 @@ namespace igx.UnitTests
 				x.ReadAncestryAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())
 			).Returns(Task.FromResult(new List<AssetType> { new AssetType { Name = "test" } }));
 
+			mock.Setup(x => 
+				x.ReadCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
+			).Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference> { new AssetCrossReference() }));
+
+			mock.Setup(x => 
+				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
+			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 201, true, "")));
+
+			//mock.Setup(x => 
+			//	x.CreateCrossReferencesAsync(It.IsAny<ApiExecution>(), It.IsAny<List<AssetCrossReference>>(), It.IsAny<int>())
+			//).Returns((List<AssetCrossReference> xRefList, object o2) =>
+			//	{
+			//		return Task.CompletedTask;
+			//	});
+
+			mock.Setup(x => 
+				x.RemoveCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
+			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
+
+			mock.Setup(x => 
+				x.UpdateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
+			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
+
 			return new List<ICatalog> { mock.Object };
 		}
 
 		public ICommentRepository GetCommentRepository()
         {
             var mock = new Mock<ICommentRepository>();
-
-            return mock.Object;
-        }
-
-        public ICrossReferencesRepository GetCrossReferencesRepository()
-        {
-            var mock = new Mock<ICrossReferencesRepository>();
-
-            mock.Setup(x => x.GetCrossReferences(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(() => Task.FromResult(new List<AssetCrossReference>() { new AssetCrossReference() { } } as IEnumerable<AssetCrossReference>));
-
-            mock.Setup(x => x.GetByAssetUid(It.IsAny<string>()))
-                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
-
-            mock.Setup(x => x.GetCrossReferenceByTypeId(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
-
-            mock.Setup(x => x.GetCrossReferenceByType(It.IsAny<string>()))
-                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
-
-            mock.Setup(x => x.GetCrossReferenceByDataSource(It.IsAny<string>()))
-                .Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference>() { new AssetCrossReference() }));
-
-            mock.Setup(x => x.CreateNewCrossReference(It.IsAny<AssetCrossReference>()))
-                .Returns(Task.FromResult<int>(1));
-
-            mock.Setup(x => x.XrefExists(It.IsAny<AssetCrossReference>()))
-                .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
-
-            mock.Setup(x => x.PostBulkCrossReferenceAsync(It.IsAny<List<AssetCrossReference>>(), It.IsAny<ApiExecution>()))
-                 .Returns((List<AssetCrossReference> xRefList, object o2) =>
-                 {
-					 return Task.FromResult(new List<AssetCrossReferenceResult>() { });
-                 });
-
-            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetCrossReference>())).
-                Returns((Guid uid, string s1, string s2, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
-
-            mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<AssetCrossReference>())).
-                Returns((Guid uid, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
-
-            mock.Setup(x => x.DeleteCrossReferenceByUid(It.IsAny<Guid>()))
-                .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
-
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<int>()))
-              .Returns((string ds, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
-
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
-             .Returns((string ds, string type, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
-
-            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>(), It.IsAny<int>()))
-              .Returns((string t, int tout) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
 
             return mock.Object;
         }
@@ -550,7 +525,7 @@ namespace igx.UnitTests
 
             return mock.Object;
         }
-
+		
         public IRelationshipRepository GetRelationshipRepository()
         {
             var mock = new Mock<IRelationshipRepository>();
@@ -736,7 +711,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public Mock<IResponsibilityRepository> GetResponsibilityRepositoryMock()
+        public Mock<IResponsibilityRepository> GetResponsibilityRepository()
         {
             var mock = new Mock<IResponsibilityRepository>();
 
@@ -779,29 +754,41 @@ namespace igx.UnitTests
 			mock.Setup(x => x.UpsertResponsibilityTypes(It.IsAny<List<ResponsibilityTypeUpsertModel>>(), It.IsAny<ApiExecution>()))
 				.Returns(new List<ResponsibilityTypeUpsertResult>() { new ResponsibilityTypeUpsertResult() });
 
+			mock.Setup(x => x.DeleteAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<bool>()))
+				.ReturnsAsync((ResponsibilityType responsibilityType, AssetType assetType, bool cascade) =>
+					new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid }
+				);
+
+			mock.Setup(x => x.GetResponsibilityTypeUsedInOwnershipLookupMessage(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>()))
+				.Returns(string.Empty);
+
+			mock.Setup(x => x.AddAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<List<int>>()))
+				.Returns((ResponsibilityType responsibilityType, AssetType assetType, List<int> permissionaBitMask) => 
+					new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid }
+				);
+
+			mock.Setup(x => x.IsValidResponsibilityForAsset(It.IsAny<Guid>(), It.IsAny<Guid>()))
+				.Returns(true);
+
 			return mock;
 		}
 
-        public ISettingsRepository GetSettingsRepository()
+        public IWorkspaces GetWorkspacesRepository()
         {
-            var mock = new Mock<ISettingsRepository>();
+            var mock = new Mock<IWorkspaces>();
 
-            mock.Setup(x => x.GetSetting(Setting.ActionMessage))
-                .Returns(Setting.ActionMessage.AsInfoModel());
+            mock.Setup(x => x.ReadSettingAsync(Setting.ActionMessage))
+                .ReturnsAsync(Setting.ActionMessage.AsInfoModel());
 
-            mock.Setup(x => x.GetSettingValue<bool>(Setting.DisableCommunityPosting)).Returns(false);
+            mock.Setup(x => x.ReadSettingValueAsync<bool>(Setting.DisableCommunityPosting))
+				.ReturnsAsync(false);
 
-            mock.Setup(x => x.GetSettingsAsDictionary()).Returns(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
+            mock.Setup(x => x.ReadSettingsAsDictionaryAsync())
+				.ReturnsAsync(Setting.ActionMessage.GetAsList().ToDictionary(k => k.ID.ToString(), v => v.Value ?? v.DefaultValue));
 
-            mock.Setup(x => x.GetSettings())
-                .Returns(Setting.ActionMessage.GetAsList());
+            mock.Setup(x => x.ReadSettingsAsync())
+                .ReturnsAsync(Setting.ActionMessage.GetAsList());
 
-            return mock.Object;
-        }
-
-        public IMediator GetMediator()
-        {
-            var mock = new Mock<IMediator>();
             return mock.Object;
         }
 

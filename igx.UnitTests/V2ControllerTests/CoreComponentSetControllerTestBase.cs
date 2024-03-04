@@ -6,6 +6,7 @@ using d360.web.Utilities;
 using Microsoft.Extensions.Logging;
 using Moq;
 using repositories;
+using System.Collections.Generic;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -13,35 +14,42 @@ namespace igx.UnitTests.V2ControllerTests
 	{
 		protected readonly Mock<ICompanyContext> MockCompanyContext;
 		protected readonly Mock<ICommunityContext> MockCommunityContext;
+		protected readonly Mock<List<ICatalog>> MockCatalogs;
 		protected readonly Mock<ILogger> MockLog;
 		protected readonly Mock<IMailProvider> MockMailProvider;
-		protected readonly Mock<ISettingsRepository> MockSettingsRepository;
+		protected readonly Mock<IWorkspaces> MockWorkspace;
 		protected readonly Mock<IThemeRepository> MockThemeRepository;
 		protected readonly Mock<IRuntimeInfo> RuntimeInfo;
 		protected readonly ICoreComponentSet CoreComponentSet;
 		protected readonly Mock<IFeatureFlagService> MockFlags;
+		protected readonly Mock<ICachingProvider> MockCache;
 
 		protected CoreComponentSetControllerTestBase()
 		{
 			
 			MockCompanyContext = new Mock<ICompanyContext>();
 			MockCommunityContext = new Mock<ICommunityContext>();
+			MockCatalogs = new Mock<List<ICatalog>>();
+			MockCatalogs.Object.AddRange(GetCatalogs());
 			MockLog = new Mock<ILogger>();
 			MockMailProvider = new Mock<IMailProvider>();
-			MockSettingsRepository = new Mock<ISettingsRepository>();
+			MockWorkspace = new Mock<IWorkspaces>();
 			MockThemeRepository = new Mock<IThemeRepository>();
 			RuntimeInfo = new Mock<IRuntimeInfo>();
 			MockFlags = new Mock<IFeatureFlagService>();
+			MockCache = new Mock<ICachingProvider>();
 
 			CoreComponentSet = new CoreComponentSet(
+				MockCache.Object,
 				MockCommunityContext.Object, 
 				MockCompanyContext.Object,
+				MockCatalogs.Object,
 				MockLog.Object,
 				MockMailProvider.Object, 
-				MockSettingsRepository.Object, 
 				MockThemeRepository.Object,
 				MockFlags.Object, 
-				RuntimeInfo.Object);
+				RuntimeInfo.Object, 
+				MockWorkspace.Object);
 		}
 	}
 }

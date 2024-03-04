@@ -17,6 +17,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using repositories;
+using repositories.azure;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Mvc;
 
@@ -87,15 +89,19 @@ namespace d360.web.Controllers
 
     public interface ICoreComponentSet
     {
-        ICompanyContext Company { get; set; }
+		ICachingProvider Cache { get; set; }
+
+		IWorkspaces Workspace { get; set; }
+
+		IEnumerable<ICatalog> Catalogs { get; set; }
+
+		ICompanyContext Company { get; set; }
 
         ICommunityContext Community { get; set; }
 		
 		ILogger Log { get; set; }
 
         IMailProvider Mail { get; set; }
-
-        ISettingsRepository SettingsRepository { get; set; }
 
         IThemeRepository ThemeRepository { get; set; }
 		
@@ -106,7 +112,11 @@ namespace d360.web.Controllers
 
     public class CoreComponentSet : ICoreComponentSet
     {
-        public ICompanyContext Company { get; set; }
+		public ICachingProvider Cache { get; set; }
+
+		public IEnumerable<ICatalog> Catalogs { get; set; }
+
+		public ICompanyContext Company { get; set; }
 
         public ICommunityContext Community { get; set; }
 
@@ -114,35 +124,52 @@ namespace d360.web.Controllers
 
 		public IMailProvider Mail { get; set; }
 
-        public ISettingsRepository SettingsRepository { get; set; }
-
         public IThemeRepository ThemeRepository { get; set; }
 
         public IFeatureFlagService FeatureFlags { get; set; }
 
 		public IRuntimeInfo RuntimeInfo { get; set; }
+		
+		public IWorkspaces Workspace { get; set; }
 
-		public CoreComponentSet(ICommunityContext community, ICompanyContext company, ILogger log, IMailProvider mail, ISettingsRepository settingsRepository, IThemeRepository themeRepository, IFeatureFlagService ff, IRuntimeInfo runtimeInfo)
+		public CoreComponentSet(
+			ICachingProvider cache,
+			ICommunityContext community, 
+			ICompanyContext company, 
+			IEnumerable<ICatalog> catalogs, 
+			ILogger log, 
+			IMailProvider mail, 
+			IThemeRepository themeRepository, 
+			IFeatureFlagService ff, 
+			IRuntimeInfo runtimeInfo,
+			IWorkspaces workspace
+			)
 		{
+			Cache = cache;
 			Company = company;
 			Community = community;
+			Catalogs = catalogs;
 			FeatureFlags = ff;
 			Log = log;
 			Mail = mail;
-			SettingsRepository = settingsRepository;
 			ThemeRepository = themeRepository;
 			RuntimeInfo = runtimeInfo;
+			Workspace = workspace;
 		}
 	}
 
     public class BaseApiController : ApiController
     {
 		internal IFeatureFlagService FeatureFlags { get; set; }
-        internal ICompanyContext Company;
+		internal ICatalog Catalog { get; set; }
+		internal ICompanyContext Company;
         internal ICommunityContext Community;
-        internal ISettingsRepository SettingsRepository;
 		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
+		internal IWorkspaces Workspace;
+
+		internal ICachingProvider Cache;
+
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
@@ -174,12 +201,26 @@ namespace d360.web.Controllers
 
         public BaseApiController(ICoreComponentSet set)
         {
+			/*Future Use:
+		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
+
+		private ICatalog Catalog { 
+			get 
+			{ 
+				return UseCatalogMicroservice ? 
+					Catalogs.Single(c => c.Platform  == Platform.Dis) :
+					Catalogs.Single(c => c.Platform == Platform.Azure);
+			}
+		}			 
+			 */
+			Catalog = set.Catalogs.Single(c => c.Platform == Platform.Azure);
             Company = set.Company;
             Community = set.Community;
 			Log = set.Log;
-            SettingsRepository = set.SettingsRepository;
 			RuntimeInfo = set.RuntimeInfo;
 			FeatureFlags = set.FeatureFlags;
+			Workspace = set.Workspace;
+			Cache = set.Cache;
 		}
 
 		internal ClientUserModel GetFeatureFlagUser()
@@ -189,7 +230,7 @@ namespace d360.web.Controllers
 
 		protected internal bool HideData3SixtyUsers()
         {
-            return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+            return GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
         }
 
         protected internal IQueryable<Resource> GetCompanyResources()
@@ -317,6 +358,11 @@ namespace d360.web.Controllers
 			return errorMessageResponse(status.StatusCode, status.Error, status.Message);
 		}
 
+		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string message)
+		{
+			return ResponseMessage(ReturnApiError(status, message, message));
+		}
+
 		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
 	        return ResponseMessage(ReturnApiError(status, title, message));
@@ -362,9 +408,45 @@ namespace d360.web.Controllers
             return response;
         }
 
-        #region Private Methods
+		#region Caching
 
-        protected internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
+		internal async Task<List<SettingInfo>> GetCachedSettings()
+		{
+			string cacheKey = $"Settings_{Company.CurrentCompanyID}";
+			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
+			if (settings == null)
+			{
+				settings = await Workspace.ReadSettingsAsync();
+				settings.ForEach(s =>
+				{
+					s.Value = s.Value ?? s.DefaultValue;
+				});
+				Cache.SetItem(cacheKey, settings, true, 1);
+			}
+
+			return settings;
+		}
+
+		internal async Task<T> GetCachedSettingValueById<T>(Setting id)
+		{
+			var settings = await GetCachedSettings();
+			var info = settings.Single(o => o.ID == id);
+
+			var checkType = default(T);
+			if (checkType is Guid)
+			{
+				Guid guid = Guid.Parse(info.Value);
+				return (T)Convert.ChangeType(guid, typeof(T));
+			}
+
+			return (T)Convert.ChangeType(info.Value, typeof(T));
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		protected internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
         {
             Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
         }
@@ -544,15 +626,17 @@ namespace d360.web.Controllers
 
     public class BaseController : Controller
     {
-        internal ICompanyContext Company;
+		internal ICatalog Catalog;
+		internal ICompanyContext Company;
         internal ICommunityContext Community;
 		internal ILogger Log;
 		internal IMailProvider Mail;
-        internal ISettingsRepository SettingsRepository;
         internal IFeatureFlagService FeatureFlags;
         internal IThemeRepository ThemeRepository;
+		internal IWorkspaces Workspace;
+		internal ICachingProvider Cache;
 
-        internal List<string> limitedFieldTypes = new List<string> {
+		internal List<string> limitedFieldTypes = new List<string> {
             DataType.Path.ToString(),
             DataType.ComplexRelationLookup.ToString(),
             DataType.FieldFromRelationship.ToString(),
@@ -578,13 +662,16 @@ namespace d360.web.Controllers
 
         public BaseController(ICoreComponentSet set)
         {
+			Catalog = set.Catalogs.Single(o => o.Platform == Platform.Azure);
             Community = set.Community;
             Company = set.Company;
             FeatureFlags = set.FeatureFlags;
 			Log = set.Log;
             Mail = set.Mail;
-            SettingsRepository = set.SettingsRepository;
             ThemeRepository = set.ThemeRepository;
+			Workspace = set.Workspace;
+
+			Cache = set.Cache;
         }
 
         #region Validation constants
@@ -657,9 +744,41 @@ namespace d360.web.Controllers
             };
         }
 
-        #endregion
+		#endregion
 
-        internal string GetNoReadSqlStatement(string identifier = null)
+		#region Caching
+
+		internal async Task<List<SettingInfo>> GetCachedSettings()
+		{
+			string cacheKey = $"Settings_{Company.CurrentCompanyID}";
+			var settings = Cache.GetItem<List<SettingInfo>>(cacheKey);
+			if (settings == null)
+			{
+				settings = await Workspace.ReadSettingsAsync();
+				Cache.SetItem(cacheKey, settings, true, 1);
+			}
+
+			return settings;
+		}
+
+		internal async Task<T> GetCachedSettingValueById<T>(Setting id)
+		{
+			var settings = await GetCachedSettings();
+			var info = settings.Single(o => o.ID == id);
+
+			var checkType = default(T);
+			if (checkType is Guid)
+			{
+				Guid guid = Guid.Parse(info.Value);
+				return (T)Convert.ChangeType(guid, typeof(T));
+			}
+
+			return (T)Convert.ChangeType(info.Value, typeof(T));
+		}
+
+		#endregion
+
+		internal string GetNoReadSqlStatement(string identifier = null)
         {
             return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
         }
@@ -745,7 +864,7 @@ namespace d360.web.Controllers
 
         internal bool HideData3SixtyUsers()
         {
-            return SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+            return GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
         }
 
         internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true, string defaultCategoryNameOverride = null)
@@ -922,7 +1041,7 @@ namespace d360.web.Controllers
                                     }
                                     else
                                     {
-                                        int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
+                                        int maxItems = GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
                                         int count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
 
                                         if (count > maxItems)
@@ -1016,11 +1135,11 @@ namespace d360.web.Controllers
             return list;
         }
 
-        internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
+        internal async Task<List<EditableField>> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
 		{
 			var row = startRow;
 			const string defaultCategoryName = "General";
-			var asset = Company.GetAssetDetail(@object, objectID);
+			var asset = await Catalog.ReadAssetDetail(@object, objectID);
 			List<IntersectType> intersectTypes;
 			List<EditableFieldItemRelationshipData> relationshipFieldData;
 			LoadRelationshipFieldData(fieldTypes, asset, out intersectTypes, out relationshipFieldData);
@@ -1245,7 +1364,7 @@ namespace d360.web.Controllers
 									}
 									else
 									{
-										int maxItems = SettingsRepository.GetSettingValue<int>(Setting.MaxDropdownItems);
+										int maxItems = GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
 										int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
 
 										string selectedValue = null;
@@ -2104,7 +2223,7 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
                 return;
             }
 
-            var settings = SettingsRepository.GetSettingsAsDictionary();
+            var settings = await Workspace.ReadSettingsAsDictionaryAsync();
 
             settings["CustomCSSLocation"] = "";
             settings["CompanyIcon"] = "";
@@ -2127,6 +2246,5 @@ select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTyp
 					httpContext.GetOwinContext().Get<string>("ApplicationLanguageSetting"));
 			}
 		}
-
     }
 }
