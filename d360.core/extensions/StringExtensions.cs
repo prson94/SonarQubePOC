@@ -12,9 +12,9 @@ namespace d360.core
 {
 	public static class StringExtensions
     {
-		public static AntiSamy sanatizer = new AntiSamy();
+		private readonly static AntiSamy sanatizer = new AntiSamy();
 
-		private static Policy _antiSamyPolicy = null;
+		private static Policy _antiSamyPolicy;
 		public static Policy AntiSamyPolicy
 		{
 			get
