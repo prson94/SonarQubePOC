@@ -124,6 +124,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid request.
+        /// </summary>
+        public static string InvalidRequestHttpErrorTitle {
+            get {
+                return ResourceManager.GetString("InvalidRequestHttpErrorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid [sortby] value provided in the request..
         /// </summary>
         public static string InvalidSortBy {
@@ -138,6 +147,60 @@ namespace d360.core.resources {
         public static string InvalidSortOrder {
             get {
                 return ResourceManager.GetString("InvalidSortOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag type specified [invalid characters].
+        /// </summary>
+        public static string InvalidTagTypeCharacters {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeCharacters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag type specified [too long]..
+        /// </summary>
+        public static string InvalidTagTypeLong {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag type must be as least 1 character long in length..
+        /// </summary>
+        public static string InvalidTagTypeShort {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag type specified [null model]..
+        /// </summary>
+        public static string InvalidTagTypeSpecified {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag type specified [no value]..
+        /// </summary>
+        public static string InvalidTagTypeSpecifiedNoValue {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeSpecifiedNoValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid uid specified..
+        /// </summary>
+        public static string InvalidTagTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidTagTypeUid", resourceCulture);
             }
         }
         

@@ -820,8 +820,13 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				TagTypeValidator.ValidateForPost(model);
 				model.Value = model.Value.Trim();
+				var validationStatus = TagTypeValidator.ValidateForPost(model);
+
+				if (validationStatus.StatusCode != HttpStatusCode.OK)
+				{
+					return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+				}
 
 				//make sure no tag with the same name exists
 				if (tagRepository.DoesTagTypeExists(model.Value))
@@ -875,6 +880,14 @@ namespace d360.web.Controllers.V2
 
 			model.Value = model.Value.Trim();
 			TagTypeValidator.ValidateForPut(tagTypeId, model);
+
+			var validationStatus = TagTypeValidator.ValidateForPut(tagTypeId, model);
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
 			var existingTagType = tagRepository.GetTagTypeByUid(tagTypeId);
 
 			if (existingTagType == null)

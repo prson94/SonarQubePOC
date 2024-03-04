@@ -1,24 +1,27 @@
 ﻿using System;
+using System.Net;
 using System.Text.RegularExpressions;
 using d360.core;
 using d360.core.entities;
+using d360.core.resources;
+using d360.core.validators;
 
 namespace d360.model.validators
 {
-	public class TagTypeValidator
+	public static class TagTypeValidator
 	{
-		public static void ValidateForPost(TagTypeApiUpsertModel model)
+		public static WorkHttpStatus ValidateForPost(TagTypeApiUpsertModel model)
 		{
 			string isTagTypeBlank = "";
 
 			if (model == null)
 			{
-				throw new Exception("Invalid tag type specified [null model].");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeSpecified}");
 			}
 
 			if (string.IsNullOrEmpty(model.Value))
 			{
-				throw new Exception("Invalid tag type specified [no value].");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeSpecifiedNoValue}");
 			}
 
 			if (!string.IsNullOrEmpty(model.Value))
@@ -28,28 +31,37 @@ namespace d360.model.validators
 
 			if (isTagTypeBlank.Length < 1)
 			{
-				throw new Exception("Tag type must be as least 1 character long in length.");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeShort}");
 			}
 
 			if (model.Value.Length > 100)
 			{
-				throw new Exception("Invalid tag type specified [too long].");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeLong}");
 			}
 
 			if(!model.Value.IsValidForTag())
 			{
-				throw new Exception("Invalid tag type specified [invalid characters]");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeCharacters}");
 			}
+
+			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
-		public static void ValidateForPut(Guid uid, TagTypeApiUpsertModel model)
+		public static WorkHttpStatus ValidateForPut(Guid uid, TagTypeApiUpsertModel model)
 		{
-			ValidateForPost(model);
+			var postStatus = ValidateForPost(model);
+
+			if (postStatus.StatusCode != HttpStatusCode.OK)
+			{
+				return postStatus;
+			}
 
 			if (uid == Guid.Empty)
 			{
-				throw new ArgumentException("Invalid uid specified.");
+				return new WorkHttpStatus(HttpStatusCode.BadRequest, TagErrors.InvalidRequestHttpErrorTitle, $"{TagErrors.InvalidTagTypeUid}");
 			}
+
+			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 	}
 }
