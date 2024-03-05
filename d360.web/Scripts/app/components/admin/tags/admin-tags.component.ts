@@ -222,7 +222,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 				var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
 				for (var i = lastIndex; i <= currentIndex; i++) {
 					if (!tableRows[i].classList.contains('p-highlight')) {
-						this.selected.push(this.tags[i]);
+						if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
+							this.selected.push(this.tags[i]);
+						}
 					}
 				}
 				this.triggerRerenderOfSelection();
@@ -268,10 +270,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
                 for (var i = lastIndex; i <= currentIndex; i++) {
-                    if (!tableRows[i].classList.contains('p-highlight')) {
-                        this.selected.push(this.tags[i]);
-                        this.triggerRerenderOfSelection();
-                    }
+					if (!tableRows[i].classList.contains('p-highlight')) {
+						if (this.selected.filter((x) => x.uid === this.tags[i].uid).length === 0) {
+							this.selected.push(this.tags[i]);
+							this.triggerRerenderOfSelection();
+						}
+					}
                 }
 
                 this.lastSelectedElement = item;
