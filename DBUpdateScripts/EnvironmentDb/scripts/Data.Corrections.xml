@@ -1082,23 +1082,25 @@ end
 		</sql>
 	</changeSet>
 	
-		<changeSet author="TDuric" id="Data.Corrections.GOV-31336">
+		<changeSet author="TDuric" id="Data.Corrections.GOV-31336-2">
 		<comment>GOV-31336/GOV-31350 - Remove empty change log records.</comment>
 		<sql dbms="mssql"
 				endDelimiter="\nGO"
 				splitStatements="true"
 				stripComments="false">
 			<![CDATA[
-		delete ga 
-		from reporting.Global_Audit ga
-		left join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
-		where 
-		gfa.AuditID is null
-		and Action = 'Updated' 
-		and Object = ActionObject 
-		and ObjectID = ActionObjectID 
-		and Object in ('Artifact','Policy','Taxonomy')
-
+			delete from reporting.Global_FieldAudit 
+			where [Value] = [PreviousValue] and FieldTypeID <> 0
+			
+			delete ga 
+			from reporting.Global_Audit ga
+			left join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
+			where 
+			gfa.AuditID is null
+			and Action = 'Updated' 
+			and Object = ActionObject 
+			and ObjectID = ActionObjectID 
+			and Object in ('Artifact','Policy','Taxonomy')
 	]]>
 		</sql>
 	</changeSet>
