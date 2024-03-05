@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Function.metrics.GatherRuleResults-v1.3">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.GatherRuleResults-v1.4">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.GatherRuleResults 
@@ -52,6 +52,7 @@ BEGIN
 								) 
 								and rp.Position = 1
 					where	metrics.RuleFiltering(i.SubjectAssetTypeID , i.SubjectAssetID, @paths) = 1
+						and metrics.RuleFiltering(i.ObjectAssetTypeID , i.ObjectAssetID, @paths) = 1
 					--NOTE: You need to handle both the SUBJECT and OBJECT for filtering. The first position must ALWAYS do both sides.
 			end
 		else
