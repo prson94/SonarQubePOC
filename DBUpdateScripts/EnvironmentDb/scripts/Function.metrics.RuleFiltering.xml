@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Function.metrics.RuleFiltering-v1.0">
+ <changeSet author="Pappas,Puneet" id="Function.metrics.RuleFiltering-v2.0">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.RuleFiltering
@@ -31,7 +31,29 @@ begin
 			if exists(
 						select	1
 						from	@tblFilters rf
-								inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId and fd.FormattedValue = rf.Value
+								inner join dbo.FieldType ft on ft.ID = rf.FieldTypeID and ft.assetTypeId = @assetTypeId
+								left join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId 
+						where 	rf.AssetTypeID = @assetTypeId and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) = rf.Value
+					)
+			begin
+				set @include = 1
+			end
+			else
+			begin
+				set @include = 0
+			end
+		end
+
+		if exists (select 1 from @tblFilters where Type = 'Boolean' and AssetTypeID = @assetTypeId and Operator in (18,19))
+		begin
+			if exists(
+						select	1
+						from	@tblFilters rf
+								inner join dbo.FieldType ft on ft.ID = rf.FieldTypeID and ft.assetTypeId = @assetTypeId
+								Left join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId  
+						where  rf.AssetTypeID = @assetTypeId 
+						and ((Operator = 18 and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) in ('true', '1')) 
+						or (Operator = 19 and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) in ('false', '0')))
 					)
 			begin
 				set @include = 1
