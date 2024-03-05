@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.TagType-v1">
+  <changeSet author="Core" id="Table.dbo.TagType-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,7 +21,7 @@ BEGIN
 		[CreatedBy] [int] CONSTRAINT [DF_TagType_createdBy] DEFAULT (0) NOT NULL,
 		[UpdatedOn] [datetime] CONSTRAINT [DF_TagType_updatedOn] DEFAULT (getutcdate()) NOT NULL,
 		[UpdatedBy] [int] CONSTRAINT [DF_TagType_updatedBy] DEFAULT (0) NOT NULL,
-		[State] [int] CONSTRAINT [DF_Tag_State] DEFAULT (1) NOT NULL,
+		[State] [int] CONSTRAINT [DF_TagType_State] DEFAULT (1) NOT NULL,
 		CONSTRAINT [PK_TagType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
