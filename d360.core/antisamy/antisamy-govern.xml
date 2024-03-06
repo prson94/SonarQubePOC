@@ -10,7 +10,7 @@ http://www.w3.org/TR/html401/struct/global.html
 	<directives>
 		<directive name="omitXmlDeclaration" value="true"/>
 		<directive name="omitDoctypeDeclaration" value="true"/>
-		<directive name="maxInputSize" value="200000"/>
+		<directive name="maxInputSize" value="500000"/>
 		<directive name="formatOutput" value="true"/>
 		<directive name="nofollowAnchors" value="true" />
 		<directive name="validateParamAsEmbed" value="true" />
