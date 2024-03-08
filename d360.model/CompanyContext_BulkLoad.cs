@@ -585,6 +585,14 @@ namespace d360.model
 								inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
 								inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex and F.ItemNumber = A.ItemNumber
 								where A.ExecutionID = @executionID and (A.Success is null or A.Success = 1)
+
+								update li
+								set li.ParentAssetUid = A.ParentUid
+								from LoadItem li
+								inner join #BulkExecutionAsset A on A.ExecutionID = @executionID and A.ItemNumber = li.RowIndex
+								where li.LoadID = @ID 
+								and (A.Success is null or A.Success = 1)
+								and li.ParentAssetUid is null and A.ParentUid is not null
 							", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
 					}
 
@@ -736,6 +744,46 @@ namespace d360.model
 				}
 			}
 
+			string sqlduplicate = $@"
+drop table if exists #tempdupassetuid;
+
+select AssetUid
+into #tempdupassetuid
+from LoadItem 
+where loadid =  @ID
+and AssetUid is not null
+group by AssetUid
+having count(1) > 1;
+
+update lt
+set status = 0,
+StatusMessage = 'Duplicate asset'
+from LoadItem lt
+inner join #tempdupassetuid tt on  tt.AssetUid = lt.AssetUid
+where lt.loadid =  @ID and lt.AssetUid is not null;
+
+update lt
+set status = 0,
+StatusMessage = 'Failed due to duplicate asset for update'
+from LoadItem lt
+left join #tempdupassetuid tt on tt.AssetUid = lt.AssetUid
+where loadid =  @ID and tt.AssetUid is null and lt.AssetUid is not null;
+
+select STRING_AGG(RowIndex,'#')
+from (
+select tt.AssetUid,STRING_AGG(lt.RowIndex,',') RowIndex
+from #tempdupassetuid tt
+inner join LoadItem lt on loadid =  @ID and tt.AssetUid = lt.AssetUid
+and lt.AssetUid is not null
+group by tt.AssetUid
+) a; 
+";
+			var dupasset = await Connection.QuerySingleAsync<string>(sqlduplicate, new { load.ID });
+
+			if (dupasset != null)
+			{
+				throw new ArgumentNullException($"asset must be unique, Duplicate entry found :{dupasset}");
+			}
 			List<AssetUpdate> putAssets = new List<AssetUpdate>();
 			List<AssetInsert> postAssets = new List<AssetInsert>();
 
@@ -782,11 +830,11 @@ namespace d360.model
 											inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
 								where		ATT.[ObjectID] = @ObjectID
 						) L
-						where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
+						where I.LoadID = @id and COALESCE(Status,1) = 1", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
 			}
 			else
 			{
-				loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
+				loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id and COALESCE(Status,1) = 1", new { id = load.ID }).ToList();
 			}
 
 			//do this in blocks of n items at a time to avoid loading everything in one shot.
@@ -907,13 +955,20 @@ inner join AssetPath P on P.ID = A.ID
 								if (!string.IsNullOrWhiteSpace(field.Value))
 								{
 									string parentUid = "";
-									int endIndex = field.Value.LastIndexOf(']');
-									int startIndex = field.Value.LastIndexOf('[') + 1;
-									if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+									if (item.ParentAssetUid != null)
 									{
-										parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-										insert.ParentUid = new Guid(parentUid);
+										insert.ParentUid = item.ParentAssetUid;
 									}
+									else
+									{
+										int endIndex = field.Value.LastIndexOf(']');
+										int startIndex = field.Value.LastIndexOf('[') + 1;
+										if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+										{
+											parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+										}
+									}
+									insert.ParentUid = new Guid(parentUid);
 								}
 							}
 							else

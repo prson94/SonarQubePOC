@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteExecutionRecords-v9">
+  <changeSet author="Pappas,Puneet" id="Procedure.api.DeleteExecutionRecords-v10">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -20,14 +20,16 @@ begin
 		-- delete records from child tables
 		drop table if exists #ex;
 
+		-- ApplicationID != 'Internal/BulkLoad/Promote' condition added for bulk loader detail information retain data.
 		select	ExecutionID,
 				Id
 		into	#ex
 		from	api.Execution e 
 		where	DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+		and 	ApplicationID != 'Internal/BulkLoad/Promote';
 
+		create clustered index cx_temp_ex_Id on #ex (Id);
 		create unique index uq_temp_ex on #ex (ExecutionID);
-		create nonclustered index ix_temp_ex_Id on #ex (Id);
 
 		if exists(select 1 from #ex)
 		begin
