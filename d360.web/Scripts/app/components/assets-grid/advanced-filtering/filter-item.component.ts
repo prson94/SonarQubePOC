@@ -953,7 +953,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 							Array.from(parsed.getElementsByTagName('p'))[0].children
 						).map((child) => (child as HTMLElement).innerText.trim()).join('>');
 					}
-					label = label.replace(/<.*?>/g, '>').split('>').join(' <i class="slim-fa fa fa-chevron-right"></i> ');
+					label = label.replace(/<.*?>/g, '>');
 					loadedData.push({ title: label, value: str.value });
 				});
 
