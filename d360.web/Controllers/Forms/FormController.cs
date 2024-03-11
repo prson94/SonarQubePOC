@@ -24,7 +24,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
  
@@ -873,7 +872,7 @@ order by Sort, title";
 			int rowNum = 0;
 			foreach (var item in values)
 			{
-				var text = Regex.Replace(item, @"[\u0000-\u001F]", string.Empty);
+				var text = System.Text.RegularExpressions.Regex.Replace(item, @"[\u0000-\u001F]", string.Empty);
 				if (text.StartsWith("="))
 				{
 					text = "'" + text;
