@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
  
@@ -872,7 +873,12 @@ order by Sort, title";
 			int rowNum = 0;
 			foreach (var item in values)
 			{
-				document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(item));
+				var text = Regex.Replace(item, @"[\u0000-\u001F]", string.Empty);
+				if (text.StartsWith("="))
+				{
+					text = "'" + text;
+				}
+				document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(text));
 			}
 
 			document.SelectWorksheet(currentSheet);
