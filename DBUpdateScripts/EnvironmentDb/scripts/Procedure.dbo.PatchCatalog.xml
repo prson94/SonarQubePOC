@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Gupta,Pappas" id="Procedure.dbo.PatchCatalog-v1.17">
-    <comment>GOV-28859</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.PatchCatalog-v2">
+    <comment>GOV-31550</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 create or alter procedure [dbo].[PatchCatalog] 
@@ -39,6 +39,23 @@ begin
 				--and IsDelete = 0
 				and (SourceId is null or trim(coalesce(SourceId, '')) = '');
 
+		-- Check if the SourceId is duplicated
+		update	t 
+		set	t.Success = 0,
+			t.[Message] = coalesce(t.[Message], '') + 'SourceId must not be duplicated within the same request; '
+		from	api.ExecutionCatalogItem t
+			inner join (
+				select	SourceId
+				from	api.ExecutionCatalogItem
+				where	ExecutionId = @executionId 
+					and [Type] = @type 
+					and (SourceId is not null or trim(coalesce(SourceId, '')) = '')
+				group by SourceId having count(1) > 1
+			) g on g.SourceId = t.SourceId
+		where	t.ExecutionId = @executionId 
+			and t.[Type] = @type 
+			and (t.SourceId is not null or trim(coalesce(t.SourceId, '')) = '');
+	    
 		-- Does asset exist based on the incoming SourceId?
 		update	T
 		set		T.Id = S.Id,
