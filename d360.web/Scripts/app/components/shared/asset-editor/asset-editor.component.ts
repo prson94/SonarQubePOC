@@ -755,7 +755,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
 				let isAllowedNull = false;
 				// When action is edit, required is false and fieldtype is boolean then allowed null or undefined
-				if (!field.Required && field.FieldType === "Boolean" && action === "edit") {
+				if (field !== null && typeof field !== "undefined" && !field.Required && field.FieldType === "Boolean" && action === "edit") {
 					isAllowedNull = true;
 				}
 
