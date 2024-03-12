@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 using d360.core.entities;
@@ -17,7 +18,7 @@ namespace d360.web.Controllers
 		#region Supporting Json Feeds
 
 		[Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
-		public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID, string value = "", string query = "")
+		public async Task<JsonNetResult> FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID, string value = "", string query = "")
 		{
 			IntersectType it;
 			DynamicParameters queryParameters = new DynamicParameters();
@@ -26,7 +27,7 @@ namespace d360.web.Controllers
 			string exceptionMessage = "";
 			bool useTypeahead = false;
 
-			int typeaheadThreshold = 1 + GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
+			int typeaheadThreshold = 1 + await GetCachedSettingValueById<int>(Setting.MaxDropdownItems);
 
 			try
 			{
@@ -182,7 +183,7 @@ namespace d360.web.Controllers
 		}
 
 		[Route("FieldType_TypeAheadLookup"), NonNullableParameters]
-		public JsonNetResult FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "", bool useColor = false)
+		public async Task<JsonNetResult> FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "", bool useColor = false)
 		{
 			var selectList = new List<SelectListItem>();
 			var ft = Company.GetById<FieldType>(fieldTypeId);
@@ -219,11 +220,12 @@ namespace d360.web.Controllers
 			var resourceJoin = $@"
 				inner join reporting.Global_resource R on R.ResourceID = V.Value and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
+			var hideData3SixtyUser = await GetHideData3SixtyUsers();
 			var itemsSql = $@"
 				{(string.IsNullOrWhiteSpace(selectedValue) ? "" : selectedSql)}
 				select top {maxItems} {columns}
 				from FieldLookupValue V
-				{(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+				{(hideData3SixtyUser && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
 				{(useColor ? colorjoin : "")}
 				where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId {(string.IsNullOrWhiteSpace(query) ? "" : " and V.Text like '%' + @query + '%' ")}";
 

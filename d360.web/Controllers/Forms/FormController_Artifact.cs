@@ -20,11 +20,11 @@ namespace d360.web.Controllers
 
         #region Field Generation
 
-        private JsonResult Diagram_AddFields(int at)
+        private async Task<JsonResult> Diagram_AddFields(int at)
         {
             var list = new List<EditableField>();
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1);
+            list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -56,7 +56,7 @@ namespace d360.web.Controllers
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>
-        private JsonResult Asset_AddFields(SystemObjects type, int at, int p)
+        private async Task<JsonResult> Asset_AddFields(SystemObjects type, int at, int p)
         {
             var sType = type.ToString();
 
@@ -80,7 +80,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {intersectType.SubjectName}", FieldType = DataType.Lookup.ToString(), Value = (p > 0) ? p.ToString() : null, ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
+            list = await loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

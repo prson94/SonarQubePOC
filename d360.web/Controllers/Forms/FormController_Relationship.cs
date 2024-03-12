@@ -169,7 +169,7 @@ namespace d360.web.Controllers
 
 		#region Field Generation
 
-		private JsonResult Relationship_AddFields(IntersectType relationshipType)
+		private async Task<JsonResult> Relationship_AddFields(IntersectType relationshipType)
 		{
 			var list = new List<EditableField>();
 
@@ -178,7 +178,7 @@ namespace d360.web.Controllers
 				return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
 			}
 
-			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2, loadLookupValues: true);
+			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2, loadLookupValues: true);
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}

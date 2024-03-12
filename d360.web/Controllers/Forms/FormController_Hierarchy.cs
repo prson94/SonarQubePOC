@@ -51,7 +51,7 @@ namespace d360.web.Controllers
 			}
 			list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid });
 
-			list = loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1, loadLookupValues: false);
+			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(hierarchyType, t).ToList(), 1, loadLookupValues: false);
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}

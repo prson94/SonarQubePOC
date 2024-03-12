@@ -1211,7 +1211,7 @@ namespace d360.web.Controllers.V2
 		{
 			var prefix = "Fields.GetLookupDefaultValues => ";
 			var errorMessage = "";
-
+			
 			try
 			{
 				Guid.TryParse(Uid, out Guid assetUid);
@@ -1225,7 +1225,7 @@ namespace d360.web.Controllers.V2
 
 				if (usersOnly)
 				{
-					string HideD3SUsers = HideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com' ";
+					string HideD3SUsers = await GetHideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com' ";
 					sql = $@"
 						select 
 							R.Uid as value,
@@ -2342,7 +2342,7 @@ namespace d360.web.Controllers.V2
 						"r.state = 1"
 					};
 
-					if (HideData3SixtyUsers())
+					if (await GetHideData3SixtyUsers())
 					{
 						wheres.Add("(R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com')");
 					}
@@ -2608,7 +2608,7 @@ namespace d360.web.Controllers.V2
 
 				if (fieldType.Type == "Relationship")
 				{
-					bool hideData3SixtyUsers = HideData3SixtyUsers();
+					bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
 					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
 					var sql = $@"
@@ -2713,7 +2713,7 @@ namespace d360.web.Controllers.V2
 				{
 					var assetformat = Company.Connection.Query<string>($"select DisplayFormat from assettype where uid = '00000001-0000-0000-0000-A00000000011'").FirstOrDefault();
 					var fieldformat = !string.IsNullOrWhiteSpace(fieldType.LookupEditFormat) ? fieldType.LookupEditFormat : fieldType.LookupDisplayFormat;
-					bool hideData3SixtyUsers = HideData3SixtyUsers();
+					bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
 					var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 					if (!string.IsNullOrWhiteSpace(assetformat) && assetformat == fieldformat)
 					{

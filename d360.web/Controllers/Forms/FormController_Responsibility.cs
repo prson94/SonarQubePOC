@@ -27,9 +27,9 @@ namespace d360.web.Controllers
 
 		#region Form Get/Post
 
-		private List<SelectListItem> getResponsibilityResources(string selectedID = "")
+		private async Task<List<SelectListItem>> getResponsibilityResources(string selectedID = "")
 		{
-			var list = GetCompanyResources()
+			var list = (await GetCompanyResources())
 				.Where(i => i.ResourceID > 0 && i.State == CompanyResourceState.Active)
 				.Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, i.Uid })
 				.ToList()
@@ -95,7 +95,7 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
-		public JsonNetResult ResponsibilityResources(Guid? assetUid, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? resTypeUid)
+		public async Task<JsonNetResult> ResponsibilityResources(Guid? assetUid, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? resTypeUid)
 		{
 			string querySql;
 			string hideUsersSql = "";
@@ -107,7 +107,7 @@ namespace d360.web.Controllers
 				assetID = Company.Assets.Where(x=> x.uid == assetUid.Value).Select(x=> x.ID).FirstOrDefault();
 			}
 
-			if (HideData3SixtyUsers())
+			if (await GetHideData3SixtyUsers())
 			{
 				hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
 			}
@@ -194,7 +194,7 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("Responsibility"), NonNullableParameters]
-		public JsonNetResult Responsibility(long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
+		public async Task<JsonNetResult> Responsibility(long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
 		{
 			long assetID = -1;
 			if (assetUid.HasValue)
@@ -228,12 +228,12 @@ namespace d360.web.Controllers
 			if (overrideID.HasValue)
 			{
 				responsibility = Company.GetById<ResponsibilityTypeRelationOverrideItem>(overrideID.Value, i => i.ResponsibilityType);
-				resources = getResponsibilityResources($"{responsibility.SecurityAsset}|{responsibility.SecurityAssetID}");
+				resources =await getResponsibilityResources($"{responsibility.SecurityAsset}|{responsibility.SecurityAssetID}");
 				responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.UID.ToString(), Selected = (i.ID == responsibility.ResponsibilityTypeID) }).ToList();
 			}
 			else
 			{
-				resources = getResponsibilityResources();
+				resources = await getResponsibilityResources();
 				responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.UID.ToString() }).ToList();
 				responsibility = new ResponsibilityTypeRelationOverrideItem { AssetID = assetID };
 			}
@@ -519,7 +519,7 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, ActionName("ResponsibilityTypeRelationRule_FormData"), Route("ResponsibilityTypeRelationRule_FormData"), NonNullableParameters]
-		public JsonNetResult GetResponsibilityTypeRelationRule_FormData(SystemObjects type, int id)
+		public async Task<JsonNetResult> GetResponsibilityTypeRelationRule_FormData(SystemObjects type, int id)
 		{
 			var tempFieldDataTypes = new List<string>();
 			limitedFieldTypes.ForEach(o => { tempFieldDataTypes.Add($"'{o}'"); });
@@ -581,7 +581,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToLis
 			var resourceFieldTypes = new List<string>();
 			var hideUsersSql = "";
 
-			if (HideData3SixtyUsers())
+			if (await GetHideData3SixtyUsers())
 			{
 				hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com')";
 			}
