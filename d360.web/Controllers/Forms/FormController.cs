@@ -872,7 +872,12 @@ order by Sort, title";
 			int rowNum = 0;
 			foreach (var item in values)
 			{
-				document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(item));
+				var text = System.Text.RegularExpressions.Regex.Replace(item, @"[\u0000-\u001F]", string.Empty);
+				if (text.StartsWith("="))
+				{
+					text = "'" + text;
+				}
+				document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(text));
 			}
 
 			document.SelectWorksheet(currentSheet);
