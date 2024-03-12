@@ -288,9 +288,9 @@ namespace d360.model.DataAccessLayer
 					err.Add(dbExecutionItem.ErrorMessage);
 				}
 
-				dbExecutionItem.Total += errors.Count;
-				dbExecutionItem.Error += errors.Count;
-				dbExecutionItem.ErrorMessage = string.Join("; ", errors.Select(x => x.Message));
+				dbExecutionItem.Total = Math.Max(dbExecutionItem.Total,errors.Count);
+				dbExecutionItem.Error = Math.Max(dbExecutionItem.Error,errors.Count);
+				dbExecutionItem.ErrorMessage = string.Join("; ", errors.Select(x => x.Message).Distinct());
 			}
 
 
