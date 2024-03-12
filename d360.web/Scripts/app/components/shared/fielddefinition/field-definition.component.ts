@@ -233,6 +233,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 							displayField.LookupEditFormat = DOMPurify.sanitize(field.Type[`${type}`].Format.Edit);
 							displayField.ParentFieldTypeName = field.Type[`${type}`].ParentFieldTypeName;
 						}
+						if (type === 'Tag') {
+							displayField.ShowInDetailsTab = true;
+						}
 						displayField.FieldTypeREF = field;
 
 						if (!this.hasPartOfKey(displayField)) {
