@@ -6187,7 +6187,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                     fieldRow["ItemNumber"] = itemNumber;
                     fieldRow["FieldName"] = fieldName;
 
-                    if (k.Value == null)
+                    if ((k.Value == null) || (fieldType.Type == "Boolean" && string.IsNullOrWhiteSpace(k.Value)))
                     {
                         fieldRow["FieldValue"] = DBNull.Value;
                     }
