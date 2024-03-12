@@ -1341,7 +1341,7 @@ inner join AssetPath P on P.ID = A.ID
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
 				";
 
-			return Query<LoadDetail>(LoadDetailBaseSql(countSql, 0, false) + " order by L.ID desc");
+			return Query<LoadDetail>(LoadDetailBaseSql(countSql, 0) + " order by L.ID desc");
 		}
 
 		public LoadDetail GetLoadDetail(int id)
