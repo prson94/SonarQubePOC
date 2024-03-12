@@ -1438,7 +1438,7 @@ order by Sort, title";
 					Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList()
 				});
 			}
-			var hideData3SixtyUsers = await GetHideData3SixtyUsers();
+
 			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, true);
 			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
 
