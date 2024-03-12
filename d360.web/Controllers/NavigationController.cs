@@ -853,12 +853,12 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("permissions/get/list")]
-		public JsonNetResult GetSiteNavPermissionList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+		public async Task<JsonNetResult> GetSiteNavPermissionList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
 		{
 			var dbArgs = new Dapper.DynamicParameters();
 			var hideUsersSql = "";
 
-			if (HideData3SixtyUsers())
+			if (await GetHideData3SixtyUsers())
 			{
 				hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
 			}

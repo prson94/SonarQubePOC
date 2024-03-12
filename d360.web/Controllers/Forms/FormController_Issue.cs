@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 using d360.core;
@@ -146,7 +147,7 @@ namespace d360.web.Controllers
         }
 
         [Route("Issue_AddFields")]
-        public JsonResult Issue_AddFields(int issueTypeId)
+        public async Task<JsonResult> Issue_AddFields(int issueTypeId)
         {
             var list = new List<EditableField>();
             var type = Company.GetById<IssueType>(issueTypeId);
@@ -159,7 +160,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
 
 			var fieldTypes = Company.Filter<FieldType>(i => i.IssueTypeID == issueTypeId).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-            list = loadDynamicFields(list, fieldTypes, 2, true, defaultCategoryNameOverride: "Form Fields");
+            list = await loadDynamicFields(list, fieldTypes, 2, true, defaultCategoryNameOverride: "Form Fields");
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

@@ -43,11 +43,11 @@ namespace d360.web.Controllers
 		private readonly IConnectorLabelRepository connectorLabelRepository;
 		private readonly IFieldsRepository fieldsRepository;
 
-		public D3SApiController(ICoreComponentSet set, 
-			ICommentRepository comments, 
-			ITagRepository tagRepository, 
-			IConnectorLabelRepository connectorLabelRepository, 
-			ISecurityContextProvider secProvider, 
+		public D3SApiController(ICoreComponentSet set,
+			ICommentRepository comments,
+			ITagRepository tagRepository,
+			IConnectorLabelRepository connectorLabelRepository,
+			ISecurityContextProvider secProvider,
 			IFieldsRepository fieldsRepository)
 			: base(set)
 		{
@@ -822,7 +822,7 @@ namespace d360.web.Controllers
 			}
 		}
 
-		private GridColumn getGridColumnForColumn(FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
+		private GridColumn getGridColumnForColumn(bool hideData3SixtyUsers, FieldType item, decimal dynamicFieldWidth, bool serverPaged, bool loadLookupList = true, bool useNameAsDataField = false)
 		{
 			string cellsFormat = "";
 			string columnType = GridColumn.COLUMN_TYPE_STRING;
@@ -867,7 +867,7 @@ namespace d360.web.Controllers
 				case "Lookup":
 					if (loadLookupList)
 					{
-						if (item.LookupObjectType == "Resource" && HideData3SixtyUsers())
+						if (item.LookupObjectType == "Resource" && hideData3SixtyUsers)
 						{
 
 							filterItems = Company.Query<string>(@"
@@ -1042,21 +1042,21 @@ namespace d360.web.Controllers
 			return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name };
 		}
 
-		private void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
+		private void parseDynamicColumnsAndFields(bool hideData3SixtyUsers, List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
 		{
 			items.ForEach(i =>
 			{
-				columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
+				columns.Add(getGridColumnForColumn(hideData3SixtyUsers, i, dynamicFieldWidth, serverPaged, false));
 
 				fields.Add(getGridFieldForColumn(i));
 			});
 		}
 
-		private void parseDynamicFilterFields(List<FieldType> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool hiddenField)
+		private void parseDynamicFilterFields(bool hideData3SixtyUsers, List<FieldType> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool hiddenField)
 		{
 			items.ForEach(i =>
 			{
-				GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true, false))
+				GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(hideData3SixtyUsers, i, dynamicFieldWidth, true, false))
 				{
 					id = i.ID.ToString(),
 					hiddenfield = hiddenField,
@@ -1069,7 +1069,7 @@ namespace d360.web.Controllers
 		}
 
 		[HttpGet, Route("{type}/{uid}/grid/definition")]
-		public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, string uid)
+		public async Task<HttpResponseMessage> GetGridDefinitionByType(SystemObjects type, string uid)
 		{
 			if (!Guid.TryParse(uid, out var guid))
 			{
@@ -1077,16 +1077,17 @@ namespace d360.web.Controllers
 			}
 
 			int objectId = Company.GetObjectId(guid, type);
-			return GetGridDefinitionByType(type, objectId);
+			return await GetGridDefinitionByType(type, objectId);
 		}
 
 		[HttpGet, Route("{type}/{id:int}/grid/definition")]
-		public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, int id)
+		public async Task<HttpResponseMessage> GetGridDefinitionByType(SystemObjects type, int id)
 		{
 			var columns = new List<GridColumn>();
 			var fields = new List<GridField>();
 			var filterColumns = new List<GridFilterColumn>();
 			var topLevelFilterFields = new List<GridFilterColumn>();
+			bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
 			decimal dynamicFieldWidth = 0;
 			int remainingWidth = 0;
 			ObjectDetail detail = null;
@@ -1154,7 +1155,7 @@ namespace d360.web.Controllers
 						showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
 					}
 
-					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
 
 					if (hasParentType && showParent)
 					{
@@ -1191,7 +1192,7 @@ namespace d360.web.Controllers
 					}
 
 					var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-					parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
+					parseDynamicFilterFields(hideData3SixtyUsers, hiddenItems, filterColumns, 0, true);
 
 					filterColumns = filterColumns.OrderBy(x => x.text).ToList();
 
@@ -1200,7 +1201,7 @@ namespace d360.web.Controllers
 
 					topFiltersHidden.ForEach(i =>
 					{
-						GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false))
+						GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(hideData3SixtyUsers, i, 0, true, loadLookupList: false))
 						{
 							id = i.ID.ToString(),
 							hiddenfield = !i.IsListable
@@ -1229,7 +1230,7 @@ namespace d360.web.Controllers
 							new GridColumn { text = Fields.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
 					);
 
-					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
 
 					fields.Add(new GridField { name = "ID", type = "number" });
 					fields.Add(new GridField { name = "Name", type = "string" });
@@ -1246,7 +1247,7 @@ namespace d360.web.Controllers
 				case SystemObjects.PolicyType:
 					#region
 
-					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
 
 					fields.Add(new GridField { name = "AssetID", type = "number" });
 					fields.Add(new GridField { name = "ID", type = "number" });
@@ -1285,7 +1286,7 @@ namespace d360.web.Controllers
 					}
 					fields.AddRange(parentGridFields);
 
-					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth, true);
 
 					//Add the colour column after code
 					columns.Insert(columns.IndexOf(columns.First(x => x.apiName != null && x.apiName.ToLower() == "code")) + 1, new GridColumn { text = Fields.Color_Name, datafield = "Color", });
@@ -1300,7 +1301,7 @@ namespace d360.web.Controllers
 				case SystemObjects.RuleType:
 					#region
 
-					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+					parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
 
 					fields.Add(new GridField { name = "AssetID", type = "number" });
 					fields.Add(new GridField { name = "ID", type = "number" });
@@ -1315,7 +1316,7 @@ namespace d360.web.Controllers
 					}
 
 					var hiddenItemsRuleType = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-					parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
+					parseDynamicFilterFields(hideData3SixtyUsers, hiddenItemsRuleType, filterColumns, 0, true);
 
 					filterColumns = filterColumns.OrderBy(x => x.text).ToList();
 
@@ -1324,7 +1325,7 @@ namespace d360.web.Controllers
 
 					topFiltersHiddenRuleType.ForEach(i =>
 					{
-						GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false))
+						GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(hideData3SixtyUsers, i, 0, true, loadLookupList: false))
 						{
 							id = i.ID.ToString(),
 							hiddenfield = !i.IsListable
@@ -1362,7 +1363,7 @@ namespace d360.web.Controllers
 						columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
 						columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = DataType.Text.ToString() });
 						columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = DataType.Text.ToString() });
-						parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+						parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth);
 						columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = DataType.DateTime.ToString() });
 						columns.Add(new GridColumn { text = Fields.Administrator_Name, datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
 						columns.Add(new GridColumn
@@ -1390,7 +1391,7 @@ namespace d360.web.Controllers
 						dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 						columns.Add(new GridColumn { text = Fields.Name_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
 						columns.Add(new GridColumn { text = Fields.OwnedItems_Name, datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
-						parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
+						parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, dynamicFieldWidth);
 
 						fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
 						fields.Add(new GridField { name = "OwnedItemCount", type = "string", apiName = "OwnedItemCount" });
@@ -1405,7 +1406,7 @@ namespace d360.web.Controllers
 			{
 				items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 				items.Insert(0, new FieldType { FriendlyName = "Name", Name = "Name", Type = "Text" });
-				parseDynamicColumnsAndFields(items, columns, fields, 0, true);
+				parseDynamicColumnsAndFields(hideData3SixtyUsers, items, columns, fields, 0, true);
 
 				filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
 
@@ -1415,7 +1416,7 @@ namespace d360.web.Controllers
 					column.filteritems = new List<string>();
 				}
 				var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-				parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
+				parseDynamicFilterFields(hideData3SixtyUsers, hiddenItems, filterColumns, 0, true);
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK, new
@@ -2477,7 +2478,7 @@ namespace d360.web.Controllers
 						) A 
 						{joins}";
 
-			if (HideData3SixtyUsers())
+			if (await GetHideData3SixtyUsers())
 			{
 				querySql += " where (A.Email not like '%@data3sixty.com' and A.Email not like '%@infogix.com' and A.Email not like '%@precisely.com')";
 			}
@@ -2495,7 +2496,7 @@ namespace d360.web.Controllers
 
 		private async Task<string> GetColumnsWithGlobalFilter(string filter, SystemObjects type, int id, string alias, DynamicParameters dbArgs)
 		{
-			string gridDefinitionString = await GetGridDefinitionByType(SystemObjects.ResourceType, id).Content.ReadAsStringAsync();
+			string gridDefinitionString = await (await GetGridDefinitionByType(SystemObjects.ResourceType, id)).Content.ReadAsStringAsync();
 			dynamic gridDefinition = JsonConvert.DeserializeObject<dynamic>(gridDefinitionString);
 			string wherecondition = string.Empty;
 
@@ -5138,10 +5139,11 @@ where v.id = {0}", id)).FirstOrDefault();
 		#region NEW Relationship Tile
 
 		[Route("{obj}/{objid:int}/relationships/{targettype}/{targettypeid:int}/fields")]
-		public HttpResponseMessage GetRelationshipFieldsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
+		public async Task<HttpResponseMessage> GetRelationshipFieldsByObject(SystemObjects obj, int objid, SystemObjects targettype, int targettypeid)
 		{
 			var columns = new List<GridColumn>();
 			var fields = new List<GridField>();
+			var hideData3SixtyUsers = await GetHideData3SixtyUsers();
 
 			var IDs = Company.Query<int>(
 				QueryConstants.ObjectRelationshipTypeIDs,
@@ -5164,7 +5166,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			fieldTypes.ForEach(f =>
 			{
 				fields.Add(getGridFieldForColumn(f));
-				columns.Add(getGridColumnForColumn(f, 100, false, false));
+				columns.Add(getGridColumnForColumn(hideData3SixtyUsers ,f, 100, false, false));
 			});
 
 			fields.Add(new GridField { name = "ID", type = "number" });

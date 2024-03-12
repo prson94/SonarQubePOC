@@ -38,57 +38,57 @@ using System.Web.Mvc;
 namespace d360.web.Controllers
 {
 	public class JsonNetResult : ActionResult
-    {
-        public Encoding ContentEncoding { get; set; }
+	{
+		public Encoding ContentEncoding { get; set; }
 
-        public string ContentType { get; set; }
+		public string ContentType { get; set; }
 
-        public object Data { get; set; }
+		public object Data { get; set; }
 
-        public JsonSerializerSettings SerializerSettings { get; set; }
+		public JsonSerializerSettings SerializerSettings { get; set; }
 
-        public Formatting Formatting { get; set; }
+		public Formatting Formatting { get; set; }
 
-        public JsonNetResult()
-        {
-            SerializerSettings = new JsonSerializerSettings
-            {
-                DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc
-            };
-        }
+		public JsonNetResult()
+		{
+			SerializerSettings = new JsonSerializerSettings
+			{
+				DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc
+			};
+		}
 
-        public override void ExecuteResult(ControllerContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+		public override void ExecuteResult(ControllerContext context)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException("context");
+			}
 
-            HttpResponseBase response = context.HttpContext.Response;
+			HttpResponseBase response = context.HttpContext.Response;
 
-            response.ContentType = !string.IsNullOrEmpty(ContentType)
-              ? ContentType
-              : "application/json";
+			response.ContentType = !string.IsNullOrEmpty(ContentType)
+			  ? ContentType
+			  : "application/json";
 
-            if (ContentEncoding != null)
-            {
-                response.ContentEncoding = ContentEncoding;
-            }
+			if (ContentEncoding != null)
+			{
+				response.ContentEncoding = ContentEncoding;
+			}
 
-            if (Data != null)
-            {
-                JsonTextWriter writer = new JsonTextWriter(response.Output) { Formatting = Formatting };
+			if (Data != null)
+			{
+				JsonTextWriter writer = new JsonTextWriter(response.Output) { Formatting = Formatting };
 
-                JsonSerializer serializer = JsonSerializer.Create(SerializerSettings);
-                serializer.Serialize(writer, Data);
+				JsonSerializer serializer = JsonSerializer.Create(SerializerSettings);
+				serializer.Serialize(writer, Data);
 
-                writer.Flush();
-            }
-        }
-    }
+				writer.Flush();
+			}
+		}
+	}
 
-    public interface ICoreComponentSet
-    {
+	public interface ICoreComponentSet
+	{
 		ICachingProvider Cache { get; set; }
 
 		IWorkspaces Workspace { get; set; }
@@ -97,50 +97,50 @@ namespace d360.web.Controllers
 
 		ICompanyContext Company { get; set; }
 
-        ICommunityContext Community { get; set; }
-		
+		ICommunityContext Community { get; set; }
+
 		ILogger Log { get; set; }
 
-        IMailProvider Mail { get; set; }
+		IMailProvider Mail { get; set; }
 
-        IThemeRepository ThemeRepository { get; set; }
-		
+		IThemeRepository ThemeRepository { get; set; }
+
 		IRuntimeInfo RuntimeInfo { get; set; }
 
 		IFeatureFlagService FeatureFlags { get; set; }
-    }
+	}
 
-    public class CoreComponentSet : ICoreComponentSet
-    {
+	public class CoreComponentSet : ICoreComponentSet
+	{
 		public ICachingProvider Cache { get; set; }
 
 		public IEnumerable<ICatalog> Catalogs { get; set; }
 
 		public ICompanyContext Company { get; set; }
 
-        public ICommunityContext Community { get; set; }
+		public ICommunityContext Community { get; set; }
 
 		public ILogger Log { get; set; }
 
 		public IMailProvider Mail { get; set; }
 
-        public IThemeRepository ThemeRepository { get; set; }
+		public IThemeRepository ThemeRepository { get; set; }
 
-        public IFeatureFlagService FeatureFlags { get; set; }
+		public IFeatureFlagService FeatureFlags { get; set; }
 
 		public IRuntimeInfo RuntimeInfo { get; set; }
-		
+
 		public IWorkspaces Workspace { get; set; }
 
 		public CoreComponentSet(
 			ICachingProvider cache,
-			ICommunityContext community, 
-			ICompanyContext company, 
-			IEnumerable<ICatalog> catalogs, 
-			ILogger log, 
-			IMailProvider mail, 
-			IThemeRepository themeRepository, 
-			IFeatureFlagService ff, 
+			ICommunityContext community,
+			ICompanyContext company,
+			IEnumerable<ICatalog> catalogs,
+			ILogger log,
+			IMailProvider mail,
+			IThemeRepository themeRepository,
+			IFeatureFlagService ff,
 			IRuntimeInfo runtimeInfo,
 			IWorkspaces workspace
 			)
@@ -158,12 +158,12 @@ namespace d360.web.Controllers
 		}
 	}
 
-    public class BaseApiController : ApiController
-    {
+	public class BaseApiController : ApiController
+	{
 		internal IFeatureFlagService FeatureFlags { get; set; }
 		internal ICatalog Catalog { get; set; }
 		internal ICompanyContext Company;
-        internal ICommunityContext Community;
+		internal ICommunityContext Community;
 		internal ILogger Log;
 		internal IRuntimeInfo RuntimeInfo;
 		internal IWorkspaces Workspace;
@@ -172,35 +172,35 @@ namespace d360.web.Controllers
 
 		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
-        internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
+		internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
-        #region Validation constants
+		#region Validation constants
 
-        internal const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to perform this action.";
-        internal const string CONFLICT_MESSAGE = "Encountered a data conflict between your request and Govern.";
-        internal const string NOT_FOUND_GENERIC_MESSAGE = "The item you are looking for cannot be located.";
-        internal const string BAD_REQUEST_GENERIC_MESSAGE = "Error while processing request.";
-        internal const string INTERNAL_ERROR_MESSAGE = "An unknown error occurred while processing this request.";
-        internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
-        internal const string SUCCESS_MESSAGE = "Returns a success message.";
+		internal const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to perform this action.";
+		internal const string CONFLICT_MESSAGE = "Encountered a data conflict between your request and Govern.";
+		internal const string NOT_FOUND_GENERIC_MESSAGE = "The item you are looking for cannot be located.";
+		internal const string BAD_REQUEST_GENERIC_MESSAGE = "Error while processing request.";
+		internal const string INTERNAL_ERROR_MESSAGE = "An unknown error occurred while processing this request.";
+		internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+		internal const string SUCCESS_MESSAGE = "Returns a success message.";
 
-        #endregion
+		#endregion
 
-        #region Parameter Description Constants
+		#region Parameter Description Constants
 
-        internal const string SIMPLE_FILTER_DESCRIPTION = "The text or phrase you want to find within the data set. Filtering is done using 'Starts with' logic.";
-        internal const string ADVANCED_FILTER_DESCRIPTION = "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.";
+		internal const string SIMPLE_FILTER_DESCRIPTION = "The text or phrase you want to find within the data set. Filtering is done using 'Starts with' logic.";
+		internal const string ADVANCED_FILTER_DESCRIPTION = "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.";
 
-        /// <summary>
-        /// The number of results to return per page. The default value is 200. Maximum is 250.
-        /// </summary>
-        internal const string PAGE_SIZE_DESCRIPTION = "The number of results to return per page. The default value is 200. Maximum is 250.";
-        internal const string PAGE_NUMBER_DESCRIPTION = "The page number to return results for.";
+		/// <summary>
+		/// The number of results to return per page. The default value is 200. Maximum is 250.
+		/// </summary>
+		internal const string PAGE_SIZE_DESCRIPTION = "The number of results to return per page. The default value is 200. Maximum is 250.";
+		internal const string PAGE_NUMBER_DESCRIPTION = "The page number to return results for.";
 
-        #endregion
+		#endregion
 
-        public BaseApiController(ICoreComponentSet set)
-        {
+		public BaseApiController(ICoreComponentSet set)
+		{
 			/*Future Use:
 		private bool UseCatalogMicroservice { get { return FeatureFlags.IsThisTrue(FlagList.CATALOG_MICRO, GetFeatureFlagUser()); } }
 
@@ -214,8 +214,8 @@ namespace d360.web.Controllers
 		}			 
 			 */
 			Catalog = set.Catalogs.Single(c => c.Platform == Platform.Azure);
-            Company = set.Company;
-            Community = set.Community;
+			Company = set.Company;
+			Community = set.Community;
 			Log = set.Log;
 			RuntimeInfo = set.RuntimeInfo;
 			FeatureFlags = set.FeatureFlags;
@@ -228,28 +228,28 @@ namespace d360.web.Controllers
 			return Company.GetFeatureFlagUser();
 		}
 
-		protected internal bool HideData3SixtyUsers()
-        {
-            return GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
-        }
+		protected internal async Task<bool> GetHideData3SixtyUsers()
+		{
+			return await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
+		}
 
-        protected internal IQueryable<Resource> GetCompanyResources()
-        {
-            return from cr in Community.Table<CompanyResource>()
-                   join r in Community.Table<Resource>() on cr.ResourceID equals r.ID
-                   where cr.CompanyID == Company.CurrentCompanyID
-                   select r;
-        }
+		protected internal IQueryable<Resource> GetCompanyResources()
+		{
+			return from cr in Community.Table<CompanyResource>()
+				   join r in Community.Table<Resource>() on cr.ResourceID equals r.ID
+				   where cr.CompanyID == Company.CurrentCompanyID
+				   select r;
+		}
 
-        protected virtual void ValidateParameters(string message = null)
-        {
-            if (ModelState.IsValid == false)
-            {
-                throw new ArgumentException(message ?? BAD_REQUEST_GENERIC_MESSAGE);
-            }
-        }
+		protected virtual void ValidateParameters(string message = null)
+		{
+			if (ModelState.IsValid == false)
+			{
+				throw new ArgumentException(message ?? BAD_REQUEST_GENERIC_MESSAGE);
+			}
+		}
 
-        #region Error Handling Helper
+		#region Error Handling Helper
 
 		/// <summary>
 		/// <remarks>for some reason all api errors which have not title specified should be bad request...</remarks>
@@ -257,101 +257,101 @@ namespace d360.web.Controllers
 		/// <param name="status"></param>
 		/// <param name="message"></param>
 		/// <returns></returns>
-        [Obsolete("You should throw appropriate exception instead of this method.")]
-        protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
-        {
-	        return ReturnApiError(status, OthersMessages.BadRequestSubmitted, message);
-        }
+		[Obsolete("You should throw appropriate exception instead of this method.")]
+		protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
+		{
+			return ReturnApiError(status, OthersMessages.BadRequestSubmitted, message);
+		}
 
-        [Obsolete("You should throw appropriate exception instead of this method.")]
-        protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string title, string message)
-        {
+		[Obsolete("You should throw appropriate exception instead of this method.")]
+		protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string title, string message)
+		{
 			// moved some code from exception handler (until this method will be removed)
 			var runtimeInfo = this.RuntimeInfo;
-	        var problem = new ProblemDetailsResponse
-	        {
-		        Type = "error",
-		        Status = (int)status,
-		        Detail = message,
-		        Title = title,
-		        Method = Request.Method.ToString(),
-		        Instance = Request.RequestUri?.ToString()
-	        };
-	        if (runtimeInfo.IsReleaseBuild == false || runtimeInfo.IsDebuggerAttached)
-	        {
-		        problem.Extra.Add("messages", new[] { message });
-		        problem.Extra.Add("stack_trace", Environment.StackTrace?.Split(new[]
-		        {
-			        "\r\n"
-		        }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
-	        }
+			var problem = new ProblemDetailsResponse
+			{
+				Type = "error",
+				Status = (int)status,
+				Detail = message,
+				Title = title,
+				Method = Request.Method.ToString(),
+				Instance = Request.RequestUri?.ToString()
+			};
+			if (runtimeInfo.IsReleaseBuild == false || runtimeInfo.IsDebuggerAttached)
+			{
+				problem.Extra.Add("messages", new[] { message });
+				problem.Extra.Add("stack_trace", Environment.StackTrace?.Split(new[]
+				{
+					"\r\n"
+				}, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
+			}
 
-	        var json = JsonConvert.SerializeObject(problem, Formatting.Indented);
-	        var response = Request.CreateResponse();
-	        response.StatusCode = status;
-	        response.Content = new StringContent(json, Encoding.UTF8, "application/problem+json");
-	        return response;
-        }
+			var json = JsonConvert.SerializeObject(problem, Formatting.Indented);
+			var response = Request.CreateResponse();
+			response.StatusCode = status;
+			response.Content = new StringContent(json, Encoding.UTF8, "application/problem+json");
+			return response;
+		}
 
 		public class StatusCodeErrorMessage
-        {
-            public HttpStatusCode Status { get; set; }
-            public string ErrorMessage { get; set; }
-        }
+		{
+			public HttpStatusCode Status { get; set; }
+			public string ErrorMessage { get; set; }
+		}
 
-        #endregion
+		#endregion
 
 		[Obsolete("Don't use this method. Throw exceptions directly")]
-        protected internal IHttpActionResult DetermineUnhandledException(Exception ex, string errorHeading, List<StatusCodeErrorMessage> errorMessages, Dictionary<string, string> methodProperties)
-        {
-            if (errorMessages == null)
-            {
-                errorMessages = new List<StatusCodeErrorMessage>();
-            }
+		protected internal IHttpActionResult DetermineUnhandledException(Exception ex, string errorHeading, List<StatusCodeErrorMessage> errorMessages, Dictionary<string, string> methodProperties)
+		{
+			if (errorMessages == null)
+			{
+				errorMessages = new List<StatusCodeErrorMessage>();
+			}
 
-            if (ex is ConflictException conflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
-            {
-	            throw new GenericException(conflictException.StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
-            }
+			if (ex is ConflictException conflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
+			{
+				throw new GenericException(conflictException.StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
+			}
 
-            if (ex is NotFoundException notFoundException && errorMessages.Any(e => e.Status == notFoundException.StatusCode))
-            {
-	            throw new GenericException(notFoundException.StatusCode, errorHeading, errorMessages.First(e => e.Status == notFoundException.StatusCode).ErrorMessage);
-            }
+			if (ex is NotFoundException notFoundException && errorMessages.Any(e => e.Status == notFoundException.StatusCode))
+			{
+				throw new GenericException(notFoundException.StatusCode, errorHeading, errorMessages.First(e => e.Status == notFoundException.StatusCode).ErrorMessage);
+			}
 
-            if (ex is StatusCodeException statusCodeException && errorMessages.Any(e => e.Status == statusCodeException.StatusCode))
-            {
-	            throw new GenericException(statusCodeException.StatusCode, errorHeading, errorMessages.First(e => e.Status == statusCodeException.StatusCode).ErrorMessage);
-            }
+			if (ex is StatusCodeException statusCodeException && errorMessages.Any(e => e.Status == statusCodeException.StatusCode))
+			{
+				throw new GenericException(statusCodeException.StatusCode, errorHeading, errorMessages.First(e => e.Status == statusCodeException.StatusCode).ErrorMessage);
+			}
 
-            if (ex is GenericException genericException)
-            {
-	            throw new GenericException(genericException.StatusCode, errorHeading, genericException.StatusDescription);
-            }
+			if (ex is GenericException genericException)
+			{
+				throw new GenericException(genericException.StatusCode, errorHeading, genericException.StatusDescription);
+			}
 
-            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("invalid filter expression"))
-            {
-	            throw new ArgumentException($"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}", ex);
-            }
+			if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("invalid filter expression"))
+			{
+				throw new ArgumentException($"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}", ex);
+			}
 
-            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("conversion failed when converting from"))
-            {
-	            throw new ArgumentException(ApiMessages.InvalidFilterExpressionUsedMessage, ex);
-            }
+			if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("conversion failed when converting from"))
+			{
+				throw new ArgumentException(ApiMessages.InvalidFilterExpressionUsedMessage, ex);
+			}
 
-            throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
-        }
+			throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+		}
 
-        protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
-        {
+		protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
+		{
 			if (Log != null)
-			{ 
+			{
 				using (Log.BeginScope(properties))
 				{
 					Log.LogError(ex, ex.Message);
-				}			
+				}
 			}
-        }
+		}
 
 		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
 		{
@@ -364,49 +364,49 @@ namespace d360.web.Controllers
 		}
 
 		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
-        {
-	        return ResponseMessage(ReturnApiError(status, title, message));
-        }
+		{
+			return ResponseMessage(ReturnApiError(status, title, message));
+		}
 
-        protected internal IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
-        {
-            return ResponseMessage(
-                Request.CreateResponse(
-                    status,
-                    new ConfirmResponse { title = title, message = message }
-                )
-            );
-        }
+		protected internal IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
+		{
+			return ResponseMessage(
+				Request.CreateResponse(
+					status,
+					new ConfirmResponse { title = title, message = message }
+				)
+			);
+		}
 
-        protected internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
-        {
-            if (properties == null)
-            {
-                properties = new Dictionary<string, string>();
-            }
+		protected internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+		{
+			if (properties == null)
+			{
+				properties = new Dictionary<string, string>();
+			}
 
-            var telemetry = new TelemetryClient();
+			var telemetry = new TelemetryClient();
 
-            if (!properties.ContainsKey("CompanyID"))
-            {
-                properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
-            }
+			if (!properties.ContainsKey("CompanyID"))
+			{
+				properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+			}
 
-            telemetry.TrackEvent(eventName, properties, metrics);
-        }
+			telemetry.TrackEvent(eventName, properties, metrics);
+		}
 
-        protected internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
-        {
-            var response = Request.CreateResponse(status);
-            response.Content = new ByteArrayContent(content);
-            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = fileName
-            };
-            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+		protected internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
+		{
+			var response = Request.CreateResponse(status);
+			response.Content = new ByteArrayContent(content);
+			response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+			{
+				FileName = fileName
+			};
+			response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-            return response;
-        }
+			return response;
+		}
 
 		#region Caching
 
@@ -447,302 +447,302 @@ namespace d360.web.Controllers
 		#region Private Methods
 
 		protected internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
-        {
-            Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
-        }
+		{
+			Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
+		}
 
-        protected internal string applyFilteringSuffix(string sql, HttpRequestMessage Request)
-        {
-            var query = Request.GetQueryStrings();
+		protected internal string applyFilteringSuffix(string sql, HttpRequestMessage Request)
+		{
+			var query = Request.GetQueryStrings();
 
-            int filterscount;
-            var filters = new StringBuilder();
+			int filterscount;
+			var filters = new StringBuilder();
 
-            if (query.ContainsKey("filterscount"))
-            {
-                if (int.TryParse(query["filterscount"], out filterscount))
-                {
-                    var filteredFields = new List<string>();    //Keeps track of the filters we have set so far.
-                    for (int i = 0; i < filterscount; i++)
-                    {
-                        if (query.ContainsKey("filterdatafield" + i))
-                        {
-                            var fField = query["filterdatafield" + i];
-                            filteredFields.Add(fField);
-                        }
-                    }
+			if (query.ContainsKey("filterscount"))
+			{
+				if (int.TryParse(query["filterscount"], out filterscount))
+				{
+					var filteredFields = new List<string>();    //Keeps track of the filters we have set so far.
+					for (int i = 0; i < filterscount; i++)
+					{
+						if (query.ContainsKey("filterdatafield" + i))
+						{
+							var fField = query["filterdatafield" + i];
+							filteredFields.Add(fField);
+						}
+					}
 
-                    for (int i = 0; i < filterscount; i++)
-                    {
-                        if (query.ContainsKey("filterdatafield" + i) && query.ContainsKey("filtercondition" + i) && query.ContainsKey("filtervalue" + i))
-                        {
-                            string filter, fFormat;
-                            var fField = query["filterdatafield" + i];
-                            var fCondition = query["filtercondition" + i];
-                            var fValue = query["filtervalue" + i];
+					for (int i = 0; i < filterscount; i++)
+					{
+						if (query.ContainsKey("filterdatafield" + i) && query.ContainsKey("filtercondition" + i) && query.ContainsKey("filtervalue" + i))
+						{
+							string filter, fFormat;
+							var fField = query["filterdatafield" + i];
+							var fCondition = query["filtercondition" + i];
+							var fValue = query["filtervalue" + i];
 
-                            switch (fCondition)
-                            {
-                                case "CONTAINS":
-                                    fFormat = "[{0}] LIKE '%{1}%'";
-                                    break;
-                                case "DOES_NOT_CONTAIN":
-                                    fFormat = "[{0}] NOT LIKE '%{1}%'";
-                                    break;
-                                case "EQUAL":
-                                    fFormat = "[{0}] = '{1}'";
-                                    break;
-                                case "NOT_EQUAL":
-                                    fFormat = "[{0}] <> '{1}'";
-                                    break;
-                                case "STARTS_WITH":
-                                    fFormat = "[{0}] LIKE '{1}%'";
-                                    break;
-                                case "ENDS_WITH":
-                                    fFormat = "[{0}] LIKE '%{1}'";
-                                    break;
-                                default:
-                                    fFormat = "";
-                                    break;
-                            }
+							switch (fCondition)
+							{
+								case "CONTAINS":
+									fFormat = "[{0}] LIKE '%{1}%'";
+									break;
+								case "DOES_NOT_CONTAIN":
+									fFormat = "[{0}] NOT LIKE '%{1}%'";
+									break;
+								case "EQUAL":
+									fFormat = "[{0}] = '{1}'";
+									break;
+								case "NOT_EQUAL":
+									fFormat = "[{0}] <> '{1}'";
+									break;
+								case "STARTS_WITH":
+									fFormat = "[{0}] LIKE '{1}%'";
+									break;
+								case "ENDS_WITH":
+									fFormat = "[{0}] LIKE '%{1}'";
+									break;
+								default:
+									fFormat = "";
+									break;
+							}
 
-                            filter = string.Format(fFormat, fField, fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
+							filter = string.Format(fFormat, fField, fValue.Replace("--", "").Replace("'", "''"));   //SQL Injection check
 
-                            if (!string.IsNullOrEmpty(filter))
-                            {
-                                filters.Append(filters.Length > 0 ? " WHERE " : " AND ");
-                                filters.Append(filter);
-                            }
-                        }
-                    }
+							if (!string.IsNullOrEmpty(filter))
+							{
+								filters.Append(filters.Length > 0 ? " WHERE " : " AND ");
+								filters.Append(filter);
+							}
+						}
+					}
 
-                    sql += filters;
-                }
-            }
+					sql += filters;
+				}
+			}
 
-            return sql;
-        }
+			return sql;
+		}
 
-        protected internal bool isValidFieldName(string field)
-        {
-            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
+		protected internal bool isValidFieldName(string field)
+		{
+			var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
 
-            return nameRegex.IsMatch(field);
-        }
+			return nameRegex.IsMatch(field);
+		}
 
-        protected internal string applySortSuffix(string sql, HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
-        {
-            string sortDataField = "";
-            string _sortOrder = sortOrder;
-            var sqlBuilder = new StringBuilder();
-            sqlBuilder.Append(sql);
-            var query = Request.GetQueryStrings();
+		protected internal string applySortSuffix(string sql, HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
+		{
+			string sortDataField = "";
+			string _sortOrder = sortOrder;
+			var sqlBuilder = new StringBuilder();
+			sqlBuilder.Append(sql);
+			var query = Request.GetQueryStrings();
 
-            if (query.ContainsKey("sortDataField"))
-            {
-                sortDataField = query["sortDataField"];
-            }
+			if (query.ContainsKey("sortDataField"))
+			{
+				sortDataField = query["sortDataField"];
+			}
 
-            if (query.ContainsKey("sortOrder"))
-            {
-                _sortOrder = query["sortOrder"];
-            }
+			if (query.ContainsKey("sortOrder"))
+			{
+				_sortOrder = query["sortOrder"];
+			}
 
-            if (string.IsNullOrEmpty(sortDataField))
-            {
-                sortDataField = sortDefaultField;
-            }
+			if (string.IsNullOrEmpty(sortDataField))
+			{
+				sortDataField = sortDefaultField;
+			}
 
-            // make sure its a valid field name
-            if (!isValidFieldName(sortDataField))
-            {
-                throw new ArgumentException(ApiMessages.InvalidSortField);
-            }
+			// make sure its a valid field name
+			if (!isValidFieldName(sortDataField))
+			{
+				throw new ArgumentException(ApiMessages.InvalidSortField);
+			}
 
-            if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
-            {
-                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS bigint) {_sortOrder}");
-            }
-            else if ((sortFieldType ?? "").ToUpperInvariant() == "DATE")
-            {
-                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS date) {_sortOrder}");
-            }
-            else if ((sortFieldType ?? "").ToUpperInvariant() == "DATETIME")
-            {
-                sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS datetime) {_sortOrder}");
-            }
-            else
-            {
-                sqlBuilder.Append(" ORDER BY [" + sortDataField + "] " + _sortOrder);
-            }
+			if ((sortFieldType ?? "").ToUpperInvariant() == "NUMBER")
+			{
+				sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS bigint) {_sortOrder}");
+			}
+			else if ((sortFieldType ?? "").ToUpperInvariant() == "DATE")
+			{
+				sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS date) {_sortOrder}");
+			}
+			else if ((sortFieldType ?? "").ToUpperInvariant() == "DATETIME")
+			{
+				sqlBuilder.Append($" ORDER BY TRY_CAST(+ [{sortDataField}] AS datetime) {_sortOrder}");
+			}
+			else
+			{
+				sqlBuilder.Append(" ORDER BY [" + sortDataField + "] " + _sortOrder);
+			}
 
-            return sqlBuilder.ToString();
-        }
+			return sqlBuilder.ToString();
+		}
 
-        protected internal string applyPagingSuffix(string sql, HttpRequestMessage Request)
-        {
-            int pagenum = 0;
-            int pagesize = 20;
+		protected internal string applyPagingSuffix(string sql, HttpRequestMessage Request)
+		{
+			int pagenum = 0;
+			int pagesize = 20;
 
-            var query = Request.GetQueryStrings();
+			var query = Request.GetQueryStrings();
 
-            if (query.ContainsKey("pagenum"))
-            {
-                pagenum = int.Parse(query["pagenum"]);
-            }
+			if (query.ContainsKey("pagenum"))
+			{
+				pagenum = int.Parse(query["pagenum"]);
+			}
 
-            if (query.ContainsKey("pagesize"))
-            {
-                pagesize = int.Parse(query["pagesize"]);
-            }
+			if (query.ContainsKey("pagesize"))
+			{
+				pagesize = int.Parse(query["pagesize"]);
+			}
 
-            sql += string.Format(" OFFSET({0}) ROWS FETCH NEXT ({1}) ROWS ONLY", pagenum * pagesize, pagesize);
+			sql += string.Format(" OFFSET({0}) ROWS FETCH NEXT ({1}) ROWS ONLY", pagenum * pagesize, pagesize);
 
-            return sql;
-        }
+			return sql;
+		}
 
-        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, string applicationId = null, ApiExecutionAction action = ApiExecutionAction.Miscellaneous)
-        {
-            var execution = new ApiExecution
-            {
-                ExecutionID = Guid.NewGuid(),
-                StartedOn = DateTime.UtcNow,
+		protected internal ApiExecution getApiExecution(int total = 0, object fields = null, string applicationId = null, ApiExecutionAction action = ApiExecutionAction.Miscellaneous)
+		{
+			var execution = new ApiExecution
+			{
+				ExecutionID = Guid.NewGuid(),
+				StartedOn = DateTime.UtcNow,
 				Action = action,
-                Route = Request?.RequestUri?.LocalPath,
-                Method = Request?.Method?.Method,
-                ResourceID = Company.CurrentResourceID,
-                Total = total,
-                Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
-                Error = 0,
-                Processed = 0,
-                ApplicationId = applicationId
-            };
+				Route = Request?.RequestUri?.LocalPath,
+				Method = Request?.Method?.Method,
+				ResourceID = Company.CurrentResourceID,
+				Total = total,
+				Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
+				Error = 0,
+				Processed = 0,
+				ApplicationId = applicationId
+			};
 
-            return execution;
-        }
+			return execution;
+		}
 
-        #endregion
-    }
+		#endregion
+	}
 
-    public class BaseController : Controller
-    {
+	public class BaseController : Controller
+	{
 		internal ICatalog Catalog;
 		internal ICompanyContext Company;
-        internal ICommunityContext Community;
+		internal ICommunityContext Community;
 		internal ILogger Log;
 		internal IMailProvider Mail;
-        internal IFeatureFlagService FeatureFlags;
-        internal IThemeRepository ThemeRepository;
+		internal IFeatureFlagService FeatureFlags;
+		internal IThemeRepository ThemeRepository;
 		internal IWorkspaces Workspace;
 		internal ICachingProvider Cache;
 
 		internal List<string> limitedFieldTypes = new List<string> {
-            DataType.Path.ToString(),
-            DataType.ComplexRelationLookup.ToString(),
-            DataType.FieldFromRelationship.ToString(),
-            DataType.DataTableSelect.ToString(),
-            DataType.OwnershipLookup.ToString(),
-            DataType.RefListRelationship.ToString(),
-            DataType.JsonElement.ToString(),
-            DataType.Tag.ToString(),
-            DataType.JSON.ToString(),
-            DataType.Score.ToString(),
-            DataType.Counter.ToString()
-        };
+			DataType.Path.ToString(),
+			DataType.ComplexRelationLookup.ToString(),
+			DataType.FieldFromRelationship.ToString(),
+			DataType.DataTableSelect.ToString(),
+			DataType.OwnershipLookup.ToString(),
+			DataType.RefListRelationship.ToString(),
+			DataType.JsonElement.ToString(),
+			DataType.Tag.ToString(),
+			DataType.JSON.ToString(),
+			DataType.Score.ToString(),
+			DataType.Counter.ToString()
+		};
 
-        internal readonly ReadOnlyCollection<string> supportedDisplayFormats = new ReadOnlyCollection<string>(new List<string> {
-            DataType.Text.ToString(),
-            DataType.Date.ToString(),
-            DataType.DateTime.ToString(),
-            DataType.Number.ToString(),
-            DataType.Decimal.ToString(),
-            DataType.Lookup.ToString(),
+		internal readonly ReadOnlyCollection<string> supportedDisplayFormats = new ReadOnlyCollection<string>(new List<string> {
+			DataType.Text.ToString(),
+			DataType.Date.ToString(),
+			DataType.DateTime.ToString(),
+			DataType.Number.ToString(),
+			DataType.Decimal.ToString(),
+			DataType.Lookup.ToString(),
 			DataType.Counter.ToString()
 		});
 
-        public BaseController(ICoreComponentSet set)
-        {
+		public BaseController(ICoreComponentSet set)
+		{
 			Catalog = set.Catalogs.Single(o => o.Platform == Platform.Azure);
-            Community = set.Community;
-            Company = set.Company;
-            FeatureFlags = set.FeatureFlags;
+			Community = set.Community;
+			Company = set.Company;
+			FeatureFlags = set.FeatureFlags;
 			Log = set.Log;
-            Mail = set.Mail;
-            ThemeRepository = set.ThemeRepository;
+			Mail = set.Mail;
+			ThemeRepository = set.ThemeRepository;
 			Workspace = set.Workspace;
 
 			Cache = set.Cache;
-        }
+		}
 
-        #region Validation constants
+		#region Validation constants
 
-        internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+		internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
 
-        #endregion
+		#endregion
 
-        #region Json Message Handling
+		#region Json Message Handling
 
-        internal JsonNetResult jsonNetException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            return new JsonNetResult { Data = new { type = "error", title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
-        }
+		internal JsonNetResult jsonNetException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
+		{
+			return new JsonNetResult { Data = new { type = "error", title, message = ex.GetFullExceptionData() }, Formatting = Newtonsoft.Json.Formatting.None };
+		}
 
-        internal JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            return Json(new { type = "error", title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
-        }
+		internal JsonResult jsonException(Exception ex, HttpStatusCode statusCode, string title = "Error Occurred!")
+		{
+			return Json(new { type = "error", title, message = ex.GetFullExceptionData() }, JsonRequestBehavior.AllowGet);
+		}
 
-        internal JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            return Json(new { type = "error", title, message }, JsonRequestBehavior.AllowGet);
-        }
+		internal JsonResult jsonException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
+		{
+			return Json(new { type = "error", title, message }, JsonRequestBehavior.AllowGet);
+		}
 
-        internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
-        {
-            Response.StatusCode = (int)statusCode;
-            return new JsonNetResult
-            {
-                Data = new { type = "error", title, message },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+		internal JsonNetResult jsonNetException(string message, HttpStatusCode statusCode, string title = "Error Occurred!")
+		{
+			Response.StatusCode = (int)statusCode;
+			return new JsonNetResult
+			{
+				Data = new { type = "error", title, message },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
 
-        internal JsonNetResult jsonNetException(Exception ex)
-        {
-            return new JsonNetResult
-            {
-                Data = new { type = "error", title = "Error Occurred!", message = ex.GetFullExceptionData() },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
+		internal JsonNetResult jsonNetException(Exception ex)
+		{
+			return new JsonNetResult
+			{
+				Data = new { type = "error", title = "Error Occurred!", message = ex.GetFullExceptionData() },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
 
-        internal JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
-        {
-            Response.StatusCode = (int)statusCode;
-            Response.StatusDescription = message.Replace("\n", "  ");
-            return Json(new { type = "confirm", title = "Success!", action, message = message.Replace("\n", "  "), id, custom = customdata }, JsonRequestBehavior.AllowGet);
-        }
+		internal JsonResult jsonSuccess(string message, string id, string action, HttpStatusCode statusCode, dynamic customdata = null)
+		{
+			Response.StatusCode = (int)statusCode;
+			Response.StatusDescription = message.Replace("\n", "  ");
+			return Json(new { type = "confirm", title = "Success!", action, message = message.Replace("\n", "  "), id, custom = customdata }, JsonRequestBehavior.AllowGet);
+		}
 
-        internal JsonNetResult jsonNetResult(dynamic data)
-        {
-            return new JsonNetResult { Data = data, Formatting = Formatting.None };
-        }
+		internal JsonNetResult jsonNetResult(dynamic data)
+		{
+			return new JsonNetResult { Data = data, Formatting = Formatting.None };
+		}
 
-        /// <summary>
-        /// Used to override default JSON return type for MVC controllers overrides maxJsonLength which doesnt get picked up from web.config for mvc endpoints
-        /// do not remove or JSON responses will be limited to default (102400 bytes)
-        /// </summary>        
-        protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
-        {
-            return new JsonResult
-            {
-                Data = data,
-                ContentType = contentType,
-                ContentEncoding = contentEncoding,
-                JsonRequestBehavior = behavior,
-                MaxJsonLength = int.MaxValue
-            };
-        }
+		/// <summary>
+		/// Used to override default JSON return type for MVC controllers overrides maxJsonLength which doesnt get picked up from web.config for mvc endpoints
+		/// do not remove or JSON responses will be limited to default (102400 bytes)
+		/// </summary>        
+		protected override JsonResult Json(object data, string contentType, Encoding contentEncoding, JsonRequestBehavior behavior)
+		{
+			return new JsonResult
+			{
+				Data = data,
+				ContentType = contentType,
+				ContentEncoding = contentEncoding,
+				JsonRequestBehavior = behavior,
+				MaxJsonLength = int.MaxValue
+			};
+		}
 
 		#endregion
 
@@ -779,363 +779,363 @@ namespace d360.web.Controllers
 		#endregion
 
 		internal string GetNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
+		{
+			return $"select AssetID from ResponsibilityDetail where ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+		}
 
-        internal string GetAssetTypeNoReadSqlStatement(string identifier = null)
-        {
-            return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
-        }
+		internal string GetAssetTypeNoReadSqlStatement(string identifier = null)
+		{
+			return $"select AssetTypeID from ResponsibilityDetail where AssetID = 0 and ((PermissionsBitMask & {(int)Permission.ReadAsset}) = 0) and ResourceID = {(string.IsNullOrEmpty(identifier) ? Company.CurrentResourceID.ToString() : identifier)}";
+		}
 
-        internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null, int? Precision = null)
-        {
-            var models = new List<FieldValidationModel>();
+		internal List<FieldValidationModel> checkAndAddValidation(string fieldType, string friendlyName, bool required, string pattern, decimal? minLength, decimal? maxLength, string validationMessage = "", decimal? Increment = null, int? Precision = null)
+		{
+			var models = new List<FieldValidationModel>();
 
-            #region Validation
+			#region Validation
 
-            if (fieldType != "Lookup")
-            {
-                if (string.IsNullOrEmpty(validationMessage))
-                {
-                    if (fieldType == "Number")
-                    {
-                        validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
-                    }
-                    if (fieldType == "Decimal")
-                    {
-                        validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
-                    }
-                }
+			if (fieldType != "Lookup")
+			{
+				if (string.IsNullOrEmpty(validationMessage))
+				{
+					if (fieldType == "Number")
+					{
+						validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a whole number");
+					}
+					if (fieldType == "Decimal")
+					{
+						validationMessage = string.Format(Validation.Pattern_Tokenized, friendlyName, "must be a decimal number");
+					}
+				}
 
-                // Required validation
-                if (required)
-                {
-                    models.Add(new FieldValidationModel { message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
-                }
+				// Required validation
+				if (required)
+				{
+					models.Add(new FieldValidationModel { message = string.Format(Validation.Required_Tokenized, friendlyName), rule = "required" });
+				}
 
-                // Pattern validation
-                if (!string.IsNullOrEmpty(pattern))
-                {
-                    models.Add(new FieldValidationModel { message = validationMessage, regex = pattern });
-                }
+				// Pattern validation
+				if (!string.IsNullOrEmpty(pattern))
+				{
+					models.Add(new FieldValidationModel { message = validationMessage, regex = pattern });
+				}
 
-                //Increment validation 
-                if (Increment.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("increment={0}", Increment.Value) });
-                }
+				//Increment validation 
+				if (Increment.HasValue)
+				{
+					models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("increment={0}", Increment.Value) });
+				}
 
-                //Precision for decimals
-                if (Precision.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("precision={0}", Precision.Value) });
-                }
+				//Precision for decimals
+				if (Precision.HasValue)
+				{
+					models.Add(new FieldValidationModel { message = validationMessage, rule = string.Format("precision={0}", Precision.Value) });
+				}
 
-                // Min/Max next precedent
-                if (maxLength.HasValue && minLength.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
-                }
-                // Min next precedent
-                else if (minLength.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
-                }
-                // Max next precedent
-                else if (maxLength.HasValue)
-                {
-                    models.Add(new FieldValidationModel { message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
-                }
-            }
+				// Min/Max next precedent
+				if (maxLength.HasValue && minLength.HasValue)
+				{
+					models.Add(new FieldValidationModel { message = string.Format(Validation.Length_Tokenized, friendlyName, minLength.Value, maxLength.Value), rule = string.Format("length={0},{1}", minLength.Value, maxLength.Value) });
+				}
+				// Min next precedent
+				else if (minLength.HasValue)
+				{
+					models.Add(new FieldValidationModel { message = string.Format(Validation.MaxLength_Tokenized, friendlyName, minLength.Value), rule = string.Format("minLength={0}", minLength.Value) });
+				}
+				// Max next precedent
+				else if (maxLength.HasValue)
+				{
+					models.Add(new FieldValidationModel { message = string.Format(Validation.MinLength_Tokenized, friendlyName, maxLength.Value), rule = string.Format("maxLength={0}", maxLength.Value) });
+				}
+			}
 
-            #endregion
+			#endregion
 
-            return models.Count > 0 ? models : null;
-        }
+			return models.Count > 0 ? models : null;
+		}
 
-        internal IQueryable<GlobalReportingResource> GetCompanyResources()
-        {
-            var hideData3SixtyUsers = HideData3SixtyUsers();
-            var query = Company.Table<GlobalReportingResource>();
+		internal async Task<IQueryable<GlobalReportingResource>> GetCompanyResources()
+		{
+			var hideData3SixtyUsers = await GetHideData3SixtyUsers();
+			var query = Company.Table<GlobalReportingResource>();
 
-            return (hideData3SixtyUsers ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
-        }
+			return (hideData3SixtyUsers ? query.Where(i => !i.Email.Contains("data3sixty.com")) : query);
+		}
 
-        internal bool HideData3SixtyUsers()
-        {
-            return GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
-        }
+		internal async Task<bool> GetHideData3SixtyUsers()
+		{
+			return await GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers);
+		}
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true, string defaultCategoryNameOverride = null)
-        {
-            var row = startRow;
-            string defaultCategoryName = "General";
+		internal async Task<List<EditableField>> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool useDefaultCategory = true, bool loadLookupValues = true, string defaultCategoryNameOverride = null)
+		{
+			var row = startRow;
+			string defaultCategoryName = "General";
+			var hideData3SixtyUsers = await GetHideData3SixtyUsers();
+			int maxItems = await GetCachedSettingValueById<int>(Setting.MaxDropdownItems);
 
 			if (!string.IsNullOrEmpty(defaultCategoryNameOverride))
 			{
 				defaultCategoryName = defaultCategoryNameOverride;
 			}
 
-            fields.ForEach(f =>
-            {
-                var categoryName = f.Category;
-                if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
-                {
-                    categoryName = defaultCategoryName;
-                }
+			fields.ForEach(async f =>
+			{
+				var categoryName = f.Category;
+				if (useDefaultCategory && string.IsNullOrWhiteSpace(categoryName))
+				{
+					categoryName = defaultCategoryName;
+				}
 
-                if (f.IsEditable && f.Type != "Tag")
-                {
-                    #region Is Editable
+				if (f.IsEditable && f.Type != "Tag")
+				{
+					#region Is Editable
 
-                    if (!limitedFieldTypes.Contains(f.Type))
-                    {
-                        var patternMessage = "";
+					if (!limitedFieldTypes.Contains(f.Type))
+					{
+						var patternMessage = "";
 
-                        if (string.IsNullOrEmpty(f.ValidationDescription))
-                        {
-                            if (f.Type == "Number")
-                            {
-                                patternMessage = "must be a whole number";
-                            }
+						if (string.IsNullOrEmpty(f.ValidationDescription))
+						{
+							if (f.Type == "Number")
+							{
+								patternMessage = "must be a whole number";
+							}
 
-                            if (f.Type == "Decimal")
-                            {
-                                patternMessage = "must be a decimal number";
-                            }
-                        }
-                        else
-                        {
-                            patternMessage = f.ValidationDescription;
-                        }
+							if (f.Type == "Decimal")
+							{
+								patternMessage = "must be a decimal number";
+							}
+						}
+						else
+						{
+							patternMessage = f.ValidationDescription;
+						}
 
-                        var fld = new EditableField
-                        {
-                            Row = row,
-                            Column = 1,
-                            FieldName = f.Name,
-                            Name = f.FriendlyName,
-                            FieldType = f.Type.ToString(),
-                            FieldDescription = f.FormDescription,
-                            Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment, f.Precision),
-                            Category = categoryName,
-                            FieldTypeID = f.ID,
-                            IsPartOfKey = f.IsPartOfKey
-                        };
+						var fld = new EditableField
+						{
+							Row = row,
+							Column = 1,
+							FieldName = f.Name,
+							Name = f.FriendlyName,
+							FieldType = f.Type.ToString(),
+							FieldDescription = f.FormDescription,
+							Validations = checkAndAddValidation(f.Type.ToString(), f.FriendlyName, f.IsRequired, f.Pattern, f.MinimumLength, f.MaximumLength, patternMessage, f.Increment, f.Precision),
+							Category = categoryName,
+							FieldTypeID = f.ID,
+							IsPartOfKey = f.IsPartOfKey
+						};
 
-                        if (!string.IsNullOrEmpty(f.DefaultValue))
-                        {
-                            fld.Value = f.DefaultValue;
-                        }
+						if (!string.IsNullOrEmpty(f.DefaultValue))
+						{
+							fld.Value = f.DefaultValue;
+						}
 
-                        if (f.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
-                        {
-                            fld.FieldType = DataType.Lookup.ToString();
-                            try
-                            {
-                                fld.MultiSelect = f.AllowMultipleValues;
-                                fld.ParentFieldTypeID = f.ParentFieldTypeID;
-                                var lookupType = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
-                                fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && f.LookupObjectID == x.AssetType.ObjectID);
+						if (f.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
+						{
+							fld.FieldType = DataType.Lookup.ToString();
+							try
+							{
+								fld.MultiSelect = f.AllowMultipleValues;
+								fld.ParentFieldTypeID = f.ParentFieldTypeID;
+								var lookupType = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
+								fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && f.LookupObjectID == x.AssetType.ObjectID);
 
-                                fld.Items = new List<SelectListItem>();
+								fld.Items = new List<SelectListItem>();
 
-                                if (f.ParentFieldTypeID > 0)
-                                {
-                                    var parent = Company.FieldTypes.Where(x => x.ID == f.ParentFieldTypeID).FirstOrDefault();
+								if (f.ParentFieldTypeID > 0)
+								{
+									var parent = Company.FieldTypes.Where(x => x.ID == f.ParentFieldTypeID).FirstOrDefault();
 
-                                    if (parent != null)
-                                    {
-                                        fld.ParentFieldTypeName = parent.Name;
-                                    }
-                                }
-                                else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
-                                {
-                                    if (f.FilterFieldTypeID > 0)
-                                    {
-                                        fld.DelayedLoadType = "FieldFilter";
-                                        //Field filter works similar to ParentFieldType, so we'll overload those parameters
-                                        var filterParent = Company.FieldTypes.Where(x => x.ID == f.FilterFieldTypeID).FirstOrDefault();
-                                        if (filterParent != null)
-                                        {
-                                            fld.ParentFieldTypeID = f.FilterFieldTypeID;
-                                            fld.ParentFieldTypeName = filterParent.FriendlyName;
-                                        }
-                                    }
-                                }
-                                else if (loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
-                                {
-                                    if (!f.IsRequired && !f.AllowMultipleValues)
-                                    {
-                                        fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
-                                    }
+									if (parent != null)
+									{
+										fld.ParentFieldTypeName = parent.Name;
+									}
+								}
+								else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
+								{
+									if (f.FilterFieldTypeID > 0)
+									{
+										fld.DelayedLoadType = "FieldFilter";
+										//Field filter works similar to ParentFieldType, so we'll overload those parameters
+										var filterParent = Company.FieldTypes.Where(x => x.ID == f.FilterFieldTypeID).FirstOrDefault();
+										if (filterParent != null)
+										{
+											fld.ParentFieldTypeID = f.FilterFieldTypeID;
+											fld.ParentFieldTypeName = filterParent.FriendlyName;
+										}
+									}
+								}
+								else if (loadLookupValues || !string.IsNullOrEmpty(f?.DefaultValue))
+								{
+									if (!f.IsRequired && !f.AllowMultipleValues)
+									{
+										fld.Items.Add(new SelectListItem { Text = "Choose...", Value = "" });
+									}
 
-                                    if (f.AllowAllValue)
-                                    {
-                                        fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
-                                    }
+									if (f.AllowAllValue)
+									{
+										fld.Items.Add(new SelectListItem { Text = f.AllowAllLabel, Value = "0" });
+									}
 
-                                    bool hideData3SixtyUsers = HideData3SixtyUsers();
-                                    var columns = $@"
+									var columns = $@"
 										V.FieldTypeID,
 										V.LookupObjectType,
 										V.LookupObjectID,
 										V.Value,
 										{(fld.UseColorControl ? "colorJson.FV AS Text" : "V.Text")}";
 
-                                    var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
+									var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com' and R.Email not like '%@precisely.com'";
 
-                                    var resourceJoin = $@"
+									var resourceJoin = $@"
 										inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
 										";
-                                    var colorjoin = $@"
+									var colorjoin = $@"
 										outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
 													from Asset A 
 													outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
 										)colorJSON 
 										";
-                                    var itemSql = $@"select {columns} 
+									var itemSql = $@"select {columns} 
 										from FieldLookupValue V
 										{(f.LookupObjectType == "Resource" ? resourceJoin : "")}
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
 										";
 
-                                    var countSql = $@"select count(*)
+									var countSql = $@"select count(*)
 										from FieldLookupValue V
 										{(f.LookupObjectType == "Resource" ? resourceJoin : "")}
 										{(fld.UseColorControl ? colorjoin : "")}
 										where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
 										";
 
-                                    if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
-                                    {
-                                        List<int> lookupValues = f.DefaultValue.Split(',').Select(x => int.Parse(x)).ToList();
+									if (!loadLookupValues && f != null && !string.IsNullOrEmpty(f.DefaultValue))
+									{
+										List<int> lookupValues = f.DefaultValue.Split(',').Select(x => int.Parse(x)).ToList();
 
-                                        if (lookupValues.Count > 0)
-                                        {
-                                            itemSql += " and V.Value in @lookupValues";
+										if (lookupValues.Count > 0)
+										{
+											itemSql += " and V.Value in @lookupValues";
 
-                                            fld.Items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
-                                                    .OrderBy(o => o.Text)
-                                                    .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                    .ToList();
+											fld.Items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupValues, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+													.OrderBy(o => o.Text)
+													.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+													.ToList();
 
-                                            fld.Items.ForEach(x => x.Selected = true);
-                                        }
-                                        else
-                                        {
-                                            fld.Items = new List<SelectListItem>();
-                                        }
-                                    }
-                                    else if (f.AllowMultipleValues)
-                                    {
-                                        var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
-                                            .OrderBy(o => o.Text)
-                                            .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                            .ToList();
+											fld.Items.ForEach(x => x.Selected = true);
+										}
+										else
+										{
+											fld.Items = new List<SelectListItem>();
+										}
+									}
+									else if (f.AllowMultipleValues)
+									{
+										var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+											.OrderBy(o => o.Text)
+											.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+											.ToList();
 
-                                        fld.Items.AddRange(items);
-                                    }
-                                    else
-                                    {
-                                        int maxItems = GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
-                                        int count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
+										fld.Items.AddRange(items);
+									}
+									else
+									{
+										int count = Company.Query<int>(countSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID }).FirstOrDefault();
 
-                                        if (count > maxItems)
-                                        {
-                                            fld.UseTypeahead = true;
+										if (count > maxItems)
+										{
+											fld.UseTypeahead = true;
 
-                                            if (!string.IsNullOrWhiteSpace(f.DefaultValue) && int.TryParse(f.DefaultValue, out int selectedVal))
-                                            {
-                                                fld.Value = f.DefaultValue;
-                                                fld.Items.AddRange(
-                                                 Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value && o.Value == selectedVal)
-                                                .OrderBy(o => o.Text)
-                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
-                                                .ToList()
-                                                    );
-                                            }
-                                        }
-                                        else
-                                        {
-                                            var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
-                                                .OrderBy(o => o.Text)
-                                                .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
-                                                .ToList();
+											if (!string.IsNullOrWhiteSpace(f.DefaultValue) && int.TryParse(f.DefaultValue, out int selectedVal))
+											{
+												fld.Value = f.DefaultValue;
+												fld.Items.AddRange(
+												 Company.Filter<FieldLookupValue>(o => o.FieldTypeID == f.ID && o.LookupObjectType == f.LookupObjectType && o.LookupObjectID == f.LookupObjectID.Value && o.Value == selectedVal)
+												.OrderBy(o => o.Text)
+												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = true })
+												.ToList()
+													);
+											}
+										}
+										else
+										{
+											var items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = f.ID, lookupObjectType = f.LookupObjectType, lookupObjectId = f.LookupObjectID })
+												.OrderBy(o => o.Text)
+												.Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
+												.ToList();
 
-                                            fld.Items.AddRange(items);
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
-                                SendException(ex);
-                            }
-                        }
+											fld.Items.AddRange(items);
+										}
+									}
+								}
+							}
+							catch (Exception ex)
+							{
+								fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
+								SendException(ex);
+							}
+						}
 
-                        if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
-                        {
-                            var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+						if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
+						{
+							var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
-                            if (intersectType != null)
-                            {
-                                bool isSubject = (intersectType.SubjectAssetTypeID == f.AssetTypeID);
+							if (intersectType != null)
+							{
+								bool isSubject = (intersectType.SubjectAssetTypeID == f.AssetTypeID);
 
-                                var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
+								var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-                                if (cardinality != Cardinality.Many)
-                                {
-                                    fld.MultiSelect = false;
-                                }
-                                else
-                                {
-                                    fld.MultiSelect = true;
-                                }
+								if (cardinality != Cardinality.Many)
+								{
+									fld.MultiSelect = false;
+								}
+								else
+								{
+									fld.MultiSelect = true;
+								}
 
-                                Predicate predicate = null;
+								Predicate predicate = null;
 
-                                if (intersectType.PredicateID.HasValue)
-                                {
-                                    predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
+								if (intersectType.PredicateID.HasValue)
+								{
+									predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
 
-                                    if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
-                                    {
-                                        fld.IsSemantic = true;
-                                    }
-                                }
-                            }
-                        }
+									if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
+									{
+										fld.IsSemantic = true;
+									}
+								}
+							}
+						}
 
-                        if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
-                        {
-                            fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
-                        }
-                        else
-                        {
-                            if (!new[] { "Number", "Decimal", "Text" }.Contains(f.Type))
-                            {
-                                fld.Required = (f.MinimumLength > 0 || f.Length > 0);
-                            }
-                        }
+						if (f.Type == DataType.Lookup.ToString())  // lookups dont set min / length properties
+						{
+							fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
+						}
+						else
+						{
+							if (!new[] { "Number", "Decimal", "Text" }.Contains(f.Type))
+							{
+								fld.Required = (f.MinimumLength > 0 || f.Length > 0);
+							}
+						}
 
-                        list.Add(fld);
-                    }
+						list.Add(fld);
+					}
 
-                    #endregion Is Editable
-                }
+					#endregion Is Editable
+				}
 
-                row++;
-            });
+				row++;
+			});
 
-            return list;
-        }
+			return list;
+		}
 
-        internal async Task<List<EditableField>> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
+		internal async Task<List<EditableField>> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false, bool useDefaultCategory = true, bool loadOnlySelectedLookupValue = false)
 		{
 			var row = startRow;
 			const string defaultCategoryName = "General";
@@ -1143,8 +1143,10 @@ namespace d360.web.Controllers
 			List<IntersectType> intersectTypes;
 			List<EditableFieldItemRelationshipData> relationshipFieldData;
 			LoadRelationshipFieldData(fieldTypes, asset, out intersectTypes, out relationshipFieldData);
+			bool hideData3SixtyUsers = await GetHideData3SixtyUsers();
+			int maxItems = await GetCachedSettingValueById<int>(Setting.MaxDropdownItems);
 
-			fieldTypes.ForEach(ft =>
+			fieldTypes.ForEach(async ft =>
 			{
 				var categoryName = ft.Category;
 
@@ -1260,7 +1262,6 @@ namespace d360.web.Controllers
 									}
 
 									List<SelectListItem> items;
-									bool hideData3SixtyUsers = HideData3SixtyUsers();
 
 									var columns = $@"
 										V.FieldTypeID,
@@ -1364,7 +1365,6 @@ namespace d360.web.Controllers
 									}
 									else
 									{
-										int maxItems = GetCachedSettingValueById<int>(Setting.MaxDropdownItems).Result;
 										int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID }).FirstOrDefault();
 
 										string selectedValue = null;
@@ -1545,238 +1545,238 @@ namespace d360.web.Controllers
 		}
 
 		internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
-        {
-            if (properties == null)
-            {
-                properties = new Dictionary<string, string>();
-            }
+		{
+			if (properties == null)
+			{
+				properties = new Dictionary<string, string>();
+			}
 
-            var telemetry = new TelemetryClient();
+			var telemetry = new TelemetryClient();
 
-            if (!properties.ContainsKey("CompanyID"))
-            {
-                properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
-            }
+			if (!properties.ContainsKey("CompanyID"))
+			{
+				properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+			}
 
-            telemetry.TrackException(ex, properties, metrics);
-        }
+			telemetry.TrackException(ex, properties, metrics);
+		}
 
-        #region Dynamic Query Processing
+		#region Dynamic Query Processing
 
-        internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
-        {			
+		internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
+		{
 			var assetTypeId = Company.AssetTypes.Where(x => x.Object == objectType && x.ObjectID == objectTypeID).FirstOrDefault().ID;
-			
-            return listableOnly ?
-                Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
-                Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ToList();
-        }
 
-        #endregion
+			return listableOnly ?
+				Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
+				Company.Filter<FieldType>(i => i.AssetTypeID == assetTypeId).OrderBy(i => i.ColumnOrder).ToList();
+		}
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
-        {
-            Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
-        }
+		#endregion
 
-        internal string getFilteringConditionBind(string field, string condition, int filterNumber, DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false, FieldType ft = null)
-        {
-            var bind = $"{prefix}{filterNumber}val";
-            var allItemsBind = "";
-            var allValueBind = "";
-            if (!skipFieldValidation)
-            {
-                if (!isValidFieldName(field))
-                {
-                    return string.Empty; // sql injection check on field name
-                }
-            }
+		internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
+		{
+			Company.GetDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
+		}
 
-            if (ft != null)
-            {
-                if (ft.AllowAllValue)
-                {
-                    allItemsBind = $"{prefix}{filterNumber}val_all";
-                    allValueBind = $"{ft.AllowAllLabel.Replace("'", "''")}";
-                }
+		internal string getFilteringConditionBind(string field, string condition, int filterNumber, DynamicParameters dbParams, string value, string prefix, bool skipFieldValidation = false, FieldType ft = null)
+		{
+			var bind = $"{prefix}{filterNumber}val";
+			var allItemsBind = "";
+			var allValueBind = "";
+			if (!skipFieldValidation)
+			{
+				if (!isValidFieldName(field))
+				{
+					return string.Empty; // sql injection check on field name
+				}
+			}
 
-                if (ft.AllowMultipleValues)
-                {
-                    if (condition == "IN")
-                    {
-                        condition = "IN_MULTI";
-                    }
-                    else
-                    {
-                        condition = "CONTAINS";
-                    }
-                }
-            }
+			if (ft != null)
+			{
+				if (ft.AllowAllValue)
+				{
+					allItemsBind = $"{prefix}{filterNumber}val_all";
+					allValueBind = $"{ft.AllowAllLabel.Replace("'", "''")}";
+				}
 
-            string querySyntax;
-            switch (condition)
-            {
-                case "CONTAINS":
-                    var val = (value ?? "").Replace('*', '%').Replace('?', '_');
-                    dbParams.Add(bind, $"%{val}%");
-                    querySyntax = $"{field} LIKE @{bind}";
-                    break;
-                case "DOES_NOT_CONTAIN":
-                    dbParams.Add(bind, $"%{value}%");
-                    querySyntax = $"{field} NOT LIKE @{bind}";
-                    break;
-                case "EQUAL":
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax = $"{field} = @{bind}";
-                    break;
-                case "NOT_EQUAL":
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax = $"{field} <> @{bind}";
-                    break;
-                case "STARTS_WITH":
-                    dbParams.Add(bind, $"{value}%");
-                    querySyntax = $"{field} LIKE @{bind}";
-                    break;
-                case "ENDS_WITH":
-                    dbParams.Add(bind, $"%{value}");
-                    querySyntax = $"{field} LIKE @{bind}";
-                    break;
-                case "IN":
-                    dbParams.Add(bind, value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries));
-                    querySyntax = $"{field} IN @{bind}";
-                    break;
-                case "IN_MULTI":
-                    var vals = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);
-                    int index = 0;
-                    querySyntax = "(";
-                    foreach (var part in vals)
-                    {
-                        if (index != 0)
-                        {
-                            querySyntax += " or ";
-                        }
+				if (ft.AllowMultipleValues)
+				{
+					if (condition == "IN")
+					{
+						condition = "IN_MULTI";
+					}
+					else
+					{
+						condition = "CONTAINS";
+					}
+				}
+			}
 
-                        var bind_sub = $"{bind}{index++}";
-                        dbParams.Add(bind_sub, $"%{part}%");
-                        querySyntax += $"{field} LIKE @{bind_sub}";
-                    }
-                    querySyntax += ")";
+			string querySyntax;
+			switch (condition)
+			{
+				case "CONTAINS":
+					var val = (value ?? "").Replace('*', '%').Replace('?', '_');
+					dbParams.Add(bind, $"%{val}%");
+					querySyntax = $"{field} LIKE @{bind}";
+					break;
+				case "DOES_NOT_CONTAIN":
+					dbParams.Add(bind, $"%{value}%");
+					querySyntax = $"{field} NOT LIKE @{bind}";
+					break;
+				case "EQUAL":
+					dbParams.Add(bind, $"{value}");
+					querySyntax = $"{field} = @{bind}";
+					break;
+				case "NOT_EQUAL":
+					dbParams.Add(bind, $"{value}");
+					querySyntax = $"{field} <> @{bind}";
+					break;
+				case "STARTS_WITH":
+					dbParams.Add(bind, $"{value}%");
+					querySyntax = $"{field} LIKE @{bind}";
+					break;
+				case "ENDS_WITH":
+					dbParams.Add(bind, $"%{value}");
+					querySyntax = $"{field} LIKE @{bind}";
+					break;
+				case "IN":
+					dbParams.Add(bind, value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries));
+					querySyntax = $"{field} IN @{bind}";
+					break;
+				case "IN_MULTI":
+					var vals = value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries);
+					int index = 0;
+					querySyntax = "(";
+					foreach (var part in vals)
+					{
+						if (index != 0)
+						{
+							querySyntax += " or ";
+						}
 
-                    break;
-                case "NULL":
-                    querySyntax = $"{field} is null";
-                    break;
-                case "NOT_NULL":
-                    querySyntax = $"{field} is not null";
-                    break;
-                case "EMPTY":
-                    querySyntax = $"{field} = ''";
-                    break;
-                case "NOT_EMPTY":
-                    querySyntax = $"{field} <> ''";
-                    break;
-                default:
-                    dbParams.Add(bind, $"{value}");
-                    querySyntax = $"{field} = @{bind}";
-                    break;
-            }
+						var bind_sub = $"{bind}{index++}";
+						dbParams.Add(bind_sub, $"%{part}%");
+						querySyntax += $"{field} LIKE @{bind_sub}";
+					}
+					querySyntax += ")";
 
-            if (field.ToLower() == "field50102" && value.ToLower() == "yes") //field50102 = highproductrisk
-            {
-                //do nothing, this is LMTOM-specific. Need to deal with this some other way. No means No, Yes means YES and NO.
-                querySyntax = "";
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(allItemsBind) && !string.IsNullOrEmpty(allValueBind))
-                {
-                    dbParams.Add(allItemsBind, $"{allValueBind}");
-                    querySyntax = $"({querySyntax} or {field} = @{allItemsBind})";
-                }
-            }
+					break;
+				case "NULL":
+					querySyntax = $"{field} is null";
+					break;
+				case "NOT_NULL":
+					querySyntax = $"{field} is not null";
+					break;
+				case "EMPTY":
+					querySyntax = $"{field} = ''";
+					break;
+				case "NOT_EMPTY":
+					querySyntax = $"{field} <> ''";
+					break;
+				default:
+					dbParams.Add(bind, $"{value}");
+					querySyntax = $"{field} = @{bind}";
+					break;
+			}
 
-            return querySyntax;
-        }
+			if (field.ToLower() == "field50102" && value.ToLower() == "yes") //field50102 = highproductrisk
+			{
+				//do nothing, this is LMTOM-specific. Need to deal with this some other way. No means No, Yes means YES and NO.
+				querySyntax = "";
+			}
+			else
+			{
+				if (!string.IsNullOrEmpty(allItemsBind) && !string.IsNullOrEmpty(allValueBind))
+				{
+					dbParams.Add(allItemsBind, $"{allValueBind}");
+					querySyntax = $"({querySyntax} or {field} = @{allItemsBind})";
+				}
+			}
 
-        internal bool isValidFieldName(string field)
-        {
-            var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
+			return querySyntax;
+		}
 
-            return nameRegex.IsMatch(field);
-        }
+		internal bool isValidFieldName(string field)
+		{
+			var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
 
-        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null, bool v2ApiFilterValues = false)
-        {
-            var query = Request.Params;
-            var filters = "";
+			return nameRegex.IsMatch(field);
+		}
 
-            if (int.TryParse(query["hidfilterscount"], out int filterscount))
-            {
-                for (int i = 0; i < filterscount; i++)
-                {
-                    var filter = "";
-                    var fField = query["hidfilterdatafield" + i];
-                    var fCondition = query["hidfiltercondition" + i];
-                    var fValue = query["hidfiltervalue" + i];
+		internal string applyHiddenFilteringSuffix(HttpRequestBase Request, DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null, bool v2ApiFilterValues = false)
+		{
+			var query = Request.Params;
+			var filters = "";
 
-                    if (!int.TryParse(fField, out int fieldID))
-                    {
-                        continue;
-                    }
+			if (int.TryParse(query["hidfilterscount"], out int filterscount))
+			{
+				for (int i = 0; i < filterscount; i++)
+				{
+					var filter = "";
+					var fField = query["hidfilterdatafield" + i];
+					var fCondition = query["hidfiltercondition" + i];
+					var fValue = query["hidfiltervalue" + i];
 
-                    var tableId = $"hidft{i}";
-                    var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
+					if (!int.TryParse(fField, out int fieldID))
+					{
+						continue;
+					}
 
-                    if (fieldType != null && fieldType.AllowMultipleValues)
-                    {
-                        filter = applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
-                    }
-                    else
-                    {
-                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.AssetID and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
-                    }
+					var tableId = $"hidft{i}";
+					var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
 
-                    if (!string.IsNullOrEmpty(filter))
-                    {
-                        filters += filter;
-                    }
-                }
-            }
+					if (fieldType != null && fieldType.AllowMultipleValues)
+					{
+						filter = applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
+					}
+					else
+					{
+						filter = $" inner join field {tableId} on ({idColumn} = {tableId}.AssetID and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+					}
 
-            return filters;
-        }
+					if (!string.IsNullOrEmpty(filter))
+					{
+						filters += filter;
+					}
+				}
+			}
 
-        private string applyMulitSelectFilteringSuffix(DynamicParameters dbParams, string value, string prefix, int filterNumber, FieldType fieldType, string idColumn = "A.ID", bool v2ApiFilterValues = false)
-        {
-            value = value.Replace("!~!", ",");
+			return filters;
+		}
 
-            if (v2ApiFilterValues)
-            {
-                var resolveValueSQL = @"select string_agg(FLV.Value,',') from 
+		private string applyMulitSelectFilteringSuffix(DynamicParameters dbParams, string value, string prefix, int filterNumber, FieldType fieldType, string idColumn = "A.ID", bool v2ApiFilterValues = false)
+		{
+			value = value.Replace("!~!", ",");
+
+			if (v2ApiFilterValues)
+			{
+				var resolveValueSQL = @"select string_agg(FLV.Value,',') from 
 						STRING_SPLIT (@input,',') S  
 						inner join 
 						FieldLookupValue FLV
 						ON fieldtypeid = @ftId AND Text = TRIM(S.value)";
 
-                value = Company.Query<string>(resolveValueSQL, new { input = value, ftId = fieldType.ID }).FirstOrDefault();
+				value = Company.Query<string>(resolveValueSQL, new { input = value, ftId = fieldType.ID }).FirstOrDefault();
 
-                if (fieldType.AllowAllValue)
-                {
-                    value += "," + fieldType.AllowAllLabel;
-                }
-            }
-            else
-            {
-                if (fieldType.AllowAllValue)
-                {
-                    value += ",0";
-                }
-            }
+				if (fieldType.AllowAllValue)
+				{
+					value += "," + fieldType.AllowAllLabel;
+				}
+			}
+			else
+			{
+				if (fieldType.AllowAllValue)
+				{
+					value += ",0";
+				}
+			}
 
-            var bind = $"{prefix}{filterNumber}val";
-            dbParams.Add(bind, $"{value}");
+			var bind = $"{prefix}{filterNumber}val";
+			dbParams.Add(bind, $"{value}");
 
-            var filter = $@"			inner join ( 
+			var filter = $@"			inner join ( 
 			select 
 				CASE 
 					WHEN IssueID is not null THEN IssueID
@@ -1796,455 +1796,455 @@ namespace d360.web.Controllers
 					FROM STRING_SPLIT(@{bind}, ',') WHERE RTRIM(value)=dd.value) 
 				) {prefix} on {prefix}.idField={idColumn} ";
 
-            return filter;
-        }
+			return filter;
+		}
 
-        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false, bool v2ApiFilterValues = false)
-        {
-            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields, fromArtifact: fromArtifact, v2ApiFilterValues: v2ApiFilterValues);
-        }
+		internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false, bool v2ApiFilterValues = false)
+		{
+			return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields, fromArtifact: fromArtifact, v2ApiFilterValues: v2ApiFilterValues);
+		}
 
-        internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
-        {
-            var query = Request.Params;
-            var filters = new List<UiRequestFilterValue>();
-            int relfilterscount = 0;
+		internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
+		{
+			var query = Request.Params;
+			var filters = new List<UiRequestFilterValue>();
+			int relfilterscount = 0;
 
-            #region Hidden Filters
+			#region Hidden Filters
 
-            if (applyHiddenFilters)
-            {
-                if (int.TryParse(query["hidfilterscount"], out relfilterscount))
-                {
-                    for (int i = 0; i < relfilterscount; i++)
-                    {
-                        var fField = query["hidfilterdatafield" + i];
-                        var fCondition = query["hidfiltercondition" + i];
-                        var fValue = query["hidfiltervalue" + i];
+			if (applyHiddenFilters)
+			{
+				if (int.TryParse(query["hidfilterscount"], out relfilterscount))
+				{
+					for (int i = 0; i < relfilterscount; i++)
+					{
+						var fField = query["hidfilterdatafield" + i];
+						var fCondition = query["hidfiltercondition" + i];
+						var fValue = query["hidfiltervalue" + i];
 
-                        if (!string.IsNullOrEmpty(fValue))
-                        {
-                            filters.Add(new UiRequestFieldFilterValue
-                            {
-                                IsUnlistedFilterField = true,
-                                Condition = fCondition,
-                                FieldName = fField,
-                                RawValue = fValue
-                            });
-                        }
-                    }
-                }
+						if (!string.IsNullOrEmpty(fValue))
+						{
+							filters.Add(new UiRequestFieldFilterValue
+							{
+								IsUnlistedFilterField = true,
+								Condition = fCondition,
+								FieldName = fField,
+								RawValue = fValue
+							});
+						}
+					}
+				}
 
-                relfilterscount = 0; // Reset
-            }
+				relfilterscount = 0; // Reset
+			}
 
-            #endregion
+			#endregion
 
-            #region Field Filters
+			#region Field Filters
 
-            if (int.TryParse(query["filterscount"], out relfilterscount))
-            {
-                for (int i = 0; i < relfilterscount; i++)
-                {
-                    var fField = query["filterdatafield" + i];
-                    var fCondition = query["filtercondition" + i];
-                    var fValue = query["filtervalue" + i];
+			if (int.TryParse(query["filterscount"], out relfilterscount))
+			{
+				for (int i = 0; i < relfilterscount; i++)
+				{
+					var fField = query["filterdatafield" + i];
+					var fCondition = query["filtercondition" + i];
+					var fValue = query["filtervalue" + i];
 
-                    if (fValue.EndsWith(".000"))
-                    {
-                        fValue = fValue.Replace(".000", "");
-                    }
+					if (fValue.EndsWith(".000"))
+					{
+						fValue = fValue.Replace(".000", "");
+					}
 
-                    if (!string.IsNullOrEmpty(fValue))
-                    {
-                        filters.Add(new UiRequestFieldFilterValue
-                        {
-                            Condition = fCondition,
-                            FieldName = fField,
-                            RawValue = fValue
-                        });
-                    }
-                }
-            }
+					if (!string.IsNullOrEmpty(fValue))
+					{
+						filters.Add(new UiRequestFieldFilterValue
+						{
+							Condition = fCondition,
+							FieldName = fField,
+							RawValue = fValue
+						});
+					}
+				}
+			}
 
-            #endregion
+			#endregion
 
-            #region Relationship Filters
+			#region Relationship Filters
 
-            if (int.TryParse(query["relcount"], out int relcount))
-            {
-                for (int i = 0; i < relcount; i++)
-                {
-                    var qs_includetype = $"rel_includetype_{i}";
-                    var qs_object = $"rel_object_{i}";
-                    var qs_objectids = $"rel_objectids_{i}";
-                    var qs_typeid = $"rel_typeid_{i}";
+			if (int.TryParse(query["relcount"], out int relcount))
+			{
+				for (int i = 0; i < relcount; i++)
+				{
+					var qs_includetype = $"rel_includetype_{i}";
+					var qs_object = $"rel_object_{i}";
+					var qs_objectids = $"rel_objectids_{i}";
+					var qs_typeid = $"rel_typeid_{i}";
 
-                    //check form
-                    var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
-                    var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
-                    var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
-                    var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
+					//check form
+					var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
+					var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
+					var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
+					var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
 
-                    //check querystring
-                    if (string.IsNullOrEmpty(RelationshipObjectIDs))
-                    {
-                        RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
-                        RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
-                        RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
-                        RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
-                    }
+					//check querystring
+					if (string.IsNullOrEmpty(RelationshipObjectIDs))
+					{
+						RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
+						RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
+						RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
+						RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
+					}
 
-                    if (!string.IsNullOrEmpty(RelationshipObjectIDs))
-                    {
-                        var rawIDs = RelationshipObjectIDs.Split(',').ToList();
-                        var IDs = new List<int>();
-                        rawIDs.ForEach(ID =>
-                        {
-                            if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
-                            {
-                                IDs.Add(idInt);
-                            }
-                        });
+					if (!string.IsNullOrEmpty(RelationshipObjectIDs))
+					{
+						var rawIDs = RelationshipObjectIDs.Split(',').ToList();
+						var IDs = new List<int>();
+						rawIDs.ForEach(ID =>
+						{
+							if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
+							{
+								IDs.Add(idInt);
+							}
+						});
 
-                        filters.Add(new UiRequestRelationshipFilterValue
-                        {
-                            IntersectTypeID = int.Parse(RelationshipIntersectTypeID),
-                            TargetObjectIDs = IDs,
-                            Operator = (RelationshipIncludeType == "Any") ? "OR" : "AND",
-                            TargetObject = RelationshipObjectType
-                        });
-                    }
-                }
-            }
+						filters.Add(new UiRequestRelationshipFilterValue
+						{
+							IntersectTypeID = int.Parse(RelationshipIntersectTypeID),
+							TargetObjectIDs = IDs,
+							Operator = (RelationshipIncludeType == "Any") ? "OR" : "AND",
+							TargetObject = RelationshipObjectType
+						});
+					}
+				}
+			}
 
-            #endregion
+			#endregion
 
-            #region Ownership Filters
+			#region Ownership Filters
 
-            string ownerUsers = query["ownerUsers"];
-            string ownerGroups = query["ownerGroups"];
+			string ownerUsers = query["ownerUsers"];
+			string ownerGroups = query["ownerGroups"];
 
-            var userFilterEnabled = !string.IsNullOrEmpty(ownerUsers);
-            var groupFilterEnabled = !string.IsNullOrEmpty(ownerGroups);
+			var userFilterEnabled = !string.IsNullOrEmpty(ownerUsers);
+			var groupFilterEnabled = !string.IsNullOrEmpty(ownerGroups);
 
-            if (userFilterEnabled || groupFilterEnabled)
-            {
-                var ownershipFilter = new UiRequestOwnershipFilterValue();
+			if (userFilterEnabled || groupFilterEnabled)
+			{
+				var ownershipFilter = new UiRequestOwnershipFilterValue();
 
-                if (groupFilterEnabled)
-                {
-                    foreach (var group in ownerGroups.Split(','))
-                    {
-                        var ids = group.Split('|');
+				if (groupFilterEnabled)
+				{
+					foreach (var group in ownerGroups.Split(','))
+					{
+						var ids = group.Split('|');
 
-                        if (ids.Length == 2)
-                        {
-                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
-                            {
-                                FilterType = UiRequestOwnershipFilterType.Group,
-                                ResponsibilityTypeID = int.Parse(ids[0]),
-                                SecurityAssetID = int.Parse(ids[1])
-                            });
-                        }
-                    }
-                }
+						if (ids.Length == 2)
+						{
+							ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
+							{
+								FilterType = UiRequestOwnershipFilterType.Group,
+								ResponsibilityTypeID = int.Parse(ids[0]),
+								SecurityAssetID = int.Parse(ids[1])
+							});
+						}
+					}
+				}
 
-                if (userFilterEnabled)
-                {
-                    foreach (var user in ownerUsers.Split(','))
-                    {
-                        var ids = user.Split('|');
+				if (userFilterEnabled)
+				{
+					foreach (var user in ownerUsers.Split(','))
+					{
+						var ids = user.Split('|');
 
-                        if (ids.Length == 2)
-                        {
-                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
-                            {
-                                FilterType = UiRequestOwnershipFilterType.User,
-                                ResponsibilityTypeID = int.Parse(ids[0]),
-                                SecurityAssetID = int.Parse(ids[1])
-                            });
-                        }
-                    }
-                }
+						if (ids.Length == 2)
+						{
+							ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
+							{
+								FilterType = UiRequestOwnershipFilterType.User,
+								ResponsibilityTypeID = int.Parse(ids[0]),
+								SecurityAssetID = int.Parse(ids[1])
+							});
+						}
+					}
+				}
 
-                if (ownershipFilter.Items.Count > 0)
-                {
-                    filters.Add(ownershipFilter);
-                }
-            }
+				if (ownershipFilter.Items.Count > 0)
+				{
+					filters.Add(ownershipFilter);
+				}
+			}
 
-            #endregion
+			#endregion
 
-            return filters;
-        }
+			return filters;
+		}
 
-        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID", bool fromArtifact = false, bool v2ApiFilterValues = false)
-        {
-            var query = Request.Params;
+		internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID", bool fromArtifact = false, bool v2ApiFilterValues = false)
+		{
+			var query = Request.Params;
 
-            #region Field Filters
+			#region Field Filters
 
-            #region Field Filters
+			#region Field Filters
 
-            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn, fields, v2ApiFilterValues) : string.Empty;
-            var whereFilter = string.Empty;
+			var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn, fields, v2ApiFilterValues) : string.Empty;
+			var whereFilter = string.Empty;
 
-            if (int.TryParse(query["filterscount"], out int filterscount))
-            {
-                for (int i = 0; i < filterscount; i++)
-                {
-                    var filter = "";
-                    var fField = query["filterdatafield" + i];
-                    var fCondition = query["filtercondition" + i];
-                    var fValue = query["filtervalue" + i];
-                    var tableId = $"fieldft{i}";
+			if (int.TryParse(query["filterscount"], out int filterscount))
+			{
+				for (int i = 0; i < filterscount; i++)
+				{
+					var filter = "";
+					var fField = query["filterdatafield" + i];
+					var fCondition = query["filtercondition" + i];
+					var fValue = query["filtervalue" + i];
+					var tableId = $"fieldft{i}";
 
-                    if (fValue.EndsWith(".000"))
-                    {
-                        fValue = fValue.Replace(".000", "");
-                    }
+					if (fValue.EndsWith(".000"))
+					{
+						fValue = fValue.Replace(".000", "");
+					}
 
-                    int fieldTypeID = 0;
-                    FieldType filterFieldType = null;
+					int fieldTypeID = 0;
+					FieldType filterFieldType = null;
 
-                    if (fields != null)
-                    {
-                        if (fField.StartsWith("Field"))
-                        {
-                            string fieldTypeIDRaw = fField.Replace("Field", "");
+					if (fields != null)
+					{
+						if (fField.StartsWith("Field"))
+						{
+							string fieldTypeIDRaw = fField.Replace("Field", "");
 
-                            if (int.TryParse(fieldTypeIDRaw, out fieldTypeID))
-                            {
-                                filterFieldType = fields.FirstOrDefault(f => f.ID == fieldTypeID);
-                            }
-                        }
-                    }
+							if (int.TryParse(fieldTypeIDRaw, out fieldTypeID))
+							{
+								filterFieldType = fields.FirstOrDefault(f => f.ID == fieldTypeID);
+							}
+						}
+					}
 
-                    if (fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
-                    {
-                        filters += applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn, v2ApiFilterValues);
-                    }
-                    else
-                    {
-                        filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
-                    }
+					if (fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
+					{
+						filters += applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn, v2ApiFilterValues);
+					}
+					else
+					{
+						filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
+					}
 
-                    if (!string.IsNullOrEmpty(filter))
-                    {
-                        whereFilter += (i == 0) ? " WHERE " : " AND ";
-                        whereFilter += filter;
-                    }
-                }
-            }
+					if (!string.IsNullOrEmpty(filter))
+					{
+						whereFilter += (i == 0) ? " WHERE " : " AND ";
+						whereFilter += filter;
+					}
+				}
+			}
 
-            filters += whereFilter;
+			filters += whereFilter;
 
-            #endregion
+			#endregion
 
-            #region Relationship Filters
+			#region Relationship Filters
 
-            if (int.TryParse(query["relcount"], out int relcount))
-            {
-                for (int i = 0; i < relcount; i++)
-                {
-                    var qs_includetype = $"rel_includetype_{i}";
-                    var qs_object = $"rel_object_{i}";
-                    var qs_objectids = $"rel_objectids_{i}";
-                    var qs_typeid = $"rel_typeid_{i}";
+			if (int.TryParse(query["relcount"], out int relcount))
+			{
+				for (int i = 0; i < relcount; i++)
+				{
+					var qs_includetype = $"rel_includetype_{i}";
+					var qs_object = $"rel_object_{i}";
+					var qs_objectids = $"rel_objectids_{i}";
+					var qs_typeid = $"rel_typeid_{i}";
 
-                    //check form
-                    var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
-                    var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
-                    var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
-                    var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
+					//check form
+					var RelationshipIncludeType = Request.Form.AllKeys.Any(k => k == qs_includetype) ? Request[qs_includetype] : "";
+					var RelationshipObjectType = Request.Form.AllKeys.Any(k => k == qs_object) ? Request[qs_object] : "";
+					var RelationshipObjectIDs = Request.Form.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(Request[qs_objectids]) : "";
+					var RelationshipIntersectTypeID = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(Request[qs_typeid]) : "";
 
-                    //check querystring
-                    if (string.IsNullOrEmpty(RelationshipObjectIDs))
-                    {
-                        RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
-                        RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
-                        RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
-                        RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
-                    }
+					//check querystring
+					if (string.IsNullOrEmpty(RelationshipObjectIDs))
+					{
+						RelationshipIncludeType = query.AllKeys.Any(k => k == qs_includetype) ? query[qs_includetype] : "";
+						RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
+						RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
+						RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
+					}
 
-                    if (v2ApiFilterValues)
-                    {
-                        RelationshipObjectIDs = Company.Query<string>(@"select string_agg(A.ObjectID,',')
+					if (v2ApiFilterValues)
+					{
+						RelationshipObjectIDs = Company.Query<string>(@"select string_agg(A.ObjectID,',')
 								from string_split(@objectUids,',')S
 								inner join Asset A on A.Uid = S.value", new { objectUids = RelationshipObjectIDs }).FirstOrDefault();
-                    }
+					}
 
-                    if (!string.IsNullOrEmpty(RelationshipObjectIDs))
-                    {
-                        var IDs = RelationshipObjectIDs.Split(',').ToList();
-                        var idList = "";
-                        IDs.ForEach(ID =>
-                        {
+					if (!string.IsNullOrEmpty(RelationshipObjectIDs))
+					{
+						var IDs = RelationshipObjectIDs.Split(',').ToList();
+						var idList = "";
+						IDs.ForEach(ID =>
+						{
 
-                            if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
-                            {
-                                idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
-                            }
-                        });
+							if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
+							{
+								idList += (string.IsNullOrEmpty(idList) ? "" : ", ") + idInt;
+							}
+						});
 
-                        dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
+						dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
 
-                        if (RelationshipIncludeType == "Any")
-                        {
-                            filters += (string.IsNullOrEmpty(filters) ? " WHERE " : " AND ") + $@"{idColumn} in (
+						if (RelationshipIncludeType == "Any")
+						{
+							filters += (string.IsNullOrEmpty(filters) ? " WHERE " : " AND ") + $@"{idColumn} in (
 select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
 union 
 select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
 )";
-                        }
-                        else
-                        {
-                            IDs.ForEach(ID =>
-                            {
-                                if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
-                                {
-                                    filters += string.IsNullOrEmpty(filters) ? " WHERE " : " AND ";
-                                    filters += $@"{idColumn} in (
+						}
+						else
+						{
+							IDs.ForEach(ID =>
+							{
+								if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
+								{
+									filters += string.IsNullOrEmpty(filters) ? " WHERE " : " AND ";
+									filters += $@"{idColumn} in (
 select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
 union 
 select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
 )";
-                                }
-                            });
-                        }
-                        
-                    }
-                }
-            }
+								}
+							});
+						}
 
-            #endregion
+					}
+				}
+			}
 
-            return filters;
-        }
+			#endregion
 
-        internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", string sortFieldType = "string")
-        {
-            if (string.IsNullOrEmpty(sortDataField))
-            {
-                sortDataField = sortDefaultField;
-                sortOrder = sortDefaultDirection;
-            }
+			return filters;
+		}
 
-            sortOrder = (sortOrder ?? string.Empty).ToLower();
+		internal string applySortSuffix(string sql, string sortDataField, string sortOrder, string sortDefaultField = "Name", string sortDefaultDirection = "asc", string sortFieldType = "string")
+		{
+			if (string.IsNullOrEmpty(sortDataField))
+			{
+				sortDataField = sortDefaultField;
+				sortOrder = sortDefaultDirection;
+			}
 
-            //validate inputs            
-            if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
-            {
-                throw new ArgumentNullException(ApiMessages.InvalidSortOrder);
-            }
+			sortOrder = (sortOrder ?? string.Empty).ToLower();
 
-            // make sure its a valid field name
-            if (!isValidFieldName(sortDataField))
-            {
-                throw new ArgumentNullException(ApiMessages.InvalidSortField);
-            }
+			//validate inputs            
+			if ((!string.IsNullOrEmpty(sortOrder)) && sortOrder != "asc" && sortOrder != "desc")
+			{
+				throw new ArgumentNullException(ApiMessages.InvalidSortOrder);
+			}
 
-            if ((sortFieldType ?? "").ToUpper() == "NUMBER")
-            {
-                sql += " ORDER BY CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
-            }
-            else if ((sortFieldType ?? "").ToUpper() == "DATE")
-            {
-                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
-            }
-            else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
-            {
-                sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
-            }
-            else
-            {
-                sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
-            }
+			// make sure its a valid field name
+			if (!isValidFieldName(sortDataField))
+			{
+				throw new ArgumentNullException(ApiMessages.InvalidSortField);
+			}
 
-            return sql;
-        }
+			if ((sortFieldType ?? "").ToUpper() == "NUMBER")
+			{
+				sql += " ORDER BY CAST(+ [" + sortDataField + "] AS bigint)" + sortOrder;
+			}
+			else if ((sortFieldType ?? "").ToUpper() == "DATE")
+			{
+				sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS date)" + sortOrder;
+			}
+			else if ((sortFieldType ?? "").ToUpper() == "DATETIME")
+			{
+				sql += " ORDER BY TRY_CAST(+ [" + sortDataField + "] AS datetime)" + sortOrder;
+			}
+			else
+			{
+				sql += " ORDER BY [" + sortDataField + "] " + sortOrder;
+			}
 
-        internal string applyPagingSuffix(string sql, int pagenum = 0, int pagesize = 20)
-        {
-            sql += string.Format(" OFFSET({0}) ROWS FETCH NEXT ({1}) ROWS ONLY", pagenum * pagesize, pagesize);
+			return sql;
+		}
 
-            return sql;
-        }
+		internal string applyPagingSuffix(string sql, int pagenum = 0, int pagesize = 20)
+		{
+			sql += string.Format(" OFFSET({0}) ROWS FETCH NEXT ({1}) ROWS ONLY", pagenum * pagesize, pagesize);
 
-        protected void ResetResourcePassword(int resourceId, string firstName, string email, string fullName)
-        {
-            var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
+			return sql;
+		}
 
-            Community.ChangePassword(resourceId, "", generatedPassword);
+		protected void ResetResourcePassword(int resourceId, string firstName, string email, string fullName)
+		{
+			var generatedPassword = System.Web.Security.Membership.GeneratePassword(10, 3);
 
-            var templateValues = new Dictionary<string, string>();
-            string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
+			Community.ChangePassword(resourceId, "", generatedPassword);
 
-            templateValues["firstname"] = firstName;
-            templateValues["password"] = generatedPassword;
-            templateValues["request_url"] = strUrl;
+			var templateValues = new Dictionary<string, string>();
+			string strUrl = Request.Url.AbsoluteUri.Replace(Request.Url.PathAndQuery, "/");
 
-            //email user 
-            Mail.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
-        }
+			templateValues["firstname"] = firstName;
+			templateValues["password"] = generatedPassword;
+			templateValues["request_url"] = strUrl;
 
-        #endregion
+			//email user 
+			Mail.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
+		}
 
-        protected async Task<bool> IsSingleSignOn()
-        {
-            var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
+		#endregion
 
-            return !(authModel == AuthenticationType.Forms);
-        }
+		protected async Task<bool> IsSingleSignOn()
+		{
+			var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
 
-        protected FileContentResult ExcelDocumentAsFile(ExcelDocument document)
-        {
-            using (var stream = new MemoryStream())
-            {
-                using (var slDocument = document.ToSLDocument())
-                {
-                    slDocument.SaveAs(stream);
+			return !(authModel == AuthenticationType.Forms);
+		}
 
-                    return File(stream.ToArray(), "application/vnd.ms-excel", $"{document.Name.GetSafeFilename()}.xlsx");
-                }
-            }
-        }
+		protected FileContentResult ExcelDocumentAsFile(ExcelDocument document)
+		{
+			using (var stream = new MemoryStream())
+			{
+				using (var slDocument = document.ToSLDocument())
+				{
+					slDocument.SaveAs(stream);
 
-        internal ClientUserModel GetFeatureFlagUser()
-        {
+					return File(stream.ToArray(), "application/vnd.ms-excel", $"{document.Name.GetSafeFilename()}.xlsx");
+				}
+			}
+		}
+
+		internal ClientUserModel GetFeatureFlagUser()
+		{
 			return Company.GetFeatureFlagUser();
-        }
+		}
 
-        protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
-        {
-            if (ViewData.ContainsKey("Settings"))
-            {
-                return;
-            }
+		protected async Task AppendSettingsToViewData(HttpContext httpContext = null)
+		{
+			if (ViewData.ContainsKey("Settings"))
+			{
+				return;
+			}
 
-            var settings = await Workspace.ReadSettingsAsDictionaryAsync();
+			var settings = await Workspace.ReadSettingsAsDictionaryAsync();
 
-            settings["CustomCSSLocation"] = "";
-            settings["CompanyIcon"] = "";
-            settings["CompanyLogo"] = "";
-            var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
-            if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
-            {
-                settings["CompanyIcon"] = currentTheme.IconUri;
-            }
+			settings["CustomCSSLocation"] = "";
+			settings["CompanyIcon"] = "";
+			settings["CompanyLogo"] = "";
+			var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
+			if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
+			{
+				settings["CompanyIcon"] = currentTheme.IconUri;
+			}
 
-            if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.HeaderLogoUri))
-            {
-                settings["CompanyLogo"] = currentTheme.HeaderLogoUri;
-            }
+			if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.HeaderLogoUri))
+			{
+				settings["CompanyLogo"] = currentTheme.HeaderLogoUri;
+			}
 
-            ViewData.Add("Settings", settings);
+			ViewData.Add("Settings", settings);
 			if (httpContext != null && httpContext.GetOwinContext() != null)
 			{
-				ViewData.Add("ApplicationLanguageSetting", 
+				ViewData.Add("ApplicationLanguageSetting",
 					httpContext.GetOwinContext().Get<string>("ApplicationLanguageSetting"));
 			}
 		}
-    }
+	}
 }

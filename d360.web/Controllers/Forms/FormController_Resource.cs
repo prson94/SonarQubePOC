@@ -28,7 +28,7 @@ namespace d360.web.Controllers
 
 		/// <param name="id">ResourceTypeID</param>
 		[Route("Resource_AddFields"), NonNullableParameters]
-		public JsonResult Resource_AddFields(int id)
+		public async Task<JsonResult> Resource_AddFields(int id)
 		{
 			var list = new List<EditableField>();
 
@@ -112,7 +112,7 @@ namespace d360.web.Controllers
 				FieldType = DataType.Boolean.ToString() 
 			});
 
-			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
+			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
@@ -342,7 +342,7 @@ namespace d360.web.Controllers
 
 
 		[HttpGet, Route("GetGroupUserList"), NonNullableParameters]
-		public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? uid)
+		public async Task<JsonNetResult> GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? uid)
 		{
 
 			if (uid.HasValue && uid.Value != Guid.Empty)
@@ -354,7 +354,7 @@ namespace d360.web.Controllers
 			var dbArgs = new Dapper.DynamicParameters();
 			var hideUsersSql = "";
 
-			if (HideData3SixtyUsers())
+			if (await GetHideData3SixtyUsers())
 			{
 				hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
 			}
@@ -395,7 +395,7 @@ namespace d360.web.Controllers
 		#region Group : Edit
 
 		[HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]
-		public JsonNetResult GetGroup(int id, Guid? uid)
+		public async Task<JsonNetResult> GetGroup(int id, Guid? uid)
 		{
 			var group = new Group();
 			var resourceList = new List<SelectListItem>();
@@ -405,9 +405,11 @@ namespace d360.web.Controllers
 				id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
 			}
 
+			var companyResources = await GetCompanyResources();
+
 			if (id == 0)
 			{
-				resourceList = GetCompanyResources()
+				resourceList = companyResources
 					.OrderBy(i => i.LastName)
 					.ThenBy(i => i.FirstName)
 					.Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
@@ -420,8 +422,8 @@ namespace d360.web.Controllers
 				group = Company.GetById<Group>(id);
 				group.Uid = Company.Assets.Where(x => x.Object == "Group" && x.ObjectID == group.ID).Select(x => x.uid).FirstOrDefault();
 
-				var primaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.PrimaryOwnerResourceID).FirstOrDefault();
-				var secondaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.SecondaryOwnerResourceID).FirstOrDefault();
+				var primaryOwner = companyResources.Where(x => x.ResourceID == group.PrimaryOwnerResourceID).FirstOrDefault();
+				var secondaryOwner = companyResources.Where(x => x.ResourceID == group.SecondaryOwnerResourceID).FirstOrDefault();
 				group.PrimaryOwnerName = primaryOwner != null ? primaryOwner.LastName + ", " + primaryOwner.FirstName : "";
 				group.SecondaryOwnerName = secondaryOwner != null ? secondaryOwner.LastName + ", " + secondaryOwner.FirstName : "";
 				
@@ -436,7 +438,7 @@ namespace d360.web.Controllers
 				}
 
 				var currentUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
-				resourceList = GetCompanyResources()
+				resourceList = companyResources
 					.Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, MembershipStatus = currentUsers.Any(o => o == i.ResourceID) ? "Current Member" : "Not Yet a Member" })
 					.OrderBy(i => i.MembershipStatus)
 					.ThenBy(i => i.LastName)

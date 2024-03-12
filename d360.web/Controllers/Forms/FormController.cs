@@ -436,7 +436,7 @@ namespace d360.web.Controllers
 
 					if (intersectType != null)
 					{
-						return Relationship_AddFields(intersectType);
+						return await Relationship_AddFields(intersectType);
 					}
 					else
 					{
@@ -480,16 +480,16 @@ namespace d360.web.Controllers
 			switch ((objectType ?? "").ToUpper())
 			{
 				case "ARTIFACT":
-					res = Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Asset_AddFields(SystemObjects.ArtifactType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				case "RULE":
-					res = Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+					res = await Asset_AddFields(SystemObjects.RuleType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
 					break;
 				case "EXPORTTEMPLATE":
 					res = ExportTemplate_AddFields();
 					break;
 				case "ISSUE":
-					res = Issue_AddFields(objectID.GetValueOrDefault());
+					res = await Issue_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "ISSUETYPE":
 					res = IssueType_AddFields();
@@ -507,10 +507,10 @@ namespace d360.web.Controllers
 					res = Predicate_AddFields();
 					break;
 				case "REFERENCEITEM":
-					res = ReferenceItem_AddFields(objectID.GetValueOrDefault());
+					res = await ReferenceItem_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "RESOURCETYPE":
-					res = Resource_AddFields(objectID.GetValueOrDefault());
+					res = await Resource_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "SURVEYTYPE":
 					res = SurveyType_AddFields();
@@ -519,10 +519,10 @@ namespace d360.web.Controllers
 					res = Tag_AddFields();
 					break;
 				case "GROUP":
-					res = Group_AddFields();
+					res = await Group_AddFields();
 					break;
 				case "TASK":
-					res = Diagram_AddFields(objectID.GetValueOrDefault());
+					res = await Diagram_AddFields(objectID.GetValueOrDefault());
 					break;
 				case "TAXONOMY":
 					res = await Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
@@ -1407,7 +1407,7 @@ order by Sort, title";
 
 		/// <param name="id">LookupTypeID</param>
 		[Route("ReferenceItem_AddFields"), NonNullableParameters]
-		public JsonResult ReferenceItem_AddFields(int id)
+		public async Task<JsonResult> ReferenceItem_AddFields(int id)
 		{
 			if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.AddAsset))
 			{
@@ -1438,8 +1438,8 @@ order by Sort, title";
 					Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList()
 				});
 			}
-
-			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, true);
+			var hideData3SixtyUsers = await GetHideData3SixtyUsers();
+			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row, true);
 			var colourRowIndex = list.First(x => x.FieldName.ToLower() == "code").Row.Value + 1;
 
 			list.ForEach(f =>
@@ -2055,7 +2055,7 @@ order by Sort, title";
 		#region Group
 
 		[Route("Group_AddFields")]
-		public JsonResult Group_AddFields()
+		public async Task<JsonResult> Group_AddFields()
 		{
 			var list = new List<EditableField>
 			{
@@ -2067,7 +2067,7 @@ order by Sort, title";
 			};
 
 			var tempList = new List<EditableField>();
-			tempList = loadDynamicFields(tempList, Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(), 1);
+			tempList = await loadDynamicFields(tempList, Company.GetFieldTypesByObject(SystemObjects.GroupType, 1).ToList(), 1);
 			tempList.ForEach(x => x.Row += 3);
 
 			list.AddRange(tempList);
