@@ -138,6 +138,8 @@ namespace d360.web.Controllers
 			var allowAllSelected = false;
 
 			var k = fields.SingleOrDefault(i => i.FieldTypeID == ft.ID);
+			var dataType = ft.Type;
+			var isReference = ft.LookupObjectType == "ReferenceItem" || ft.LookupObjectType == "ReferenceItemType";
 
 			if (k != null)
 			{
@@ -218,7 +220,6 @@ namespace d360.web.Controllers
 					ro.Value = "values";
 					var items = (!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { };
 					var itemIds = new List<long>();
-					var isReference = ft.LookupObjectType == "ReferenceItem" || ft.LookupObjectType == "ReferenceItemType";
 					var tooltipContext = isReference ? TemplateAction.LookupPreview.ToString() : TemplateAction.Preview.ToString();
 					var lookupUrl = k?.LookupUrl;
 
@@ -264,6 +265,11 @@ namespace d360.web.Controllers
 							}
 						}
 					}
+				}
+				else if (allowAllSelected && isReference)
+				{
+					ro.DataType = "color";
+					ro.Value = $"[{{\"name\":\"{ft.AllowAllLabel}\", \"color\":\"transparent\"}}]";
 				}
 
 				list.Add(new DetailReadOnlyRowModel
