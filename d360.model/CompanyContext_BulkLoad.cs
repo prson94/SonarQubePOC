@@ -251,64 +251,86 @@ namespace d360.model
 			return execution;
 		}
 
-		private static string LoadDetailBaseSql 
+		private string LoadDetailBaseSql(string countSql,int LoadId, bool getLoadErrorMessage = false) 
 		{
-			get {
-				return $@"select	L.ID,
-													L.[Object],
-													L.ObjectID,
-													case 
-														when L.[Action] = 'M' and L.ObjectID = 0 then '{Bulkload.Object_GroupMembership.CleanForSql()}'
-														when L.[Action] = 'M' and L.ObjectID = 1 then '{Bulkload.Object_Users.CleanForSql()}'
-														when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[{Bulkload.Object_Deleted.CleanForSql()}]')  
-														else coalesce(C_D.[Name], '{Bulkload.Object_Default.CleanForSql()}') 
-													end as ObjectName,
-													L.Notes, 
-													coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
-													'MyFile.' + L.Extension as FilePath,
-													L.DateStarted,
-													case when L.Action in ('P','R','U') and L.[File] is null then
-														case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
-															L.DateCompleted
-														when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
-															L.DateCompleted
-														when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
-															EE.CompletedOn
-														else
-															EA.CompletedOn      
-														end
-													else 
-														L.DateCompleted 
-													end as DateCompleted,
-													case L.[Action]
-														when 'M' then '{Bulkload.UsersGroups.CleanForSql()}'
-														when 'P' then '{Bulkload.Promotion.CleanForSql()}'
-														when 'R' then '{Bulkload.Relation.CleanForSql()}'
-														when 'U' then '{Bulkload.Unrelation.CleanForSql()}'
-														when 'L' then '{Bulkload.Lineage.CleanForSql()}'
-														when 'O' then '{Bulkload.Responsibilities.CleanForSql()}'
-														when 'T' then '{Bulkload.LineageTechnical.CleanForSql()}'
-														when 'S' then '{Bulkload.Synonyms.CleanForSql()}'
-														when 'W' then '{Bulkload.Promotion_ViaWorkflow.CleanForSql()}'
-													end as [Action],
-													S.C as Success,
-													E.C as Error,
-													I.C as Incomplete,
-													T.C as Total,
-													R.FirstName + ' ' + R.LastName as Requestor
-											from	[Load] L
-													left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
-													left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
-													left join (
-														select [Name], [Object] ,ObjectID from AssetType
-														union all
-														select ITN.[Name] as [Name], 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
-														cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+			string loaderrorsql = "";
+			if (getLoadErrorMessage)
+			{
+				loaderrorsql = $@"
 
-													) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
-													left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-													{{0}}";
+declare @IsSucess bigint = 0;
+select @IsSucess = count(1)
+from LoadItem
+where LoadId = {LoadId} and Status = 1;
+
+if (@IsSucess = 0)
+begin
+	select top 1 @LoadErrorMessage = StatusMessage
+	from LoadItem
+	where LoadId = {LoadId} and Status = 0;
+end
+";
 			}
+
+				return $@"		
+								declare @LoadErrorMessage nvarchar(2000);
+
+								{loaderrorsql}
+
+								select	L.ID,
+									L.[Object],
+									L.ObjectID,
+									case 
+										when L.[Action] = 'M' and L.ObjectID = 0 then '{Bulkload.Object_GroupMembership.CleanForSql()}'
+										when L.[Action] = 'M' and L.ObjectID = 1 then '{Bulkload.Object_Users.CleanForSql()}'
+										when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[{Bulkload.Object_Deleted.CleanForSql()}]')  
+										else coalesce(C_D.[Name], '{Bulkload.Object_Default.CleanForSql()}') 
+									end as ObjectName,
+									L.Notes, 
+									coalesce(EA.ErrorMessage, @LoadErrorMessage,'') + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
+									'MyFile.' + L.Extension as FilePath,
+									L.DateStarted,
+									case when L.Action in ('P','R','U') and L.[File] is null then
+										case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
+											L.DateCompleted
+										when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+											L.DateCompleted
+										when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
+											EE.CompletedOn
+										else
+											EA.CompletedOn      
+										end
+									else 
+										L.DateCompleted 
+									end as DateCompleted,
+									case L.[Action]
+										when 'M' then '{Bulkload.UsersGroups.CleanForSql()}'
+										when 'P' then '{Bulkload.Promotion.CleanForSql()}'
+										when 'R' then '{Bulkload.Relation.CleanForSql()}'
+										when 'U' then '{Bulkload.Unrelation.CleanForSql()}'
+										when 'L' then '{Bulkload.Lineage.CleanForSql()}'
+										when 'O' then '{Bulkload.Responsibilities.CleanForSql()}'
+										when 'T' then '{Bulkload.LineageTechnical.CleanForSql()}'
+										when 'S' then '{Bulkload.Synonyms.CleanForSql()}'
+										when 'W' then '{Bulkload.Promotion_ViaWorkflow.CleanForSql()}'
+									end as [Action],
+									S.C as Success,
+									E.C as Error,
+									I.C as Incomplete,
+									T.C as Total,
+									R.FirstName + ' ' + R.LastName as Requestor
+							from	[Load] L
+									left join api.Execution EE on EE.ExecutionId = L.PutExecutionID
+									left join api.Execution EA on EA.ExecutionId = L.PostExecutionID
+									left join (
+										select [Name], [Object] ,ObjectID from AssetType
+										union all
+										select ITN.[Name] as [Name], 'IntersectType' as [Object], ID as ObjectID from IntersectType IT
+										cross apply dbo.GetIntersectTypeNames(IT.ID) ITN
+
+									) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
+									left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
+									{countSql}";
 		}
 
 		#endregion
@@ -745,6 +767,8 @@ namespace d360.model
 			}
 
 			string sqlduplicate = $@"
+declare @errormessage nvarchar(max);
+
 drop table if exists #tempdupassetuid;
 
 select AssetUid
@@ -755,34 +779,32 @@ and AssetUid is not null
 group by AssetUid
 having count(1) > 1;
 
-update lt
-set status = 0,
-StatusMessage = 'Duplicate asset'
-from LoadItem lt
-inner join #tempdupassetuid tt on  tt.AssetUid = lt.AssetUid
-where lt.loadid =  @ID and lt.AssetUid is not null;
-
-update lt
-set status = 0,
-StatusMessage = 'Failed due to duplicate asset for update'
-from LoadItem lt
-left join #tempdupassetuid tt on tt.AssetUid = lt.AssetUid
-where loadid =  @ID and tt.AssetUid is null and lt.AssetUid is not null;
-
-select STRING_AGG(RowIndex,'#')
+select @errormessage = STRING_AGG('[' + RowIndex + ']','#')
 from (
 select tt.AssetUid,STRING_AGG(lt.RowIndex,',') RowIndex
 from #tempdupassetuid tt
 inner join LoadItem lt on loadid =  @ID and tt.AssetUid = lt.AssetUid
 and lt.AssetUid is not null
-group by tt.AssetUid
-) a; 
+group by tt.AssetUid) a;
+
+if (@errormessage is not null)
+begin
+	set @errormessage = 'Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.' + @errormessage;
+
+	update lt
+	set status = 0,
+	StatusMessage =  substring(@errormessage,1,1000)
+	from LoadItem lt
+	where lt.loadid =  @ID and lt.AssetUid is not null;
+end
+
+select @errormessage
 ";
 			var dupasset = await Connection.QuerySingleAsync<string>(sqlduplicate, new { load.ID });
 
 			if (dupasset != null)
 			{
-				throw new ArgumentNullException($"asset must be unique, Duplicate entry found :{dupasset}");
+				throw new ArgumentNullException($"{dupasset}");
 			}
 			List<AssetUpdate> putAssets = new List<AssetUpdate>();
 			List<AssetInsert> postAssets = new List<AssetInsert>();
@@ -1316,15 +1338,17 @@ inner join AssetPath P on P.ID = A.ID
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
 				cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+				cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
+				";
 
-			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
+			return Query<LoadDetail>(LoadDetailBaseSql(countSql, 0, false) + " order by L.ID desc");
 		}
 
 		public LoadDetail GetLoadDetail(int id)
 		{
 			Load load = GetById<Load>(id);
 			bool useExecutionTable = false;
+			bool getLoadErrorMessage = false;
 
 			if (v2ApiActions.Contains(load.Action) && (load.PostExecutionID != null || load.PutExecutionID != null))
 			{
@@ -1410,14 +1434,17 @@ inner join AssetPath P on P.ID = A.ID
 			}
 			else
 			{
+				getLoadErrorMessage= true;
 				countSql = @"
 					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
 					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
 					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-					cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+					cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
+					outer apply (select top 1 StatusMessage ErrorMessage from LoadItem Li where LoadID = L.ID and Status = 0) LoadError
+				";
 			}
 
-			return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " where L.ID = " + id).SingleOrDefault();
+			return Query<LoadDetail>(LoadDetailBaseSql(countSql, id, getLoadErrorMessage) + " where L.ID = " + id).SingleOrDefault();
 		}
 
 		public IEnumerable<dynamic> GetLoadColumnDetails(int id)
