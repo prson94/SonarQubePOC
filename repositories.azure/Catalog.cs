@@ -607,7 +607,7 @@ order by    P.[Path];";
 				return response;
 			}
 
-			var sql = "update AssetCrossReference set ExternalID = @ExternalID, @Fieldhash = @FieldHash where [uid] = @uid and [DataSource] = @DataSource and [Type] = @Type";
+			var sql = "update AssetCrossReference set ExternalID = @ExternalID, Fieldhash = @FieldHash where [uid] = @uid and [DataSource] = @DataSource and [Type] = @Type";
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
