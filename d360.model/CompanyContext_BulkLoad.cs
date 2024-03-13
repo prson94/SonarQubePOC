@@ -265,9 +265,13 @@ where LoadId = {LoadId} and Status = 1;
 
 if (@IsSucess = 0)
 begin
-	select top 1 @LoadErrorMessage = StatusMessage
+	select @LoadErrorMessage = substring(STRING_AGG(StatusMessage,';'),1,2000)
+	from 
+	(
+	select distinct StatusMessage
 	from LoadItem
-	where LoadId = {LoadId} and Status = 0;
+	where LoadId = {LoadId} and Status = 0
+	) a;
 end
 ";
 			}
@@ -767,7 +771,9 @@ end
 			}
 
 			string sqlduplicate = $@"
+declare @DuplicateRow nvarchar(max);
 declare @errormessage nvarchar(max);
+
 
 drop table if exists #tempdupassetuid;
 
@@ -779,7 +785,7 @@ and AssetUid is not null
 group by AssetUid
 having count(1) > 1;
 
-select @errormessage = STRING_AGG('[' + RowIndex + ']','#')
+select @DuplicateRow = STRING_AGG('[' + RowIndex + ']','#')
 from (
 select tt.AssetUid,STRING_AGG(lt.RowIndex,',') RowIndex
 from #tempdupassetuid tt
@@ -787,15 +793,23 @@ inner join LoadItem lt on loadid =  @ID and tt.AssetUid = lt.AssetUid
 and lt.AssetUid is not null
 group by tt.AssetUid) a;
 
-if (@errormessage is not null)
+if (@DuplicateRow is not null)
 begin
-	set @errormessage = 'Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.' + @errormessage;
+	set @errormessage = 'Key values match another asset under a different set of key fields or 2 or more concurrent requests contains same key field values.' + @DuplicateRow;
 
 	update lt
 	set status = 0,
 	StatusMessage =  substring(@errormessage,1,1000)
 	from LoadItem lt
 	where lt.loadid =  @ID and lt.AssetUid is not null;
+
+	update lt
+	set status = 0,
+	StatusMessage =  'Duplicate Asset.'
+	from LoadItem lt
+	inner join #tempdupassetuid tt on lt.AssetUid = tt.AssetUid
+	where lt.loadid =  @ID and lt.AssetUid is not null;
+
 end
 
 select @errormessage
