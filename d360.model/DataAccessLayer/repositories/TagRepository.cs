@@ -1273,8 +1273,15 @@ namespace d360.model.DataAccessLayer
 
 			await CompanyContext.Connection.ExecuteAsync(@"
 					--add new tags
-					INSERT INTO Tag (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+					declare @TagTypeId int;
+
+					select @TagTypeId = COALESCE(max(ID),1)
+					from TagType
+					where uid = '00000001-0000-0000-0000-B00000000011';
+
+					INSERT INTO Tag (Value,TagTypeId, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
 					SELECT DISTINCT B.Tag as Value, 
+									@TagTypeId,
 									GETUTCDATE(), 
 									@resourceId, 
 									GETUTCDATE(), 
