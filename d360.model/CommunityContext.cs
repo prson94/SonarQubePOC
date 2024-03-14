@@ -321,24 +321,24 @@ namespace d360.model
             if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID) && !skipCacheCheck)
             {
                 cs = Caching.GetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID);
-
-                return cs;
+				if (cs != null)
+				{
+					return cs;
+				}
             }
-            else
+            
+            dynamic res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
+                            inner join DatabaseServer s on s.ID = c.DatabaseServerID 
+                            where c.ID = @companyId", new { companyId = CurrentCompanyID });
+
+            cs = CompanyConnectionStringHelper.ConnectionString(CurrentCompanyID, res.Server, res.Username, res.Password);
+
+            if (!skipCacheCheck)
             {
-                dynamic res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
-                                inner join DatabaseServer s on s.ID = c.DatabaseServerID 
-                                where c.ID = @companyId", new { companyId = CurrentCompanyID });
-
-                cs = CompanyConnectionStringHelper.ConnectionString(CurrentCompanyID, res.Server, res.Username, res.Password);
-
-                if (!skipCacheCheck)
-                {
-                    Caching.SetItemInListByID(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
-                }
-
-                return cs;
+                Caching.SetItemInListByID(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
             }
+
+            return cs;
         }
 
         public bool ChangePassword(int resourceID, string oldPassword, string newPassword)
