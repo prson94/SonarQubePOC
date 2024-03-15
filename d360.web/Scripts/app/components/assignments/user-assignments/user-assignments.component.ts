@@ -22,6 +22,7 @@ import { CompleteAssignmentComponent } from '../complete-assignment/complete-ass
 export class UserAssignmentsComponent extends BaseComponent implements OnInit, OnDestroy {
 	@Input() userUid: string;
 	@Input() isAdminPage: boolean = false;
+	@Input() assignmentTileNotAvailable: boolean = false;
 	loadSub: Subscription;
 	workflowTypeName: string;
 
@@ -117,6 +118,11 @@ export class UserAssignmentsComponent extends BaseComponent implements OnInit, O
 		}
 
 		const params = { _pageSize: this.rowsPerPage, _pageNum: this.currentPageNumber, _order: this.sortField, _direction: this.sortOrder && this.sortOrder === SortOrder.Descending ? "desc" : "asc"  };
+
+		if(this.assignmentTileNotAvailable) {
+			params['_workflowTypeUid'] = this.urlWorkflowTypeUid;
+			params['_workflowVersion'] = this.urlWorkflowVersion;
+		}
 
 		this.isLoading = true;
 		this.loadSub =

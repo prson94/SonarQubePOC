@@ -35,9 +35,10 @@
 </div>
 
 <ng-container>
-	<div *ngIf="showAssignmentTile" class="row home-tiles">
+	<div [hidden]="!showAssignmentTile" class="row home-tiles">
 		<div class="col s12 l12">
-			<d3s-user-assignments></d3s-user-assignments>
+			<d3s-user-assignments
+				[assignmentTileNotAvailable]="!showAssignmentTile"></d3s-user-assignments>
 		</div>
 	</div>
 
