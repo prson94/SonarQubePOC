@@ -41,7 +41,7 @@
 		</div>
 		<div class="row" *ngIf="selectedNode.fields.form['@description'] != null">
 			<label class="ig-label" i18n>Description</label>
-			<div class="ig-value" [innerHTML]="selectedNode.fields.form['@description'] | safeHtml"></div>
+			<div class="ig-value ig-html ql-editor no-padding" [innerHTML]="selectedNode.fields.form['@description'] | safeHtml"></div>
 		</div>
 		<div class="row"
 			 *ngIf="selectedNode.fields?.form != null && selectedNode.fields?.form['@allowReassignResource'] != null">
