@@ -617,7 +617,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			Connection.Execute(query,
 			new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID }, transaction: trans, commandTimeout: timeout);
 
-			addMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+			addMeasurement(metrics, $"Update/Delete fields used by lookup values>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
 
 			#endregion
