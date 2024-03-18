@@ -96,7 +96,7 @@ namespace d360.model
 			return escapedValue;
 		}
 
-		private int DeleteAssetsByChunk(ApiExecution execution, int timeout, Dictionary<string, double> metrics, int step, DateTime dt, bool canHaveProcess, Stopwatch sw, PredicateType? predicateType, int beginItemNumber, int endItemNumber, int currentLoop, int retryCount, string querySuffix, SqlTransaction trans)
+		private int DeleteAssetsByChunk(AssetType at, ApiExecution execution, int timeout, Dictionary<string, double> metrics, int step, DateTime dt, bool canHaveProcess, Stopwatch sw, PredicateType? predicateType, int beginItemNumber, int endItemNumber, int currentLoop, int retryCount, string querySuffix, SqlTransaction trans)
 		{
 			#region Delete workflow items
 
@@ -561,6 +561,63 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 			addMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+			sw.Restart();
+
+			#endregion
+
+			#region Update/Delete fields used by lookup values
+
+			var query = $@"
+					declare @lookupFieldTypes table (FieldTypeId int, AllowMultipleValues bit, Type nvarchar(255),LookupDisplayFormat nvarchar(255), LookupObjectType nvarchar(255),LookupObjectID int)
+					declare @deletedObjectIds table (ObjectId int)
+
+					insert into @lookupFieldTypes (FieldTypeId, AllowMultipleValues, Type, LookupDisplayFormat, LookupObjectID, LookupObjectType)
+					select Id, AllowMultipleValues, Type, LookupDisplayFormat, LookupObjectID, LookupObjectType from dbo.FieldType where LookupObjectID = @lookupObjectId and LookupObjectType = @lookupObject
+
+					if (select count(*) from @lookupFieldTypes) = 0
+					begin
+						return
+					end
+
+					insert into @deletedObjectIds
+					select ObjectID from api.Execution e
+					inner join api.ExecutionDeletedAsset S on S.ExecutionID =e.ExecutionID
+					where {querySuffix}
+
+					DELETE F 
+					from dbo.Field f
+					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+					inner join @deletedObjectIds a on f.Value = a.ObjectId
+					where ft.AllowMultipleValues = 0
+
+					MERGE dbo.Field as F
+					using (
+						select F.ID, NewValue.value as NewValue, ft.*
+						from dbo.Field F
+						inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+							outer apply (
+							select STRING_AGG(value,',') as value from string_split(F.Value,',') 
+								left join @deletedObjectIds d on d.ObjectId = value
+							  where d.ObjectId is null
+							)
+						NewValue
+						where ft.AllowMultipleValues = 1
+					) as Source 
+					on F.ID = Source.Id
+					WHEN MATCHED AND Source.NewValue IS NULL
+						THEN DELETE
+					WHEN MATCHED AND Source.NewValue IS NOT NULL
+						THEN UPDATE 
+							Set 
+							Value = Source.NewValue,
+							FormattedValue =
+								utility.GetFormattedFieldLookupValueWithMultiple(Source.Type, Source.LookupDisplayFormat, Source.LookupObjectType, Source.LookupObjectID, Source.NewValue, Source.AllowMultipleValues);
+				";
+
+			Connection.Execute(query,
+			new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID }, transaction: trans, commandTimeout: timeout);
+
+			addMeasurement(metrics, $"Update/Delete fields used by lookup values>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
 
 			#endregion
@@ -1705,9 +1762,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									Connection.Execute(logSql, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-	if (intersectTypeID.HasValue && parentIntersectGuids != null && parentIntersectGuids.Count()>0)
-	{
-	string logSqlR = @"
+									if (intersectTypeID.HasValue && parentIntersectGuids != null && parentIntersectGuids.Count() > 0)
+									{
+										string logSqlR = @"
 		drop table if exists #PCRelationships;
 		create table #PCRelationships(Uid uniqueidentifier,Action nvarchar(100));
 		insert into #PCRelationships 
@@ -1804,8 +1861,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 		from	#tempintersectdetail i;
 ";
 
-		Connection.Execute(logSqlR, new { execution.Id, TableData = getRelationParentChildTable(parentIntersectGuids).AsTableValuedParameter("dbo.ParentIntersect") }, transaction: trans, commandTimeout: timeout);
-	}
+										Connection.Execute(logSqlR, new { execution.Id, TableData = getRelationParentChildTable(parentIntersectGuids).AsTableValuedParameter("dbo.ParentIntersect") }, transaction: trans, commandTimeout: timeout);
+									}
 									#endregion
 
 									sw.Restart();
@@ -2398,7 +2455,7 @@ where	T.ExecutionID = @ExecutionID
 													  new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 
-												step = DeleteAssetsByChunk(execution, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
+												step = DeleteAssetsByChunk(at, execution, timeout, metrics, step, dt, canHaveProcess, sw, predicateType, beginItemNumber, endItemNumber, currentLoop, chunkDeletionRetryCount, chunksQueryString, trans);
 												// Update success flag
 												Connection.Execute(
 													$"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{chunksQueryString} and S.AssetID is not null;",
@@ -2658,7 +2715,7 @@ where	T.ExecutionID = @ExecutionID
 				//if for any reason this failed we do not want whole workflow to stop
 			}
 		}
-		
+
 		#endregion
 	}
 }
