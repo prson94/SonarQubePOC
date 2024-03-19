@@ -753,13 +753,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			if (this.form.value.hasOwnProperty(p)) {
 				const field = this.fields.find((f) => f.FieldName === p);
 
-				let isAllowedNull = false;
-				// When action is edit, required is false and fieldtype is boolean then allowed null or undefined
-				if (field !== null && typeof field !== "undefined" && !field.Required && field.FieldType === "Boolean" && action === "edit") {
-					isAllowedNull = true;
-				}
-
-				if ((field === null || typeof field === "undefined") && !isAllowedNull) {
+				if (field === null || typeof field === "undefined") {
 					continue;
 				}
 
@@ -798,7 +792,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					}
 				}
 				else if (field.FieldType === 'Boolean') {
-					if (!this.form.value[p]) {
+					if (typeof this.form.value[p] === "undefined") {
 						this.form.value[p] = null;
 					}
 				}
