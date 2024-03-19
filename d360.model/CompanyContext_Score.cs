@@ -2081,16 +2081,18 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 
 									select OwningAssetUid,
 											EffectiveDate,
-											EvaluatedAssetUid
+											EvaluatedAssetUid,
+											RunDate
 									into #tempduplicate
 									from api.[ExecutionAssetResult] EAR
 									where success is null
 									group by OwningAssetUid,
 											EffectiveDate,
-											EvaluatedAssetUid
+											EvaluatedAssetUid,
+											RunDate
 									having count(1) > 1;
 
-									create clustered index cx_tempduplicate on #tempduplicate(OwningAssetUid,EvaluatedAssetUid,EffectiveDate)
+									create clustered index cx_tempduplicate on #tempduplicate(OwningAssetUid,EvaluatedAssetUid,EffectiveDate,RunDate)
 
 									update EAR
 									set		Success = 0,
@@ -2099,6 +2101,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 									inner join #tempduplicate AR on AR.OwningAssetUid = EAR.OwningAssetUid
 													and AR.EffectiveDate = EAR.EffectiveDate
 													and AR.EvaluatedAssetUid = EAR.EvaluatedAssetUid
+													and AR.RunDate = EAR.RunDate
 									where EAR.ExecutionID = @ExecutionID
 										and EAR.success is null;
 
@@ -2110,6 +2113,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 										inner join AssetResult AR on AR.OwningAssetUid = EAR.OwningAssetUid
 													and AR.EffectiveDate = EAR.EffectiveDate
 													and AR.EvaluatedAssetUid = EAR.EvaluatedAssetUid
+													and AR.RunDate = EAR.RunDate
 									where 
 										AE.Method = 'POST'
 										and EAR.ExecutionID = @ExecutionID
