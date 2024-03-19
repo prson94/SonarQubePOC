@@ -144,6 +144,9 @@ from	reporting.Global_FieldAudit i_p
 										break;
 								}
 								break;
+							case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
+								commandText = updateLookupValues();
+								break;
 							default:
 								commandText = "";
 								break;
@@ -931,5 +934,63 @@ insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
 		}
 
 		#endregion
+
+		string updateLookupValues()
+		{
+			return $@"
+				declare @assetTypeUid uniqueidentifier
+				declare @lookupObjectId int
+				declare @lookupObject nvarchar(max)
+
+				select @assetTypeUid = JSON_VALUE(Fields,'$.AssetTypeUid') from api.Execution where Id = @Id
+
+				select @lookupObjectId = ObjectID, @lookupObject = REPLACE(Object,'Type','') from AssetType where uid = @assetTypeUid
+
+				declare @lookupFieldTypes table (FieldTypeId int, AllowMultipleValues bit, Type nvarchar(255),LookupDisplayFormat nvarchar(255), LookupObjectType nvarchar(255),LookupObjectID int)
+
+				insert into @lookupFieldTypes (FieldTypeId, AllowMultipleValues, Type, LookupDisplayFormat, LookupObjectID, LookupObjectType)
+				select Id, AllowMultipleValues, Type, LookupDisplayFormat, LookupObjectID, LookupObjectType 
+				from 
+				dbo.FieldType where LookupObjectID = @lookupObjectId and LookupObjectType = @lookupObject
+
+
+				if (select count(*) from @lookupFieldTypes) = 0
+				begin
+					return
+				end
+
+				select distinct ObjectID
+				into #updatedObjectIds
+				from api.Execution e
+				inner join api.ExecutionAsset S on S.ExecutionID = e.ExecutionID
+				where e.Id = @Id
+
+				create nonclustered index ix_id on #updatedObjectIds (ObjectId)
+
+				UPDATE F
+				set F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(ft.Type, ft.LookupDisplayFormat, ft.LookupObjectType, ft.LookupObjectID, f.Value, ft.AllowMultipleValues)
+					from dbo.Field f
+					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+					inner join #updatedObjectIds a on f.Value = a.ObjectId
+					where ft.AllowMultipleValues = 0
+
+				select distinct id 
+				into #tempUpdateLookupFieldTable
+				from dbo.Field f
+				inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+				cross apply (select * from string_split(f.Value,','))vals
+				inner join #updatedObjectIds a on a.ObjectId = vals.value
+				where ft.AllowMultipleValues = 1
+
+				UPDATE F
+				set F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(ft.Type, ft.LookupDisplayFormat, ft.LookupObjectType, ft.LookupObjectID, f.Value, ft.AllowMultipleValues)
+					from dbo.Field f
+					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+					inner join #tempUpdateLookupFieldTable tempF on tempF.ID = f.ID
+					where ft.AllowMultipleValues = 1
+
+				drop table if exists #tempUpdateLookupFieldTable
+				drop table if exists #updatedObjectIds;";
+		}
 	}
 }
