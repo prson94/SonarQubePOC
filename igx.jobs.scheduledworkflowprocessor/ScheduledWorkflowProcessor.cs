@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.core.enums;
+﻿using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.extensions;
 using d360.extensions.info;
@@ -14,6 +13,7 @@ using System.Linq;
 
 namespace igx.jobs.scheduledworkflowprocessor
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class ScheduledWorkflowProcessor : BaseWebJob
 	{
         const string FUNCTION_NAME = "Workflow_ProcessSchedule";

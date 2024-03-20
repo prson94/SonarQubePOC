@@ -10,6 +10,7 @@ using System.Linq;
 
 namespace igx.jobs.databaseindexrebuilder
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class DatabaseIndexRebuilder : BaseWebJob
 	{
         const string FUNCTION_NAME = "DatabaseTask_IndexRebuilder";

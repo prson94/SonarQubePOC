@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.databasecleaner
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class DatabaseCleaner : BaseWebJob
 	{
 		const string FUNCTION_NAME = "DatabaseCleaner";

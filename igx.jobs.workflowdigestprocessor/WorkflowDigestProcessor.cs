@@ -1,5 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.extensions;
+﻿using d360.extensions;
 using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
@@ -11,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.workflowdigestprocessor
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class WorkflowDigestProcessor: BaseWebJob
 	{
 		const string FUNCTION_NAME = "Workflow_DigestProcessor";

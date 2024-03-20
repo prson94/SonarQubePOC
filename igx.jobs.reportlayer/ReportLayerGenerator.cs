@@ -12,6 +12,7 @@ using System.Linq;
 
 namespace igx.jobs.reportlayer
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class ReportLayerGenerator : BaseWebJob
 	{
         const string FUNCTION_NAME = "ReportLayerGenerator";

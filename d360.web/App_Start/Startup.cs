@@ -116,8 +116,8 @@ namespace d360.web
 					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY);
-						i.Instance.SubAccount = Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT);
+						i.Instance.ApiKey = Config.GetValue<string>("MandrillApiKey");
+						i.Instance.SubAccount = Config.GetValue<string>("MandrillSubAccount");
 					});
 				builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
 				builder.RegisterType<extensions.events.AzureQueueSource>().As<IQueueSource>()

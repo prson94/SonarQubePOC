@@ -32,8 +32,8 @@ namespace igx.jobs.scheduledworkflowprocessor
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, MandrillMailProvider>(s => {
 						return new MandrillMailProvider { 
-							ApiKey = context.Configuration[constants.MAIL_API_KEY],
-							SubAccount = context.Configuration[constants.MAIL_SUB_ACCOUNT]
+							ApiKey = context.Configuration["MandrillApiKey"],
+							SubAccount = context.Configuration["MandrillSubAccount"]
 						};
 					});
 				});
