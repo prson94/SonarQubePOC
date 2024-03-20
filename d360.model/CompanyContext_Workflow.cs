@@ -1183,7 +1183,7 @@ namespace d360.model
 							FormattedValue = @formattedValue,
 							UpdatedBy = @updatedBy,
 							UpdatedOn = GETUTCDATE()
-						where ID = @fieldId and value <> @value
+						where ID = @fieldId and ((value is not null and value <> @value) or (value is null and formattedValue is not null and formattedValue <> @value))
 					end
 					else
 					begin
