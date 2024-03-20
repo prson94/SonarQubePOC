@@ -78,8 +78,8 @@
 													formTitle
 													}}
 												</label>
-												<div class="ig-value" [innerHTML]="
-														formDescription
+												<div class="ig-value ig-html ql-editor no-padding" [innerHTML]="
+														formDescription | safeHtml
 													"></div>
 											</div>
 										</div>
@@ -91,8 +91,8 @@
 													formTitle
 														}}
 													</label>
-													<div class="ig-value" [innerHTML]="
-														formDescriptionRaw
+													<div class="ig-value ig-html ql-editor no-padding" [innerHTML]="
+														formDescriptionRaw | safeHtml
 													"></div>
 												</div>
 											</div>

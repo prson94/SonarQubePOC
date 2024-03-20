@@ -43,6 +43,6 @@
 	</div>
 	<div class="row">
 		<label class="ig-label" i18n>Form Description</label>
-		<div i18n class="ig-value" [innerHtml]="step.Fields?.form?.['@description'] | safeHtml"></div>
+		<div i18n class="ig-value ig-html ql-editor no-padding" [innerHtml]="step.Fields?.form?.['@description'] | safeHtml"></div>
 	</div>
 </ng-container>
