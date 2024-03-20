@@ -99,30 +99,31 @@ namespace d360.model.DataAccessLayer.repositories
 			}
 		}
 
-		public static string GetPathJoinSql(FieldType fieldType)
+		public static string GetPathJoinSql(FieldType fieldType, int? assetTypeID)
 		{
-			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
-			if (pathDefinition?.AssetTypeUid != null)
+			if (assetTypeID != null)
 			{
 				return $@"
 					outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
-					         FROM (
-					         SELECT *
-					           FROM (
-					           SELECT X.p.value('./@level', 'int') as L,
-					                  X.p.value('./@position', 'int') as P,
-					                  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
-					                  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
-					             FROM Node.Segments.nodes('/path/segment') X(p)
-					           ) s
-					           JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = '{pathDefinition.AssetTypeUid}'
-					         ) segmentPath
-					      )F{fieldType.ID}(FormattedValue)
+							 FROM (
+							 SELECT *
+							   FROM (
+							   SELECT X.p.value('./@level', 'int') as L,
+									  X.p.value('./@position', 'int') as P,
+									  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+									  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+								 FROM AssetPath atp
+								 cross apply atp.Segments.nodes('/path/segment') X(p)
+								 where atp.id = a.id 
+							   ) s
+							 where AssetTypeId = {assetTypeID}
+							 ) segmentPath
+						  )F{fieldType.ID}(FormattedValue)
 				";
 			}
-			
 			return "";
 		}
+
 
 		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string idSql = "A.[ID]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null, SystemObjects objectType = SystemObjects.Artifact, bool CreateTempTableForFieldFromRelationship = false, List<(int, string)> fieldSorts = null, List<FieldTypesReferenceListQry> referenceListTempQryList = null, List<string> temptablelist = null)
 		{
@@ -629,13 +630,26 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else if (f.Type == "Score")
 				 {
+					 Guid? AllocationUID = null;
+
+					 if (f.AssetTypeID != null)
+					 {
+						 var sql = $@"
+									select top 1 al.Uid
+									from assettype att
+									inner join metrics.Allocation Al on Al.assettypeuid = att.uid and Al.ScoreType = {f.ScoreType} and Al.OverrideName is null
+									where att.id = @AssetTypeID
+								 ";
+						 AllocationUID = CompanyContext.Query<Guid?>(sql, new { f.AssetTypeID }, ApiTimeout).FirstOrDefault();
+					 }
 					 var sqlscore = $@"(select top 1 S.[Value],
 										case when S.Value is null then ' ' 
 										else cast(cast((round(S.[Value] * 100, 1)) as float) as nvarchar) + '%'
 										end as FormattedValue
 										from metrics.Score S
-										inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {f.ScoreType} and Al.OverrideName is null
-										where S.AssetUid = A.Uid and S.EndDate is null)";
+										where S.AssetUid = A.Uid and S.EndDate is null 
+										{(AllocationUID != null ? $" and S.AllocationUid = '{AllocationUID}'" : " and 1 = 2")}
+										)";
 
 					 fieldJoins.Add($"{joinPrefix} apply {sqlscore} {tableAlias}", f.ID.ToString());
 				 }
@@ -799,7 +813,8 @@ namespace d360.model.DataAccessLayer.repositories
 								 selectSource = $@"DFColor{tableAlias}.color
 									 FROM #TempLookUp{f.LookupObjectType}{f.LookupObjectID} DFColor{tableAlias}
 									 WHERE DFColor{tableAlias}.Object = '{f.LookupObjectType}' and DFColor{tableAlias}.ObjectID = {f.DefaultValue}";
-							 } else
+							 } 
+							 else
 							 {
 								selectSource = $@"COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
 									FROM AssetType AT
@@ -829,10 +844,15 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else if (f.Type == "Path")
 				 {
-					 string pathJoinStatement = GetPathJoinSql(f);
-					 if (!string.IsNullOrEmpty(pathJoinStatement))
+					 var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(f.Definition);
+					 if (pathDefinition?.AssetTypeUid != null)
 					 {
-						 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
+						 int? assetTypeID = CompanyContext.Filter<AssetType>(i => i.uid == pathDefinition.AssetTypeUid).SingleOrDefault()?.ID;
+						 string pathJoinStatement = GetPathJoinSql(f, assetTypeID);
+						 if (!string.IsNullOrEmpty(pathJoinStatement))
+						 {
+							 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
+						 }
 					 }
 				 }
 				 else
@@ -848,11 +868,11 @@ namespace d360.model.DataAccessLayer.repositories
 			);			
 		}
 
-		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery)
-		{			
+		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery, ref bool AddOwnerShipDataIntoTemp)
+		{
 			bool useTypeLevelDefaultSorts = false;
-			
-			if(assetType.Class == AssetTypeClass.Reference)
+			bool IsOwnershipOrder = false;
+			if (assetType.Class == AssetTypeClass.Reference)
 			{
 				useTypeLevelDefaultSorts = true;
 			}
@@ -932,7 +952,13 @@ namespace d360.model.DataAccessLayer.repositories
 										orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + orderBy;
 										return;
 									}
-
+									else
+									{
+										if (field.Type == "OwnershipLookup")
+										{
+											IsOwnershipOrder = true;
+										}
+									}
 									if (field.Type == "Link")
 									{
 										valueColumn = "Value";
@@ -1128,6 +1154,7 @@ namespace d360.model.DataAccessLayer.repositories
 				}
 
 			}
+			AddOwnerShipDataIntoTemp = IsOwnershipOrder;
 		}
 
 		protected string getFieldDataTypeWrapper(FieldType ft)

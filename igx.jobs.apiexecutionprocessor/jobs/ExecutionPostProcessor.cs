@@ -506,8 +506,9 @@ from api.Execution e
 	inner join api.ExecutionAsset ea on ea.ExecutionID = e.ExecutionID
 	inner join api.ExecutionField ef on e.ExecutionID = ef.ExecutionID
 	inner join Field f on f.AssetID = ea.AssetID and f.FieldTypeID = ef.FieldTypeID
+	inner join Field fu on fu.ID = f.ID 
 	inner join FieldType ft on ft.ID = f.FieldTypeID
-where e.Id = @id and f.UpdatedOn > e.StartedOn
+where e.Id = @id and fu.UpdatedOn > e.StartedOn;
 
 {INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl

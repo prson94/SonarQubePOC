@@ -278,13 +278,23 @@ namespace d360.model
 
 							{whenQueryData.TempTableQuery}
 
+							drop table if exists #tempdatarule;
+					
+							create table #tempdatarule(AssetId Bigint);
+							create clustered index cx_tempdatarule on #tempdatarule(AssetID);
+					
+							insert into #tempdatarule (AssetID)
+							select distinct AssetID from ({whenQueryData.SqlQuery}) a;
+
+							update T
+							set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+							from [dbo].[ResponsibilityRuleResultAsset] as T
+							inner join #tempdatarule S on S.AssetID = T.AssetID
+							where T.RuleID = @ruleId;
+
 							merge [dbo].[ResponsibilityRuleResultAsset] as T
-									using	(
-												{whenQueryData.SqlQuery}
-											) as S
+									using	#tempdatarule S
 									on		@ruleId = T.RuleID and S.AssetID = T.AssetID
-									when	matched then
-											update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 									when	not matched by target then
 											insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
 									when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
@@ -292,7 +302,10 @@ namespace d360.model
 									output  $action as ActionType, 
 											iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
-									into #changes;";
+									into #changes;
+
+									drop table if exists #tempdatarule;
+									";
 					whenQueryData.DbParameters.Add("ruleId", rule.ID);
 					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: timeout);
 
@@ -300,17 +313,26 @@ namespace d360.model
 					if (thenSql != null && thenSql.Length > 0)
 					{
 						sqlToExecute = $@"
+							drop table if exists #tempdataruleThen;
+					
+							select *
+							into #tempdataruleThen
+							from ({thenSql}) a;
+
+							create clustered index cx_tempdataruleThen on #tempdataruleThen(RuleID,SecurityAsset,SecurityAssetID);
+					
 							merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
-									using	(
-												{thenSql}
-											) as S
+									using	#tempdataruleThen as S
 									on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
 									when	matched then
 											update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 									when	not matched by target then
 											insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
 									when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-											delete;";
+											delete;
+							
+							drop table if exists #tempdataruleThen;
+						";
 						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
 					}
 
@@ -399,18 +421,27 @@ group by A.Uid";
 
 					//merge into the asset table 
 					sqlToExecute = @"
+							drop table if exists #tempdataruleAT;
+
+							create table #tempdataruleAT(AssetTypeID int,RuleID int);
+							create clustered index cx_tempdataruleAT on #tempdataruleAT(AssetTypeID,RuleID);
+
+							insert into #tempdataruleAT (AssetTypeID, RuleID)
+							select	T.ID as AssetTypeID,		
+									R.ID as RuleID
+							from	AssetType T
+							inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
+							where	R.ID = @ruleId;
+
+							update T
+							set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+							from [dbo].[ResponsibilityRuleResultAsset] as T
+							inner join #tempdataruleAT S on S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
+							where T.ID = @ruleId;
+
 							merge   [dbo].[ResponsibilityRuleResultAsset] as T
-							using	(
-									select	T.ID as AssetTypeID,		
-											R.ID as RuleID
-									from	AssetType T
-											inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
-										where 
-												R.ID = @ruleId
-									) as S
+							using	#tempdataruleAT as S
 							on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
-							when	matched then
-									update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 							when	not matched by target then
 									insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
 							when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
@@ -418,22 +449,33 @@ group by A.Uid";
 							output  $action as ActionType, 
 									iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
 									iif($action = 'DELETE', deleted.AssetTypeID, inserted.AssetTypeID)
-							into #changes;";
+							into #changes;
+
+							drop table if exists #tempdataruleAT";
 					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
 					//merge into the resource table
 					sqlToExecute = $@"
+							drop table if exists #tempdataruleThenAT;
+					
+							select *
+							into #tempdataruleThenAT
+							from ({thenSql}) a;
+
+							create clustered index cx_tempdataruleThenAT on #tempdataruleThenAT(RuleID,SecurityAsset,SecurityAssetID);
+
 							merge   [dbo].[ResponsibilityRuleResultSecurityAsset] as T
-							using	(
-									{thenSql}
-									) as S
+							using	#tempdataruleThenAT as S
 							on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
 							when	matched then
 									update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 							when	not matched by target then
 									insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
 							when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-									delete;";
+									delete;
+
+							drop table if exists #tempdataruleThenAT;
+							";
 					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
 
 					// Get impacted assets, for rescoring purposes.
@@ -896,8 +938,45 @@ group by A.Uid";
 
 		public void ClearInvalidRelationRuleResults()
 		{
-			Connection.Execute("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
-			Connection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
+			string sql = $@"
+							drop table if exists #tempRuleDelete;
+							create table #tempRuleDelete (RuleID int)
+							create clustered index icx_tempRuleDelete on #tempRuleDelete(RuleID);
+
+							insert into #tempRuleDelete
+							select distinct R.RuleID
+							from [dbo].[ResponsibilityRuleResultAsset]  R
+							left join ResponsibilityTypeRelationRule RRR on RRR.ID = R.RuleID
+							where RRR.ID is null and R.RuleID <> 0;
+							
+							if exists (select 1 from  #tempRuleDelete)
+							begin
+								delete R
+								from [dbo].[ResponsibilityRuleResultAsset] R
+								inner join #tempRuleDelete rd on rd.RuleID = R.RuleID;
+							end
+						   ";
+			Connection.Execute(sql, commandTimeout: 7200);
+
+			string securitysql = $@"
+							drop table if exists #tempSecuRuleDelete;
+							create table #tempSecuRuleDelete (RuleID int)
+							create clustered index icx_tempSecuRuleDelete on #tempSecuRuleDelete(RuleID);
+
+							insert into #tempSecuRuleDelete
+							select distinct R.RuleID
+							from [dbo].[ResponsibilityRuleResultSecurityAsset]  R
+							left join ResponsibilityTypeRelationRule RRR on RRR.ID = R.RuleID
+							where RRR.ID is null and R.RuleID <> 0;
+							
+							if exists (select 1 from  #tempSecuRuleDelete)
+							begin
+								delete R
+								from [dbo].[ResponsibilityRuleResultSecurityAsset] R
+								inner join #tempSecuRuleDelete rd on rd.RuleID = R.RuleID;
+							end
+						   ";
+			Connection.Execute(securitysql, commandTimeout: 7200);
 		}
 		
 		public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
@@ -1401,9 +1480,10 @@ where	EG.Success is null
 			}
 
 			whenSql.Append($@"
-		from	Asset A 
-		inner join AssetPath P on P.ID = A.ID and A.AssetTypeID =  @AssetTypeIDValue
-		inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+		from assettype att
+		inner join Asset A on a.assettypeid = att.id and att.ID =  @AssetTypeIDValue
+		{(includeUid ? "inner join AssetPath P on P.ID = A.ID" : "")}
+		{(includeName ? "inner join AssetDisplayValue ADV on ADV.AssetID = A.ID" : "")}
 		");
 
 			int fCount = 1;
@@ -1415,6 +1495,7 @@ where	EG.Success is null
 				{
 					if (w.CheckType == "F")
 					{
+						string clausestring = (fCount == 1 ? " where " : " and ");
 						if (w.FieldTypeID > 0)
 						{
 							string fieldWhere = "";
@@ -1436,67 +1517,86 @@ where	EG.Success is null
 								if (whenFieldType.AllowMultipleValues)// multiselect list
 								{
 									fieldWhere =
-										$" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and {dbParameterName} in (select value from string_split(coalesce(F.Value, {dbParameterDefaultValue}),','))";
+										$" {clausestring} f.FieldTypeID = {w.FieldTypeID} and {dbParameterName} in (select value from string_split(coalesce(F.Value, {dbParameterDefaultValue}),','))";
 								}
 								else if (whenFieldType.Type == "Text")
 								{
 									switch (w.Operator)
 									{
 										case Operator.NotEquals:
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) != {dbParameterName}";
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) != {dbParameterName}";
 											break;
 										case Operator.Contains:
 											value = $"%{w.Value.Trim()}%";
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.NotContains:
 											value = $"%{w.Value.Trim()}%";
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) NOT LIKE {dbParameterName}";
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) NOT LIKE {dbParameterName}";
 											break;
 										case Operator.StartsWith:
 											value = $"{w.Value}%";
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.EndsWith:
 											value = $"%{w.Value}";
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
+											fieldWhere = $"  {clausestring}  f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) LIKE {dbParameterName}";
 											break;
 										case Operator.Populated:
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is not null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))>0)";  // all field types plus single select list
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is not null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))>0)";  // all field types plus single select list
 											break;
 										case Operator.NotPopulated:
-											fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))=0)";  // all field types plus single select list
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and (coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) is null or LEN(coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}))=0)";  // all field types plus single select list
 											break;
 										default:
-											fieldWhere = $" where ff.AssetId is null and  f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = {dbParameterName}";  // all field types plus single select list
+											fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = {dbParameterName}";  // all field types plus single select list
 											break;
 									}
 
 								}
 								else // all other field types including single select list
 								{
-									fieldWhere = $" where ff.AssetId is null and f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = '{w.Value}'";  // all field types plus single select list
+									fieldWhere = $" {clausestring} f.FieldTypeID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, {dbParameterDefaultValue}) = '{w.Value}'";  // all field types plus single select list
 								}
 
-								whenTempTables.Append($@"
-								drop table if exists #filtered_field{fCount};
-								create table #filtered_field{fCount}(AssetID Bigint);
-								create clustered index icx_filtered_field{fCount} on #filtered_field{fCount}(AssetID);");
+								if (fCount == 1)
+								{
+									whenTempTables.Append($@"
+								drop table if exists #filtered_field;
+								create table #filtered_field(AssetID Bigint);
+								create clustered index icx_filtered_field on #filtered_field(AssetID);");
 
-								dbArgs.Add(dbParameterName, value);
-								dbArgs.Add(dbParameterDefaultValue, defaultValue);
-								//load filtered field data into temp table
-								whenTempTables.Append($@"
+									dbArgs.Add(dbParameterName, value);
+									dbArgs.Add(dbParameterDefaultValue, defaultValue);
+									//load filtered field data into temp table
+									whenTempTables.Append($@"
 
-									insert into #filtered_field{fCount}
+									insert into #filtered_field
 									select f.AssetID
 									from Field f
-									left join #filtered_field{fCount} ff on ff.AssetId = f.AssetID
 									{fieldWhere}");
 
-								//filter by using inner join 
+									whenSql.AppendLine($"inner join #filtered_field{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
+								}
+								else
+								{
 
-								whenSql.AppendLine($"inner join #filtered_field{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
+									dbArgs.Add(dbParameterName, value);
+									dbArgs.Add(dbParameterDefaultValue, defaultValue);
+									//load filtered field data into temp table
+									whenTempTables.Append($@"
+
+									 delete ff
+									 from #filtered_field ff
+									 left join Field f on f.AssetId = ff.AssetID {fieldWhere}
+									 where f.AssetId is null;
+
+									");
+
+
+
+								}
+
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
@@ -1512,19 +1612,15 @@ where	EG.Success is null
 							$@"( 
 								{(w.Operator == Operator.NotIn ? "Not" : "")} exists(
 										SELECT TargetAsset.Uid as TargetAssetId
-										FROM  
-											[Intersect] I
-											inner join [Asset] TargetAsset on TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID} and
-											(I.ObjectAssetId = TargetAsset.Id or I.SubjectAssetId = TargetAsset.Id)
-										WHERE 
-											I.IntersectTypeID = {w.IntersectTypeID}			   								   
-											and 
-											((I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id) 
-											or 
-											(I.ObjectAssetId = A.Id and I.SubjectAssetId = TargetAsset.Id))
+										FROM [Asset] TargetAsset
+										left join [Intersect] Isubj on Isubj.IntersectTypeID = {w.IntersectTypeID} and Isubj.SubjectAssetId = A.Id and Isubj.ObjectAssetId = TargetAsset.Id
+										left join [Intersect] Iobj on Iobj.IntersectTypeID = {w.IntersectTypeID} and Iobj.ObjectAssetId = A.Id and Iobj.SubjectAssetId = TargetAsset.Id
+										WHERE TargetAsset.Object = '{w.TargetObject}' and TargetAsset.ObjectID = {w.TargetObjectID}
+										and (Isubj.IntersectTypeID is not null or Iobj.IntersectTypeID is not null)
 										)
 							)"
 							);
+
 						rCount++;
 					}
 				}
@@ -1544,7 +1640,6 @@ where	EG.Success is null
 				DeclareVariable = declareVar.ToString()
 			};
 		}
-
 		public string GetUserPermissionQuery(string tempTableName = "PermissiondAssets", string userParam = "ResourceID", string typeParam = "AssetTypeID")
 		{
 			return $@"drop table if exists #{tempTableName};

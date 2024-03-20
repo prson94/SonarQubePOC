@@ -410,6 +410,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			bool IsModelPolicyHasLevelFilter = false;
 			var simpleFilterTempTables = new StringBuilder();
 			List<string> tempTablelist = new List<string>();
+			bool addOwnerShipDataIntoTemp = false;
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -916,10 +917,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			if (includeOwnershipLookup && ownershipFieldTypes.Any())
 			{
 				populateOwnershipLookupTableSQL = @"
-					declare @id int = (select top 1 id from assettype where id = @assettypeid),
-							@IsAssetNotZero int = 0,
-							@IsAssetZero int = 0;
-
+					declare @id int = (select top 1 id from assettype where id = @assettypeid);
 
 					drop table if exists #OwnershipLookupAssets;
 					create table #OwnershipLookupAssets (
@@ -937,31 +935,24 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					);
 					create clustered index cix_OwnershipLookupAssetId on #OwnershipLookupAssets (AssetId);
 
-					insert into #OwnershipLookupAssets
-						SELECT [AssetID]
-							  ,[ResponsibilityTypeID]
-							  ,[ResponsibilityTypeName]
-							  ,[ResourceName]
-							  ,[SecurityAsset]
-							  ,[SecurityAssetName]
-							  ,[Context]
-							  ,[ResourceId]
-							  ,[ResourceUid]
-							  ,[SecurityAssetId]
-							  ,[SecurityAssetUid]
-						FROM [dbo].[ResponsibilityDetailByAssetTypeID](@id) rd
-						where IsVisible = 1
-						option(recompile);
-
-						select @IsAssetZero = count(1) 
-						from (
-						select top 1 AssetId from #OwnershipLookupAssets where AssetId = 0
-						) a;
-
-						select @IsAssetNotZero = count(1) 
-						from (
-						select top 1 AssetId from #OwnershipLookupAssets where AssetId != 0
-						) a;
+					if (@AddOwnerShipDataIntoTemp = 1)
+					begin
+						insert into #OwnershipLookupAssets
+							SELECT [AssetID]
+								  ,[ResponsibilityTypeID]
+								  ,[ResponsibilityTypeName]
+								  ,[ResourceName]
+								  ,[SecurityAsset]
+								  ,[SecurityAssetName]
+								  ,[Context]
+								  ,[ResourceId]
+								  ,[ResourceUid]
+								  ,[SecurityAssetId]
+								  ,[SecurityAssetUid]
+							FROM [dbo].[ResponsibilityDetailByAssetTypeID](@id) rd
+							where IsVisible = 1
+							option(recompile);
+					end
 					";
 
 				List<string> ownershipJoins = new List<string>();
@@ -1046,7 +1037,9 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
 				}
 			}
-			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams, fieldsUsedInMainQuery);
+			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams, fieldsUsedInMainQuery, AddOwnerShipDataIntoTemp: ref addOwnerShipDataIntoTemp);
+
+			dbArgs.Add("@AddOwnerShipDataIntoTemp", addOwnerShipDataIntoTemp ? 1 : 0);
 
 			var OrderMainQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
 
@@ -1406,18 +1399,19 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								select  A.ID
 								from    Asset A  
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
-								where A.AssetTypeID = @assettypeid and @IsAssetZero = 1 and tfa.AssetId is null 
-								and exists (select 1 from #OwnershipLookupAssets ola 
-											where ola.assetid = 0
+								where A.AssetTypeID = @assettypeid and tfa.AssetId is null 
+								and exists (select 1 from Test_ResponsibilityOwnershipField ola 
+											where ola.assetid = 0 and ola.AssetTypeID = @assettypeid
 											and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
 
 						simpleFilters.Add(simpleFilterOwnership);
 
 						string simpleFilterOwnership2 = $@"
 								select distinct ola.assetid
-								from    #OwnershipLookupAssets ola  
+								from    Asset a
+								inner join Test_ResponsibilityOwnershipField ola on a.id = ola.AssetID and ola.assetid <> 0  
 								left join #TempFilteredAssets tfa on tfa.AssetId = ola.assetid
-								where tfa.AssetId is null and @IsAssetNotZero = 1 and ola.assetid <> 0
+								where A.AssetTypeID = @assettypeid and tfa.AssetId is null and ola.assetid <> 0
 								and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))})";
 
 						simpleFilters.Add(simpleFilterOwnership2);
@@ -1921,6 +1915,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								 {baseSQL} 
 								 {countSQL} 
 								 {(includeParent ? parentApplyTempTableSQL : "")} 
+								 {(!string.IsNullOrWhiteSpace(populateOwnershipLookupTableSQL) ? "exec [Test_GenerateOwnerShipDataForGetAsset] @AssetTypeID" : "")}
 								 {sql} 
 								  OPTION(RECOMPILE)";
 

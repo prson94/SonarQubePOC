@@ -1,0 +1,92 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="PuneetGupta" id="View.dbo.ResponsibilityOwnershipField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	create or alter view [dbo].[ResponsibilityOwnershipField]
+	AS
+		select	
+				RT.Name as ResponsibilityTypeName,
+				rasset.AssetID,
+				rasset.AssetTypeID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+				r.ApplyToType,
+				r.IsVisible,
+				RES.uid as SecurityAssetUid
+		from	responsibilitytyperelationrule r
+				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+				inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+				inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+				inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
+		where 	RES.State=1
+		union all
+		select	
+				RT.Name as ResponsibilityTypeName,
+				rasset.AssetID,
+				rasset.AssetTypeID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				G.Name as SecurityAssetName,
+				r.ApplyToType,
+				r.IsVisible,
+				secasset.uid as SecurityAssetUid
+		from	responsibilitytyperelationrule r
+				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
+				inner join [ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+				inner join [ResponsibilityType] RT on RT.ID = r.ResponsibilityTypeID
+				inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+				inner join [AssetType] attg on attg.class = 12
+				inner join [Asset] secasset ON secasset.AssetTypeID = attg.ID AND secasset.ObjectID = rresource.SecurityAssetID
+				inner join ResourceGroup RG on RG.GroupID = G.ID
+				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+		where 	RES.State=1
+		union all
+		select	
+				RT.Name as ResponsibilityTypeName,
+				oride.AssetID,
+				a.assettypeid as AssetTypeID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+				cast(0 as bit) as ApplyToType,
+				cast(1 as bit) as IsVisible,
+				RES.uid as SecurityAssetUid
+		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+				inner join [dbo].asset a on (a.id = oride.assetID)
+				inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+		union all
+		select	
+				RT.Name as ResponsibilityTypeName,
+				oride.AssetID,
+				a.assettypeid as AssetTypeID,
+				RES.FirstName + ' ' + RES.LastName as ResourceName,
+				G.[Name] as SecurityAssetName,
+				cast(0 as bit) as ApplyToType,
+				cast(1 as bit) as IsVisible,
+				secasset.uid as SecurityAssetUid
+		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
+				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+				inner join [dbo].asset a on (a.id = oride.assetID)
+				inner join [dbo].assettype att on (att.id = a.assettypeid)
+				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
+				inner join [AssetType] attg on attg.class = 12
+				inner join [Asset] secasset ON secasset.AssetTypeID = attg.ID  AND secasset.ObjectID = oride.SecurityAssetID
+				inner join ResourceGroup RG on RG.GroupID = G.ID
+				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
