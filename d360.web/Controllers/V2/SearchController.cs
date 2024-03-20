@@ -1080,7 +1080,7 @@ namespace d360.web.Controllers.V2
 
 			if (Company.CurrentResourceIsAdmin)
 			{
-				limits.HideData3SixtyUsers = await GetHideData3SixtyUsers();//GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
+				limits.HideData3SixtyUsers = await GetHideData3SixtyUsers();
 			}
 			else
 			{
