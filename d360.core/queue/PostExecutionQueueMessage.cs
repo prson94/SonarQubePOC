@@ -5,7 +5,8 @@ public enum PostExecutionQueueMessageAction
 	History = 1,
 	Indexing,
 	Scoring,
-	Workflow
+	Workflow,
+	UpdateAssetLookupValues
 }
 
 public class PostExecutionQueueMessage

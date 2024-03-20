@@ -92,7 +92,7 @@ namespace d360.model
 		internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
 
-        public string ApiExecutionFieldTable { get; set; } = "api.executionfield"; // table to use to load field values from
+        public const string ApiExecutionFieldTable = "api.executionfield"; // table to use to load field values from
 
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
 
