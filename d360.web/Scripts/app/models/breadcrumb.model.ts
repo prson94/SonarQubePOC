@@ -16,7 +16,8 @@ export class Breadcrumb {
     parentID: number;
     parentUrl: string;
     show: boolean = true;
-    preLoadedTypeAhead: SearchResult[] = [];
+	preLoadedTypeAhead: SearchResult[] = [];
+	showAsLink: boolean = true;
 
     constructor(text?: string,
                 link?: string,

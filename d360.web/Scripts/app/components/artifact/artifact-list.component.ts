@@ -132,9 +132,12 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 		this.currentAreaNameSubscription =
 			this.headerBreadcrumbService
 				.getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
-			.subscribe((result) => {
+				.subscribe((result) => {
 					this.currentAreaName = result;
-					this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
+					const rootBreadcrumb = new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle);
+					rootBreadcrumb.showAsLink = false;
+
+					this.headerBreadcrumbService.showBreadcrumb(rootBreadcrumb);
 					this.artifactTypeHierarchy.forEach((x) => {
 						this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
 							x.Name,
@@ -154,13 +157,13 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.assetTypeApiModel.HasDashboards });
 						this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.assetTypeApiModel.ID, this.assetTypeApiModel.Name, null, true, this.assetTypeApiModel.HasV2Workflows, this.assetTypeApiModel.uid));
 						this.secondaryNavService.setCurrentArea(this.assetTypeApiModel.Name, res, $localize`Assets`);
-						if (this.assetTypeApiModel.HasV2Workflows) {							
+						if (this.assetTypeApiModel.HasV2Workflows) {
 							this.secondaryNavService.showItem(
 								new SecondaryNavItem($localize`Assignments`,
 									'assetTypeAssignments',
 									['fa-usb'],
 									`/assets/${this.baseAssetTypeUid}/assignments`)
-							);							
+							);
 						}
 					});
 					this.navigationItemsSubs.push(breadCrumbsSub);

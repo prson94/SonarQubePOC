@@ -2,7 +2,7 @@
      (mouseleave)="out(treePanel,searchPanel,$event)">
     <a (click)="navigateToLink(breadcrumb.link)"
        class="breadcrumb"
-       [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
+       [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link), 'hide-link-styles' : !breadcrumb.showAsLink}"
        [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
         <span class="breadcrumb-text"
               [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
