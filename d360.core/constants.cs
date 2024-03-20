@@ -19,8 +19,6 @@ namespace d360.core
         public static readonly int COMPANY_BULK_LOAD_MAX_ROWS = int.Parse(ConfigurationManager.AppSettings["BulkLoadMaxRows"]);
         public static readonly string COMPANY_STYLES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_STYLES_FOLDER}/";
         public static readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
-        public static readonly string MAIL_API_KEY = "MandrillApiKey";
-        public static readonly string MAIL_SUB_ACCOUNT = "MandrillSubAccount";
         public const string TITLE_PREFIX = "Data360";
         public const string COMPANY = "Precisely.";
         public const string PRODUCT = "Data360 Govern";

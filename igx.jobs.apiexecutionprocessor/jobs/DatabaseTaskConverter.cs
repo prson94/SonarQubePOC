@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class DatabaseTaskConverter : BaseTaskWebJob
 	{
 		const string FUNCTION_NAME = "DatabaseTaskConverter";

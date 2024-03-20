@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace igx.functions.consumption
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class DisplayValueChecker: BaseWebJob
     {
 		const string FUNCTION_NAME = "DisplayValueChecker";

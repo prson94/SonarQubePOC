@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.responsibilityruleprocessor
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class ResponsibilityRuleProcessor : BaseWebJob
 	{
 		const string FUNCTION_NAME = "ResponsibilityRules_ProcessScheduled";

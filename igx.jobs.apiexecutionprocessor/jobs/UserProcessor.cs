@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class UserProcessor : BaseWebJob
 	{
 		private const string FUNCTION_NAME = "UserProcessor";

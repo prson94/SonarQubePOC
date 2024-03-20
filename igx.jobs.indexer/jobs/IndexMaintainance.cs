@@ -12,6 +12,7 @@ using System.Linq;
 
 namespace igx.jobs.indexer
 {
+	[Singleton(Account = "AzureStorageConnectionString", Mode = SingletonMode.Listener)]
 	public class IndexMaintainance: BaseWebJob
     {
 		const string FUNCTION_NAME = "IndexMaintainance";
