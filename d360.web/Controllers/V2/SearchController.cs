@@ -89,11 +89,12 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A list of matching search items.", typeof(IQueryable<IndexResult>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE),
 		]
-		public IQueryable<IndexResult> GetSearchResults(string phrase)
+		public async Task<IQueryable<IndexResult>> GetSearchResults(string phrase)
 		{
 			if (!string.IsNullOrEmpty(phrase))
 			{
-				var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, phrase, 200, 0, GetQueryLimitation());
+				var limitation = await GetQueryLimitation();
+				var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, phrase, 200, 0, limitation);
 				result.Results.ForEach(i =>
 				{
 					i.AbsoluteUrl = string.Format($"https://{Community.GetPrimaryUrlPrefix()}.data3sixty.com/{i.Url}");
@@ -164,7 +165,8 @@ namespace d360.web.Controllers.V2
 
 					queryRequest.FieldFilters.RemoveAll(f => f.Field == "Tags");
 					queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
-					resultset = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, queryRequest, GetQueryLimitation());
+					var limitation = await GetQueryLimitation();
+					resultset = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, queryRequest, limitation);
 
 					int augmentTime = 0;
 
@@ -260,7 +262,8 @@ namespace d360.web.Controllers.V2
 				IList<TypeaheadResult> res = null;
 				if (!string.IsNullOrEmpty(query))
 				{
-					res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, query, GetQueryLimitation(), num.GetValueOrDefault(7), categories).ToList();
+					var limitation = await GetQueryLimitation();
+					res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, query, limitation, num.GetValueOrDefault(7), categories).ToList();
 					await AugmentResults(res).ConfigureAwait(false);
 				}
 
@@ -1064,7 +1067,7 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		private QueryLimitation GetQueryLimitation()
+		private async Task<QueryLimitation> GetQueryLimitation()
 		{
 			List<string> blockedCategories = new List<string>();
 
@@ -1077,7 +1080,7 @@ namespace d360.web.Controllers.V2
 
 			if (Company.CurrentResourceIsAdmin)
 			{
-				limits.HideData3SixtyUsers = GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
+				limits.HideData3SixtyUsers = await GetHideData3SixtyUsers();//GetCachedSettingValueById<bool>(Setting.HideData3SixtyUsers).Result;
 			}
 			else
 			{
