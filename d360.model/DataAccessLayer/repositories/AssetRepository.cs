@@ -411,6 +411,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 			var simpleFilterTempTables = new StringBuilder();
 			List<string> tempTablelist = new List<string>();
 			bool addOwnerShipDataIntoTemp = false;
+			List<bool> addOwnerShipDataIntolist = new List<bool>();
+
 
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
@@ -1037,8 +1039,12 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
 				}
 			}
-			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams, fieldsUsedInMainQuery, AddOwnerShipDataIntoTemp: ref addOwnerShipDataIntoTemp);
+			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams, fieldsUsedInMainQuery, AddOwnerShipDataIntolist: addOwnerShipDataIntolist);
 
+			if (addOwnerShipDataIntolist.Count > 0)
+			{
+				addOwnerShipDataIntoTemp = addOwnerShipDataIntolist[0];
+			}
 			dbArgs.Add("@AddOwnerShipDataIntoTemp", addOwnerShipDataIntoTemp ? 1 : 0);
 
 			var OrderMainQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";

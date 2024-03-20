@@ -868,7 +868,7 @@ namespace d360.model.DataAccessLayer.repositories
 			);			
 		}
 
-		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery, ref bool AddOwnerShipDataIntoTemp)
+		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery, List<bool> AddOwnerShipDataIntolist)
 		{
 			bool useTypeLevelDefaultSorts = false;
 			bool IsOwnershipOrder = false;
@@ -1154,7 +1154,7 @@ namespace d360.model.DataAccessLayer.repositories
 				}
 
 			}
-			AddOwnerShipDataIntoTemp = IsOwnershipOrder;
+			AddOwnerShipDataIntolist.Add(IsOwnershipOrder);
 		}
 
 		protected string getFieldDataTypeWrapper(FieldType ft)
