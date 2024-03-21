@@ -345,7 +345,6 @@ where	((coalesce(pv.Value,'') = '' and  coalesce(cast(f.ValueId as nvarchar(max)
 						from	FieldType
 						where	ID = f.FieldTypeID
 								and [Type] = 'Lookup'
-								and ISNUMERIC(f.LookupValue) = 1
 						) fv
 			outer apply (select top 1
 		ROW_NUMBER() OVER (PARTITION BY i_a.Object, i_a.ObjectID, iif(i_p.FieldTypeID = 0, i_p.FieldName, cast(i_p.FieldTypeID  as nvarchar(100)) ) ORDER BY i_p.[AuditId] DESC) as RowNum,
