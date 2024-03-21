@@ -214,7 +214,7 @@ namespace d360.model.DataAccessLayer
 						return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidUser, string.Format(MemberShipErrors.UserUidSystemUser, model.Uid));
 					}
 
-					model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == CompanyContext.CurrentCompanyID && r.ResourceID == model.Resource.ResourceID && r.State != CompanyResourceState.Deleted);
+					model.CompanyResource = CommunityContext.CompanyResources.SingleOrDefault(r => r.CompanyID == CompanyContext.CurrentCompanyID && r.ResourceID == model.Resource.ResourceID);
 
 					if (model.CompanyResource == null)
 					{
