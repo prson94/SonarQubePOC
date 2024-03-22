@@ -344,6 +344,7 @@ namespace d360.model.DataAccessLayer
 					dbExecutionItem.Total,
 					dbExecutionItem.Processed,
 					dbExecutionItem.Error,
+					dbExecutionItem.ErrorMessage,
 					Action = dbExecutionItem.Action.ToString(),
 					Fields = JsonConvert.DeserializeObject<dynamic>(f),
 					dbExecutionItem.StartedOn,

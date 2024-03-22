@@ -98,7 +98,7 @@ namespace igx.jobs.apiexecutionprocessor
 
 				await company.Connection.OpenAsync();
 				var dbExecutionItem = company.Connection.Query<ApiExecution>("select * from api.Execution where ExecutionID = @ExecutionID", new { info.ExecutionID }).SingleOrDefault();
-
+				List<DatabaseBulkAssetResult> resultdata = new List<DatabaseBulkAssetResult>();
 				try
 				{
 					if (dbExecutionItem != null)
@@ -152,7 +152,7 @@ namespace igx.jobs.apiexecutionprocessor
 										var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, true, false);
+										resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, true, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
@@ -172,7 +172,7 @@ namespace igx.jobs.apiexecutionprocessor
 										var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, true, false);
+										resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, true, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
@@ -192,7 +192,7 @@ namespace igx.jobs.apiexecutionprocessor
 										var deleteAssets = await Storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"DeleteAssets: {DateTime.UtcNow:hh:mm:ss}");
-										assetRepository.DeleteAssets(deleteAssets, assetType, dbExecutionItem, true);
+										resultdata = assetRepository.DeleteAssets(deleteAssets, assetType, dbExecutionItem, true);
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success] from api.ExecutionDeletedAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
 									else
@@ -342,6 +342,10 @@ namespace igx.jobs.apiexecutionprocessor
 							if (!string.IsNullOrEmpty(resultsSql))
 							{
 								var results = await company.Connection.QueryAsync<dynamic>(resultsSql, new { executionId = dbExecutionItem.ExecutionID, dbExecutionItem.Id }, commandTimeout: 540);
+								if (results.Count() == 0 && resultdata.Count > 0)
+								{
+									results = resultdata;
+								}
 								await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.ResponseFileName, results);
 								if (action == ApiExecutionAction.PatchCatalog)
 								{

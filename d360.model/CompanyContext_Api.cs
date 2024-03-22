@@ -702,7 +702,21 @@ namespace d360.model
             Connection.Execute(sql, new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
         }
 
-        private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
+		private void LogExecutionError(Guid executionID, int total, int processedcount, int errorcount, string msg, int timeout = 3600)
+		{
+			int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+			Connection.Execute($@"
+								update	api.Execution
+								set	[Total] = @total,
+									[Processed] = @processedcount,
+									[Error] = @errorcount,
+									[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
+								where	ExecutionID = @executionID; 
+								",
+		 new { executionID, msg, total, processedcount, errorcount, characterLimit }, commandTimeout: timeout);
+		}
+		
+		private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
         {
             int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
             Connection.Execute($@"
@@ -1724,9 +1738,9 @@ where   ER.ExecutionID = @ExecutionID
 	update	E 
 	set		E.[State] = 4,
 			E.CompletedOn = @dt,
-			E.[Total] = Tc.Cnt,
-			E.Processed = Pc.Cnt,
-			E.[Error] = Ec.Cnt
+			E.[Total] = case when Tc.Cnt = 0 then E.[Total] else Tc.Cnt end,
+			E.Processed = case when Pc.Cnt = 0 then E.Processed else Pc.Cnt end,
+			E.[Error] = case when Ec.Cnt = 0 then E.[Error] else Ec.Cnt end
 	from	api.Execution E
 			cross apply (
 				select count(1) as Cnt from api.{apiTableName} where ExecutionId = E.{whereId} and Success = 0 
