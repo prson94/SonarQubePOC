@@ -889,7 +889,10 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				table.Columns.Add("Message", typeof(string));
 				table.Columns.Add("Success", typeof(bool));
 				table.Columns.Add("Uid", typeof(Guid));
+
 				table.Columns.Add("ParentUid", typeof(Guid));
+				table.Columns.Add("ParentItemNumber", typeof(int));
+
 				table.Columns.Add("ObjectType", typeof(string));
 				table.Columns.Add("ObjectTypeID", typeof(int));
 				table.Columns.Add("SourceID", typeof(string));
@@ -922,6 +925,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				CurrentExecutionLocationModel currentLocation = null;
 				bool hasLookupFieldTypes = false;
 				bool hasRelationshipFieldTypes = false;
+				bool hasParentsSetInPayload = false;
+
 				List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
 				try
@@ -1031,6 +1036,18 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								row["ParentUid"] = model.ParentUid;
 							}
 
+							if (model.ParentItemNumber.HasValue)
+							{
+								row["ParentItemNumber"] = model.ParentItemNumber;
+								hasParentsSetInPayload = true;
+
+								if (model.ParentItemNumber > i)
+								{
+									success = false;
+									errorMessage = $"ParentItemNumber {model.ParentItemNumber} cannot be higher than current ItemNumber {i}";
+								}
+							}
+
 							row["ObjectType"] = at.Object;
 							row["ObjectTypeID"] = at.ObjectID;
 
@@ -1101,6 +1118,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								bulkCopy.ColumnMappings.Add("Message", "Message");
 								bulkCopy.ColumnMappings.Add("Success", "Success");
 
+								bulkCopy.ColumnMappings.Add("ParentItemNumber", "ParentItemNumber");
 								bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
 								bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
 
@@ -1469,6 +1487,23 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 										new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 											addMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 										}
+									}
+
+									if (hasParentsSetInPayload)
+									{
+										Connection.Execute($@"update ea
+														set ea.ParentAssetID = parent.AssetID,
+														ea.ParentAssetTypeID = a.AssetTypeID,
+														ea.ParentObject = parent.Object,
+														ea.ParentObjectID = parent.ObjectID,
+														ea.ParentObjectType = parent.ObjectType,
+														ea.ParentObjectTypeID = parent.ObjectTypeID
+														from api.ExecutionAsset ea 
+														inner join api.ExecutionAsset parent on parent.ExecutionID = ea.ExecutionID and parent.ItemNumber = ea.ParentItemNumber
+														inner join asset a on a.ID = parent.AssetID
+														where ea.ExecutionID = @ExecutionID and ea.Success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber",
+										new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+										addMeasurement(metrics, $"Update parents IDs from ParentItemNumber >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 									}
 
 									#region Parent/Child Relationship

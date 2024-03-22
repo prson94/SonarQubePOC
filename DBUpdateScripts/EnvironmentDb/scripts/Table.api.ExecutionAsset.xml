@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas" id="Table.api.ExecutionAsset-v5">
+ <changeSet author="TomislavDuric" id="Table.api.ExecutionAsset-v6.1">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAsset')
@@ -21,6 +21,7 @@ BEGIN
 		[ObjectType] [varchar](50) NULL,
 		[ObjectTypeID] [int] NULL,
 		[ProposedKey] [varchar](32) NULL,
+		[ParentItemNumber] [int] NULL,
 		[ParentUid] [uniqueidentifier] NULL,
 		[ParentAssetID] [bigint] NULL,
 		[ParentObject] [varchar](50) NULL,
@@ -52,6 +53,11 @@ begin
 end
 
 alter table [api].[ExecutionAsset] alter column [Message] nvarchar(max) null;
+
+if not exists(select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'ExecutionAsset' and COLUMN_NAME = 'ParentItemNumber')
+begin
+	alter table api.ExecutionAsset add ParentItemNumber int null
+end
 		]]>
   </sql>
  </changeSet>
