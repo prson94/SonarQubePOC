@@ -1239,7 +1239,7 @@ namespace d360.model
 						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
 					    from FieldType ft where ft.ID = @fieldTypeID)
 
-						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and value <> @value"
+						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and COALESCE(value,FormattedValue) <> @value"
 					, new
 					{
 						value = updateValue,
