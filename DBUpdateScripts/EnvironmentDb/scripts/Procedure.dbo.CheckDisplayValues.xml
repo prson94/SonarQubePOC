@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v8">
-  <comment>GOV-21412</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v9">
+  <comment>GOV-31471</comment>
   <comment>If logical is changed, this also needs to be updated in GetAssetDisplayValueById</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -48,11 +48,17 @@ BEGIN
 		
 		drop table if exists #TempClassAssetTypeIDs;
 
-		create table #TempClassAssetTypeIDs (AssetTypeID int,TFINDEX int,TLINDEX int,[value] nvarchar(max),FieldTypeID int,CounterPrefix nvarchar(50),[Type] [varchar](25), index idx_tempdispvalue clustered(AssetTypeID));
+		create table #TempClassAssetTypeIDs 
+		(AssetTypeID int,TFINDEX int,TLINDEX int,[value] nvarchar(max),FieldTypeID int,CounterPrefix nvarchar(50),
+		[Type] [varchar](25),IsOnlyCode Bit Default 0,ISOnlyName Bit Default 0
+		, index idx_tempdispvalue clustered(AssetTypeID));
 
 		insert into #TempClassAssetTypeIDs
 		select 
-		Att.ID, TF.[index] TFINDEX, TL.[index] TLINDEX, TL.[value], FT.ID FieldTypeID,isnull(FT.CounterPrefix,'') CounterPrefix,FT.Type
+		Att.ID, TF.[index] TFINDEX, TL.[index] TLINDEX, TL.[value], FT.ID FieldTypeID,
+		isnull(FT.CounterPrefix,'') CounterPrefix,FT.Type,
+		case when Att.DisplayFormat = '{code}' then 1 else 0 end,
+		case when Att.DisplayFormat = '{name}' then 1 else 0 end
 		from AssetType Att
 		cross apply [utility].[OrderedSplit](replace(Att.DisplayFormat, '{', '|'), '|') TF
 		cross apply [utility].[OrderedSplit](replace(TF.[value], '}', '|'), '|') TL
@@ -70,6 +76,16 @@ BEGIN
 		begin
 			if (@AssetClass = @ReferenceItemType)
 			begin
+			
+				insert into #TempAssetDisplayValue
+				select A.ID,CONVERT(NVARCHAR(32),HashBytes('SHA1', A.Code),2)  DisplayValueHash,A.Code DisplayValue
+				from #TempClassAssetTypeIDs TL
+				inner join Asset A on A.AssetTypeID = TL.AssetTypeID
+				left join AssetDisplayValue adv on adv.AssetID = a.id 
+				Where  A.Code is not null  and TL.IsOnlyCode = 1 and RTRIM(TL.value) <> ''
+				and coalesce(adv.DisplayValue,'') != A.Code
+				option (recompile);
+			
 				insert into #TempAssetDisplayValue
 				select A.ID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
 				from AssetType Att
@@ -95,6 +111,8 @@ BEGIN
 				) D
 				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
+				and exists (select 1 from #TempClassAssetTypeIDs TL 
+							where att.Id = TL.AssetTypeID and TL.IsOnlyCode = 0)
 				option (recompile);
 			end
 			else if (@AssetClass = @GroupType)
@@ -159,6 +177,16 @@ BEGIN
 			end
 			else 
 			begin
+
+				insert into #TempAssetDisplayValue
+				select F.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', F.FormattedValue),2)  DisplayValueHash,F.FormattedValue DisplayValue
+				from #TempClassAssetTypeIDs TL
+				inner join Field F on F.FieldTypeID = TL.FieldTypeID
+				left join AssetDisplayValue adv on adv.AssetID = F.AssetID 
+				Where  F.FormattedValue is not null  and TL.ISOnlyName = 1 and RTRIM(TL.value) <> '' and TL.FieldTypeID is not null
+				and coalesce(adv.DisplayValue,'') != F.FormattedValue
+				option (recompile);
+
 				insert into #TempAssetDisplayValue
 				select A.ID,CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2)  DisplayValueHash,ADV.DisplayValue
 				from AssetType Att
@@ -184,6 +212,8 @@ BEGIN
 				) D
 				order by D.TokenIndex,D.TokenIndexL) results ) ADV
 				Where  att.Class = @AssetClass and ADV.DisplayValue is not null
+				and exists (select 1 from #TempClassAssetTypeIDs TL 
+							where att.Id = TL.AssetTypeID and TL.ISOnlyName = 0)
 				option (recompile);
 			end
 			 

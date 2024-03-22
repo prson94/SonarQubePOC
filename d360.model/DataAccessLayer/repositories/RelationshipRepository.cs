@@ -2111,7 +2111,8 @@ where	Id = @Id
 				cntsql = $@"
 select	count(1)
 from	[Intersect] i 
-where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
+where	i.IntersectTypeID = @intersectTypeID {whereFilter}
+option (recompile)";
 			}
 
 			string sql = $@"
@@ -2131,7 +2132,7 @@ where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
 									order by i.id
 									OFFSET @offset ROWS 
 									FETCH NEXT @rows ROWS ONLY
-
+									option (recompile);
 								
 									-- create temp table
 									 drop table if exists #TempIntersectInfo
@@ -2158,6 +2159,7 @@ where	i.IntersectTypeID = @intersectTypeID {whereFilter}";
 										from #temprelation t
 										inner join [intersect] I on t.id = I.id
 										order by t.id
+										option (recompile);
 
 										UPDATE	t
 										SET		t.SubjectUid =  a.[uid]

@@ -187,7 +187,7 @@ namespace d360.extensions.search
             FROM {batchTableName} t
             INNER JOIN Semantic s ON t.AssetUid = s.uid;
 
-            CREATE NONCLUSTERED INDEX IX_searcindexbatch_{batchUid} ON {batchTableName} (AssetID);
+            CREATE CLUSTERED INDEX CX_searcindexbatch_{batchUid} ON {batchTableName} (AssetID);
             ");
 
             IEnumerable<AssetTypeClass> types = _context.Query<AssetTypeClass>($"SELECT DISTINCT Class FROM {batchTableName} WHERE Class IS NOT NULL");

@@ -1,0 +1,159 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.GenerateOwnerShipDataForGetAsset-v1">
+  <comment>GOV-31471</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+Create or Alter Procedure [dbo].[GenerateOwnerShipDataForGetAsset]		
+@AssetTypeID int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	if (OBJECT_ID('tempdb..#OwnershipLookupAssets') IS NOT NULL and OBJECT_ID('tempdb..#tempasset') IS NOT NULL)
+	begin
+		if exists(select 1 from #OwnershipLookupAssets)
+			BEGIN
+				drop table if exists #OwnershipLookupAssets_temp;
+
+				select *
+				into #OwnershipLookupAssets_temp
+				from (
+				select ow.*
+				from #tempasset tempa
+				inner join #OwnershipLookupAssets ow on tempa.AssetID = ow.AssetID
+				union all
+				select ow.*
+				from #OwnershipLookupAssets ow 
+				where ow.AssetID = 0
+				)a ;
+
+				truncate table #OwnershipLookupAssets;
+
+				insert into #OwnershipLookupAssets
+				select * from #OwnershipLookupAssets_temp;
+				
+				drop table if exists #OwnershipLookupAssets_temp;
+			end
+		else
+			BEGIN
+				With AssetRule as
+				(
+					select rasset.AssetTypeID,
+					rasset.AssetID,
+					rasset.RuleID
+					from  #tempasset a
+					inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.AssetID = a.ID)
+					union all 
+					select rasset.AssetTypeID,
+					rasset.AssetID,
+					rasset.RuleID
+					from  [dbo].[ResponsibilityRuleResultAsset] rasset
+					inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+					where (rasset.AssetID = 0 and rasset.AssetTypeID = @AssetTypeID and r.ApplyToType = 1)
+				)
+				insert into #OwnershipLookupAssets
+				select	rasset.AssetID,
+						r.ResponsibilityTypeID as ResponsibilityTypeID,
+						RT.Name as ResponsibilityTypeName,
+						RES.FirstName + ' ' + RES.LastName as ResourceName,
+						rresource.SecurityAsset,
+						RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+						r.Context,
+						rresource.SecurityAssetID as ResourceID,
+						RES.uid as ResourceUid,
+						rresource.SecurityAssetID,
+						RES.uid as SecurityAssetUid
+				from	AssetRule rasset
+						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+						inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+						inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+						inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R'
+				where 	RES.State=1
+				union all
+				select	rasset.AssetID,
+						r.ResponsibilityTypeID as ResponsibilityTypeID,
+						RT.Name as ResponsibilityTypeName,
+						RES.FirstName + ' ' + RES.LastName as ResourceName,
+						rresource.SecurityAsset,
+						G.Name as SecurityAssetName,
+						r.Context,
+						RG.ResourceID as ResourceID,
+						RES.uid as ResourceUid,
+						rresource.SecurityAssetID,
+						secasset.uid as SecurityAssetUid
+				from	AssetRule rasset
+						inner join dbo.responsibilitytyperelationrule r on (r.ID = rasset.RuleID)
+						inner join dbo.[ResponsibilityRuleResultSecurityAsset] rresource on (r.ID = rresource.RuleID)
+						inner join dbo.ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
+						inner join dbo.[Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+						inner join [AssetType] attg on attg.class = 12
+						inner join [Asset] secasset ON secasset.AssetTypeID = attg.ID AND secasset.ObjectID = rresource.SecurityAssetID
+						inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+						inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
+				where 	RES.State=1;
+				
+				if exists (select 1 
+							from #tempasset tempa
+							inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.assetID = tempa.assetID
+						  )
+				begin
+					insert into #OwnershipLookupAssets
+					select	oride.AssetID,
+							oride.ResponsibilityTypeID as ResponsibilityTypeID,
+							RT.Name as ResponsibilityTypeName,
+							RES.FirstName + ' ' + RES.LastName as ResourceName,
+							oride.SecurityAsset,
+							RES.FirstName + ' ' + RES.LastName as SecurityAssetName,
+							oride.Context,
+							RES.ResourceID as ResourceID,
+							RES.uid as ResourceUid,
+							oride.SecurityAssetID,
+							RES.uid as SecurityAssetUid
+					from	#tempasset tempa
+							inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.assetID = tempa.assetID
+							inner join dbo.ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+							inner join [dbo].asset a on (a.id = oride.assetID and a.AssetTypeID = @AssetTypeID)
+							inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
+					union all
+					select	oride.AssetID,
+							oride.ResponsibilityTypeID as ResponsibilityTypeID,
+							RT.Name as ResponsibilityTypeName,
+							RES.FirstName + ' ' + RES.LastName as ResourceName,
+							oride.SecurityAsset,
+							G.[Name] as SecurityAssetName,
+							oride.Context,
+							RES.ResourceID as ResourceID,
+							RES.uid as ResourceUid,
+							oride.SecurityAssetID,
+							secasset.uid as SecurityAssetUid
+					from	#tempasset tempa
+							inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.assetID = tempa.assetID
+							inner join dbo.ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
+							inner join [dbo].asset a on (a.id = oride.assetID and a.AssetTypeID = @AssetTypeID)
+							inner join dbo.[Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
+							inner join [AssetType] attg on attg.class = 12
+							inner join [Asset] secasset ON secasset.AssetTypeID = attg.ID AND secasset.ObjectID = oride.SecurityAssetID
+							inner join dbo.ResourceGroup RG on RG.GroupID = G.ID
+							inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
+				End
+		End
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
