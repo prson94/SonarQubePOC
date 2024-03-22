@@ -1126,4 +1126,47 @@ end
 	</rollback>
   </changeSet>
   
+   <changeSet author="TDuric" id="Data.Corrections.GOV-32125">
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		update fa
+		set fa.Value = F.Value
+		from reporting.Global_FieldAudit fa
+		inner join FieldType ft on ft.ID = fa.FieldTypeID
+		cross apply (
+			select utility.GetFormattedFieldLookupValueWithMultiple
+					(ft.Type, 
+					ft.LookupDisplayFormat, 
+					ft.LookupObjectType, 
+					ft.LookupObjectID, 
+					fa.Value, 
+					ft.AllowMultipleValues) as Value)
+			F(Value)
+		where ft.Type = 'Lookup' and ft.AllowMultipleValues = 1 and f.Value is not null
+
+
+		update fa
+		set fa.PreviousValue = F.PreviousValue
+		from reporting.Global_FieldAudit fa
+		inner join FieldType ft on ft.ID = fa.FieldTypeID
+		cross apply (
+			select utility.GetFormattedFieldLookupValueWithMultiple
+					(ft.Type,
+					ft.LookupDisplayFormat, 
+					ft.LookupObjectType, 
+					ft.LookupObjectID, 
+					fa.PreviousValue, 
+					ft.AllowMultipleValues) as PreviousValue)
+			F(PreviousValue)
+		where ft.Type = 'Lookup' and ft.AllowMultipleValues = 1  and f.PreviousValue is not null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>
