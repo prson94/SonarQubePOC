@@ -18,7 +18,7 @@ namespace d360.core
         public static readonly string COMPANY_BULK_LOAD_FOLDER = "bulk-loads";
         public static readonly int COMPANY_BULK_LOAD_MAX_ROWS = int.Parse(ConfigurationManager.AppSettings["BulkLoadMaxRows"]);
         public static readonly string COMPANY_STYLES_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_STYLES_FOLDER}/";
-        public const int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
+        public static readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
         public const string TITLE_PREFIX = "Data360";
         public const string COMPANY = "Precisely.";
         public const string PRODUCT = "Data360 Govern";
