@@ -51,9 +51,12 @@ namespace d360.core.entities
 
         [IgnoreDataMember, NotMapped]
         public int Level { get; set; }
-        #endregion
 
-        [IgnoreDataMember, ForeignKey("LoadID")]
+		[IgnoreDataMember, NotMapped]
+		public int? ParentItemNumber { get; set; }
+		#endregion
+
+		[IgnoreDataMember, ForeignKey("LoadID")]
         public virtual Load Load { get; set; }
 
         [IgnoreDataMember, ForeignKey("LoadID, RowIndex")]

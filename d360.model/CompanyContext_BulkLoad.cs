@@ -36,6 +36,12 @@ namespace d360.model
 		public int LoadID { get; set; }
 	}
 
+	internal class LoadColumnParentItemNumberMapping
+	{
+		public int RowIndex { get; set; }
+		public int ParentRowIndex { get; set; }
+	}
+
 	public partial interface ICompanyContext : IBaseContext
 	{
 		string BulkLoadStatusMsg { get; set; }
@@ -43,12 +49,12 @@ namespace d360.model
 		#region DbSets
 
 		DbSet<LoadColumn> LoadColumns { get; set; }
-        
-        DbSet<LoadItemColumn> LoadItemColumns { get; set; }
-        
-        DbSet<LoadItem> LoadItems { get; set; }
-        
-        DbSet<Load> Loads { get; set; }
+
+		DbSet<LoadItemColumn> LoadItemColumns { get; set; }
+
+		DbSet<LoadItem> LoadItems { get; set; }
+
+		DbSet<Load> Loads { get; set; }
 
 		#endregion
 
@@ -74,7 +80,7 @@ namespace d360.model
 		private const int timeout = 3600;
 		private const int defaultBulkLoadLoopSize = 500;
 		private readonly List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
-		
+
 		public string BulkLoadStatusMsg { get; set; }
 
 		#region DbSets
@@ -90,12 +96,12 @@ namespace d360.model
 		#endregion
 
 		#region Utility
-		
+
 		private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
 		{
 			await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id and ExecutionItemUid is null", new { id = load.ID }, timeout: timeout);
-		}	
-		
+		}
+
 		private int getAssetIDFieldIndex(AssetTypeClass @class, int assetTypeId, string name, List<LoadColumn> columns)
 		{
 			if (@class == AssetTypeClass.Reference && assetTypeId == 0)
@@ -124,8 +130,8 @@ namespace d360.model
 
 				return col.ColumnIndex;
 			}
-		}	
-		
+		}
+
 		private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
 		{
 			return (await QueryAsync<string>(@"select
@@ -202,8 +208,8 @@ namespace d360.model
 						@object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object },
 						objectID = assetType.ObjectID
 					}, timeout: timeout)).FirstOrDefault();
-		}		
-		
+		}
+
 		internal ApiExecution getPromoteApiExecution(Load load, int total, ApiExecutionAction action)
 		{
 			ApiExecution execution = new ApiExecution
@@ -226,7 +232,7 @@ namespace d360.model
 
 			return execution;
 		}
-		
+
 		internal ApiExecution getRelateApiExecution(Load load, int total)
 		{
 			ApiExecution execution = new ApiExecution
@@ -251,7 +257,7 @@ namespace d360.model
 			return execution;
 		}
 
-		private string LoadDetailBaseSql(string countSql,int LoadId, bool getLoadErrorMessage = false) 
+		private string LoadDetailBaseSql(string countSql, int LoadId, bool getLoadErrorMessage = false)
 		{
 			string loaderrorsql = "";
 			if (getLoadErrorMessage)
@@ -276,7 +282,7 @@ end
 ";
 			}
 
-				return $@"		
+			return $@"		
 								declare @LoadErrorMessage nvarchar(2000);
 
 								{loaderrorsql}
@@ -825,9 +831,52 @@ select @errormessage
 
 			List<LoadItem> loadItems = new List<LoadItem>();
 			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
-
+			var columnParentItemNumberMappings = new List<LoadColumnParentItemNumberMapping>();
 
 			Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
+
+
+			if (assetType.Class == AssetTypeClass.Model)
+			{
+				int numberOfRequiredFields = FieldTypes.Count(f => f.AssetTypeID == assetType.ID && f.IsPartOfKey);
+				int maxLevels = assetType.HierarchyMaximumDepth;
+
+				columnParentItemNumberMappings = Query<LoadColumnParentItemNumberMapping>(@"create table #tempRowIndexKeyTable(RowIndex int, [Key] nvarchar(4000), LastLevelKey nvarchar(4000), ParentRowIndex int)
+create nonclustered index ix_key_idx on #tempRowIndexKeyTable([Key])
+
+declare @currentLevel int = 1
+declare @currentKey int = 1
+declare @targetIndex int = -1
+declare @levelKeyIndexes table (ColumnIndex int)
+
+while @currentKey <= @numberOfRequiredFields
+begin
+	insert into @levelKeyIndexes (ColumnIndex) values (((@currentKey-1)* @maxLevels)+1)
+
+	set @currentKey = @currentKey + 1
+end
+
+while @currentLevel <= @maxLevels
+begin
+	merge #tempRowIndexKeyTable as T
+	using (
+		select RowIndex, 
+		string_agg(cast(Value as nvarchar(255)),',') as Value from dbo.LoadItemColumn LIC
+	where LIC.LoadID = @loadId and ColumnIndex in (select ColumnIndex + (@currentLevel-1) from @levelKeyIndexes)
+	group by RowIndex
+	)Data
+	on Data.RowIndex = T.RowIndex
+	when matched and Data.Value is not null then update set T.[Key] = CONCAT(T.[Key],Data.Value), T.LastLevelKey = Data.Value
+	when not matched then insert (RowIndex,[Key], LastLevelKey) VALUES (Data.RowIndex, Data.Value, Data.Value);
+
+	set @currentLevel = @currentLevel + 1
+end
+
+select T.RowIndex, keys.RowIndex as ParentRowIndex from #tempRowIndexKeyTable T
+inner join #tempRowIndexKeyTable keys on keys.[Key] = REPLACE(T.[Key], T.LastLevelKey, '')
+
+drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLevels, loadId = load.ID }).ToList();
+			}
 
 			//build level info for models
 			if (assetType.Class == AssetTypeClass.Model)
@@ -867,6 +916,7 @@ select @errormessage
 								where		ATT.[ObjectID] = @ObjectID
 						) L
 						where I.LoadID = @id and COALESCE(Status,1) = 1", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
+
 			}
 			else
 			{
@@ -979,6 +1029,15 @@ inner join AssetPath P on P.ID = A.ID
 							{
 								insert.ParentUid = parentUid;
 							}
+							else
+							{
+								var parent = columnParentItemNumberMappings.FirstOrDefault(x => x.RowIndex == item.RowIndex);
+								if (parent != null)
+								{
+									item.ParentItemNumber = parent.ParentRowIndex - 1;
+								}
+							}
+
 						}
 
 						foreach (LoadItemColumn field in rowColumns)
@@ -991,6 +1050,7 @@ inner join AssetPath P on P.ID = A.ID
 								if (!string.IsNullOrWhiteSpace(field.Value))
 								{
 									string parentUid = "";
+
 									if (item.ParentAssetUid != null)
 									{
 										insert.ParentUid = item.ParentAssetUid;
@@ -1020,6 +1080,11 @@ inner join AssetPath P on P.ID = A.ID
 										insert.Fields.Add(col.Name, field.Value);
 									}
 								}
+							}
+
+							if (item.ParentItemNumber.HasValue)
+							{
+								insert.ParentItemNumber = item.ParentItemNumber;
 							}
 						}
 
@@ -1090,7 +1155,7 @@ inner join AssetPath P on P.ID = A.ID
 
 			await SaveChangesAsync();
 		}
-		
+
 		public async Task BulkRelation(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository, BulkRelationshipOperation operation)
 		{
 			if (load == null)
@@ -1280,7 +1345,7 @@ inner join AssetPath P on P.ID = A.ID
 
 			await SaveChangesAsync();
 		}
-		
+
 		public async Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId)
 		{
 			await Connection.OpenIfClosed();
@@ -1343,7 +1408,7 @@ inner join AssetPath P on P.ID = A.ID
 				WHERE	LI.LoadID = @loadid AND LCA.Value = 'Replace' AND COALESCE(LCT.[Value], '') = ''
 
 				SELECT	AssetUid, Tag, [Action] 
-				FROM	#bulkTags", new { loadId, executionId }); 
+				FROM	#bulkTags", new { loadId, executionId });
 		}
 
 		public IEnumerable<LoadDetail> GetLoadDetails()
@@ -1448,7 +1513,7 @@ inner join AssetPath P on P.ID = A.ID
 			}
 			else
 			{
-				getLoadErrorMessage= true;
+				getLoadErrorMessage = true;
 				countSql = @"
 					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
 					cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
