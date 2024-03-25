@@ -1180,15 +1180,15 @@ namespace d360.model
 					begin
 						update Field
 							set Value = @value,
-							FormattedValue = @formattedValue,
+							FormattedValue = coalesce(@formattedValue, @value),
 							UpdatedBy = @updatedBy,
 							UpdatedOn = GETUTCDATE()
-						where ID = @fieldId and ((value is not null and value <> @value) or (value is null and formattedValue is not null and formattedValue <> @value))
+						where ID = @fieldId and COALESCE(value,FormattedValue) <> @value
 					end
 					else
 					begin
 						insert into [Field] (AssetID, FieldTypeID, ObjectID, ObjectType, [Value], [FormattedValue], IssueID, IntersectID, UpdatedBy) 
-						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, @formattedValue, @IssueID, @IntersectID, @updatedBy)
+						values (@assetID, @fieldTypeID, @objectId, @objectType, @value, COALESCE(@formattedValue ,@value), @IssueID, @IntersectID, @updatedBy)
 					end"
 					, dbargs);
 			}
@@ -1239,7 +1239,7 @@ namespace d360.model
 						utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, @value, FT.AllowMultipleValues)
 					    from FieldType ft where ft.ID = @fieldTypeID)
 
-						update Field set [Value] = @value, [FormattedValue] = @formattedValue, UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and COALESCE(value,FormattedValue) <> @value"
+						update Field set [Value] = @value, [FormattedValue] = coalesce(@formattedValue,@value), UpdatedOn = getutcdate(), UpdatedBy = @updatedBy where FieldTypeID = @fieldTypeID and {idSQL} and COALESCE(value,FormattedValue) <> @value"
 					, new
 					{
 						value = updateValue,
