@@ -6009,7 +6009,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                                 case "Boolean":
 									if (!string.IsNullOrEmpty(fieldValue))
 									{
-										fieldValue = fieldValue.ToLower();
+										fieldValue = fieldValue.ToLowerInvariant();
 									}
 
 									if ((fieldValue != "true" && fieldValue != "false") && !string.IsNullOrEmpty(fieldValue))
