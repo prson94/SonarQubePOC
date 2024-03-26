@@ -32,6 +32,7 @@ namespace igx.jobs.workflowdigestprocessor
 			Queue = queue;
 		}
 
+		[Singleton(Mode = SingletonMode.Function)]
 		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)   
 		{
 			try
