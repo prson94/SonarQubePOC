@@ -35,6 +35,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 			Queue = queue;
 		}
 
+		[Singleton(Mode = SingletonMode.Function)]
 		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)   
         {
 			try
