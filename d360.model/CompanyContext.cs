@@ -2259,14 +2259,16 @@ from	IntersectType I
 			public ObjectStateEntry entry;
 			public Audit Audit = new Audit();
 			private CompanyContext CompanyContext;
-			public EFEntryState(CompanyContext ctx)
-			{
-				CompanyContext = ctx;
-			}
-
-			public EFEntryState(ObjectStateEntry entry)
+			public EFEntryState(ObjectStateEntry entry, CompanyContext ctx)
 			{
 				this.entry = entry;
+				CompanyContext = ctx;
+
+				ParseAuditRecord();
+			}
+
+			private void ParseAuditRecord()
+			{
 				if (entry.Entity is AssetType)
 				{
 					AssetType o = entry.Entity as AssetType;
@@ -2302,7 +2304,7 @@ from	IntersectType I
 						ObjectName = o.Name,
 						ActionObjectName = o.Name,
 						ActionObjectTypeName = o.Class.GetDisplayName(),
-						ActionDescription = $"This asset type has been ${action.ToLowerInvariant()}",
+						ActionDescription = $"This asset type has been {action.ToLowerInvariant()}",
 						Date = updatedOn,
 						ResourceID = updatedBy,
 						Version = currentVersion,
@@ -2362,12 +2364,17 @@ from	IntersectType I
 		public class EFChangeTracker
 		{
 			private List<EFEntryState> _trackedChanges = new List<EFEntryState>();
+			private CompanyContext ctx;
+			public EFChangeTracker(CompanyContext ctx)
+			{
+				this.ctx = ctx;
+			}
 			public void Add(ObjectStateEntry entry)
 			{
-				_trackedChanges.Add(new EFEntryState(entry));
+				_trackedChanges.Add(new EFEntryState(entry, ctx));
 			}
 
-			public void SaveChangeLogs(CompanyContext ctx)
+			public void SaveChangeLogs()
 			{
 				List<Audit> audits = new List<Audit>();
 
@@ -2385,7 +2392,7 @@ from	IntersectType I
 
 		public override int SaveChanges()
 		{
-			EFChangeTracker changeTracker = new EFChangeTracker();
+			EFChangeTracker changeTracker = new EFChangeTracker(this);
 
 			int returnValue = 0;
 			List<Field> fieldsToCheckForChanges = new List<Field>();
@@ -2828,7 +2835,7 @@ from	IntersectType I
 				createEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 			}
 
-			changeTracker.SaveChangeLogs(this);
+			changeTracker.SaveChangeLogs();
 
 			return returnValue;
 		}
