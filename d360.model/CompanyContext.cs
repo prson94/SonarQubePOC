@@ -50,7 +50,7 @@ namespace d360.model
 		internal IMailProvider Mail;
 		internal IQueueSource QueueSource;
 		private readonly CommunityContext Community;
-		
+
 		private bool IsEventingEnabled;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
@@ -72,7 +72,7 @@ namespace d360.model
 		public CompanyContext(
 			ICommunityContext community,
 			ICachingProvider caching,
-			IQueueSource queueSource, 
+			IQueueSource queueSource,
 			IMailProvider mail,
 			ISecurityContextProvider context,
 			ILogger log,
@@ -202,7 +202,7 @@ namespace d360.model
 		public DbSet<TagType> TagTypes { get; set; }
 
 		public DbSet<ConnectorLabel> ConnectorLabels { get; set; }
-		
+
 		public DbSet<AssetTag> AssetTags { get; set; }
 
 		public DbSet<AuditField> AuditFields { get; set; }
@@ -217,7 +217,7 @@ namespace d360.model
 		{
 			metrics[$"{stepNumber}-{key}"] = value;
 		}
-		
+
 		private void addMetric(TelemetryClient client, ApiExecution execution, string methodName, Dictionary<string, double> metrics, bool isLog)
 		{
 			if (!isLog)
@@ -233,7 +233,7 @@ namespace d360.model
 
 			client.TrackEvent($"API v2 Execution ID[{execution.ExecutionID}]", propsToSend, metrics);
 		}
-		
+
 		private void addQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
 		{
 			// if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
@@ -319,7 +319,7 @@ namespace d360.model
 					addQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
 				}
 			}
-						
+
 			if (events.Any())
 			{
 				QueueSource.CreateTopicMessages(events);
@@ -737,7 +737,7 @@ from	Field F
 
 			return list;
 		}
-		
+
 		public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null)
 		{
 			return await Database.Connection.QueryAsync<AllowedIntersectionType>(
@@ -761,8 +761,8 @@ from	Field F
 		public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
 		{
 			return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
-		}	
-			
+		}
+
 		public AssetTypeStyle GetAssetTypeStyle(string type, int id)
 		{
 			AssetType assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
@@ -1191,7 +1191,7 @@ from	Field F
 				return null;
 			}
 		}
-		
+
 		public string GetIntersectTypeName(IntersectType intersectType)
 		{
 			string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
@@ -1319,7 +1319,7 @@ from	Field F
 		public ObjectDetail GetObjectDetailByAssetAssetTypeId(long? assetId, int? assetTypeId)
 		{
 			ObjectDetail model = null;
-			if(assetId != null)
+			if (assetId != null)
 			{
 				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
 					ObjectID as ID,
@@ -1342,7 +1342,8 @@ from	Field F
 					AssetTypeClass as [Class]
 				FROM AssetDetail
 				WHERE ID = @assetId", new { assetId });
-			} else if (assetTypeId != null)
+			}
+			else if (assetTypeId != null)
 			{
 				model = Database.Connection.QuerySingleOrDefault<ObjectDetail>(@"SELECT
 					O.ObjectID as ID,
@@ -1434,7 +1435,7 @@ from	Field F
 
 			return JObject.Parse(string.Concat(jsonRows));
 		}
-		
+
 		public AssetDetail GetParentAsset(long assetId)
 		{
 			if (assetId <= 0)
@@ -1447,13 +1448,13 @@ from	Field F
 			var detail = Query<AssetDetail>(sql, new { assetId }).FirstOrDefault();
 
 			if (detail == null)
-			{ 
+			{
 				detail = default;
 			}
 
 			return detail;
 		}
-		
+
 		public AssetType GetParentType(int id)
 		{
 			if (id <= 0)
@@ -1622,7 +1623,7 @@ from	IntersectType I
 
 			selectedSql = $@"
 						select	A.ObjectId as [Value],
-								{(ft.UseDisplayFormat ? "ADV.DisplayValue" : "P.DisplayPath" )} as [Text],
+								{(ft.UseDisplayFormat ? "ADV.DisplayValue" : "P.DisplayPath")} as [Text],
 								1 as Selected 
 						from	[Intersect] i
 								inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
@@ -1738,7 +1739,7 @@ from	IntersectType I
 									and not A.ID = @assetId
 													{(string.IsNullOrEmpty(query) ? "" : " and (P.DisplayPath like '%' + @query + '%')")}
 													{formattedCardinalityCheck}";
-					
+
 					sql = $@"
 							select	distinct 
 									A.ObjectId as Value, 
@@ -1783,10 +1784,11 @@ from	IntersectType I
 			if (!includeSelection)
 			{
 				items = Query<dynamic>(
-					sql, 
-					new { 
-						offset, 
-						rows, 
+					sql,
+					new
+					{
+						offset,
+						rows,
 						query,
 						assetId,
 						intersectTypeID = intersectType.ID,
@@ -1936,7 +1938,7 @@ from	IntersectType I
 			}
 			return follow;
 		}
-		
+
 		public bool IsUserFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID)
 		{
 			return GetFollowingParent(AssetTypeID, AssetID, resourceID) != null;
@@ -2047,7 +2049,7 @@ from	IntersectType I
 								DateTime filterDate;
 
 								//parsing date time with Z will convert date time as local time which will not match with db utc-0 value
-								string dateValue = value.Replace("Z", "").Replace("z","");
+								string dateValue = value.Replace("Z", "").Replace("z", "");
 								if (DateTime.TryParse(dateValue, out filterDate))
 								{
 									wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
@@ -2226,7 +2228,7 @@ from	IntersectType I
 		{
 			return await Database.Connection.QueryAsync<T>(sql, param, null, timeout).ConfigureAwait(false);
 		}
-		
+
 		public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
 		{
 			return await Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param, null, timeout);
@@ -2252,8 +2254,139 @@ from	IntersectType I
 			return renderTemplate("Tooltip", action, type, id);
 		}
 
+		public class EFEntryState
+		{
+			public ObjectStateEntry entry;
+			public Audit Audit = new Audit();
+			private CompanyContext CompanyContext;
+			public EFEntryState(CompanyContext ctx)
+			{
+				CompanyContext = ctx;
+			}
+
+			public EFEntryState(ObjectStateEntry entry)
+			{
+				this.entry = entry;
+				if (entry.Entity is AssetType)
+				{
+					AssetType o = entry.Entity as AssetType;
+
+					var currentVersion = CompanyContext.Audits.Where(x => x.ActionObject == o.Object && x.ActionObjectID == o.ObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
+					currentVersion++;
+
+					string action = "";
+					switch (entry.State)
+					{
+						case EntityState.Added:
+							action = "Created";
+							break;
+						case EntityState.Modified:
+							action = "Updated";
+							break;
+						case EntityState.Deleted:
+							action = "Removed";
+							break;
+					}
+
+					DateTime updatedOn = o.UpdatedOn ?? o.CreatedOn ?? DateTime.UtcNow;
+					int updatedBy = o.UpdatedBy ?? o.CreatedBy ?? 0;
+
+
+					Audit = new Audit
+					{
+						Object = o.Object,
+						ObjectID = o.ObjectID,
+						ActionObject = o.Object,
+						ActionObjectID = o.ObjectID,
+						Action = action,
+						ObjectName = o.Name,
+						ActionObjectName = o.Name,
+						ActionObjectTypeName = o.Class.GetDisplayName(),
+						ActionDescription = $"This asset type has been ${action.ToLowerInvariant()}",
+						Date = updatedOn,
+						ResourceID = updatedBy,
+						Version = currentVersion,
+						AuditFields = new List<AuditField>()
+					};
+
+					if (entry.State != EntityState.Deleted)
+					{
+						HandleFieldUpdates(entry, o);
+					}
+				}
+			}
+
+			private void HandleFieldUpdates<T>(ObjectStateEntry entry, T o)
+			{
+				var properties = o.GetType().GetProperties()
+										.Where(prop => prop.IsDefined(typeof(TrackInChangeLog), false));
+
+				foreach (var prop in properties)
+				{
+					var _val = prop.GetValue(o, null);
+					string oldValue = null;
+					string newValue = _val != null ? _val.ToString() : null;
+
+					if (entry.State == EntityState.Modified)
+					{
+						var oldValAsObj = entry.OriginalValues[prop.Name];
+						oldValue = oldValAsObj != null ? oldValAsObj.ToString() : null;
+					}
+
+					if (oldValue != newValue)
+					{
+						Audit.AuditFields.Add(
+							new AuditField()
+							{
+								FieldName = prop.Name,
+								FieldTypeID = 0,
+								PreviousValue = oldValue,
+								Value = newValue
+							});
+					}
+				}
+			}
+
+			public void UpdateIds()
+			{
+				if (entry.Entity is AssetType)
+				{
+					AssetType o = entry.Entity as AssetType;
+
+					Audit.ObjectID = o.ObjectID;
+					Audit.ActionObjectID = o.ObjectID;
+				}
+			}
+		}
+
+		public class EFChangeTracker
+		{
+			private List<EFEntryState> _trackedChanges = new List<EFEntryState>();
+			public void Add(ObjectStateEntry entry)
+			{
+				_trackedChanges.Add(new EFEntryState(entry));
+			}
+
+			public void SaveChangeLogs(CompanyContext ctx)
+			{
+				List<Audit> audits = new List<Audit>();
+
+				_trackedChanges.ForEach(x => x.UpdateIds());
+				_trackedChanges.ForEach(x => audits.Add(x.Audit));
+
+				if (audits.Count > 0)
+				{
+					ctx.Audits.AddRange(audits);
+					ctx.SaveChanges();
+				}
+			}
+		}
+
+
 		public override int SaveChanges()
 		{
+			EFChangeTracker changeTracker = new EFChangeTracker();
+
 			int returnValue = 0;
 			List<Field> fieldsToCheckForChanges = new List<Field>();
 			List<Field> changedFields = new List<Field>();
@@ -2461,6 +2594,8 @@ from	IntersectType I
 					{
 						throw new ArgumentException(Messages.Error_Name_Required);
 					}
+
+					changeTracker.Add(entry);
 				}
 
 				#endregion
@@ -2692,6 +2827,8 @@ from	IntersectType I
 			{
 				createEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 			}
+
+			changeTracker.SaveChangeLogs(this);
 
 			return returnValue;
 		}

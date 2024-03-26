@@ -140,33 +140,15 @@ END
   </sql>
  </changeSet>
   
- <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterInsert-v2.1">
+ <changeSet author="TDuric" id="Table.dbo.AssetType-AssetType_AfterInsert-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[AssetType_AfterInsert]
-   ON  [dbo].[AssetType] 
-   AFTER INSERT
-AS 
-	SET NOCOUNT ON;
-	
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Add', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(CreatedBy, 0)), [Object], ObjectID from inserted;
-]]>
+	DROP TRIGGER IF EXISTS [dbo].[AssetType_AfterInsert]
   </sql>
  </changeSet>
   
- <changeSet author="Core" id="Table.dbo.AssetType-AssetType_AfterUpdate-v2.1">
+ <changeSet author="TDuric" id="Table.dbo.AssetType-AssetType_AfterUpdate-v3">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-CREATE OR ALTER TRIGGER [dbo].[AssetType_AfterUpdate]
-   ON  [dbo].[AssetType] 
-   AFTER UPDATE
-AS 
-	SET NOCOUNT ON;
-	
-	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-        select 'Update', [queue].WriteIndexXml('', [Object], ObjectID, coalesce(UpdatedBy, 0)), [Object], ObjectID from inserted;
-]]>
+	DROP TRIGGER IF EXISTS [dbo].[AssetType_AfterUpdate]
   </sql>
  </changeSet>
 
