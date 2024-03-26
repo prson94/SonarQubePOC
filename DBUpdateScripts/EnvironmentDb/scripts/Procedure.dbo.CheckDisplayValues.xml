@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v9">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.CheckDisplayValues-v10">
   <comment>GOV-31471</comment>
   <comment>If logical is changed, this also needs to be updated in GetAssetDisplayValueById</comment>
     <sql dbms="mssql"
@@ -181,7 +181,7 @@ BEGIN
 				insert into #TempAssetDisplayValue
 				select F.AssetID,CONVERT(NVARCHAR(32),HashBytes('SHA1', F.FormattedValue),2)  DisplayValueHash,F.FormattedValue DisplayValue
 				from #TempClassAssetTypeIDs TL
-				inner join Field F on F.FieldTypeID = TL.FieldTypeID
+				inner join Field F on F.FieldTypeID = TL.FieldTypeID and F.AssetID is not null
 				left join AssetDisplayValue adv on adv.AssetID = F.AssetID 
 				Where  F.FormattedValue is not null  and TL.ISOnlyName = 1 and RTRIM(TL.value) <> '' and TL.FieldTypeID is not null
 				and coalesce(adv.DisplayValue,'') != F.FormattedValue
