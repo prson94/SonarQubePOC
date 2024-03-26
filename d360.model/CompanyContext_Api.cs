@@ -6007,13 +6007,16 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
                             switch (fieldType.Type)
                             {
                                 case "Boolean":
+									if (!string.IsNullOrEmpty(fieldValue))
+									{
+										fieldValue = fieldValue.ToLowerInvariant();
+									}
 
-                                    if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
+									if ((fieldValue != "true" && fieldValue != "false") && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
                                         errorMessages.Add(string.Format(CompanyContextApiError.ValidateBoolValue, fieldName));
                                     }
-
                                     break;
                                 case "Date":
                                     DateTime dTest;
