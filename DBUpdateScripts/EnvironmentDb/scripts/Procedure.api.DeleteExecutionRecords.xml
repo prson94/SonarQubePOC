@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas,Puneet" id="Procedure.api.DeleteExecutionRecords-v10">
+  <changeSet author="Pappas,Puneet" id="Procedure.api.DeleteExecutionRecords-v11">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -26,7 +26,7 @@ begin
 		into	#ex
 		from	api.Execution e 
 		where	DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan
-		and 	ApplicationID != 'Internal/BulkLoad/Promote';
+		and 	coalesce(ApplicationID,'') != 'Internal/BulkLoad/Promote';
 
 		create clustered index cx_temp_ex_Id on #ex (Id);
 		create unique index uq_temp_ex on #ex (ExecutionID);
