@@ -60,6 +60,19 @@ END
 	</rollback>
   </changeSet>
   
+  
+   <changeSet author="PuneetGupta" id="Index.dbo.ResponsibilityTypeRelationOverrideItem-v1">
+  <comment>GOV-31471</comment>
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRelationOverrideItem_AssetID_SecurityAsset')
+BEGIN
+ CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationOverrideItem_AssetID_SecurityAsset] ON [dbo].[ResponsibilityTypeRelationOverrideItem] ([AssetID], [SecurityAsset]) INCLUDE ([ResponsibilityTypeID],[SecurityAssetID])
+END
+]]>
+  </sql>
+ </changeSet> 
+  
   <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-DeleteTrigger-v1.3">
     <comment>GOV-9766</comment>
     <sql dbms="mssql"
