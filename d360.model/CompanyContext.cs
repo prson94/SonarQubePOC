@@ -2329,6 +2329,8 @@ from	IntersectType I
 				{
 					FieldType o = entry.Entity as FieldType;
 
+					changeTracker.Add(entry);
+
 					if (entry.State == EntityState.Added)
 					{
 						if (Any<FieldType>(i => ((o.AssetTypeID != null && i.AssetTypeID == o.AssetTypeID) || (o.IntersectTypeID != null && i.IntersectTypeID == o.IntersectTypeID) || (o.IssueTypeID != null && i.IssueTypeID == o.IssueTypeID)) && i.Name == o.Name))

@@ -10,7 +10,8 @@ using d360.core.enums;
 namespace d360.model.helpers
 {
 	public class EFEntryState
-	{
+	{ 
+		public bool ShouldBeLogged { get; set; }
 		public ObjectStateEntry entry;
 		public Audit Audit = new Audit();
 		private CompanyContext CompanyContext;
@@ -68,21 +69,17 @@ namespace d360.model.helpers
 
 				var actionObject = "";
 				var actionObjectId = 0;
-				var actionObjectName = "";
 
 				if (ft.AssetTypeID.HasValue)
 				{
-					var at = CompanyContext.AssetTypes.Select(x => new { x.ObjectID, x.Object, x.Name, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
+					var at = CompanyContext.AssetTypes.Select(x => new { x.ObjectID, x.Object, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
 					actionObject = at.Object;
 					actionObjectId = at.ObjectID;
-					actionObjectName = at.Name;
 				}
 				else if (ft.IssueTypeID.HasValue)
 				{
-					var it = CompanyContext.IssueTypes.Select(x => new { x.Name, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
 					actionObject = "IssueType";
 					actionObjectId = ft.IssueTypeID.Value;
-					actionObjectName = it.Name;
 
 				}
 				else if (ft.IntersectTypeID.HasValue)
@@ -99,7 +96,7 @@ namespace d360.model.helpers
 					ActionObjectID = actionObjectId,
 					Action = action,
 					ObjectName = ft.FriendlyName,
-					ActionObjectName = actionObjectName,
+					ActionObjectName = ft.FriendlyName,
 					ActionObjectTypeName = "Field Type",
 					ActionDescription = $"This field type has been {action.ToLowerInvariant()}",
 					Date = DateTime.UtcNow,
@@ -109,13 +106,14 @@ namespace d360.model.helpers
 			}
 
 
-			var currentVersion = CompanyContext.Audits.Where(x => x.ActionObject == Audit.Object && x.ActionObjectID == Audit.ObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
+			var currentVersion = CompanyContext.Audits.Where(x => x.ActionObject == Audit.ActionObject && x.ActionObjectID == Audit.ActionObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
 			Audit.Version = currentVersion + 1;
 
 			if (entry.State != EntityState.Deleted)
 			{
 				HandleFieldUpdates(entry, entry.Entity);
 			}
+			ShouldBeLogged = entry.State == EntityState.Deleted || Audit.AuditFields.Count > 0;
 		}
 
 		private void HandleFieldUpdates<T>(ObjectStateEntry entry, T o)
@@ -135,7 +133,7 @@ namespace d360.model.helpers
 					oldValue = oldValAsObj != null ? oldValAsObj.ToString() : null;
 				}
 
-				if (oldValue != newValue)
+				if ((oldValue ?? "") != (newValue ?? ""))
 				{
 					Audit.AuditFields.Add(
 						new AuditField()
@@ -151,19 +149,22 @@ namespace d360.model.helpers
 
 		public void UpdateIds()
 		{
-			if (entry.Entity is AssetType)
+			if (entry.State != EntityState.Detached)
 			{
-				AssetType o = entry.Entity as AssetType;
+				if (entry.Entity is AssetType)
+				{
+					AssetType o = entry.Entity as AssetType;
 
-				Audit.ObjectID = o.ObjectID;
-				Audit.ActionObjectID = o.ObjectID;
-			}
+					Audit.ObjectID = o.ObjectID;
+					Audit.ActionObjectID = o.ObjectID;
+				}
 
-			if (entry.Entity is FieldType)
-			{
-				FieldType ft = entry.Entity as FieldType;
+				if (entry.Entity is FieldType)
+				{
+					FieldType ft = entry.Entity as FieldType;
 
-				Audit.ObjectID = ft.ID;
+					Audit.ObjectID = ft.ID;
+				}
 			}
 		}
 	}
@@ -186,7 +187,7 @@ namespace d360.model.helpers
 			List<Audit> audits = new List<Audit>();
 
 			_trackedChanges.ForEach(x => x.UpdateIds());
-			_trackedChanges.ForEach(x => audits.Add(x.Audit));
+			_trackedChanges.Where(x => x.ShouldBeLogged).ToList().ForEach(x => audits.Add(x.Audit));
 
 			if (audits.Count > 0)
 			{
