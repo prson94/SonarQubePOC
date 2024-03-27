@@ -12,21 +12,24 @@ namespace d360.model.helpers
 	public class EFEntryState
 	{ 
 		public bool ShouldBeLogged { get; set; }
-		public ObjectStateEntry entry;
-		public Audit Audit = new Audit();
-		private CompanyContext CompanyContext;
+		private ObjectStateEntry _entry;
+		private Audit _audit = new Audit();
+		private readonly CompanyContext _companyContext;
+
 		public EFEntryState(ObjectStateEntry entry, CompanyContext ctx)
 		{
-			this.entry = entry;
-			CompanyContext = ctx;
+			this._entry = entry;
+			_companyContext = ctx;
 
 			ParseAuditRecord();
 		}
 
+		public Audit Audit { get { return _audit; } }
+
 		private void ParseAuditRecord()
 		{
 			string action = "";
-			switch (entry.State)
+			switch (_entry.State)
 			{
 				case EntityState.Added:
 					action = "Created";
@@ -37,16 +40,19 @@ namespace d360.model.helpers
 				case EntityState.Deleted:
 					action = "Removed";
 					break;
+				default:
+					action = "";
+					break;
 			}
 
-			if (entry.Entity is AssetType)
+			if (_entry.Entity is AssetType)
 			{
-				AssetType at = entry.Entity as AssetType;
+				AssetType at = _entry.Entity as AssetType;
 
 				DateTime updatedOn = at.UpdatedOn ?? at.CreatedOn ?? DateTime.UtcNow;
 				int updatedBy = at.UpdatedBy ?? at.CreatedBy ?? 0;
 
-				Audit = new Audit
+				_audit = new Audit
 				{
 					Object = at.Object,
 					ObjectID = at.ObjectID,
@@ -63,16 +69,16 @@ namespace d360.model.helpers
 				};
 			}
 
-			if (entry.Entity is FieldType)
+			if (_entry.Entity is FieldType)
 			{
-				FieldType ft = entry.Entity as FieldType;
+				FieldType ft = _entry.Entity as FieldType;
 
 				var actionObject = "";
 				var actionObjectId = 0;
 
 				if (ft.AssetTypeID.HasValue)
 				{
-					var at = CompanyContext.AssetTypes.Select(x => new { x.ObjectID, x.Object, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
+					var at = _companyContext.AssetTypes.Select(x => new { x.ObjectID, x.Object, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
 					actionObject = at.Object;
 					actionObjectId = at.ObjectID;
 				}
@@ -88,7 +94,7 @@ namespace d360.model.helpers
 					actionObjectId = ft.IntersectTypeID.Value;
 				}
 
-				Audit = new Audit
+				_audit = new Audit
 				{
 					Object = "FieldType",
 					ObjectID = ft.ID,
@@ -106,14 +112,14 @@ namespace d360.model.helpers
 			}
 
 
-			var currentVersion = CompanyContext.Audits.Where(x => x.ActionObject == Audit.ActionObject && x.ActionObjectID == Audit.ActionObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
-			Audit.Version = currentVersion + 1;
+			var currentVersion = _companyContext.Audits.Where(x => x.ActionObject == _audit.ActionObject && x.ActionObjectID == _audit.ActionObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
+			_audit.Version = currentVersion + 1;
 
-			if (entry.State != EntityState.Deleted)
+			if (_entry.State != EntityState.Deleted)
 			{
-				HandleFieldUpdates(entry, entry.Entity);
+				HandleFieldUpdates(_entry, _entry.Entity);
 			}
-			ShouldBeLogged = entry.State == EntityState.Deleted || Audit.AuditFields.Count > 0;
+			ShouldBeLogged = _entry.State == EntityState.Deleted || _audit.AuditFields.Count > 0;
 		}
 
 		private void HandleFieldUpdates<T>(ObjectStateEntry entry, T o)
@@ -135,8 +141,8 @@ namespace d360.model.helpers
 
 				if ((oldValue ?? "") != (newValue ?? ""))
 				{
-					Audit.AuditFields.Add(
-						new AuditField()
+					_audit.AuditFields.Add(
+						new AuditField
 						{
 							FieldName = prop.Name,
 							FieldTypeID = 0,
@@ -149,21 +155,20 @@ namespace d360.model.helpers
 
 		public void UpdateIds()
 		{
-			if (entry.State != EntityState.Detached)
+			if (_entry.State != EntityState.Detached)
 			{
-				if (entry.Entity is AssetType)
+				if (_entry.Entity is AssetType)
 				{
-					AssetType o = entry.Entity as AssetType;
+					AssetType o = _entry.Entity as AssetType;
 
-					Audit.ObjectID = o.ObjectID;
-					Audit.ActionObjectID = o.ObjectID;
+					_audit.ObjectID = o.ObjectID;
+					_audit.ActionObjectID = o.ObjectID;
 				}
 
-				if (entry.Entity is FieldType)
+				if (_entry.Entity is FieldType)
 				{
-					FieldType ft = entry.Entity as FieldType;
-
-					Audit.ObjectID = ft.ID;
+					FieldType ft = _entry.Entity as FieldType;
+					_audit.ObjectID = ft.ID;
 				}
 			}
 		}
@@ -171,15 +176,15 @@ namespace d360.model.helpers
 
 	public class EFChangeTracker
 	{
-		private List<EFEntryState> _trackedChanges = new List<EFEntryState>();
-		private CompanyContext ctx;
+		private readonly List<EFEntryState> _trackedChanges = new List<EFEntryState>();
+		private readonly CompanyContext _companyContext;
 		public EFChangeTracker(CompanyContext ctx)
 		{
-			this.ctx = ctx;
+			this._companyContext = ctx;
 		}
 		public void Add(ObjectStateEntry entry)
 		{
-			_trackedChanges.Add(new EFEntryState(entry, ctx));
+			_trackedChanges.Add(new EFEntryState(entry, _companyContext));
 		}
 
 		public void SaveChangeLogs()
@@ -191,8 +196,8 @@ namespace d360.model.helpers
 
 			if (audits.Count > 0)
 			{
-				ctx.Audits.AddRange(audits);
-				ctx.SaveChanges();
+				_companyContext.Audits.AddRange(audits);
+				_companyContext.SaveChanges();
 			}
 		}
 	}
