@@ -12,7 +12,7 @@ namespace d360.model.helpers
 	public class EFEntryState
 	{ 
 		public bool ShouldBeLogged { get; set; }
-		private ObjectStateEntry _entry;
+		private readonly ObjectStateEntry _entry;
 		private Audit _audit = new Audit();
 		private readonly CompanyContext _companyContext;
 
