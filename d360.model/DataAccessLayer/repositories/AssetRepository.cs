@@ -1921,7 +1921,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								 {baseSQL} 
 								 {countSQL} 
 								 {(includeParent ? parentApplyTempTableSQL : "")} 
-								 {(!string.IsNullOrWhiteSpace(populateOwnershipLookupTableSQL) ? "exec [Test_GenerateOwnerShipDataForGetAsset] @AssetTypeID" : "")}
+								 {(!string.IsNullOrWhiteSpace(populateOwnershipLookupTableSQL) ? "exec [GenerateOwnerShipDataForGetAsset] @AssetTypeID" : "")}
 								 {sql} 
 								  OPTION(RECOMPILE)";
 
