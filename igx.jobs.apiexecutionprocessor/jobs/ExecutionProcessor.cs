@@ -152,7 +152,7 @@ namespace igx.jobs.apiexecutionprocessor
 										var postAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
-										resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, true, false);
+										resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
@@ -172,7 +172,7 @@ namespace igx.jobs.apiexecutionprocessor
 										var putAssets = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(info.StorageFolder, info.RequestFileName);
 
 										log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
-										resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, true, false);
+										resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
