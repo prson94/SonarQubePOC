@@ -594,7 +594,10 @@ namespace d360.web.Controllers.Services
 						{
 							List<string> values = new List<string>();
 
-							values = field.Values.Select(x => x.Value).ToList();
+							if (field.Values != null)
+							{
+								values = field.Values.Select(x => x.Value).ToList();
+							}
 							
 							displayVal = "";
 							foreach (var v in values)
