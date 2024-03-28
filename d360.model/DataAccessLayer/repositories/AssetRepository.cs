@@ -1406,7 +1406,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 								from    Asset A  
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where A.AssetTypeID = @assettypeid and tfa.AssetId is null 
-								and exists (select 1 from Test_ResponsibilityOwnershipField ola 
+								and exists (select 1 from ResponsibilityOwnershipField ola 
 											where ola.assetid = 0 and ola.AssetTypeID = @assettypeid
 											and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
 
@@ -1415,7 +1415,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						string simpleFilterOwnership2 = $@"
 								select distinct ola.assetid
 								from    Asset a
-								inner join Test_ResponsibilityOwnershipField ola on a.id = ola.AssetID and ola.assetid <> 0  
+								inner join ResponsibilityOwnershipField ola on a.id = ola.AssetID and ola.assetid <> 0  
 								left join #TempFilteredAssets tfa on tfa.AssetId = ola.assetid
 								where A.AssetTypeID = @assettypeid and tfa.AssetId is null and ola.assetid <> 0
 								and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))})";
