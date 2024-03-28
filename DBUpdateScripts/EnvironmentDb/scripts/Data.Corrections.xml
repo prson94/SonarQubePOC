@@ -1126,7 +1126,7 @@ end
 	</rollback>
   </changeSet>
   
-   <changeSet author="TDuric" id="Data.Corrections.GOV-32125.2">
+   <changeSet author="TDuric" id="Data.Corrections.GOV-32125.3">
    <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -1146,7 +1146,7 @@ end
 					ft.AllowMultipleValues) as Value)
 			F(Value)
 		outer apply (select min(ISNUMERIC(value)) as value from string_split(fa.Value,','))IsNumber
-		where IsNumber.value = 1 and ft.Type = 'Lookup' and ft.AllowMultipleValues = 1 and f.Value is not null
+		where len(fa.value) < 4000 and IsNumber.value = 1 and ft.Type = 'Lookup' and ft.AllowMultipleValues = 1 and f.Value is not null
 
 
 		update fa
@@ -1163,7 +1163,7 @@ end
 					ft.AllowMultipleValues) as PreviousValue)
 			F(PreviousValue)
 		outer apply (select min(ISNUMERIC(value)) as value from string_split(fa.Value,','))IsNumber
-		where IsNumber.value = 1 and ft.Type = 'Lookup' and ft.AllowMultipleValues = 1  and f.PreviousValue is not null
+		where len(fa.value) < 4000 and IsNumber.value = 1 and ft.Type = 'Lookup' and ft.AllowMultipleValues = 1  and f.PreviousValue is not null
 		]]>
     </sql>
 	<rollback>

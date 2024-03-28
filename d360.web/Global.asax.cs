@@ -67,6 +67,7 @@ namespace d360.web
                     return;
                 }
             }
+
             /*
              * If Govern is accessed in a frame, cookies will be considered 3rd party cookies by the ancestor page
              * so to work, the SameSite flag needs to be set to "None", and when SameSite is set to none, the Secure flag
