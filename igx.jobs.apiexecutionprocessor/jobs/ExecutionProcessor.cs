@@ -9,6 +9,7 @@ using d360.featureflags;
 using d360.model;
 using d360.model.DataAccessLayer;
 using Dapper;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -125,6 +126,8 @@ namespace igx.jobs.apiexecutionprocessor
 										log.LogTrace($"PostAssets: {DateTime.UtcNow:hh:mm:ss}");
 										resultdata = assetRepository.PostAssets(postAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
 
+										await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, log);
+
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
 									else
@@ -144,6 +147,8 @@ namespace igx.jobs.apiexecutionprocessor
 
 										log.LogTrace($"PutAssets: {DateTime.UtcNow:hh:mm:ss}");
 										resultdata = assetRepository.PutAssets(putAssets, assetType, dbExecutionItem, sendWorkflowEvents: info.SendWorkflowEvents, false);
+
+										await processLoadBulkTagging(dbExecutionItem, assetType.ID, company, log);
 
 										resultsSql = @"select [ItemNumber], [uid], [ExecutionItemUid], [Message], [Success], IsNew from	api.ExecutionAsset where ExecutionID = @executionId order by ItemNumber asc";
 									}
@@ -402,5 +407,31 @@ namespace igx.jobs.apiexecutionprocessor
 				new { dbExecutionItem.ErrorMessage, dbExecutionItem.CompletedOn, dbExecutionItem.Id });
 		}
 
+		private async Task processLoadBulkTagging(ApiExecution dbExecutionItem, int assetTypeId, ICompanyContext c, ILogger log)
+		{
+			try
+			{
+				var tagField = c.FieldTypes.FirstOrDefault(f => f.AssetTypeID == assetTypeId && f.Type == "Tag");
+				var load = c.Loads.FirstOrDefault(l => l.PutExecutionID == dbExecutionItem.ExecutionID || l.PostExecutionID == dbExecutionItem.ExecutionID);
+				if (load != null && tagField != null)
+				{
+					var loadHasTagField = c.LoadColumns.Any(l => l.LoadID == load.ID && l.Name == tagField.Name);
+					if (loadHasTagField)
+					{
+						log.LogTrace($"Processing execution {dbExecutionItem.ExecutionID} for load {load.ID}");
+						var bulkTags = await c.GetBulkTagAssetsAsync(load.ID, dbExecutionItem.ExecutionID);
+						if (bulkTags.Any())
+						{
+							var repo = new TagRepository(c, FeatureFlags, Queue);
+							await repo.BulkTagAssets(bulkTags, load.UpdatedBy ?? 0);
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				log.LogError(ex, "Error in {FUNCTION_NAME}, on try/catch retry connection attempt.", FUNCTION_NAME);
+			}
+		}
 	}
 }

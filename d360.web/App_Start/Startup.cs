@@ -207,9 +207,7 @@ namespace d360.web
 
 				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 
-				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest().OnActivating(o => {
-					o.Instance.NotificationQueue = Config.GetValue<string>("NotificationQueue");
-				});
+				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
 				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>()

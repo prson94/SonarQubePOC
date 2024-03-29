@@ -26,8 +26,7 @@ namespace igx.jobs.apiexecutionprocessor
 #if DEBUG
 						 q.BatchSize = 1;
 #endif
-					 })
-					 .AddServiceBus();
+					 });
 				})
 				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) => {

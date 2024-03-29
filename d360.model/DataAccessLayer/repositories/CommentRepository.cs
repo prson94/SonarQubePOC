@@ -23,8 +23,6 @@ namespace d360.model.DataAccessLayer
 		internal IStorageProvider Storage;
 		internal ICommunityContext Community;
 
-		public string NotificationQueue { get; set; }
-
 		public CommentRepository(
 			ICompanyContext companyContext, 
 			IQueueSource queue, 
@@ -151,7 +149,7 @@ namespace d360.model.DataAccessLayer
 
 					await CompanyContext.SaveChangesAsync();
 
-					await Queue.CreateMessageAsync(NotificationQueue, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = commentId });
+					await Queue.CreateMessageAsync(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = commentId });
 					//SendCommentNotification(taggedAssets, dbComment, commentedOnAssetId);
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });

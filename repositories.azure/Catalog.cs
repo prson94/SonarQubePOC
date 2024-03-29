@@ -24,7 +24,7 @@ namespace repositories.azure
 
 		readonly string TAG_API_MODEL_SQL_WITHOUT_WHERE = @"
 select	t.uid, 
-		t.[Value] 
+		t.[Value],
 		cnt.UseCount,
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -35,8 +35,8 @@ select	t.uid,
 		tt.Uid as TagTypeUID
 from	Tag t
 		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
-		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
-		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
 		public Catalog(DapperConnectionProvider provider): base(provider) { }
@@ -81,7 +81,7 @@ declare @version int;
 select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
-	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.Name, 'Tag assigned', @version
+	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag assigned', @version
 	from	Asset a
 			left join AssetDisplayValue d on d.AssetID = a.ID 
 			join Tag t on t.ID = @tagId
@@ -369,7 +369,7 @@ values (@uid, @value, @dt, @u, @dt, @u, @State, @tagTypeId);
 select @tagId = SCOPE_IDENTITY();
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
-values ('Tag', @tagId, @Value, @CreatedBy, @CreatedOn, 'Created', 'Tag', @tagId, 'Tags', @Value, 'Tag created', 1);
+values ('Tag', @tagId, @Value, @u, @dt, 'Created', 'Tag', @tagId, 'Tags', @Value, 'Tag created', 1);
 
 {TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.ID = @tagId;", 
 							new { tagTypeId, value, uid = Guid.NewGuid(), state = (int)State.Active, u = CurrentUserId, dt = DateTime.UtcNow });
@@ -495,7 +495,7 @@ where	t.uid = @uid";
 				var chevron = " <i class=\"fa fa-chevron-right\"></i> ";
 				foreach (var item in result)
 				{
-					AssetTypeClass itemClass = AssetTypeClass.Parse(item.Class);
+					var itemClass = (AssetTypeClass)item.Class;
 					string breadcrumb = "";
 					switch (itemClass)
 					{
@@ -769,7 +769,8 @@ order by    P.[Path];";
 
 		public async Task<RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>> ReadTagsAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			var response = new RepositoryResponse<IEnumerable<TagApiModel>>(null, 200, true, "");
+			var response = new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(
+				new PagedApiBaseViewModel<TagApiModel>(), 200, true, "");
 
 			var dbArgs = new DynamicParameters();
 			var queryFilters = new List<string>();
@@ -784,18 +785,15 @@ order by    P.[Path];";
 				new SortColumnOption("tagtypeuid", "tt.[Uid]")
 			};
 
-			var tables = @"
+			var countSql = $@"select count(1) 
 from	Tag t
-		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
-		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
-		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
-
-			var countSql = $"select count(1) {tables}";
 
 			var sql = $@"
 select	t.uid, 
-		t.[Value] 
+		t.[Value], 
 		cnt.UseCount,
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
@@ -804,7 +802,11 @@ select	t.uid,
 		c.FirstName as CreatedByFirstName,
 		c.LastName as CreatedByLastName,
 		tt.Uid as TagTypeUID
-{tables}";
+from	Tag t
+		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
+		inner join TagType tt on tt.ID = t.TagTypeID";
 
 			queryParams.CheckForQueryParameter<Guid>("uid", "t.[UID]", "@uid", ref dbArgs, ref queryFilters);
 			queryParams.CheckForQueryParameter("tagtypeuid", "tt.[uid]", "@tagtypeid", ref dbArgs, ref queryFilters, SYSTEM_TAG_TYPE_UID);
@@ -819,8 +821,8 @@ select	t.uid,
 				}
 			}
 
-			int pageNum = queryParams.CheckForPageNumber();
-			int pageSize = queryParams.CheckForPageSize();
+			response.Data.pageNum = queryParams.CheckForPageNumber();
+			response.Data.pageSize = queryParams.CheckForPageSize();
 			bool includeTotal = queryParams.CheckForIncludeTotal();
 
 			if (queryFilters.Count > 0)
@@ -836,7 +838,7 @@ select	t.uid,
 
 			if (includeTotal)
 			{
-				sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+				sql += $" offset {response.Data.pageSize * (response.Data.pageNum - 1)} rows fetch next {response.Data.pageSize} rows only";
 			}
 
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
@@ -844,13 +846,12 @@ select	t.uid,
 				if (includeTotal)
 				{
 					var qry = await connection.QueryMultipleAsync($"{countSql}; {sql}; ", dbArgs);
-
-					var total = await qry.ReadSingleAsync<int>();
-					response.Data = await qry.ReadAsync<TagApiModel>();
+					response.Data.total = await qry.ReadSingleAsync<int>();
+					response.Data.items = (await qry.ReadAsync<TagApiModel>()).ToList();
 				}
 				else
 				{
-					response.Data = await connection.QueryAsync<TagApiModel>(sql, dbArgs);
+					response.Data.items = (await connection.QueryAsync<TagApiModel>(sql, dbArgs)).ToList();
 				}
 			}
 

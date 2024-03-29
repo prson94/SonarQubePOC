@@ -57,7 +57,7 @@ namespace igx.jobs.apiexecutionprocessor
 						"select * from Comment where ID = @CommentId; " +
 						resourceSql +
 						"select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource gr inner join Comment c on c.CreatedBy = gr.ResourceID and c.ID = @CommentId;" +
-						"select * from AssetDetail d inner join Comment c on c.ID = @CommentId and c.AssetID = d.AssetID;",
+						"select * from AssetDetail d inner join Comment c on c.ID = @CommentId and c.AssetID = d.ID;",
 						new { CommentId = info.Payload }
 					);
 					var comment = await query.ReadFirstAsync<Comment>();
@@ -74,7 +74,11 @@ namespace igx.jobs.apiexecutionprocessor
 						var subject = string.Format(Notifications.TaggedCommentMailSubject, commenterName, asset.DisplayValue);
 						var heading = string.Format(Notifications.TaggedCommentMailHeader, commenterName);
 						var body = string.Format(
-							Notifications.TaggedCommentMailBody, commenterName, rootUrl, assetUrl, asset.DisplayValue, comment.CreatedOn.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy")
+							Notifications.TaggedCommentMailBody, 
+							commenterName, 
+							assetUrl,
+							asset.DisplayValue, 
+							comment.CreatedOn.Value.ToString("hh:mm tt 'UTC' 'on' dd MMM yyyy")
 						);
 
 						foreach (var user in taggedUsers)

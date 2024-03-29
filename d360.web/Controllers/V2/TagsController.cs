@@ -692,7 +692,7 @@ namespace d360.web.Controllers.V2
 		{
 			if (model == null)
 			{
-				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage));
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 			if (!Company.CurrentResourceIsAdmin)
 			{

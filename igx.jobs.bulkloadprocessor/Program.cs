@@ -25,11 +25,7 @@ namespace igx.jobs.bulkloadprocessor
 #if DEBUG
 						 q.BatchSize = 1;
 #endif
-					 })
-					  .AddServiceBus(s => {
-						s.MaxAutoLockRenewalDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.                    
-						s.MaxConcurrentCalls = 5; // up to 5 concurrent calls.
-					});
+					 });
 				})
 				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) => {
