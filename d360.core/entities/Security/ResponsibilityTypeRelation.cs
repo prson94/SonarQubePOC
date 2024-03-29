@@ -10,7 +10,7 @@ namespace d360.core.entities
     /// <summary>
     /// Defines what types of artifacts can be assigned as a source for a given responsibility type.
     /// </summary>
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityTypeRelation : BaseObject, IUpdatedMetadata, ICreatedMetadata
     {
         [Key, Column(Order = 1), DataMember]

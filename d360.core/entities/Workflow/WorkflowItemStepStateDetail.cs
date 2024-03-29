@@ -8,7 +8,7 @@ using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("ItemStepStateDetail", Schema = "workflow")]
+    [DataContract, Table("ItemStepStateDetail", Schema = "workflow")]
     public class WorkflowItemStepStateDetail : BaseIntObject, IIntObject
     {
 		[DataMember]

@@ -9,7 +9,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     [Table("RebuildJobStatus")]
     public class CompanyRebuildJobStatus : BaseObject
     {

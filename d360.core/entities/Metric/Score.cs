@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("Score", Schema = "metrics")]
+    [DataContract, Table("Score", Schema = "metrics")]
     public class Score : BaseUidObject
     {
         [DataMember]

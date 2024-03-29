@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class Comment : BaseCreatedAndUpdatedIntObject, IIntObject
     {
         [DataMember]
@@ -35,7 +35,7 @@ namespace d360.core.entities
         public virtual Asset Asset { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentDetails : BaseObject
     {
         [DataMember]
@@ -143,7 +143,9 @@ namespace d360.core.entities
 
     public class CommentNotification
     {
-        public string RecipientName { get; set; }
+		public int CommentId { get; set; }
+
+		public string RecipientName { get; set; }
 
         public string RecipientEmail { get; set; }
 

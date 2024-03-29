@@ -8,7 +8,7 @@ using d360.core.resources;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class SiteNav : BaseIntObject, IIntObject
     {
         [DataMember]

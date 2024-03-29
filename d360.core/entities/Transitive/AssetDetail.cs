@@ -5,7 +5,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public class AssetDetail : BaseLongObject
     {
         [DataMember]

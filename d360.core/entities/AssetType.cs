@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-	[DataContract(Namespace = NAMESPACE)]
+	[DataContract]
 	public class AssetType : BaseCreatedAndUpdatedIntObject
 	{
 		[DataMember]
@@ -123,7 +123,7 @@ namespace d360.core.entities
 
 	}
 
-	[DataContract(Namespace = NAMESPACE)]
+	[DataContract]
 	public class AssetTypeApiViewModel : BaseObject
 	{
 		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

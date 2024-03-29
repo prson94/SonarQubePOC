@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class Field : BaseLongObject
     {
         [DataMember]
@@ -36,7 +36,7 @@ namespace d360.core.entities
 		public int? IntersectID { get; set; }
 	}
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class FieldApiModel : BaseObject
     {
         [Key, Column(Order = 1)]

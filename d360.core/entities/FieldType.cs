@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities
 {
-	[DataContract(Namespace = NAMESPACE)]
+	[DataContract]
 	public class FieldType : BaseIntObject, IIntObject
 	{
 		[DataMember]

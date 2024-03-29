@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+	<TargetFrameworks>netstandard2.1;net48</TargetFrameworks>
+	<Nullable>enable</Nullable>
+	<LangVersion>latest</LangVersion>
+</PropertyGroup>
+	
+	
+</Project>

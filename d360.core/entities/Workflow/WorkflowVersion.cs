@@ -7,7 +7,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("Version", Schema = "workflow")]
+    [DataContract, Table("Version", Schema = "workflow")]
     public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IUIDMetadata
     {
         [DataMember]

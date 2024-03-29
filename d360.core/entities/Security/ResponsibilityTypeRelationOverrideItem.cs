@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityTypeRelationOverrideItem : BaseLongObject
     {
         [DataMember]

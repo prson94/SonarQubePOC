@@ -7,7 +7,7 @@ using d360.core.enums;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("Asset", Schema = "metrics")]
+    [DataContract, Table("Asset", Schema = "metrics")]
     public class MetricAsset : BaseCreatedAndUpdatedUidObject
     {
         [DataMember]

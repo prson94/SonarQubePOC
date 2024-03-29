@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentRelation : BaseObject
     {
         [Column(Order = 1), DataMember, Key]
@@ -15,7 +15,7 @@ namespace d360.core.entities
         public long AssetID { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentRelationDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

@@ -8,7 +8,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-	[DataContract(Namespace = NAMESPACE)]
+	[DataContract]
 	public class TagType : BaseCreatedAndUpdatedIntObject, ICreatedMetadata, IUpdatedMetadata
 	{
 		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

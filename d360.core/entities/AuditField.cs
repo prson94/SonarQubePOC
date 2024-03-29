@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("Global_FieldAudit", Schema = "reporting")]
+    [DataContract, Table("Global_FieldAudit", Schema = "reporting")]
     public class AuditField : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

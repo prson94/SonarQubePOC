@@ -9,7 +9,7 @@ using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("EventRegistration", Schema = "workflow")]
+    [DataContract, Table("EventRegistration", Schema = "workflow")]
     public class WorkflowEventRegistration : BaseIntObject, IIntObject
     {
         [DataMember]

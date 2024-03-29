@@ -86,7 +86,7 @@ namespace d360.core.entities
         public string FullName { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE), System.ComponentModel.DataAnnotations.Schema.Table("Global_Resource", Schema = "reporting")]
+    [DataContract, Table("Global_Resource", Schema = "reporting")]
     public class GlobalReportingResource : BaseObject
     {
         [DataMember, Key]
@@ -145,7 +145,7 @@ namespace d360.core.entities
         public string Type { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class LoadDetail : BaseObject
     {
         [DataMember]
@@ -194,7 +194,7 @@ namespace d360.core.entities
         public string Requestor { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class LoadDetailV2 : BaseObject
     {
         [DataMember]
@@ -332,7 +332,7 @@ namespace d360.core.entities
 
     #endregion
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ObjectStatisticTileModel : BaseObject
     {
         [DataMember]
@@ -360,7 +360,7 @@ namespace d360.core.entities
         public List<ObjectStatisticTileItemModel> Items { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ObjectStatisticTileItemModel : BaseObject
     {
         [DataMember]
@@ -376,7 +376,7 @@ namespace d360.core.entities
         public int TypeID { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class RawObjectStatistic : BaseObject
     {
         [DataMember]
@@ -513,7 +513,7 @@ namespace d360.core.entities
         public bool HasItemOwn { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class LoadItemDetail : BaseObject
     {
         [DataMember]
@@ -544,7 +544,7 @@ namespace d360.core.entities
         public string StatusMessage { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class SingleLoadDetail : BaseObject
     {
         [DataMember]

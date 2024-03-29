@@ -8,7 +8,7 @@ using d360.core.enums;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersion", Schema = "metrics")]
+    [DataContract, Table("AssetVersion", Schema = "metrics")]
     public class MetricAssetVersion : BaseCreatedObject
     {
         [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

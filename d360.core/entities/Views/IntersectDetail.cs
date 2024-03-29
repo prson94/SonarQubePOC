@@ -7,7 +7,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class IntersectDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

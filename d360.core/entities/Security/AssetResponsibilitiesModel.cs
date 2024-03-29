@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class AssetResponsibilitiesApiModel : BaseObject
     {
         [DataMember]
@@ -20,7 +20,7 @@ namespace d360.core.entities
         public List<AssetResponsibilityItemModel> items { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityApiModel : BaseObject
     {
         public long AssetID { get; set; }
@@ -65,7 +65,7 @@ namespace d360.core.entities
         }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class OwnershipApiModel : BaseObject
     {
         [DataMember]
@@ -99,7 +99,7 @@ namespace d360.core.entities
         public bool IsVisible { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class AssetResponsibilityItemModel : BaseObject
     {
         public long AssetID { get; set; }

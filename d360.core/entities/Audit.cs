@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("Global_Audit", Schema = "reporting")]
+    [DataContract, Table("Global_Audit", Schema = "reporting")]
     public class Audit : BaseObject
     {
         [DataMember]

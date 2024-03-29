@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("ItemAssignment", Schema = "workflow")]
+    [DataContract, Table("ItemAssignment", Schema = "workflow")]
     public class WorkflowItemAssignment : BaseObject
     {
         [DataMember]

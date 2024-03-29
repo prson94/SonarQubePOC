@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("Execution", Schema = "metrics")]
+    [DataContract, Table("Execution", Schema = "metrics")]
     public class ScoreExecution : BaseObject
     {
         [DataMember, Key]

@@ -11,7 +11,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentVote : BaseIntObject, IIntObject
     {
         #region Properties
@@ -28,7 +28,7 @@ namespace d360.core.entities
         #endregion
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentAggregateVoteDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
@@ -39,7 +39,7 @@ namespace d360.core.entities
         public int Count { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentVoteDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
@@ -53,7 +53,7 @@ namespace d360.core.entities
         public string userDisplayName { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CommentVoterDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

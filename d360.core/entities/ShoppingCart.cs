@@ -7,7 +7,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ShoppingCart : BaseIntObject, IIntObject, IEventTrackedEntity
     {
         [DataMember]

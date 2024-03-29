@@ -8,7 +8,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class Issue : BaseIntObject, IIntObject, IFieldsObject, IUpdatedMetadata, IEventTrackedEntity, IUIDMetadata
     {
         public int IssueTypeID { get; set; }

@@ -204,7 +204,7 @@ namespace d360.web.Models
         }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class FilterObjectItem
     {
         [DataMember]
@@ -227,7 +227,7 @@ namespace d360.web.Models
         public Guid? value { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class ReadOnlyFieldValue
     {
         [DataMember]
@@ -292,7 +292,7 @@ namespace d360.web.Models
         }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class ReadOnlyField
     {
         [DataMember]
@@ -418,7 +418,7 @@ namespace d360.web.Models
         public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
 
-    [DataContract(Name = "ObjectSurvey", Namespace = constants.NAMESPACE)]
+    [DataContract(Name = "ObjectSurvey")]
     public class ObjectSurveyModel
     {
         [DataMember]
