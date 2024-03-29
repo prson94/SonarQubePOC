@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities.Views
 {
-    [DataContract(Namespace = NAMESPACE), Table("ResponsibilityDetail")]
+    [DataContract, Table("ResponsibilityDetail")]
     public class ResponsibilityDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

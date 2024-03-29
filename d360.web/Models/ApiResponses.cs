@@ -53,7 +53,7 @@ namespace d360.web.Models
         public List<DatabaseBulkAssetResult> Results { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class ConfirmResponse
     {
         [DataMember]
@@ -66,7 +66,7 @@ namespace d360.web.Models
         public string message { get; set; } = "success";
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class CreateResponse
     {
         [DataMember]
@@ -83,7 +83,7 @@ namespace d360.web.Models
         }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class ErrorResponse
     {
         [DataMember]

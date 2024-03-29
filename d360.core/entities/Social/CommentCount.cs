@@ -6,7 +6,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), NotMapped]
+    [DataContract, NotMapped]
     public class CommentCount : BaseIntObject, IIntObject
     {
         #region Properties

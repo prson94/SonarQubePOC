@@ -8,7 +8,7 @@ using d360.core.enums;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersionRollupPath", Schema = "metrics")]
+    [DataContract, Table("AssetVersionRollupPath", Schema = "metrics")]
     public class MetricAssetVersionRollupPath : BaseUidObject
     {
         [DataMember]
@@ -24,7 +24,7 @@ namespace d360.core.entities.Metric
         public virtual ICollection<MetricAssetVersionRollupPathFilter> Filters { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersionRollupPathFilter", Schema = "metrics")]
+    [DataContract, Table("AssetVersionRollupPathFilter", Schema = "metrics")]
     public class MetricAssetVersionRollupPathFilter : BaseUidObject
     {
         [DataMember]
@@ -52,7 +52,7 @@ namespace d360.core.entities.Metric
         public virtual FieldType FieldType { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersionRollupPathFilterValue", Schema = "metrics")]
+    [DataContract, Table("AssetVersionRollupPathFilterValue", Schema = "metrics")]
     public class MetricAssetVersionRollupPathFilterValue : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

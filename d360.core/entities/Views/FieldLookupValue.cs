@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class FieldLookupValue : BaseObject
     {
         [Column(Order = 1), DataMember, Key]

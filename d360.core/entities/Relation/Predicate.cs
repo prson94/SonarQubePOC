@@ -9,7 +9,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class Predicate : BaseIntObject, IIntObject
     {
         [DataMember, StringLength(100)]
@@ -32,7 +32,7 @@ namespace d360.core.entities
     {
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class PredicateApiViewModel : BaseObject
     {
         [DataMember]

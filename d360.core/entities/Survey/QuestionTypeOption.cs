@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class QuestionTypeOption : BaseIntObject, IIntObject
     {
         [DataMember]

@@ -9,7 +9,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("Allocation", Schema = "metrics")]
+    [DataContract, Table("Allocation", Schema = "metrics")]
     public class MetricAllocation : BaseCreatedAndUpdatedGuidObject
     {
         [DataMember]

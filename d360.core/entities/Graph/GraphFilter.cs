@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities.Graph
 {
-    [DataContract(Namespace = NAMESPACE), Table("Filter", Schema = "graph")]
+    [DataContract, Table("Filter", Schema = "graph")]
     [JsonConverter(typeof(GraphFilterConverter))]
     public class GraphFilter : BaseObject, IUpdatedMetadata, ICreatedMetadata
     {

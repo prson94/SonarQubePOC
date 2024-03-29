@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersionConditionItemValue", Schema = "metrics")]
+    [DataContract, Table("AssetVersionConditionItemValue", Schema = "metrics")]
     public class MetricAssetVersionConditionItemValue : BaseObject
     {
         [Key, Column(Order = 1)]

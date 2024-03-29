@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [DataContract(Name = "resourceGroup", Namespace = NAMESPACE)]
+    [DataContract(Name = "resourceGroup")]
     public class ResourceGroup : BaseObject
     {
         #region Properties

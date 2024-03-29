@@ -10,6 +10,7 @@
         Cache = 6,
         Event = 7,
         Integration = 8,
-        Scoring = 9
+        Scoring = 9,
+		NotifyOfComment = 10
     }
 }

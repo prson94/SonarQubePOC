@@ -7,13 +7,12 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseObject
     {
-        internal const string NAMESPACE = constants.NAMESPACE;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseUidObject : BaseObject
     {
         [
@@ -24,7 +23,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseGuidObject : BaseObject
     {
         [
@@ -36,7 +35,7 @@ namespace d360.core.entities
         public Guid ID { get; set; }
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedGuidObject : BaseUidObject, IUpdatedMetadata, ICreatedMetadata
     {
         public int? CreatedBy { get; set; } = 0;
@@ -50,7 +49,7 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; } = DateTime.UtcNow;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseIntObject : BaseObject
     {
         [
@@ -62,7 +61,7 @@ namespace d360.core.entities
         public int ID { get; set; }
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedUidObject : BaseUidObject, IUpdatedMetadata, ICreatedMetadata
     {
         [DataMember]
@@ -78,7 +77,7 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; } = DateTime.UtcNow;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedIntObject : BaseIntObject
     {
         public int? CreatedBy { get; set; }
@@ -93,7 +92,7 @@ namespace d360.core.entities
         private DateTime? createdon = null;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject, IUpdatedMetadata, ICreatedMetadata
     {
         public int? CreatedBy { get; set; }
@@ -121,7 +120,7 @@ namespace d360.core.entities
         private DateTime? updatedon = null;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedObject : BaseObject
     {
         public int? CreatedBy { get; set; }
@@ -136,7 +135,7 @@ namespace d360.core.entities
         private DateTime? createdon = null;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedObject : BaseObject
     {
         [DataMember]
@@ -166,7 +165,7 @@ namespace d360.core.entities
         private DateTime? updatedon = null;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseLongObject : BaseObject
     {
         [
@@ -178,7 +177,7 @@ namespace d360.core.entities
         public long ID { get; set; }
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseCreatedAndUpdatedLongObject : BaseLongObject
     {
         public int? CreatedBy { get; set; }
@@ -206,14 +205,14 @@ namespace d360.core.entities
         private DateTime? updatedon = null;
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseTemplateGuidObject : BaseObject
     {
         [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Uid { get; set; }
     }
 
-    [Serializable, DataContract(Namespace = NAMESPACE)]
+    [Serializable, DataContract]
     public abstract class BaseTemplateCreatedAndUpdatedGuidObject : BaseTemplateGuidObject
     {
         [DataMember]

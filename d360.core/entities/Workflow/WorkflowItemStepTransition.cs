@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("ItemStepTransition", Schema = "workflow")]
+    [DataContract, Table("ItemStepTransition", Schema = "workflow")]
     public class WorkflowItemStepTransition : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

@@ -210,7 +210,7 @@ namespace d360.web.Models
         public int? Timeout { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class EditableField : ReadOnlyField
     {
         public EditableField()
@@ -308,7 +308,7 @@ namespace d360.web.Models
         public Cardinality ObjectCardinality { get; set; }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class EditableFieldItem
     {
         public EditableFieldItem()
@@ -511,7 +511,7 @@ namespace d360.web.Models
         }
     }
 
-    [DataContract(Namespace = constants.NAMESPACE)]
+    [DataContract]
     public class FieldValidationModel
     {
         /// <summary>

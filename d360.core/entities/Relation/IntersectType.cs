@@ -13,7 +13,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class IntersectType : BaseIntObject, IIntObject, IUpdatedMetadata, IEventTrackedEntity
     {
         [DataMember]

@@ -10,7 +10,7 @@ using d360.core.queue;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("Execution", Schema = "api")]
+    [DataContract, Table("Execution", Schema = "api")]
     public class ApiExecution : BaseObject
     {
 		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

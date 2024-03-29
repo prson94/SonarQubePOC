@@ -7,7 +7,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities.Workflow
 {
-    [DataContract(Namespace = NAMESPACE), Table("TaskProcedure", Schema = "workflow")]
+    [DataContract, Table("TaskProcedure", Schema = "workflow")]
     public class WorkflowTaskProcedure : BaseIntObject, IIntObject, IUpdatedMetadata
     {
         [DataMember, StringLength(250)]

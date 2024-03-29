@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityTypeRelationRule : BaseIntObject, IIntObject, IUpdatedMetadata, ICreatedMetadata, IUIDMetadata
     {
         [DataMember]

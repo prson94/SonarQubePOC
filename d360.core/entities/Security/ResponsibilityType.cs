@@ -8,7 +8,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityType : BaseIntObject, IIntObject, IUpdatedMetadata, ICreatedMetadata
     {
         #region Properties
@@ -35,7 +35,7 @@ namespace d360.core.entities
         public virtual ICollection<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class ResponsibilityTypeViewModel : BaseObject
     {
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

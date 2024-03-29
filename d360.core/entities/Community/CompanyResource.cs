@@ -7,7 +7,7 @@ using d360.core.enums;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class CompanyResource : BaseObject
     {
         [Column(Order = 1), Key]

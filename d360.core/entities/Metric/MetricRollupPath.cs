@@ -8,7 +8,7 @@ using d360.core.enums;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("RollupPath", Schema = "metrics")]
+    [DataContract, Table("RollupPath", Schema = "metrics")]
     public class MetricRollupPath : BaseUidObject
     {
         [DataMember]
@@ -30,7 +30,7 @@ namespace d360.core.entities.Metric
         public virtual ICollection<MetricRollupPathSegment> Segments { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE), Table("RollupPathLink", Schema = "metrics")]
+    [DataContract, Table("RollupPathLink", Schema = "metrics")]
     public class MetricRollupPathLink : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
@@ -49,7 +49,7 @@ namespace d360.core.entities.Metric
         public virtual MetricRollupPath RollupPath { get; set; }
     }
 
-    [DataContract(Namespace = NAMESPACE), Table("RollupPathSegment", Schema = "metrics")]
+    [DataContract, Table("RollupPathSegment", Schema = "metrics")]
     public class MetricRollupPathSegment : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]

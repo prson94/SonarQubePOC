@@ -9,7 +9,7 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("ExecutionExternal", Schema = "api")]
+    [DataContract, Table("ExecutionExternal", Schema = "api")]
     public class ApiExecutionsExternal : BaseIntObject, IIntObject
     {
         [DataMember]

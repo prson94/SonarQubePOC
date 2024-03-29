@@ -11,7 +11,7 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
+    [DataContract]
     public class AssetTypeExportTemplate : BaseCreatedAndUpdatedObject
     {
         #region Properties

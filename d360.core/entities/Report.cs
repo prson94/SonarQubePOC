@@ -15,7 +15,7 @@ using d360.core.resources;
 
 namespace d360.core.entities
 {
-	[DataContract(Namespace = NAMESPACE)]
+	[DataContract]
 	public class Report : BaseIntObject, IIntObject, IUpdatedMetadata
 	{
 		[DataMember]

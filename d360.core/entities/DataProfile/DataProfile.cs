@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), Table("AssetDataProfile", Schema = "dbo")]
+    [DataContract, Table("AssetDataProfile", Schema = "dbo")]
     public class AssetDataProfile : BaseCreatedAndUpdatedLongObject
     {
         [DataMember]
@@ -142,7 +142,7 @@ namespace d360.core.entities
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
 	}
 
-    [DataContract(Namespace = NAMESPACE), Table("AssetDataProfileSample", Schema = "dbo")]
+    [DataContract, Table("AssetDataProfileSample", Schema = "dbo")]
     public class AssetDataProfileSample : BaseLongObject
     {
         [DataMember]

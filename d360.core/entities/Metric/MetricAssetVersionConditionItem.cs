@@ -7,7 +7,7 @@ using d360.core.enums;
 
 namespace d360.core.entities.Metric
 {
-    [DataContract(Namespace = NAMESPACE), Table("AssetVersionConditionItem", Schema = "metrics")]
+    [DataContract, Table("AssetVersionConditionItem", Schema = "metrics")]
     public class MetricAssetVersionConditionItem : BaseUidObject
     {
         [DataMember]
