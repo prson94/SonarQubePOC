@@ -22,7 +22,6 @@ namespace d360.model
 			builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
             builder.RegisterType<GraphFilterValidator>().InstancePerRequest();
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
-            builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
 			builder.RegisterType<ExecutionsRepository>().As<IExecutionsRepository>().InstancePerRequest();
 			builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();

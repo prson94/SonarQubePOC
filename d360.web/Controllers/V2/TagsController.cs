@@ -9,6 +9,8 @@ using System.Web.Http.Description;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.queue;
+using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
@@ -38,9 +40,11 @@ namespace d360.web.Controllers.V2
 	{
 		private readonly ITagRepository tagRepository;
 		private readonly IAssetRepository assetRepository;
+		private readonly IQueueSource Queue;
 
-		public TagsController(ICoreComponentSet set, ITagRepository repository, IAssetRepository assetRep) : base(set)
+		public TagsController(ICoreComponentSet set, IQueueSource queue, ITagRepository repository, IAssetRepository assetRep) : base(set)
 		{
+			Queue = queue;
 			tagRepository = repository;
 			assetRepository = assetRep;
 		}
@@ -52,27 +56,20 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet, MapToApiVersion("2.0"),
 			Route("search"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerProduces("application/json"),
 			SwaggerParameter("Value", "The value of the tag that's to be searched.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("TagTypeUid", "The UID for the type of the tags that's to be searched. Defaults to searching 'General'.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "Search for tags completed.", typeof(List<dynamic>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Error while fetching tags.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult Search()
+		public async Task<IHttpActionResult> Search()
 		{
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				var tags = tagRepository.SearchTags(queryParams);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
-			}
-			catch (Exception ex)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, ex.Message);
-
-			}
+			var queryParams = Request.GetQueryNameValuePairs();
+			var response = await Catalog.ReadTagsAsync(queryParams);
+			return (response.IsSuccess) ? 
+				Ok(response.Data) : 
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -81,7 +78,6 @@ namespace d360.web.Controllers.V2
 		[HttpGet]
 		[MapToApiVersion("2.0")]
 		[Route("")]
-		[SwaggerConsumes("application/json")]
 		[SwaggerProduces("application/json")]
 		[SwaggerParameter("uid", "The Uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false)]
 		[SwaggerParameter("tagtypeuid", "The Uid of a specific tag type to return.", DataType = "string", ParameterType = "query", Required = false)]
@@ -95,36 +91,23 @@ namespace d360.web.Controllers.V2
 		[SwaggerParameter("_includeTotal",
 			"Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.",
 			DataType = "boolean", ParameterType = "query", Required = false)]
-		[SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>))]
+		[SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(PagedApiBaseViewModel<TagApiModelWrapper>))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]
-		[SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))]
-		[SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))]
 		public async Task<IHttpActionResult> Get()
 		{
-			try
-			{
-				var queryParams = Request.GetQueryNameValuePairs();
-				string isValid = isPageSizeAndNumValid(queryParams);
+			var queryParams = Request.GetQueryNameValuePairs();
+			string isValid = isPageSizeAndNumValid(queryParams);
 
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-				}
-
-				var tags = await tagRepository.GetTags(queryParams);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
-			}
-			catch (ArgumentException e)
+			if (!string.IsNullOrEmpty(isValid))
 			{
-				var msg = e.Message.Replace("\n", " ").Replace("\r", "");
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, msg);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
 			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message.Replace("\n", " ").Replace("\r", "");
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, msg);
-			}
+
+			var response = await Catalog.ReadTagsAsync(queryParams);
+
+			return (response.IsSuccess) ?
+				Ok(response.Data) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -143,30 +126,26 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult DeleteById(string tagUid, bool cascade = false)
+		public async Task<IHttpActionResult> DeleteById(string tagUid, bool cascade = false)
 		{
 			Guid _tagUid;
 			if (!Guid.TryParse(tagUid, out _tagUid))
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, tagUid));
+				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidGuid, tagUid));
 			}
-
 			if (!tagRepository.DoesTagExists(_tagUid))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
+				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
 			}
-
 			if (!tagRepository.IsAuthorizedToEditTag(_tagUid))
 			{
-				throw new UnauthorizedBusinessLayerException(ApiMessages.AccessDenied);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
 			}
 
-			if (!tagRepository.DeleteTags(new List<TagApiDeleteModel> { new TagApiDeleteModel { uid = _tagUid, cascade = cascade } }))
-			{
-				throw new NotFoundBusinessLayerException(TagsApiMessages.TagNotFound);
-			}
-
-			return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage);
+			var response = await Catalog.RemoveTagsAsync(new List<Guid> { _tagUid });
+			return (response.IsSuccess) ? 
+				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message, response.Message);
 		}
 
 
@@ -183,40 +162,17 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult PostTag(TagApiUpsertModel model)
+		public async Task<IHttpActionResult> PostTag(TagApiUpsertModel model)
 		{
 			if (model == null)
 			{
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
-			TagApiModel result;
-
-			try
-			{
-				TagValidator.ValidateForPost(model);
-				model.Value = model.Value.Trim();
-
-				//make sure tag is not empty
-				if (string.IsNullOrEmpty(model.Value))
-				{
-					throw new ArgumentNullException(TagsApiMessages.ErrorCreateTag);
-				}
-
-				//make sure no tag with the same name exists
-				if (tagRepository.DoesTagExists(model.Value, model.TagTypeUid))
-				{
-					throw new ArgumentNullException(TagsApiMessages.TagExists);
-				}
-
-				result = tagRepository.CreateTag(model);
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorCreateTag, e.Message);
-			}
-
-			return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+			var response = await Catalog.CreateTagAsync(model.Value, model.TagTypeUid);
+			return (response.IsSuccess) ?
+				Ok(response.Data) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -235,47 +191,42 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult Put(string tagUid, TagApiUpsertModel model)
+		public async Task<IHttpActionResult> Put(string tagUid, TagApiUpsertModel model)
 		{
 			Guid tagId;
 			if (!Guid.TryParse(tagUid, out tagId))
 			{
-				throw new ArgumentException(ApiMessages.InvalidGuid);
+				return errorMessageArgumentResponse(ApiMessages.InvalidGuid);
 			}
 
 			if (!tagRepository.DoesTagExists(tagId))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
+				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
 			}
 
 			if (!tagRepository.IsAuthorizedToEditTag(tagId))
 			{
-				throw new ForbiddenBusinessLayerException(ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			model.Value = model.Value.Trim();
-			TagValidator.ValidateForPut(tagId, model);
-			var existingTag = tagRepository.GetTagByUid(tagId);
+			var response = await Catalog.UpdateTagAsync(tagId, model.Value);
 
-			//make sure tag is not empty
-			if (string.IsNullOrEmpty(model.Value))
+			if (response.IsSuccess)
 			{
-				throw new ArgumentNullException(TagsApiMessages.ErrorUpdateTag);
-			}
+				await Queue.CreateMessageAsync(constants.Queue.Search, new ReindexModel
+				{
+					To = QueueAction.UpdateInIndex,
+					BatchOperation = ReindexBatchOperation.Update,
+					BatchUids = new List<Guid> { tagId }
+				});
 
-			if (existingTag == null)
+				var result = await Catalog.ReadTagAsync(tagId);
+				return Ok(result.Data);
+			}
+			else
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
-
-			if (tagRepository.DoesTagExists(tagId, model))
-			{
-				throw new ArgumentException(TagsApiMessages.TagExists);
-			}
-
-			var result = tagRepository.UpdateTag(tagId, model, existingTag);
-
-			return Ok(result);
 		}
 
 		/// <summary>
@@ -295,32 +246,30 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
 		]
-		public IHttpActionResult DeleteTags(List<TagApiDeleteModel> model)
+		public async Task<IHttpActionResult> DeleteTags(List<TagApiDeleteModel> model)
 		{
 			if (model == null)
 			{
-				throw new ArgumentException(ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
-
 			foreach (var item in model)
 			{
 				if (!tagRepository.DoesTagExists(item.uid))
 				{
-					throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
+					return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
 				}
 
 				if (!tagRepository.IsAuthorizedToEditTag(item.uid))
 				{
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
+					return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
 				}
 			}
 
-			if (!tagRepository.DeleteTags(model))
-			{
-				throw new UnauthorizedBusinessLayerException(TagsApiMessages.TagNotFound);
-			}
-
-			return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
+			var uids = model.Select(o => o.uid).ToList();
+			var response = await Catalog.RemoveTagsAsync(uids);
+			return (response.IsSuccess) ?
+				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message, response.Message);
 		}
 
 		/// <summary>
@@ -338,56 +287,50 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public IHttpActionResult ConsolidateTags(string parentUid, List<string> childrenUids)
+		public async Task<IHttpActionResult> ConsolidateTags(string parentUid, List<string> childrenUids)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
 			}
 
-			try
+			Guid _parentUid;
+			if (!Guid.TryParse(parentUid, out _parentUid))
 			{
-				if (Guid.Parse(parentUid) == Guid.Empty)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, string.Format(ApiMessages.CustomUidNotValid, parentUid));
-				}
-
-				foreach (var item in childrenUids)
-				{
-					if (Guid.Parse(item) == Guid.Empty)
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, string.Format(ApiMessages.CustomUidNotValid, item));
-					}
-				}
-
-				if (childrenUids.Contains(parentUid))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorConsolodateTags, TagsApiMessages.ParentNotIncludeInChild);
-				}
-
-				IEnumerable<TagApiModel> result = tagRepository.ConsolidateTags(parentUid, childrenUids);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+				return errorMessageArgumentResponse(string.Format(ApiMessages.CustomUidNotValid, parentUid));
 			}
-			catch (Exception ex)
+
+			var _childrenUids = new List<Guid>();
+			foreach (var item in childrenUids)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, TagsApiMessages.ErrorConsolodateTags, ex.Message);
+				Guid child;
+				if (Guid.TryParse(item, out child))
+				{
+					_childrenUids.Add(child);
+				}
+				else
+				{
+					return errorMessageArgumentResponse(string.Format(ApiMessages.CustomUidNotValid, item));
+				}
 			}
+
+			if (_childrenUids.Contains(_parentUid))
+			{
+				return errorMessageArgumentResponse(TagsApiMessages.ParentNotIncludeInChild);
+			}
+
+			var response = await Catalog.ConsolidateTagsAsync(_parentUid, _childrenUids);
+
+			return response.IsSuccess ? 
+				Ok(response.Data) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		[HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath"), ApiExplorerSettings(IgnoreApi = true)]
-		public IHttpActionResult GetAssetsPath(Guid tagUid)
+		public async Task<IHttpActionResult> GetAssetsPath(Guid tagUid)
 		{
-			try
-			{
-				List<AssetTagList> result = tagRepository.GetAssetsPathForTag(tagUid);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.UnknownError, e.Message);
-			}
+			var result = await Catalog.ReadAssetBreadcrumbsByTagAsync(tagUid);
+			return Ok(result.Data);
 		}
 
 		/// <summary>
@@ -488,54 +431,46 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult GetTagDetails(string uid)
 		{
-			try
+			Guid tagUid = Guid.Parse(uid);
+			Guid AssetTypeUid = new Guid();
+
+			if (!tagRepository.DoesTagExists(tagUid))
 			{
-				Guid tagUid = Guid.Parse(uid);
-				Guid AssetTypeUid = new Guid();
-
-				if (!tagRepository.DoesTagExists(tagUid))
-				{
-					return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidRequest, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
-				}
-
-				var queryParams = Request.GetQueryNameValuePairs();
-				string isValid = isPageSizeAndNumValid(queryParams);
-
-				if (!string.IsNullOrEmpty(isValid))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
-				}
-
-				if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
-				{
-					if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
-					}
-
-					if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
-					{
-						var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == AssetTypeUid);
-
-						if (assetType == null)
-						{
-							return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
-						}
-					}
-					else
-					{
-						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
-					}
-				}
-
-				TagDetailApiModel results = tagRepository.GetDetails(tagUid, queryParams);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.InvalidRequest, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
 			}
-			catch (Exception e)
+
+			var queryParams = Request.GetQueryNameValuePairs();
+			string isValid = isPageSizeAndNumValid(queryParams);
+
+			if (!string.IsNullOrEmpty(isValid))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagFetch, e.Message);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid);
 			}
+
+			if (queryParams.Any(q => q.Key.ToLower() == "assettypeuid"))
+			{
+				if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value.ToLower(), out AssetTypeUid))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
+				}
+
+				if (AssetTypeUid != null && AssetTypeUid != Guid.Empty)
+				{
+					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == AssetTypeUid);
+
+					if (assetType == null)
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
+					}
+				}
+				else
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidAssetTypeID);
+				}
+			}
+
+			var results = tagRepository.GetDetails(tagUid, queryParams);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -606,86 +541,44 @@ namespace d360.web.Controllers.V2
 			return ResponseMessage(result);
 		}
 
-		[HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
-		public IHttpActionResult GetTagTooltipData(string tagUid, Guid? assetUid = null)
+		[HttpGet, MapToApiVersion("2.0"), Route("{tagUid:Guid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
+		public IHttpActionResult GetTagTooltipData(Guid tagUid, Guid? assetUid = null)
 		{
-			try
-			{
-				Guid tagGuid = Guid.Parse(tagUid);
-				IEnumerable<dynamic> result = tagRepository.GetTooltip(tagGuid, assetUid);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagToolTip, e.Message);
-			}
+			var result = tagRepository.GetTooltip(tagUid, assetUid);
+			return Ok(result);
 		}
 
 		[HttpGet, MapToApiVersion("2.0"), Route("tooltipByName"), ApiExplorerSettings(IgnoreApi = true)]
 		public IHttpActionResult GetTagTooltipByNameData(string tagName, Guid? assetUid = null)
 		{
-			try
-			{
-				tagName = tagName.Replace("&amp;", "&");
-				var tag = tagRepository.GetTagByName(tagName);
-
-				return GetTagTooltipData(tag.uid.ToString(), assetUid);
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagToolTip, e.Message);
-			}
+			tagName = tagName.Replace("&amp;", "&");
+			var tag = tagRepository.GetTagByName(tagName);
+			return GetTagTooltipData(tag.uid, assetUid);
 		}
 
 		/// <summary>
 		/// A check to see if a tag already exists or not.
 		/// </summary>
 		/// <param name="value">The name of the tag that's been checked if exists.</param>
-		[HttpGet,
-		Route("exists"),
-		SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+		[HttpGet, Route("exists"), SwaggerProduces("application/json"),
 		SwaggerResponse(HttpStatusCode.OK, "Tag does exist.", typeof(HttpStatusCode)),
-		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse)),
-		SwaggerResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists.", typeof(ErrorResponse)),
-		SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
+		SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse))]
 		public IHttpActionResult CheckIfTagExist(string value)
 		{
-			try
-			{
-				var result = tagRepository.GetTagByName(value);
-
-				if (result == null)
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound));
-				}
-				else
-				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
-				}
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorCheckTagExists, e.Message);
-			}
+			var result = tagRepository.GetTagByName(value);
+			return (result == null) ? errorMessageNotFoundResponse("") : Ok();
 		}
 
-		[HttpGet,
-		Route("AssetTagDetails"),
-		ApiExplorerSettings(IgnoreApi = true)]
+		[HttpGet, Route("AssetTagDetails"), ApiExplorerSettings(IgnoreApi = true)]
 		public IHttpActionResult getAssetTagDetails(int tagID, Guid assetUID)
 		{
-			try
+			var asset = assetRepository.GetAssetByUID(assetUID);
+			if (asset == null)
 			{
-				var asset = assetRepository.GetAssetByUID(assetUID);
-				var result = tagRepository.GetAssetTagDetails(tagID, asset.ID);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+				return errorMessageNotFoundResponse("Asset not found.");
 			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorAssetTagDetail, e.Message);
-			}
+			var result = tagRepository.GetAssetTagDetails(tagID, asset.ID);
+			return Ok(result);
 		}
 
 		[HttpGet,
@@ -699,14 +592,13 @@ namespace d360.web.Controllers.V2
 
 				if (assetUid == null || assetUid == Guid.Empty)
 				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+					return Ok(result);
 				}
 
 				var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
-
 				if (asset == null)
 				{
-					return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+					return Ok(result);
 				}
 
 				List<AssetTag> assetTags = Company.AssetTags.Where(x => x.AssetID == asset.ID).ToList();
@@ -738,11 +630,11 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+				return Ok(result);
 			}
 			catch (Exception e)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorTagPermissionDetail, e.Message);
+				return errorMessageArgumentResponse(TagsApiMessages.ErrorTagPermissionDetail);
 			}
 		}
 
@@ -760,11 +652,11 @@ namespace d360.web.Controllers.V2
 				var asset = assetRepository.GetAssetByUID(assetUID);
 				var result = tagRepository.GetAssetTagDetails(tag.ID, asset.ID);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+				return Ok(result);
 			}
 			catch (Exception e)
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorAssetTagDetail, e.Message);
+				return errorMessageArgumentResponse(TagsApiMessages.ErrorAssetTagDetail);
 			}
 		}
 
@@ -774,27 +666,14 @@ namespace d360.web.Controllers.V2
 		[HttpGet]
 		[MapToApiVersion("2.0")]
 		[Route("tagTypes")]
-		[SwaggerConsumes("application/json")]
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagTypeApiModel>))]
-		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]
-		[SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))]
 		[SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))]
 		public async Task<IHttpActionResult> GetTagTypes()
 		{
-			try
-			{
-				var tagTypess = await tagRepository.GetTagTypes();
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tagTypess));
-			}
-			catch (Exception ex)
-			{
-				var msg = ex.Message.Replace("\n", " ").Replace("\r", "");
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTagTypes, msg);
-			}
+				var models = await Catalog.ReadTagTypesAsync();
+				return Ok(models);
 		}
-
 
 		/// <summary>
 		/// Adds a tag type with the properties provided in the model.
@@ -806,42 +685,24 @@ namespace d360.web.Controllers.V2
 			Route("tagTypes"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The specified tag type was saved, returns the properties of the created tag type.", typeof(TagTypeApiModel)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not allowed to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult PostTagType(TagTypeApiUpsertModel model)
+		public async Task<IHttpActionResult> PostTagType(TagTypeApiUpsertModel model)
 		{
 			if (model == null)
 			{
-				return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage));
 			}
-
-			TagTypeApiModel result;
-
-			try
+			if (!Company.CurrentResourceIsAdmin)
 			{
-				model.Value = model.Value.Trim();
-				var validationStatus = TagTypeValidator.ValidateForPost(model);
-
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
-				}
-
-				//make sure no tag with the same name exists
-				if (tagRepository.DoesTagTypeExists(model.Value))
-				{
-					throw new ArgumentNullException(TagsApiMessages.TagExists);
-				}
-
-				result = tagRepository.CreateTagType(model);
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorCreateTagType, e.Message);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+			var response = await Catalog.CreateTagTypeAsync(model.Value);
+			return (response.IsSuccess) ?
+				Ok(response.Data) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 
 		/// <summary>
@@ -857,52 +718,37 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The specified tag type was updated, returns the properties of the created tag type.", typeof(TagTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag type was not found.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
+		public async Task<IHttpActionResult> PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
 		{
 			Guid tagTypeId;
 			if (!Guid.TryParse(tagTypeUid, out tagTypeId))
 			{
-				throw new ArgumentException(ApiMessages.InvalidGuid);
+				return errorMessageArgumentResponse(ApiMessages.InvalidGuid);
 			}
 
-			if (!tagRepository.DoesTagTypeExists(tagTypeId))
+			if (model == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagTypeUidNotFound, tagTypeId));
+				return errorMessageArgumentResponse(ApiMessages.Invalid);
 			}
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				throw new ForbiddenBusinessLayerException(ApiMessages.ForbiddenUserNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
-			model.Value = model.Value.Trim();
-			TagTypeValidator.ValidateForPut(tagTypeId, model);
-
-			var validationStatus = TagTypeValidator.ValidateForPut(tagTypeId, model);
-
-			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
+			if (response.IsSuccess)
 			{
-				return errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+				var responseModel = await Catalog.ReadTagTypeAsync(tagTypeId);
+				return Ok(responseModel);
 			}
-
-			var existingTagType = tagRepository.GetTagTypeByUid(tagTypeId);
-
-			if (existingTagType == null)
+			else
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagTypeUidNotFound, tagTypeId));
+				return errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 			}
-
-			if (tagRepository.DoesTagTypeExists(tagTypeId, model))
-			{
-				throw new ArgumentException(TagsApiMessages.TagTypeExists);
-			}
-
-			var result = tagRepository.UpdateTagType(tagTypeId, model, existingTagType);
-
-			return Ok(result);
 		}
 
 		/// <summary>
@@ -921,30 +767,26 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public IHttpActionResult DeleteTagTypeById(string tagTypeUid, bool cascade = false)
+		public async Task<IHttpActionResult> DeleteTagTypeById(string tagTypeUid, bool cascade = false)
 		{
 			Guid _tagTypeUid;
 			if (!Guid.TryParse(tagTypeUid, out _tagTypeUid))
 			{
-				throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, _tagTypeUid));
+				return errorMessageArgumentResponse(string.Format(ApiMessages.InvalidGuid, _tagTypeUid));
 			}
-
 			if (!tagRepository.DoesTagTypeExists(_tagTypeUid))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagTypeUidNotFound, _tagTypeUid));
+				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagTypeUidNotFound, _tagTypeUid));
 			}
-
 			if (!Company.CurrentResourceIsAdmin)
 			{
-				throw new UnauthorizedBusinessLayerException(ApiMessages.AccessDenied);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
 			}
 
-			if (!tagRepository.DeleteTagTypes(new List<TagTypeApiDeleteModel> { new TagTypeApiDeleteModel { uid = _tagTypeUid, cascade = cascade } }))
-			{
-				throw new NotFoundBusinessLayerException(TagsApiMessages.TagTypeNotFound);
-			}
-
-			return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagTypeRemoved, TagsApiMessages.TagTypeRemoveMessage);
+			var response = await Catalog.RemoveTagTypesAsync(new List<Guid> { _tagTypeUid });
+			return response.IsSuccess ?
+				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagTypeRemoved, TagsApiMessages.TagTypeRemoveMessage) :
+				errorMessageResponse((HttpStatusCode)response.StatusCode, response.Message);
 		}
 	}
 }

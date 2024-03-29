@@ -992,10 +992,10 @@ order by Sort, title";
 						var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
 
 						var stats = xls.GetWorksheetStatistics();
-						if (stats != null && stats.NumberOfRows > constants.COMPANY_BULK_LOAD_MAX_ROWS)
+						if (stats != null && stats.NumberOfRows > 100000)
 						{
 							return jsonException(
-								$"Please reduce the number of rows from {stats.NumberOfRows} to less than {constants.COMPANY_BULK_LOAD_MAX_ROWS}",
+								$"Please reduce the number of rows from {stats.NumberOfRows} to less than 100000",
 								HttpStatusCode.BadRequest);
 						}
 						int columnCount = 0;
@@ -1222,9 +1222,8 @@ order by Sort, title";
 				{
 					load.File = null;
 					Company.Add(load);
-					await Storage.CreateFolder($"{constants.COMPANY_BULK_LOAD_FOLDER}");
-					await Storage.CreateFile($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
-					Company.Enqueue(Company.BulkLoadQueue, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
+					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
+					Company.Enqueue(constants.Queue.BulkLoad, new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 
 					json = jsonSuccess(FormControllerApiMessage.FileUploadedAndQueueProcessing, load.ID.ToString(), "A", HttpStatusCode.Created);
 				}
@@ -1399,7 +1398,7 @@ order by Sort, title";
 
 			if (bytes == null)
 			{
-				var fileString = Storage.GetFileContentsAsString($"{constants.COMPANY_BULK_LOAD_FOLDER}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}");
+				var fileString = Storage.GetFileContentsAsString($"{constants.Storage.BulkLoads}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}");
 				bytes = Encoding.Default.GetBytes(fileString);
 			}
 
@@ -1796,7 +1795,7 @@ order by Sort, title";
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						shortcut.IconUrl = $"{imageFileName}";
 
@@ -1862,7 +1861,7 @@ order by Sort, title";
 					{
 						try
 						{
-							await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+							await Storage.DeleteFile(constants.Storage.Resources, new Uri(existing.IconUrl).Segments.Last());
 						}
 						catch { }
 					}
@@ -1878,7 +1877,7 @@ order by Sort, title";
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.shortcut.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						shortcut.IconUrl = $"{imageFileName}";
 
@@ -1888,7 +1887,7 @@ order by Sort, title";
 				{
 					try
 					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.IconUrl).Segments.Last());
+						await Storage.DeleteFile(constants.Storage.Resources, new Uri(existing.IconUrl).Segments.Last());
 					}
 					catch { }
 				}
@@ -1946,13 +1945,12 @@ order by Sort, title";
 				{
 					try
 					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
+						await Storage.DeleteFile(constants.Storage.Resources, $"{Company.CurrentCompanyID}_{existing.IconUrl}");
 					}
 					catch
 					{
-						//surpress the exception if we cant delete the custom file 
-						// it is most likely already deleted we should not prevent 
-						// removing of the shortcut from govern in this case see GOV-13572
+						// Supress the exception if we cant delete the custom file it is most likely already deleted we should not prevent 
+						// removing of the shortcut from govern in this case see GOV-13572.
 					}
 				}
 

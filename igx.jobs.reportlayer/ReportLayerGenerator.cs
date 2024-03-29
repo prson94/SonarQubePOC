@@ -23,7 +23,7 @@ namespace igx.jobs.reportlayer
 
 		}
 
-		[FunctionName(FUNCTION_NAME)]
+		[FunctionName(FUNCTION_NAME), Disable]
 		public void Run([TimerTrigger(TIMER_SETTINGS, RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             try

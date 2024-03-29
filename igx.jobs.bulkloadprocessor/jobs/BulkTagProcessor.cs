@@ -77,18 +77,9 @@ namespace igx.jobs.bulkloadprocessor
 						CompanyPrefix = info.CompanyDomainPrefix,
 						IsAdministrator = true
 					};
-					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-					{
-						ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-						AssetGraphQueue = Configuration["AssetGraphQueue"],
-						BulkLoadQueue = Configuration["BulkLoadQueue"],
-						DisplayValueQueue = Configuration["DisplayValueQueue"],
-						EventBusTopicName = Configuration["EventBusTopicName"],
-						ScoringQueue = Configuration["ScoringQueue"],
-						SearchIndexQueue = Configuration["SearchIndexQueue"]
-					};
-					var tagRepository = new TagRepository(company, FeatureFlags);
+					var community = new CommunityContext(ConnString, Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
+					var tagRepository = new TagRepository(company, FeatureFlags, Queue);
 
 					var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);
 					if (execution != null && (execution.Action == d360.core.queue.ApiExecutionAction.PostAssets || execution.Action == d360.core.queue.ApiExecutionAction.PutAssets))

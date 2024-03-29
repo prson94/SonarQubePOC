@@ -374,7 +374,7 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(originalImage))
 				{
-					await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+					await Storage.DeleteFile(constants.Storage.Resources, originalImage);
 				}
 
 				//clear out permissions
@@ -450,7 +450,7 @@ namespace d360.web.Controllers
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						model.Folder.ImageIconUrl = $"{imageFileName}";
 					}
@@ -725,7 +725,7 @@ namespace d360.web.Controllers
 				{
 					try
 					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, folderToUpdate.ImageIconUrl);
+						await Storage.DeleteFile(constants.Storage.Resources, folderToUpdate.ImageIconUrl);
 					}
 					catch
 					{
@@ -750,7 +750,7 @@ namespace d360.web.Controllers
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
 						folderToUpdate.Icon = null;

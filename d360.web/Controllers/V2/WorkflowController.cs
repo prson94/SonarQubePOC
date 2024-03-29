@@ -281,52 +281,52 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				throw new ArgumentException(isValid);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageNum + "; " + ApiMessages.Invalid_PageSize);
 			}
 
 			if (!validator.IsValidGuidCountForGetWorkflowModel(queryParams))
 			{
-				throw new ArgumentException(WorkflowApiMessages.MoreThanOneUidPassed);
+				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.MoreThanOneUidPassed);
 			}
 
 			if (!validator.IsValidOrderByFieldForGetWorkflowModel(queryParams))
 			{
-				throw new ArgumentException(WorkflowApiMessages.InvalidOrderParameterPassed);
+				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidOrderParameterPassed);
 			}
 
 			if (!validator.IsValidDirectionForWorkflowGetModel(queryParams))
 			{
-				throw new ArgumentException(ApiMessages.InvalidDirection);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection);
 			}
 
 			if (!validator.IsValidGuidForGetWorkflowModel(queryParams))
 			{
-				throw new ArgumentException(WorkflowApiMessages.InvalidUidWorkflowVersionRequest);
+				return errorMessageResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidUidWorkflowVersionRequest);
 			}
 
 			if (!validator.IsValidAsset(queryParams))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")));
 			}
 
 			if (!validator.IsValidAction(queryParams))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionUidNotFound, GetUidFromQueryParams(queryParams, "ActionUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.ActionUidNotFound, GetUidFromQueryParams(queryParams, "ActionUid")));
 			}
 
 			if (!validator.IsValidRelationship(queryParams))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(RelationshipsApiMessages.RelationShipUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.RelationShipUidNotFound, GetUidFromQueryParams(queryParams, "RelationshipTypeUid")));
 			}
 
 			if (!validator.IsValidWorkflowType(queryParams))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, GetUidFromQueryParams(queryParams, "WorkflowTypeUid")));
 			}
 
 			if (!validator.IsValidWorkflowVersion(queryParams))
 			{
-				throw new NotFoundBusinessLayerException(string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, GetUidFromQueryParams(queryParams, "versionUid")));
+				return errorMessageResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.WorkflowVersionUIDNotFound, GetUidFromQueryParams(queryParams, "versionUid")));
 			}
 
 			var workflows = await workflowRepository.GetWorkflows(queryParams);

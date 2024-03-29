@@ -3545,7 +3545,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				UpdateAssetTypeSynonymAllocations(model, assetType);
 				if (defaultPermissionChanged)
 				{
-					QueueSource.CreateMessage(CompanyContext.SearchIndexQueue, new ReindexModel
+					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
 						CompanyID = CompanyContext.CurrentCompanyID,
 						AssetTypeUid = assetType.uid,
@@ -3574,8 +3574,8 @@ where	N.DisplayPath like @phrase {prefilterSql}
 				results = CompanyContext.RemoveAssets(execution, assetType, assets);
 				CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteAssets);
 
-				QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 				CompanyContext.SendWorkflowEvents(assetType.Object, assetType.ObjectID, results, core.enums.Workflow.ChangeType.Delete);
 
@@ -3594,7 +3594,7 @@ where	N.DisplayPath like @phrase {prefilterSql}
 								Payload = new RuleAssetRemovedModel { AssetUid = result.uid },
 								StartedOn = DateTime.UtcNow
 							};
-							QueueSource.CreateMessage(CompanyContext.ScoringQueue, info);
+							QueueSource.CreateMessage(constants.Queue.Score, info);
 						}
 					});
 				}
@@ -3642,27 +3642,22 @@ where	N.DisplayPath like @phrase {prefilterSql}
 							Payload = new RuleAssetRemovedModel { AssetUid = assetUid },
 							StartedOn = DateTime.UtcNow
 						};
-						QueueSource.CreateMessage(CompanyContext.ScoringQueue, info);
+						QueueSource.CreateMessage(constants.Queue.Score, info);
 					});
 				}
 
 				#endregion DQ Scoring
 
-				#region Queue successfully deleted asset types for reindexing
-
-				var indexQueueName = CompanyContext.SearchIndexQueue;
+				// Queue successfully deleted asset types for reindexing
 				results.Where(r => r.Success).ToList().ForEach(r =>
 				{
-					QueueSource.CreateMessage(indexQueueName, new ReindexModel
+					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
 						CompanyID = CompanyContext.CurrentCompanyID,
 						AssetTypeUid = r.uid,
 						Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
 					});
 				});
-
-				#endregion Reindex
-
 			}
 			catch (Exception ex)
 			{

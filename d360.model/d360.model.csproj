@@ -15,6 +15,7 @@
   </ItemGroup>
 	
   <ItemGroup>	  
+    <ProjectReference Include="..\constants\constants.csproj" />	  
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>

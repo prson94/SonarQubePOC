@@ -1,0 +1,125 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.ConsolidateTags-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.ConsolidateTags
+	@userId int,
+	@parentUid uniqueidentifier,
+	@children dbo.UidTable readonly
+as
+begin
+	set nocount on;
+
+	declare @newTagId int,
+			@newTagValue nvarchar(250),
+			@dt datetime = getutcdate();
+
+	select	top 1 
+			@newTagId = Id,
+			@newTagValue = [Value] 
+	from	Tag 
+	where	uid = @parentUid;
+
+	declare @mergedTags table (Id int, Uid uniqueidentifier, [Value] nvarchar(250));
+	insert into @mergedTags
+		select	t.Id,
+				t.Uid,
+				t.[Value]
+		from	Tag t
+				inner join @children c on c.Uid = t.Uid;
+
+	declare @assetTagToRemove table (AssetTagId int, AssetId bigint, TagId int);
+	insert into @assetTagToRemove
+		select	a.Id,
+				a.AssetId,
+				a.TagId
+		from	AssetTag a
+				inner join @mergedTags c on c.Id = a.TagId;
+
+	declare @assets table (AssetId bigint, Object varchar(50), ObjectId int, DisplayValue nvarchar(250), AuditId bigint); -- We will populate this AuditId below.
+	insert into @assets
+		select	t.AssetId,
+				a.Object,
+				a.ObjectId,
+				substring(coalesce(d.DisplayValue, '[NO_DISPLAY_VALUE]'), 1, 250),
+				null
+		from	@assetTagToRemove t
+				inner join Asset a on a.ID = t.AssetId
+				left join AssetDisplayValue d on d.AssetID = t.AssetId;
+
+	begin try
+		begin tran
+
+		-- Remove the tags we are merging from the assets.
+		delete	t
+		from	AssetTag t
+				inner join @assetTagToRemove m on m.AssetTagId = t.Id;
+
+		-- Assign new tag we merged into for ll the assets that previously had the now-merged tags above. 
+		-- Do not add record if new tag is already assigned to asset.
+		insert into AssetTag (AssetId, TagId, CreatedOn, CreatedBy)
+			select		r.AssetId,
+						@newTagId,
+						@dt,
+						@userId
+			from		@assetTagToRemove r
+						left join AssetTag n on n.AssetID = r.AssetId AND n.TagId = @newTagId
+			where		n.Id is null
+			group by	r.AssetId;
+
+		-- Logical delete merged tags.
+		update	t 
+		set		t.[State] = 3
+		from	Tag t
+				inner join @mergedTags m on m.Id = t.Id;
+
+		declare @audits table (Object varchar(50), ObjectId int, AuditId bigint);
+
+		-- Insert into audit table.
+		insert into reporting.Global_Audit 
+					([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+			output	inserted.Object, inserted.ObjectId, inserted.Id
+			into	@audits
+			select	a.Object, a.ObjectID, a.DisplayValue, @userId, @dt, 'Consolidated', 'Tag', @newTagId, 'Tags', @newTagValue, 'Tag consolidated', l.NewVersion
+			from	@assets a
+					cross apply (
+						select  max([Version])+1 as [NewVersion]
+						from	reporting.Global_Audit
+						where	Object = a.Object and ObjectID = a.ObjectID
+					) l;
+
+		update	t
+		set		t.AuditId = l.AuditId
+		from	@assets t
+				inner join @audits l on l.Object = t.Object and l.ObjectId = t.ObjectId;
+		
+		-- Inser merged tags with the matching tag we merged into.
+		insert into reporting.Global_FieldAudit (AuditId, FieldTypeId, FieldName, [Value], PreviousValue)
+			select	a.AuditId, 0, 'Tag', @newTagValue, t.[Value]
+			from	@assets a
+					inner join @assetTagToRemove r on r.AssetId = a.AssetId
+					inner join @mergedTags t on t.Id = r.TagId
+
+		commit;
+	end try
+	begin catch
+		rollback;
+	end catch
+
+	select  T.uid, 
+			Items.count as UseCount 
+	from    Tag T
+			cross apply (select count(*) from AssetTag where TagId = T.Id)Items (count)
+	where   T.uid = @parentUid or T.uid in (select uid from @children);
+
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

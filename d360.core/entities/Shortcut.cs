@@ -53,20 +53,20 @@ namespace d360.core.entities
         [NotMapped, DataMember]
         public string IconPayload { get; set; }
 
-        [NotMapped, DataMember]
-        public string FullURL
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(IconUrl))
-                {
-                    return null;
-                }
-                else
-                {
-                    return constants.COMPANY_RESOURCES_URL + IconUrl;
-                }
-            }
-        }
+        //[NotMapped, DataMember]
+        //public string FullURL
+        //{
+        //    get
+        //    {
+        //        if (string.IsNullOrEmpty(IconUrl))
+        //        {
+        //            return null;
+        //        }
+        //        else
+        //        {
+        //            return constants.COMPANY_RESOURCES_URL + IconUrl;
+        //        }
+        //    }
+        //}
     }
 }

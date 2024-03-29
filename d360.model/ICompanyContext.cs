@@ -24,14 +24,6 @@ namespace d360.model
 {
 	public partial interface ICompanyContext : IBaseContext
     {
-		string ApiExecutionQueue { get; set; }
-		string AssetGraphQueue { get; set; }
-		string BulkLoadQueue { get; set; }
-		string DisplayValueQueue { get; set; }
-		string EventBusTopicName { get; set; }
-		string ScoringQueue { get; set; }
-		string SearchIndexQueue { get; set; }
-
 		#region DbSets
 
 		DbSet<AuditField> AuditFields { get; set; }

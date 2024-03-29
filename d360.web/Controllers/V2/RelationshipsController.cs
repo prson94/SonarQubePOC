@@ -1262,7 +1262,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				Company.UpdateExecutionWithErrorFromException(execution, ex);
-				throw new RestApiException(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT));
+				throw new RestApiException(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false, 2000));
 			}
 
 			return Ok(results);

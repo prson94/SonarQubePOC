@@ -11,6 +11,7 @@ using d360.featureflags;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
+using MoreLinq;
 using repositories;
 using System;
 using System.Collections.Generic;
@@ -225,6 +226,7 @@ namespace d360.model.DataAccessLayer
 				CompanyContext.Add(execution);
 				CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
+				var uids = resources.Select(r => r.Uid).ToList();
 				foreach (var model in resources)
 				{
 					model.Resource.State = CompanyResourceState.Deleted;
@@ -234,8 +236,6 @@ namespace d360.model.DataAccessLayer
 					CommunityContext.Update(model.CompanyResource);
 
 					CompanyContext.Query<int>($@"
-insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID]) values ('ObjectIndex', 'D', 'Resource', @resourceId);
-
 insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
 	select	distinct
 			'Resource', 
@@ -255,6 +255,21 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 	where	res.resourceid = @resourceId", 
 						new { r = CompanyContext.CurrentResourceID, resourceId = model.Resource.ResourceID }
 					).ToList();
+				}
+				int limit = 25;
+				var subset = new List<Guid>();
+				while (uids.Count > 0)
+				{
+					subset = uids.Take(limit).ToList();
+					uids.RemoveRange(0, limit);
+					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
+					{
+						CompanyID = CompanyContext.CurrentCompanyID,
+						Category = "Resource",
+						To = QueueAction.RemoveFromIndex,
+						BatchOperation = ReindexBatchOperation.Delete,
+						BatchUids = subset
+					});
 				}
 
 				execution.Processed = resources.Count();
@@ -1300,8 +1315,8 @@ exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, 0;",
 
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.UpsertUsers);
 
-			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
-			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			return results;
 		}

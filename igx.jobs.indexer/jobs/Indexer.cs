@@ -39,7 +39,7 @@ namespace igx.jobs.indexer
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+		public async Task RunViaQueue([QueueTrigger(constants.Queue.Search, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
         {
             ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 
@@ -225,17 +225,8 @@ namespace igx.jobs.indexer
 				ResourceID = 0,
 				IsAdministrator = true
 			};
-			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-			{
-				ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-				AssetGraphQueue = Configuration["AssetGraphQueue"],
-				BulkLoadQueue = Configuration["BulkLoadQueue"],
-				DisplayValueQueue = Configuration["DisplayValueQueue"],
-				EventBusTopicName = Configuration["EventBusTopicName"],
-				ScoringQueue = Configuration["ScoringQueue"],
-				SearchIndexQueue = Configuration["SearchIndexQueue"]
-			};
+			var community = new CommunityContext(ConnString, Cache, Queue, context);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 			int timeoutHours = int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"]);
 			

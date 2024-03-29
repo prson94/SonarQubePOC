@@ -30,7 +30,7 @@ namespace igx.jobs.indexer
 					services.AddScoped(s => {
 						return new ElasticSearchSource
 						{
-							CommunityConnectionString = context.Configuration["CommunityContext"]
+							CommunityConnectionString = context.Configuration[constants.Setting.Community]
 						};
 					});
 				});

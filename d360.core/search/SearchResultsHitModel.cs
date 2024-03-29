@@ -14,7 +14,7 @@ namespace d360.core.search
 			{
 				if (_source != null)
 				{
-					var jToken = _source.SelectToken(constants.D3S_FIELD_PREFIX + "Category");
+					var jToken = _source.SelectToken("d3s.Category");
 					return jToken?.Value<string>();
 				}
 				return null;

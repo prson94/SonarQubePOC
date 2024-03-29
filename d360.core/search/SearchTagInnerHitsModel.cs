@@ -10,7 +10,7 @@ namespace d360.core.search
 
 		public string GetHighLightValue()
 		{
-			if (highlight != null && highlight.TryGetValue(constants.D3S_FIELD_PREFIX + "Tags.Value", out var jToken))
+			if (highlight != null && highlight.TryGetValue("d3s.Tags.Value", out var jToken))
 			{
 				if (jToken.Type == JTokenType.Array)
 				{

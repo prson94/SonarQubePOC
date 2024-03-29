@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
 using d360.featureflags;
@@ -18,11 +19,11 @@ namespace d360.model.DataAccessLayer
 {
 	public class CommentRepository : BaseRepository, ICommentRepository
 	{
-		#region DI
-
 		internal IQueueSource Queue;
 		internal IStorageProvider Storage;
 		internal ICommunityContext Community;
+
+		public string NotificationQueue { get; set; }
 
 		public CommentRepository(
 			ICompanyContext companyContext, 
@@ -36,8 +37,6 @@ namespace d360.model.DataAccessLayer
 			Queue = queue;
 			Storage = storage;
 		}
-
-		#endregion DI
 
 		#region Common Sql
 
@@ -152,7 +151,8 @@ namespace d360.model.DataAccessLayer
 
 					await CompanyContext.SaveChangesAsync();
 
-					SendCommentNotification(taggedAssets, dbComment, commentedOnAssetId);
+					await Queue.CreateMessageAsync(NotificationQueue, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = commentId });
+					//SendCommentNotification(taggedAssets, dbComment, commentedOnAssetId);
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
@@ -805,76 +805,14 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 			}
 		}
 
-		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment, long? commentedOnAssetId = null)
+		private void SendCommentNotification(List<Asset> taggedAssets, Comment comment)
 		{
 			if (taggedAssets.Any(a => a.Object == core.SystemObjects.Resource.ToString() || a.Object == core.SystemObjects.Group.ToString()))
 			{
 				var commentCreator = CompanyContext.Connection.Query<string>("Select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource GR where resourceId = @commentBy", new { commentBy = comment.CreatedBy }).FirstOrDefault();
-
 				if (commentCreator != null)
 				{
-
-					var assetDetail = CompanyContext.Connection.Query<AssetDetail>("Select * from AssetDetail A where A.ID = @AssetID", new { AssetID = commentedOnAssetId ?? comment.AssetID }).FirstOrDefault();
-
-					if (assetDetail != null)
-					{
-						string resourceSQL = $@"select distinct * from (Select 
-																		GR.*
-																	from 
-																		CommentRelation CR 
-																		inner join 
-																		Asset A on A.ID = CR.AssetID 
-																		inner join 
-																		reporting.Global_Resource GR on A.ObjectID = GR.ResourceID 
-																	where 
-																		CommentID = @commentID 
-																		and 
-																		A.Object = 'Resource'
-																	Union
-																	Select 
-																		GR.*
-																	from 
-																		CommentRelation CR 
-																		inner join 
-																		Asset A on A.ID = CR.AssetID
-																		inner Join 
-																		ResourceGroup RG on A.ObjectID = RG.GroupID
-																		inner join 
-																		reporting.Global_Resource GR on RG.ResourceID = GR.ResourceID 
-																	where 
-																		CommentID = @commentID 
-																		and 
-																		A.Object = 'Group') A";
-
-						var resourcesToNotify = CompanyContext.Connection.Query<GlobalReportingResource>(resourceSQL, new { commentID = comment.ID }).ToList();
-
-						CommentNotification notification = new CommentNotification
-						{
-							CommenterName = commentCreator,
-							Subject = string.Format(Notifications.TaggedCommentMailSubject, commentCreator, assetDetail.DisplayValue),
-							IsHtml = true,
-							CommentedOnAssetId = commentedOnAssetId
-						};
-
-						resourcesToNotify.ForEach(r =>
-						{
-							notification.RecipientEmail = r.Email;
-							notification.RecipientName = r.FullName;
-
-							var commentUrl = $"/asset/{assetDetail.uid}/comments";
-							var assetUrl = $"/asset/{assetDetail.uid}";
-
-							if (!CompanyContext.HasUserReadPermission(assetDetail.Object, assetDetail.ObjectID, assetDetail.AssetTypeID, r.ResourceID))
-							{
-								commentUrl = assetUrl = $"/home";
-							}
-
-							notification.AssetUrl = assetUrl;
-							notification.CommentUrl = commentUrl;
-
-							CompanyContext.Connection.Execute("insert into [queue].[task]([Action], [Object], [ObjectID], [Custom]) values('Notify', 'TaggedComment', @id, @notification)", new { id = comment.ID, notification = JsonConvert.SerializeObject(notification) });
-						});
-					}
+					Queue.CreateMessage(constants.Queue.Notification, new QueueMessage<int> { CompanyId = CompanyContext.CurrentCompanyID, CompanyPrefix = CompanyContext.CurrentCompanyDomain, Payload = comment.ID });
 				}
 			}
 		}

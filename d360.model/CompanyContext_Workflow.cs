@@ -1129,7 +1129,7 @@ namespace d360.model
 							int duration = (int)Math.Pow(2, retries);
 							retries++;
 							root.Attribute(RETRIES).SetValue(retries);
-							await QueueSource.CreateScheduledTopicMessageAsync(eventInfo, DateTimeOffset.UtcNow.AddMinutes(duration));
+							await QueueSource.CreateMessageAsync(constants.Queue.Workflow, eventInfo, TimeSpan.FromMinutes(duration));
 							item.Settings = root.ToString();
 							await SaveChangesAsync();
 
@@ -1163,7 +1163,7 @@ namespace d360.model
 			}
 
 			//add topic messages for the transitions
-			await QueueSource.CreateTopicMessagesAsync(events);
+			await QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
 		}
 
 		private async Task UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, AssetType assetType, Asset asset = null)
@@ -2218,7 +2218,7 @@ namespace d360.model
 				};
 
 				//add topic messages for the transitions
-				await QueueSource.CreateTopicMessageAsync(startEvent);
+				await QueueSource.CreateMessageAsync(constants.Queue.Workflow, startEvent);
 			} else if (!transitionPassed && transition.TransitionType == TransitionType.Condition) {
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
@@ -2465,7 +2465,7 @@ namespace d360.model
 			//add topic messages for the transitions
 			if (events.Count > 0)
 			{
-				QueueSource.CreateTopicMessages(events);
+				QueueSource.CreateMessages(constants.Queue.Workflow, events);
 			}
 
 			return true;
@@ -3548,7 +3548,7 @@ namespace d360.model
 				}
 			};
 
-			QueueSource.CreateTopicMessages(events);
+			QueueSource.CreateMessages(constants.Queue.Workflow, events);
 		}
 
 		public async Task SendDigestEmails(EnvironmentLevel environmentLevel)
@@ -3946,7 +3946,8 @@ namespace d360.model
 
 					if (events.Count > WorkflowSendBatchSize)
 					{
-						QueueSource.CreateTopicMessages(events);
+						QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
+						//QueueSource.CreateTopicMessages(events);
 						events.Clear();
 					}
 				}
@@ -3954,7 +3955,8 @@ namespace d360.model
 
 			if (events.Count > 0)
 			{
-				QueueSource.CreateTopicMessages(events);
+				QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
+				//QueueSource.CreateTopicMessages(events);
 				events.Clear();
 			}
 		}

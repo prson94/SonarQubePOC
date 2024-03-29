@@ -1,0 +1,121 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.DeleteTags-v1">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.DeleteTags
+	@resourceId int,
+	@uids dbo.UidTable readonly
+as
+begin
+	set nocount on;
+	declare @success bit = 0;
+
+	drop table if exists #tags;
+	drop table if exists #assetTags;
+	drop table if exists #tagVersions;
+	drop table if exists #assetVersions;
+
+	create table #tags (TagId int, TagValue nvarchar(250));
+	create table #assetTags (AssetObject varchar(50), AssetObjectId int, AssetId bigint, AssetName nvarchar(250), TagId int);
+	create table #tagVersions (Object varchar(50), ObjectId int, [NewVersion] int)
+	create table #assetVersions (AssetObject varchar(50), AssetObjectId int, [NewVersion] int)
+
+	insert into #tags (TagId, TagValue)
+		select	t.Id, t.Value
+		from	Tag t 
+				inner join @uids s on s.Uid = t.uid;
+	create clustered index Tags_Temp on #tags (TagId);
+
+	insert into #assetTags (AssetObject, AssetObjectID, AssetId, AssetName, TagId)
+		select	a.Object,
+				a.ObjectID,
+				a.ID,
+				d.DisplayValue,
+				a_t.TagID
+		from	AssetTag a_t
+				inner join #tags t on t.TagId = a_t.TagID
+				inner join Asset a on a.ID = a_t.AssetID
+				inner join AssetDisplayValue d on d.AssetID = a.ID;
+	create clustered index AssetTags_Temp on #assetTags (AssetObject, AssetObjectID);
+
+	insert into #assetVersions (AssetObject, AssetObjectID, NewVersion)
+		select	a.Object,
+				a.ObjectId,
+				max(a.[Version])+1
+		from	#assetTags t
+				inner join reporting.Global_Audit a on a.Object = t.AssetObject and a.ObjectID = t.AssetObjectId
+		group by a.Object, a.ObjectId;
+
+	insert into #tagVersions (Object, ObjectID, NewVersion)
+		select	a.Object,
+				a.ObjectId,
+				max(a.[Version])+1
+		from	#tags t
+				inner join reporting.Global_Audit a on a.Object = 'Tag' and a.ObjectID = t.TagId
+		group by a.Object, a.ObjectId;
+
+	declare @dt datetime = getutcdate();
+
+	begin try
+		begin tran
+
+		delete	t
+		from	AssetTag t
+				inner join #assetTags s on s.AssetId = t.AssetID and s.TagId = t.TagID;
+
+		delete	t
+		from	Tag t
+				inner join #tags s on s.TagId = t.ID;
+
+		insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
+			select	v.AssetObject,
+					v.AssetObjectId,
+					a_t.AssetName,
+					@resourceId,
+					@dt,
+					'Updated',
+					'Tag',
+					t.TagId,
+					'Tags',
+					t.TagValue,
+					'Tags removed',
+					v.NewVersion
+			from	#assetVersions v
+					inner join #assetTags a_t on a_t.AssetObject = v.AssetObject and a_t.AssetObjectId = v.AssetObjectId
+					inner join #tags t on t.TagId = a_t.TagId;
+
+		insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version])
+			select	v.Object,
+					v.ObjectId,
+					t.TagValue,
+					@resourceId,
+					@dt,
+					'Removed',
+					'Tag',
+					v.ObjectId,
+					'Tags',
+					t.TagValue,
+					'Tag removed',
+					v.NewVersion
+			from	#tagVersions v
+					inner join #tags t on t.TagId = v.ObjectId;
+
+		commit;
+		set @success = 1;
+	end try
+	begin catch
+		rollback;
+	end catch
+
+	return @success;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

@@ -350,7 +350,7 @@ select @id";
 					ScoreType = alloc.ScoreType.ToString()
 				}).Single();
 
-			Queue.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { 
+			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { 
 				Action = PostExecutionQueueMessageAction.History, 
 				CompanyID = CompanyContext.CurrentCompanyID, 
 				ExecutionId = executionId
@@ -432,7 +432,7 @@ select @id";
 					ScoreType = alloc.ScoreType.ToString()
 				}).Single();
 
-			Queue.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage
+			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
 				CompanyID = CompanyContext.CurrentCompanyID,
@@ -500,7 +500,7 @@ select @id";
 					action = (int)ApiExecutionAction.DeleteScoreAllocation
 				}).Single();
 
-			Queue.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage
+			Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{
 				Action = PostExecutionQueueMessageAction.History,
 				CompanyID = CompanyContext.CurrentCompanyID,
@@ -697,7 +697,7 @@ drop table #TempDataProcess
 					Payload = new AssetRescoreRequestModel { AssetUid = unique.AssetUid, EffectiveDate = unique.EffectiveDate, ScoreType = ScoreType.Governance },
 					StartedOn = DateTime.UtcNow
 				};
-				Queue.CreateMessage(CompanyContext.ScoringQueue, info);
+				Queue.CreateMessage(constants.Queue.Score, info);
 			}
 
 			models = null;

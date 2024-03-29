@@ -67,7 +67,7 @@ namespace d360.model.DataAccessLayer
 			CompanyContext.Add(execution);
 
 			// Save to queue.
-			if (!await Queue.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo))
+			if (!await Queue.CreateMessageAsync(constants.Queue.Execution, executionInfo))
 			{
 				throw new ApplicationException(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}

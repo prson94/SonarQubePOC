@@ -16,7 +16,9 @@ namespace d360.extensions.storage
         private BlobContainerClient GetContainer(string name)
         {
             var client = new BlobServiceClient(StorageConnectionString);
-            return client.GetBlobContainerClient(name);
+			var container = client.GetBlobContainerClient(name);
+			container.CreateIfNotExists();
+			return container;
         }
 
         private BlobClient GetBlob(string folderName, string fileName)

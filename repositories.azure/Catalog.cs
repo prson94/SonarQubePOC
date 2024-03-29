@@ -1,6 +1,10 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
 using Dapper;
 using Dapper.Contrib.Extensions;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.EMMA;
 using repositories.resources;
 using System;
@@ -8,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +20,77 @@ namespace repositories.azure
 {
 	public class Catalog : Repository, ICatalog
 	{
+		readonly Guid SYSTEM_TAG_TYPE_UID = new Guid("00000001-0000-0000-0000-b00000000011");
+
+		readonly string TAG_API_MODEL_SQL_WITHOUT_WHERE = @"
+select	t.uid, 
+		t.[Value] 
+		cnt.UseCount,
+		c.Uid as CreatedByUid,
+		t.CreatedOn,
+		u.Uid as UpdatedByUid,
+		t.UpdatedOn,
+		c.FirstName as CreatedByFirstName,
+		c.LastName as CreatedByLastName,
+		tt.Uid as TagTypeUID
+from	Tag t
+		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
+		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+		inner join TagType tt on tt.ID = t.TagTypeID";
+
 		public Catalog(DapperConnectionProvider provider): base(provider) { }
+
+		public async Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge)
+		{
+			var response = new RepositoryResponse<IEnumerable<TagApiModel>>(null, 200, true, "");
+
+			var dt = new DataTable();
+			dt.Columns.Add("uid", typeof(Guid));
+			uidsToMerge.ForEach(t =>
+			{
+				dt.Rows.Add(t);
+			});
+
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("userId", CurrentUserId, DbType.Int32);
+			dbArgs.Add("parentUid", parentUid);
+			dbArgs.Add("children", dt.AsTableValuedParameter("dbo.UidTable"));
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QueryAsync<TagApiModel>("exec api.ConsolidateTags @userId, @parentUid, @children", dbArgs);
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		{
+			RepositoryResponse<bool> response;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response = new RepositoryResponse<bool>(true, 201, true, "");
+				await connection.ExecuteAsync($@"
+insert into AssetTag ([uid], AssetID, TagID, CreatedOn, CreatedBy) values (@uid, @assetId, @tagId, @dt, @u);
+
+declare @version int;
+select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.Name, 'Tag assigned', @version
+	from	Asset a
+			left join AssetDisplayValue d on d.AssetID = a.ID 
+			join Tag t on t.ID = @tagId
+	where	a.ID = @assetId;",
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+			}
+
+			return response;
+		}
 
 		public async Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model)
 		{
@@ -238,6 +313,136 @@ where	ExecutionID = @executionID
 			throw new NotImplementedException();
 		}
 
+		public async Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid)
+		{
+			RepositoryResponse<TagApiModel> response;
+
+			if (!tagTypeUid.HasValue)
+			{
+				tagTypeUid = SYSTEM_TAG_TYPE_UID;
+			}
+
+			value = (value ?? "").Trim();
+
+			if (string.IsNullOrEmpty(value))
+			{
+				return new RepositoryResponse<TagApiModel>(400, "Tag is empty.");
+			}
+
+			if (value.Length < 1)
+			{
+				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeShort);
+			}
+
+			if (value.Length > 100)
+			{
+				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeLong);
+			}
+
+			if (!value.IsValidForTag())
+			{
+				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeCharacters);
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var tagTypeId = await connection.QuerySingleOrDefaultAsync<int>("select id from TagType where Uid = @uid", new { uid = tagTypeUid.Value });
+				if (tagTypeId > 0)
+				{
+					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
+						"select cast(iif(count(1) > 1, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and lower([Value]) = @value",
+						new { tagTypeId, value = value.ToLower() }
+					);
+
+					if (tagExists)
+					{
+						response = new RepositoryResponse<TagApiModel>(409, TagErrors.TagExists);
+					}
+					else
+					{
+						response = new RepositoryResponse<TagApiModel>(null, 201, true, "");
+						response.Data = await connection.QuerySingleAsync<TagApiModel>(
+							$@"
+declare @tagId int;
+insert into Tag ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy], [State], [TagTypeId])
+values (@uid, @value, @dt, @u, @dt, @u, @State, @tagTypeId);
+select @tagId = SCOPE_IDENTITY();
+
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+values ('Tag', @tagId, @Value, @CreatedBy, @CreatedOn, 'Created', 'Tag', @tagId, 'Tags', @Value, 'Tag created', 1);
+
+{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.ID = @tagId;", 
+							new { tagTypeId, value, uid = Guid.NewGuid(), state = (int)State.Active, u = CurrentUserId, dt = DateTime.UtcNow });
+					}
+				}
+				else
+				{
+					response = new RepositoryResponse<TagApiModel>(404, TagErrors.TagTypeNotFound);
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value)
+		{
+			RepositoryResponse<TagTypeApiModel> response;
+			
+			value = (value ?? "").Trim();
+			if (string.IsNullOrEmpty(value))
+			{
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeSpecifiedNoValue);
+			}
+			if (value.Length < 1)
+			{
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeShort);
+			}
+			if (value.Length > 100)
+			{
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeLong);
+			}
+			if (!value.IsValidForTag())
+			{
+				return new RepositoryResponse<TagTypeApiModel>(null, 400, false, TagErrors.InvalidTagTypeCharacters);
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var exists = await connection.QuerySingleOrDefaultAsync<bool>(
+					"select cast(iif(count(1) > 1, 1, 0) as bit) from TagType where lower([Value]) = @value",
+					new { value = value.ToLower() }
+				);
+
+				if (exists)
+				{
+					response = new RepositoryResponse<TagTypeApiModel>(null, 409, false, TagErrors.TagExists);
+				}
+				else
+				{
+					response = new RepositoryResponse<TagTypeApiModel>(null, 201, true, "");
+					response.Data = await connection.QueryFirstAsync(
+						@"
+declare @id int;
+insert into TagType ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy], [State])
+values (@uid, @value, @dt, @CurrentUserId, @dt, @CurrentUserId, 1);
+select @id = SCOPE_IDENTITY();
+
+select	t.uid, 
+		t.[Value] 
+		c.Uid as CreatedByUid,
+		t.CreatedOn,
+		u.Uid as UpdatedByUid,
+		t.UpdatedOn
+from	TagType t
+		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+where	t.ID = @id;", new { uid = Guid.NewGuid(), value, CurrentUserId, dt = DateTime.UtcNow });
+				}
+			}
+
+			return response;
+		}
+
 		public async Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
 		{
 			const string sql = @"
@@ -264,6 +469,69 @@ order by	lvl";
 				results = await connection.QueryAsync<AssetType>(sql, new { assetUid });
 			}
 			return results.ToList();
+		}
+
+		public async Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid)
+		{
+			var response = new RepositoryResponse<IEnumerable<AssetTagList>>(null, 200, true, "");
+
+			string sql = @"
+select	D.DisplayValue,
+		A.uid,
+		AST.[Class],
+		AST.Name
+from	Tag T
+		inner join AssetTag AT on AT.TagId = T.Id
+		inner join Asset A on A.ID = AT.AssetID
+		inner join AssetType AST ON AST.ID = A.AssetTypeId
+		inner join AssetDisplayValue D on D.AssetID = A.ID
+where	t.uid = @uid";
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				var result = await connection.QueryAsync<dynamic>(sql, new { uid = tagUid });
+
+				var ret = new List<AssetTagList>();
+				var chevron = " <i class=\"fa fa-chevron-right\"></i> ";
+				foreach (var item in result)
+				{
+					AssetTypeClass itemClass = AssetTypeClass.Parse(item.Class);
+					string breadcrumb = "";
+					switch (itemClass)
+					{
+						case AssetTypeClass.BusinessAsset:
+							breadcrumb = CommonNames.AssetTypeClass_Business;
+							break;
+						case AssetTypeClass.TechnicalAsset:
+							breadcrumb = CommonNames.AssetTypeClass_Technical;
+							break;
+						case AssetTypeClass.Policy:
+							breadcrumb = CommonNames.AssetTypeClass_Policy;
+							break;
+						case AssetTypeClass.Model:
+							breadcrumb = CommonNames.AssetTypeClass_Model;
+							break;
+						case AssetTypeClass.Rule:
+							breadcrumb = CommonNames.AssetTypeClass_Rule;
+							break;
+						case AssetTypeClass.Diagram:
+							breadcrumb = CommonNames.AssetTypeClass_Task;
+							break;
+					}
+					breadcrumb += $"{chevron}{item.Name}";
+
+					var atl = new AssetTagList
+					{
+						Breadcrumbs = breadcrumb,
+						DisplayName = item.DisplayValue,
+						Url = $"/asset/{item.uid}"
+					};
+					ret.Add(atl);
+				}
+				response.Data = ret;
+			}
+
+			return response;
 		}
 
 		public async Task<AssetDetail> ReadAssetDetail(long id)
@@ -440,40 +708,12 @@ order by    P.[Path];";
 		{
 			var dbArgs = new DynamicParameters();
 			var sql = "select uid, DataSource, Type, ExternalID, FieldHash from AssetCrossReference";
-			List<string> queryFilters = new List<string>();
+			var queryFilters = new List<string>();
 
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
-			{
-				Guid assetUid = new Guid();
-
-				var assetUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid").Value;
-				if (Guid.TryParse(assetUidString, out assetUid))
-				{
-					dbArgs.Add("@assetuid", assetUid);
-					queryFilters.Add($"[UID] = @assetuid");
-				}
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_externalid"))
-			{
-				var externalId = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_externalid").Value;
-				dbArgs.Add("@externalid", externalId);
-				queryFilters.Add($"[ExternalID] = @externalid");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_datasource"))
-			{
-				var ds = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_datasource").Value;
-				dbArgs.Add("@datasource", ds);
-				queryFilters.Add($"[DataSource] = @datasource");
-			}
-
-			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_type"))
-			{
-				var ty = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_type").Value;
-				dbArgs.Add("@type", ty);
-				queryFilters.Add($"[type] = @type");
-			}
+			queryParams.CheckForQueryParameter<Guid>("_assetuid", "[UID]", "@assetUid", ref dbArgs, ref queryFilters);
+			queryParams.CheckForQueryParameter<string>("_externalid", "[ExternalID]", "@externalid", ref dbArgs, ref queryFilters);
+			queryParams.CheckForQueryParameter<string>("_datasource", "[DataSource]", "@datasource", ref dbArgs, ref queryFilters);
+			queryParams.CheckForQueryParameter<string>("_type", "[type]", "@type", ref dbArgs, ref queryFilters);
 
 			if (queryFilters.Count > 0)
 			{
@@ -503,6 +743,200 @@ order by    P.[Path];";
 		public Task ReadSemanticTypes()
 		{
 			throw new NotImplementedException();
+		}
+
+		public async Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid)
+		{
+			var response = new RepositoryResponse<TagApiModel>(null, 404, false, "");
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QuerySingleOrDefaultAsync<TagApiModel>($@"{TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.Uid = @uid", new { uid });
+				if (response.Data != null)
+				{
+					response.Message = "";
+					response.IsSuccess = true;
+					response.StatusCode = 200;
+				}
+				else
+				{
+					response = new RepositoryResponse<TagApiModel>(null, 404, false, "Tag not found.");
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>> ReadTagsAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var response = new RepositoryResponse<IEnumerable<TagApiModel>>(null, 200, true, "");
+
+			var dbArgs = new DynamicParameters();
+			var queryFilters = new List<string>();
+			var validOrderFields = new List<SortColumnOption> { 
+				new SortColumnOption("uid", "t.[uid]"),
+				new SortColumnOption("value", "t.[Value]"),
+				new SortColumnOption("usecount", "cnt.UseCount"),
+				new SortColumnOption("createdon", "t.CreatedOn"),
+				new SortColumnOption("createdbyuid", "c.[Uid]"),
+				new SortColumnOption("updatedon", "t.UpdatedOn"),
+				new SortColumnOption("updatedbyuid", "u.[Uid]"),
+				new SortColumnOption("tagtypeuid", "tt.[Uid]")
+			};
+
+			var tables = @"
+from	Tag t
+		cross apply (select count(1) as UseCount from AssetTag where TagID = t.ID) as cnt
+		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+		inner join TagType tt on tt.ID = t.TagTypeID";
+
+			var countSql = $"select count(1) {tables}";
+
+			var sql = $@"
+select	t.uid, 
+		t.[Value] 
+		cnt.UseCount,
+		c.Uid as CreatedByUid,
+		t.CreatedOn,
+		u.Uid as UpdatedByUid,
+		t.UpdatedOn,
+		c.FirstName as CreatedByFirstName,
+		c.LastName as CreatedByLastName,
+		tt.Uid as TagTypeUID
+{tables}";
+
+			queryParams.CheckForQueryParameter<Guid>("uid", "t.[UID]", "@uid", ref dbArgs, ref queryFilters);
+			queryParams.CheckForQueryParameter("tagtypeuid", "tt.[uid]", "@tagtypeid", ref dbArgs, ref queryFilters, SYSTEM_TAG_TYPE_UID);
+			queryParams.CheckForQueryParameter<int>("id", "t.[ID]", "@id", ref dbArgs, ref queryFilters);
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == "_tag"))
+			{
+				var searchPhrase = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_tag").Value.Trim();
+				if (!string.IsNullOrEmpty(searchPhrase))
+				{
+					dbArgs.Add("@searchPhrase", $"%{searchPhrase}%");
+					queryFilters.Add($"t.[Value] like @searchPhrase");
+				}
+			}
+
+			int pageNum = queryParams.CheckForPageNumber();
+			int pageSize = queryParams.CheckForPageSize();
+			bool includeTotal = queryParams.CheckForIncludeTotal();
+
+			if (queryFilters.Count > 0)
+			{
+				var whereSql = " where " + string.Join(" and ", queryFilters);
+				sql += whereSql;
+				countSql += whereSql;
+			}
+
+			var orderColumn = queryParams.CheckForSortColumn(validOrderFields, "t.[Value]");
+			var direction = queryParams.CheckForSortDirection();
+			sql += $" order by {orderColumn} {direction}";
+
+			if (includeTotal)
+			{
+				sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				if (includeTotal)
+				{
+					var qry = await connection.QueryMultipleAsync($"{countSql}; {sql}; ", dbArgs);
+
+					var total = await qry.ReadSingleAsync<int>();
+					response.Data = await qry.ReadAsync<TagApiModel>();
+				}
+				else
+				{
+					response.Data = await connection.QueryAsync<TagApiModel>(sql, dbArgs);
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<TagTypeApiModel>> ReadTagTypeAsync(Guid uid)
+		{
+			var response = new RepositoryResponse<TagTypeApiModel>(null, 404, false, "");
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response.Data = await connection.QuerySingleOrDefaultAsync<TagTypeApiModel>(
+					@"
+select	t.uid, 
+		t.[Value] 
+		c.Uid as CreatedByUid,
+		t.CreatedOn,
+		u.Uid as UpdatedByUid,
+		t.UpdatedOn
+from	TagType t
+		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+where	t.Uid = @uid", new { uid });
+
+				if (response.Data != null)
+				{
+					response.Message = "";
+					response.IsSuccess = true;
+					response.StatusCode = 200;
+				}
+				else
+				{
+					response = new RepositoryResponse<TagTypeApiModel>(null, 404, false, "Tag not found.");
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync()
+		{
+			IEnumerable<TagTypeApiModel> models = null;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				models = await connection.QueryAsync<TagTypeApiModel>(
+					@"
+select	t.uid, 
+		t.[Value] 
+		c.Uid as CreatedByUid,
+		t.CreatedOn,
+		u.Uid as UpdatedByUid,
+		t.UpdatedOn
+from	TagType t
+		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+order by	t.[value]");
+			}
+
+			return models;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		{
+			RepositoryResponse<bool> response;
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				response = new RepositoryResponse<bool>(true, 201, true, "");
+				await connection.ExecuteAsync($@"
+delete AssetTag where AssetID = @assetId and TagID = @tagId;
+
+declare @version int;
+select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Unassigned', 'Tag', @tagId, 'Tags', t.Name, 'Tag unassigned', @version
+	from	Asset a
+			left join AssetDisplayValue d on d.AssetID = a.ID 
+			join Tag t on t.ID = @tagId
+	where	a.ID = @assetId;",
+					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
+			}
+
+			return response;
 		}
 
 		public async Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -573,6 +1007,66 @@ order by    P.[Path];";
 			throw new NotImplementedException();
 		}
 
+		public async Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags)
+		{
+			var response = new RepositoryResponse<bool>(false, 200, false);
+
+			var dt = new DataTable();
+			dt.Columns.Add("uid", typeof(Guid));
+			tags.ForEach(t =>
+			{
+				dt.Rows.Add(t);
+			});
+
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("userId", CurrentUserId, DbType.Int32);
+			dbArgs.Add("uids", dt.AsTableValuedParameter("dbo.UidTable"));
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				await connection.ExecuteAsync("exec api.DeleteTags @userId, @uids", dbArgs);
+				response.IsSuccess = true;
+				response.StatusCode = 200;
+				response.Data = true;
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes)
+		{
+			var response = new RepositoryResponse<bool>(false, 200, false);
+
+			if (tagTypes.Any(t => t == SYSTEM_TAG_TYPE_UID))
+			{
+				return new RepositoryResponse<bool>( 
+					false, 403, false, string.Format(TagErrors.TagTypeNotDeletable, SYSTEM_TAG_TYPE_UID)
+				);
+			}
+
+			var dt = new DataTable();
+			dt.Columns.Add("uid", typeof(Guid));
+			tagTypes.ForEach(t =>
+			{
+				dt.Rows.Add(t);
+			});
+
+			var dbArgs = new DynamicParameters();
+			dbArgs.Add("userId", CurrentUserId, DbType.Int32);
+			dbArgs.Add("uids", dt.AsTableValuedParameter("dbo.UidTable"));
+
+			using (var connection = ConnectionProvider.Connect())
+			{
+				var success = await connection.QuerySingleAsync<bool>("exec api.DeleteTagTypes @userId, @uids", dbArgs);
+				response.IsSuccess = success;
+				response.StatusCode = success ? 200 : 409;
+				response.Message = success ? "" : "Unable to remove tag types.";
+				response.Data = success;
+			}
+
+			return response;
+		}
+
 		public async Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model)
 		{
 			var userErrorMessages = new List<string>();
@@ -623,6 +1117,135 @@ order by    P.[Path];";
 		public async Task<RepositoryResponse<Semantic>> UpdateSemanticType()
 		{
 			throw new NotImplementedException();
+		}
+
+		public async Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value)
+		{
+			var response = new RepositoryResponse<bool>(false, 200, false, "");
+
+			value = (value ?? "").Trim();
+
+			if (string.IsNullOrEmpty(value))
+			{
+				return new RepositoryResponse<bool>(false, 400, false, "Tag is empty.");
+			}
+			if (value.Length < 1 || value.Length > 100)
+			{
+				return new RepositoryResponse<bool>(false, 400, false, "Tag must be a text value with a length from 1 to 100..");
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+
+				var (tagId, tagTypeId) = await connection.QuerySingleOrDefaultAsync<(int, int)>(
+					"select id, tagTypeId from Tag where Uid = @uid", new { uid });
+				
+				if (tagId > 0)
+				{
+					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
+						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"from Tag " +
+						"where TagTypeID = @tagTypeId and ID <> @tagId and lower([Value]) = @value",
+						new { tagId, tagTypeId, value = value.ToLower() }
+					);
+
+					if (tagExists)
+					{
+						response = new RepositoryResponse<bool>(false, 409, false, TagErrors.TagExists);
+					}
+					else
+					{
+						await connection.ExecuteAsync(
+							@"
+declare @dt datetime = getutcdate();
+update	Tag
+set		[Value] = @value,
+		UpdatedOn = @dt,
+		UpdatedBy = @userId
+where	ID = @tagId;
+
+declare @version int;
+select @version = max([Version])+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
+
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);", 
+							new { tagId, value, userId = CurrentUserId });
+
+						response = new RepositoryResponse<bool>(true, 200, true, "Tag updated.");
+					}
+				}
+				else
+				{
+					response = new RepositoryResponse<bool>(false, 404, false, TagErrors.TagUidNotExists);
+				}
+			}
+
+			return response;
+		}
+
+		public async Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value)
+		{
+			RepositoryResponse<bool> response;
+
+			value = (value ?? "").Trim();
+
+			if (string.IsNullOrEmpty(value))
+			{
+				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeSpecifiedNoValue);
+			}
+			if (value.Length < 1)
+			{
+				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeShort);
+			}
+			if (value.Length > 100)
+			{
+				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeLong);
+			}
+			if (!value.IsValidForTag())
+			{
+				return new RepositoryResponse<bool>(400, TagErrors.InvalidTagTypeCharacters);
+			}
+
+			using (var connection = (SqlConnection)ConnectionProvider.Connect())
+			{
+				var id = await connection.QuerySingleOrDefaultAsync<int>(
+					"select id from TagType where Uid = @uid", new { uid });
+
+				if (id > 0)
+				{
+					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
+						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
+						"from TagType " +
+						"where ID <> @id and lower([Value]) = @value",
+						new { id, value = value.ToLower() }
+					);
+
+					if (tagExists)
+					{
+						response = new RepositoryResponse<bool>(false, 409, false, TagErrors.TagExists);
+					}
+					else
+					{
+						await connection.ExecuteAsync(
+							@"
+declare @dt datetime = getutcdate();
+update	TagType
+set		[Value] = @value,
+		UpdatedOn = @dt,
+		UpdatedBy = @userId
+where	ID = @id;",
+							new { id, value, userId = CurrentUserId });
+
+						response = new RepositoryResponse<bool>(true, 200, true, "Tag updated.");
+					}
+				}
+				else
+				{
+					response = new RepositoryResponse<bool>(400, TagErrors.TagUidNotExists);
+				}
+			}
+
+			return response;
 		}
 	}
 }
