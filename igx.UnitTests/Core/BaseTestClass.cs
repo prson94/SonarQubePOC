@@ -435,6 +435,30 @@ namespace igx.UnitTests
 			mock.SetupGet(p => p.Platform).Returns(Platform.Azure);
 
 			mock.Setup(x =>
+				x.ConsolidateTagsAsync(It.IsAny<Guid>(), It.IsAny<List<Guid>>())
+			).Returns(Task.FromResult(new RepositoryResponse<IEnumerable<TagApiModel>>(new List<TagApiModel>(), 200, true, "")));
+
+			mock.Setup(x =>
+				x.CreateAssetTagAsync(It.IsAny<long>(), It.IsAny<int>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
+
+			mock.Setup(x =>
+				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
+			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference { DataSource = "", ExternalID= "", FieldHash= "", Type = "", uid = Guid.NewGuid() }, 200, true, "")));
+
+			mock.Setup(x =>
+				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
+			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 201, true, "")));
+
+			mock.Setup(x =>
+				x.CreateTagAsync(It.IsAny<string>(), It.IsAny<Guid?>())
+			).Returns(Task.FromResult(new RepositoryResponse<TagApiModel>(new TagApiModel(), 200, true, "")));
+
+			mock.Setup(x =>
+				x.CreateTagTypeAsync(It.IsAny<string>())
+			).Returns(Task.FromResult(new RepositoryResponse<TagTypeApiModel>(new TagTypeApiModel(), 200, true, "")));
+
+			mock.Setup(x =>
 				x.ReadAssetPaths(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<int>())
 			).Returns(Task.FromResult(new AssetPathResults { items = new List<AssetPathResult> { new AssetPathResult { path = "" } }, total = 1 }));
 
@@ -446,24 +470,58 @@ namespace igx.UnitTests
 				x.ReadCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
 			).Returns(Task.FromResult<IEnumerable<AssetCrossReference>>(new List<AssetCrossReference> { new AssetCrossReference() }));
 
-			mock.Setup(x => 
-				x.CreateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
-			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 201, true, "")));
+			mock.Setup(x =>
+				x.ReadTagAsync(It.IsAny<Guid>())
+			).Returns(Task.FromResult(new RepositoryResponse<TagApiModel>(new TagApiModel(), 200, true, "")));
 
-			//mock.Setup(x => 
-			//	x.CreateCrossReferencesAsync(It.IsAny<ApiExecution>(), It.IsAny<List<AssetCrossReference>>(), It.IsAny<int>())
-			//).Returns((List<AssetCrossReference> xRefList, object o2) =>
-			//	{
-			//		return Task.CompletedTask;
-			//	});
+			mock.Setup(x =>
+				x.ReadTagsAsync(It.IsAny<IEnumerable<KeyValuePair<string, string>>>())
+			).Returns(Task.FromResult(
+				new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(
+					new PagedApiBaseViewModel<TagApiModel> { 
+						items = new List<TagApiModel> { new TagApiModel { Value = "Test" } }, 
+						pageNum = 1, 
+						pageSize = 25, 
+						total = 1 
+					}, 200, true, "")
+				)
+			);
 
-			mock.Setup(x => 
+			mock.Setup(x =>
+				x.ReadTagTypeAsync(It.IsAny<Guid>())
+			).Returns(Task.FromResult(new RepositoryResponse<TagTypeApiModel>(new TagTypeApiModel(), 200, true, "")));
+
+			mock.Setup(x =>
+				x.ReadTagTypesAsync()
+			).Returns(Task.FromResult(new List<TagTypeApiModel>().AsEnumerable()));
+
+			mock.Setup(x =>
+				x.RemoveAssetTagAsync(It.IsAny<long>(), It.IsAny<int>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
+
+			mock.Setup(x =>
 				x.RemoveCrossReferencesAsync(It.IsAny<List<KeyValuePair<string, string>>>())
 			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
+
+			mock.Setup(x =>
+				x.RemoveTagsAsync(It.IsAny<List<Guid>>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
+
+			mock.Setup(x =>
+				x.RemoveTagTypesAsync(It.IsAny<List<Guid>>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			mock.Setup(x => 
 				x.UpdateCrossReferenceAsync(It.IsAny<AssetCrossReference>())
 			).Returns(Task.FromResult(new RepositoryResponse<AssetCrossReference>(new AssetCrossReference(), 200, true, "")));
+
+			mock.Setup(x =>
+				x.UpdateTagAsync(It.IsAny<Guid>(), It.IsAny<string>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
+
+			mock.Setup(x =>
+				x.UpdateTagTypeAsync(It.IsAny<Guid>(), It.IsAny<string>())
+			).Returns(Task.FromResult(new RepositoryResponse<bool>(true, 200, true, "")));
 
 			return new List<ICatalog> { mock.Object };
 		}
@@ -611,14 +669,8 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ITagRepository>();
 
-            mock.Setup(x => x.CreateTag(It.IsAny<TagApiUpsertModel>()))
-                .Returns(new TagApiModel());
-
             mock.Setup(x => x.DoesTagExists(It.IsAny<string>(), It.IsAny<Guid?>()))
                 .Returns((string s, Guid? uid) => s == DataConstants.Tags.ValidName ? false : true);
-
-            mock.Setup(x => x.DeleteTags(It.IsAny<List<TagApiDeleteModel>>()))
-                .Returns((List<TagApiDeleteModel> list) => list.Any(x => x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
 
             mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
@@ -626,21 +678,11 @@ namespace igx.UnitTests
             mock.Setup(x => x.IsAuthorizedToEditTag(It.IsAny<Guid>()))
                 .Returns(true);
 
-            mock.Setup(x => x.GetTags(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(Task.FromResult(new TagApiModelWrapper() { items = new List<TagApiModel>() }));
-
-            mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiUpsertModel>(), It.IsAny<Tag>()))
-                .Returns((Guid uid, TagApiUpsertModel tam, Tag tag) => uid == Guid.Parse(DataConstants.ValidGUID) ? new TagApiModel() { Value = tam.Value, uid = uid } : null);
-            mock.Setup(x => x.IsAuthorizedToDeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
-                .Returns(true);
-            mock.Setup(x => x.CreateAssetTag(It.IsAny<int>(), It.IsAny<long>()))
-                .Returns(new AssetTag());
             mock.Setup(x => x.DoesAssetTagExists(It.IsAny<int>(), It.IsAny<long>()))
                 .Returns(true);
-            mock.Setup(x => x.GetAssetTag(It.IsAny<int>(), It.IsAny<long>()))
+            
+			mock.Setup(x => x.GetAssetTag(It.IsAny<int>(), It.IsAny<long>()))
             .Returns(new AssetTag() { UID = Guid.Parse(DataConstants.ValidGUID) });
-            mock.Setup(x => x.DeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
-                .Returns(true);
 
             mock.Setup(x => x.DoesTagExists(It.IsAny<Guid>()))
                 .Returns(true);

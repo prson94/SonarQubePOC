@@ -12,6 +12,16 @@ namespace repositories.dis
 	{
 		public string BaseUrl { get { return "https://data-catalog-dev.govern.cloud.precisely.services"; } }
 
+		public Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model)
 		{
 			throw new NotImplementedException();
@@ -27,7 +37,22 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid)
 		{
 			throw new NotImplementedException();
 		}
@@ -90,6 +115,31 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>> ReadTagsAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<TagTypeApiModel>> ReadTagTypeAsync(Guid uid)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			throw new NotImplementedException();
@@ -100,12 +150,32 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model)
 		{
 			throw new NotImplementedException();
 		}
 
 		public Task<RepositoryResponse<Semantic>> UpdateSemanticType()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value)
 		{
 			throw new NotImplementedException();
 		}

@@ -996,7 +996,10 @@ namespace d360.web.Controllers.V2
 
 			ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessAddMessage);
+			return Ok(new ConfirmResponse { 
+				title = ApiMessages.Success, 
+				message = ResponsibilityApiMessages.ResponsibilitySuccessAddMessage
+			});
 		}
 
 		/// <summary>

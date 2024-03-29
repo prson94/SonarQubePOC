@@ -702,7 +702,7 @@ namespace d360.model
 
 		private void LogExecutionError(Guid executionID, int total, int processedcount, int errorcount, string msg, int timeout = 3600)
 		{
-			int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+			int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
 			Connection.Execute($@"
 								update	api.Execution
 								set	[Total] = @total,
