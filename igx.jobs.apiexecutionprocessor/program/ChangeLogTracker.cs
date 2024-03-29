@@ -5,8 +5,11 @@ using System.Data.Entity;
 using System.Linq;
 using d360.core;
 using d360.core.enums;
+using d360.model;
+using System.Data.SqlClient;
+using Dapper;
 
-namespace d360.model.helpers
+namespace igx.jobs.apiexecutionprocessor.helpers
 {
 	public enum ChangeAction
 	{
@@ -19,9 +22,9 @@ namespace d360.model.helpers
 		public string Value { get; set; }
 	}
 
-	public class EFEntryState<T> where T : class
+	public class ChangeLogTracker<T> where T : class
 	{
-		private readonly ICompanyContext _companyContext;
+		private readonly SqlConnection _connection;
 		private readonly T lastState;
 
 		private T originalState;
@@ -30,9 +33,9 @@ namespace d360.model.helpers
 		public bool ShouldBeLogged { get; set; }
 
 		private Audit _audit = new Audit();
-		public EFEntryState(T lastState, ChangeAction action, ICompanyContext ctx)
+		public ChangeLogTracker(T lastState, SqlConnection connection)
 		{
-			_companyContext = ctx;
+			_connection = connection;
 			this.lastState = lastState;
 		}
 
@@ -48,7 +51,7 @@ namespace d360.model.helpers
 			if (lastState is AssetType)
 			{
 				var obj = lastState as AssetType;
-				var originalValues = _companyContext.Query<FieldValueState>(_lastVersionFieldLogsSQL, new { obj.Object, obj.ObjectID });
+				var originalValues = _connection.Query<FieldValueState>(_lastVersionFieldLogsSQL, new { obj.Object, obj.ObjectID });
 				originalState = (T)Activator.CreateInstance(typeof(T));
 
 				var properties = originalState.GetType().GetProperties().Where(prop => prop.IsDefined(typeof(TrackInChangeLog), false));

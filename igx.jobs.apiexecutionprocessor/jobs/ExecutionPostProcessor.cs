@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.queue;
 using d360.model;
 using Dapper;
+using igx.jobs.apiexecutionprocessor.helpers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -13,13 +14,13 @@ using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
 {
-	public class ExecutionPostProcessor: BaseWebJob
+	public class ExecutionPostProcessor : BaseWebJob
 	{
 		private const string FUNCTION_NAME = "ExecutionPostProcessor";
 		readonly string INSERT_SQL = "insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, [Version], Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)";
 		readonly string INSERT_FIELD_SQL = "insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)";
 
-		public ExecutionPostProcessor(IConfiguration config): base(config) { }
+		public ExecutionPostProcessor(IConfiguration config) : base(config) { }
 
 		string maxVersionSql(string objectColumn, string objectIdColumn)
 		{
@@ -38,7 +39,7 @@ from	reporting.Global_FieldAudit i_p
 
 		[FunctionName(FUNCTION_NAME), ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
 		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "QueuesConnectionString")] string message, ILogger log)
-        {
+		{
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
 			var logProperties = new Dictionary<string, object> {
@@ -50,122 +51,134 @@ from	reporting.Global_FieldAudit i_p
 			using (log.BeginScope(logProperties))
 			{
 				string companyConnectionString = GetCompanyConnectionString(request.CompanyID);
-				string commandText = "";
 
 				using (var companyConnection = new SqlConnection(companyConnectionString))
 				{
 					await companyConnection.OpenIfClosed();
-				
-					var execution = await companyConnection.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
-
-					if (execution != null) 
+					if (request.ExecutionId > 0)
 					{
-						string actionText = "";
+						await HandleExecutions(log, request, companyConnection);
+					}
+					else
+					{
+						var at = companyConnection.Query<AssetType>("select * from dbo.AssetType where uid = @uid", new { request.uid });
+						var ct = new ChangeLogTracker(at,)
+					}
+					companyConnection.CloseIfOpened();
+				}
+			}
+		}
 
-						switch (request.Action)
+		private async Task HandleExecutions(ILogger log, PostExecutionQueueMessage request, SqlConnection companyConnection)
+		{
+			string commandText = string.Empty;
+			var execution = await companyConnection.QueryFirstOrDefaultAsync<ApiExecution>("select * from api.Execution where Id = @id", new { id = request.ExecutionId });
+
+			if (execution != null)
+			{
+				string actionText = "";
+
+				switch (request.Action)
+				{
+					case PostExecutionQueueMessageAction.History:
+						switch (execution.Action)
 						{
-							case PostExecutionQueueMessageAction.History:
-								switch (execution.Action)
-								{
-									case ApiExecutionAction.DeleteAssets:
-										commandText = historyDeleteAssets();
-										break;
-									case ApiExecutionAction.DeleteGroups:
-										commandText = historyDeleteGroups();
-										break;
-									case ApiExecutionAction.DeletePredicates:
-										commandText = historyDeletePredicates();
-										break;
-									case ApiExecutionAction.DeleteRelationships:
-										commandText = historyDeleteRelations();
-										break;
-									case ApiExecutionAction.DeleteScoreAllocation:
-										commandText = historyDeleteScoreAllocation();
-										break;
-									case ApiExecutionAction.PostGroups:
-									case ApiExecutionAction.PutGroups:
-										actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
-										commandText = historyUpsertGroups(actionText);
-										break;
-									case ApiExecutionAction.PostAssets:
-									case ApiExecutionAction.PutAssets:
-										actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
-										commandText = historyUpsertAssets(actionText);
-										break;
-									case ApiExecutionAction.PostScoreAllocation:
-									case ApiExecutionAction.PutScoreAllocation:
-										commandText = historyUpsertScoreAllocation();
-										break;
-									case ApiExecutionAction.PostRelationships:
-									case ApiExecutionAction.PutRelationships:
-										commandText = historyUpsertRelations();
-										break;
-									case ApiExecutionAction.PatchCatalog:
-										commandText = historyPatchCatalog();
-										break;
-									case ApiExecutionAction.UpsertPredicates:
-										commandText = historyUpsertPredicates();
-										break;
-									case ApiExecutionAction.UpsertUsers:
-										commandText = historyUpsertUsers();
-										break;
-									default:
-										commandText = "";
-										break;
-								}
+							case ApiExecutionAction.DeleteAssets:
+								commandText = historyDeleteAssets();
 								break;
-							case PostExecutionQueueMessageAction.Indexing:
-								switch (execution.Action)
-								{
-									case ApiExecutionAction.DeleteAssets:
-										commandText = indexDeleteAssets();
-										break;
-									case ApiExecutionAction.PostAssets:
-									case ApiExecutionAction.PutAssets:
-										actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
-										commandText = indexUpsertAssets(actionText);
-										break;
-									case ApiExecutionAction.PatchCatalog:
-										commandText = indexPatchCatalog();
-										break;
-									case ApiExecutionAction.DeleteGroups:
-										commandText = indexDeleteGroups();
-										break;
-									case ApiExecutionAction.PostGroups:
-									case ApiExecutionAction.PutGroups:
-										actionText = execution.Action == ApiExecutionAction.PostGroups ? "A" : "U";
-										commandText = indexUpsertGroups(actionText);
-										break;
-									case ApiExecutionAction.UpsertUsers:
-										commandText = indexUpsertUsers();
-										break;
-									default:
-										commandText = "";
-										break;
-								}
+							case ApiExecutionAction.DeleteGroups:
+								commandText = historyDeleteGroups();
 								break;
-							case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
-								commandText = updateLookupValues();
+							case ApiExecutionAction.DeletePredicates:
+								commandText = historyDeletePredicates();
+								break;
+							case ApiExecutionAction.DeleteRelationships:
+								commandText = historyDeleteRelations();
+								break;
+							case ApiExecutionAction.DeleteScoreAllocation:
+								commandText = historyDeleteScoreAllocation();
+								break;
+							case ApiExecutionAction.PostGroups:
+							case ApiExecutionAction.PutGroups:
+								actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
+								commandText = historyUpsertGroups(actionText);
+								break;
+							case ApiExecutionAction.PostAssets:
+							case ApiExecutionAction.PutAssets:
+								actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
+								commandText = historyUpsertAssets(actionText);
+								break;
+							case ApiExecutionAction.PostScoreAllocation:
+							case ApiExecutionAction.PutScoreAllocation:
+								commandText = historyUpsertScoreAllocation();
+								break;
+							case ApiExecutionAction.PostRelationships:
+							case ApiExecutionAction.PutRelationships:
+								commandText = historyUpsertRelations();
+								break;
+							case ApiExecutionAction.PatchCatalog:
+								commandText = historyPatchCatalog();
+								break;
+							case ApiExecutionAction.UpsertPredicates:
+								commandText = historyUpsertPredicates();
+								break;
+							case ApiExecutionAction.UpsertUsers:
+								commandText = historyUpsertUsers();
 								break;
 							default:
 								commandText = "";
 								break;
 						}
-
-						if (!string.IsNullOrEmpty(commandText))
+						break;
+					case PostExecutionQueueMessageAction.Indexing:
+						switch (execution.Action)
 						{
-							try
-							{
-								await companyConnection.ExecuteAsync(commandText, new { execution.Id, r = execution.ResourceID, dt = execution.ProcessingStartedOn ?? execution.StartedOn }, commandTimeout: 1800);
-							}
-							catch (Exception ex)
-							{
-								log.LogCritical(ex, "Error when post-processing execution.");
-							}
+							case ApiExecutionAction.DeleteAssets:
+								commandText = indexDeleteAssets();
+								break;
+							case ApiExecutionAction.PostAssets:
+							case ApiExecutionAction.PutAssets:
+								actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
+								commandText = indexUpsertAssets(actionText);
+								break;
+							case ApiExecutionAction.PatchCatalog:
+								commandText = indexPatchCatalog();
+								break;
+							case ApiExecutionAction.DeleteGroups:
+								commandText = indexDeleteGroups();
+								break;
+							case ApiExecutionAction.PostGroups:
+							case ApiExecutionAction.PutGroups:
+								actionText = execution.Action == ApiExecutionAction.PostGroups ? "A" : "U";
+								commandText = indexUpsertGroups(actionText);
+								break;
+							case ApiExecutionAction.UpsertUsers:
+								commandText = indexUpsertUsers();
+								break;
+							default:
+								commandText = "";
+								break;
 						}
+						break;
+					case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
+						commandText = updateLookupValues();
+						break;
+					default:
+						commandText = "";
+						break;
+				}
+
+				if (!string.IsNullOrEmpty(commandText))
+				{
+					try
+					{
+						await companyConnection.ExecuteAsync(commandText, new { execution.Id, r = execution.ResourceID, dt = execution.ProcessingStartedOn ?? execution.StartedOn }, commandTimeout: 1800);
 					}
-					companyConnection.CloseIfOpened();
-				}			
+					catch (Exception ex)
+					{
+						log.LogCritical(ex, "Error when post-processing execution.");
+					}
+				}
 			}
 		}
 
@@ -194,7 +207,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		string historyDeleteGroups()
-		{ 
+		{
 			return $@"
 {INSERT_SQL}
 	select	distinct
@@ -217,7 +230,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		string historyDeletePredicates()
-		{ 
+		{
 			return $@"
 {INSERT_SQL}
 	select	distinct
@@ -240,7 +253,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		string historyDeleteRelations()
-		{ 
+		{
 			return $@"
 {INSERT_SQL}
 	select	p.Object, 
@@ -286,7 +299,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		string historyPatchCatalog()
-		{ 
+		{
 			return $@"
 declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
 {INSERT_SQL}
@@ -559,7 +572,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 		}
 
 		string historyUpsertGroups(string actionText)
-		{ 
+		{
 			return $@"
 declare @tbl table (ID bigint, ObjectID int)
 {INSERT_SQL}
@@ -661,7 +674,7 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_Genera
 		}
 
 		string historyUpsertRelations()
-		{ 
+		{
 			return $@"
 drop table if exists #tempdata;
 
@@ -701,7 +714,7 @@ create clustered index idx_tempdata on #tempdata (id);
 drop table if exists #tempdata;";
 		}
 
-		string historyUpsertScoreAllocation() 
+		string historyUpsertScoreAllocation()
 		{
 			return $@"
 drop table if exists #tempScore;
@@ -798,7 +811,7 @@ drop table if exists #tempScore;";
 		}
 
 		string historyUpsertUsers()
-		{ 
+		{
 			return $@"
 declare @tbl table (ID bigint, ObjectID int)
 {INSERT_SQL}

@@ -99,6 +99,7 @@
     <Compile Include="models\QueueTask.cs" />
     <Compile Include="models\TaskMessage.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="program\ChangeLogTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

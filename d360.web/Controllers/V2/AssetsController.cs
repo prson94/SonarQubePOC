@@ -15,6 +15,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using Dapper;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
@@ -1381,6 +1382,8 @@ namespace d360.web.Controllers.V2
 
 				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 				var result = new AssetTypeSuccess { Uid = assetType.uid, Message = AssetsApiMessages.AssetTypeCreatedMessage, Success = true };
+
+				await AssetRepository.CreateHistoryJob(assetType.uid, HistoryType.AssetType);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 			}

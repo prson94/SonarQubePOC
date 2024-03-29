@@ -2255,8 +2255,6 @@ from	IntersectType I
 
 		public override int SaveChanges()
 		{
-			EFChangeTracker changeTracker = new EFChangeTracker(this);
-
 			int returnValue = 0;
 			List<Field> fieldsToCheckForChanges = new List<Field>();
 			List<Field> changedFields = new List<Field>();
@@ -2328,8 +2326,6 @@ from	IntersectType I
 				if (entry.Entity is FieldType)
 				{
 					FieldType o = entry.Entity as FieldType;
-
-					changeTracker.Add(entry);
 
 					if (entry.State == EntityState.Added)
 					{
@@ -2466,8 +2462,6 @@ from	IntersectType I
 					{
 						throw new ArgumentException(Messages.Error_Name_Required);
 					}
-
-					changeTracker.Add(entry);
 				}
 
 				#endregion
@@ -2699,8 +2693,6 @@ from	IntersectType I
 			{
 				createEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 			}
-
-			changeTracker.SaveChangeLogs();
 
 			return returnValue;
 		}

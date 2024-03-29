@@ -51,6 +51,20 @@ namespace d360.model.DataAccessLayer
 			Community = community;
 		}
 
+		public async Task CreateHistoryJob(Guid uid, HistoryType type)
+		{
+			await QueueSource.CreateMessageAsync(CompanyContext.AssetGraphQueue,
+				new PostExecutionQueueMessage
+				{
+					Action = PostExecutionQueueMessageAction.History,
+					CompanyID = CompanyContext.CurrentCompanyID,
+					ExecutionId = -1,
+					uid = uid,
+					HistoryType = type
+				});
+		}
+
+
 		public Asset GetAssetByObjectId(string obj, int objId)
 		{
 			return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();

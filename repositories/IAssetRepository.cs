@@ -13,117 +13,119 @@ using SpreadsheetLight;
 
 namespace repositories
 {
-    public interface IAssetRepository
-    {
-        Asset GetAssetByObjectId(string obj, int objId);
-        
-        Asset GetAssetByUID(Guid assetUid);
-        AssetTypeClass GetAssetClassByUID(Guid assetUid);
-        
-        Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid);
-        
-        List<AssetTypeClassInfo> GetAssetTypeList();
-        
-        Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null);
-        
-        Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
-        
-        Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
-        
-        dynamic GetFieldTypes(Guid assetTypeUid);
+	public interface IAssetRepository
+	{
+		Asset GetAssetByObjectId(string obj, int objId);
 
-        List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
-        
-        Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
-        
-        List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
+		Asset GetAssetByUID(Guid assetUid);
+		AssetTypeClass GetAssetClassByUID(Guid assetUid);
 
-        Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
-        
-        List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool executionInDb = false);
-        
-        Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
-        
-        Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true);
-        
-        Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
-        
-        Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
-        
-        Predicate GetPredicateByUID(Guid predicateGuid);
-        
-        AssetType GetArtifactTypeByID(int artifactTypeId);
-        
-        AssetType GetAssetTypeByUID(Guid assetTypeUid);
-        
-        AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
-        
-        AssetType GetAssetTypeByModel(AssetTypeUpsert model);
-        
-        Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string status, string component);
-        
-        void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx");
-        
-        bool DoesAssetExists(Guid uid);
-        
-        bool IsReachedTransformationLimit(AssetTypeUpsert model);
+		Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? assetTypeUid);
 
-        Task<dynamic> GetAssetDetails(Asset asset);
-        
-        Task<List<PathComponent>> GetAssetPath(Guid assetUid);
-        
-        Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids);
-        
-        Task<dynamic> GetAssetTypeDetails(AssetType type);
-        
-        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false);
-        
-        Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid);
-       
-        Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null);
-        
-        Task<AssetsCountModel> GetAssetsCounts();
-       
-        Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
-        
-        List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true, bool executionInDb = false);
-        
-        List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
-        
-        Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
-        
-        Task<dynamic> GetAssetSingle(Guid assetUid);
-        
-        Task<List<IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid);
-        
-        Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
-        
-        Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
-        
-        Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
-        
-        Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
-        
-        ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model);
+		List<AssetTypeClassInfo> GetAssetTypeList();
 
-        IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
+		Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null);
 
-        Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
 
-        IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType);
+		Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
 
-        IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType);
+		dynamic GetFieldTypes(Guid assetTypeUid);
 
-        Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes();
+		List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
-        Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetTypeID, List<dynamic> customfields, CancellationToken? cancellationToken = null);
+		Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
 
-        bool isAllowDisplayAssettypeField(AssetTypeClass assettypeclass, string fieldname);
+		List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
-        bool isAllowDisplayFieldType(string strdatatype, string fieldname);
+		Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
 
-        void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false);
+		List<DatabaseBulkAssetResult> DeleteAssets(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool executionInDb = false);
 
-        void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
-    }
+		Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
+
+		Task<ApiExecutionInfo> DeleteBulkAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true);
+
+		Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
+
+		Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
+
+		Predicate GetPredicateByUID(Guid predicateGuid);
+
+		AssetType GetArtifactTypeByID(int artifactTypeId);
+
+		AssetType GetAssetTypeByUID(Guid assetTypeUid);
+
+		AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
+
+		AssetType GetAssetTypeByModel(AssetTypeUpsert model);
+
+		Task<APIExecutionExternalAPIModelResult> GetConnectorStatusItems(IEnumerable<KeyValuePair<string, string>> queryParams, DateTime? _startDate, DateTime? _endDate, Guid? externalId, string status, string component);
+
+		void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx");
+
+		bool DoesAssetExists(Guid uid);
+
+		bool IsReachedTransformationLimit(AssetTypeUpsert model);
+
+		Task<dynamic> GetAssetDetails(Asset asset);
+
+		Task<List<PathComponent>> GetAssetPath(Guid assetUid);
+
+		Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids);
+
+		Task<dynamic> GetAssetTypeDetails(AssetType type);
+
+		Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams, bool isChildItem = false);
+
+		Task<AssetCountsModel> GetAssetCountOfAssetTypeUid(Guid assetTypeUid);
+
+		Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses, IEnumerable<KeyValuePair<string, string>> queryParams, Guid? assetTypeUid = null);
+
+		Task<AssetsCountModel> GetAssetsCounts();
+
+		Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
+
+		List<DatabaseBulkAssetTypeResult> DeleteAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution, bool stateChangeOnly = true, bool executionInDb = false);
+
+		List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
+
+		Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
+
+		Task<dynamic> GetAssetSingle(Guid assetUid);
+
+		Task<List<IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid);
+
+		Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
+
+		Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
+
+		Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		ApiExecutionExternalViewModel AddConnectorStatus(ApiExecutionExternalRequestModel model);
+
+		IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
+
+		Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType);
+
+		IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType);
+
+		Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes();
+
+		Task<AssetsTypeRelatedQueryResults> GetAssettypeRelatedData(AssetType assetTypeID, List<dynamic> customfields, CancellationToken? cancellationToken = null);
+
+		bool isAllowDisplayAssettypeField(AssetTypeClass assettypeclass, string fieldname);
+
+		bool isAllowDisplayFieldType(string strdatatype, string fieldname);
+
+		void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false);
+
+		void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
+
+		Task CreateHistoryJob(Guid uid, HistoryType type);
+	}
 }
