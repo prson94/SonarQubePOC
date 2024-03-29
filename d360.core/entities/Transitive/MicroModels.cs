@@ -247,20 +247,20 @@ namespace d360.core.entities
         
         public string ImageIconUrl { get; set; }
         
-        public string FullURL
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ImageIconUrl))
-                {
-                    return null;
-                }
-                else
-                {
-                    return constants.COMPANY_RESOURCES_URL + ImageIconUrl;
-                }
-            }
-        }
+        //public string FullURL
+        //{
+        //    get
+        //    {
+        //        if (string.IsNullOrEmpty(ImageIconUrl))
+        //        {
+        //            return null;
+        //        }
+        //        else
+        //        {
+        //            return constants.COMPANY_RESOURCES_URL + ImageIconUrl;
+        //        }
+        //    }
+        //}
         
         public string Title { get; set; }
         public string url { get; set; }

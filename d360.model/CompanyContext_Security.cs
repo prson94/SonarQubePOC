@@ -371,7 +371,7 @@ group by A.Uid";
 							transaction: transaction
 						).SingleOrDefault();
 
-						Enqueue(SearchIndexQueue, new ReindexModel
+						Enqueue(constants.Queue.Search, new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
 							AssetTypeUid = assetType.uid,
@@ -512,7 +512,7 @@ group by A.Uid";
 							new { rule.Object, rule.ObjectID },
 							transaction: transaction
 						).SingleOrDefault();
-						Enqueue(SearchIndexQueue, new ReindexModel
+						Enqueue(constants.Queue.Search, new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
 							AssetTypeUid = assetType.uid,
@@ -631,12 +631,12 @@ group by A.Uid";
                 if (dups.Any())
                 {
                     string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
                 else
                 {
                     string message = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.AssetUid}, ResponsibilityTypeUid: {i.keyFields.ResponsibilityTypeUid}, AssignedUid: {i.keyFields.AssignedUid}"))}. AssetUid, ResponsibilityTypeUid, AssignedUid are key fields and the combination must be unique within a batch.";
-                    execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                    execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 }
             }
             else
@@ -814,7 +814,7 @@ group by A.Uid";
 					LogExecutionErrorToAppInsights(execution, generalEx);
 
 					generalChecksCompleted = false;
-                    string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+                    string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
                     execution.ErrorMessage = msg;
                     execution.Processed = 0;
                     execution.Error = request.Count();
@@ -1057,7 +1057,7 @@ where	ExecutionID = @ExecutionID and A.uid is null";
 			catch (Exception generalEx)
 			{
 				generalChecksCompleted = false;
-				string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+				string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 				execution.ErrorMessage = msg;
 				execution.Processed = 0;
 				execution.Error = groups.Count();
@@ -1150,8 +1150,8 @@ where	EG.Success is null
 					}
 				}
 
-				QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-				QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 				results.AddRange(
 								Query<GroupResponseResult>(
@@ -2471,7 +2471,7 @@ where	EG.Success is null
 			if (dups.Any())
 			{
 				string message = $"Duplicate Names: {string.Join(", ", dups.Select(i => i.Items.First().Name.Trim()))}. Name must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -2661,7 +2661,7 @@ where	EG.Success is null
 				catch (Exception generalEx)
 				{
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = groups.Count();
@@ -2960,8 +2960,8 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 				}
 			}
 
@@ -2982,13 +2982,13 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (uidDupes.Any())
 			{
 				string message = $"Duplicate uid item identifiers: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -3290,7 +3290,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 				catch (Exception generalEx)
 				{
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();
@@ -3446,7 +3446,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 			if (uidDupes.Any() && execution.Method == "PUT")
 			{
 				string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (nameDupes.Any())
@@ -3602,7 +3602,7 @@ values		(S.FieldTypeID, S.Value, S.FormattedValue, @resourceId, @date, S.AssetID
 				catch (Exception generalEx)
 				{
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();

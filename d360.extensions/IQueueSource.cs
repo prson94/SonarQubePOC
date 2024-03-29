@@ -13,19 +13,5 @@ namespace d360.extensions
         bool CreateMessages<T>(string queueName, List<T> items);
         Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null);
         Task<bool> CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null);
-        void CreateTopicMessage(EventInfo e);
-        void CreateTopicMessage(string topicName, EventInfo e);
-        void CreateTopicMessage<T>(string topicName, T e);
-        Task CreateTopicMessageAsync(EventInfo e);
-        Task CreateTopicMessageAsync(string topicName, EventInfo e);
-        Task CreateFilteredTopicMessageAsync(string topicName, IFilteredServiceBusMessage e);
-        Task CreateScheduledTopicMessageAsync(EventInfo e, DateTimeOffset delay);
-        Task CreateTopicMessageAsync<T>(string topicName, T e);
-        void CreateTopicMessages(List<EventInfo> events);
-        void CreateTopicMessages(string topicName, List<EventInfo> events);
-        void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null);
-        Task CreateTopicMessagesAsync(List<EventInfo> events);
-        Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events);
-        Task CreateTopicMessagesAsync<T>(string topicName, List<T> events);
     }
 }

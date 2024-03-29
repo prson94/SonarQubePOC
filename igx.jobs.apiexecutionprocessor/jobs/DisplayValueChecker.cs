@@ -38,7 +38,6 @@ namespace igx.functions.consumption
 		[FunctionName(FUNCTION_NAME)]
         public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)
         {
-			var topicName = Configuration["DisplayValueQueue"];
 			var companies = GetCompaniesByCurrentSlot();
 			foreach (var c in companies)
 			{
@@ -59,26 +58,13 @@ namespace igx.functions.consumption
 							ResourceID = 0,
 							IsAdministrator = true,
 						};
-						var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-						{
-							ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-							AssetGraphQueue = Configuration["AssetGraphQueue"],
-							BulkLoadQueue = Configuration["BulkLoadQueue"],
-							DisplayValueQueue = Configuration["DisplayValueQueue"],
-							EventBusTopicName = Configuration["EventBusTopicName"],
-							ScoringQueue = Configuration["ScoringQueue"],
-							SearchIndexQueue = Configuration["SearchIndexQueue"]
-						};
+						var community = new CommunityContext(ConnString, Cache, Queue, context);
+						var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-						var rs = await company.UpdateRebuildJobStatus(
-							CompanyRebuildJobToken.DisplayValues, 
-							CompanyRebuildJobStatusState.Active, 
-							int.Parse(Configuration["V2EnvironmentJobRebuildTimeoutInHours"])
-						);
+						var rs = await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, 12);
 						if (rs.StatusCode == System.Net.HttpStatusCode.OK)
 						{
-							await Queue.CreateMessageAsync(topicName, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
+							await Queue.CreateMessageAsync(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
 						}
 					}
 					catch (Exception ex)

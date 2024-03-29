@@ -37,7 +37,7 @@ from	reporting.Global_FieldAudit i_p
 		}
 
 		[FunctionName(FUNCTION_NAME), ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
-		public async Task Run([QueueTrigger("%AssetGraphQueue%", Connection = "QueuesConnectionString")] string message, ILogger log)
+		public async Task Run([QueueTrigger(constants.Queue.PostExecution, Connection = constants.Setting.Storage)] string message, ILogger log)
         {
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
@@ -108,36 +108,6 @@ from	reporting.Global_FieldAudit i_p
 										break;
 									case ApiExecutionAction.UpsertUsers:
 										commandText = historyUpsertUsers();
-										break;
-									default:
-										commandText = "";
-										break;
-								}
-								break;
-							case PostExecutionQueueMessageAction.Indexing:
-								switch (execution.Action)
-								{
-									case ApiExecutionAction.DeleteAssets:
-										commandText = indexDeleteAssets();
-										break;
-									case ApiExecutionAction.PostAssets:
-									case ApiExecutionAction.PutAssets:
-										actionText = execution.Action == ApiExecutionAction.PostAssets ? "A" : "U";
-										commandText = indexUpsertAssets(actionText);
-										break;
-									case ApiExecutionAction.PatchCatalog:
-										commandText = indexPatchCatalog();
-										break;
-									case ApiExecutionAction.DeleteGroups:
-										commandText = indexDeleteGroups();
-										break;
-									case ApiExecutionAction.PostGroups:
-									case ApiExecutionAction.PutGroups:
-										actionText = execution.Action == ApiExecutionAction.PostGroups ? "A" : "U";
-										commandText = indexUpsertGroups(actionText);
-										break;
-									case ApiExecutionAction.UpsertUsers:
-										commandText = indexUpsertUsers();
 										break;
 									default:
 										commandText = "";
@@ -850,87 +820,6 @@ from	api.ExecutionLog a
 		outer apply {previousValueCrossApplySql("'Resource'", "p.ObjectId", "f.FieldName")} pv
 where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
 or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
-		}
-
-		#endregion
-
-		#region Index Generators
-
-		string indexDeleteAssets()
-		{
-			return $@"
-insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-	select	'ObjectIndex',
-			'D',
-			p.Object, 
-			p.ObjectId,
-			p.AssetId
-	from	api.ExecutionLog l
-			inner join api.Execution e on e.Id = l.ExecutionId 
-			cross apply openjson(l.Payload) with (AssetId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
-	where l.ExecutionId = @Id;";
-		}
-
-		string indexDeleteGroups()
-		{
-			return $@"
-insert into [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-	select	'ObjectIndex',
-			'D',
-			'Group', 
-			p.ID,
-			p.AssetId
-	from	api.ExecutionLog l
-			cross apply openjson(l.Payload) with (ID int, AssetId bigint) p
-	where l.ExecutionId = @Id;";
-		}
-
-		string indexPatchCatalog()
-		{
-			return @"
-insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-	select	'ObjectIndex', 
-			case 
-				when l.IsDelete = 1 then 'D'
-				when l.IsDelete = 0 and l.[Action] = 'A' then 'A'
-				else 'U'
-			end, 
-			a.Object, 
-			a.ObjectId, 
-			@dt, 
-			a.Id
-	from	api.ExecutionCatalogItem l
-			inner join Asset a on a.Id = l.Id and l.ExecutionId = @Id and l.[Type] = 'A' and l.Success = 1 and l.IsDelete = 0";
-		}
-
-		string indexUpsertAssets(string actionText)
-		{
-			return $@"
-insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-	select	'ObjectIndex', '{actionText}', p.Object, p.ObjectId, @dt, coalesce(p.AssetId, 0)
-	from	api.ExecutionLog l
-			cross apply openjson(l.Payload) with (AssetId bigint, Object varchar(50), ObjectId int) p
-	where	l.ExecutionId = @Id;";
-		}
-
-		string indexUpsertGroups(string actionText)
-		{
-			return $@"
-insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-	select	'ObjectIndex', '{actionText}', 'Group', p.ID, @dt, p.AssetId
-	from	api.ExecutionLog l
-			cross apply openjson(l.Payload) with (ID int, AssetId bigint) p
-	where	l.ExecutionId = @Id;";
-		}
-
-		string indexUpsertUsers()
-		{
-			return $@"
-insert into queue.task (Action, Custom, Object, ObjectID, Date, AssetID)
-	select	'ObjectIndex', iif(p.IsNew = 1, 'A', 'U'), 'Resource', p.ObjectId, @dt, p.AssetId
-	from	api.ExecutionLog l
-			cross apply openjson(l.Payload) with (ObjectId int, AssetId bigint, IsNew bit) p
-	where	l.ExecutionId = @Id;";
 		}
 
 		#endregion

@@ -3100,10 +3100,9 @@ namespace d360.web.Controllers.V2
 			Route("tags"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Asset / Tag Association failed. Tag field may not be assigned to Asset. ", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, "Asset / Tag Association failed. Tag field may not be assigned to Asset. ", typeof(ErrorResponse))
 		]
-		public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
+		public async Task<IHttpActionResult> PostAssetTag(List<AssetTagApiModel> assetTags)
 		{
 			List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
             core.entities.Tag currentTag;
@@ -3217,15 +3216,14 @@ namespace d360.web.Controllers.V2
 					continue;
 				}
 
-				AssetTag assetTag = TagRepository.CreateAssetTag(currentTag.ID, asset.ID);
+				var response = await Catalog.CreateAssetTagAsync(asset.ID, currentTag.ID);
 
-				if (assetTag != null)
+				if (response.IsSuccess)
 				{
-					var tag = TagRepository.GetTagById(assetTag.TagID);
 					result = new AssetTagSuccessApiModel()
 					{
 						Message = $"Asset / Tag Association  created",
-						Uid = tag.uid,
+						Uid = currentTag.uid,
 						Success = true
 					};
 					resultList.Add(result);
@@ -3236,7 +3234,7 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, resultList));
+			return Ok(resultList);
 		}
 
 		/// <summary>
@@ -3247,13 +3245,10 @@ namespace d360.web.Controllers.V2
 		/// <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
 		/// <returns>An HTTP status code and message.</returns>
 		[
-			HttpDelete,
-			Route("tags"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "Removes the association between an existing asset and an existing tag, returns the Uid of removed asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			HttpDelete, Route("tags"), SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Removes the association between an existing asset and an existing tag, returns the Uid of removed asset/tag association.", typeof(List<AssetTagSuccessApiModel>))
 		]
-		public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
+		public async Task<IHttpActionResult> DeleteAssetTag(List<AssetTagApiModel> assetTags)
 		{
 			List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
 			foreach (var assetTagApi in assetTags)
@@ -3261,7 +3256,6 @@ namespace d360.web.Controllers.V2
 				AssetTagSuccessApiModel result;
 
 				var currentTag = TagRepository.GetTagByUid(assetTagApi.TagUID);
-
 				if (currentTag == null)
 				{
 					result = new AssetTagSuccessApiModel()
@@ -3275,7 +3269,6 @@ namespace d360.web.Controllers.V2
 				}
 
 				var asset = AssetRepository.GetAssetByUID(assetTagApi.AssetUID);
-
 				if (asset == null)
 				{
 					result = new AssetTagSuccessApiModel()
@@ -3326,19 +3319,20 @@ namespace d360.web.Controllers.V2
 
 				AssetTag assetTag = TagRepository.GetAssetTag(currentTag.ID, asset.ID);
 
-				if (assetTag != null && TagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
+				if (assetTag != null)
 				{
-					result = new AssetTagSuccessApiModel()
+					await Catalog.RemoveAssetTagAsync(asset.ID, currentTag.ID);
+					result = new AssetTagSuccessApiModel
 					{
 						Message = $"Asset / Tag Association  Deleted",
-						Uid = assetTag.UID.Value,
+						Uid = currentTag.uid,
 						Success = true
 					};
 					resultList.Add(result);
 				}
 				else
 				{
-					result = new AssetTagSuccessApiModel()
+					result = new AssetTagSuccessApiModel
 					{
 						Message = string.Format(AssetsApiMessages.TagUIDAssetUIDNotExists, assetTagApi.TagUID.ToString(), assetTagApi.AssetUID.ToString()),
 						Success = false
@@ -3348,7 +3342,7 @@ namespace d360.web.Controllers.V2
 
 			}
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, resultList));
+			return Ok(resultList);
 		}
 		#endregion
 

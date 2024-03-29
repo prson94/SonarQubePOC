@@ -10,13 +10,23 @@ namespace repositories
 	{
 		Platform Platform { get; }
 
+		Task<RepositoryResponse<IEnumerable<TagApiModel>>> ConsolidateTagsAsync(Guid parentUid, List<Guid> uidsToMerge);
+
+		Task<RepositoryResponse<bool>> CreateAssetTagAsync(long assetId, int tagId);
+
 		Task<RepositoryResponse<AssetCrossReference>> CreateCrossReferenceAsync(AssetCrossReference model);
 
 		Task CreateCrossReferencesAsync(ApiExecution execution, List<AssetCrossReference> import, int timeout = 3600);
 
 		Task CreateSemanticType();
 
+		Task<RepositoryResponse<TagApiModel>> CreateTagAsync(string value, Guid? tagTypeUid);
+
+		Task<RepositoryResponse<TagTypeApiModel>> CreateTagTypeAsync(string value);
+
 		Task<List<AssetType>> ReadAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
+
+		Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid);
 
 		Task<AssetDetail> ReadAssetDetail(long id);
 
@@ -38,12 +48,30 @@ namespace repositories
 
 		Task ReadSemanticTypes();
 
+		Task<RepositoryResponse<TagApiModel>> ReadTagAsync(Guid uid);
+
+		Task<RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>> ReadTagsAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		Task<RepositoryResponse<TagTypeApiModel>> ReadTagTypeAsync(Guid uid);
+
+		Task<IEnumerable<TagTypeApiModel>> ReadTagTypesAsync();
+
+		Task<RepositoryResponse<bool>> RemoveAssetTagAsync(long assetId, int tagId);
+
 		Task<RepositoryResponse<AssetCrossReference>> RemoveCrossReferencesAsync(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<RepositoryResponse<string>> RemoveSemanticType();
 
+		Task<RepositoryResponse<bool>> RemoveTagsAsync(List<Guid> tags);
+
+		Task<RepositoryResponse<bool>> RemoveTagTypesAsync(List<Guid> tagTypes);
+
 		Task<RepositoryResponse<AssetCrossReference>> UpdateCrossReferenceAsync(AssetCrossReference model);
 
 		Task<RepositoryResponse<Semantic>> UpdateSemanticType();
+
+		Task<RepositoryResponse<bool>> UpdateTagAsync(Guid uid, string value);
+
+		Task<RepositoryResponse<bool>> UpdateTagTypeAsync(Guid uid, string value);
 	}
 }

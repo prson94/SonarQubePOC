@@ -939,36 +939,36 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				throw new ArgumentException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
 			if (responsibility == null)
 			{
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			if (!passedResponsibilityCheck && !Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
 			{
-				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
+				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedMessage);
 			}
 
 			bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
 			if (!isValidResponsibilityForAsset)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
+				return errorMessageArgumentResponse(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
 			}
 
 			if (model.ResourceUid.Count == 0)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidNotEmpty);
+				return errorMessageArgumentResponse(ResponsibilityApiMessages.ResourceUidNotEmpty);
 			}
 
 			if (model.ResourceUid.Any(x => x == Guid.Empty))
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidInvalid);
+				return errorMessageArgumentResponse(ResponsibilityApiMessages.ResourceUidInvalid);
 			}
 
 			var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(model.ResourceUid, asset.uid, responsibility.UID).ToList();
@@ -976,13 +976,13 @@ namespace d360.web.Controllers.V2
 			if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
 			{
 				var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
+				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
 			}
 
 			if (securityAssets.Any(x => x.Exists == true))
 			{
 				var badAsset = securityAssets.First(x => x.Exists == true);
-				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
+				return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
 			}
 
 			foreach (var uid in model.ResourceUid)
@@ -990,13 +990,13 @@ namespace d360.web.Controllers.V2
 				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
 				if (sas == null)
 				{
-					throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+					return errorMessageArgumentResponse(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
 				}
 			}
 
 			ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-			return Ok(new ConfirmResponse { title = ApiMessages.Success, message = ResponsibilityApiMessages.ResponsibilitySuccessAddMessage });
+			return successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessAddMessage);
 		}
 
 		/// <summary>

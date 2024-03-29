@@ -458,12 +458,12 @@ namespace d360.web.Controllers.V2
 				model.Origin = origin;
 				if (indexer.CanCreatePendingDBLog(assetTypeClass, r.AssetTypeUid))
 				{
-					Queue.CreateMessage(Company.SearchIndexQueue, model);
+					Queue.CreateMessage(constants.Queue.Search, model);
 				}
 			});
 			response.message = "Rebuild queued";
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
+			return Ok(response);
 		}
 
 		#region Enrich elastic results with DB data
@@ -723,13 +723,14 @@ namespace d360.web.Controllers.V2
 							new List<string> { "Uid" })
 				});
 
+				var baseUri = StorageBaseUri;
 				foreach (var m in menuItems)
 				{
 					foreach (var r in results.Where(r => r.AssetTypeUid == m.AssetTypeUid))
 					{
 						if (!string.IsNullOrEmpty(m.ImageIconUrl))
 						{
-							r.ImageUrl = constants.COMPANY_RESOURCES_URL + m.ImageIconUrl;
+							r.ImageUrl = $"{baseUri}{constants.Storage.Resources}/{ m.ImageIconUrl}";
 						}
 						else if (!string.IsNullOrEmpty(m.Icon))
 						{
@@ -759,11 +760,12 @@ namespace d360.web.Controllers.V2
 				var names = siteNavMap.Values.ToList();
 				Dictionary<string, (string, string)> iconMap = Company.Query<(string Name, string Icon, string ImageIconUrl)>(sql, new { names }).ToDictionary(t => t.Name, t => (t.Icon, t.ImageIconUrl));
 
+				var baseUri = StorageBaseUri;
 				foreach (var r in results.Where(res => res.MissingIcon() && siteNavMap.ContainsKey(res.Group) && iconMap.ContainsKey(siteNavMap[res.Group])))
 				{
 					if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
 					{
-						r.ImageUrl = constants.COMPANY_RESOURCES_URL + iconMap[siteNavMap[r.Group]].Item2;
+						r.ImageUrl = $"{baseUri}{constants.Storage.Resources}/{iconMap[siteNavMap[r.Group]].Item2}";
 					}
 					else if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item1))
 					{

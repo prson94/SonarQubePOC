@@ -1,9 +1,7 @@
-﻿using d360.core;
-using d360.extensions;
+﻿using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.events;
 using d360.extensions.mail;
-using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -19,7 +17,12 @@ namespace igx.jobs.workflowsubscriber
 			builder
 				.SetGovernConfiguration()
 				.ConfigureWebJobs(c => {
-					c.AddServiceBus();
+					c.AddAzureStorageQueues(q => {
+						q.MaxPollingInterval = TimeSpan.FromSeconds(5);
+#if DEBUG
+						q.BatchSize = 1;
+#endif
+					}).AddServiceBus();
 				})
 				.ConfigureGovernLogging()
 				.ConfigureWebJobs(c => {
@@ -33,20 +36,15 @@ namespace igx.jobs.workflowsubscriber
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
 						{
-							EventBusTopicName = context.Configuration["EventBusTopicName"],
-							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
-							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
-					});
-					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, MandrillMailProvider>(o => {
 						return new MandrillMailProvider()
 						{
-							ApiKey = context.Configuration["MandrillApiKey"],
-							SubAccount = context.Configuration["MandrillSubAccount"]
+							ApiKey = context.Configuration[constants.Setting.MailKey],
+							SubAccount = context.Configuration[constants.Setting.MailAccount]
 						};
 					});
 				});

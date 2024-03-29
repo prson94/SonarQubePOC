@@ -52,20 +52,12 @@ namespace d360.model
 		private readonly CommunityContext Community;
 		
 		private bool IsEventingEnabled;
+		int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");
 
 		private string SettingsCacheKey => $"Settings_{CurrentCompanyID}";
-
-		public string ApiExecutionQueue { get; set; }
-		public string AssetGraphQueue { get; set; }
-		public string BulkLoadQueue { get; set; }
-		public string DisplayValueQueue { get; set; }
-		public string EventBusTopicName { get; set; }
-		public string ScoringQueue { get; set; }
-		public string SearchIndexQueue { get; set; }
-
 
 		#region Ctors
 
@@ -322,7 +314,7 @@ namespace d360.model
 						
 			if (events.Any())
 			{
-				QueueSource.CreateTopicMessages(events);
+				QueueSource.CreateMessages(constants.Queue.Workflow, events);
 			}
 		}
 
@@ -538,7 +530,7 @@ from	Field F
 				}
 			}
 
-			Enqueue(DisplayValueQueue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
 		}
 
 		/// <summary>
@@ -621,7 +613,7 @@ from	Field F
 							ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), det.Type),
 							ObjectTypeID = det.TypeID
 						});
-						QueueSource.CreateTopicMessages(events);
+						QueueSource.CreateMessages(constants.Queue.Workflow, events);
 					}
 				}
 
@@ -676,7 +668,7 @@ from	Field F
 			Delete<Field>(f => f.IntersectID == id);
 			Delete(item);
 
-			QueueSource.CreateTopicMessage(new EventInfo
+			QueueSource.CreateMessage(constants.Queue.Workflow, new EventInfo
 			{
 				CompanyID = CurrentCompanyID,
 				Action = ChangeType.Delete,
@@ -2239,12 +2231,12 @@ from	IntersectType I
 
 		public void RebuildDisplayValuesRequest()
 		{
-			Enqueue(DisplayValueQueue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
+			Enqueue(constants.Queue.DisplayValue, new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
 		}
 
 		public void RebuildIndexRequest()
 		{
-			Enqueue(SearchIndexQueue, new ReindexModel { CompanyID = CurrentCompanyID });
+			Enqueue(constants.Queue.Search, new ReindexModel { CompanyID = CurrentCompanyID });
 		}
 
 		public string RenderTooltip(string action, SystemObjects type, int id)

@@ -64,12 +64,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="jobs\Indexer.cs" />
     <Compile Include="jobs\IndexMaintainance.cs" />
+    <Compile Include="jobs\PostExecutionIndexListener.cs" />
     <Compile Include="models\FieldSqlModel.cs" />
     <Compile Include="models\IPagedQuerySqlModel.cs" />
     <Compile Include="models\ResponsibilitySqlModel.cs" />
     <Compile Include="models\TagSqlModel.cs" />
-    <Compile Include="jobs\Indexer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -81,6 +82,10 @@
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\constants\constants.csproj">
+      <Project>{cf258379-3c5f-49a3-8a4e-a3d1d5bfca72}</Project>
+      <Name>constants</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>

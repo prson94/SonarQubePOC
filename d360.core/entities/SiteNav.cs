@@ -52,21 +52,8 @@ namespace d360.core.entities
         [NotMapped, DataMember]
         public string Type { get { return this.Name == "#ASSET_TYPE" ? CommonNames.CommonName_AssetType :CommonNames.Text_Folder; } }
 
-        [NotMapped, DataMember]
-        public string FullURL
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(ImageIconUrl))
-                {
-                    return null;
-                }
-                else
-                {
-                    return constants.COMPANY_RESOURCES_URL + ImageIconUrl;
-                }
-            }
-        }
+        //[NotMapped, DataMember]
+        //public string FullURL { get; set; }
     }
 
     public class SiteNavPermission : BaseObject

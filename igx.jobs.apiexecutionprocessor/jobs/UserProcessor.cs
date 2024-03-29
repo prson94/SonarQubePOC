@@ -28,7 +28,7 @@ namespace igx.jobs.apiexecutionprocessor
 			{
 				var companies = GetCompaniesByCurrentSlot();
 
-				using (var cnn = new SqlConnection(Configuration["CommunityContext"]))
+				using (var cnn = new SqlConnection(ConnString))
 				{
 					await cnn.OpenIfClosed();
 

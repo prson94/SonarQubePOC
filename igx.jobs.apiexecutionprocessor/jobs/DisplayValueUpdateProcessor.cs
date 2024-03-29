@@ -33,7 +33,7 @@ namespace igx.functions.consumption
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-        public async Task Run([QueueTrigger("%DisplayValueQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+        public async Task Run([QueueTrigger(constants.Queue.DisplayValue, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
         {
             var updateInfo = JsonConvert.DeserializeObject<DisplayUpdateInfo>(myQueueItem);
 
@@ -55,19 +55,10 @@ namespace igx.functions.consumption
 						ResourceID = 0,
 						IsAdministrator = true,
 					};
-					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-					{
-						ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-						AssetGraphQueue = Configuration["AssetGraphQueue"],
-						BulkLoadQueue = Configuration["BulkLoadQueue"],
-						DisplayValueQueue = Configuration["DisplayValueQueue"],
-						EventBusTopicName = Configuration["EventBusTopicName"],
-						ScoringQueue = Configuration["ScoringQueue"],
-						SearchIndexQueue = Configuration["SearchIndexQueue"]
-					};
+					var community = new CommunityContext(ConnString, Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
-					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, Configuration["CommunityContext"]))
+					using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, ConnString))
 					{
 						await companyConnection.OpenIfClosed();
 

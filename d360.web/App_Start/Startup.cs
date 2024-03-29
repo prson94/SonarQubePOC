@@ -6,6 +6,7 @@ using d360.core.types;
 using d360.extensions;
 using d360.featureflags;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Controllers;
 using d360.web.Handlers.Exceptions;
 using d360.web.Models;
@@ -112,7 +113,7 @@ namespace d360.web
 
 				builder.RegisterType<extensions.search.ElasticSearchSource>().As<ISearchSource>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.CommunityConnectionString = Config.GetValue<string>("CommunityContext");
+						i.Instance.CommunityConnectionString = Config.GetValue<string>(constants.Setting.Community);
 					});
 				builder.RegisterType<extensions.mail.MandrillMailProvider>().As<IMailProvider>()
 					.InstancePerRequest().OnActivating(i => {
@@ -122,20 +123,18 @@ namespace d360.web
 				builder.RegisterType<caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
 				builder.RegisterType<extensions.events.AzureQueueSource>().As<IQueueSource>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.EventBusTopicName = Config.GetValue<string>("EventBusTopicName");
-						i.Instance.EventServiceBusConnectionString = Config.GetValue<string>("EventServiceBus");
-						i.Instance.QueuesConnectionString = Config.GetValue<string>("QueuesConnectionString");
+						i.Instance.StorageConnectionString = Config.GetValue<string>(constants.Setting.Storage);
 					});
 				builder.RegisterType<extensions.storage.AzureStorageProvider>().As<IStorageProvider>()
 					.InstancePerRequest().OnActivating(i => {
-						i.Instance.StorageConnectionString = Config.GetValue<string>("AzureStorageConnectionString");
+						i.Instance.StorageConnectionString = Config.GetValue<string>(constants.Setting.Storage);
 					});
 
 				#endregion
 
 				builder.Register(c =>
 				{
-					return new FeatureFlagService(Config.GetValue<string>("LaunchDarklySdkKey"));
+					return new FeatureFlagService(Config.GetValue<string>(constants.Setting.FeatureFlagKey));
 				}).As<IFeatureFlagService>().SingleInstance();
 
 				builder.RegisterType<OidcDiscoveryCache>().AsSelf().InstancePerRequest();
@@ -192,7 +191,7 @@ namespace d360.web
 				#region Repositories
 
 				builder.Register(o => {
-					var connectionString = Config.GetValue<string>("CommunityContext");
+					var connectionString = Config.GetValue<string>(constants.Setting.Community);
 					var cache = o.Resolve<ICachingProvider>();
 					var queue = o.Resolve<IQueueSource>();
 					var ctx = o.Resolve<ISecurityContextProvider>();
@@ -206,23 +205,24 @@ namespace d360.web
 					return new repositories.azure.DapperConnectionProvider { ConnectionString = connectionString };
 				}).InstancePerRequest();
 
-				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest().OnActivating(i => {
-					i.Instance.ApiExecutionQueue = Config.GetValue<string>("ApiExecutionQueue");
-					i.Instance.AssetGraphQueue = Config.GetValue<string>("AssetGraphQueue");
-					i.Instance.BulkLoadQueue = Config.GetValue<string>("BulkLoadQueue");
-					i.Instance.DisplayValueQueue = Config.GetValue<string>("DisplayValueQueue");
-					i.Instance.ScoringQueue = Config.GetValue<string>("ScoringQueue");
-					i.Instance.SearchIndexQueue = Config.GetValue<string>("SearchIndexQueue");
-				});
+				builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 
+				builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest().OnActivating(o => {
+					o.Instance.NotificationQueue = Config.GetValue<string>("NotificationQueue");
+				});
 				builder.RegisterModelModule(); // Register repos from d360.model
 				
-				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>().InstancePerRequest();
+				builder.RegisterType<repositories.azure.Catalog>().As<ICatalog>()
+					.InstancePerRequest().OnActivating(i => {
+						var sec = i.Context.Resolve<ISecurityContextProvider>();
+						i.Instance.CurrentUserId = sec.ResourceID;
+					});
 				builder.RegisterType<repositories.dis.Catalog>().As<ICatalog>().InstancePerRequest();
 				builder.RegisterType<repositories.azure.Workspaces>().As<IWorkspaces>()
 					.InstancePerRequest().OnActivating(i => {
 						var sec = i.Context.Resolve<ISecurityContextProvider>();
 
+						i.Instance.CurrentUserId = sec.ResourceID;
 						i.Instance.CompanyId = sec.CompanyID;
 						i.Instance.WorkspaceId = "";
 					});

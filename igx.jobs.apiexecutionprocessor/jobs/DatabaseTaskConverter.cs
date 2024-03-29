@@ -41,10 +41,10 @@ namespace igx.jobs.apiexecutionprocessor
 						using (var outerCompanyConnection = new SqlConnection(CompanyConnectionUtils.GetConnectionString(company.CompanyID, company.Server, company.Username, company.Password)))
 						{
 							await outerCompanyConnection.OpenIfClosed();
-							if (HasWork(outerCompanyConnection))
-							{
-								await Queue.CreateFilteredTopicMessageAsync(Configuration["EventBusTopicName"], new TaskMessage(company));
-							}
+							//if (HasWork(outerCompanyConnection))
+							//{
+								//await Queue.CreateFilteredTopicMessageAsync(Configuration["EventBusTopicName"], new TaskMessage(company));
+							//}
 						}
 					}
 					catch (Exception ex)

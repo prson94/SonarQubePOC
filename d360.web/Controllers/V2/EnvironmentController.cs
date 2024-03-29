@@ -88,7 +88,7 @@ namespace d360.web.Controllers.V2
 					return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 				}
 
-				var currentStatusList = await Company.GetRebuildJobStatuses(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+				var currentStatusList = await Company.GetRebuildJobStatuses(12);
 				var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
 				currentStatusList.ForEach(i =>
 				{
@@ -118,7 +118,7 @@ namespace d360.web.Controllers.V2
 					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 				}
 
-				var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+				var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, 12);
 				if (readyToActivate.StatusCode == HttpStatusCode.OK)
 				{
 					switch (model.Job)
@@ -168,70 +168,6 @@ namespace d360.web.Controllers.V2
 
 			return Request.CreateResponse(HttpStatusCode.OK, data);
 		}
-
-		[HttpGet, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
-		public HttpResponseMessage StyleCustomizations()
-		{
-			var css = "";
-
-			//only admins can access this route
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
-
-			//go to azure storage for this company try to get the custom css
-			try
-			{
-				css = _storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
-			}
-
-			return Request.CreateResponse(HttpStatusCode.OK, css);
-		}
-
-		[HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
-		public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
-			//delete the old css file
-			try
-			{
-				await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
-			}
-			catch
-			{
-				//no handling of this case
-			}
-
-			try
-			{
-				if (!string.IsNullOrWhiteSpace(UpdateCss.css))
-				{
-					await Workspace.UpsertSettingAsync(Setting.CustomCSSLocation, $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css");
-					await _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
-				}
-				else
-				{
-					await Workspace.RemoveSettingAsync(Setting.CustomCSSLocation);
-				}
-			}
-			catch
-			{
-				//no handling of this case
-			}
-
-			return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.StyleUpdated);
-		}
-
 
 		/// <summary>
 		/// Retrieves a list of epplication settings.
@@ -482,21 +418,6 @@ namespace d360.web.Controllers.V2
 					.Select(o => o.Trim())
 					.Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
 					.ToList());
-			}
-
-			if (setting.ID == Setting.CompanyLogo)
-			{
-				value = updateSingleSettingImageFile(constants.COMPANY_LOGO_FOLDER, constants.COMPANY_LOGO_URL, value).Result;
-			}
-
-			if (setting.ID == Setting.CompanyIcon)
-			{
-				value = updateSingleSettingImageFile(constants.COMPANY_ICON_FOLDER, constants.COMPANY_ICON_URL, value).Result;
-			}
-
-			if (setting.ID == Setting.HomePageBackgroundImage)
-			{
-				value = updateSingleSettingImageFile(constants.COMPANY_RESOURCES_FOLDER, constants.COMPANY_RESOURCES_URL, value).Result;
 			}
 
 			if (clearSetting)

@@ -34,7 +34,7 @@ namespace igx.jobs.scoreprocessor
 			Queue = queue;
 		}
 
-		public async Task Run([QueueTrigger("%ScoringQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+		public async Task Run([QueueTrigger(constants.Queue.Score, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
 		{
 			var info = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 			var logProperties = new Dictionary<string, object> {
@@ -304,17 +304,8 @@ insert into #ids (AssetUid)
 				CompanyPrefix = companyDomainPrefix,
 				IsAdministrator = false
 			};
-			var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-			{
-				ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-				AssetGraphQueue = Configuration["AssetGraphQueue"],
-				BulkLoadQueue = Configuration["BulkLoadQueue"],
-				DisplayValueQueue = Configuration["DisplayValueQueue"],
-				EventBusTopicName = Configuration["EventBusTopicName"],
-				ScoringQueue = Configuration["ScoringQueue"],
-				SearchIndexQueue = Configuration["SearchIndexQueue"]
-			};
+			var community = new CommunityContext(ConnString, Cache, Queue, context);
+			var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 			var assetGroups = updatedAssets.GroupBy(a => new { a.ObjectType, a.ObjectTypeID }).ToList();
 

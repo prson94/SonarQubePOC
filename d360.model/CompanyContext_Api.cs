@@ -72,8 +72,6 @@ namespace d360.model
 
 		void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
 
-		void SendBatchApiCompletedEvent(ApiExecution execution);
-
 		void SetApiExecutionProcessingStartTime(Guid ExecutionId);
 
 		void UpdateExecutionWithErrorFromException(ApiExecution execution, Exception ex);
@@ -718,7 +716,7 @@ namespace d360.model
 		
 		private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
         {
-            int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+            int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
             Connection.Execute($@"
 								update	api.Execution
 								set		[ErrorMessage] = LEFT(coalesce([ErrorMessage],'') + @msg,@characterLimit)
@@ -734,7 +732,7 @@ namespace d360.model
 
 		private void LogLoopExecutionErrorAll(Guid executionID, long errorcount, string targetTable, string msg, int timeout = 3600)
 		{
-			int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+			int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
 			Connection.Execute($@"
 								update	api.Execution
 								set		Processed = 0,
@@ -1951,7 +1949,7 @@ where   ER.ExecutionID = @ExecutionID
 			{
 				LogExecutionErrorToAppInsights(execution, generalEx);
 				generalChecksCompleted = false;
-				string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+				string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 				execution.ErrorMessage = msg;
 				execution.Processed = 0;
 				execution.Error = import.Count();
@@ -2092,7 +2090,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -2779,19 +2777,19 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (tooLongOwners.Any())
 			{
 				string message = $"Owner value max length exceeded : {string.Join(", ", tooLongOwners.Select(i => i.Owner))}. Max length of Owner field is 100 characters.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (uidDupes.Any())
 			{
 				string message = string.Format(Messages.Error_Duplicate_Relationship_Uid, string.Join(", ", uidDupes.Select(i => i.Uid)));
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (!executionItemDupes.Any() && !tooLongOwners.Any() && !uidDupes.Any())
@@ -3875,7 +3873,7 @@ from	#tempexecurelat e
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4061,7 +4059,7 @@ from	#tempexecurelat e
             if (dupes.Any())
             {
                 string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+                execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4546,13 +4544,13 @@ from	#tempexecurelat e
 			{
 				string message = string.Format(CompanyContextApiError.DuplicateExecutionItem, string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString())));
 
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipUpdateResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (tooLongOwners.Any())
 			{
 				string message = string.Format(CompanyContextApiError.OwnerValueMaxLength, string.Join(", ", tooLongOwners.Select(i => i.Owner)));
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DatabaseBulkRelationshipUpdateResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (!executionItemDupes.Any() && !tooLongOwners.Any())
@@ -4961,7 +4959,7 @@ from	#tempexecurelat e
 				{
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();
@@ -5108,7 +5106,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					sw.Restart();
 
@@ -5141,7 +5139,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -5150,7 +5148,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				if (uidDupes.Any())
 				{
 					string message = $"Duplicate predicate Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 					results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 				}
 				else
@@ -5281,7 +5279,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					{
 						LogExecutionErrorToAppInsights(execution, generalEx);
 						generalChecksCompleted = false;
-						string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+						string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 						execution.ErrorMessage = msg;
 						execution.Processed = 0;
 						execution.Error = import.Count();
@@ -5443,19 +5441,6 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 								",
                                 new { executionID }, commandTimeout: timeout, transaction: trans);
         }
-				
-		public void SendBatchApiCompletedEvent(ApiExecution execution)
-		{
-			QueueSource.CreateFilteredTopicMessageAsync(EventBusTopicName, new BatchApiEvent()
-			{
-				CompanyID = CurrentCompanyID,
-				CompanyDomainPrefix = CurrentCompanyDomain,
-				Action = BatchApiEventAction.Completed,
-				ExecutionID = execution.ExecutionID
-			})
-				.GetAwaiter()
-				.GetResult();
-		}
 
 		public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
 		{
@@ -5495,7 +5480,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 
 		public void UpdateExecutionWithErrorFromException(ApiExecution execution, Exception ex)
 		{
-			string message = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+			string message = ex.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 			execution.ErrorMessage = message;
 			execution.CompletedOn = DateTime.UtcNow;
 			Connection.Execute($@"update api.execution set ErrorMessage = @message, CompletedOn = @date where executionid = @ExecutionID", new { execution.ExecutionID, message, date = DateTime.UtcNow });
@@ -5537,19 +5522,19 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (predDupes.Any())
 			{
 				string message = $"Duplicate predicate items: {string.Join(", ", predDupes.Select(i => i.Items.First().Name + "|" + i.Items.First().Type.ToString()))}. Name and type must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else if (predInverseDupes.Any())
 			{
 				string message = $"Duplicate predicate items: {string.Join(", ", predInverseDupes.Select(i => i.Items.First().Inverse + "|" + i.Items.First().Type.ToString()))}. Inverse and type must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -5691,7 +5676,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
 					string msg = generalEx.GetFullExceptionData(false);
-					execution.ErrorMessage = msg.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, msg.Length));
+					execution.ErrorMessage = msg.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, msg.Length));
 					execution.Processed = 0;
 					execution.Error = import.Count();
 
@@ -5843,7 +5828,7 @@ update P set P.Success = 1 from api.ExecutionDeletedPredicate P where {querySuff
 						endItemNumber += loopSize;
 					}
 
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					Connection.Close();
 				}

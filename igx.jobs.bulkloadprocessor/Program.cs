@@ -36,16 +36,14 @@ namespace igx.jobs.bulkloadprocessor
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
 						{
-							EventBusTopicName = context.Configuration["EventBusTopicName"],
-							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
-							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
 					});
 					services.AddScoped<IStorageProvider, AzureStorageProvider>(s => {
-						return new AzureStorageProvider { StorageConnectionString = context.Configuration["AzureStorageConnectionString"] };
+						return new AzureStorageProvider { StorageConnectionString = context.Configuration[constants.Setting.Storage] };
 					});
 					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
+						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, DummyMailProvider>();

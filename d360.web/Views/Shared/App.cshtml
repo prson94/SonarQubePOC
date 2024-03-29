@@ -10,18 +10,9 @@
 
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
-    var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
-
-    var baseUrl = "";
-    if ((useCdn ?? "").ToLower() == "true")
-    {
-        baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
-    }
 
     var title = settings["BrowserTitlePrefix"] ?? "Data360, Inc.";
-
-    var companyIcon = string.Format("{0}/favicon.ico", baseUrl);
-    companyIcon = settings["CompanyIcon"];
+    var companyIcon = settings["CompanyIcon"] ?? "/favicon.ico";
 }
 @functions{
     public string GetAntiForgeryToken()
@@ -43,8 +34,8 @@
     <meta name="description" content="Data360: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
-    <link rel="preload" href="@string.Format("{0}/fonts/fontawesome-webfont.woff2?v=4.7.0", baseUrl)" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="@string.Format("{0}/content/primeicons/fonts/primeicons.ttf", baseUrl)" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="/fonts/fontawesome-webfont.woff2?v=4.7.0" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/content/primeicons/fonts/primeicons.ttf" as="font" type="font/ttf" crossorigin>
     <script type="text/javascript">
         var CurrentResourceID = @(CurrentResourceID);
 		var CurrentResourceUid = '@(CurrentResourceUid)';
@@ -56,16 +47,16 @@
         var ApplicationLanguageSetting = '@(ApplicationLanguageSetting)';
         var FederationUrlPrefix = "";
     </script>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/primeng.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/primeicons.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/default.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="/content/primeng/primeng.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/primeicons/primeicons.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/primeng/default.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/styles/materialize.min.css" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/theme.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="/content/primeng/theme.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/quill/v1.3.7/quill.snow.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/codemirror/codemirror.min.css" />
+    <link rel="stylesheet" type="text/css" href="/content/codemirror/eclipse.min.css" />
     <link rel="stylesheet" type="text/css" href="/api/v2/environment/themes/current.css" />
 </head>
 <body>

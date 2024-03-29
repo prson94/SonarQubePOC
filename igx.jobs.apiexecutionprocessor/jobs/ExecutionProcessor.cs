@@ -27,7 +27,6 @@ namespace igx.jobs.apiexecutionprocessor
 	{
 		const string FUNCTION_NAME = "ExecutionProcessor";
 
-		const int DEFAULT_MERGE_BLOCK_SIZE = 500;
 		const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
 		const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
 		const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
@@ -48,7 +47,7 @@ namespace igx.jobs.apiexecutionprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([QueueTrigger("%ApiExecutionQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+		public async Task Run([QueueTrigger(constants.Queue.Execution, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
 		{
 			var info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 
@@ -71,17 +70,8 @@ namespace igx.jobs.apiexecutionprocessor
 					CompanyPrefix = info.CompanyDomainPrefix,
 					IsAdministrator = false
 				};
-				var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-				{
-					ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-					AssetGraphQueue = Configuration["AssetGraphQueue"],
-					BulkLoadQueue = Configuration["BulkLoadQueue"],
-					DisplayValueQueue = Configuration["DisplayValueQueue"],
-					EventBusTopicName = Configuration["EventBusTopicName"],
-					ScoringQueue = Configuration["ScoringQueue"],
-					SearchIndexQueue = Configuration["SearchIndexQueue"]
-				};
+				var community = new CommunityContext(ConnString, Cache, Queue, context);
+				var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 
 				var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
 				if (resource != null)
@@ -103,29 +93,10 @@ namespace igx.jobs.apiexecutionprocessor
 				{
 					if (dbExecutionItem != null)
 					{
-						int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;
-
-						int dbExecutionTimeout = int.Parse(Configuration["DBExecuteQueryTimeout"]);
-
-						if (int.TryParse(Configuration["V2ApiBatchMergeBlockSize"], out int tempBlockSize))
-						{
-							mergeBlockSize = tempBlockSize > 0 ? tempBlockSize : DEFAULT_MERGE_BLOCK_SIZE;
-						}
-
-						if (int.TryParse(Configuration["V2ApiBatchSqlBatchSize"], out int tempsqlBulkCopyBlockSize))
-						{
-							company.SqlBulkBatchSize = tempsqlBulkCopyBlockSize >= 0 ? tempsqlBulkCopyBlockSize : DEFAULT_SQL_BULK_COPY_BLOCK_SIZE;
-						}
-
-						if (int.TryParse(Configuration["V2ApiBatchSqlBulkTimeout"], out int tempsqlBulkCopyTimeout))
-						{
-							company.SqlBulkBatchTimeout = tempsqlBulkCopyTimeout >= 0 ? tempsqlBulkCopyTimeout : DEFAULT_SQL_BULK_COPY_TIMEOUT;
-						}
-
-						if (int.TryParse(Configuration["V2ApiBatchWorkflowBatchSize"], out int tempWorkflowBatchSize))
-						{
-							company.WorkflowSendBatchSize = tempWorkflowBatchSize >= 0 ? tempWorkflowBatchSize : DEFAULT_WORKFLOW_BATCH_SIZE;
-						}
+						int dbExecutionTimeout = 10800;
+						company.SqlBulkBatchSize = DEFAULT_SQL_BULK_COPY_BLOCK_SIZE;
+						company.SqlBulkBatchTimeout = DEFAULT_SQL_BULK_COPY_TIMEOUT;
+						company.WorkflowSendBatchSize = DEFAULT_WORKFLOW_BATCH_SIZE;
 
 						bool executeJob = (dbExecutionItem.State != d360.core.enums.State.Deleted);
 
@@ -323,9 +294,9 @@ namespace igx.jobs.apiexecutionprocessor
 									await execRepo.PatchCatalog(dbExecutionItem.Id, patchCatalogPayload);
 									resultsSql = @"select iif([Type] = 'A', 'Asset', 'Relation') as [Type], TypeSourceId, SourceId, SubjectSourceId, ObjectSourceId, [Message], [Success], cast(iif([Action] = 'A', 1, 0) as bit) as IsNew from api.ExecutionCatalogItem where ExecutionId = @Id order by [Type] asc";
 
-									Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-									Queue.CreateMessage(company.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
-									Queue.CreateMessage(company.ScoringQueue, new ScoreQueueInfo
+									Queue.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									Queue.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = info.CompanyID, ExecutionId = dbExecutionItem.Id });
+									Queue.CreateMessage(constants.Queue.Score, new ScoreQueueInfo
 									{
 										ChangeType = ScoreQueueChangeType.PatchCatalogExecution,
 										CompanyID = info.CompanyID,
@@ -377,7 +348,7 @@ namespace igx.jobs.apiexecutionprocessor
 						{
 							if (dbExecutionItem.RetryCount >= maxRetryCount)
 							{
-								string errorMessage = ex.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+								string errorMessage = ex.GetFullExceptionData(false, 2000);
 								dbExecutionItem.ErrorMessage = errorMessage;
 								dbExecutionItem.CompletedOn = DateTime.UtcNow;
 							}
@@ -394,7 +365,7 @@ namespace igx.jobs.apiexecutionprocessor
 					{
 						log.LogWarning(ex, "Currently on Retry {RetryCount}", dbExecutionItem.RetryCount);
 						TimeSpan delay = new TimeSpan(0, 0, delaySeconds * dbExecutionItem.RetryCount.Value); // Incremental backoff.
-						await Queue.CreateMessageAsync(company.ApiExecutionQueue, info, delay);
+						await Queue.CreateMessageAsync(constants.Queue.Execution, info, delay);
 					}
 					else
 					{

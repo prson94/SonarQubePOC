@@ -78,6 +78,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WorkflowQueueListener.cs" />
+    <Compile Include="WorkflowBaseJob.cs" />
     <Compile Include="WorkflowSubscriber.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +90,10 @@
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\constants\constants.csproj">
+      <Project>{cf258379-3c5f-49a3-8a4e-a3d1d5bfca72}</Project>
+      <Name>constants</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
@@ -103,10 +109,6 @@
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>
       <Name>d360.extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\d360.featureflags\d360.featureflags.csproj">
-      <Project>{20cca898-62dd-4ff1-8126-e65065e830e3}</Project>
-      <Name>d360.featureflags</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{B12A1078-5835-43B8-AFB2-C3D24C4AA098}</Project>
@@ -141,6 +143,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus">
       <Version>5.13.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage">
+      <Version>5.2.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Xml">
       <Version>8.0.0</Version>

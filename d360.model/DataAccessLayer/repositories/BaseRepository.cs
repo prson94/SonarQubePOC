@@ -1338,7 +1338,7 @@ namespace d360.model.DataAccessLayer.repositories
 			CompanyContext.Add(execution);
 
 			// Save to queue.
-			if (!await queueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo))
+			if (!await queueSource.CreateMessageAsync(constants.Queue.Execution, executionInfo))
 			{
 				throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}

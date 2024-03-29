@@ -526,7 +526,7 @@ namespace d360.web.Controllers.V2
 			Company.Add(execution);
 
 			// Save to queue.
-			await Queue.CreateMessageAsync(Company.ApiExecutionQueue, executionInfo);
+			await Queue.CreateMessageAsync(constants.Queue.Execution, executionInfo);
 
 			return await sendExecutionProcessingResponse(executionInfo);
         }

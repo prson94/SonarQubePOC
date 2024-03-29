@@ -176,7 +176,7 @@ namespace d360.model.DataAccessLayer
 				},
 				StartedOn = DateTime.UtcNow
 			};
-			Queue.CreateMessage(CompanyContext.ScoringQueue, info);
+			Queue.CreateMessage(constants.Queue.Score, info);
 		}
 
 		public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
@@ -1607,7 +1607,7 @@ namespace d360.model.DataAccessLayer
 					},
 					StartedOn = DateTime.UtcNow
 				};
-				Queue.CreateMessage(CompanyContext.ScoringQueue, info);
+				Queue.CreateMessage(constants.Queue.Score, info);
 			}
 
 			return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
@@ -2273,7 +2273,7 @@ namespace d360.model.DataAccessLayer
 					Payload = request,
 					StartedOn = DateTime.UtcNow
 				};
-				Queue.CreateMessage(CompanyContext.ScoringQueue, info);
+				Queue.CreateMessage(constants.Queue.Score, info);
 			});
 		}
 
@@ -2610,7 +2610,7 @@ namespace d360.model.DataAccessLayer
 			CompanyContext.Add(execution);
 
 			// Save to queue.
-			if (!await Queue.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo))
+			if (!await Queue.CreateMessageAsync(constants.Queue.Execution, executionInfo))
 			{
 				throw new ArgumentException(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
 			}
