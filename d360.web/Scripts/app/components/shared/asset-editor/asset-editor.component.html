@@ -46,7 +46,7 @@
 									   i18n-title
 									   title="Description">
 						<div inputs class="inputs-wrapper">
-							<div class="row" [innerHtml]="editorDecription"></div>
+							<div class="row ig-html ql-editor no-padding" [innerHtml]="editorDecription | safeHtml"></div>
 						</div>
 					</ig-property-group>
 
