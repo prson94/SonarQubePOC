@@ -1109,6 +1109,12 @@ namespace d360.model.DataAccessLayer.repositories
 					else
 					{
 						List<string> sortStatements = new List<string>();
+
+						if (fieldTypes.Any(x => x.SortOrder > 0 && x.IsListable == true && x.Type == "OwnershipLookup"))
+						{
+							IsOwnershipOrder = true;
+						}
+
 						orderFields.ForEach(ft =>
 						{
 							fieldsUsedInMainQuery.AddRange(ft.Select(x => "F" + x.ID.ToString()));
