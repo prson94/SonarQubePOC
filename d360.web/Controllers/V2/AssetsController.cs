@@ -875,6 +875,11 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(httpStatusCode, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
 				}
 
+				if (isStreamResponse)
+				{
+					queryParams = getqueryParamsforexcel(queryParams, isStreamResponse, assetType);
+				}
+
 				if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidOrderRequese));
@@ -973,9 +978,6 @@ namespace d360.web.Controllers.V2
 
 						var paramList = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson").ToList();
 
-						paramList.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
-						paramList.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
-
 						queryParams = paramList;
 
 						SLDocument results;
@@ -1050,6 +1052,30 @@ namespace d360.web.Controllers.V2
 
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
 			}
+		}
+
+		private IEnumerable<KeyValuePair<string, string>> getqueryParamsforexcel(IEnumerable<KeyValuePair<string, string>> queryParams, bool isStreamResponse, AssetType assetType)
+		{
+			var Params = queryParams.ToList();
+			if (!queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid"))
+			{
+				Params.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
+				Params.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+			}
+			else
+			{
+				if (queryParams.Any(p => p.Key.Trim().ToLowerInvariant() == "_order"))
+				{
+					string order = queryParams.FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
+					FieldType fieldType = Company.FieldTypes.FirstOrDefault(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == order.ToLower());
+					if (fieldType?.Type == "OwnershipLookup")
+					{
+						Params.RemoveAll(x => x.Key.ToLower() == "_includeownershiplookup");
+						Params.Add(new KeyValuePair<string, string>("_includeownershiplookup", "true"));
+					}
+				}
+			}
+			return Params;
 		}
 
 		/// <summary>
