@@ -437,7 +437,7 @@ group by A.Uid";
 							set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
 							from [dbo].[ResponsibilityRuleResultAsset] as T
 							inner join #tempdataruleAT S on S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
-							where T.ID = @ruleId;
+							where T.RuleID = @ruleId;
 
 							merge   [dbo].[ResponsibilityRuleResultAsset] as T
 							using	#tempdataruleAT as S
@@ -1576,7 +1576,7 @@ where	EG.Success is null
 									from Field f
 									{fieldWhere}");
 
-									whenSql.AppendLine($"inner join #filtered_field{fCount} ftf{fCount} on ftf{fCount}.AssetId = A.Id");
+									whenSql.AppendLine($"inner join #filtered_field ftf on ftf.AssetId = A.Id");
 								}
 								else
 								{
