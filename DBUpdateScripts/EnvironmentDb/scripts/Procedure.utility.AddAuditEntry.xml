@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Procedure.utility.AddAuditEntry-v31">
+ <changeSet author="Pappas,Puneet" id="Procedure.utility.AddAuditEntry-v32">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [utility].[AddAuditEntry]
@@ -29,7 +29,8 @@ begin
 			@ConvertMainObjectTypeName nvarchar(250),
 			@auditID bigint,
 			@Version int,
-			@IScheckUpdated bit = 0;
+			@IScheckUpdated bit = 0,
+			@ISCheckAddInUpdateFieldName bit = 0;
 			
 	declare @MainObject_Temp varchar(50),
 		@MainObjectID_Temp int,
@@ -434,10 +435,10 @@ begin
 	begin
 		insert into @tbl  (FieldName, NewValue)
 			select		'Tags', 
-						string_Agg(T.Value, ', ')
+						string_Agg(T.Value, ', ') within group  (order by TA.id asc)
 			from		Asset A
 						inner join AssetTag TA on TA.AssetID = A.ID and A.Object = @DependentObject and A.ObjectID = @DependentObjectID
-						inner join Tag T on T.ID = TA.TagID
+						inner join Tag T on T.ID = TA.TagID;
 	
 		set @ActionObjectTypeName = 'Tags'
 		set @ObjectName = 'Tag'
@@ -454,6 +455,8 @@ begin
 		set @DependentObjectID = @MainObjectID_Temp;
 		set @ActionObjectName = @ObjectName_temp;
 		Set @IScheckUpdated = 1;
+		
+		Set @ISCheckAddInUpdateFieldName = 1
 	end
 
 	-- this is the case where the last value of a field was removed and the asset remains its not the asset being deleted just an update.
@@ -480,23 +483,46 @@ begin
 	if @Action in ('Updated')
 	begin
 		-- Determines if the new value is different from the last updated value. If so, this should be included as part of the audit.
-		update	T
-		set		T.Updated = 1,
-				T.PreviousValue = S.Value
-		from	@tbl T
-				cross apply (
-					select	top 1
-							ROW_NUMBER() OVER (PARTITION BY a.Object, a.ObjectID, iif(f.FieldTypeID = 0, f.FieldName, f.FieldTypeID) ORDER BY f.[AuditId] DESC) as RowNum,
-							[Value]
-					from	reporting.Global_FieldAudit f
-							inner join reporting.Global_Audit a on a.ID = f.AuditID 
-								and a.Object = @MainObject
-								and a.ObjectID = @MainObjectID
-								and ( 
-										(f.FieldTypeID = T.FieldTypeID and T.FieldTypeID <> 0) 
-										or (f.FieldName = T.FieldName and T.FieldTypeID = 0) 
-									)
-							) S
+
+		if (@ISCheckAddInUpdateFieldName = 1)
+			begin
+				update	T
+					set		T.Updated = case when coalesce(T.NewValue,'') = coalesce(S.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS  then 0
+										else 1 end,
+							T.PreviousValue = case when S.RowNum is not null then S.Value else null end
+					from	@tbl T
+							outer apply (
+								select	top 1
+										ROW_NUMBER() OVER (PARTITION BY a.Object, a.ObjectID, f.FieldName ORDER BY a.[Id] DESC) as RowNum,
+										[Value]
+								from	reporting.Global_Audit a
+										inner join reporting.Global_FieldAudit f on f.AuditID  = a.ID 
+											and  f.FieldName = T.FieldName and T.FieldTypeID = 0
+								where 	a.Object = @MainObject
+								and 	a.ObjectID = @MainObjectID
+										) S
+			end
+		else
+			begin
+					update	T
+					set		T.Updated = case when coalesce(T.NewValue,'') = coalesce(S.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS  then 0
+										else 1 end,
+						T.PreviousValue = S.Value
+					from	@tbl T
+						cross apply (
+							select	top 1
+										ROW_NUMBER() OVER (PARTITION BY a.Object, a.ObjectID, iif(f.FieldTypeID = 0, f.FieldName, f.FieldTypeID) ORDER BY a.[Id] DESC) as RowNum,
+									[Value]
+								from	reporting.Global_Audit a
+										inner join reporting.Global_FieldAudit f on f.AuditID  = a.ID 
+										and ( 
+												(f.FieldTypeID = T.FieldTypeID and T.FieldTypeID <> 0) 
+												or (f.FieldName = T.FieldName and T.FieldTypeID = 0) 
+											)
+								where 	a.Object = @MainObject
+								and 	a.ObjectID = @MainObjectID
+									) S
+			end
 
 		if @ActionObjectTypeName in ('Tag','Tags')
 		begin
