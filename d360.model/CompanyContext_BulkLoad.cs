@@ -1049,7 +1049,6 @@ inner join AssetPath P on P.ID = A.ID
 							{
 								if (!string.IsNullOrWhiteSpace(field.Value))
 								{
-									string parentUid = "";
 
 									if (item.ParentAssetUid != null)
 									{
@@ -1057,14 +1056,15 @@ inner join AssetPath P on P.ID = A.ID
 									}
 									else
 									{
+										string parentUid = "";
 										int endIndex = field.Value.LastIndexOf(']');
 										int startIndex = field.Value.LastIndexOf('[') + 1;
 										if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
 										{
 											parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+											insert.ParentUid = new Guid(parentUid);
 										}
 									}
-									insert.ParentUid = new Guid(parentUid);
 								}
 							}
 							else
