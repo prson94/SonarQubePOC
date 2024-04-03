@@ -102,7 +102,6 @@ namespace igx.jobs.apiexecutionprocessor
 				catch (Exception ex)
 				{
 					log.LogError(ex, "Error in {FUNCTION_NAME}, on try/catch retry connection attempt.", FUNCTION_NAME);
-					return;
 				}
 			}
 		}

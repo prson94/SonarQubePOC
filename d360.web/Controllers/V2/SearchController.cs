@@ -723,14 +723,14 @@ namespace d360.web.Controllers.V2
 							new List<string> { "Uid" })
 				});
 
-				var baseUri = StorageBaseUri;
+				var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
 				foreach (var m in menuItems)
 				{
 					foreach (var r in results.Where(r => r.AssetTypeUid == m.AssetTypeUid))
 					{
 						if (!string.IsNullOrEmpty(m.ImageIconUrl))
 						{
-							r.ImageUrl = $"{baseUri}{constants.Storage.Resources}/{ m.ImageIconUrl}";
+							r.ImageUrl = $"{baseUri}/{ m.ImageIconUrl}";
 						}
 						else if (!string.IsNullOrEmpty(m.Icon))
 						{
@@ -760,12 +760,12 @@ namespace d360.web.Controllers.V2
 				var names = siteNavMap.Values.ToList();
 				Dictionary<string, (string, string)> iconMap = Company.Query<(string Name, string Icon, string ImageIconUrl)>(sql, new { names }).ToDictionary(t => t.Name, t => (t.Icon, t.ImageIconUrl));
 
-				var baseUri = StorageBaseUri;
+				var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
 				foreach (var r in results.Where(res => res.MissingIcon() && siteNavMap.ContainsKey(res.Group) && iconMap.ContainsKey(siteNavMap[res.Group])))
 				{
 					if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
 					{
-						r.ImageUrl = $"{baseUri}{constants.Storage.Resources}/{iconMap[siteNavMap[r.Group]].Item2}";
+						r.ImageUrl = $"{baseUri}/{iconMap[siteNavMap[r.Group]].Item2}";
 					}
 					else if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item1))
 					{

@@ -3881,7 +3881,6 @@ namespace d360.model
 					if (events.Count > WorkflowSendBatchSize)
 					{
 						QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
-						//QueueSource.CreateTopicMessages(events);
 						events.Clear();
 					}
 				}
@@ -3890,7 +3889,6 @@ namespace d360.model
 			if (events.Count > 0)
 			{
 				QueueSource.CreateMessagesAsync(constants.Queue.Workflow, events);
-				//QueueSource.CreateTopicMessages(events);
 				events.Clear();
 			}
 		}
