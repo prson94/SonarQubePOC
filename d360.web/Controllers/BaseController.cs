@@ -174,17 +174,6 @@ namespace d360.web.Controllers
 
 		internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
-		internal string StorageBaseUri 
-		{ 
-			get 
-			{
-				var storageConnectionString = Config.GetValue<string>(constants.Setting.Storage);
-				storageConnectionString = storageConnectionString.Split(new char[] { ';' })[1].Split('=')[1]; // extrast the account name out of the storage connection string.
-				storageConnectionString = $"https://{storageConnectionString}.blob.core.windows.net/";
-				return storageConnectionString;
-			} 
-		}
-
 		#region Validation constants
 
 		internal const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to perform this action.";

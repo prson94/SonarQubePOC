@@ -39,6 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\constants\constants.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="resources\AssetTypeErrors.Designer.cs">
       <DependentUpon>AssetTypeErrors.resx</DependentUpon>
       <DesignTime>True</DesignTime>

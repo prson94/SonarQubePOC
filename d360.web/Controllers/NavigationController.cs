@@ -136,6 +136,14 @@ namespace d360.web.Controllers
 				}).ToList();
 			}
 
+			var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
+			nodes.ForEach(n => {
+				if (!string.IsNullOrEmpty(n.ImageIconUrl))
+				{
+					n.FullURL = $"{baseUri}/{n.ImageIconUrl}";
+				}
+			});
+
 			return nodes;
 		}
 
@@ -159,11 +167,17 @@ namespace d360.web.Controllers
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record
+			var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
 			foreach (var item in menuItems)
 			{
 				if (defaultTitleValues.ContainsKey(item.Title))
 				{
 					item.Title = defaultTitleValues[item.Title];
+				}
+
+				if (!string.IsNullOrEmpty(item.ImageIconUrl))
+				{
+					item.FullURL = $"{baseUri}/{item.ImageIconUrl}";
 				}
 			}
 

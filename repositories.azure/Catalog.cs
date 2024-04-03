@@ -499,9 +499,6 @@ where	t.uid = @uid";
 					string breadcrumb = "";
 					switch (itemClass)
 					{
-						case AssetTypeClass.BusinessAsset:
-							breadcrumb = CommonNames.AssetTypeClass_Business;
-							break;
 						case AssetTypeClass.TechnicalAsset:
 							breadcrumb = CommonNames.AssetTypeClass_Technical;
 							break;
@@ -516,6 +513,9 @@ where	t.uid = @uid";
 							break;
 						case AssetTypeClass.Diagram:
 							breadcrumb = CommonNames.AssetTypeClass_Task;
+							break;
+						default:
+							breadcrumb = CommonNames.AssetTypeClass_Business;
 							break;
 					}
 					breadcrumb += $"{chevron}{item.Name}";

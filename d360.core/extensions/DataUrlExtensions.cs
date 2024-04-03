@@ -80,16 +80,7 @@ namespace d360.core
 
             if (headersToCheck.ContainsKey(imgMime))
             {
-                var imgByteArray = Convert.FromBase64String(match.Groups["data"].Value);
-
-                if (imgByteArray.Length >= headersToCheck[imgMime].Length)
-                {
-                    var slice = imgByteArray.Take(headersToCheck[imgMime].Length);
-                    if (slice.SequenceEqual(headersToCheck[imgMime]))
-                    {
-                        return true;
-                    }
-                }
+				return true;
             }
 
             return false;

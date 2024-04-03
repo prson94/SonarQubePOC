@@ -51,7 +51,7 @@ namespace d360.model
 		private readonly CommunityContext Community;
 
 		private bool IsEventingEnabled;
-		int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
+		readonly int ERROR_MESSAGE_CHARACTER_LIMIT = 2000;
 
 		public int ApiTimeout => GetSettingValue<int>(Setting.ApiTimeout);
 		Guid Refertypelistuid = Guid.Parse("0000000a-0000-0000-0000-000000000009");

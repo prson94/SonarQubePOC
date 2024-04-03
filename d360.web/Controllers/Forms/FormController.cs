@@ -2018,9 +2018,16 @@ order by Sort, title";
 		[HttpGet, Route("shortcut/list")]
 		public JsonNetResult ListShortcuts()
 		{
+			var shortcuts = Company.Shortcuts.OrderBy(s => s.DisplayOrder).ToList();
+			var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
+			shortcuts.ForEach(s => {
+				if (!string.IsNullOrEmpty(s.IconUrl)) {
+					s.FullURL = $"{baseUri}/{s.IconUrl}";
+				}
+			});
 			return new JsonNetResult
 			{
-				Data = Company.Shortcuts.OrderBy(s => s.DisplayOrder).ToList(),
+				Data = shortcuts,
 				Formatting = Formatting.None
 			};
 		}
