@@ -1332,18 +1332,12 @@ export class BaseComponent {
 					this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
 						this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
 						const areaName: string = currentAreaName ? currentAreaName : folderTitle;
-						let areaLink: string = `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}`;
-						if (area === "Technical Assets") {
-							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-						}
-						else {
-							areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-						}
 						const areaBreadcrumb = new Breadcrumb(
 							areaName,
-							areaLink,
+							null,
 							false
 						);
+						areaBreadcrumb.showAsLink = false;
 						this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
 						for (const breadcrumb of data.Artifact.Breadcrumbs) {
@@ -1429,10 +1423,8 @@ export class BaseComponent {
 						this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
 					});
 
-					const areaRootUriSegment: string = (objectName.toLowerCase() === 'policy') ? 'Policy' : 'Model';
-					const areaBreadcrumb = new Breadcrumb(
-						currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_ASSETS_CLASS_ROOT}/${areaRootUriSegment}`
-					);
+					const areaBreadcrumb = new Breadcrumb(currentAreaName ? currentAreaName : res);
+					areaBreadcrumb.showAsLink = false;
 					this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 
 					this.breadcrumbsService.showBreadcrumb(
@@ -1471,11 +1463,12 @@ export class BaseComponent {
 				var currentAreaName = result;
 				this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
 					this.breadcrumbsService.clearBreadcrumbs();
+					const areaBreadcrumb = new Breadcrumb(
+						currentAreaName ? currentAreaName : res
+					)
+					areaBreadcrumb.showAsLink = false;
 					this.breadcrumbsService.showBreadcrumb(
-						new Breadcrumb(
-							currentAreaName ? currentAreaName : res,
-							`${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/class/Rule`
-						)
+						areaBreadcrumb
 					);
 					this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `assets/${data.AssetTypeUid}`,
 						undefined,
