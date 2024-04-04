@@ -36,7 +36,7 @@ END
   </sql>
  </changeSet>
 
- <changeSet author="TDuric" id="Indices.dbo.Field-v2" runInTransaction="false">
+ <changeSet author="TDuric" id="Indices.dbo.Field-v3" runInTransaction="false">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 	IF EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
@@ -44,18 +44,6 @@ END
 		DROP FULLTEXT INDEX ON [dbo].[Field]
 	END
 	
-	IF NOT EXISTS (select * from sys.tables as t
-			inner join sys.columns as c
-				on  t.object_id = c.object_id
-			inner join sys.index_columns as ic 
-				on c.column_id = ic.column_id and c.object_id = ic.object_id
-			inner join sys.indexes as i
-				on ic.index_id = i.index_id and ic.object_id = i.object_id
-			where i.name = 'IX_Field_FieldTypeIDAssetID_Include' and c.name = 'Value')
-	BEGIN
-		drop index IX_Field_FieldTypeIDAssetID_Include on dbo.Field
-	END
-
 	if not exists (select * from sys.indexes where name = 'UQ_Field_ID')
 	begin
 		create unique nonclustered index [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
