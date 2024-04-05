@@ -679,6 +679,13 @@ namespace igx.UnitTests
 			return mockRepo.Object;
 		}
 
+		public IAuditRepository GetAuditRepository()
+		{
+			var mockRepo = new Mock<IAuditRepository>();
+
+			return mockRepo.Object;
+		}
+
 		public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();

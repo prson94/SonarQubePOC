@@ -62,6 +62,7 @@ namespace d360.web.Controllers.V2
 		private readonly IFieldsRepository FieldsRepository;
 		private readonly IRelationshipRepository RelationshipRepository;
 		private readonly ITagRepository TagRepository;
+		private readonly IAuditRepository AuditRepository;
 
 		public AssetsController(
 			ICoreComponentSet set,
@@ -71,7 +72,8 @@ namespace d360.web.Controllers.V2
 			IExecutionsRepository executionsRepository,
 			IFieldsRepository fieldsRepository,
 			IRelationshipRepository relationshipRepository,
-			ITagRepository tagRepository
+			ITagRepository tagRepository,
+			IAuditRepository auditRepository
 		) : base(set)
 		{
 			QueueSource = queueSource;
@@ -81,6 +83,7 @@ namespace d360.web.Controllers.V2
 			FieldsRepository = fieldsRepository;
 			RelationshipRepository = relationshipRepository;
 			TagRepository = tagRepository;
+			AuditRepository = auditRepository;
 		}
 
 		#endregion
@@ -148,7 +151,7 @@ namespace d360.web.Controllers.V2
 		{
 			var clonedList = queryParams.CloneThis().ToList();
 			clonedList.RemoveAll(kvp => kvp.Key.In(
-				"_loadPermissionDetails", "_includeParent", "_onlyListableFields", "_includeTotal", 
+				"_loadPermissionDetails", "_includeParent", "_onlyListableFields", "_includeTotal",
 				"_includeFields", "_includeColor", "_exporttemplateuid", "_includeCreatedModifiedBy", "_listColorsAsJSON",
 				"_includeOwnershipLookup", "_includeProfilingCheck", "useTypeLevelDefaultSorts", "_pageSize", "_pageNum"
 				));
@@ -346,11 +349,11 @@ namespace d360.web.Controllers.V2
 				{
 					document.SetCellValue(rowNumber, index++, (string)row.CanEditParent);
 				}
-				string descriptionstring= "";
+				string descriptionstring = "";
 				if ((string)row.Description != null)
 				{
 					descriptionstring = (string)row.Description;
-					descriptionstring = descriptionstring.RemoveHtml().Replace("&nbsp;", " "); 
+					descriptionstring = descriptionstring.RemoveHtml().Replace("&nbsp;", " ");
 				}
 				document.SetCellValue(rowNumber, index++, descriptionstring);
 
@@ -482,10 +485,10 @@ namespace d360.web.Controllers.V2
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.API_Name);
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Category);
 				AssetRepository.SetCellIntValue(document, rowNumber, index++, row.Seq);
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Description,SupportHtml: true);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Display_Description, SupportHtml: true);
 
 
-				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description",true);
+				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Form_Description, enumValue.ToString(), styleGray, "form_description", true);
 
 				AssetRepository.SetCellStringValue(document, rowNumber, index++, row.Listable, enumValue.ToString(), styleGray, "listable");
 				if (row.Listable != null && (string)row.Listable == "True")
@@ -736,7 +739,7 @@ namespace d360.web.Controllers.V2
 			document.SelectWorksheet(assettypeNameSheet);
 			return document;
 		}
-		
+
 		/// <summary>
 		/// Retrieves assets for the given asset type unique identifier.
 		/// </summary>
@@ -836,7 +839,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_includeCreatedModifiedBy", "Include the CreatedByUid, and ModifiedByUid fields in the response. The default value is false meaning these values are not returned.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_includeOwnershipLookup", "Include the OwnershipLookup fields in the response. The default value is false meaning these values are not returned.  An exception to this setting is if an ownershiplookup type field is used in the sort for the asset type this setting will be ignored and the field always returned.", DataType = "boolean", ParameterType = "query", Required = false),
-			SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),			
+			SwaggerParameter("_includeProfilingCheck", "Include a check for whether or not the asset has Data Profiling. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
 		]
 		public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid, CancellationToken cancellationToken)
 		{
@@ -1005,13 +1008,14 @@ namespace d360.web.Controllers.V2
 					if (queryParams.Any(k => k.Key == "_pageNum"))
 					{
 						if (int.TryParse(queryParams.First(k => k.Key == "_pageNum").Value, out pageNum))
-						{ 
-						
+						{
+
 						}
 					}
-					if (pageNum > 1) {
-						total = Cache.GetItem<int?>(countCacheKey); 
-						if (total.HasValue && total < 1000) 
+					if (pageNum > 1)
+					{
+						total = Cache.GetItem<int?>(countCacheKey);
+						if (total.HasValue && total < 1000)
 						{
 							total = null;
 						}
@@ -1305,13 +1309,13 @@ namespace d360.web.Controllers.V2
 						Company.Add(nameFieldType);
 					}
 
-					if(model.Class == AssetTypeClass.Reference)
+					if (model.Class == AssetTypeClass.Reference)
 					{
 						var codeFieldType = new FieldType
-						{							
+						{
 							Name = "Code",
 							FriendlyName = "Code",
-							Type = DataType.System.ToString(),							
+							Type = DataType.System.ToString(),
 							AssetTypeID = model.AssetTypeID,
 							IsRequired = true,
 							IsListable = true,
@@ -1323,7 +1327,7 @@ namespace d360.web.Controllers.V2
 							MinimumLength = 1,
 							SortOrder = 1,
 							ColumnOrder = 1,
-							SortByAscending = true,																				
+							SortByAscending = true,
 							UpdatedBy = Company.CurrentResourceID
 						};
 
@@ -1385,11 +1389,16 @@ namespace d360.web.Controllers.V2
 				var result = new AssetTypeSuccess { Uid = assetType.uid, Message = AssetsApiMessages.AssetTypeCreatedMessage, Success = true };
 
 				//handle change logs
-				await AssetRepository.CreateHistoryJob(assetType.Object, assetType.ObjectID, ChangeLogType.Created);
+				await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Created }); ;
 				var fields = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
 				foreach (var item in fields)
 				{
-					await AssetRepository.CreateHistoryJob(SystemObjects.FieldType.ToString(), item.ID, ChangeLogType.Created);
+					await AuditRepository.CreateHistoryJob(new ObjectInfo() {
+						Object = SystemObjects.FieldType.ToString(),
+						ObjectId = item.ID, 
+						ChangeType = ChangeLogType.Created,
+						AssetTypeId = assetType.ID
+					}); ;
 				}
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -1548,7 +1557,7 @@ namespace d360.web.Controllers.V2
 				Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
 				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 
-				await AssetRepository.CreateHistoryJob(assetType.Object, assetType.ObjectID, ChangeLogType.Updated);
+				await AuditRepository.CreateHistoryJob(new ObjectInfo() { Object = assetType.Object, ObjectId = assetType.ObjectID, ChangeType = ChangeLogType.Updated }); ;
 
 				var result = new AssetTypeSuccess { Uid = model.Uid, Message = string.Format(ApiMessages.SucessfullyUpdated, model.Name), Success = true };
 
@@ -1868,7 +1877,7 @@ namespace d360.web.Controllers.V2
 		{
 			var data = Company.Assets.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-			if(data == null)
+			if (data == null)
 			{
 				data = Company.AssetTypes.Where(x => x.uid == uid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 			}
@@ -2499,7 +2508,7 @@ namespace d360.web.Controllers.V2
 			HttpGet,
 			Route("{assetTypeUid:Guid}/possibleCreators"),
 			ApiExplorerSettings(IgnoreApi = true),
-			SwaggerConsumes("application/json"), 
+			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Assets of specified AssetType."),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
@@ -2590,7 +2599,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>An HTTP status code and message.</returns>
 		[
 			HttpGet,
-			ApiExplorerSettings(IgnoreApi =true),
+			ApiExplorerSettings(IgnoreApi = true),
 			Route("possibleSiteNav"),
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
@@ -2605,7 +2614,8 @@ namespace d360.web.Controllers.V2
 			try
 			{
 				//if the user is not an admin make sure they cannot read this data as this is used only in site nav administration
-				if (!Company.CurrentResourceIsAdmin)				{
+				if (!Company.CurrentResourceIsAdmin)
+				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
 				}
 
@@ -3071,8 +3081,8 @@ namespace d360.web.Controllers.V2
 				{
 					return await Task.FromResult(
 						errorMessageResponse(
-							HttpStatusCode.NotFound, 
-							ApiMessages.NotFound, 
+							HttpStatusCode.NotFound,
+							ApiMessages.NotFound,
 							ApiMessages.ExecutionUIDNotFound
 						)
 					);
@@ -3118,7 +3128,7 @@ namespace d360.web.Controllers.V2
 		public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
 		{
 			List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
-            core.entities.Tag currentTag;
+			core.entities.Tag currentTag;
 			foreach (var assetTagApi in assetTags)
 			{
 				AssetTagSuccessApiModel result;
@@ -3511,7 +3521,7 @@ namespace d360.web.Controllers.V2
 					{
 						return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, AssetsApiMessages.PageSizeRange)));
 					}
-					else 
+					else
 					{
 						pageSize = res;
 					}
@@ -3943,7 +3953,7 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, "Take must be greater than 0");
 			}
-			if(skip < 0)
+			if (skip < 0)
 			{
 				skip = 0;
 			}

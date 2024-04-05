@@ -66,12 +66,17 @@ from	reporting.Global_FieldAudit i_p
 						{
 							case "FieldType":
 								var ft = companyConnection.Query<FieldType>("select top 1 * from dbo.FieldType where Id = @ObjectId", new { request.ObjectInfo.ObjectId }).FirstOrDefault();
-								new ChangeLogTracker<FieldType>(ft, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+
+								if (ft == null)
+								{
+									ft = new FieldType() { ID = (int)request.ObjectInfo.ObjectId, AssetTypeID = request.ObjectInfo.AssetTypeId, IssueTypeID = request.ObjectInfo.IssueTypeId, IntersectTypeID = request.ObjectInfo.IntersectTypeId };
+								}
+								new ChangeLogTracker<FieldType>(ft, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
 								break;
 							default:
 								//default handle asset types
 								var at = companyConnection.Query<AssetType>("select top 1 * from dbo.AssetType where Object = @object and ObjectId = @objectId", new { request.ObjectInfo.Object, request.ObjectInfo.ObjectId }).FirstOrDefault();
-								new ChangeLogTracker<AssetType>(at, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+								new ChangeLogTracker<AssetType>(at, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
 								break;
 						}
 

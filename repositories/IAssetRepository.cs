@@ -125,7 +125,5 @@ namespace repositories
 		void SetCellStringValue(SLDocument document, int rowNumber, int index, string? value, string datatype = "", SLStyle styleGray = null, string fieldname = "", bool SupportHtml = false);
 
 		void SetCellIntValue(SLDocument document, int rowNumber, int index, decimal? value, string datatype = "", SLStyle styleGray = null, string fieldname = "");
-
-		Task CreateHistoryJob(string obj, long objectId, ChangeLogType changeType);
 	}
 }

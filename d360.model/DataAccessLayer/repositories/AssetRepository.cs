@@ -51,24 +51,6 @@ namespace d360.model.DataAccessLayer
 			Community = community;
 		}
 
-		public async Task CreateHistoryJob(string obj, long objectId, ChangeLogType changeLogType)
-		{
-			await QueueSource.CreateMessageAsync(CompanyContext.AssetGraphQueue,
-				new PostExecutionQueueMessage
-				{
-					Action = PostExecutionQueueMessageAction.History,
-					CompanyID = CompanyContext.CurrentCompanyID,
-					ExecutionId = -1,
-					ObjectInfo = new ObjectInfo
-					{
-						Object = obj,
-						ObjectId = objectId,
-						ChangeType = changeLogType
-					}
-				});
-		}
-
-
 		public Asset GetAssetByObjectId(string obj, int objId)
 		{
 			return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();

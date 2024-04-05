@@ -25,6 +25,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 	{
 		private readonly SqlConnection _connection;
 		private readonly T lastState;
+		private readonly int resourceId;
 
 		private T originalState;
 		private ChangeLogType action;
@@ -32,11 +33,12 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 		public bool ShouldBeLogged { get; set; }
 
 		private Audit _audit = new Audit();
-		public ChangeLogTracker(T lastState, SqlConnection connection, ChangeLogType action)
+		public ChangeLogTracker(T lastState, int resourceId,  SqlConnection connection, ChangeLogType action)
 		{
 			_connection = connection;
 			this.lastState = lastState;
 			this.action = action;
+			this.resourceId = resourceId;
 		}
 
 		public void ParseAndSaveAuditRecord()
@@ -96,7 +98,6 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				AssetType at = this.lastState as AssetType;
 
 				DateTime updatedOn = at.UpdatedOn ?? at.CreatedOn ?? DateTime.UtcNow;
-				int updatedBy = at.UpdatedBy ?? at.CreatedBy ?? 0;
 
 				_audit = new Audit
 				{
@@ -110,13 +111,14 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 					ActionObjectTypeName = at.Class.GetDisplayName(),
 					ActionDescription = $"This asset type has been {action.ToString()}",
 					Date = updatedOn,
-					ResourceID = updatedBy,
+					ResourceID = this.resourceId,
 					AuditFields = new List<AuditField>()
 				};
 			}
 			else if (lastState is FieldType)
 			{
 				FieldType ft = lastState as FieldType;
+				FieldType original = originalState as FieldType;
 
 				var actionObject = "";
 				var actionObjectId = 0;
@@ -146,12 +148,12 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 					ActionObject = actionObject,
 					ActionObjectID = actionObjectId,
 					Action = action.ToString(),
-					ObjectName = ft.FriendlyName,
-					ActionObjectName = ft.FriendlyName,
+					ObjectName = ft.FriendlyName ?? original.FriendlyName ?? "",
+					ActionObjectName = ft.FriendlyName ?? original.FriendlyName ??"",
 					ActionObjectTypeName = "Field Type",
 					ActionDescription = $"This field type has been {action.ToString().ToLowerInvariant()}",
 					Date = DateTime.UtcNow,
-					ResourceID = ft.UpdatedBy,
+					ResourceID = this.resourceId,
 					AuditFields = new List<AuditField>()
 				};
 			}
@@ -263,7 +265,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 			}
 		}
 
-		private string GetLastVersionSQL(bool useOnlyActionObjectCheck = false)
+		private string GetLastVersionSQL(bool useOnlyObjectCheck = false)
 		{
 			return $@"
 				drop table if exists #changelogs
@@ -272,7 +274,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				into #changelogs
 				from reporting.Global_Audit GA
 				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
-				where ActionObject = @object and ActionObjectID = @objectId {(useOnlyActionObjectCheck ? "" : "and Object = @object and ObjectID = @objectId")}
+				where Object = @object and ObjectID = @objectId {(useOnlyObjectCheck ? "" : "and ActionObject = @object and ActionObjectID = @objectId")}
 
 				select * from #changelogs logs
 				outer apply (select max(version) from #changelogs where fieldname = logs.FieldName)L(MaxVersion)

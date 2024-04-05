@@ -26,5 +26,9 @@ public class ObjectInfo
 {
 	public string Object { get; set; }
 	public long ObjectId { get; set; }
+	public int? AssetTypeId { get; set; }
+	public int? IssueTypeId { get; set; }
+	public int? IntersectTypeId { get; set; }
+	public int ResourceId { get; set; }
 	public ChangeLogType ChangeType { get; set; }
 }
