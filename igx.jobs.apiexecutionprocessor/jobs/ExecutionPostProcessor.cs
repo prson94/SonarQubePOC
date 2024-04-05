@@ -502,15 +502,28 @@ delete @tbl;";
 			// Add the audit history header records for the asset that rely on the first set of assets.
 			// Only when updated field type affected display value of lookup field on target asset
 			commandText += $@"
+declare @StartedOn date,
+@ExecutionID uniqueidentifier;
+
+select @StartedOn = StartedOn , @ExecutionID = ExecutionID
+from api.Execution e
+where e.Id = @id;
+
+drop table if exists #tempunqAssetFieldID;
+
+select distinct ea.AssetID,ef.FieldTypeID
+into #tempunqAssetFieldID
+from api.ExecutionAsset ea
+inner join api.ExecutionField ef on ea.ExecutionID = ef.ExecutionID and ea.ItemNumber = ef.ItemNumber
+where ea.ExecutionID = @ExecutionID
+
 select distinct ft.ID, ft.Name
 into #updatedFieldTypeIds
-from api.Execution e
-	inner join api.ExecutionAsset ea on ea.ExecutionID = e.ExecutionID
-	inner join api.ExecutionField ef on e.ExecutionID = ef.ExecutionID
-	inner join Field f on f.AssetID = ea.AssetID and f.FieldTypeID = ef.FieldTypeID
-	inner join Field fu on fu.ID = f.ID 
-	inner join FieldType ft on ft.ID = f.FieldTypeID
-where e.Id = @id and fu.UpdatedOn > e.StartedOn;
+from #tempunqAssetFieldID ea
+inner join Field f on f.AssetID = ea.AssetID and f.FieldTypeID = ea.FieldTypeID
+inner join Field fu on fu.ID = f.ID 
+inner join FieldType ft on ft.ID = f.FieldTypeID
+where fu.UpdatedOn > @StartedOn;
 
 {INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
@@ -553,6 +566,7 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			drop table if exists #tempField;
 			drop table if exists #fields;
 			drop table if exists #updatedFieldTypeIds;
+			drop table if exists #tempunqAssetFieldID;
 ";
 
 			return commandText;
