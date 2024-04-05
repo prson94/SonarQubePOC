@@ -1272,7 +1272,7 @@ namespace d360.web.Controllers.V2
 				{
 					return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
 				}
-
+				List<FieldType> addedFieldTypes = new List<FieldType>();
 				if (model.AssetTypeID > 0 || model.IssueTypeID > 0 || model.IntersectTypeID > 0)
 				{
 					if (model.Class != AssetTypeClass.Reference)
@@ -1301,6 +1301,7 @@ namespace d360.web.Controllers.V2
 							nameFieldType.ShowIfEmpty = true;
 						}
 
+						addedFieldTypes.Add(nameFieldType);
 						Company.Add(nameFieldType);
 					}
 
@@ -1383,7 +1384,13 @@ namespace d360.web.Controllers.V2
 				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 				var result = new AssetTypeSuccess { Uid = assetType.uid, Message = AssetsApiMessages.AssetTypeCreatedMessage, Success = true };
 
+				//handle change logs
 				await AssetRepository.CreateHistoryJob(assetType.Object, assetType.ObjectID, ChangeLogType.Created);
+				var fields = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
+				foreach (var item in fields)
+				{
+					await AssetRepository.CreateHistoryJob(SystemObjects.FieldType.ToString(), item.ID, ChangeLogType.Created);
+				}
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 			}

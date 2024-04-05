@@ -62,9 +62,19 @@ from	reporting.Global_FieldAudit i_p
 					}
 					else if (request.ObjectInfo != null)
 					{
-						var at = companyConnection.Query<AssetType>("select top 1 * from dbo.AssetType where Object = @object and ObjectId = @objectId", new { request.ObjectInfo.Object, request.ObjectInfo.ObjectId }).FirstOrDefault();
-						var ct = new ChangeLogTracker<AssetType>(at, companyConnection, request.ObjectInfo.ChangeType);
-						ct.ParseAndSaveAuditRecord();
+						switch (request.ObjectInfo.Object)
+						{
+							case "FieldType":
+								var ft = companyConnection.Query<FieldType>("select top 1 * from dbo.FieldType where Id = @ObjectId", new { request.ObjectInfo.ObjectId }).FirstOrDefault();
+								new ChangeLogTracker<FieldType>(ft, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+								break;
+							default:
+								//default handle asset types
+								var at = companyConnection.Query<AssetType>("select top 1 * from dbo.AssetType where Object = @object and ObjectId = @objectId", new { request.ObjectInfo.Object, request.ObjectInfo.ObjectId }).FirstOrDefault();
+								new ChangeLogTracker<AssetType>(at, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+								break;
+						}
+
 					}
 					companyConnection.CloseIfOpened();
 				}

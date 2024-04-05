@@ -55,24 +55,36 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 
 		private void SetInitialState()
 		{
+			List<FieldValueState> originalValues = new List<FieldValueState>();
 			if (lastState is AssetType)
 			{
 				var obj = lastState as AssetType;
-				var originalValues = _connection.Query<FieldValueState>(_lastVersionFieldLogsSQL, new { obj.Object, obj.ObjectID });
-				originalState = (T)Activator.CreateInstance(typeof(T));
+				originalValues = _connection.Query<FieldValueState>(GetLastVersionSQL(), new { obj.Object, obj.ObjectID }).ToList();
+			}
+			else if (lastState is FieldType)
+			{
+				var obj = lastState as FieldType;
+				originalValues = _connection.Query<FieldValueState>(GetLastVersionSQL(true), new { Object = SystemObjects.FieldType.ToString(), ObjectID = obj.ID }).ToList();
+			}
 
-				var properties = originalState.GetType().GetProperties().Where(prop => prop.IsDefined(typeof(TrackInChangeLog), false));
-				foreach (var prop in properties)
+			SetOriginalValuesGeneric(originalValues);
+		}
+
+		private void SetOriginalValuesGeneric(IEnumerable<FieldValueState> originalValues)
+		{
+			originalState = (T)Activator.CreateInstance(typeof(T));
+
+			var properties = originalState.GetType().GetProperties().Where(prop => prop.IsDefined(typeof(TrackInChangeLog), false));
+			foreach (var prop in properties)
+			{
+				var valueState = originalValues.FirstOrDefault(x => x.FieldName == prop.Name);
+				if (valueState != null && valueState.Value != null)
 				{
-					var valueState = originalValues.FirstOrDefault(x => x.FieldName == prop.Name);
-					if (valueState != null && valueState.Value != null)
-					{
-						Type t = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+					Type t = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
 
-						object safeValue = (valueState.Value == null) ? null : Convert.ChangeType(valueState.Value, t);
+					object safeValue = (valueState.Value == null) ? null : Convert.ChangeType(valueState.Value, t);
 
-						prop.SetValue(originalState, safeValue, null);
-					}
+					prop.SetValue(originalState, safeValue, null);
 				}
 			}
 		}
@@ -102,8 +114,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 					AuditFields = new List<AuditField>()
 				};
 			}
-
-			if (lastState is FieldType)
+			else if (lastState is FieldType)
 			{
 				FieldType ft = lastState as FieldType;
 
@@ -114,7 +125,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				{
 					var at = _connection.Query("select ObjectId, Object from AssetType where ID = @AssetTypeID", new { ft.AssetTypeID }).FirstOrDefault();
 					actionObject = at.Object;
-					actionObjectId = at.ObjectID;
+					actionObjectId = at.ObjectId;
 				}
 				else if (ft.IssueTypeID.HasValue)
 				{
@@ -175,6 +186,12 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 
 				if ((oldValue ?? "") != (newValue ?? ""))
 				{
+					if (newValue == "True" || newValue == "False")
+					{
+						//convert boolean values ToLower()
+						newValue = newValue.ToLowerInvariant();
+					}
+
 					_audit.AuditFields.Add(
 						new AuditField
 						{
@@ -246,19 +263,21 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 			}
 		}
 
-		private readonly string _lastVersionFieldLogsSQL = $@"
+		private string GetLastVersionSQL(bool useOnlyActionObjectCheck = false)
+		{
+			return $@"
 				drop table if exists #changelogs
 
 				select gfa.FieldName, gfa.Value, ga.Version
 				into #changelogs
 				from reporting.Global_Audit GA
 				inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID
-				where ActionObject = @object and ActionObjectID = @objectId and Object = @object and ObjectID = @objectId
+				where ActionObject = @object and ActionObjectID = @objectId {(useOnlyActionObjectCheck ? "" : "and Object = @object and ObjectID = @objectId")}
 
 				select * from #changelogs logs
 				outer apply (select max(version) from #changelogs where fieldname = logs.FieldName)L(MaxVersion)
 				where logs.Version = l.MaxVersion;";
-
+		}
 	}
 
 
