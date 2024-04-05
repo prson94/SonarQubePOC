@@ -1383,7 +1383,7 @@ namespace d360.web.Controllers.V2
 				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
 				var result = new AssetTypeSuccess { Uid = assetType.uid, Message = AssetsApiMessages.AssetTypeCreatedMessage, Success = true };
 
-				await AssetRepository.CreateHistoryJob(assetType.uid, HistoryType.AssetType);
+				await AssetRepository.CreateHistoryJob(assetType.Object, assetType.ObjectID, ChangeLogType.Created);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 			}
@@ -1540,6 +1540,8 @@ namespace d360.web.Controllers.V2
 				//update affected display values
 				Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
 				Company.CreateRollupPathChangedExecution(assetTypeId: assetType.ID);
+
+				await AssetRepository.CreateHistoryJob(assetType.Object, assetType.ObjectID, ChangeLogType.Updated);
 
 				var result = new AssetTypeSuccess { Uid = model.Uid, Message = string.Format(ApiMessages.SucessfullyUpdated, model.Name), Success = true };
 

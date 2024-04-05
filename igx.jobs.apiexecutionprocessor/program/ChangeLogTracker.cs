@@ -8,18 +8,17 @@ using d360.core.enums;
 using d360.model;
 using System.Data.SqlClient;
 using Dapper;
+using System.Text;
+using Dapper.Contrib.Extensions;
+using System.Data;
+using System.Reflection;
 
 namespace igx.jobs.apiexecutionprocessor.helpers
 {
-	public enum ChangeAction
-	{
-		Created, Updated, Removed
-	}
-
 	public class FieldValueState
 	{
 		public string FieldName { get; set; }
-		public string Value { get; set; }
+		public object Value { get; set; }
 	}
 
 	public class ChangeLogTracker<T> where T : class
@@ -28,22 +27,30 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 		private readonly T lastState;
 
 		private T originalState;
-		private ChangeAction action;
+		private ChangeLogType action;
 
 		public bool ShouldBeLogged { get; set; }
 
 		private Audit _audit = new Audit();
-		public ChangeLogTracker(T lastState, SqlConnection connection)
+		public ChangeLogTracker(T lastState, SqlConnection connection, ChangeLogType action)
 		{
 			_connection = connection;
 			this.lastState = lastState;
+			this.action = action;
 		}
 
 		public void ParseAndSaveAuditRecord()
 		{
-			SetInitialState();
-			ParseAuditRecord();
-			var a = this._audit;
+			try
+			{
+				SetInitialState();
+				ParseAuditRecord();
+				SaveIntoDatabase();
+			}
+			catch (Exception ex)
+			{
+				var a = ex;
+			}
 		}
 
 		private void SetInitialState()
@@ -57,8 +64,15 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				var properties = originalState.GetType().GetProperties().Where(prop => prop.IsDefined(typeof(TrackInChangeLog), false));
 				foreach (var prop in properties)
 				{
-					var value = originalValues.FirstOrDefault(x => x.FieldName == prop.Name && !string.IsNullOrEmpty(x.Value));
-					prop.SetValue(originalState, value);
+					var valueState = originalValues.FirstOrDefault(x => x.FieldName == prop.Name);
+					if (valueState != null && valueState.Value != null)
+					{
+						Type t = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+						object safeValue = (valueState.Value == null) ? null : Convert.ChangeType(valueState.Value, t);
+
+						prop.SetValue(originalState, safeValue, null);
+					}
 				}
 			}
 		}
@@ -98,7 +112,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 
 				if (ft.AssetTypeID.HasValue)
 				{
-					var at = _companyContext.AssetTypes.Select(x => new { x.ObjectID, x.Object, x.ID }).FirstOrDefault(x => x.ID == ft.AssetTypeID);
+					var at = _connection.Query("select ObjectId, Object from AssetType where ID = @AssetTypeID", new { ft.AssetTypeID }).FirstOrDefault();
 					actionObject = at.Object;
 					actionObjectId = at.ObjectID;
 				}
@@ -132,14 +146,14 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 			}
 
 
-			var currentVersion = _companyContext.Audits.Where(x => x.ActionObject == _audit.ActionObject && x.ActionObjectID == _audit.ActionObjectID).OrderByDescending(x => x.Version).Select(x => x.Version).FirstOrDefault();
+			var currentVersion = _connection.Query<int>("select Version from reporting.Global_Audit where ActionObject = @ActionObject and ActionObjectID = @ActionObjectID order by Version desc", new { _audit.ActionObject, _audit.ActionObjectID }).FirstOrDefault();
 			_audit.Version = currentVersion + 1;
 
-			if (action != ChangeAction.Removed)
+			if (action != ChangeLogType.Removed)
 			{
 				HandleFieldUpdates();
 			}
-			ShouldBeLogged = action == ChangeAction.Removed || _audit.AuditFields.Count > 0;
+			ShouldBeLogged = action == ChangeLogType.Removed || _audit.AuditFields.Count > 0;
 		}
 
 		private void HandleFieldUpdates()
@@ -153,7 +167,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 				string oldValue = null;
 				string newValue = _val != null ? _val.ToString() : null;
 
-				if (action == ChangeAction.Updated)
+				if (action == ChangeLogType.Updated)
 				{
 					var oldValAsObj = prop.GetValue(this.originalState, null);
 					oldValue = oldValAsObj != null ? oldValAsObj.ToString() : null;
@@ -169,6 +183,65 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 							PreviousValue = oldValue,
 							Value = newValue
 						});
+				}
+			}
+		}
+
+		private void SaveIntoDatabase()
+		{
+			//Generate insert query
+			string insertQuery = @"
+			insert into reporting.Global_Audit 
+			(Object, ObjectID, ActionObject, ActionObjectID,Action,ActionDescription,ActionObjectName,ActionObjectTypeName,Date,ObjectName,ResourceID,Version)
+			VALUES (@Object, @ObjectID, @ActionObject, @ActionObjectID,@Action,@ActionDescription,@ActionObjectName,@ActionObjectTypeName,@Date,@ObjectName,@ResourceID,@Version)
+		
+			select SCOPE_IDENTITY()";
+			int auditId = _connection.Query<int>(insertQuery, new
+			{
+				_audit.Object,
+				_audit.ObjectID,
+				_audit.ActionObject,
+				_audit.ActionObjectID,
+				_audit.Action,
+				_audit.ActionDescription,
+				_audit.ActionObjectName,
+				_audit.ActionObjectTypeName,
+				_audit.Date,
+				_audit.ObjectName,
+				_audit.ResourceID,
+				_audit.Version
+			}).FirstOrDefault();
+
+			if (_audit.AuditFields.Count > 0)
+			{
+				DataTable fieldAuditTable = new DataTable();
+				fieldAuditTable.Columns.Add("AuditID", typeof(long));
+				fieldAuditTable.Columns.Add("FieldTypeID", typeof(int));
+				fieldAuditTable.Columns.Add("FieldName", typeof(string));
+				fieldAuditTable.Columns.Add("Value", typeof(string));
+				fieldAuditTable.Columns.Add("PreviousValue", typeof(string));
+
+				foreach (var fieldAudit in _audit.AuditFields)
+				{
+					DataRow row = fieldAuditTable.NewRow();
+					row["AuditID"] = auditId;
+					row["FieldTypeID"] = fieldAudit.FieldTypeID;
+					row["FieldName"] = fieldAudit.FieldName;
+					row["Value"] = fieldAudit.Value;
+					row["PreviousValue"] = fieldAudit.PreviousValue;
+
+					fieldAuditTable.Rows.Add(row);
+				}
+
+				using (SqlBulkCopy bulk = _connection.CreateBulkCopy("reporting.Global_FieldAudit"))
+				{
+					bulk.ColumnMappings.Add("AuditID", "AuditID");
+					bulk.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+					bulk.ColumnMappings.Add("FieldName", "FieldName");
+					bulk.ColumnMappings.Add("Value", "Value");
+					bulk.ColumnMappings.Add("PreviousValue", "PreviousValue");
+
+					bulk.WriteToServer(fieldAuditTable);
 				}
 			}
 		}

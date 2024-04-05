@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
@@ -59,10 +60,11 @@ from	reporting.Global_FieldAudit i_p
 					{
 						await HandleExecutions(log, request, companyConnection);
 					}
-					else
+					else if (request.ObjectInfo != null)
 					{
-						var at = companyConnection.Query<AssetType>("select * from dbo.AssetType where uid = @uid", new { request.uid });
-						var ct = new ChangeLogTracker(at,)
+						var at = companyConnection.Query<AssetType>("select top 1 * from dbo.AssetType where Object = @object and ObjectId = @objectId", new { request.ObjectInfo.Object, request.ObjectInfo.ObjectId }).FirstOrDefault();
+						var ct = new ChangeLogTracker<AssetType>(at, companyConnection, request.ObjectInfo.ChangeType);
+						ct.ParseAndSaveAuditRecord();
 					}
 					companyConnection.CloseIfOpened();
 				}
