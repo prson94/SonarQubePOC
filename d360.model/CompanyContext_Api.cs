@@ -239,31 +239,47 @@ namespace d360.model
         
 		private void LoadMissingKeyFields(Guid executionID, AssetType at, int timeout = 3600)
         {
-            Connection.Execute($@"
-								insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
-									select	A.ExecutionID,
-											A.ItemNumber,
-											FT.Name,
-											EF.FormattedValue,
-											FT.ID,
-											EF.Value,
-											1
-									from	[api].[ExecutionAsset] A
-											inner join FieldType FT on FT.AssetTypeID = @assetTypeID 
-																		and FT.IsPartOfKey = 1
-											inner join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
-											left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
-									where	A.ExecutionID = @executionID 
-											and F.ItemNumber is null;
+			string sqlstmt = $@"
+drop table if exists #tempLoadMissingKeyFields;
 
-								update  T
-								set     T.ParentUid = S.Uid,
-										T.ParentObject = S.Object,
-										T.ParentObjectID = S.ObjectID
-								from    api.ExecutionAsset T
-										inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.ObjectAssetID = T.AssetID and T.ParentUid is null
-										inner join Asset S on S.ID = I.SubjectAssetID;",
-            new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
+select	distinct A.ExecutionID,
+		A.AssetID,
+		A.ItemNumber,
+		FT.Name FieldName,
+		FT.ID FieldTypeID
+into #tempLoadMissingKeyFields
+from	[api].[ExecutionAsset] A
+		inner join FieldType FT on FT.AssetTypeID = @assetTypeID and FT.IsPartOfKey = 1
+		left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+where	A.ExecutionID = @executionID 
+and F.ItemNumber is null;
+
+if exists(select 1 from #tempLoadMissingKeyFields)
+begin
+	insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+		select	A.ExecutionID,
+				A.ItemNumber,
+				A.FieldName,
+				EF.FormattedValue,
+				A.FieldTypeID,
+				EF.Value,
+				1
+		from	#tempLoadMissingKeyFields A
+				inner join Field EF on EF.FieldTypeID = A.FieldTypeID and EF.AssetID = A.AssetID;
+end
+
+drop table if exists #tempLoadMissingKeyFields;
+
+update  T
+set     T.ParentUid = S.Uid,
+		T.ParentObject = S.Object,
+		T.ParentObjectID = S.ObjectID
+from    api.ExecutionAsset T
+		inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.ObjectAssetID = T.AssetID and T.ParentUid is null
+		inner join Asset S on S.ID = I.SubjectAssetID;
+";
+
+            Connection.Execute(sqlstmt, new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
             if (at.Class == AssetTypeClass.Reference)
             {
