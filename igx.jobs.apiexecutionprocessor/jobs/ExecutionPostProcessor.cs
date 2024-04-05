@@ -62,21 +62,27 @@ from	reporting.Global_FieldAudit i_p
 					}
 					else if (request.ObjectInfo != null)
 					{
+						dynamic tracker;
 						switch (request.ObjectInfo.Object)
 						{
 							case "FieldType":
+								tracker = new ChangeLogTracker<FieldType>(log);
 								var ft = companyConnection.Query<FieldType>("select top 1 * from dbo.FieldType where Id = @ObjectId", new { request.ObjectInfo.ObjectId }).FirstOrDefault();
 
 								if (ft == null)
 								{
 									ft = new FieldType() { ID = (int)request.ObjectInfo.ObjectId, AssetTypeID = request.ObjectInfo.AssetTypeId, IssueTypeID = request.ObjectInfo.IssueTypeId, IntersectTypeID = request.ObjectInfo.IntersectTypeId };
 								}
-								new ChangeLogTracker<FieldType>(ft, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+								tracker.Set(ft, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType);
+								tracker.ParseAndSaveAuditRecord();
 								break;
 							default:
 								//default handle asset types
 								var at = companyConnection.Query<AssetType>("select top 1 * from dbo.AssetType where Object = @object and ObjectId = @objectId", new { request.ObjectInfo.Object, request.ObjectInfo.ObjectId }).FirstOrDefault();
-								new ChangeLogTracker<AssetType>(at, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType).ParseAndSaveAuditRecord();
+								var fieldTypeCTT = new ChangeLogTracker<FieldType>(log);
+								tracker = new ChangeLogTracker<AssetType>(log);
+								tracker.Set(at, request.ObjectInfo.ResourceId, companyConnection, request.ObjectInfo.ChangeType);
+								tracker.ParseAndSaveAuditRecord();
 								break;
 						}
 

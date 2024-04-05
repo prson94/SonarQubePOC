@@ -426,9 +426,9 @@ namespace d360.web.Controllers.V2
 			}
 
 			var updatedFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-			foreach (var old in existingFields)
+			foreach (var old in existingFieldsNotMutated)
 			{
-				var @new = existingFieldsNotMutated.FirstOrDefault(x => x.Name == old.Name);
+				var @new = updatedFields.FirstOrDefault(x => x.Name == old.Name);
 				if (@new != null && JsonConvert.SerializeObject(old) != JsonConvert.SerializeObject(@new))
 				{
 					await AuditRepository.CreateHistoryJob(new ObjectInfo
@@ -442,9 +442,9 @@ namespace d360.web.Controllers.V2
 					});
 				}
 			}
-			foreach (var @new in existingFieldsNotMutated)
+			foreach (var @new in updatedFields)
 			{
-				var old = existingFields.FirstOrDefault(x => x.Name == @new.Name);
+				var old = existingFieldsNotMutated.FirstOrDefault(x => x.Name == @new.Name);
 				if (old == null)
 				{
 					await AuditRepository.CreateHistoryJob(new ObjectInfo

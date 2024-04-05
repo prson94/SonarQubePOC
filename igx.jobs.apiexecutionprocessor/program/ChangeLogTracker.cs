@@ -12,6 +12,7 @@ using System.Text;
 using Dapper.Contrib.Extensions;
 using System.Data;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace igx.jobs.apiexecutionprocessor.helpers
 {
@@ -23,9 +24,10 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 
 	public class ChangeLogTracker<T> where T : class
 	{
-		private readonly SqlConnection _connection;
-		private readonly T lastState;
-		private readonly int resourceId;
+		private readonly ILogger Log;
+		private SqlConnection _connection;
+		private T lastState;
+		private int resourceId;
 
 		private T originalState;
 		private ChangeLogType action;
@@ -33,25 +35,38 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 		public bool ShouldBeLogged { get; set; }
 
 		private Audit _audit = new Audit();
-		public ChangeLogTracker(T lastState, int resourceId,  SqlConnection connection, ChangeLogType action)
+
+		private bool isSet;
+		public ChangeLogTracker(ILogger log)
+		{
+			isSet = false;
+			Log = log;
+		}
+
+		public void Set(T lastState, int resourceId, SqlConnection connection, ChangeLogType action)
 		{
 			_connection = connection;
 			this.lastState = lastState;
 			this.action = action;
 			this.resourceId = resourceId;
+			isSet = true;
 		}
 
 		public void ParseAndSaveAuditRecord()
 		{
 			try
 			{
+				if (!isSet)
+				{
+					throw new Exception("Use Set before calling ParseAndSaveAuditRecord");
+				}
 				SetInitialState();
 				ParseAuditRecord();
 				SaveIntoDatabase();
 			}
 			catch (Exception ex)
 			{
-				var a = ex;
+				Log.LogError(exception: ex, "Error on ParseAndSaveAuditRecord");
 			}
 		}
 
@@ -149,7 +164,7 @@ namespace igx.jobs.apiexecutionprocessor.helpers
 					ActionObjectID = actionObjectId,
 					Action = action.ToString(),
 					ObjectName = ft.FriendlyName ?? original.FriendlyName ?? "",
-					ActionObjectName = ft.FriendlyName ?? original.FriendlyName ??"",
+					ActionObjectName = ft.FriendlyName ?? original.FriendlyName ?? "",
 					ActionObjectTypeName = "Field Type",
 					ActionDescription = $"This field type has been {action.ToString().ToLowerInvariant()}",
 					Date = DateTime.UtcNow,
