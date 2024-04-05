@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="TDuric" id="Procedure.api.DeleteAssetTypesByExecution-v6">
+ <changeSet author="Pappas" id="Procedure.api.DeleteAssetTypesByExecution-v5.2">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter procedure [api].[DeleteAssetTypesByExecution]
@@ -28,11 +28,9 @@ begin
 
 	-- Lookup the asset type Id.
 	update	T
-	set		T.AssetTypeID = S.ID,
-			T.Object = S.Object,
-			T.ObjectId = S.ObjectId
+	set		T.AssetTypeID = S.ID
 	from	api.ExecutionDeletedAssetType T
-			inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;		
+			inner join AssetType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID;	
 
 	-- Invalid Uid message.
 	update	api.ExecutionDeletedAssetType
@@ -802,17 +800,6 @@ begin
 			from	api.Execution T
 			where	T.ExecutionID = @ExecutionID
 		end;
-	end catch
-	
-	begin try
-		insert into reporting.Global_Audit (Object,ObjectID, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionDescription, ObjectName, ActionObjectName, Version, ActionObjectTypeName)
-		select EDAT.Object, EDAT.ObjectID, e.ResourceID, GETUTCDATE(), 'Removed', EDAT.Object, EDAT.ObjectID, 'This asset type has been deleted', old.ObjectName,old.ObjectName, old.Version +1, old.ActionObjectTypeName
-		from api.ExecutionDeletedAssetType  EDAT
-		inner join api.Execution E on E.ExecutionID = EDAT.ExecutionID
-		outer apply (select top 1 * from reporting.Global_Audit where ActionObject = EDAT.Object and ActionObjectID = EDAT.ObjectID order by Version desc)Old
-		where EDAT.ExecutionID = @ExecutionID
-	end try
-	begin catch
 	end catch
 end
 ]]>
