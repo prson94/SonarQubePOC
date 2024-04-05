@@ -268,6 +268,8 @@ begin
 				inner join Field EF on EF.FieldTypeID = A.FieldTypeID and EF.AssetID = A.AssetID;
 end
 
+drop table if exists #tempLoadMissingKeyFields;
+
 update  T
 set     T.ParentUid = S.Uid,
 		T.ParentObject = S.Object,
