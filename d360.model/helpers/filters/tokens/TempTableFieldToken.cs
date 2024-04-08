@@ -258,7 +258,7 @@ namespace d360.model.helpers.filters
 						}
 						else
 						{
-							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx})";
+							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx},',')";
 						}
 						sqlParamsRef.Add($"@defLookupValue{parameterIdx}", defaultValue);
 					}
@@ -270,7 +270,7 @@ namespace d360.model.helpers.filters
 						}
 						else
 						{
-							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} F{fieldTypeId}.{valueQueryPart}";
+							filterExpression = $"@filter_{parameterIdx} {(condition == "in" ? "=" : "!=")} coalesce(F{fieldTypeId}.{valueQueryPart},',')";
 						}
 					}
 
