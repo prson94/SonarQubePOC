@@ -426,8 +426,19 @@ namespace d360.model.DataAccessLayer
 		{
 			var dbArgs = new DynamicParameters();
 
+			StringBuilder stateQuery = new StringBuilder();
+
+			stateQuery.AppendLine("declare @stateNames table(id int, name nvarchar(max))");
+			foreach (StepState stepState in Enum.GetValues(typeof(StepState)).Cast<StepState>().ToList())
+			{
+				stateQuery.AppendLine($"insert into @stateNames values({(int)stepState},'{stepState}')");
+			}
+
 			dbArgs.Add("@uid", workflowUid);
-			string sql = @" select Item.ID,
+			string sql = $@" 
+								{stateQuery}
+	
+								select Item.ID,
 								itemstep.UID,
 								vs.Name,
 								VS.State,
@@ -439,6 +450,22 @@ namespace d360.model.DataAccessLayer
 								itemstep.Fields as ItemFields,
 								itemstep.StartedOn,
 								itemstep.CompletedOn,
+								case 
+									when 
+										ItemStep.CompletedOn is not null and itemStep.State <=2 then 'Complete'
+									when 
+										ItemState.name is null or itemstate.id = 1 then 'Pending'
+									when	
+										itemstate.id = 3 then 'Error'
+									else
+										'Failed'
+									end as [Status]
+								,case 
+									when 
+										(ItemStep.CompletedOn is null and ItemState.name is not null and itemstate.id <> 1) or (ItemStep.CompletedOn is not null and itemStep.State > 2) then ItemState.name 
+								else
+									null
+								end as [StatusCode],
 								R.uid as StartedByUid,
 								R1.uid as CompletedByUid
 								from workflow.[version]  v 
@@ -450,6 +477,7 @@ namespace d360.model.DataAccessLayer
 								item.VersionID =v.id and itemstep.ItemID = item.id
 								left outer join reporting.Global_Resource R on R.ResourceID = itemstep.StartedBy
 								left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
+								outer apply (select top 1 name, id from @stateNames where id = itemstep.State) itemState
 								 where item.uid=@uid";
 
 			var workflowInstances = await CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);
@@ -1071,7 +1099,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AST.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "WA.StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "WA.CompletedOn", SqlFieldType.DateTime),
-				new DefaultFilter("status", "WA.Status", SqlFieldType.Text),
+				new DefaultFilter("status", "WA.UIStatus", SqlFieldType.Text),
 				new DefaultFilter("assetTypeUid", "ast.uid", SqlFieldType.Guid),
 				new DefaultFilter("actionTypeUid", "IT.uid", SqlFieldType.Guid),
 				new DefaultFilter("assetUid", "A.uid", SqlFieldType.Guid),
@@ -1086,7 +1114,7 @@ namespace d360.model.DataAccessLayer
 				new DefaultFilter("assetDisplayValue", "coalesce(wa.RelationshipName,ADV.DisplayValue,AST.Name, 'unknown')", SqlFieldType.Text),
 				new DefaultFilter("startedOn", "StartedOn", SqlFieldType.DateTime),
 				new DefaultFilter("completedOn", "CompletedOn", SqlFieldType.DateTime),
-				new DefaultFilter("status", "Status", SqlFieldType.Text),
+				new DefaultFilter("status", "UIStatus", SqlFieldType.Text),
 				new DefaultFilter("displayPath", "AP.DisplayPath", SqlFieldType.Text),
 				new DefaultFilter("workflowName", "workflowName", SqlFieldType.Text),
 				new DefaultFilter("assigneesJson", "AssignedUsers.value", SqlFieldType.Text),
@@ -1254,6 +1282,14 @@ namespace d360.model.DataAccessLayer
 									else 'Unknown'
 							  END as initiatingObjectType";
 
+			StringBuilder stateQuery = new StringBuilder();
+
+			stateQuery.AppendLine("declare @stateNames table(id int, name nvarchar(max))");
+			foreach (StepState stepState in Enum.GetValues(typeof(StepState)).Cast<StepState>().ToList())
+			{
+				stateQuery.AppendLine($"insert into @stateNames values({(int)stepState},'{stepState}')");
+			}
+
 			var assigneesSql = $@"OUTER APPLY
 							(
 								SELECT 
@@ -1273,20 +1309,42 @@ namespace d360.model.DataAccessLayer
 
 			var coreSelectsTempTable = $@"
 									drop table if exists #assignments
+		
+									{stateQuery.ToString()}
 	
 									select 
-										WI.uid as workflowItemUid, 
-										T.uid as workflowUid, 
-										T.Name as workflowName,
-										GR.FirstName + ' ' + GR.LastName as initiator,
-										GR.uid as initiatorUid,		
-										WI.StartedOn,
-										WI.CompletedOn,
-										case 											
-											when WI.CompletedOn is null 
-												then 'Pending'            
-											else        
-												'Complete' end as [Status]
+										WI.uid as workflowItemUid 
+										,T.uid as workflowUid
+										,T.Name as workflowName
+										,GR.FirstName + ' ' + GR.LastName as initiator
+										,GR.uid as initiatorUid	
+										,WI.StartedOn
+										,WI.CompletedOn
+										,case 
+											when 
+												WI.CompletedOn is not null then 'Complete'
+											when 
+												ItemState.name is null or itemstate.id = 1 then 'Pending'
+											when	
+												itemstate.id = 3 then 'Error'
+											else
+												'Failed'
+											end as [Status]
+										,case 
+											when 
+												WI.CompletedOn is null and ItemState.name is not null 
+												then ItemState.name 
+											else
+												null
+											end as [StatusCode]	
+										,case 
+											when 
+												WI.CompletedOn is not null then 'Complete'
+											when 
+												ItemState.name is null or itemstate.id = 1 then 'Pending'											
+											else
+												'Failed'
+											end as [UIStatus]
 										,WI.Object
 										,WI.ObjectID
 										,WIS.ID as workflowItemStepID
@@ -1303,7 +1361,9 @@ namespace d360.model.DataAccessLayer
 										INNER JOIN workflow.Version V on V.TypeID = T.ID and T.State in (1,4) 
 										inner join workflow.Item WI on V.ID=WI.VersionID {(hasActionFilter ? "and WI.Object = 'Issue'" : "")}
 										left JOIN reporting.Global_Resource GR on GR.ResourceID = WI.StartedBy
-										left join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID
+										left join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID		
+										left join workflow.ItemStep WIS2 on WIS2.ID = WIS.ID
+										outer apply (select top 1 name, id from @stateNames where id = WIS2.State) itemState																		
 									";
 
 			var coreSelects = $@"
@@ -1340,7 +1400,7 @@ namespace d360.model.DataAccessLayer
 					left join Asset A on a.ID = WA.AssetId
 					left join AssetPath AP on A.ID=AP.ID					
 					left join AssetDisplayValue ADV on A.id = ADV.AssetID
-					outer apply (select {classSQL})IOT
+					outer apply (select {classSQL})IOT					
 					outer apply (
 						select case when WA.Object = 'Intersect' then 'Relationship'
 							when A.Id is not null then 'Asset' else 'Asset Type' end as [Type])ObjectType(Type)
@@ -1445,9 +1505,18 @@ namespace d360.model.DataAccessLayer
 								{string.Join(Environment.NewLine, classCaseStatements)}
 								else 'Unknown'
 								END as InitiatingObjectType";
+			
+			StringBuilder stateQuery = new StringBuilder();
+
+			stateQuery.AppendLine("declare @stateNames table(id int, name nvarchar(max))");
+			foreach (StepState stepState in Enum.GetValues(typeof(StepState)).Cast<StepState>().ToList())
+			{
+				stateQuery.AppendLine($"insert into @stateNames values({(int)stepState},'{stepState}')");
+			}
 
 
 			string sql = $@"
+						{stateQuery}
 
 						Drop table if exists #tempWorkFlowDetail;
 						SELECT  WI.ID WorkflowItemID,WI.Object,WI.ObjectID,
@@ -1516,10 +1585,23 @@ namespace d360.model.DataAccessLayer
 							WI.StartedOn,
 							WI.CompletedOn,
 							case 
-								when WI.CompletedOn is null 
-									then 'Pending'
+								when 
+									WI.CompletedOn is not null then 'Complete'
+								when 
+									ItemState.name is null or itemstate.id = 1 then 'Pending'
+								when	
+									itemstate.id = 3 then 'Error'
 								else
-									'Complete' end as [Status],
+									'Failed'
+								end as [Status]
+							,case 
+								when 
+									WI.CompletedOn is not null then 'Complete'
+								when 
+									ItemState.name is null then 'Pending'
+								else
+									ItemState.name 
+								end as [StatusCode],
 							TWD.AssetUid as AssetUid,
 							coalesce(TWD.RelationshipName,AP.DisplayPath,AST.Name) as AssetPath,
 							TWD.IssueUid as ActionUid,
@@ -1534,6 +1616,9 @@ namespace d360.model.DataAccessLayer
 						LEFT JOIN AssetType AST on AST.ID=TWD.AssetTypeID
 						LEFT JOIN AssetPath AP on TWD.AssetID=AP.ID
 						LEFT JOIN AssetDisplayValue ADV on TWD.AssetID = ADV.AssetID
+						left join (select WIS1.ItemID, MAX(ID) as ID from workflow.ItemStep WIS1 group by WIS1.ItemID) WIS on WIS.itemID=WI.ID		
+						left join workflow.ItemStep WIS2 on WIS2.ID = WIS.ID
+						outer apply (select top 1 name, id from @stateNames where id = WIS2.State) itemState
 						where WI.UID = @workflowItemUid";
 
 			return await CompanyContext.QueryFirstOrDefaultAsync<WorkflowItemDetails>(sql, dbArgs, ApiTimeout);

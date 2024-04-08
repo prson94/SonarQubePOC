@@ -72,4 +72,49 @@ export class WorkflowHelpers {
 				return responseType;
 		}
 	}
+
+	static workflowStateDetail(state: string): {title: string, body: string} {
+		switch (state) {
+			case 'Error':
+				return {
+					title: $localize`Failed: unidentified code error`,
+					body: $localize`<p>Assignment failed and cannot be completed due to an unknown reason.</p><p><b>Contact support to troubleshoot the issue.</b> After the issue is fixed, a new instance will need to be initiated.</p>`
+				};
+			case 'Failed':
+				return {
+					title: $localize`Failed: assignment failed for an unknown reason`,
+					body: $localize`<p>Assignment failed and cannot be completed due to an unknown reason.</p><p><b>Contact support to troubleshoot the issue.</b> After the issue is fixed, a new instance will need to be initiated.</p>`
+				};			
+			case 'HTTPRequestError':
+				return {
+					title: $localize`Failed: HTTP Request failed`,
+					body: $localize`<p>Assignment Failed and cannot be completed because the last HTTP Request was unsuccessful.</p><p><b>Configuration of the HTTP Request activity needs to be reviewed.</b> After the issues are fixed, a new instance will need to be initiated.</p>`
+				};
+			case 'NoValidTransitions':
+				return {
+					title: $localize`Failed: no valid transitions found`,
+					body: $localize`<p>Assignment Failed and cannot be completed because no valid transitions were found after the last completed step</p><p><b>Workflow configuration needs to be reviewed.</b> After transition issues are fixed, a new instance will need to be initiated.</p>`
+				};
+			case 'InvalidInitiator':
+				return {
+					title: $localize`Failed: Invalid Initiator`,
+					body: $localize`<p>Assignment Failed and cannot be completed because the initiator cannot be identified.</p><p><b>Confirm the status of the initiating user.</b> After the issue is fixed, a new instance will need to be initiated.</p>`
+				};
+			case 'NoValidAssignee':
+				return {
+					title: $localize`Failed: No valid form recipient found`,
+					body: $localize`<p>Assignment Failed and cannot be completed because no valid recipients were found for the last form activity.</p><p><b>Configuration of the Form activity needs to be reviewed.</b> After the issues are fixed, a new instance will need to be initiated.</p>`
+				};
+			case 'InvalidRecipient':
+				return {
+					title: $localize`Failed: no valid recipient found`,
+					body: $localize`<p>Assignment Failed and cannot be completed because no valid recipient was found after the last completed step</p><p><b>Workflow configuration needs to be reviewed.</b> After the issues are fixed, a new instance will need to be initiated.</p>`
+				};
+			default: 
+				return {
+					title: $localize`Failed: failed for an unknown reason`,
+					body: $localize`<p>Assignment failed and cannot be completed due to an unknown reason.</p><p><b>Contact support to troubleshoot the issue.</b> After the issue is fixed, a new instance will need to be initiated.</p>`
+				};
+		}
+	}
 }

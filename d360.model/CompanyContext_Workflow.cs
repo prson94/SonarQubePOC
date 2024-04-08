@@ -496,6 +496,23 @@ namespace d360.model
 
 			if (string.IsNullOrEmpty(responseSettings.InputStepId))
 			{
+
+				if (item != null)
+				{
+					item.State = StepState.HTTPRequestError;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,
+						Message = "ERROR - INVALID HTTP RESPONSE STEP MISSING INPUT STEP ID.",
+						State = StepState.HTTPRequestError
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
+				}
+
 				throw new ArgumentException($"ERROR - INVALID HTTP RESPONSE STEP MISSING INPUT STEP ID.");
 			}
 
@@ -506,6 +523,22 @@ namespace d360.model
 
 			if (requestStep == null)
 			{
+				if (item != null)
+				{
+					item.State = StepState.HTTPRequestError;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,
+						Message = "ERROR - INVALID HTTP RESPONSE STEP MISSING REQUEST STEP.",
+						State = StepState.HTTPRequestError
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
+				}
+
 				throw new ArgumentNullException(nameof(requestStep), $"ERROR - INVALID HTTP RESPONSE STEP MISSING REQUEST STEP.");
 			}
 
@@ -514,6 +547,23 @@ namespace d360.model
 
 			if (string.IsNullOrEmpty(requestStepBody))
 			{
+
+				if (item != null)
+				{
+					item.State = StepState.HTTPRequestError;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,
+						Message = "ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.",
+						State = StepState.HTTPRequestError
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
+				}
+
 				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
 				throw new ArgumentException($"ERROR - INVALID HTTP RESPONSE BODY IS NULL OR EMPTY.");
 			}
@@ -525,6 +575,22 @@ namespace d360.model
 			}
 			catch
 			{
+				if (item != null)
+				{
+					item.State = StepState.HTTPRequestError;
+
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = item.ID,
+						Message = "ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.",
+						State = StepState.HTTPRequestError
+					};
+
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
+
+					SaveChanges();
+				}
+
 				Log.LogError($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
 				throw new ArgumentException($"ERROR - INVALID HTTP RESPONSE BODY IS NOT VALID JSON.");
 
@@ -2156,13 +2222,13 @@ namespace d360.model
 			} else if (!transitionPassed && transition.TransitionType == TransitionType.Condition) {
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
-				fromItemStep.State = StepState.Failed;
+				fromItemStep.State = StepState.NoValidTransitions;
 
 				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 				{
 					itemStepID = fromItemStep.ID,
 					Message = "Step completed with 0 valid transitions",
-					State = StepState.Failed
+					State = StepState.NoValidTransitions
 				};
 
 				WorkflowItemStepStateDetails.Add(itemStateDetail);
@@ -2612,13 +2678,13 @@ namespace d360.model
 				}
 				else
 				{
-					itemStep.State = StepState.Failed;
+					itemStep.State = StepState.NoValidTransitions;
 
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
 						itemStepID = itemStep.ID,
 						Message = "Form completed with 0 transitions",
-						State = StepState.Failed
+						State = StepState.NoValidTransitions
 					};
 
 					WorkflowItemStepStateDetails.Add(itemStateDetail);
@@ -3647,13 +3713,13 @@ namespace d360.model
 				{
 					Log.LogError("ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.");
 
-					itemStep.State = StepState.Failed;
+					itemStep.State = StepState.InvalidInitiator;
 
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
 						itemStepID = itemStep.ID,						
 						Message = "ERROR CANNOT DETERMINE WHO TO ASSIGN FORM STEP TO.",
-						State = StepState.Failed
+						State = StepState.InvalidInitiator
 					};
 
 					WorkflowItemStepStateDetails.Add(itemStateDetail);
@@ -3668,12 +3734,12 @@ namespace d360.model
 				{
 					Log.LogError("ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.");
 
-					itemStep.State = StepState.Failed;
+					itemStep.State = StepState.InvalidInitiator;
 					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 					{
 						itemStepID = itemStep.ID,
 						Message = "ERROR CANNOT FIND THE RESOURCE WHO STARTED THE WORKFLOW TO ASSIGN FORM TO.",
-						State = StepState.Failed,
+						State = StepState.InvalidInitiator,
 					};
 
 					WorkflowItemStepStateDetails.Add(itemStateDetail);
@@ -3737,12 +3803,12 @@ namespace d360.model
 
 			if (users.Count == 0)
 			{
-				itemStep.State = StepState.Failed;
+				itemStep.State = StepState.NoValidAssignee;
 
 				var itemStateDetail = new WorkflowItemStepStateDetail { 
 					itemStepID = itemStep.ID, 
 					Message = "No valid users for assignment.", 
-					State = StepState.Failed 
+					State = StepState.NoValidAssignee
 				};
 
 				WorkflowItemStepStateDetails.Add(itemStateDetail);

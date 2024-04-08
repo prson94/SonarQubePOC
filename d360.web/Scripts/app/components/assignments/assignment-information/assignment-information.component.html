@@ -7,6 +7,22 @@
 		(click)="completeAssignmentClick()" i18n
 >Complete the Assignment&nbsp;<span class="fa fa-pencil"></span>
 </button>
+<div *ngIf="isFailedAssignment" class="assignment-error">
+	<p-accordion class="p-accordion" [expandIcon]="'fa fa-chevron-right'" [collapseIcon]="'fa fa-chevron-down'">
+		<p-accordionTab class="p-accordion-tab">
+			<ng-template pTemplate="header">
+				<span>
+					<i class="fa fa-exclamation-circle" aria-hidden="true"></i> <span style="padding: 0 0.3rem "> {{itemState.title}} </span>
+				</span>
+			</ng-template>
+			<ng-template pTemplate="content">
+				<span class="col p-accordion-content">
+					<span [innerHtml]="itemState.body"></span>
+				</span>
+			</ng-template>
+		</p-accordionTab>
+	</p-accordion>
+</div>
 <div class="asset-detail-tabs" *ngIf="assignmentItem?.initiatingObjectType === 'Action'">
 	<ig-property-group i18n-title title="Request" [shouldBePadded]="false" [showHeaderLine]="false">
 		<div readonly>

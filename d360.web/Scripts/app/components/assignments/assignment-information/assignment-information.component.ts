@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
-import { AssignmentItem, AssignmentItemStep, WorkflowStepDetail } from '../../../models/workflow.model';
+import { AssignmentItem, AssignmentItemStep, StepState, WorkflowStepDetail } from '../../../models/workflow.model';
 import { FeatureFlagService } from '../../../guards/feature-flag.service';
+import { WorkflowHelpers } from '../../../static/workflow-helpers';
 
 @Component({
 	selector: 'd3s-assignment-information',
@@ -44,6 +45,12 @@ export class AssignmentInformationComponent {
 	private assignmentItemStep: AssignmentItemStep;
 	private _workflowItemUid: string;
 
+	public isFailedAssignment: boolean = false;
+
+	helper = WorkflowHelpers;
+
+	public itemState: { title: string, body: string } = { title: "", body: "" };
+
 	constructor(private workflowService: WorkflowService,
 		private cdRef: ChangeDetectorRef, featureFlagService: FeatureFlagService) {
 		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
@@ -51,7 +58,12 @@ export class AssignmentInformationComponent {
 
 	loadAssignmentItem(workflowItemUid: string): void {
 		this.isAssignmentItemLoading = true;
+		this.isFailedAssignment = false;
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
+			if (response.Status == StepState[StepState.Failed] || response.Status == StepState[StepState.Error]) {
+				this.itemState = this.helper.workflowStateDetail(response.StatusCode);
+				this.isFailedAssignment = true;
+			}
 			this.isAssignmentItemLoading = false;
 			this.assignmentItem = response;
 			this.cdRef.markForCheck();

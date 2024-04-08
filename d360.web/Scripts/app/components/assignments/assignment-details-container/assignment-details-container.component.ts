@@ -190,14 +190,18 @@ export class AssignmentDetailsContainerComponent extends BaseComponent implement
 	private getBadgeColor(assignmentStatus: string): string {
 		if (assignmentStatus === 'Complete') {
 			return '#6f7482';
+		} else if (assignmentStatus === 'Error' || assignmentStatus === 'Failed') {
+			return '#aa1638';
 		} else {
-			return '#006fba';
+			return '#006fba';			
 		}
 	}
 
 	private getBadgeLabel(assignmentStatus: string): string {
 		if (assignmentStatus === 'Complete') {
 			return $localize`Complete`;
+		} else if (assignmentStatus === 'Failed' || assignmentStatus === 'Error') {
+			return $localize`Failed`;		
 		} else {
 			return $localize`Pending`;
 		}

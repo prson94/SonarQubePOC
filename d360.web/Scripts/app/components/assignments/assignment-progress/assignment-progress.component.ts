@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, Output, ViewChildren } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChildren, ChangeDetectorRef } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
-import { AssignmentItemStep } from '../../../models/workflow.model';
+import { AssignmentItemStep, StepState } from '../../../models/workflow.model';
 import { AssignmentProgressStepComponent } from './assignment-progress-step/assignment-progress-step.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { FeatureFlagService } from '../../../guards/feature-flag.service';
+import { WorkflowHelpers } from '../../../static/workflow-helpers';
 
 @Component({
 	selector: 'd3s-assignment-progress',
@@ -26,6 +27,7 @@ export class AssignmentProgressComponent {
 			this.loadAssignmentSteps();
 		}
 	}
+	@Input() assignmentStatus: string;
 
 	get workflowItemUid(): string {
 		return this._workflowItemUid;
@@ -48,14 +50,22 @@ export class AssignmentProgressComponent {
 
 	private _workflowItemUid: string;
 
+	public isFailedAssignment: boolean = false;
+
+	helper = WorkflowHelpers;
+
+	public itemState: { title: string, body: string } = {title:"", body:""};
+
 	constructor(private workflowService: WorkflowService,
 				public linkClickInterceptor: LinkClickInterceptor,
-				featureFlagService: FeatureFlagService) {
+				featureFlagService: FeatureFlagService,
+				private changeDetectorRef: ChangeDetectorRef) {
 		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
 	}
 
 	private loadAssignmentSteps() {
 		this.assignmentItemSteps = [];
+		this.isFailedAssignment = false;
 		this.isLoading = true;
 		this.workflowService.getAssignmentItemSteps(this._workflowItemUid)
 			.subscribe((response: AssignmentItemStep[]): void => {
@@ -63,6 +73,15 @@ export class AssignmentProgressComponent {
 				this.assignmentItemSteps = response.sort(function (a: AssignmentItemStep, b: AssignmentItemStep) {
 					return (a.StartedOn < b.StartedOn) ? -1 : ((a.StartedOn > b.StartedOn) ? 1 : 0);
 				});
+				if (this.assignmentItemSteps.some(x => (x.Status != StepState.Complete && x.Status != StepState.Pending))) {
+					let failedStep = this.assignmentItemSteps.find(x => (x.Status != StepState.Complete && x.Status != StepState.Pending));
+					this.itemState = this.helper.workflowStateDetail(StepState[failedStep.StatusCode].toString());
+					this.isFailedAssignment = true;
+				} else if (this.assignmentStatus == StepState[StepState.Failed] || this.assignmentStatus == StepState[StepState.Error]) {
+					this.itemState = this.helper.workflowStateDetail(this.assignmentStatus);
+					this.isFailedAssignment = true;
+				}
+				this.changeDetectorRef.detectChanges();
 			});
 	}
 

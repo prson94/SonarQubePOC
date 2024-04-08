@@ -133,6 +133,7 @@ import {
 	AssignmentDetailsContainerComponent
 } from './assignment-details-container/assignment-details-container.component';
 import { AssignmentDetailLinksComponent } from './assignment-detail-links/assignment-detail-links.component';
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
 	declarations: [
@@ -173,7 +174,7 @@ import { AssignmentDetailLinksComponent } from './assignment-detail-links/assign
 		StepInformationRelationshipChangeComponent,
 		WorkflowPendingAssignmentsComponent,
 		WorkflowVersionDetailsComponent,
-		WorkflowVersionInformationComponent,
+		WorkflowVersionInformationComponent,		
 	],
 	exports: [
 		AssignmentInformationComponent,
@@ -233,7 +234,8 @@ import { AssignmentDetailLinksComponent } from './assignment-detail-links/assign
 		WorkflowDiagramModule,
 		WorkflowModule,
 		WorkflowModule,
-		FormFeedbackBadgesModule
+		FormFeedbackBadgesModule,
+		AccordionModule,
 	]
 })
 export class AssignmentsModule {
