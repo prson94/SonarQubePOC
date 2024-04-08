@@ -361,6 +361,7 @@ from	reporting.Global_FieldAudit i_p
 			// Record history for assets we are creating/updating.
 			commandText += $@"
 declare @tbl table (ID bigint, Object varchar(50), ObjectID int)
+
 {INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	p.Object, 
@@ -394,7 +395,10 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			inner join @tbl tt on tt.Object = p.Object and tt.ObjectID = p.ObjectID
 			inner join api.Execution e on e.Id = a.ExecutionId and e.Id = @Id and a.SubTask is null
 			inner join api.ExecutionField f on f.ExecutionID = e.ExecutionID and f.ItemNumber = p.ItemNumber and f.FieldTypeID not in (select ID from FieldType where ID = f.FieldTypeID and [Type] in ('Relationship'))
-            inner join #updatedFieldsMap fields on fields.Object = p.Object and fields.ObjectId = p.ObjectId and f.FieldTypeID = fields.FieldTypeId";
+            inner join #updatedFieldsMap fields on fields.Object = p.Object and fields.ObjectId = p.ObjectId and f.FieldTypeID = fields.FieldTypeId
+
+			drop table if exists #updatedFieldsMap;
+";
 
 			// Record the relationship changes via any relation fields on the assets above.
 			commandText += $@"
@@ -441,62 +445,152 @@ from	api.ExecutionLog l
 		inner join Asset a on a.Id = p.AssetId
 		inner join AssetType t on t.Id = a.AssetTypeId
 		inner join FieldType f on f.Type = 'Lookup' and f.LookupObjectType = replace(t.[Object],'Type','') and f.LookupObjectID = t.ObjectID
-where	l.ExecutionId = @Id;";
+where	l.ExecutionId = @Id;
 
-			// Calculate any formatted values we will use to update the fields.
+create clustered index idx_relyingFieldTypes on #relyingFieldTypes (ID);
+";
+
+			// Create Temporary #fields tale.
+			commandText += $@"
+drop table if exists #fields;
+create table #fields(
+AssetID bigint,
+Object  varchar(100),
+ObjectID int,
+TypeName nvarchar(500),
+ObjectName nvarchar(max),
+FieldName nvarchar(256),
+FieldTypeID int,
+FieldValue nvarchar(max)
+);
+create clustered index cx_fields on #fields(AssetID);
+";
+
+			// Calculate any formatted values we will use to update the fields(AllowMultipleValues false).
 			commandText += $@"
 select	ID as FieldtypeId,
-		cast(ObjectId as nvarchar(255)) ObjectIdPrefix,
-		cast(ObjectId as nvarchar(4000)) ObjectId,
+		cast(ObjectId as nvarchar(10)) ObjectId,
 		utility.GetFormattedFieldLookupValueWithMultiple(Type, LookupDisplayFormat, LookupObjectType, LookupObjectID, ObjectId, AllowMultipleValues) as FormattedValue
 into	#formattedValues
-from	#relyingFieldTypes;
+from	#relyingFieldTypes
+where	AllowMultipleValues = 0;
 
-create clustered index idx_formattedValues on #formattedValues (FieldtypeId,ObjectIdPrefix);
-
+create clustered index idx_formattedValues on #formattedValues (FieldtypeId,ObjectId);
 ";
 
 			// Get Required Field from Field table.
 			commandText += $@"
-drop table if exists #tempField;
+if exists(select 1 from #formattedValues)
+begin
+	drop table if exists #tempField;
 
-select	fv.FieldtypeId as FieldtypeId,
-		f.AssetID as AssetID,
-		f.ID as FieldID,
-		fv.FormattedValue,
-		case when coalesce(fv.FormattedValue,'') = coalesce(f.FormattedValue,'') then 1 else 0 end IsMatch
-into	#tempField
-from	#formattedValues fv
-inner join Field F on fv.FieldtypeId = F.FieldtypeId and fv.ObjectIdPrefix = substring(F.[Value], 1, 255) and Fv.ObjectId = F.[Value]
+	select	fv.FieldtypeId as FieldtypeId,
+			f.AssetID as AssetID,
+			f.ID as FieldID,
+			fv.FormattedValue,
+			case when coalesce(fv.FormattedValue,'') = coalesce(f.FormattedValue,'') then 1 else 0 end IsMatch
+	into	#tempField
+	from	#formattedValues fv
+	inner join Field F on fv.FieldtypeId = F.FieldtypeId and fv.ObjectId = F.[Value] and coalesce(F.[Value],'') != ''
 
-create clustered index idx_tempField on #tempField (FieldID);
+	create clustered index idx_tempField on #tempField (FieldID);
 
+	UPDATE	F
+	SET		F.FormattedValue = FT.FormattedValue
+	from	Field F
+	inner join #tempField FT on FT.FieldID = F.ID and FT.IsMatch = 0;
+
+	insert into #fields
+	select	F.AssetID,
+			A.Object,
+			A.ObjectID,
+			A.TypeName,
+			A.DisplayValue as ObjectName,
+			T.Name as FieldName,
+			F.FieldTypeID,
+			F.FormattedValue as FieldValue
+	from	#tempField F
+			inner join FieldType T on T.ID = F.FieldTypeID
+			inner join AssetDetail A on A.ID = F.AssetID;
+end
 ";
 
-			// Now update the lookup fields themselves.
+			// Calculate any formatted values we will use to update the fields(AllowMultipleValues True).
 			commandText += $@"
-UPDATE	F
-SET		F.FormattedValue = FT.FormattedValue
-from	Field F
-		inner join #tempField FT on FT.FieldID = F.ID and FT.IsMatch = 0;";
+select	ID as FieldtypeId,
+		cast(ObjectId as nvarchar(10)) ObjectId
+into	#formattedValuesTrue
+from	#relyingFieldTypes
+where	AllowMultipleValues = 1;
 
-			// Get the list of asset/field combinations we updated above to record history for them.
+create clustered index idx_formattedValuesTrue on #formattedValuesTrue (FieldtypeId);
+";
+
+			// Get Required Field from Field table.
 			commandText += $@"
-select	F.AssetID,
-		A.Object,
-		A.ObjectID,
-		A.TypeName,
-		A.DisplayValue as ObjectName,
-		T.Name as FieldName,
-		F.FieldTypeID,
-		F.FormattedValue as FieldValue
-into	#fields
-from	#tempField F
-		inner join FieldType T on T.ID = F.FieldTypeID
-		inner join AssetDetail A on A.ID = F.AssetID;";
+if exists(select 1 from #formattedValuesTrue)
+begin
+	drop table if exists #tempFieldTrue;
+
+	select	F.ID as FieldID,
+			cast(null as int)	as FieldtypeId,
+			cast(null as bigint) as AssetID,
+			cast(null as nvarchar(max)) FormattedValue,
+			cast(null as nvarchar(max)) [FieldValue],
+			cast(null as nvarchar(max)) FormattedValue_New
+	into	#tempFieldTrue
+	from	#formattedValuesTrue fv
+	inner join Field F on fv.FieldtypeId = F.FieldtypeId and coalesce(F.[Value],'') != '' 
+	cross apply (select [Value] 
+				from string_split(F.[Value], ',') V 
+				where V.[Value] = fv.ObjectId and coalesce(V.[Value],'') !='') C;
+
+	if exists(select 1 from #tempFieldTrue)
+	begin
+		create clustered index idx_tempFieldTrue on #tempFieldTrue (FieldID);
+	
+		Update tempF
+		Set FieldtypeId = F.FieldtypeId,
+		AssetID = F.AssetID,
+		FormattedValue = F.FormattedValue,
+		FieldValue = F.[Value]
+		from #tempFieldTrue tempF
+		inner join Field F on F.ID = tempF.FieldID;
+
+		Update F
+		Set FormattedValue_New = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.[FieldValue], FT.AllowMultipleValues)
+		from #tempFieldTrue F
+		inner join #relyingFieldTypes FT on F.FieldtypeId = FT.ID;
+	
+		UPDATE	F
+		SET		F.FormattedValue = FT.FormattedValue_New
+		from	Field F
+		inner join #tempFieldTrue FT on FT.FieldID = F.ID 
+		and coalesce(FT.FormattedValue_New,'') <> coalesce(FT.FormattedValue,'');
+
+		insert into #fields
+		select	F.AssetID,
+				A.Object,
+				A.ObjectID,
+				A.TypeName,
+				A.DisplayValue as ObjectName,
+				T.Name as FieldName,
+				F.FieldTypeID,
+				F.FormattedValue_New as FieldValue
+		from	#tempFieldTrue F
+				inner join FieldType T on T.ID = F.FieldTypeID
+				inner join AssetDetail A on A.ID = F.AssetID;
+	end
+end
+";
 
 			// Clear out the audit header temp table variable from where we used it above. Using it again here.
 			commandText += $@"
+drop table if exists #relyingFieldTypes;
+drop table if exists #formattedValues;
+drop table if exists #formattedValuesTrue;
+drop table if exists #tempField;
+drop table if exists #tempFieldTrue;
 delete @tbl;";
 
 			// Add the audit history header records for the asset that rely on the first set of assets.
@@ -525,6 +619,21 @@ inner join Field fu on fu.ID = f.ID
 inner join FieldType ft on ft.ID = f.FieldTypeID
 where fu.UpdatedOn > @StartedOn;
 
+drop table if exists #tempunqAssetFieldID;
+drop table if exists #tempfieldsdata;
+
+select	distinct F.Object,
+		F.ObjectId,
+		F.ObjectName,
+		F.TypeName
+into #tempfieldsdata
+from	#fields F
+		inner join FieldType ft on ft.ID = F.FieldtypeId
+		inner join #updatedFieldTypeIds uft on ft.LookupDisplayFormat like '%'+uft.Name+'%';
+
+drop table if exists #updatedFieldTypeIds;
+
+
 {INSERT_SQL}
 output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 	select	F.Object,
@@ -539,10 +648,11 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			F.TypeName, 
 			F.ObjectName, 
 			'Underlying asset from lookup was updated.' 
-	from	#fields F
-			inner join FieldType ft on ft.ID = F.FieldtypeId
-			inner join #updatedFieldTypeIds uft on ft.LookupDisplayFormat like '%'+uft.Name+'%'
-			{maxVersionSql("F.Object", "F.ObjectId")};";
+	from	#tempfieldsdata F
+			{maxVersionSql("F.Object", "F.ObjectId")};
+
+			drop table if exists #tempfieldsdata;
+";
 
 			// Add the field history records for the assets whose lookup fields we updated.
 			commandText += $@"
@@ -556,19 +666,10 @@ output inserted.ID, inserted.Object, inserted.ObjectID into @tbl
 			inner join @tbl tt on tt.Object = f.Object and tt.ObjectID = f.ObjectID
 			outer apply {previousValueCrossApplySql("f.Object", "f.ObjectId", "f.FieldName")} pv
 	where	((coalesce(pv.Value,'') = '' and  coalesce(f.FieldValue,'') != '') 
-	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));";
+	or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_General_CP1_CS_AS));
 
-			// Add the field history records for the assets whose lookup fields we updated.
-			commandText += $@"
-			drop table if exists #updatedFieldsMap;
-			drop table if exists #relyingFieldTypes;
-			drop table if exists #formattedValues;
-			drop table if exists #tempField;
-			drop table if exists #fields;
-			drop table if exists #updatedFieldTypeIds;
-			drop table if exists #tempunqAssetFieldID;
-";
-
+	drop table if exists #fields;
+	";
 			return commandText;
 		}
 
