@@ -73,11 +73,11 @@ export class AssignmentProgressComponent {
 				this.assignmentItemSteps = response.sort(function (a: AssignmentItemStep, b: AssignmentItemStep) {
 					return (a.StartedOn < b.StartedOn) ? -1 : ((a.StartedOn > b.StartedOn) ? 1 : 0);
 				});
-				if (this.assignmentItemSteps.some(x => (x.Status != StepState.Complete && x.Status != StepState.Pending))) {
-					let failedStep = this.assignmentItemSteps.find(x => (x.Status != StepState.Complete && x.Status != StepState.Pending));
+				if (this.assignmentItemSteps.some(x => (x.Status !== StepState.Complete && x.Status !== StepState.Pending))) {
+					let failedStep = this.assignmentItemSteps.find(x => (x.Status !== StepState.Complete && x.Status !== StepState.Pending));
 					this.itemState = this.helper.workflowStateDetail(StepState[failedStep.StatusCode].toString());
 					this.isFailedAssignment = true;
-				} else if (this.assignmentStatus == StepState[StepState.Failed] || this.assignmentStatus == StepState[StepState.Error]) {
+				} else if (this.assignmentStatus === StepState[StepState.Failed] || this.assignmentStatus === StepState[StepState.Error]) {
 					this.itemState = this.helper.workflowStateDetail(this.assignmentStatus);
 					this.isFailedAssignment = true;
 				}

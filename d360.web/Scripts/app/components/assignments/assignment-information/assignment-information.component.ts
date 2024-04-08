@@ -60,7 +60,7 @@ export class AssignmentInformationComponent {
 		this.isAssignmentItemLoading = true;
 		this.isFailedAssignment = false;
 		this.workflowService.getAssignmentItem(workflowItemUid).subscribe((response: AssignmentItem): void => {
-			if (response.Status == StepState[StepState.Failed] || response.Status == StepState[StepState.Error]) {
+			if (response.Status === StepState[StepState.Failed] || response.Status === StepState[StepState.Error]) {
 				this.itemState = this.helper.workflowStateDetail(response.StatusCode);
 				this.isFailedAssignment = true;
 			}
