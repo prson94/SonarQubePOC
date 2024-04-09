@@ -338,6 +338,9 @@ namespace d360.model.helpers
 								selects.Add($"H{f.RelationIndex + 1}_Node.DisplayPath as [{fieldAlias}]");
 							}
 							break;
+						case "link":
+							selects.Add($"{fieldSelector}.[Value] as [{fieldAlias}]");
+							break;
 						default:
 							selects.Add($"{fieldSelector}.FormattedValue as [{fieldAlias}]");
 							break;
