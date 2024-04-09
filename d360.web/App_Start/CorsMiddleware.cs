@@ -41,7 +41,10 @@ namespace d360.web
 						"https://shell-qa.dis.cloud.precisely.services",
 						"https://shell-stg.dis.cloud.precisely.com",
 						"https://shell.dis.cloud.precisely.com",
-						"https://cloud.precisely.com"
+						"https://cloud.precisely.com",
+      						"https://cdn-dev.cloud.precisely.services",
+	    					"https://cdn-stg.cloud.precisely.com",
+	  					"https://cdn.cloud.precisely.com"
 					};
 
 					if (!string.IsNullOrEmpty(originsSetting))
