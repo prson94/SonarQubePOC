@@ -124,7 +124,9 @@
                                 <a context-link (click)="navigate(item[column.urlfield], $event, {column,item})" [innerText]="item[column.datafield]" [attr.data-link-type]="getDataLinkType(item)"></a>
                             </ng-container>
                         </span>
-                        <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
+                        <span *ngSwitchCase="'link'" style="display:block; word-wrap:break-word !important">
+                            <d3s-link-display [value]="item[column.datafield]"></d3s-link-display>
+                        </span>
                         <span *ngSwitchCase="'html'" style="display:block; word-wrap:break-word !important" [innerHtml]="item[column.datafield]"></span>
                         <span *ngSwitchCase="'Score'" style="display:block; word-wrap:break-word !important" [innerHtml]="getScoreFieldHTML(item,column.datafield)"></span>
                         <span *ngSwitchCase="'color'" style="display:block; word-wrap:break-word !important">
