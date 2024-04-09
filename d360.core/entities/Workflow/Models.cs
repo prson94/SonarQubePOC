@@ -534,7 +534,11 @@ namespace d360.core.entities.Workflow
         public Guid? CompletedByUid { get; set; }
         
         public DateTime? CompletedOn { get; set; }
-    }
+
+		public StepState? Status	{ get; set; }
+
+		public StepState? StatusCode { get; set; }
+	}
 
     public class WorkflowAssignmentApiViewModel
     {
@@ -587,6 +591,8 @@ namespace d360.core.entities.Workflow
 		public string ChangeType { get; set; }
 
 		public string initiatingObjectType { get; set; }
+
+		public string StatusCode { get; set; }
 	}
 
 	public class WorkflowAssignee

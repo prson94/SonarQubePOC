@@ -12,7 +12,7 @@
 	<d3s-assignment-progress #assignmentProgressComponent [workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
 							 [workflowTypeVersion]="workflowAssignmentItem?.Version"
 							 [workflowUid]="workflowAssignmentItem?.workflowUid"
-							 [showCompleteAssignment]="false" [shouldBePadded]="true"></d3s-assignment-progress>
+							 [showCompleteAssignment]="false" [shouldBePadded]="true" [assignmentStatus]="workflowAssignmentItem?.Status"></d3s-assignment-progress>
 	<d3s-assignment-information-general #assignmentInformationGeneralComponent
 										[workflowItemUid]="workflowAssignmentItem?.workflowItemUid"
 										[shouldBePadded]="true" [isCollapsed]="true"

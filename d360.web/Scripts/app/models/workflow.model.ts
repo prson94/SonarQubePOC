@@ -495,6 +495,19 @@ export enum ConditionFieldType {
 	HttpResponse
 }
 
+
+export enum StepState {
+	Pending = 1,
+	Complete = 2,
+	Error = 3,
+	Failed = 4,
+	InvalidRecipient = 5,
+	HTTPRequestError = 6,
+	NoValidTransitions = 7,
+	InvalidInitiator = 8,
+	NoValidAssignee = 9,
+}
+
 //#endregion
 
 export class WorkflowAssignmentSummary {
@@ -582,6 +595,8 @@ export class AssignmentItemStep {
 	State: string;
 	StepType: string;
 	Uid: string;
+	Status: number;
+	StatusCode: number;
 }
 
 export class AssignmentItem {
@@ -593,6 +608,7 @@ export class AssignmentItem {
 	StartedOn: string;
 	CompletedOn: string;
 	Status: string;
+	StatusCode: string;
 	AssetUid: string;
 	AssetPath: string;
 	ActionUid: string;

@@ -534,7 +534,7 @@ export class AssignmentGridComponent extends BaseComponent implements OnInit, On
 	};
 
 	private getFilteredStatuses = (params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> => {
-		const statusValues: string[] = ['Pending', 'Complete'];
+		const statusValues: string[] = ['Pending', 'Complete', 'Failed'];
 		const values: string[] = statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? '') !== -1);
 		return of({
 			items: values,
