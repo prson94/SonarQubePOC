@@ -45,6 +45,7 @@ namespace d360.web.Controllers.V2
 		#region DI
 
 		private readonly IAssetRepository AssetRepository;
+		private readonly IAuditRepository AuditRepository;
 		private readonly IFieldsRepository FieldsRepository;
 		private readonly IQueueSource Queue;
 		private readonly IStorageProvider Storage;
@@ -54,13 +55,15 @@ namespace d360.web.Controllers.V2
 			IStorageProvider storage,
 			IQueueSource queue,
 			IFieldsRepository fieldsRepository,
-			IAssetRepository assetRepository
+			IAssetRepository assetRepository,
+			IAuditRepository auditRepository
 		) : base(set)
 		{
 			AssetRepository = assetRepository;
 			FieldsRepository = fieldsRepository;
 			Queue = queue;
 			Storage = storage;
+			AuditRepository = auditRepository;
 		}
 
 		#endregion
@@ -231,6 +234,8 @@ namespace d360.web.Controllers.V2
 			#region Validation
 
 			var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+			var existingFieldsNotMutated = JsonConvert.DeserializeObject<List<FieldType>>(JsonConvert.SerializeObject(existingFields));
+
 			var ExistingIntersectID = new List<Tuple<string, Guid>>();
 
 			if (model.AssetTypeUid.HasValue)
@@ -420,6 +425,40 @@ namespace d360.web.Controllers.V2
 				throw new RestApiException(status.StatusCode, status.Error, status.Message);
 			}
 
+			var updatedFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+			foreach (var old in existingFieldsNotMutated)
+			{
+				var @new = updatedFields.FirstOrDefault(x => x.Name == old.Name);
+				if (@new != null && JsonConvert.SerializeObject(old) != JsonConvert.SerializeObject(@new))
+				{
+					await AuditRepository.CreateHistoryJob(new ObjectInfo
+					{
+						Object = SystemObjects.FieldType.ToString(),
+						ObjectId = old.ID,
+						ChangeType = ChangeLogType.Updated,
+						AssetTypeId = old.AssetTypeID,
+						IntersectTypeId = old.IntersectTypeID,
+						IssueTypeId = old.IssueTypeID,
+					});
+				}
+			}
+			foreach (var @new in updatedFields)
+			{
+				var old = existingFieldsNotMutated.FirstOrDefault(x => x.Name == @new.Name);
+				if (old == null)
+				{
+					await AuditRepository.CreateHistoryJob(new ObjectInfo
+					{
+						Object = SystemObjects.FieldType.ToString(),
+						ObjectId = @new.ID,
+						ChangeType = ChangeLogType.Created,
+						AssetTypeId = @new.AssetTypeID,
+						IntersectTypeId = @new.IntersectTypeID,
+						IssueTypeId = @new.IssueTypeID,
+					});
+				}
+			}
+
 			#endregion
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsUpdated, Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
@@ -496,6 +535,19 @@ namespace d360.web.Controllers.V2
 
 			FieldsRepository.DeleteFields(currentFieldTypes, fieldNamesToDelete);
 
+			foreach (var field in currentFieldTypes.Where(x => fieldNamesToDelete.Contains(x.Name)))
+			{
+				await AuditRepository.CreateHistoryJob(new ObjectInfo
+				{
+					Object = SystemObjects.FieldType.ToString(),
+					ObjectId = field.ID,
+					ChangeType = ChangeLogType.Removed,
+					AssetTypeId = field.AssetTypeID,
+					IntersectTypeId = field.IntersectTypeID,
+					IssueTypeId = field.IssueTypeID,
+				});
+			}
+
 			#endregion
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = Fields.FieldsRemoved, Success = true, Uid = typeIdentifierInfoModel?.Uid ?? Guid.Empty })));
@@ -558,7 +610,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(
-				fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0, 
+				fieldNamesToDelete != null ? fieldNamesToDelete.Count : 0,
 				new ApiExecutionFields_DeleteFieldtypes { TypeIdentifierInfo = typeIdentifierInfoModel, FieldNamesToDelete = fieldNamesToDelete },
 				action: ApiExecutionAction.DeleteFieldTypes
 			);
@@ -821,14 +873,14 @@ namespace d360.web.Controllers.V2
 				{
 					dataTypeOptions = dataTypeOptions
 						.Where(x => x.value != DataType.FieldFromRelationship.ToString())
-						.Where(x=> x.value != DataType.JSON.ToString())
-						.Where(x=> x.value != DataType.JsonElement.ToString())
-						.Where(x=> x.value != DataType.OwnershipLookup.ToString())
-						.Where(x=> x.value != DataType.RefListRelationship.ToString())
-						.Where(x=> x.value != DataType.ComplexRelationLookup.ToString())
-						.Where(x=> x.value != DataType.Relationship.ToString())
-						.Where(x=> x.value != DataType.Score.ToString())
-						.Where(x=> x.value != DataType.Tag.ToString())
+						.Where(x => x.value != DataType.JSON.ToString())
+						.Where(x => x.value != DataType.JsonElement.ToString())
+						.Where(x => x.value != DataType.OwnershipLookup.ToString())
+						.Where(x => x.value != DataType.RefListRelationship.ToString())
+						.Where(x => x.value != DataType.ComplexRelationLookup.ToString())
+						.Where(x => x.value != DataType.Relationship.ToString())
+						.Where(x => x.value != DataType.Score.ToString())
+						.Where(x => x.value != DataType.Tag.ToString())
 						.ToList();
 				}
 
@@ -1211,7 +1263,7 @@ namespace d360.web.Controllers.V2
 		{
 			var prefix = "Fields.GetLookupDefaultValues => ";
 			var errorMessage = "";
-			
+
 			try
 			{
 				Guid.TryParse(Uid, out Guid assetUid);
@@ -2381,13 +2433,13 @@ namespace d360.web.Controllers.V2
 				{
 					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.IssueTypeID == id && ft.Name == fieldName);
 				}
-				else if(fieldObject == SystemObjects.IntersectType.ToString())
+				else if (fieldObject == SystemObjects.IntersectType.ToString())
 				{
 					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.IntersectTypeID == id && ft.Name == fieldName);
 				}
 				else
 				{
-					fieldType = Company.FieldTypes.FirstOrDefault(ft =>  ft.AssetTypeID == id && ft.Name == fieldName);
+					fieldType = Company.FieldTypes.FirstOrDefault(ft => ft.AssetTypeID == id && ft.Name == fieldName);
 				}
 
 				//list items for parent field
@@ -2638,7 +2690,7 @@ namespace d360.web.Controllers.V2
 										where R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")};
 										create nonclustered index ix_tempresourceids on #tempresourceids(ResourceID);
 										";
-						sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
+					sql += onlyCount ? Environment.NewLine + "select 1 where 1 = 0;" : $@"
 										select 
 											ObjectId as value,
 										{(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "isnull(node.DisplayPath,'Path Missing') ")} as text										
@@ -2649,7 +2701,7 @@ namespace d360.web.Controllers.V2
 										order by {(fieldType.UseDisplayFormat ? "ADV.DisplayValue" : "node.displaypath")} 
 										{pagingQuery}
 										OPTION(RECOMPILE);";
-						sql += $@"
+					sql += $@"
 										select count(1) from Asset A
 										inner join #tempresourceids R on R.ResourceID = A.ObjectID
 										 {(fieldType.UseDisplayFormat ? "inner join AssetDisplayValue ADV on ADV.AssetID = a.id" : "inner join AssetPath Node on Node.id = a.id")}
@@ -2813,7 +2865,7 @@ namespace d360.web.Controllers.V2
 								select {selectStatement} from #tempResults V {colorjoin};";
 					}
 					else
-					{ 
+					{
 						query = $@"
 								drop table if exists #tempResults
 								select V.*

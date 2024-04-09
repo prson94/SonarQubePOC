@@ -42,7 +42,7 @@ namespace igx.UnitTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-            fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository())
+            fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), GetAuditRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

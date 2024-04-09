@@ -440,4 +440,9 @@ namespace d360.core
             Type = type;
         }
     }
+
+	public class TrackInChangeLog : Attribute
+	{
+
+	}
 }

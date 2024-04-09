@@ -53,7 +53,8 @@ namespace igx.UnitTests
 				GetExecutionsRepository(),
 				GetFieldsRepository(),
 				GetRelationshipRepository(),
-				GetTagRepository())
+				GetTagRepository(),
+				GetAuditRepository())
 			{
 				Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -851,7 +852,8 @@ namespace igx.UnitTests
 				GetExecutionsRepository(), 
 				GetFieldsRepository(), 
 				GetRelationshipRepository(), 
-				GetTagRepository()
+				GetTagRepository(),
+				GetAuditRepository()
 				)
             {
                 Request = new HttpRequestMessage(),

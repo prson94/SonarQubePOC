@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.Models;
+using d360.extensions;
 using d360.model.helpers.filters;
 using Dapper;
 using repositories;
@@ -14,12 +15,15 @@ namespace d360.model.DataAccessLayer.repositories
 {
 	internal sealed class AuditRepository : DapperRepositoryBase<ICompanyDbConnectionProvider>, IAuditRepository
     {
-        // this property is added only to support code which should be fixed in GOV-16916
-        private ICompanyContext CompanyContext { get; }
+		internal IQueueSource QueueSource;
 
-        public AuditRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer, ICompanyContext companyContext) : base(queryComposer)
+		// this property is added only to support code which should be fixed in GOV-16916
+		private ICompanyContext CompanyContext { get; }
+
+        public AuditRepository(IDapperQueryComposer<ICompanyDbConnectionProvider> queryComposer, ICompanyContext companyContext, IQueueSource queueSource) : base(queryComposer)
         {
             CompanyContext = companyContext;
+			QueueSource = queueSource;
         }
 
         private readonly Dictionary<string, string> ActionObjectDictionary = new Dictionary<string, string>
@@ -30,8 +34,20 @@ namespace d360.model.DataAccessLayer.repositories
             { "TaxonomyType", "ModelType" },
             { "ResponsibilityTypeRelationOverrideItem", "Responsibility Type Relation Override Item" },
         };
+		public async Task CreateHistoryJob(ObjectInfo info)
+		{
+			info.ResourceId = CompanyContext.CurrentResourceID;
+			await QueueSource.CreateMessageAsync(CompanyContext.AssetGraphQueue,
+				new PostExecutionQueueMessage
+				{
+					Action = PostExecutionQueueMessageAction.History,
+					CompanyID = CompanyContext.CurrentCompanyID,
+					ExecutionId = -1,
+					ObjectInfo = info
+				});
+		}
 
-        public async Task<PagedApiBaseViewModel<AssetAuditApiItemModel>> PagedAuditViewAsync(
+		public async Task<PagedApiBaseViewModel<AssetAuditApiItemModel>> PagedAuditViewAsync(
             Guid? assetUid,
             Guid? assetTypeUid,
             string action,

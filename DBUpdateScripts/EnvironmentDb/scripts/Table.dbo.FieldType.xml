@@ -173,7 +173,7 @@ AS
   </sql>
  </changeSet>
 
- <changeSet author="bquinlivan,PuneetGupta" id="Table.dbo.Field-FieldType_AfterUpsert-v3">
+ <changeSet author="TDuric" id="Table.dbo.Field-FieldType_AfterUpsert-v4">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
@@ -244,47 +244,7 @@ BEGIN
 				from	FieldType FT
 						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is null and FT.Type='Link'
 		END
-		
-		IF (EXISTS (SELECT * FROM DELETED))
-		BEGIN
-			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-			SELECT 
-				'Update'
-				,CASE 
-					WHEN i.IntersectTypeID is not null THEN
-					[queue].WriteIndexXml('', 'IntersectType', i.IntersectTypeID, i.UpdatedBy)
-					WHEN i.IssueTypeID is not null THEN
-					[queue].WriteIndexXml('', 'IssueType', i.IssueTypeID, i.UpdatedBy)
-					ELSE
-					[queue].WriteIndexXml('', A.Object, A.ObjectID, i.UpdatedBy) 
-				END as Custom
-				, 'FieldType'
-				, i.ID 
-			FROM 
-				inserted i
-				LEFT JOIN 
-				AssetType A on A.ID = i.AssetTypeID				
-		END
-		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
-		BEGIN
-			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
-			select 
-				'Add'
-				,CASE 
-					WHEN i.IntersectTypeID is not null THEN
-					[queue].WriteIndexXml('', 'IntersectType', i.IntersectTypeID, i.UpdatedBy)
-					WHEN i.IssueTypeID is not null THEN
-					[queue].WriteIndexXml('', 'IssueType', i.IssueTypeID, i.UpdatedBy)
-					ELSE
-					[queue].WriteIndexXml('', A.Object, A.ObjectID, i.UpdatedBy) 
-				END as Custom
-				, 'FieldType'
-				, i.ID 
-			FROM 
-				inserted i
-				LEFT JOIN 
-				AssetType A on A.ID = i.AssetTypeID		
-		END
+
 END;
 ]]>
   </sql>

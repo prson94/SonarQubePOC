@@ -24,108 +24,141 @@ namespace d360.core.entities
 		[DataMember]
 		public int? IssueTypeID { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Name_Name", Description = "Name_Description"), StringLength(250)]
 		public string Name { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string Category { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "DisplayDescription_Name", Description = "DisplayDescription_Description")]
 		public string DisplayDescription { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "FormDescription_Name", Description = "FormDescription_Description")]
 		public string FormDescription { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "ValidationDescription_Name", Description = "ValidationDescription_Description")]
 		public string ValidationDescription { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "FriendlyName_Name", Description = "FriendlyName_Description"), StringLength(250)]
 		public string FriendlyName { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Type_Name", Description = "Type_Description"), Column(TypeName = "varchar"), StringLength(25)]
 		public string Type { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "LookupObjectType_Name", Description = "LookupObjectType_Description"), Column(TypeName = "varchar"), StringLength(25)]
 		public string LookupObjectType { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "LookupObjectID_Name", Description = "LookupObjectID_Description")]
 		public int? LookupObjectID { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? LookupObjectFieldTypeID { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, StringLength(250)]
 		public string LookupDisplayFormat { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, StringLength(250)]
 		public string LookupEditFormat { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Length_Name", Description = "Length_Description")]
 		public int? Length { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "MinimumLength_Name", Description = "MinimumLength_Description")]
 		public decimal? MinimumLength { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "MaximumLength_Name", Description = "MaximumLength_Description")]
 		public decimal? MaximumLength { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember, Display(ResourceType = typeof(resources.Fields), Name = "Pattern_Name", Description = "Pattern_Description")]
 		[Column(TypeName = "varchar"), StringLength(1000)]
 		public string Pattern { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsListable { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsRequired { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsDisplayable { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsEditable { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsPartOfKey { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int ColumnOrder { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? ColumnWidth { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int SortOrder { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool SortByAscending { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string DefaultValue { get; set; }
 
 		public string DefaultFormattedValue { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool AllowAllValue { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string AllowAllLabel { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsPrimaryFilter { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool AllowMultipleValues { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int ParentFieldTypeID { get; set; }
 
 		[DataMember]
 		public int UpdatedBy { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public decimal? Increment { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? Precision { get; set; }
 
@@ -138,24 +171,30 @@ namespace d360.core.entities
 		[DataMember]
 		public int? FilterFieldTypeID { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool ShowIfEmpty { get; set; }
 
 		[DataMember]
 		public string Definition { get; set; } = "{}";
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? ScoreType { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool SearchAddToResult { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string SearchPrefix { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string SearchSuffix { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? SearchDisplayOrder { get; set; }
 
@@ -165,15 +204,19 @@ namespace d360.core.entities
 		[IgnoreDataMember]
 		public virtual FieldTypeLookup FieldTypeLookup { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string CounterPrefix { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int? CounterInitialIndex { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool? DisplayInColumn { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool UseDisplayFormat { get; set; }
 

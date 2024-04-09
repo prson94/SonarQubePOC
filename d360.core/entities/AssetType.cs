@@ -18,15 +18,18 @@ namespace d360.core.entities
 		[DataMember]
 		public Guid uid { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string Name { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string Description { get; set; }
 
 		[DataMember]
 		public AssetTypeClass Class { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public string DisplayFormat { get; set; }
 
@@ -39,6 +42,7 @@ namespace d360.core.entities
 		[DataMember]
 		public State State { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int HierarchyMaximumDepth { get; set; }
 
@@ -60,27 +64,34 @@ namespace d360.core.entities
 		[IgnoreDataMember, ForeignKey("ID")]
 		public virtual AssetTypeStyle AssetTypeStyle { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool UseAsTransformation { get; set; }
 
 		[NotMapped]
 		public AssetType Parent { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool? AutoDisplayParent { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public bool? CanEditParent { get; set; }
-		
+
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsDescriptionEnabled { get; set; }
-		
+
+		[TrackInChangeLog]
 		[DataMember]
 		public bool IsDescriptionVisibleByDefault { get; set; }
-		
+
+		[TrackInChangeLog]
 		[DataMember]
 		public string DescriptionButtonName { get; set; }
 
+		[TrackInChangeLog]
 		[DataMember]
 		public int DefaultPermissions { get; set; } = (int)Permission.ReadAsset;
 

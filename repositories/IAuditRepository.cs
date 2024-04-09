@@ -20,5 +20,7 @@ namespace repositories
             string filter,
             IReadOnlyList<OrderByModel> orderByList
         );
-    }
+
+		Task CreateHistoryJob(ObjectInfo info);
+	}
 }
