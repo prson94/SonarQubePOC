@@ -882,16 +882,16 @@ namespace d360.model
 					client.Timeout = new TimeSpan(0, 0, requestSettings.Timeout);
 
 					response = await client.SendAsync(request);
-					if (!response.IsSuccessStatusCode)
+					if (!(response.StatusCode == HttpStatusCode.InternalServerError))
 					{
-						item.State = StepState.Failed;
+						item.State = StepState.HTTPRequestError;
 
 						WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
 						{
 							itemStepID = item.ID,
 							Message = $"Http request failed with status code {response.StatusCode}",
 							Details = response.RequestMessage.ToString(),
-							State = StepState.Failed
+							State = StepState.HTTPRequestError
 						};
 
 						WorkflowItemStepStateDetails.Add(itemStateDetail);
