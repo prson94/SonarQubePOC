@@ -52,7 +52,7 @@
             <div class="row">&nbsp;</div>
             <div class="FieldName" i18n>File</div>
             <div>
-                <input type="file" (change)="changeFile($event);" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" name="File" formenctype="multipart/form-data" />
+                <input type="file" #fileInput (change)="changeFile($event);" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" name="File" formenctype="multipart/form-data" />
             </div>
         </div>
         <div *ngIf="errorMessage.length > 0" class="col s12">
