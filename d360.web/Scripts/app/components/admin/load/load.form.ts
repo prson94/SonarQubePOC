@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
+﻿import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange, ViewChild } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { LoadColumn, LoadFilePostModel } from '../../../models/load.model';
 import { LoadService } from '../../../services/load.service';
@@ -18,6 +18,8 @@ export class LoadForm implements OnInit, OnChanges {
     @Output() onError = new EventEmitter();
     @Output() onCancel = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
+
+	@ViewChild('fileInput') fileInput: ElementRef;
 
     isLoading = false;
     isLoadingColumns = false;
@@ -162,6 +164,7 @@ export class LoadForm implements OnInit, OnChanges {
                             if (data["type"] === 'error') {
                                 this.onError.emit(null);
                                 this.errorMessage = data["message"];
+                                this.fileInput.nativeElement.value = null;
                             } else {
                                 this.onSuccess.emit(null);
                             }
