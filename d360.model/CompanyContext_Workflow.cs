@@ -882,7 +882,7 @@ namespace d360.model
 					client.Timeout = new TimeSpan(0, 0, requestSettings.Timeout);
 
 					response = await client.SendAsync(request);
-					if (!(response.StatusCode == HttpStatusCode.InternalServerError))
+					if (response.StatusCode == HttpStatusCode.InternalServerError)
 					{
 						item.State = StepState.HTTPRequestError;
 
