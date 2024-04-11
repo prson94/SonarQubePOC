@@ -3025,12 +3025,13 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(ActionApiMessages.AssetTypeNotFound, assetType.Uid.ToString())));
 				}
 
-				string deletionInProgressQuery = @"SELECT count(*)
+				string deletionInProgressQuery = @"SELECT count(1)
 									  FROM [api].[Execution]
 									  where Route = '/api/v2/assets/single'
 									  and completedon is null
 									  and Method = 'DELETE'
-									  and Fields = @fields";
+									  and Fields = @fields
+									  and ErrorMessage is null";
 
 				var fieldObj = new ApiExecutionFields_DeleteAssetTypes { AssetTypeUid = assetType.Uid };
 
