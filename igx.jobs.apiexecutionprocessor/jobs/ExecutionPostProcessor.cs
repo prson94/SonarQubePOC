@@ -101,65 +101,65 @@ from	reporting.Global_FieldAudit i_p
 			{
 				string actionText = "";
 
-						switch (request.Action)
+				switch (request.Action)
+				{
+					case PostExecutionQueueMessageAction.History:
+						switch (execution.Action)
 						{
-							case PostExecutionQueueMessageAction.History:
-								switch (execution.Action)
-								{
-									case ApiExecutionAction.DeleteAssets:
-										commandText = historyDeleteAssets();
-										break;
-									case ApiExecutionAction.DeleteGroups:
-										commandText = historyDeleteGroups();
-										break;
-									case ApiExecutionAction.DeletePredicates:
-										commandText = historyDeletePredicates();
-										break;
-									case ApiExecutionAction.DeleteRelationships:
-										commandText = historyDeleteRelations();
-										break;
-									case ApiExecutionAction.DeleteScoreAllocation:
-										commandText = historyDeleteScoreAllocation();
-										break;
-									case ApiExecutionAction.PostGroups:
-									case ApiExecutionAction.PutGroups:
-										actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
-										commandText = historyUpsertGroups(actionText);
-										break;
-									case ApiExecutionAction.PostAssets:
-									case ApiExecutionAction.PutAssets:
-										actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
-										commandText = historyUpsertAssets(actionText);
-										break;
-									case ApiExecutionAction.PostScoreAllocation:
-									case ApiExecutionAction.PutScoreAllocation:
-										commandText = historyUpsertScoreAllocation();
-										break;
-									case ApiExecutionAction.PostRelationships:
-									case ApiExecutionAction.PutRelationships:
-										commandText = historyUpsertRelations();
-										break;
-									case ApiExecutionAction.PatchCatalog:
-										commandText = historyPatchCatalog();
-										break;
-									case ApiExecutionAction.UpsertPredicates:
-										commandText = historyUpsertPredicates();
-										break;
-									case ApiExecutionAction.UpsertUsers:
-										commandText = historyUpsertUsers();
-										break;
-									default:
-										commandText = "";
-										break;
-								}
+							case ApiExecutionAction.DeleteAssets:
+								commandText = historyDeleteAssets();
 								break;
-							case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
-								commandText = updateLookupValues();
+							case ApiExecutionAction.DeleteGroups:
+								commandText = historyDeleteGroups();
+								break;
+							case ApiExecutionAction.DeletePredicates:
+								commandText = historyDeletePredicates();
+								break;
+							case ApiExecutionAction.DeleteRelationships:
+								commandText = historyDeleteRelations();
+								break;
+							case ApiExecutionAction.DeleteScoreAllocation:
+								commandText = historyDeleteScoreAllocation();
+								break;
+							case ApiExecutionAction.PostGroups:
+							case ApiExecutionAction.PutGroups:
+								actionText = execution.Action == ApiExecutionAction.PostGroups ? "Created" : "Updated";
+								commandText = historyUpsertGroups(actionText);
+								break;
+							case ApiExecutionAction.PostAssets:
+							case ApiExecutionAction.PutAssets:
+								actionText = execution.Action == ApiExecutionAction.PostAssets ? "Created" : "Updated";
+								commandText = historyUpsertAssets(actionText);
+								break;
+							case ApiExecutionAction.PostScoreAllocation:
+							case ApiExecutionAction.PutScoreAllocation:
+								commandText = historyUpsertScoreAllocation();
+								break;
+							case ApiExecutionAction.PostRelationships:
+							case ApiExecutionAction.PutRelationships:
+								commandText = historyUpsertRelations();
+								break;
+							case ApiExecutionAction.PatchCatalog:
+								commandText = historyPatchCatalog();
+								break;
+							case ApiExecutionAction.UpsertPredicates:
+								commandText = historyUpsertPredicates();
+								break;
+							case ApiExecutionAction.UpsertUsers:
+								commandText = historyUpsertUsers();
 								break;
 							default:
 								commandText = "";
 								break;
 						}
+						break;
+					case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
+						commandText = updateLookupValues();
+						break;
+					default:
+						commandText = "";
+						break;
+				}
 
 				if (!string.IsNullOrEmpty(commandText))
 				{
