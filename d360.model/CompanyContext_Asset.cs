@@ -618,7 +618,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 								left join @deletedObjectIds d on d.ObjectId = value
 							  where d.ObjectId is null
 						)NewValue
-					where ft.AllowMultipleValues = 1 and NewValue.value is not null	;
+					where ft.AllowMultipleValues = 1 and F.Value <> NewValue.value and  NewValue.value is not null	;
 
 					select distinct 
 						a.[Object] as [Object], 
@@ -676,9 +676,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 						drop table if exists #audits
 				";
-			
-			//Connection.Execute(query,
-			//new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID, execution.ResourceID }, transaction: trans, commandTimeout: timeout);
+
+			Connection.Execute(query,
+			new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID, execution.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 			addMeasurement(metrics, $"Update/Delete fields used by lookup values>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
