@@ -592,8 +592,19 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					from dbo.Field f
 					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
 					inner join @deletedObjectIds a on f.Value = a.ObjectId
-					where ft.AllowMultipleValues = 0
+					where ft.AllowMultipleValues = 0 and f.value not like '%,%'
 					
+					--Handle lookupfields that are not multiselect, but they were at some point, so old multivalues remain
+					DELETE F 
+					output deleted.FieldTypeId, deleted.AssetId, 1 into @updated
+					from dbo.Field f
+					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+							outer apply (
+							select STRING_AGG(value,',') as value from string_split(F.Value,',') 
+								left join @deletedObjectIds d on d.ObjectId = value
+							  where d.ObjectId is null
+						)NewValue
+					where ft.AllowMultipleValues = 0 and f.value like '%,%' and NewValue.value is null;
 					
 					DELETE F 
 					output deleted.FieldTypeId, deleted.AssetId, 1 into @updated
