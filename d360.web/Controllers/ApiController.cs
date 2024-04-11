@@ -4326,7 +4326,7 @@ where	A.Object = 'Policy' and A.ObjectID = @id", new { id }).SingleOrDefault();
 						{
 							var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
-							var color = string.IsNullOrEmpty(asset.Color) ? "None" : Company.Query<string>($@"SELECT top 1 JSON_VALUE(ACJ.ColorJSON,'$.Name') as name, JSON_VALUE(ACJ.ColorJSON,'$.Value') as color FROM dbo.GetAssetColorJsonByColor({asset.Color}) ACJ FOR JSON PATH").SingleOrDefault();
+							var color = string.IsNullOrEmpty(asset.Color) ? "None" : Company.Query<string>($@"SELECT top 1 JSON_VALUE(ACJ.ColorJSON,'$.Name') as name, JSON_VALUE(ACJ.ColorJSON,'$.Value') as color FROM dbo.GetAssetColorJsonByColor('{asset.Color}') ACJ FOR JSON PATH").SingleOrDefault();
 
 							dynamicRows.ForEach(r =>
 							{
