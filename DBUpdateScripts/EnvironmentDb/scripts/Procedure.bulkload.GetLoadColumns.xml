@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.bulkload.GetLoadColumns-v23">
-    <comment>GOV-21417</comment>
+  <changeSet author="tduric,Puneet" id="Procedure.bulkload.GetLoadColumns-v24">
+    <comment>GOV-32544</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -96,7 +96,7 @@ begin
 			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level], LookUpID) values (2, 'Resource', 1, 1, 0, 1, 1, @UserEmailGroupdisplayValueLookupIDIdentifier)
 
 			insert into @lookups (FieldTypeID, [Label], LookUpID)
-				select	2, 'User:' + email, @UserEmailGroupdisplayValueLookupIDIdentifier from reporting.Global_Resource order by email
+				select	2, 'User:' + email, @UserEmailGroupdisplayValueLookupIDIdentifier from reporting.Global_Resource where state = 1 order by email
 
 			insert into @lookups (FieldTypeID, [Label], LookUpID)
 				select	2, 'Group:' + DisplayValue, @UserEmailGroupdisplayValueLookupIDIdentifier from AssetDetail A
