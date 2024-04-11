@@ -583,39 +583,102 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					select ObjectID from api.Execution e
 					inner join api.ExecutionDeletedAsset S on S.ExecutionID =e.ExecutionID
 					where {querySuffix}
+					
+					declare @updated table (FieldTypeId int, AssetId int, IsDeleted bit)
+					declare @inserted_audits table (Id int, ActionObject varchar(50), ActionObjectId int)
 
 					DELETE F 
+					output deleted.FieldTypeId, deleted.AssetId, 1 into @updated
 					from dbo.Field f
 					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
 					inner join @deletedObjectIds a on f.Value = a.ObjectId
 					where ft.AllowMultipleValues = 0
-
-					MERGE dbo.Field as F
-					using (
-						select F.ID, NewValue.value as NewValue, ft.*
-						from dbo.Field F
-						inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+					
+					
+					DELETE F 
+					output deleted.FieldTypeId, deleted.AssetId, 1 into @updated
+					from dbo.Field f
+					inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
 							outer apply (
 							select STRING_AGG(value,',') as value from string_split(F.Value,',') 
 								left join @deletedObjectIds d on d.ObjectId = value
 							  where d.ObjectId is null
-							)
-						NewValue
-						where ft.AllowMultipleValues = 1
-					) as Source 
-					on F.ID = Source.Id
-					WHEN MATCHED AND Source.NewValue IS NULL
-						THEN DELETE
-					WHEN MATCHED AND Source.NewValue IS NOT NULL
-						THEN UPDATE 
-							Set 
-							Value = Source.NewValue,
-							FormattedValue =
-								utility.GetFormattedFieldLookupValueWithMultiple(Source.Type, Source.LookupDisplayFormat, Source.LookupObjectType, Source.LookupObjectID, Source.NewValue, Source.AllowMultipleValues);
-				";
+						)NewValue
+					where ft.AllowMultipleValues = 1 and NewValue.value is null;
 
-			Connection.Execute(query,
-			new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID }, transaction: trans, commandTimeout: timeout);
+					update F
+					set Value = NewValue.value,
+							FormattedValue =
+								utility.GetFormattedFieldLookupValueWithMultiple(ft.Type, ft.LookupDisplayFormat, ft.LookupObjectType, ft.LookupObjectID, NewValue.value, ft.AllowMultipleValues)
+					output inserted.FieldTypeId, inserted.AssetId, 0 into @updated
+					from dbo.Field f
+							inner join @lookupFieldTypes ft on ft.FieldTypeId = f.FieldTypeID
+							outer apply (
+							select STRING_AGG(value,',') as value from string_split(F.Value,',') 
+								left join @deletedObjectIds d on d.ObjectId = value
+							  where d.ObjectId is null
+						)NewValue
+					where ft.AllowMultipleValues = 1 and NewValue.value is not null	;
+
+					select distinct 
+						a.[Object] as [Object], 
+						a.[ObjectID] as ObjectId, 
+						adv.DisplayValue as ObjectName,
+						@ResourceID as ResourceId,
+						GETUTCDATE() as [Date],
+						'Updated' as [Action],
+						a.[Object] as ActionObject, 
+						a.[ObjectID] as ActionObjectId,
+						at.Name as ActionObjectTypeName, 
+						adv.DisplayValue as ActionObjectName,
+						'Underlying asset from lookup was updated.' as ActionDescription,
+						isnull(LastAudit.Version,0) + 1 as [Version],
+						a.ID as AssetId,
+						updated.FieldTypeId,
+						LastAuditValue.Value,
+						updated.IsDeleted
+						into #audits
+						from @updated updated
+						inner join Asset a on a.ID = updated.AssetId
+						inner join AssetDisplayValue adv on adv.AssetID = a.ID
+						inner join AssetType at on at.ID = a.AssetTypeID
+						outer apply (
+							select top 1 [Version] from reporting.Global_Audit ga where ga.ActionObject = a.Object and ga.ActionObjectID = a.ObjectID order by Version desc
+						)LastAudit(Version)
+						outer apply (
+							select top 1 Value from reporting.Global_Audit ga 
+							inner join reporting.Global_FieldAudit gfa on gfa.AuditID = ga.ID 
+							where gfa.FieldTypeID = updated.FieldTypeId and ga.ActionObject = a.Object and ga.ActionObjectID = a.ObjectID order by Version desc
+						)LastAuditValue(Value)
+
+						insert into reporting.Global_Audit
+						output inserted.ID, inserted.ActionObject, inserted.ActionObjectID into @inserted_audits
+						select Object, ObjectId, ObjectName, ResourceId, Date, Action, ActionObject, ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, Version
+						from #audits
+
+
+						insert into reporting.Global_FieldAudit
+						(AuditID, FieldTypeID, FieldName, Value, PreviousValue)
+						select ia.Id as AuditId, [audit].FieldTypeId, ft.Name, null as Value, [audit].Value as PreviousValue
+						from @inserted_audits ia
+						inner join #audits [audit] on ia.ActionObject = [audit].ActionObject and ia.ActionObjectId = [audit].ActionObjectId
+						inner join FieldType ft on ft.ID = [audit].FieldTypeId
+						where [audit].IsDeleted = 1
+
+						insert into reporting.Global_FieldAudit
+						(AuditID, FieldTypeID, FieldName, Value, PreviousValue)
+						select ia.Id as AuditId, [audit].FieldTypeId, ft.Name, F.FormattedValue as Value, [audit].Value as PreviousValue
+						from @inserted_audits ia
+						inner join #audits [audit] on ia.ActionObject = [audit].ActionObject and ia.ActionObjectId = [audit].ActionObjectId
+						inner join dbo.Field F on f.AssetID = [audit].AssetId and F.FieldTypeID = [audit].FieldTypeId
+						inner join FieldType ft on ft.ID = [audit].FieldTypeId
+						where [audit].IsDeleted = 0
+
+						drop table if exists #audits
+				";
+			
+			//Connection.Execute(query,
+			//new { execution.ExecutionID, beginItemNumber, endItemNumber, lookupObject = at.Object.Replace("Type", ""), lookupObjectId = at.ObjectID, execution.ResourceID }, transaction: trans, commandTimeout: timeout);
 
 			addMeasurement(metrics, $"Update/Delete fields used by lookup values>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
 			sw.Restart();
