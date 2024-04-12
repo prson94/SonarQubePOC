@@ -68,7 +68,7 @@ namespace d360.web
 
 			try
 			{
-				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.COMMUNITYDB_APPSETTING]))
+				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
 				{
 					cnn.Open();
 					var baseSql = @"
@@ -329,7 +329,7 @@ namespace d360.web
 
 			if (!string.IsNullOrEmpty(userName))
 			{
-				using (SqlConnection community = new SqlConnection(ConfigurationManager.AppSettings[constants.COMMUNITYDB_APPSETTING]))
+				using (SqlConnection community = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
 				{
 					community.Open();
 					resource = await community.QuerySingleOrDefaultAsync<Resource>("select * from Resource where username = @userName", new { userName });

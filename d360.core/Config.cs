@@ -24,5 +24,12 @@ namespace d360.core
                 return default(T);
             }
         }
+
+		public static string GetStorageUrl(string folder)
+		{
+			var storageConnectionString = GetValue<string>(constants.Setting.Storage);
+			storageConnectionString = storageConnectionString.Split([';'])[1].Split('=')[1]; // extract the account name out of the storage connection string.
+			return $"https://{storageConnectionString}.blob.core.windows.net/{folder}";
+		}
     }
 }

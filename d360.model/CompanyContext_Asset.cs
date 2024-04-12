@@ -913,7 +913,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				if (dupes.Any())
 				{
 					string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 					LogExecutionError(execution.ExecutionID, import.Count(), 0, import.Count(), message);
 					results.AddRange(import.Select((i, ItemNumber) => new DatabaseBulkAssetResult { ItemNumber = ItemNumber + 1, ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 
@@ -928,7 +928,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					if (uidDupes.Any())
 					{
 						string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-						execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+						execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 						LogExecutionError(execution.ExecutionID, import.Count(), 0, import.Count(), message);
 						results.AddRange(import.Select((i, ItemNumber) => new DatabaseBulkAssetResult { ItemNumber = ItemNumber + 1, ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 
@@ -1368,7 +1368,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				{
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();
@@ -2047,12 +2047,12 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					Connection.Close();
 
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
-					QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.Indexing, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 
 					if (!isInsert)
 					{
-						QueueSource.CreateMessage(AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetLookupValues, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetLookupValues, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 					}
 
 					if (sendWorkflowEvents)
@@ -2061,16 +2061,6 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 						addMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
 						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
 						addMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
-					}
-
-					try
-					{
-						SendBatchApiCompletedEvent(execution);
-						addMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
-					}
-					catch
-					{
-						// Should continue on here, and not fail the enire process.
 					}
 				}
 			}
@@ -2127,7 +2117,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				LogExecutionError(execution.ExecutionID, import.Count(), 0, import.Count(), message);
 				results.AddRange(import.Select((i, ItemNumber) => new DatabaseBulkAssetResult { ItemNumber = ItemNumber + 1, ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 			}
@@ -2142,7 +2132,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				if (uidDupes.Any())
 				{
 					string message = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 					LogExecutionError(execution.ExecutionID, import.Count(), 0, import.Count(), message);
 					results.AddRange(import.Select((i, ItemNumber) => new DatabaseBulkAssetResult { ItemNumber = ItemNumber + 1, ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 				}
@@ -2297,7 +2287,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					{
 						LogExecutionErrorToAppInsights(execution, generalEx);
 						generalChecksCompleted = false;
-						string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+						string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 						execution.ErrorMessage = msg;
 						execution.Processed = 0;
 						execution.Error = import.Count();
@@ -2605,7 +2595,7 @@ where	T.ExecutionID = @ExecutionID
 													LogExecutionErrorToAppInsights(execution, ex);
 													sw.Restart();
 
-													int characterLimit = constants.ERROR_MESSAGE_CHARACTER_LIMIT;
+													int characterLimit = ERROR_MESSAGE_CHARACTER_LIMIT;
 													Connection.Execute($@"
                                                             drop table if exists #tempAssetsToDelete
 												            create table #tempAssetsToDelete(Object nvarchar(255), ObjectID bigint)
@@ -2686,7 +2676,7 @@ where	T.ExecutionID = @ExecutionID
 			if (executionItemDupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -2696,7 +2686,7 @@ where	T.ExecutionID = @ExecutionID
 				if (uidDupes.Any())
 				{
 					string message = $"Duplicate Asset Type Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 					results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
 				}
 				else

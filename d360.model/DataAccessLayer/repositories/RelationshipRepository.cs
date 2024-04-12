@@ -1583,7 +1583,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
+			await QueueSource.CreateMessageAsync(constants.Queue.Execution, executionInfo);
 
 			return executionInfo;
 		}
@@ -1605,7 +1605,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
+			await QueueSource.CreateMessageAsync(constants.Queue.Execution, executionInfo);
 
 			return executionInfo;
 		}
@@ -1669,7 +1669,7 @@ from	IntersectType I
 				$"from	{table} r " +
 				"where	r.ExecutionId = @ExecutionID and r.Success = 1", new { executionID }).ToList();
 
-			QueueSource.CreateMessage(CompanyContext.SearchIndexQueue, new ReindexModel
+			QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 			{
 				CompanyID = CompanyContext.CurrentCompanyID,
 				IntersectIDs = intersects,
@@ -1699,7 +1699,7 @@ from	IntersectType I
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.DeleteRelationships);
 
 			// Send change log request.
-			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage
 			{ 
 				Action = PostExecutionQueueMessageAction.History, 
 				CompanyID = CompanyContext.CurrentCompanyID, 
@@ -1745,7 +1745,7 @@ from	IntersectType I
 			execution.ExecutionID = executionInfo.ExecutionID;
 			CompanyContext.Add(execution);
 
-			await QueueSource.CreateMessageAsync(CompanyContext.ApiExecutionQueue, executionInfo);
+			await QueueSource.CreateMessageAsync(constants.Queue.Execution, executionInfo);
 
 			return executionInfo;
 		}
@@ -1755,7 +1755,7 @@ from	IntersectType I
 			var results = CompanyContext.ImportRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1780,7 +1780,7 @@ from	IntersectType I
 			var results = CompanyContext.PutRelationships(execution, intersectType, relations, 3600, lookupFieldsPassedByValue);
 			CompanyContext.CompleteApiExecutionAndGetCounts(execution.ExecutionID, ApiExecutionAction.PostRelationships);
 
-			QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+			QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 
 			// Send scoring request.
 			var assets = CompanyContext.Query<Guid>(
@@ -1810,7 +1810,7 @@ from	IntersectType I
 				results = CompanyContext.RemovePredicates(execution, predicates);
 				
 				// Send change log request.
-				QueueSource.CreateMessage(CompanyContext.AssetGraphQueue, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+				QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
 				
 				// Close execution record.
 				execution.Processed = results.Count;

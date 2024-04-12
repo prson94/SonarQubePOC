@@ -136,6 +136,14 @@ namespace d360.web.Controllers
 				}).ToList();
 			}
 
+			var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
+			nodes.ForEach(n => {
+				if (!string.IsNullOrEmpty(n.ImageIconUrl))
+				{
+					n.FullURL = $"{baseUri}/{n.ImageIconUrl}";
+				}
+			});
+
 			return nodes;
 		}
 
@@ -159,11 +167,17 @@ namespace d360.web.Controllers
 
 			//if db Titles are still defaults ones than load translation for them
 			//if different, use title from db record
+			var baseUri = Config.GetStorageUrl(constants.Storage.Resources);
 			foreach (var item in menuItems)
 			{
 				if (defaultTitleValues.ContainsKey(item.Title))
 				{
 					item.Title = defaultTitleValues[item.Title];
+				}
+
+				if (!string.IsNullOrEmpty(item.ImageIconUrl))
+				{
+					item.FullURL = $"{baseUri}/{item.ImageIconUrl}";
 				}
 			}
 
@@ -374,7 +388,7 @@ namespace d360.web.Controllers
 
 				if (!string.IsNullOrEmpty(originalImage))
 				{
-					await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+					await Storage.DeleteFile(constants.Storage.Resources, originalImage);
 				}
 
 				//clear out permissions
@@ -450,7 +464,7 @@ namespace d360.web.Controllers
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						model.Folder.ImageIconUrl = $"{imageFileName}";
 					}
@@ -725,7 +739,7 @@ namespace d360.web.Controllers
 				{
 					try
 					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, folderToUpdate.ImageIconUrl);
+						await Storage.DeleteFile(constants.Storage.Resources, folderToUpdate.ImageIconUrl);
 					}
 					catch
 					{
@@ -750,7 +764,7 @@ namespace d360.web.Controllers
 					using (var imageStream = new MemoryStream(imageByteArray))
 					{
 						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+						await Storage.CreateFile(constants.Storage.Resources, imageFileName, imageStream);
 
 						folderToUpdate.ImageIconUrl = $"{imageFileName}";
 						folderToUpdate.Icon = null;

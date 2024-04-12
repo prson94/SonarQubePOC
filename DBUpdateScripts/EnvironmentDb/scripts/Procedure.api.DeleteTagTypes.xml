@@ -1,0 +1,55 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.api.DeleteTagTypes-v1">
+    <comment></comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+create or alter procedure api.DeleteTagTypes
+	@resourceId int,
+	@uids dbo.UidTable readonly
+as
+begin
+	set nocount on;
+	declare @success bit = 0;
+
+	declare @tagUids dbo.UidTable;
+	insert into @tagUids
+		select	o.Uid 
+		from	Tag o
+				inner join TagType t on t.ID = o.TagTypeId
+				inner join @uids u on u.Uid = t.uid;
+
+	begin try
+		begin tran
+
+		update	t
+		set		t.State = 3 -- deleted
+		from	TagType t 
+				inner join @uids u on u.Uid = t.uid;
+
+		exec @success = api.DeleteTags @resourceId, @tagUids;
+
+		if @success = 1
+		begin
+			commit;
+		end
+		else
+		begin
+			rollback;
+		end
+	end try
+	begin catch
+		rollback;
+	end catch
+
+	return @success;
+end
+]]>
+    </sql>
+  </changeSet>
+</databaseChangeLog>

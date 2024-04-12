@@ -37,7 +37,7 @@ namespace d360.model.DataAccessLayer.repositories
 		public async Task CreateHistoryJob(ObjectInfo info)
 		{
 			info.ResourceId = CompanyContext.CurrentResourceID;
-			await QueueSource.CreateMessageAsync(CompanyContext.AssetGraphQueue,
+			await QueueSource.CreateMessageAsync(constants.Queue.PostExecution,
 				new PostExecutionQueueMessage
 				{
 					Action = PostExecutionQueueMessageAction.History,

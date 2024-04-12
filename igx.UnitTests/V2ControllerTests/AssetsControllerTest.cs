@@ -752,8 +752,8 @@ namespace igx.UnitTests
                 TagUID = Guid.Parse(DataConstants.ValidGUID),
             });
 
-            var actionResult = this.assetsController.PostAssetTag(model);
-            var res = await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+            var actionResult = await assetsController.PostAssetTag(model);
+            var res = await actionResult.ExecuteAsync(new CancellationToken());
             var data = res.Content.ReadAsStringAsync();
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             AssertJSON.True<List<AssetTagSuccessApiModel>>(data.Result);
@@ -769,8 +769,8 @@ namespace igx.UnitTests
                 TagUID = Guid.Parse(DataConstants.ValidGUID),
             });
 
-            var actionResult = this.assetsController.DeleteAssetTag(model);
-            var res = await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+            var actionResult = await assetsController.DeleteAssetTag(model);
+            var res = await actionResult.ExecuteAsync(new CancellationToken());
             var data = res.Content.ReadAsStringAsync();
             Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
             AssertJSON.True<List<AssetTagSuccessApiModel>>(data.Result);

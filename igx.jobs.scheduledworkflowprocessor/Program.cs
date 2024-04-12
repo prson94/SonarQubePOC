@@ -24,9 +24,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
 						{
-							EventBusTopicName = context.Configuration["EventBusTopicName"],
-							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
-							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();

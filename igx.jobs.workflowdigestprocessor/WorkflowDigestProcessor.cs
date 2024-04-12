@@ -56,17 +56,8 @@ namespace igx.jobs.workflowdigestprocessor
 								ResourceID = 0,
 								IsAdministrator = true
 							};
-							var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-							{
-								ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-								AssetGraphQueue = Configuration["AssetGraphQueue"],
-								BulkLoadQueue = Configuration["BulkLoadQueue"],
-								DisplayValueQueue = Configuration["DisplayValueQueue"],
-								EventBusTopicName = Configuration["EventBusTopicName"],
-								ScoringQueue = Configuration["ScoringQueue"],
-								SearchIndexQueue = Configuration["SearchIndexQueue"]
-							};
+							var community = new CommunityContext(ConnString, Cache, Queue, context);
+							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 							
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}

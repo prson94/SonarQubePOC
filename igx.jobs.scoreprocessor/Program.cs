@@ -28,13 +28,11 @@ namespace igx.jobs.scoreprocessor
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
 						{
-							EventBusTopicName = context.Configuration["EventBusTopicName"],
-							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
-							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
 					});
 					services.AddSingleton(s => {
-						return new LdClient(context.Configuration["LaunchDarklySdkKey"]);
+						return new LdClient(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, DummyMailProvider>();

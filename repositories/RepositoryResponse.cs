@@ -2,6 +2,14 @@
 {
 	public class RepositoryResponse<T>
 	{
+		public RepositoryResponse(int statusCode, string message = null)
+		{
+			Data = default(T);
+			IsSuccess = false;
+			Message = message;
+			StatusCode = statusCode;
+		}
+
 		public RepositoryResponse(T data, int statusCode, bool success, string message = null)
 		{
 			Data = data;

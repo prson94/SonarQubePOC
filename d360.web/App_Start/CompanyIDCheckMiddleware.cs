@@ -54,7 +54,7 @@ namespace d360.web
 
 			if (dict == null)
 			{
-				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.COMMUNITYDB_APPSETTING]))
+				using (var cnn = new SqlConnection(ConfigurationManager.AppSettings[constants.Setting.Community]))
 				{
 					cnn.Open();
 					dict = (await cnn.QueryAsync<cd>(@"

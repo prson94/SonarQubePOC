@@ -223,11 +223,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid tag specified (same tag already exists)..
+        /// </summary>
+        public static string TagExists {
+            get {
+                return ResourceManager.GetString("TagExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tag Type with uid &apos;{0}&apos; cannot be deleted..
         /// </summary>
         public static string TagTypeNotDeletable {
             get {
                 return ResourceManager.GetString("TagTypeNotDeletable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag Type not found..
+        /// </summary>
+        public static string TagTypeNotFound {
+            get {
+                return ResourceManager.GetString("TagTypeNotFound", resourceCulture);
             }
         }
         

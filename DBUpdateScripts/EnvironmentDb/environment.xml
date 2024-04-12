@@ -333,8 +333,11 @@
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>
 
 	<!-- Procedures (object-based naming) -->
+	<include file="scripts/Procedure.api.ConsolidateTags.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetTypesByExecution.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
+	<include file="scripts/Procedure.api.DeleteTags.xml"/>
+	<include file="scripts/Procedure.api.DeleteTagTypes.xml"/>
 	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
 	<include file="scripts/Procedure.api.ParseAssetPaths.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>

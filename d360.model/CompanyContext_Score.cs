@@ -647,7 +647,7 @@ namespace d360.model
 				StartedOn = DateTime.UtcNow,
 				Payload = (payload != null ? JsonConvert.SerializeObject(payload) : "{}")
 			};
-			QueueSource.CreateMessage(ScoringQueue, info);
+			QueueSource.CreateMessage(constants.Queue.Score, info);
 		}
 
 		#endregion
@@ -849,7 +849,7 @@ where	exists(
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = ScoreType.Governance, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
 				};
-				QueueSource.CreateMessage(ScoringQueue, info);
+				QueueSource.CreateMessage(constants.Queue.Score, info);
 			});
 		}
 		
@@ -865,7 +865,7 @@ where	exists(
 					Payload = new AssetRescoreRequestModel { AssetUid = assetUid, ScoreType = scoreType, EffectiveDate = DateTime.UtcNow.Date },
 					StartedOn = DateTime.UtcNow
 				};
-				QueueSource.CreateMessage(ScoringQueue, info);
+				QueueSource.CreateMessage(constants.Queue.Score, info);
 			});
 		}
 
@@ -929,7 +929,7 @@ group by	a.Uid",
 			if (dupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -1229,7 +1229,7 @@ group by	a.Uid",
 				catch (Exception generalEx)
 				{
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();
@@ -1684,7 +1684,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 			if (dupes.Any())
 			{
 				string message = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				results.AddRange(import.Select(i => new DataQualityResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
 			}
 			else
@@ -2129,7 +2129,7 @@ new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTy
 				catch (Exception generalEx)
 				{
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = import.Count();

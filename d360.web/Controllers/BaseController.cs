@@ -353,6 +353,16 @@ namespace d360.web.Controllers
 			}
 		}
 
+		protected internal IHttpActionResult errorMessageArgumentResponse(string message)
+		{
+			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, message, message));
+		}
+
+		protected internal IHttpActionResult errorMessageNotFoundResponse(string message)
+		{
+			return ResponseMessage(ReturnApiError(HttpStatusCode.NotFound, message, message));
+		}
+
 		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
 		{
 			return errorMessageResponse(status.StatusCode, status.Error, status.Message);

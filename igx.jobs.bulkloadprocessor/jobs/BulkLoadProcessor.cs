@@ -1,6 +1,4 @@
-﻿using AngleSharp.Common;
-using d360.core;
-using d360.core.entities;
+﻿using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
@@ -10,7 +8,6 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.company;
 using Dapper;
-using LaunchDarkly.Sdk.Server;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -49,7 +46,7 @@ namespace igx.jobs.bulkloadprocessor
 		}
 
 		[FunctionName(FUNCTION_NAME)]
-		public async Task Run([QueueTrigger("%BulkLoadQueue%", Connection = "QueuesConnectionString")] string myQueueItem, ILogger log)
+		public async Task Run([QueueTrigger(constants.Queue.BulkLoad, Connection = constants.Setting.Storage)] string myQueueItem, ILogger log)
 		{
 			var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
 			Load load = null;
@@ -76,19 +73,10 @@ namespace igx.jobs.bulkloadprocessor
 						CompanyPrefix = _c.UrlPrefix,
 						IsAdministrator = true
 					};
-					var community = new CommunityContext(Configuration["CommunityContext"], Cache, Queue, context);
-					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true)
-					{
-						ApiExecutionQueue = Configuration["ApiExecutionQueue"],
-						AssetGraphQueue = Configuration["AssetGraphQueue"],
-						BulkLoadQueue = Configuration["BulkLoadQueue"],
-						DisplayValueQueue = Configuration["DisplayValueQueue"],
-						EventBusTopicName = Configuration["EventBusTopicName"],
-						ScoringQueue = Configuration["ScoringQueue"],
-						SearchIndexQueue = Configuration["SearchIndexQueue"]
-					};
+					var community = new CommunityContext(ConnString, Cache, Queue, context);
+					var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
 					var assetRepository = new AssetRepository(company, Queue, Storage, community, FeatureFlags);
-					var tagRepository = new TagRepository(company, FeatureFlags);
+					var tagRepository = new TagRepository(company, FeatureFlags, Queue);
 					var relationshipRepository = new RelationshipRepository(community, company, Queue, Storage, FeatureFlags);
 
 					#endregion

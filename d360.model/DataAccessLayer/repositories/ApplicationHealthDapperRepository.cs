@@ -1,6 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-
 using d360.core.entities;
 using d360.model.DataAccessLayer.repositories;
 using repositories;
@@ -15,8 +14,7 @@ namespace d360.model.DataAccessLayer
 
         public async Task<ApplicationHealthDetailsEntity> GetDetailsAsync(CancellationToken cancellationToken = default)
         {
-            var sql = "SELECT count(1) FROM[queue].[Task] WITH(NOLOCK); "
-                      + "SELECT count(1) FROM[api].[Execution] WITH(NOLOCK) WHERE CompletedOn IS NULL; "
+            var sql = "SELECT count(1) FROM[api].[Execution] WITH(NOLOCK) WHERE CompletedOn IS NULL; "
                       + "SELECT count(1) FROM[workflow].[Item] WITH(NOLOCK) WHERE CompletedOn IS NULL; ";
             var grid = await QueryComposer.QueryMultipleAsync(sql);
 

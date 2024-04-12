@@ -26,39 +26,36 @@ namespace igx.jobs.apiexecutionprocessor
 #if DEBUG
 						 q.BatchSize = 1;
 #endif
-					 })
-					 .AddServiceBus();
+					 });
 				})
 				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
 						{
-							EventBusTopicName = context.Configuration["EventBusTopicName"],
-							EventServiceBusConnectionString = context.Configuration["EventServiceBus"],
-							QueuesConnectionString = context.Configuration["QueuesConnectionString"]
+							StorageConnectionString = context.Configuration[constants.Setting.Storage]
 						};
 					});
 					services.AddScoped<IStorageProvider, AzureStorageProvider>(s => {
-						return new AzureStorageProvider { StorageConnectionString = context.Configuration["AzureStorageConnectionString"] };
+						return new AzureStorageProvider { StorageConnectionString = context.Configuration[constants.Setting.Storage] };
 					});
 					services.AddScoped<ICachingProvider, DummyCachingProvider>();
 					services.AddScoped<IMailProvider, MandrillMailProvider>(s => {
 						return new MandrillMailProvider
 						{
-							ApiKey = context.Configuration["MandrillApiKey"],
-							SubAccount = context.Configuration["MandrillSubAccount"]
+							ApiKey = context.Configuration[constants.Setting.MailKey],
+							SubAccount = context.Configuration[constants.Setting.MailAccount]
 						};
 					});
 					services.AddScoped(o =>
 					{
 						return new ElasticSearchSource
 						{
-							CommunityConnectionString = context.Configuration["CommunityContext"]
+							CommunityConnectionString = context.Configuration[constants.Setting.Community]
 						};
 					});
 					services.AddSingleton<IFeatureFlagService, FeatureFlagService>(o => {
-						return new FeatureFlagService(context.Configuration["LaunchDarklySdkKey"]);
+						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 				});
 

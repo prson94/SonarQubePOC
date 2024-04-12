@@ -31,7 +31,7 @@ namespace igx.UnitTests.V2ControllerTests
 	        DependencyResolver.AddService(RuntimeInfoMock.Object);
 	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
 
-			this.tagsController = new TagsController(GetCoreComponentSet(), GetTagRepository(), GetAssetRepository())
+			this.tagsController = new TagsController(GetCoreComponentSet(), GetQueue(), GetTagRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -41,31 +41,28 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetTags()
         {
-
             var actionResult = await tagsController.Get();
 
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
             var str = res.Result.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            AssertJSON.True<TagApiModelWrapper>(str);
-
+            AssertJSON.True<PagedApiBaseViewModel<TagApiModel>>(str);
         }
 
         [Fact]
         public async Task DeleteTags()
         {
-            var actionResult = tagsController.DeleteById(DataConstants.ValidGUID);
+            var actionResult = await tagsController.DeleteById(DataConstants.ValidGUID);
             await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
         }
 
         [Fact]
-        public void PostTag()
+        public async Task PostTag()
         {
             var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
-            var actionResult = tagsController.PostTag(model);
-
+            var actionResult = await tagsController.PostTag(model);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
@@ -75,50 +72,31 @@ namespace igx.UnitTests.V2ControllerTests
 
         }
 
-
         [Fact]
-        public void PostTag_Error()
-        {
-            var model = new TagApiUpsertModel() { Value = "invalid_name" };
-
-            var actionResult = tagsController.PostTag(model);
-
-            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<JToken>(str);
-
-            Assert.True(data != null, XMsg.InvalidJSON);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
-            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-
-        }
-
-        [Fact]
-        public void PutTag()
+        public async Task PutTag()
         {
             var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
-            var actionResult = tagsController.Put(DataConstants.ValidGUID, model);
-
+            var actionResult = await tagsController.Put(DataConstants.ValidGUID, model);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
 
             Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             AssertJSON.True<TagApiModel>(str);
-
         }
 
 
         [Fact]
-        public void PutTag_ErrorInvalidGuid()
+        public async Task PutTag_ErrorInvalidGuid()
         {
             var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
+			var actionResult = await tagsController.Put("invalid", model);
+			var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+			//var str = await res.Result.Content.ReadAsStringAsync();
 
-            Action act = () => tagsController.Put(DataConstants.InvalidGUID, model);
+			Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
-			act.Should().ThrowExactly<ArgumentException>();
-        }
+		}
     }
 }

@@ -171,8 +171,14 @@
   <data name="InvalueTotalValue" xml:space="preserve">
     <value>Invalid value [{0}] passed in the request.</value>
   </data>
+  <data name="TagExists" xml:space="preserve">
+    <value>Invalid tag specified (same tag already exists).</value>
+  </data>
   <data name="TagTypeNotDeletable" xml:space="preserve">
     <value>Tag Type with uid '{0}' cannot be deleted.</value>
+  </data>
+  <data name="TagTypeNotFound" xml:space="preserve">
+    <value>Tag Type not found.</value>
   </data>
   <data name="TagUidNotExists" xml:space="preserve">
     <value>Tag with uid '{0}' does not exists!</value>

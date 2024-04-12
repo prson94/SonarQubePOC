@@ -80,7 +80,7 @@ namespace d360.model
 			if (dups.Any())
 			{
 				string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-				execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+				execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 			}
 			else
 			{
@@ -371,7 +371,7 @@ namespace d360.model
 				{
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = models.Count();
@@ -724,12 +724,12 @@ namespace d360.model
 				if (dups.Any())
 				{
 					string message = $"Duplicate Execution Item Identifiers: {string.Join(", ", dups.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				}
 				else
 				{
 					string message = $"Duplicate Records: {string.Join(", ", dupRecords.Select(i => $"AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate}"))}. AssetUid and ProfileSetDate pairs are used as record identifiers and must be unique within a batch.";
-					execution.ErrorMessage = message.Substring(0, Math.Min(constants.ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
+					execution.ErrorMessage = message.Substring(0, Math.Min(ERROR_MESSAGE_CHARACTER_LIMIT, message.Length));
 				}
 			}
 			else
@@ -1381,7 +1381,7 @@ namespace d360.model
 				{
 					LogExecutionErrorToAppInsights(execution, generalEx);
 					generalChecksCompleted = false;
-					string msg = generalEx.GetFullExceptionData(false, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					string msg = generalEx.GetFullExceptionData(false, ERROR_MESSAGE_CHARACTER_LIMIT);
 					execution.ErrorMessage = msg;
 					execution.Processed = 0;
 					execution.Error = request.Count();
@@ -1693,7 +1693,7 @@ namespace d360.model
 				const int batchSize = 200;
 				if (profileUids.Count <= batchSize)
 				{
-					QueueSource.CreateMessage(SearchIndexQueue, new ReindexModel
+					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
 						CompanyID = CurrentCompanyID,
 						BatchUids = profileUids,
@@ -1706,7 +1706,7 @@ namespace d360.model
 					while (indexOfLastItemTaken < profileUids.Count)
 					{
 						var profileUidsTaken = profileUids.Skip(indexOfLastItemTaken).Take(batchSize).ToList();
-						QueueSource.CreateMessage(SearchIndexQueue, new ReindexModel
+						QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
 							BatchUids = profileUidsTaken,

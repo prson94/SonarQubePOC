@@ -15,8 +15,9 @@ namespace d360.web
     {
 		public static string StorageUrl { 
 			get {
-				var storageAccountName = Config.GetValue<string>("AzureStorageName") ?? "data3sixty";
-				return $"https://{storageAccountName}.blob.core.windows.net";
+				var storageConnection = Config.GetValue<string>("StorageConnection");
+				var storageAccount = Regex.Match(storageConnection, @"(?<=(AccountName\=))(\w)+(?=;)").Value;
+				return $"https://{storageAccount}.blob.core.windows.net";
 			} 
 		}
 
