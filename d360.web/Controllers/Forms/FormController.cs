@@ -1001,6 +1001,10 @@ order by Sort, title";
 
 						var NumberOfColumns = stats.NumberOfColumns;
 
+						// below check added ticket GOV-32536
+						// User add and drop extra column added to fill excel sheet.
+						// Some reason not identified Number of column return more than 16k
+						// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
 						if (stats.NumberOfColumns > 16000)
 						{
 							var lastcolumn = 0;
