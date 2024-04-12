@@ -1005,19 +1005,9 @@ order by Sort, title";
 						// User add and drop extra column added to fill excel sheet.
 						// Some reason not identified Number of column return more than 16k
 						// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
-						if (stats.NumberOfColumns > 16000)
+						if (stats.NumberOfColumns == constants.MAX_NUMBER_OF_COLUMNS)
 						{
-							var lastcolumn = 0;
-							for (int i = 1; i <= stats.NumberOfColumns; i++)
-							{
-								var testValue = xls.GetCellValueAsString(1, i);
-
-								if (!string.IsNullOrEmpty(testValue))
-								{
-									lastcolumn++;
-								}
-							}
-							NumberOfColumns = lastcolumn;
+							NumberOfColumns = CountNumberOfColumnsManually(stats,xls);
 						}
 
 						int columnCount = 0;
@@ -1425,6 +1415,21 @@ order by Sort, title";
 			}
 
 			return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted}.xlsx");
+		}
+
+		private int CountNumberOfColumnsManually(SLWorksheetStatistics stats, SLDocument xls)
+		{
+			var lastcolumn = 0;
+			for (int i = 1; i <= stats.NumberOfColumns; i++)
+			{
+				var testValue = xls.GetCellValueAsString(1, i);
+
+				if (!string.IsNullOrEmpty(testValue))
+				{
+					lastcolumn++;
+				}
+			}
+			return lastcolumn;
 		}
 
 		#endregion
