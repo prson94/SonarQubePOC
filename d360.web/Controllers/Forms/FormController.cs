@@ -998,9 +998,27 @@ order by Sort, title";
 								$"Please reduce the number of rows from {stats.NumberOfRows} to less than 100000",
 								HttpStatusCode.BadRequest);
 						}
+
+						var NumberOfColumns = stats.NumberOfColumns;
+
+						if (stats.NumberOfColumns > 16000)
+						{
+							var lastcolumn = 0;
+							for (int i = 1; i <= stats.NumberOfColumns; i++)
+							{
+								var testValue = xls.GetCellValueAsString(1, i);
+
+								if (!string.IsNullOrEmpty(testValue))
+								{
+									lastcolumn++;
+								}
+							}
+							NumberOfColumns = lastcolumn;
+						}
+
 						int columnCount = 0;
 
-						for (int i = 1; i <= stats.NumberOfColumns; i++)
+						for (int i = 1; i <= NumberOfColumns; i++)
 						{
 							var testValue = xls.GetCellValueAsString(1, i);
 
