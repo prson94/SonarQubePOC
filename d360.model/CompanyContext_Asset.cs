@@ -1362,6 +1362,84 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 					addMeasurement(metrics, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, ++step);
 					sw.Restart();
 
+					if (hasParentsSetInPayload)
+					{
+						var sqlcheckchildrec = $@"
+
+						if exists(select 1 from api.ExecutionAsset T where  ExecutionID = @ExecutionID and success = 0)
+						begin
+							drop table if exists #tempExecuAsset;
+							select itemnumber,Success,cast(Message as nvarchar(4000)) Message,ParentItemNumber
+							into #tempExecuAsset
+							from api.ExecutionAsset T
+							where ExecutionID = @ExecutionID;
+
+							create clustered index cix_tempExecuAsset on #tempExecuAsset (ParentItemNumber);
+							create index ix_tempExecuAsset_ItemNumber on #tempExecuAsset (ItemNumber) include (ParentItemNumber);
+
+
+							drop table if exists #tempchild;
+							drop table if exists #tempparent;
+
+							with rs as
+							(
+							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							from #tempExecuAsset T
+							where success = 0
+							union all
+							select T.itemnumber, s.itemnumber,s.Message,1 Include
+							from rs s
+							inner join #tempExecuAsset T on s.itemnumber = T.ParentItemNumber and T.Success is null
+							)
+							select itemnumber,Message
+							into #tempchild
+							from rs
+							where Include = 1;
+
+							create clustered index cix_tempchild on #tempchild (itemnumber);
+
+							update	T
+							set		T.Success = 0,
+									T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on parent record :' + S.[Message] + '; ', ''),1,2000)
+							from	api.ExecutionAsset T
+									inner join	#tempchild S on T.itemnumber = S.itemnumber
+							where	T.ExecutionID = @ExecutionID
+							and T.Success is null;
+
+							---Parent Record
+							with rs as
+							(
+							select itemnumber,ParentItemNumber,coalesce(Message,'') Message,0 Include
+							from #tempExecuAsset T
+							where success = 0
+							union all
+							select T.itemnumber, T.ParentItemNumber,s.Message,1 Include
+							from rs s
+							inner join #tempExecuAsset T on s.ParentItemNumber = T.itemnumber and T.Success is null
+							)
+							select itemnumber,Message
+							into #tempparent
+							from rs
+							where Include = 1;
+
+							create clustered index cix_tempparent on #tempparent (itemnumber);
+
+							update	T
+							set		T.Success = 0,
+									T.[Message] = SUBSTRING(coalesce(T.[Message] + '; ', '') + coalesce('Error on child record :' + S.[Message] + '; ', ''),1,2000)
+							from	api.ExecutionAsset T
+									inner join	#tempparent S on T.itemnumber = S.itemnumber
+							where	T.ExecutionID = @ExecutionID
+							and T.Success is null;
+
+						end
+";
+						Connection.Execute(sqlcheckchildrec, new { execution.ExecutionID }, commandTimeout: timeout);
+
+						addMeasurement(metrics, "Mark Child/Parent Failed if Parent/Child Failed (Model/Policy) - ExecutionAsset", sw.ElapsedMilliseconds, ++step);
+						sw.Restart();
+
+					}
 					generalChecksCompleted = true;
 				}
 				catch (Exception generalEx)
