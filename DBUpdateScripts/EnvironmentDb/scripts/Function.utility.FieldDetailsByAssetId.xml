@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.utility.FieldDetailsByAssetId-v2">
-  <comment>GOV-20715</comment>
+  <changeSet author="Puneet Gupta" id="Function.utility.FieldDetailsByAssetId-v3">
+  <comment>GOV-32582</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,7 +28,13 @@ CREATE OR ALTER FUNCTION [utility].[FieldDetailsByAssetId]
                     WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
                     WHEN @HasDefaultValue = 1 THEN T.DefaultFormattedValue
                     ELSE NULL 
-                END AS nvarchar(MAX)) AS FormattedValue
+                END AS nvarchar(MAX)) AS FormattedValue,
+				TRY_CAST(CASE 
+                    WHEN @AllowAllValue = 1 AND F.[Value] = '0' THEN T.AllowAllLabel 
+                    WHEN F.[Value] IS NOT NULL THEN F.[Value]
+                    WHEN @HasDefaultValue = 1 THEN T.DefaultValue
+                    ELSE NULL 
+                END AS nvarchar(MAX)) AS [Value]
         FROM    dbo.FieldType AS T  
                 LEFT OUTER JOIN dbo.Field AS F ON F.FieldTypeID = @FieldTypeId and F.AssetId = @AssetID
         WHERE    T.id = @FieldTypeId
