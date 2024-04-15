@@ -1170,5 +1170,28 @@ end
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
-  
+   <changeSet author="TKlok" id="Data.Corrections.GOV-32553">
+   <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			update its
+			set state = 2
+			from workflow.ItemStep its
+			inner join workflow.ItemStepStateDetail ssd on its.ID = ssd.ItemStepId
+			where its.State in (4, 7)
+			and ssd.message = 'Step completed with 0 valid transitions'
+			and exists (select 1 from workflow.ItemStepTransition st where st.FromItemStepID = ssd.ItemStepId)
+
+			delete from workflow.ItemStepStateDetail
+			where State in (4, 7)
+			and message = 'Step completed with 0 valid transitions'
+			and exists (select 1 from workflow.ItemStepTransition st where st.FromItemStepID = ItemStepId)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

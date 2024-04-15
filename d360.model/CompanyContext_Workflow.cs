@@ -2206,6 +2206,18 @@ namespace d360.model
 				WorkflowItemStepTransitions.Add(trans);
 				SaveChanges();
 
+				// remove NoValidTransitions error if a previous transition from this step set it
+				if (transition.TransitionType == TransitionType.Condition && fromItemStep.State == StepState.NoValidTransitions)
+				{
+					fromItemStep.State = StepState.Complete;
+					var itemStateDetail = WorkflowItemStepStateDetails.Where(d => d.itemStepID == fromItemStep.ID && d.State == StepState.NoValidTransitions).FirstOrDefault();
+					if (itemStateDetail != null)
+					{
+						WorkflowItemStepStateDetails.Remove(itemStateDetail);
+					}
+					SaveChanges();
+				}
+
 				EventInfo startEvent = new EventInfo
 				{
 					CompanyID = CurrentCompanyID,
@@ -2219,24 +2231,27 @@ namespace d360.model
 
 				//add topic messages for the transitions
 				await QueueSource.CreateMessageAsync(constants.Queue.Workflow, startEvent);
-			} else if (!transitionPassed && transition.TransitionType == TransitionType.Condition) {
+			}
+			else if (!transitionPassed && transition.TransitionType == TransitionType.Condition)
+			{
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
-				fromItemStep.State = StepState.NoValidTransitions;
-
-				WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+				if (!WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID))
 				{
-					itemStepID = fromItemStep.ID,
-					Message = "Step completed with 0 valid transitions",
-					State = StepState.NoValidTransitions
-				};
+					fromItemStep.State = StepState.NoValidTransitions;
 
-				WorkflowItemStepStateDetails.Add(itemStateDetail);
+					WorkflowItemStepStateDetail itemStateDetail = new WorkflowItemStepStateDetail
+					{
+						itemStepID = fromItemStep.ID,
+						Message = "Step completed with 0 valid transitions",
+						State = StepState.NoValidTransitions
+					};
 
-				SaveChanges();
+					WorkflowItemStepStateDetails.Add(itemStateDetail);
 
+					SaveChanges();
+				}
 			}
-
 		}
 
 		public async Task ExecuteStep(long itemStepID, long itemID, EventInfo eventInfo)
