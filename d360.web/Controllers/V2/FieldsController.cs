@@ -2896,24 +2896,24 @@ namespace d360.web.Controllers.V2
 
 						query = $@"
 							drop table if exists #tempResults
-							select {tempselectlist}
+							select {tempselectlist}, ROW_NUMBER() over (order by cast (O.Value as int)) as ORDERBYCOLUMN
 							into #tempResults
 							from FieldLookupValue V
+								left join 
+								OPENJSON(@refListOrder) O on O.[Key] = V.Value							
 							{parentFieldJoins}							
 							where @fieldTypeId = v.FieldTypeID
 							{whereQuery}
-							order by text asc
+							order by ORDERBYCOLUMN
 							{pagingQuery};
 
 							select 
 								{selectStatement} 
 							from 
 								#tempResults V 
-								left join 
-								OPENJSON(@refListOrder) O on O.[Key] = V.Value							
 								{colorjoin}
 							order by 
-								cast (O.Value as int);";
+								v.ORDERBYCOLUMN;";
 
 					}
 				}
