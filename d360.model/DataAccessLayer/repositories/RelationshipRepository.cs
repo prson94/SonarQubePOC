@@ -1327,6 +1327,12 @@ OPTION(RECOMPILE)";
 			bool includeDisplayFormat = false;
 			bool includeHasFieldFromRelationship = false;
 			bool includeHasListableRelationship = false;
+			List<string> whereStatements = new List<string>();
+
+			if (!string.IsNullOrWhiteSpace(whereClause))
+			{
+				whereStatements.Add(whereClause);
+			}
 
 			if (queryParams != null)
 			{
@@ -1337,7 +1343,7 @@ OPTION(RECOMPILE)";
 					if (Guid.TryParse(predicateUidString, out predicateUid))
 					{
 						dbArgs.Add("@predicateUid", predicateUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
+						whereStatements.Add(" P.[UID] = @predicateUid");
 					}
 				}
 
@@ -1366,11 +1372,11 @@ OPTION(RECOMPILE)";
 						if (IsReferenceType)
 						{
 							dbArgs.Add("@RefListUid", RefListUid);
-							whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid OR S9.Uid = @RefListUid OR O9.Uid = @RefListUid)";
+							whereStatements.Add(" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid OR S9.Uid = @RefListUid OR O9.Uid = @RefListUid)");
 						}
 						else
 						{
-							whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
+							whereStatements.Add(" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)");
 						}
 					}
 				}		
@@ -1382,7 +1388,7 @@ OPTION(RECOMPILE)";
 					if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
 					{
 						dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Uid = @relationshiptypeuid)";
+						whereStatements.Add(" (I.Uid = @relationshiptypeuid)");
 					}
 				}
 
@@ -1391,7 +1397,7 @@ OPTION(RECOMPILE)";
 					var sourceId = queryParams.FirstOrDefault(q => q.Key.ToLower() == "sourceid").Value;
 					int sourceIdMaxLength = sourceId.Length > 500 ? 500 : sourceId.Length;
 					sourceId = sourceId.Substring(0, sourceIdMaxLength);
-					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.SourceID = @sourceId";
+					whereStatements.Add("I.SourceID = @sourceId");
 					dbArgs.Add("sourceId", sourceId);
 				}
 
@@ -1402,7 +1408,7 @@ OPTION(RECOMPILE)";
 					if (Enum.TryParse(stateString, out state))
 					{
 						dbArgs.Add("@state", state);
-						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
+						whereStatements.Add("I.State = @state");
 					}
 				}
 
@@ -1524,6 +1530,15 @@ OPTION(RECOMPILE)";
 								end as 'HasListableRelationship'");
 			}
 
+			var whereSql = "";
+
+			whereStatements.Add("(coalesce(SP.[Path], S.Name, S9.Name) is not null and coalesce(OP.[Path], O.Name, O9.Name) is not null)");
+
+			if (whereStatements.Any())
+			{
+				whereSql = $"where {string.Join(" and ", whereStatements)}";
+			}
+
 			var sql = $@"
 select	I.Id,
 		I.Uid,
@@ -1558,7 +1573,7 @@ from	IntersectType I
 			left join AssetDisplayValue adv_created on adv_created.AssetID = created.ID
 			left join asset updated on updated.Object = 'Resource' and updated.ObjectID = I.CreatedBy
 			left join AssetDisplayValue adv_updated on adv_updated.AssetID = updated.ID" : "")}
-		{whereClause} for json path";
+		{whereSql} for json path";
 
 			var models = await CompanyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
 
