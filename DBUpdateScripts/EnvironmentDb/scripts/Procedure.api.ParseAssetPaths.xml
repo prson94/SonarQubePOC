@@ -104,17 +104,20 @@ begin
 		set KeyPathHash = ([dbo].[GetKeyPathHash]([XmlData]))
 		from #tblgrp g;
 		
-		update AP
-		set AP.Segments = T.XMLData
-		from #tblgrp T
-		inner join AssetPath AP on ap.ID = T.GroupID
-
-		insert into AssetPath (Id, Segments)
-		select	S.GroupId as Id,S.XmlData as Segments
-		from	#tblgrp s
-		left join AssetPath AP on ap.ID = s.GroupID
-		where AP.Id is null
-		
+	merge	AssetPath as t
+	using	(
+			select	GroupId as Id,
+						XmlData as Segments,
+						KeyPathHash
+			from	#tblgrp
+			) as s
+	on		(t.Id = s.Id)
+		when	matched and t.KeyPathHash != s.KeyPathHash then
+	update	set
+			t.Segments = s.Segments
+	when not matched by target then
+	insert	(Id, Segments)
+	values	(s.Id, s.Segments);
 	end
 	else
 	begin

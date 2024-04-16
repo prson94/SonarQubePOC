@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.api.MergeAssetPaths-v9">
+  <changeSet author="TDuric" id="Procedure.api.MergeAssetPaths-v10">
     <comment></comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
@@ -19,6 +19,11 @@ create or alter procedure [api].[MergeAssetPaths]
 as
 begin
 	set nocount on;
+
+	drop table if exists #hierarchy
+	drop table if exists #tbl
+	drop table if exists #incoming
+	drop table if exists #ids
 
 	create table #hierarchy (
 		GroupID bigint,
@@ -45,8 +50,8 @@ begin
 		FormattedValue nvarchar(max)
 	)
 
-
 	create table #incoming (ID bigint)
+
 	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
 
 	insert into #incoming 
@@ -54,8 +59,7 @@ begin
 		from	api.ExecutionAsset
 		where	ExecutionID = @executionId
 				and ItemNumber between @begin and @end
-			
-
+				
 	if @class = 15
 	begin
 		insert into #incoming 
@@ -81,53 +85,6 @@ begin
 			where AT.uid = @assetTypeUid
 	end 
 
-	create table #hierarchyIntersectTypes (ID bigint)
-	declare @hierarchyAssetTypeId int = (select top 1 a.AssetTypeID from #incoming inner join dbo.Asset a on a.ID = #incoming.ID);
-
-	insert into #hierarchyIntersectTypes
-	select IntersectType.ID from IntersectType
-	inner join [Predicate] p on p.ID = IntersectType.PredicateID
-	where p.Type in (3,4)
-
-
-	create table #tempHierarchyRels (Lvl int, SubjectAssetId bigint, ObjectAssetId bigint)
-	create nonclustered index ix_lvl_object on #tempHierarchyRels (Lvl, ObjectAssetId) include (SubjectAssetId)
-	create nonclustered index ix_lvl_subject on #tempHierarchyRels (Lvl, SubjectAssetId) include (ObjectAssetId)
-
-
-	insert into #tempHierarchyRels
-	select 0, SubjectAssetID, ObjectAssetID from #incoming A
-	left join [Intersect] I on I.SubjectAssetID = A.ID and I.IntersectTypeID in (select Id from #hierarchyIntersectTypes)
-
-	insert into #tempHierarchyRels
-	select -1, SubjectAssetID, ObjectAssetID from #incoming A
-	left join [Intersect] I on I.ObjectAssetID = A.ID and I.IntersectTypeID in (select Id from #hierarchyIntersectTypes)
-
-	--first load parents 
-	declare @depth  int = -2
-
-	while @depth > -10
-	begin
-		insert into #tempHierarchyRels
-		select @depth, I.SubjectAssetID, I.ObjectAssetID from #tempHierarchyRels R
-		left join [Intersect] I on I.ObjectAssetID = R.SubjectAssetID and I.IntersectTypeID in (select Id from #hierarchyIntersectTypes)
-		where R.Lvl = (@depth+1) and I.ID is not null
-
-		set @depth = @depth -1
-	end
-
-	set @depth = 1
-	
-	while @depth < 10
-	begin
-		insert into #tempHierarchyRels
-		select @depth, I.SubjectAssetID, I.ObjectAssetID from #tempHierarchyRels R
-		left join [Intersect] I on I.SubjectAssetID = R.ObjectAssetId and I.IntersectTypeID in (select Id from #hierarchyIntersectTypes)
-		where R.Lvl = (@depth-1) and I.ID is not null
-
-		set @depth = @depth +1
-	end
-
 	if exists (select top 1 * from #incoming)
 	begin
 		with descendants as (
@@ -135,13 +92,13 @@ begin
 					I.ObjectAssetID
 			from	#incoming O
 					inner join Asset A on O.ID = A.ID
-					inner join #tempHierarchyRels I on I.SubjectAssetID = O.ID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.SubjectAssetID = O.ID
 					inner join Asset C on C.ID = I.ObjectAssetID
 			union all
 			select	I.SubjectAssetID,
 					I.ObjectAssetID
 			from	descendants c
-					inner join #tempHierarchyRels I on I.SubjectAssetID = c.ObjectAssetID
+					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.SubjectAssetID = c.ObjectAssetID
 					inner join Asset A on A.ID = I.ObjectAssetID
 		)
 		insert into #incoming
@@ -200,7 +157,7 @@ begin
 						A.Code,
 						0 as [Level]
 				from	Asset A
-						left join #tempHierarchyRels I on I.ObjectAssetID = A.ID
+						left join PredicateIntersect I on I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
 						inner join #incoming O on O.ID = A.ID
 				union all
 				select	c.GroupID,
@@ -214,8 +171,8 @@ begin
 						inner join Asset A on c.ParentObjectAssetID = A.ID
 						outer apply (
 							select	I.SubjectAssetID
-							from	#tempHierarchyRels I 
-							where	I.ObjectAssetID = A.ID
+							from	PredicateIntersect I 
+							where	I.PredicateType in (3,4) and I.ObjectAssetID = A.ID
 						) I
 			)
 
@@ -228,8 +185,8 @@ begin
 						A.Code
 				from	hierarchy A
 						left join Asset P on P.ID = A.ParentObjectAssetID;
-
 		end
+
 
 		if @class = 9
 		begin
@@ -302,7 +259,6 @@ begin
 						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 						left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
 				where 	coalesce(F.FormattedValue, FT.DefaultFormattedValue) is not null
-
 			--handle counter fields
 			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	distinct
@@ -323,14 +279,6 @@ begin
 		create clustered index CIX_TempTbl on #tbl (GroupID);
 
 		exec api.ParseAssetPaths;
-		
-		drop table if exists #tblgrp
-	    drop table if exists #hierarchy
-		drop table if exists #incoming
-		drop table if exists #ids
-		drop table if exists #tbl
-		drop table if exists #tempHierarchyRels
-		drop table if exists #hierarchyIntersectTypes
 	end
 end
 ]]>
