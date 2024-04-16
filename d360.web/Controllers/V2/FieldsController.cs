@@ -2913,7 +2913,7 @@ namespace d360.web.Controllers.V2
 								OPENJSON(@refListOrder) O on O.[Key] = V.Value							
 								{colorjoin}
 							order by 
-								O.Value;";
+								cast (O.Value as int);";
 
 					}
 				}
