@@ -339,14 +339,9 @@ where	ExecutionID = @executionID
 				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeLong);
 			}
 
-			if (!value.IsValidForTag())
-			{
-				return new RepositoryResponse<TagApiModel>(400, TagErrors.InvalidTagTypeCharacters);
-			}
-
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
-				var tagTypeId = await connection.QuerySingleOrDefaultAsync<int>("select id from TagType where Uid = @uid", new { uid = tagTypeUid.Value });
+				var tagTypeId = await connection.QuerySingleOrDefaultAsync<int>("select id from TagType where Uid = @uid and State = @state", new { uid = tagTypeUid.Value, state = State.Active });
 				if (tagTypeId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
