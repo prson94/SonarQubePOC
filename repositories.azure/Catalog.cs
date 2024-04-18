@@ -409,8 +409,8 @@ values ('Tag', @tagId, @Value, @u, @dt, 'Created', 'Tag', @tagId, 'Tags', @Value
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var exists = await connection.QuerySingleOrDefaultAsync<bool>(
-					"select cast(iif(count(1) > 1, 1, 0) as bit) from TagType where lower([Value]) = @value",
-					new { value = value.ToLower() }
+					"select cast(iif(count(1) > 1, 1, 0) as bit) from TagType where lower([Value]) = @value and State = @state",
+					new { value = value.ToLower(), state = State.Active }
 				);
 
 				if (exists)
@@ -420,23 +420,23 @@ values ('Tag', @tagId, @Value, @u, @dt, 'Created', 'Tag', @tagId, 'Tags', @Value
 				else
 				{
 					response = new RepositoryResponse<TagTypeApiModel>(null, 201, true, "");
-					response.Data = await connection.QueryFirstAsync(
+					response.Data = await connection.QueryFirstAsync<TagTypeApiModel>(
 						@"
 declare @id int;
 insert into TagType ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy], [State])
-values (@uid, @value, @dt, @CurrentUserId, @dt, @CurrentUserId, 1);
+values (@uid, @value, @dt, @CurrentUserId, @dt, @CurrentUserId, @state);
 select @id = SCOPE_IDENTITY();
 
 select	t.uid, 
-		t.[Value] 
+		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
 		u.Uid as UpdatedByUid,
 		t.UpdatedOn
 from	TagType t
-		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
-		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
-where	t.ID = @id;", new { uid = Guid.NewGuid(), value, CurrentUserId, dt = DateTime.UtcNow });
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
+where	t.ID = @id;", new { uid = Guid.NewGuid(), value, CurrentUserId, dt = DateTime.UtcNow, state = State.Active });
 				}
 			}
 
@@ -867,15 +867,16 @@ from	Tag t
 				response.Data = await connection.QuerySingleOrDefaultAsync<TagTypeApiModel>(
 					@"
 select	t.uid, 
-		t.[Value] 
+		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
 		u.Uid as UpdatedByUid,
 		t.UpdatedOn
 from	TagType t
-		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
-		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
-where	t.Uid = @uid", new { uid });
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
+where	t.Uid = @uid
+		and t.State = @state", new { uid, state = State.Active });
 
 				if (response.Data != null)
 				{
@@ -899,16 +900,18 @@ where	t.Uid = @uid", new { uid });
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				models = await connection.QueryAsync<TagTypeApiModel>(
-					@"
+					
+					$@"
 select	t.uid, 
-		t.[Value] 
+		t.[Value],
 		c.Uid as CreatedByUid,
 		t.CreatedOn,
 		u.Uid as UpdatedByUid,
 		t.UpdatedOn
 from	TagType t
-		inner join reporting.Global_Resource c on c.ResorceID = t.CreatedBy
-		inner join reporting.Global_Resource u on u.ResorceID = t.UpdatedBy
+		inner join reporting.Global_Resource c on c.ResourceID = t.CreatedBy
+		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
+where	t.State = {(int)State.Active}
 order by	t.[value]");
 			}
 
@@ -1058,7 +1061,7 @@ insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, 
 
 			using (var connection = ConnectionProvider.Connect())
 			{
-				var success = await connection.QuerySingleAsync<bool>("exec api.DeleteTagTypes @userId, @uids", dbArgs);
+				var success = await connection.QuerySingleAsync<bool>("DECLARE @return_status INT; exec @return_status = api.DeleteTagTypes @userId, @uids; select @return_status", dbArgs);
 				response.IsSuccess = success;
 				response.StatusCode = success ? 200 : 409;
 				response.Message = success ? "" : "Unable to remove tag types.";
@@ -1210,15 +1213,15 @@ values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @
 			using (var connection = (SqlConnection)ConnectionProvider.Connect())
 			{
 				var id = await connection.QuerySingleOrDefaultAsync<int>(
-					"select id from TagType where Uid = @uid", new { uid });
+					"select id from TagType where Uid = @uid and State = @state", new { uid, state = State.Active });
 
 				if (id > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
 						"select cast(iif(count(1) > 1, 1, 0) as bit) " +
 						"from TagType " +
-						"where ID <> @id and lower([Value]) = @value",
-						new { id, value = value.ToLower() }
+						"where ID <> @id and lower([Value]) = @value and State = @state",
+						new { id, value = value.ToLower(), state = State.Active }
 					);
 
 					if (tagExists)
