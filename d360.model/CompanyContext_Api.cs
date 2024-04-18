@@ -2481,7 +2481,9 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 				drop table if exists #DeletedRelationships;
 				create table #DeletedRelationships
 				(
-					[uid] uniqueidentifier
+					[uid] uniqueidentifier,
+					IntersectTypeID int,
+					intersectId int
 				)
 
 				create index idx_DeletedRelationships_uid on #DeletedRelationships(uid);
@@ -2627,19 +2629,19 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 				With IIDs as
 				(
-				select distinct ID,Uid from
+				select distinct ID,Uid, IntersectTypeID, intersectId from
 				(
-				select I.ID,I.Uid
+				select I.ID,I.Uid, I.IntersectTypeID, I.Id as intersectId
 				from #tempdatasmy A
                 inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.ObjectAssetID = A.ObjectAssetID
 				union all
-				select I.ID,I.Uid
+				select I.ID,I.Uid, I.IntersectTypeID, I.Id as intersectId
 				from #tempdatasmy A
                 inner join [Intersect] I on I.IntersectTypeID = A.IntersectTypeID and I.SubjectAssetID = A.ObjectAssetID
 				) a
 				)
 				insert into #DeletedRelationships WITH(TABLOCK)
-				select I.[uid]
+				select I.[uid], I.IntersectTypeID, I.Id as intersectId
 				from IIDs I
 				left join #Relationships R on R.ID = I.Id
 				where R.ID is null;	
@@ -2743,12 +2745,18 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 							inner join IntersectDetail i on i.Uid = o.uid
 					Where o.IsNew = 1;
 
-				select [uid], 1 as Success, 'Intersect' as [Object] from #RelationshipsFinal
+				select [uid], 1 as Success, 'Intersect' as [Object], 0 as isDelete, IntersectTypeID, ID as IntersectID from #RelationshipsFinal
 				union all
-				select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships";
+				select [uid], 1 as Success, 'Intersect' as [Object], 1 as isDelete, IntersectTypeID, IntersectID from #DeletedRelationships";
 
-            Connection.Query<DatabaseBulkRelationshipResult>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-        }
+            var results = Connection.Query<dynamic>(sql, new { executionID = execution.ExecutionID, execution.Id, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+			
+			foreach(var result in results.GroupBy(x=> new { x.IntersectTypeID, x.isDelete }).Select(r=> r.First()))
+			{
+				var filteredResults = results.Where(x => x.IntersectTypeID == result.IntersectTypeID && x.isDelete == result.isDelete).Select(x=> new DatabaseBulkRelationshipResult{ ItemNumber = 0,  uid = x.uid, Success = true, IntersectID = x.IntersectID}).ToList();				
+				SendWorkflowEvents("IntersectType", result.IntersectTypeID, filteredResults, result.isDelete==1? ChangeType.Delete : ChangeType.Add, null);
+			}			
+		}
 
 		public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool lookupFieldsPassedByValue = false)
 		{
