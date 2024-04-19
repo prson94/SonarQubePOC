@@ -76,7 +76,7 @@ namespace repositories.azure
 				}
 			}
 
-			if (defaultValue != null && !dbArgs.ParameterNames.Contains(sqlparameternameArgs))
+			if (defaultValue is not null && !dbArgs.ParameterNames.Contains(sqlparameternameArgs))
 			{
 				dbArgs.Add(sqlparameternameArgs, defaultValue);
 			}
