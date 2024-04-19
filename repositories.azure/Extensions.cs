@@ -44,6 +44,7 @@ namespace repositories.azure
 			string filterPropertyName, string sqlColumn, string sqlParameterName,
 			ref DynamicParameters dbArgs, ref List<string> queryFilters, T defaultValue = default)
 		{
+			var sqlparameternameArgs = sqlParameterName.Replace("@", "");
 			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
 			{
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
@@ -54,7 +55,7 @@ namespace repositories.azure
 						Guid parsedValue;
 						if (Guid.TryParse(rawValue, out parsedValue))
 						{
-							dbArgs.Add(sqlParameterName, parsedValue);
+							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
 						}
 					}
@@ -63,21 +64,21 @@ namespace repositories.azure
 						int parsedValue;
 						if (int.TryParse(rawValue, out parsedValue))
 						{
-							dbArgs.Add(sqlParameterName, parsedValue);
+							dbArgs.Add(sqlparameternameArgs, parsedValue);
 							queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
 						}
 					}
 					else 
 					{
-						dbArgs.Add(sqlParameterName, rawValue);
+						dbArgs.Add(sqlparameternameArgs, rawValue);
 						queryFilters.Add($"{sqlColumn} = {sqlParameterName}");
 					}
 				}
 			}
 
-			if (defaultValue != null && !dbArgs.ParameterNames.Contains(sqlParameterName))
+			if (defaultValue is not null && !dbArgs.ParameterNames.Contains(sqlparameternameArgs))
 			{
-				dbArgs.Add(sqlParameterName, defaultValue);
+				dbArgs.Add(sqlparameternameArgs, defaultValue);
 			}
 		}
 
