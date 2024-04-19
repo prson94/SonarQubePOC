@@ -267,7 +267,7 @@ namespace d360.model
 declare @IsSucess bigint = 0;
 select @IsSucess = count(1)
 from LoadItem
-where LoadId = {LoadId} and Status = 1;
+where LoadId = {LoadId} and coalesce(Status,1) = 1;
 
 if (@IsSucess = 0)
 begin
@@ -276,7 +276,7 @@ begin
 	(
 	select distinct StatusMessage
 	from LoadItem
-	where LoadId = {LoadId} and Status = 0
+	where LoadId = {LoadId} and coalesce(Status,1) = 0
 	) a;
 end
 ";
@@ -779,7 +779,7 @@ end
 			string sqlduplicate = $@"
 declare @DuplicateRow nvarchar(max);
 declare @errormessage nvarchar(max);
-
+declare @IsNotAllFailed bit;
 
 drop table if exists #tempdupassetuid;
 
@@ -818,13 +818,22 @@ begin
 
 end
 
-select @errormessage
+select @IsNotAllFailed = count(1) 
+from (
+select top 1 lt.loadid
+from LoadItem lt
+where lt.loadid =  @ID and coalesce(status,1) = 1
+) a
+select @errormessage errormessage, @IsNotAllFailed IsNotAllFailed
 ";
-			var dupasset = await Connection.QuerySingleAsync<string>(sqlduplicate, new { load.ID });
+			var dupasset = await Connection.QuerySingleAsync<dynamic>(sqlduplicate, new { load.ID });
 
 			if (dupasset != null)
 			{
-				throw new ArgumentNullException($"{dupasset}");
+				if (!dupasset?.IsNotAllFailed)
+				{
+					throw new ArgumentNullException($"{dupasset?.errormessage}");
+				}
 			}
 			List<AssetUpdate> putAssets = new List<AssetUpdate>();
 			List<AssetInsert> postAssets = new List<AssetInsert>();
@@ -1450,6 +1459,8 @@ inner join AssetPath P on P.ID = A.ID
 									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
 									union all
 									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+									union all									
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 									) R
 								) E
 							cross apply (
@@ -1460,6 +1471,8 @@ inner join AssetPath P on P.ID = A.ID
 									select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
 									union all
 									select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+									union all									
+									select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 									) R
 								) T";
 						break;

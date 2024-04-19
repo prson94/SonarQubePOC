@@ -6,6 +6,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
 using Microsoft.Web.Http;
 using repositories;
 using Resources;
@@ -13,11 +14,13 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using static d360.core.entities.Resource;
@@ -698,7 +701,10 @@ namespace d360.web.Controllers.V2
 			var queryParams = Request.GetQueryNameValuePairs();
 			var sql = "";
 			var sqlColumns = "";
+			var sqlColumnsLoad = "";
 			var sqlTables = "";
+			var sqlTablesLoad = "";
+
 			int _pageSize = 200;
 			int _pageNum = 1;
 			string _direction = "desc";
@@ -708,6 +714,8 @@ namespace d360.web.Controllers.V2
 			string filterValue = "";
 			List<string> v2ApiActions = new List<string> { "P", "R", "U" };
 			string countSql = "select	count(1) ";
+			string temptable = "";
+			string Droptemptable = "";
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -837,15 +845,26 @@ namespace d360.web.Controllers.V2
 						}
 
 						var parentAssetType = assetType == null ? null : Company.GetParentType(assetType.ID);
+						Droptemptable = $@"drop table if exists #tempExecutionData;";
+
+						temptable = $@"
+										drop table if exists #tempExecutionData;
+										select *
+										into #tempExecutionData
+										from (
+											select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId in (@putExecutionID,@postExecutionID)
+											union all
+											select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId in (@putExecutionID,@postExecutionID)
+										 ) EA;
+										create clustered index cx_#tempExecutionData on #tempExecutionData(ExecutionId, ItemNumber);
+									";
 
 						sqlColumns = $"select I.RowIndex as RowIndex\n";
+						sqlColumnsLoad = $"select I.RowIndex as RowIndex\n";
 						sqlTables = @"
-							from (
-								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
-								union all
-								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
-							 ) EA
+							from #tempExecutionData EA
 							 left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+						sqlTablesLoad = @" from  LoadItem I ";
 						columns.ForEach(c =>
 						{
 							var i = c.ColumnIndex;
@@ -854,12 +873,19 @@ namespace d360.web.Controllers.V2
 							{
 								sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
 								sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+
+								sqlColumnsLoad += $",C{i}.[Value] as Column{i}\n";
+								sqlTablesLoad += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+
 							}
 							else
 							{
 								sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
 								sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
 								sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+
+								sqlColumnsLoad += $",C{i}.[Value] as Column{i}\n";
+								sqlTablesLoad += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
 							}
 
 						});
@@ -867,13 +893,22 @@ namespace d360.web.Controllers.V2
 						sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
 						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
 
-						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-						sql += $"union all\n";
-						sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql + orderBySql + offsetSql;
+						sqlColumnsLoad += $", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+						sqlColumnsLoad += ", case when I.StatusMessage is not null and I.[Status] = 0 then I.StatusMessage else  '' end as StatusMessage\n";
 
-						countSql += $" from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-						countSql += $"union all\n";
-						countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql;
+						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID\n";
+						sql += $" union all\n";
+						sql += $"{string.Format(sqlColumns, "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID\n";
+						sql += $" union all\n";
+						sql += $" {sqlColumnsLoad} {sqlTablesLoad} where I.LoadID = @id and I.Status = 0\n";
+						sql += $") R " + whereSql + orderBySql + offsetSql;
+
+						countSql += $" from ({string.Format(sqlColumns, "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID\n";
+						countSql += $" union all\n";
+						countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID\n";
+						countSql += $" union all\n";
+						countSql += $"{sqlColumnsLoad} {sqlTablesLoad} where I.LoadID = @id and I.Status = 0\n";
+						countSql += $") R " + whereSql;
 
 						break;
 					case "R":
@@ -926,13 +961,22 @@ namespace d360.web.Controllers.V2
 						break;
 				}
 
+				var getAllQuery = $@"{temptable}
+									 {countSql}
+									 {sql}
+									 {Droptemptable}
+									";
 
-				var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue });
-				var total = Company.Query<int>(countSql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue }).FirstOrDefault();
+				SqlMapper.GridReader gridReader = await Company.Connection.QueryMultipleAsync(
+				  new CommandDefinition(getAllQuery,
+				  parameters: new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue },
+				  commandTimeout: ApiTimeout
+				));
 				model.pageNum = _pageNum;
 				model.pageSize = _pageSize;
-				model.items = results;
-				model.total = total;
+
+				model.total = gridReader.Read<int>().FirstOrDefault();
+				model.items = gridReader.Read<dynamic>().ToList();
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
@@ -953,12 +997,21 @@ namespace d360.web.Controllers.V2
 				sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
 				var count = countSql + " " + sqlTables + " where I.LoadID = @id) X " + whereSql;
 
-				var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue });
-				var total = Company.Query<int>(count, new { id = load.ID, filterValue }).FirstOrDefault();
+				var getAllQuery = $@"{count}
+
+									 {sql}
+									";
+
+				SqlMapper.GridReader gridReader = await Company.Connection.QueryMultipleAsync(
+				  new CommandDefinition(getAllQuery,
+				  parameters: new { id = load.ID, filterValue },
+				  commandTimeout: ApiTimeout
+				));
+
 				model.pageNum = _pageNum;
 				model.pageSize = _pageSize;
-				model.items = results;
-				model.total = total;
+				model.total = gridReader.Read<int>().FirstOrDefault();
+				model.items = gridReader.Read<dynamic>().ToList();
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
