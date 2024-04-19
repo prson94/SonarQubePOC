@@ -859,10 +859,6 @@ namespace d360.web.Controllers.V2
 										create clustered index cx_#tempExecutionData on #tempExecutionData(ExecutionId, ItemNumber);
 									";
 
-						sqlColumns.Clear();
-						sqlColumnsLoad.Clear();
-						sqlTables.Clear();
-						sqlTablesLoad.Clear();
 						sqlColumns.AppendLine($"select I.RowIndex as RowIndex");
 						sqlColumnsLoad.AppendLine ($"select I.RowIndex as RowIndex");
 						sqlTables.AppendLine("from #tempExecutionData EA");
@@ -918,7 +914,6 @@ namespace d360.web.Controllers.V2
 
 						break;
 					case "R":
-						sqlColumns.Clear();
 						sqlColumns.AppendLine ($"select	* from(select I.RowIndex as RowIndex");
 						countSql.AppendLine($" from(select I.RowIndex as RowIndex");
 						sqlTables.AppendLine("from LoadItem I");
