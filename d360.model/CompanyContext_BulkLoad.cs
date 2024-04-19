@@ -924,12 +924,12 @@ drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLe
 											inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
 								where		ATT.[ObjectID] = @ObjectID
 						) L
-						where I.LoadID = @id and COALESCE(Status,1) = 1", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
+						where I.LoadID = @id and COALESCE(Status,1) = 1  order by I.rowindex", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
 
 			}
 			else
 			{
-				loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id and COALESCE(Status,1) = 1", new { id = load.ID }).ToList();
+				loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id and COALESCE(Status,1) = 1 order by rowindex", new { id = load.ID }).ToList();
 			}
 
 			//do this in blocks of n items at a time to avoid loading everything in one shot.
@@ -945,15 +945,30 @@ drop table if exists #tempRowIndexKeyTable", new { numberOfRequiredFields, maxLe
 			int numberOfLoops = (int)Math.Ceiling((decimal)(loadItems.Count - currentLocation) / loopSize);
 			int beginItemNumber = currentLocation;
 			int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
-			int rowIndexStartNumber = 2;
 
 			var tagField = FieldTypes.FirstOrDefault(f => f.Type == "Tag" && f.AssetTypeID == assetType.ID);
 			bool hasTags = tagField != null;
 
+			var itemcolquery = $@"
+drop table if exists #tempdata;
+
+select LI.Rowindex 
+into #tempdata
+from LoadItem LI
+where LoadID = @id and COALESCE(Status,1) = 1
+order by RowIndex
+offset @beginItemNumber rows fetch next @loopSize  rows only;
+
+create clustered index cx_tempdata on #tempdata (Rowindex);
+
+select LIC.* 
+from #tempdata t
+inner join LoadItemColumn LIC on LoadID = @id and LIC.RowIndex = t.RowIndex";
+
 			for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
 			{
 				//bulk load rowindex starts with 2!
-				List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id and RowIndex between @beginItemNumber and @endItemNumber", new { id = load.ID, beginItemNumber = beginItemNumber + rowIndexStartNumber, endItemNumber = endItemNumber + rowIndexStartNumber }).ToList();
+				List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>(itemcolquery, new { id = load.ID, beginItemNumber , loopSize }).ToList();
 
 				//create API models                    
 				for (int currentIndex = beginItemNumber; currentIndex < endItemNumber; currentIndex++)
