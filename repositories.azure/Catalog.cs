@@ -345,8 +345,8 @@ where	ExecutionID = @executionID
 				if (tagTypeId > 0)
 				{
 					var tagExists = await connection.QuerySingleOrDefaultAsync<bool>(
-						"select cast(iif(count(1) > 1, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and lower([Value]) = @value",
-						new { tagTypeId, value = value.ToLower() }
+						"select cast(iif(count(1) > 1, 1, 0) as bit) from Tag where TagTypeID = @tagTypeId and lower([Value]) = @value and state = @state",
+						new { tagTypeId, value = value.ToLower(), state = State.Active}
 					);
 
 					if (tagExists)
@@ -803,6 +803,8 @@ from	Tag t
 		inner join reporting.Global_Resource u on u.ResourceID = t.UpdatedBy
 		inner join TagType tt on tt.ID = t.TagTypeID";
 
+			dbArgs.Add("@state", State.Active);
+			queryFilters.Add($"t.state = @state");
 			queryParams.CheckForQueryParameter<Guid>("uid", "t.[UID]", "@uid", ref dbArgs, ref queryFilters);
 			queryParams.CheckForQueryParameter("tagtypeuid", "tt.[uid]", "@tagtypeid", ref dbArgs, ref queryFilters, SYSTEM_TAG_TYPE_UID);
 			queryParams.CheckForQueryParameter<int>("id", "t.[ID]", "@id", ref dbArgs, ref queryFilters);
