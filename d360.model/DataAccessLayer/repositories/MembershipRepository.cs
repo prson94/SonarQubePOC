@@ -261,7 +261,8 @@ insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Da
 				while (uids.Count > 0)
 				{
 					subset = uids.Take(limit).ToList();
-					uids.RemoveRange(0, limit);
+					var removecount = subset.Count();
+					uids.RemoveRange(0, removecount);
 					QueueSource.CreateMessage(constants.Queue.Search, new ReindexModel
 					{
 						CompanyID = CompanyContext.CurrentCompanyID,
