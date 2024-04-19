@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
- <changeSet author="Pappas,Puneet" id="Function.metrics.RuleFiltering-v2.0">
+ <changeSet author="Pappas" id="Function.metrics.RuleFiltering-v3.0">
   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
 create or alter function metrics.RuleFiltering
@@ -19,69 +19,103 @@ as
 begin
     declare @include bit = 1;
 
-	declare @tblFilters table (AssetTypeID int, Position int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max));
+	-- Position column below is for the looping we need to do.
+	-- [Include] column is to store the state of each check. If all are 1, then the function result is TRUE.
+	declare @tblFilters table (Position int identity, AssetTypeID int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max), [Include] bit null);
 	insert into @tblFilters
-		select	AssetTypeID, Position, FieldTypeID, FieldName, [Type], Operator, Value
-		from	openjson(@paths) with (AssetTypeID int, Position int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max));
+		select	AssetTypeID, FieldTypeID, FieldName, [Type], Operator, Value, null
+		from	openjson(@paths) with (AssetTypeID int, FieldTypeID int, FieldName nvarchar(250), [Type] varchar(50), Operator int, Value nvarchar(max))
+		where	AssetTypeID = @assetTypeId
+				and FieldTypeID is not null;
 
-	if exists (select 1 from @tblFilters where FieldTypeID is not null and AssetTypeID = @assetTypeId)
+	declare @maxPosition int,
+			@currentPosition int = 1;
+	select @maxPosition = max(Position) from @tblFilters;
+
+	while @currentPosition <= @maxPosition
 	begin
-		if exists (select 1 from @tblFilters where Type = 'Text' and AssetTypeID = @assetTypeId)
-		begin
-			if exists(
-						select	1
-						from	@tblFilters rf
-								inner join dbo.FieldType ft on ft.ID = rf.FieldTypeID and ft.assetTypeId = @assetTypeId
-								left join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId 
-						where 	rf.AssetTypeID = @assetTypeId and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) = rf.Value
-					)
-			begin
-				set @include = 1
-			end
-			else
-			begin
-				set @include = 0
-			end
-		end
+		declare @operator int,
+				@type varchar(25),
+				@valueToVerify nvarchar(max),
+				@testValue nvarchar(max),
+				@currentInclude bit = 1;
 
-		if exists (select 1 from @tblFilters where Type = 'Boolean' and AssetTypeID = @assetTypeId and Operator in (18,19))
-		begin
-			if exists(
-						select	1
-						from	@tblFilters rf
-								inner join dbo.FieldType ft on ft.ID = rf.FieldTypeID and ft.assetTypeId = @assetTypeId
-								Left join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId  
-						where  rf.AssetTypeID = @assetTypeId 
-						and ((Operator = 18 and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) in ('true', '1')) 
-						or (Operator = 19 and coalesce(fd.FormattedValue, ft.DefaultFormattedValue) in ('false', '0')))
-					)
-			begin
-				set @include = 1
-			end
-			else
-			begin
-				set @include = 0
-			end
-		end
+		select	top 1
+				@type = ft.[Type],	
+				@valueToVerify = coalesce(fd.FormattedValue, ft.DefaultFormattedValue),
+				@testValue = rf.[Value],
+				@operator = rf.Operator 
+		from	@tblFilters rf
+				inner join dbo.FieldType ft on ft.ID = rf.FieldTypeID and ft.assetTypeId = @assetTypeId and rf.AssetTypeID = @assetTypeId
+				left join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId
+		where	rf.Position = @currentPosition;
 
-		if exists (select 1 from @tblFilters where Type = 'Lookup' and AssetTypeID = @assetTypeId)
+
+		if  (@type = 'Boolean' and @operator = 1 and @valueToVerify in ('true', '1'))											--IS 
+			or (@type = 'Date' and @operator = 1 and try_cast(@valueToVerify as date) = try_cast(@testValue as date))			
+			or (@type = 'Decimal' and @operator = 1 and try_cast(@valueToVerify as decimal) = try_cast(@testValue as decimal))	
+			or (@type = 'Lookup' and @operator = 1 and exists (
+				select	1
+				from	@tblFilters rf
+						inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId
+						inner join dbo.FieldType ft on ft.Id = fd.FieldTypeID and ft.Type = 'Lookup'
+						inner join dbo.AssetType t on t.Object = ft.LookupObjectType+'Type' and t.ObjectId = ft.LookupObjectID
+						inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = fd.Value and rf.Value = a.Uid
+				where	rf.Position = @currentPosition
+				)
+			)
+			or (@type = 'Number' and @operator = 1 and try_cast(@valueToVerify as bigint) = try_cast(@testValue as bigint))		
+			or (@type = 'Text' and @operator = 1 and @valueToVerify = @testValue)												
+			or (@type = 'Date' and @operator = 2 and try_cast(@valueToVerify as date) <> try_cast(@testValue as date))			--IS NOT
+			or (@type = 'Boolean' and @operator = 2 and @valueToVerify in ('false', '0'))										
+			or (@type = 'Decimal' and @operator = 2 and try_cast(@valueToVerify as decimal) <> try_cast(@testValue as decimal))	
+			or (@type = 'Lookup' and @operator = 2 and exists (
+				select	1
+				from	@tblFilters rf
+						inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId
+						inner join dbo.FieldType ft on ft.Id = fd.FieldTypeID and ft.Type = 'Lookup'
+						inner join dbo.AssetType t on t.Object = ft.LookupObjectType+'Type' and t.ObjectId = ft.LookupObjectID
+						inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = fd.Value and rf.Value <> a.Uid
+				where	rf.Position = @currentPosition
+				)
+			)
+			or (@type = 'Number' and @operator = 2 and try_cast(@valueToVerify as bigint) <> try_cast(@testValue as bigint))	
+			or (@type = 'Text' and @operator = 2 and @valueToVerify <> @testValue)												
+			or (@type = 'Text' and @operator = 3 and @valueToVerify like '%' + @testValue + '%')								--CONTAINS
+			or (@type = 'Text' and @operator = 4 and @valueToVerify not like '%' + @testValue + '%')							--NOT CONTAINS
+			or (@type = 'Text' and @operator = 5 and @valueToVerify like @testValue + '%')										--STARTS WITH
+			or (@type = 'Text' and @operator = 6 and @valueToVerify like '%' + @testValue)										--ENDS WITH
+			or (@type = 'Date' and @operator = 7 and try_cast(@valueToVerify as date) < try_cast(@testValue as date))			--BEFORE
+			or (@type = 'Date' and @operator = 8 and try_cast(@valueToVerify as date) > try_cast(@testValue as date))			--AFTER
+			or (@operator = 10 and @valueToVerify <> '' and @valueToVerify is not null)											--POPULATED
+			or (@operator = 11 and (@valueToVerify = '' or @valueToVerify is null))												--NOTPOPULATED
+			or (@type = 'Decimal' and @operator = 12 and try_cast(@valueToVerify as decimal) > try_cast(@testValue as decimal))	--GT
+			or (@type = 'Number' and @operator = 12 and try_cast(@valueToVerify as bigint) > try_cast(@testValue as bigint))	
+			or (@type = 'Decimal' and @operator = 13 and try_cast(@valueToVerify as decimal) <= try_cast(@testValue as decimal))--LTE
+			or (@type = 'Number' and @operator = 13 and try_cast(@valueToVerify as bigint) <= try_cast(@testValue as bigint))	
+			or (@type = 'Decimal' and @operator = 14 and try_cast(@valueToVerify as decimal) < try_cast(@testValue as decimal))	--LT
+			or (@type = 'Number' and @operator = 14 and try_cast(@valueToVerify as bigint) < try_cast(@testValue as bigint))	
+			or (@type = 'Decimal' and @operator = 15 and try_cast(@valueToVerify as decimal) >= try_cast(@testValue as decimal))--GTE
+			or (@type = 'Number' and @operator = 15 and try_cast(@valueToVerify as bigint) >= try_cast(@testValue as bigint))	
+			or (@type = 'Boolean' and @operator = 18 and @valueToVerify in ('true', '1'))										--IS TRUE
+			or (@type = 'Boolean' and @operator = 19 and @valueToVerify in ('false', '0'))										--IS FALSE
+			or (@type = 'Date' and @operator = 20 and try_cast(@valueToVerify as date) <= try_cast(@testValue as date))			--ON OR BEFORE
+			or (@type = 'Date' and @operator = 21 and try_cast(@valueToVerify as date) >= try_cast(@testValue as date))			--ON OR AFTER
 		begin
-			if exists(
-						select	1
-						from	@tblFilters rf
-								inner join dbo.Field fd on fd.FieldTypeID = rf.FieldTypeID and fd.AssetID = @assetId and rf.AssetTypeID = @assetTypeId
-								inner join dbo.FieldType ft on ft.Id = fd.FieldTypeID and ft.Type = 'Lookup'
-								inner join dbo.AssetType t on t.Object = ft.LookupObjectType+'Type' and t.ObjectId = ft.LookupObjectID
-								inner join dbo.Asset a on a.AssetTypeID = t.ID and a.ObjectID = fd.Value and rf.Value = a.Uid
-					)
-			begin
-				set @include = 1
-			end
-			else
-			begin
-				set @include = 0
-			end
+			set @currentInclude = 1
 		end
+		else
+		begin
+			set @currentInclude = 0
+		end
+	
+		update @tblFilters set [Include] = @currentInclude where Position = @currentPosition;
+		set @currentPosition = @currentPosition + 1;
+	end
+
+	if exists(select 1 from @tblFilters where [Include] = 0)
+	begin
+		set @include = 0;
 	end
 
     -- Return the result of the function

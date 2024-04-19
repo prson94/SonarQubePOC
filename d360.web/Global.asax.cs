@@ -1,30 +1,17 @@
-﻿using System.Web;
+﻿using Autofac;
+using d360.web.Handlers.Exceptions;
+using d360.web.Utilities;
+using System;
+using System.Deployment.Internal.CodeSigning;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
-using d360.model;
-using d360.extensions;
-using Autofac;
-using d360.web.Controllers;
-using System.Diagnostics;
-using System;
-using System.Security.Cryptography;
-using System.Deployment.Internal.CodeSigning;
-using d360.core;
-using System.Linq;
-using d360.core.types;
-using Autofac.Integration.Mvc;
-using d360.web.Utilities;
-using d360.extensions.caching;
-using d360.web.Handlers.Exceptions;
-using d360.web.Services;
-using MediatR.Extensions.Autofac.DependencyInjection;
-using d360.web.Services.Favorites;
-using Microsoft.ApplicationInsights;
-using d360.web.Models;
 
 namespace d360.web
 {
-    public static class AutofacExtensions
+	public static class AutofacExtensions
     {
 	    public static void AddWebApiExceptionHandler<T>(this ContainerBuilder builder)
 			where T: IWebApi2ExceptionHandler
