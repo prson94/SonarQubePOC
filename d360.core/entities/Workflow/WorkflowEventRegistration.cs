@@ -55,4 +55,17 @@ namespace d360.core.entities.Workflow
 		[DataMember]
 		public int? IssueTypeID { get; set; }
 	}
+
+	public class ScheduledWorkflowExecution: BaseIntObject, IIntObject
+	{
+		[DataMember]
+		public int EventID { get; set; }
+
+		[DataMember]
+		public Guid instanceID { get; set; }
+
+		[DataMember]
+		public DateTime ExecutionDate { get; set; }
+
+	}
 }
