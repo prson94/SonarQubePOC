@@ -38,6 +38,8 @@ namespace d360.web.Controllers
 		private readonly IResponsibilityRepository ResponsibilityRepository;
 		private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
 
+		readonly int MAX_NUMBER_OF_COLUMNS = 16384;
+
 		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
 			GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
 			: base(set)
@@ -1005,7 +1007,7 @@ order by Sort, title";
 						// User add and drop extra column added to fill excel sheet.
 						// Some reason not identified Number of column return more than 16k
 						// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
-						if (stats.NumberOfColumns == constants.MAX_NUMBER_OF_COLUMNS)
+						if (stats.NumberOfColumns == MAX_NUMBER_OF_COLUMNS)
 						{
 							NumberOfColumns = CountNumberOfColumnsManually(stats,xls);
 						}
