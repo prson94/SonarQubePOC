@@ -29,7 +29,7 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags`;
 
         if (getAll) {
-            url += "?getAll=true";
+			url += "?_includetotal=false";
         }
 
         return this.http.get(url)
