@@ -6,6 +6,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
 using Microsoft.Web.Http;
 using repositories;
 using Resources;
@@ -13,11 +14,13 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using static d360.core.entities.Resource;
@@ -697,8 +700,11 @@ namespace d360.web.Controllers.V2
 			ResourceApiViewModel model = new ResourceApiViewModel();
 			var queryParams = Request.GetQueryNameValuePairs();
 			var sql = "";
-			var sqlColumns = "";
-			var sqlTables = "";
+			StringBuilder sqlColumns = new StringBuilder();
+			StringBuilder sqlColumnsLoad = new StringBuilder();
+			StringBuilder sqlTables = new StringBuilder();
+			StringBuilder sqlTablesLoad = new StringBuilder();
+
 			int _pageSize = 200;
 			int _pageNum = 1;
 			string _direction = "desc";
@@ -707,7 +713,9 @@ namespace d360.web.Controllers.V2
 			string whereSql = "";
 			string filterValue = "";
 			List<string> v2ApiActions = new List<string> { "P", "R", "U" };
-			string countSql = "select	count(1) ";
+			StringBuilder countSql = new StringBuilder("select	count(1) ");
+			string temptable = "";
+			string Droptemptable = "";
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -837,128 +845,176 @@ namespace d360.web.Controllers.V2
 						}
 
 						var parentAssetType = assetType == null ? null : Company.GetParentType(assetType.ID);
+						Droptemptable = $@"drop table if exists #tempExecutionData;";
 
-						sqlColumns = $"select I.RowIndex as RowIndex\n";
-						sqlTables = @"
-							from (
-								select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
-								union all
-								select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
-							 ) EA
-							 left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+						temptable = $@"
+										drop table if exists #tempExecutionData;
+										select *
+										into #tempExecutionData
+										from (
+											select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId in (@putExecutionID,@postExecutionID)
+											union all
+											select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId in (@putExecutionID,@postExecutionID)
+										 ) EA;
+										create clustered index cx_#tempExecutionData on #tempExecutionData(ExecutionId, ItemNumber);
+									";
+
+						sqlColumns.AppendLine($"select I.RowIndex as RowIndex");
+						sqlColumnsLoad.AppendLine ($"select I.RowIndex as RowIndex");
+						sqlTables.AppendLine("from #tempExecutionData EA");
+						sqlTables.AppendLine("left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid");
+						sqlTablesLoad.AppendLine("from  LoadItem I");
 						columns.ForEach(c =>
 						{
 							var i = c.ColumnIndex;
 
 							if (parentAssetType != null && c.Name == parentAssetType.Name)
 							{
-								sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
-								sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+								sqlColumns.AppendLine($",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}");
+								sqlTables.AppendLine($" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID");
+
+								sqlColumnsLoad.AppendLine($",C{i}.[Value] as Column{i}");
+								sqlTablesLoad.AppendLine($" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}");
 							}
 							else
 							{
-								sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-								sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-								sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+								sqlColumns.AppendLine($",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}");
+								sqlTables.AppendLine($" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}");
+								sqlTables.AppendLine($" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'");
+
+								sqlColumnsLoad.AppendLine($",C{i}.[Value] as Column{i}");
+								sqlTablesLoad.AppendLine($" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}");
 							}
 
 						});
 
-						sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+						sqlColumns.AppendLine($", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]");
+						sqlColumns.AppendLine(", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage");
 
-						sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-						sql += $"union all\n";
-						sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql + orderBySql + offsetSql;
+						sqlColumnsLoad.AppendLine($", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]");
+						sqlColumnsLoad.AppendLine( ", case when I.StatusMessage is not null and I.[Status] = 0 then I.StatusMessage else  '' end as StatusMessage");
 
-						countSql += $" from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-						countSql += $"union all\n";
-						countSql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R " + whereSql;
+						sql = $@"select * from ({string.Format(sqlColumns.ToString(), "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID
+								 union all
+								{string.Format(sqlColumns.ToString(), "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID
+								union all
+								{sqlColumnsLoad} {sqlTablesLoad} where I.LoadID = @id and I.Status = 0
+								) R 
+								{whereSql}
+								{orderBySql} 
+								{offsetSql}";
+
+						countSql.AppendLine($" from ({string.Format(sqlColumns.ToString(), "Item successfully updated.")} {sqlTables} where EA.ExecutionID = @putExecutionID");
+						countSql.AppendLine("union all");
+						countSql.AppendLine($"{string.Format(sqlColumns.ToString(), "Item successfully added.")} {sqlTables} where EA.ExecutionID = @postExecutionID");
+						countSql.AppendLine($" union all ");
+						countSql.AppendLine($" {sqlColumnsLoad} {sqlTablesLoad} where I.LoadID = @id and I.Status = 0 ");
+						countSql.AppendLine($" ) R ");
+						countSql.AppendLine(whereSql);
 
 						break;
 					case "R":
-						sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
-						countSql += $" from(select I.RowIndex as RowIndex\n";
-						sqlTables = @"from LoadItem I
-									  left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
-									  left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
-									  left join api.Execution E on E.ExecutionID = @postExecutionID ";
+						sqlColumns.AppendLine ($"select	* from(select I.RowIndex as RowIndex");
+						countSql.AppendLine($" from(select I.RowIndex as RowIndex");
+						sqlTables.AppendLine("from LoadItem I");
+						sqlTables.AppendLine("left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID");
+						sqlTables.AppendLine("left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID");
+						sqlTables.AppendLine("left join api.Execution E on E.ExecutionID = @postExecutionID");
 						columns.ForEach(c =>
 						{
 							var i = c.ColumnIndex;
-							sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-							countSql += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-							sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+							sqlColumns.AppendLine($",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}");
+							countSql.AppendLine($",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}");
+							sqlTables.AppendLine($" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}");
+							sqlTables.AppendLine($" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'");
 
 						});
-						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+						sqlColumns.AppendLine($", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]");
+						sqlColumns.AppendLine(", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage");
 
-						countSql += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
-						countSql += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
+						countSql.AppendLine($", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]");
+						countSql.AppendLine(", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage");
 
 						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
-						countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
+						countSql.AppendLine($" {sqlTables} where I.LoadID = @id) X " + whereSql);
 
 						break;
 					case "U":
-						countSql += " from(select I.RowIndex as RowIndex\n";
-						sqlColumns = $"select	* from(select I.RowIndex as RowIndex\n";
-						sqlTables = @"from LoadItem I
-										left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
+						countSql.AppendLine(" from(select I.RowIndex as RowIndex");
+						sqlColumns.AppendLine($"select	* from(select I.RowIndex as RowIndex");
+						sqlTables.AppendLine("from LoadItem I");
+						sqlTables.AppendLine("left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID");
 						columns.ForEach(c =>
 						{
 							var i = c.ColumnIndex;
-							sqlColumns += $",C{i}.[Value] as Column{i}\n";
-							countSql += $",C{i}.[Value] as Column{i}\n";
-							sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+							sqlColumns.AppendLine($",C{i}.[Value] as Column{i}");
+							countSql.AppendLine($",C{i}.[Value] as Column{i}");
+							sqlTables.AppendLine($" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}");
 
 						});
-						sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+						sqlColumns.AppendLine($", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]");
+						sqlColumns.AppendLine(", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage");
 
-						countSql += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-						countSql += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+						countSql.AppendLine($", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]");
+						countSql.AppendLine(", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage");
 
 						sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
-						countSql += $" {sqlTables} where I.LoadID = @id) X " + whereSql;
+						countSql.AppendLine($" {sqlTables} where I.LoadID = @id) X ");
+						countSql.AppendLine(whereSql);
 						break;
 				}
 
+				var getAllQuery = $@"{temptable}
+									 {countSql}
+									 {sql}
+									 {Droptemptable}
+									";
 
-				var results = Company.Query<dynamic>(sql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue });
-				var total = Company.Query<int>(countSql, new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue }).FirstOrDefault();
+				SqlMapper.GridReader gridReader = await Company.Connection.QueryMultipleAsync(
+				  new CommandDefinition(getAllQuery,
+				  parameters: new { id = load.ID, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID, filterValue },
+				  commandTimeout: ApiTimeout
+				));
 				model.pageNum = _pageNum;
 				model.pageSize = _pageSize;
-				model.items = results;
-				model.total = total;
+
+				model.total = gridReader.Read<int>().FirstOrDefault();
+				model.items = gridReader.Read<dynamic>().ToList();
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
 			else
 			{
-				countSql += "from(select I.RowIndex as RowIndex";
-				sqlColumns = "select	* from(select I.RowIndex as RowIndex";
-				sqlTables = "from LoadItem I";
+				countSql.AppendLine("from(select I.RowIndex as RowIndex");
+				sqlColumns.AppendLine("select	* from(select I.RowIndex as RowIndex");
+				sqlTables.AppendLine("from LoadItem I");
 				columns.ForEach(c =>
 				{
-					countSql += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
-					sqlColumns += string.Format(", C{0}.Value as Column{0}", c.ColumnIndex);
-					sqlTables += string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex);
+					countSql.AppendLine(string.Format(", C{0}.Value as Column{0}", c.ColumnIndex));
+					sqlColumns.AppendLine(string.Format(", C{0}.Value as Column{0}", c.ColumnIndex));
+					sqlTables.AppendLine(string.Format(" left join LoadItemColumn C{0} on C{0}.LoadID = I.LoadID and C{0}.RowIndex = I.RowIndex and C{0}.ColumnIndex = {0}", c.ColumnIndex));
 				});
-				sqlColumns += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
-				countSql += ", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage";
+				sqlColumns.AppendLine(", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage");
+				countSql.AppendLine(", case I.[Status] when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status], I.StatusMessage as StatusMessage");
 
 				sql += sqlColumns + " " + sqlTables + " where I.LoadID = @id) X " + whereSql + orderBySql + offsetSql;
 				var count = countSql + " " + sqlTables + " where I.LoadID = @id) X " + whereSql;
 
-				var results = Company.Query<dynamic>(sql, new { id = load.ID, filterValue });
-				var total = Company.Query<int>(count, new { id = load.ID, filterValue }).FirstOrDefault();
+				var getAllQuery = $@"{count}
+
+									 {sql}
+									";
+
+				SqlMapper.GridReader gridReader = await Company.Connection.QueryMultipleAsync(
+				  new CommandDefinition(getAllQuery,
+				  parameters: new { id = load.ID, filterValue },
+				  commandTimeout: ApiTimeout
+				));
+
 				model.pageNum = _pageNum;
 				model.pageSize = _pageSize;
-				model.items = results;
-				model.total = total;
+				model.total = gridReader.Read<int>().FirstOrDefault();
+				model.items = gridReader.Read<dynamic>().ToList();
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
