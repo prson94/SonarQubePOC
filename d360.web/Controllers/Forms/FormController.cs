@@ -38,6 +38,8 @@ namespace d360.web.Controllers
 		private readonly IResponsibilityRepository ResponsibilityRepository;
 		private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
 
+		readonly int MAX_NUMBER_OF_COLUMNS = 16384;
+
 		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
 			GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
 			: base(set)
@@ -998,9 +1000,21 @@ order by Sort, title";
 								$"Please reduce the number of rows from {stats.NumberOfRows} to less than 100000",
 								HttpStatusCode.BadRequest);
 						}
+
+						var NumberOfColumns = stats.NumberOfColumns;
+
+						// below check added ticket GOV-32536
+						// User add and drop extra column added to fill excel sheet.
+						// Some reason not identified Number of column return more than 16k
+						// Attached file with ticket is "Contract uploader template (For Precisely Testing)"
+						if (stats.NumberOfColumns == MAX_NUMBER_OF_COLUMNS)
+						{
+							NumberOfColumns = CountNumberOfColumnsManually(stats,xls);
+						}
+
 						int columnCount = 0;
 
-						for (int i = 1; i <= stats.NumberOfColumns; i++)
+						for (int i = 1; i <= NumberOfColumns; i++)
 						{
 							var testValue = xls.GetCellValueAsString(1, i);
 
@@ -1403,6 +1417,21 @@ order by Sort, title";
 			}
 
 			return File(bytes, "application/vnd.ms-excel", $"{load.DateCompleted}.xlsx");
+		}
+
+		private int CountNumberOfColumnsManually(SLWorksheetStatistics stats, SLDocument xls)
+		{
+			var lastcolumn = 0;
+			for (int i = 1; i <= stats.NumberOfColumns; i++)
+			{
+				var testValue = xls.GetCellValueAsString(1, i);
+
+				if (!string.IsNullOrEmpty(testValue))
+				{
+					lastcolumn++;
+				}
+			}
+			return lastcolumn;
 		}
 
 		#endregion
