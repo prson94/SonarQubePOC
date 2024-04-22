@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.core.queue;
 using d360.model;
 using Dapper;
-using DocumentFormat.OpenXml.Spreadsheet;
 using igx.jobs.apiexecutionprocessor.helpers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs.apiexecutionprocessor
