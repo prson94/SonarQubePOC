@@ -7,6 +7,7 @@ using igx.jobs.apiexecutionprocessor.helpers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -40,7 +41,7 @@ from	reporting.Global_FieldAudit i_p
 
 		[FunctionName(FUNCTION_NAME), ExponentialBackoffRetry(5, "00:00:10", "00:15:00")]
 		public async Task Run([QueueTrigger(constants.Queue.PostExecution, Connection = constants.Setting.Storage)] string message, ILogger log)
-        {
+		{
 			var request = message.AsObject<PostExecutionQueueMessage>();
 
 			var logProperties = new Dictionary<string, object> {
@@ -156,6 +157,9 @@ from	reporting.Global_FieldAudit i_p
 					case PostExecutionQueueMessageAction.UpdateAssetLookupValues when execution.Action == ApiExecutionAction.PutAssets:
 						commandText = updateLookupValues();
 						break;
+					case PostExecutionQueueMessageAction.UpdateAssetPaths:
+						UpdateAssetPaths(companyConnection, execution, log);
+						break;
 					default:
 						commandText = "";
 						break;
@@ -174,6 +178,8 @@ from	reporting.Global_FieldAudit i_p
 				}
 			}
 		}
+
+
 
 		#region History Generators
 
@@ -1031,6 +1037,49 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_Genera
 
 				drop table if exists #tempUpdateLookupFieldTable
 				drop table if exists #updatedObjectIds;";
+		}
+
+		void UpdateAssetPaths(SqlConnection companyConnection, ApiExecution execution, ILogger log)
+		{
+			try
+			{
+				var assetTypeUid = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(execution.Fields).AssetTypeUid;
+				var assetType = companyConnection.QueryFirst<AssetType>("select * from dbo.AssetType where uid = @assetTypeUid", new { assetTypeUid });
+
+				int itemsPerLoop = 500;
+				decimal numberOfLoops = Math.Ceiling(execution.Total / (decimal)itemsPerLoop);
+
+				for (int i = 0; i < numberOfLoops; i++)
+				{
+					var sqlParameters = new
+					{
+						executionID = execution.ExecutionID,
+						@class = (int)assetType.Class,
+						begin = itemsPerLoop * i,
+						end = itemsPerLoop * i + itemsPerLoop,
+						isInsert = false
+					};
+					using (SqlTransaction trans = companyConnection.BeginTransaction())
+					{
+						try
+						{
+							companyConnection.Execute("exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+							sqlParameters, transaction: trans, commandTimeout: 3600);
+
+							trans.Commit();
+						}
+						catch(Exception ex)
+						{
+							trans.Rollback();
+							log.LogCritical(ex, $"Error when post-processing execution [UpdateAssetPaths:{execution.Id}].");
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				log.LogCritical(ex, $"Error when post-processing execution [UpdateAssetPaths:{execution.Id}].");
+			}
 		}
 	}
 }

@@ -6,7 +6,8 @@ public enum PostExecutionQueueMessageAction
 	Indexing,
 	Scoring,
 	Workflow,
-	UpdateAssetLookupValues
+	UpdateAssetLookupValues,
+	UpdateAssetPaths
 }
 
 public enum ChangeLogType

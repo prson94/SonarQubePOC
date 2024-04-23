@@ -890,6 +890,7 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 			bool hasDuplicateUids = false;
 			bool enableJsonAttributes = false;
 			bool hasCounterField = false;
+			bool sendAssetGraphPostExecutionEvent = false;
 
 			try
 			{
@@ -1864,15 +1865,23 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 									if (shouldRunMergeAssetPath)
 									{
-										//call new procedure.
-										addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
+										if (isInsert)
+										{
+											//call MergeAssetPath only on insert as queries in govern require asset path to be populated to be returned
+											addMeasurement(metrics, $"MergeAssetPaths >> {currentLoop} > Begin", 0, ++step);
 
-										Connection.Execute(
-											"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
-											new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
-											transaction: trans, timeout);
-										addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
-										sw.Restart();
+											Connection.Execute(
+												"exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
+												new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber, isInsert },
+												transaction: trans, timeout);
+											addMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
+											sw.Restart();
+										}
+										else
+										{
+											//in case of update, delegate path processing to post execution processor for faster updating
+											sendAssetGraphPostExecutionEvent = true;
+										}
 									}
 
 									// Must execute BEFORE the Success flag is updated below.
@@ -2127,6 +2136,11 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 
 					QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.History, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
 					QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+
+					if (sendAssetGraphPostExecutionEvent)
+					{
+						QueueSource.CreateMessage(constants.Queue.PostExecution, new PostExecutionQueueMessage { Action = PostExecutionQueueMessageAction.UpdateAssetPaths, CompanyID = CurrentCompanyID, ExecutionId = execution.Id });
+					}
 
 					if (!isInsert)
 					{
