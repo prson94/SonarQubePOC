@@ -168,6 +168,7 @@
 	<include file="scripts/Table.workflow.VersionStep.xml"/>
 	<include file="scripts/Table.workflow.VersionStepTransition.xml"/>
 	<include file="scripts/Table.workflow.EventRegistration.xml"/>
+	<include file="scripts/Table.workflow.ScheduledWorkflowExecution.xml"/>
 	<include file="scripts/Table.workflow.Item.xml"/>
 	<include file="scripts/Table.workflow.ItemAssignment.xml"/>
 	<include file="scripts/Table.workflow.ItemStep.xml"/>

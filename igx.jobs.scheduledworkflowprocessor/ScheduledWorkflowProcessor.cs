@@ -36,7 +36,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 		}
 
 		[Singleton(Mode = SingletonMode.Function)]
-		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log)   
+		public void Run([TimerTrigger(TIMER_SETTINGS)]TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
         {
 			try
 			{
@@ -70,7 +70,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 							foreach (var registration in scheduledWorkflows)
 							{
 								// If the registration applies fire of the workflow and break if not go to the next one.
-								if (company.ExecuteScheduledWorkflow(registration).Result)
+								if (company.ExecuteScheduledWorkflow(registration, executionContext.InvocationId).Result)
 								{
 									break;
 								}

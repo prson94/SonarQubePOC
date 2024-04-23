@@ -79,7 +79,7 @@ namespace d360.model
 		/// <returns></returns>
 		Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
 
-		Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
+		Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId);
 
 		/// <summary>
 		/// Evaluate a given workflow step, if we succeed we need to add a new event for the transitions that follow
@@ -1936,7 +1936,7 @@ namespace d360.model
 			return true;
 		}
 
-		public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration)
+		public async Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration, Guid executionContextInstanceId)
 		{
 			Log.LogTrace($"DEBUG - CHECKING IF SCHEDULED WORKFLOW SHOULD RUN TYPE ID {registration.TypeID}");
 
@@ -1958,8 +1958,14 @@ namespace d360.model
 			int matchingItems = 0;
 			List<string> items = new List<string>();
 
-			if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow)
+			ScheduledWorkflowExecution lastExecution = Query<ScheduledWorkflowExecution>("Select * from [workflow].[ScheduledWorkflowExecution] where eventID = @eventID order by ExecutionDate desc", new { eventID = registration.ID }).FirstOrDefault();
+
+			//Add a check here to see if currently being executed. 
+			if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow && (lastExecution?.ExecutionDate == null || settings.GetNextExecution(lastExecution?.ExecutionDate) <= DateTime.UtcNow))
 			{
+				//register which instance is running it. 
+				Connection.Execute("Insert into [workflow].[ScheduledWorkflowExecution] (EventID, InstanceID, ExecutionDate) Values (@eventID, @instanceID, @executionDate)", new { EventID = registration.ID, instanceID = executionContextInstanceId, ExecutionDate = DateTime.UtcNow });
+
 				string sql = @"select 
 										ad.ObjectID as ID,
 										ad.DisplayValue

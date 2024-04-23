@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.Workflow.ScheduledWorkflowExecution-v1">
+  <comment>GOV-32315</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'ScheduledWorkflowExecution')
+		BEGIN
+			CREATE TABLE [workflow].[ScheduledWorkflowExecution](
+				[ID] [int] IDENTITY(1,1) NOT NULL,
+				[EventID] [int] NOT NULL,
+				[instanceID] uniqueidentifier NOT NULL,
+				[ExecutionDate] [datetime] NOT NULL,
+			 CONSTRAINT [PK_ScheduledWorkflowExecution] PRIMARY KEY CLUSTERED 
+			(
+				[ID] ASC
+			)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+			) ON [PRIMARY]
+
+			ALTER TABLE [workflow].[ScheduledWorkflowExecution]  WITH CHECK ADD  CONSTRAINT [FK_ScheduledWorkflowExecution_WorkflowEventRegistration] FOREIGN KEY([EventID])
+			REFERENCES [workflow].[EventRegistration] ([ID])
+			ON DELETE CASCADE
+
+			ALTER TABLE [workflow].[ScheduledWorkflowExecution] CHECK CONSTRAINT [FK_ScheduledWorkflowExecution_WorkflowEventRegistration]		
+		END
+		]]>
+    </sql>
+	<rollback>
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
+		]]>
+		</sql>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
