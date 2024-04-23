@@ -561,29 +561,43 @@ select count(1) from AuditView {whereSql};
 				condition = "ga.[Object] = @Object and ga.ObjectId = @ObjectId";
 			}
 
-			result.resourceName = Company.Query<dynamic>($@"select distinct
-					CASE WHEN R.State = 3 THEN
-						R.FirstName + ' ' + R.LastName + ' (deleted)'
-					ELSE
-						R.FirstName + ' ' + R.LastName
-					END as val
-				from reporting.global_audit ga
-				inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-				where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+			var strQuery = $@"
+drop table if exists #tempauditdata;
 
-			result.action = Company.Query<dynamic>($@"select distinct ga.action as val
-				from reporting.global_audit ga
-				where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x => x.val).ToList();
+select *
+into #tempauditdata
+from reporting.global_audit ga
+where {condition};
 
-			result.actionObject = Company.Query<dynamic>($@"select distinct
-				case when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 1 then 'Business Asset'
-				when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 8 then 'Technical Asset'
-				else  ga.ActionObject end val
-				from reporting.global_audit ga
-				left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
-				left join Asset A on A.Object = ga.Object and A.ObjectID = ga.ObjectID
-				left join AssetType ATT on A.AssetTypeID = att.id
-				where {condition}", new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout).Select(x =>
+select distinct
+CASE WHEN R.State = 3 THEN
+	R.FirstName + ' ' + R.LastName + ' (deleted)'
+ELSE
+	R.FirstName + ' ' + R.LastName
+END as val
+from #tempauditdata ga
+inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID;
+
+select distinct ga.action as val
+from #tempauditdata ga;
+
+select distinct
+case when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 1 then 'Business Asset'
+when ga.ActionObject like 'Artifact%' and coalesce(at.class, att.class) = 8 then 'Technical Asset'
+else  ga.ActionObject end val
+from #tempauditdata ga
+left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+left join Asset A on A.Object = ga.Object and A.ObjectID = ga.ObjectID
+left join AssetType ATT on A.AssetTypeID = att.id;
+
+drop table if exists #tempauditdata;
+";
+
+			SqlMapper.GridReader gridReader = Company.QueryMultiple(strQuery, new { objectInfo.Object, objectInfo.ObjectId }, ApiTimeout);
+
+			result.resourceName = gridReader.Read<dynamic>().Select(x => x.val).ToList();
+			result.action = gridReader.Read<dynamic>().Select(x => x.val).ToList();
+			result.actionObject = gridReader.Read<dynamic>().Select(x =>
 			{
 				return ActionObjectDictionary.ContainsKey(x.val) ? ActionObjectDictionary[x.val] : x.val;
 			}).ToList();
