@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 
 namespace igx.jobs.scheduledworkflowprocessor
 {
@@ -40,8 +41,12 @@ namespace igx.jobs.scheduledworkflowprocessor
         {
 			try
 			{
-				var companies = GetCompaniesByCurrentSlot();
+				//add random delay so instances run at an offset to each other.
+				var rand = new Random();
+				Thread.Sleep(rand.Next(30) * 1000);
 
+				var companies = GetCompaniesByCurrentSlot();
+				
 				companies.ForEach(c =>
 				{
 					var logProperties = new Dictionary<string, object> {
@@ -66,7 +71,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 
 							// Load all workflows of type schedule.
 							var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
-
+							
 							foreach (var registration in scheduledWorkflows)
 							{
 								// If the registration applies fire of the workflow and break if not go to the next one.
