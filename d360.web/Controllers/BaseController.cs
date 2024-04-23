@@ -370,7 +370,7 @@ namespace d360.web.Controllers
 
 		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string message)
 		{
-			return ResponseMessage(ReturnApiError(status, message, message));
+			return ResponseMessage(ReturnApiError(status, status.ToString(), message));
 		}
 
 		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
