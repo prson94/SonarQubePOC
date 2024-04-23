@@ -10,7 +10,7 @@ namespace d360.core.entities
     [DataContract]
     public class CompanyDigestExecution : BaseIntObject
 	{
-		[DataMember, Key]
+		[DataMember]
         public int CompanyID { get; set; }
 
 		[DataMember]
