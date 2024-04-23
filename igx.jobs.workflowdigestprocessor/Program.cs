@@ -44,7 +44,7 @@ namespace igx.jobs.workflowdigestprocessor
 
 			//add random delay so instances run at an offset to each other.
 			var rand = new Random();
-			Thread.Sleep(rand.Next(301) * 1000);
+			Thread.Sleep(rand.Next(30) * 1000);
 
 			using (var host = builder.Build())
 			{
