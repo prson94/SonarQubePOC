@@ -36,7 +36,7 @@ namespace igx.jobs.workflowdigestprocessor
 		}
 
 		[Singleton(Mode = SingletonMode.Function)]
-		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log, ExecutionContext executionContext)   
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log, Microsoft.Azure.WebJobs.ExecutionContext executionContext)   
 		{
 			try
 			{
