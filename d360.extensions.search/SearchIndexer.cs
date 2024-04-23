@@ -6,7 +6,6 @@ using d360.extensions.search.models;
 using Dapper;
 using MoreLinq;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -139,7 +138,7 @@ namespace d360.extensions.search
             }
         }
 
-        public void IndexAssets(ConcurrentBag<Guid> AssetGuids)
+        public void IndexAssets(IEnumerable<Guid> AssetGuids)
         {
             if (AssetGuids.Count == 1)
             {
@@ -213,7 +212,7 @@ namespace d360.extensions.search
             }
         }
 
-        public void IndexAssets(ConcurrentBag<Tuple<string, long>> tuples)
+        public void IndexAssets(IEnumerable<Tuple<string, long>> tuples)
         {
             List<IndexObjectModel> models = tuples.Distinct().SelectMany(t => LoadModels(_context, _companyID, t.Item1, t.Item2)).ToList();
             if (models.Any())
@@ -223,9 +222,9 @@ namespace d360.extensions.search
             }
         }
 
-        public void RemoveAssets(ConcurrentBag<Guid> AssetGuids)
+        public void RemoveAssets(IEnumerable<Guid> AssetGuids)
         {
-            if (AssetGuids.Count == 0)
+            if (!AssetGuids.Any())
             {
                 return;
             }
@@ -384,7 +383,7 @@ namespace d360.extensions.search
             _source.AddToIndex(models);
         }
 
-		public void IndexIntersects(ConcurrentBag<int> intersectIds)
+		public void IndexIntersects(IEnumerable<int> intersectIds)
 		{
 			string batchUid = Guid.NewGuid().ToString().Replace('-', '_');
 			string batchTableName = $"##searcindexintersectbatch_{batchUid}";
@@ -425,9 +424,9 @@ namespace d360.extensions.search
 			_context.Execute($@"DROP TABLE IF EXISTS {batchTableName};");
 		}
 
-		public void RemoveIntersects(ConcurrentBag<int> intersectIds)
+		public void RemoveIntersects(IEnumerable<int> intersectIds)
 		{
-			var deletes = new ConcurrentBag<IndexObjectModel>();
+			var deletes = new List<IndexObjectModel>();
 			intersectIds.ForEach((i) =>
 			{
 				//Intersects have two search documents, se we need to delete both
@@ -448,7 +447,7 @@ namespace d360.extensions.search
 			_source.RemoveFromIndex(deletes);
 		}
 
-		public void IndexUpdateAssetPaths(ConcurrentBag<long> AssetIds)
+		public void IndexUpdateAssetPaths(IEnumerable<long> AssetIds)
         {
             string sql = @"select
 	            att.Class as assetclass,

@@ -25,11 +25,13 @@ namespace d360.model.DataAccessLayer
 	{
 		internal IAssetRepository AssetRepository;
 		internal IStorageProvider Storage;
+		internal IQueueSource QueueSource;
 
-		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage, IFeatureFlagService ff) : base(context, ff)
+		public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage, IQueueSource queueSource, IFeatureFlagService ff) : base(context, ff)
 		{
 			AssetRepository = assetRepository;
 			Storage = storage;
+			QueueSource = queueSource;
 		}
 
 		public async Task<IEnumerable<dynamic>> GetAvailableDiagramNodesForAsset(Guid assetUid)
@@ -659,7 +661,9 @@ namespace d360.model.DataAccessLayer
 			}
 
 			// TODO: Add event grid calls here.
-			
+
+			QueueSource.CreateMessage(constants.Queue.PostExecutionIndex, new PostExecutionQueueMessage { CompanyID = CompanyContext.CurrentCompanyID, ExecutionId = execution.Id });
+
 			return validationRes;
 		}
 

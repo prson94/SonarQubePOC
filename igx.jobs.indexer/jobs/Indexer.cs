@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -84,6 +83,28 @@ namespace igx.jobs.indexer
 					indexer.IndexAssetType(assetTypeUid);
 				}
 			}
+			else if (reindex.BatchUids != null && reindex.BatchUids.Any())
+			{
+				if (reindex.BatchOperation == ReindexBatchOperation.Update)
+				{
+					indexer.IndexAssets(reindex.BatchUids);
+				}
+				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
+				{
+					indexer.RemoveAssets(reindex.BatchUids);
+				}
+			}
+			else if (reindex.IntersectIDs != null && reindex.IntersectIDs.Any())
+			{
+				if (reindex.BatchOperation == ReindexBatchOperation.Update)
+				{
+					indexer.IndexIntersects(reindex.IntersectIDs);
+				}
+				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
+				{
+					indexer.RemoveIntersects(reindex.IntersectIDs);
+				}
+			}
 			else if (!string.IsNullOrEmpty(reindex.Category))
 			{
 				if (reindex.Category == "UpdateMapping")
@@ -104,30 +125,6 @@ namespace igx.jobs.indexer
 					{
 						indexer.IndexAssetClass(info.ID);
 					}
-				}
-			}
-			else if (reindex.BatchUids != null && reindex.BatchUids.Any())
-			{
-				ConcurrentBag<Guid> uids = new ConcurrentBag<Guid>(reindex.BatchUids);
-				if (reindex.BatchOperation == ReindexBatchOperation.Update)
-				{
-					indexer.IndexAssets(uids);
-				}
-				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
-				{
-					indexer.RemoveAssets(uids);
-				}
-			}
-			else if (reindex.IntersectIDs != null && reindex.IntersectIDs.Any())
-			{
-				ConcurrentBag<int> intersects = new ConcurrentBag<int>(reindex.IntersectIDs);
-				if (reindex.BatchOperation == ReindexBatchOperation.Update)
-				{
-					indexer.IndexIntersects(intersects);
-				}
-				else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
-				{
-					indexer.RemoveIntersects(intersects);
 				}
 			}
 			else

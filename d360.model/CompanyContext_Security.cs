@@ -1091,7 +1091,8 @@ insert into api.ExecutionLog (ExecutionId, [Payload])
 	select	@Id,
 			(select G.ID,
 					A.ID as AssetId,
-					G.Name as ObjectName
+					G.Name as ObjectName,
+					A.[Object]
 			for json path
 			) as Payload
 	from	api.ExecutionDeletedGroup o
