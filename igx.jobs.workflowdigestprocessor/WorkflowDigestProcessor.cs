@@ -1,4 +1,5 @@
-﻿using d360.extensions;
+﻿using d360.core.entities;
+using d360.extensions;
 using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.workflowdigestprocessor
@@ -33,7 +35,7 @@ namespace igx.jobs.workflowdigestprocessor
 		}
 
 		[Singleton(Mode = SingletonMode.Function)]
-		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log)   
+		public async Task Run([TimerTrigger(TIMER_SETTINGS)] TimerInfo myTimer, ILogger log, ExecutionContext executionContext)   
 		{
 			try
 			{
@@ -58,7 +60,33 @@ namespace igx.jobs.workflowdigestprocessor
 							};
 							var community = new CommunityContext(ConnString, Cache, Queue, context);
 							var company = new CompanyContext(community, Cache, Queue, Mail, context, log, true);
-							
+
+							CompanyDigestExecution lastExecution = community.CompanyDigestExecution.Where(x=> x.CompanyID == c.CompanyID).OrderByDescending(x=>x.LastExecuted).FirstOrDefault();
+
+							//Check if digest was already sent today
+							if (lastExecution != null && lastExecution?.LastExecuted?.DayOfWeek == DateTime.UtcNow.DayOfWeek)
+							{
+								continue;
+							}
+
+							if (lastExecution == null)
+							{
+								lastExecution = new CompanyDigestExecution()
+								{
+									CompanyID = c.CompanyID,
+									InstanceID = executionContext.InvocationId,
+									LastExecuted = DateTime.UtcNow,									
+								};
+
+								community.Add(lastExecution);								
+							}
+							else
+							{
+								lastExecution.LastExecuted = DateTime.UtcNow;
+								lastExecution.InstanceID = executionContext.InvocationId;
+								community.Update(lastExecution);
+							}							
+
 							await company.SendDigestEmails(c.EnvironmentLevel);
 						}
 						catch (Exception ex)

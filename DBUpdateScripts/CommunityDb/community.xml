@@ -21,6 +21,7 @@
 	<include file="scripts/Table.dbo.CompanyDomainSetting.xml"/>
 	<include file="scripts/Table.dbo.CompanyDomainGroup.xml"/>
 	<include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
+	<include file="scripts/Table.dbo.CompanyDigestExecution.xml"/>	
 	<include file="scripts/Table.dbo.Resource.xml"/>
 	<include file="scripts/Table.dbo.CompanyResource.xml"/>
 	<include file="scripts/Table.dbo.EnvironmentTemplate.xml"/>
