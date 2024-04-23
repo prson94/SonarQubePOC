@@ -138,7 +138,7 @@ namespace d360.extensions.search
             }
         }
 
-        public void IndexAssets(IEnumerable<Guid> AssetGuids)
+        public void IndexAssets(List<Guid> AssetGuids)
         {
             if (AssetGuids.Count == 1)
             {
