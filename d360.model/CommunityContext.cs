@@ -60,7 +60,9 @@ namespace d360.model
         
         public DbSet<DomainSetting> DomainSettings { get; set; }
         
-        public DbSet<Resource> Resources { get; set; }	
+        public DbSet<Resource> Resources { get; set; }
+
+		public DbSet<CompanyDigestExecution> CompanyDigestExecution { get; set; }
 
 		#endregion
 

@@ -6,6 +6,7 @@ using d360.featureflags;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
 
 namespace igx.jobs.workflowdigestprocessor
 {
@@ -20,6 +21,7 @@ namespace igx.jobs.workflowdigestprocessor
 				.ConfigureWebJobs(c =>
 				{
 					c.AddTimers();
+					c.AddExecutionContextBinding();
 				})
 				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) =>
@@ -37,7 +39,8 @@ namespace igx.jobs.workflowdigestprocessor
 						return new FeatureFlagService(context.Configuration[constants.Setting.FeatureFlagKey]);
 					});
 				});
-			
+
+
 			using (var host = builder.Build())
 			{
 				await host.RunAsync();
