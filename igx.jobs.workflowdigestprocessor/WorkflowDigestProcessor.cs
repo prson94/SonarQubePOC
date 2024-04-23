@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs.workflowdigestprocessor
@@ -39,6 +40,10 @@ namespace igx.jobs.workflowdigestprocessor
 		{
 			try
 			{
+				//add random delay so instances run at an offset to each other.
+				var rand = new Random();
+				Thread.Sleep(rand.Next(30) * 1000);
+
 				var companies = GetCompaniesByCurrentSlot();
 				foreach (var c in companies)
 				{
