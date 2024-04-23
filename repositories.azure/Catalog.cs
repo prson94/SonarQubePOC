@@ -75,17 +75,62 @@ from	Tag t
 			{
 				response = new RepositoryResponse<bool>(true, 201, true, "");
 				await connection.ExecuteAsync($@"
+declare @audittable table (auditID int,
+Object varchar(50),
+ObjectID int
+);
+
+declare @PreviousValue nvarchar(max),
+@auditID int,
+@ObjectID int,
+@Object varchar(50);
+
+drop table if exists #tbl;
+
 insert into AssetTag ([uid], AssetID, TagID, CreatedOn, CreatedBy) values (@uid, @assetId, @tagId, @dt, @u);
 
 declare @version int;
-select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+output inserted.ID, inserted.[Object], inserted.[ObjectID] into @audittable
 	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag assigned', @version
 	from	Asset a
 			left join AssetDisplayValue d on d.AssetID = a.ID 
 			join Tag t on t.ID = @tagId
-	where	a.ID = @assetId;",
+	where	a.ID = @assetId;
+
+select @auditID = auditID,
+@ObjectID  = ObjectID,
+@Object = Object
+from @audittable;
+
+select	'Tags' FieldName, 
+string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
+into #tbl
+from	AssetTag TA 
+inner join Tag T on T.ID = TA.TagID
+where TA.AssetID = @assetId;
+
+select	top 1
+@PreviousValue = [Value]
+from	reporting.Global_Audit a
+inner join reporting.Global_FieldAudit f on f.AuditID  = a.ID and  f.FieldName = 'Tags' and f.FieldTypeID = 0
+where 	a.Object = @Object
+and 	a.ObjectID = @ObjectID
+and a.id != @auditID
+order by a.id desc;
+
+insert into reporting.Global_FieldAudit ( AuditID, FieldTypeID, FieldName, Value, PreviousValue )
+select	@auditID,
+0,
+FieldName,
+NewValue,
+@PreviousValue
+from	#tbl
+
+drop table if exists #tbl;
+",
 					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
 			}
 
@@ -923,17 +968,63 @@ order by	t.[value]");
 			{
 				response = new RepositoryResponse<bool>(true, 201, true, "");
 				await connection.ExecuteAsync($@"
+declare @audittable table (auditID int,
+Object varchar(50),
+ObjectID int
+);
+
+declare @PreviousValue nvarchar(max),
+@auditID int,
+@ObjectID int,
+@Object varchar(50);
+
+drop table if exists #tbl;
+
 delete AssetTag where AssetID = @assetId and TagID = @tagId;
 
 declare @version int;
-select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
-	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Unassigned', 'Tag', @tagId, 'Tags', t.Name, 'Tag unassigned', @version
+output inserted.ID, inserted.[Object], inserted.[ObjectID] into @audittable
+	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Unassigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag unassigned', @version
 	from	Asset a
 			left join AssetDisplayValue d on d.AssetID = a.ID 
 			join Tag t on t.ID = @tagId
-	where	a.ID = @assetId;",
+	where	a.ID = @assetId;
+
+select @auditID = auditID,
+@ObjectID  = ObjectID,
+@Object = Object
+from @audittable;
+
+select	'Tags' FieldName, 
+string_Agg(T.Value, ', ') within group  (order by TA.id asc) NewValue
+into #tbl
+from	AssetTag TA 
+inner join Tag T on T.ID = TA.TagID
+where TA.AssetID = @assetId;
+
+select	top 1
+@PreviousValue = [Value]
+from	reporting.Global_Audit a
+inner join reporting.Global_FieldAudit f on f.AuditID  = a.ID and  f.FieldName = 'Tags' and f.FieldTypeID = 0
+where 	a.Object = @Object
+and 	a.ObjectID = @ObjectID
+and a.id != @auditID
+order by a.id desc;
+
+insert into reporting.Global_FieldAudit ( AuditID, FieldTypeID, FieldName, Value, PreviousValue )
+select	@auditID,
+0,
+FieldName,
+NewValue,
+@PreviousValue
+from	#tbl
+
+drop table if exists #tbl;
+
+",
 					new { assetId, tagId, uid = Guid.NewGuid(), u = CurrentUserId, dt = DateTime.UtcNow });
 			}
 
@@ -1166,7 +1257,7 @@ set		[Value] = @value,
 where	ID = @tagId;
 
 declare @version int;
-select @version = max([Version])+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
+select @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);", 
