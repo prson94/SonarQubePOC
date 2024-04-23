@@ -78,7 +78,7 @@ from	Tag t
 insert into AssetTag ([uid], AssetID, TagID, CreatedOn, CreatedBy) values (@uid, @assetId, @tagId, @dt, @u);
 
 declare @version int;
-select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Assigned', 'Tag', @tagId, 'Tags', t.[Value], 'Tag assigned', @version
@@ -926,7 +926,7 @@ order by	t.[value]");
 delete AssetTag where AssetID = @assetId and TagID = @tagId;
 
 declare @version int;
-select  @version = max([Version])+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
+select  @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit l inner join Asset a on a.Object = l.Object and a.ObjectID = l.ObjectID and a.ID = @assetId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 	select	a.Object, a.ObjectID, d.DisplayValue, @u, @dt, 'Unassigned', 'Tag', @tagId, 'Tags', t.Name, 'Tag unassigned', @version
@@ -1166,7 +1166,7 @@ set		[Value] = @value,
 where	ID = @tagId;
 
 declare @version int;
-select @version = max([Version])+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
+select @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);", 
