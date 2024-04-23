@@ -6,8 +6,6 @@ using d360.extensions.mail;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scheduledworkflowprocessor
@@ -38,11 +36,7 @@ namespace igx.jobs.scheduledworkflowprocessor
 							SubAccount = context.Configuration["MandrillSubAccount"]
 						};
 					});					
-				});			
-
-			//add random delay so instances run at an offset to each other.
-			var rand = new Random();
-			Thread.Sleep(rand.Next(301) * 1000);
+				});						
 
 			using (var host = builder.Build())
             {
