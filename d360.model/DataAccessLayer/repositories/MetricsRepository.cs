@@ -2452,6 +2452,7 @@ namespace d360.model.DataAccessLayer
 												end as IsDuplicate
 										from	AssetResult R												
 										Where	R.OwningAssetUid = @owningAssetUid
+										and (@evaluatedAssetUid is null or R.evaluatedAssetUid = @evaluatedAssetUid)
 									),
 									E as (
 										select	R.Uid as ResultUid,
@@ -2472,7 +2473,7 @@ namespace d360.model.DataAccessLayer
 												inner join 
 												AssetType AST on A.AssetTypeID = AST.ID
 										where R.OwningAssetUid = @owningAssetUid
-										and (@evaluatedAssetUid is null or (@evaluatedAssetUid is not null and R.evaluatedAssetUid = @evaluatedAssetUid))	
+										and (@evaluatedAssetUid is null or R.evaluatedAssetUid = @evaluatedAssetUid)	
 									)";
 
 			var countQuery = $@"
