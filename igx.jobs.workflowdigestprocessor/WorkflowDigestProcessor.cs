@@ -71,7 +71,7 @@ namespace igx.jobs.workflowdigestprocessor
 
 							if (lastExecution == null)
 							{
-								lastExecution = new CompanyDigestExecution()
+								lastExecution = new CompanyDigestExecution
 								{
 									CompanyID = c.CompanyID,
 									InstanceID = executionContext.InvocationId,
