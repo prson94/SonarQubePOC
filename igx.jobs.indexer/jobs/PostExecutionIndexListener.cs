@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace igx.jobs.indexer
@@ -39,6 +40,9 @@ namespace igx.jobs.indexer
 				try
 				{
 					var list = new List<IndexObjectModel>();
+					var searchUpserts = new List<Guid>();
+					var searchDeletes = new List<Guid>();
+
 					ApiExecutionAction action = ApiExecutionAction.Miscellaneous;
 					
 					using (var company = CompanyConnectionUtils.GetCompanyConnection(message.CompanyID, ConnString))
@@ -49,116 +53,33 @@ namespace igx.jobs.indexer
 						{
 							action = execution.Action;
 							string sql = "";
+							IEnumerable<Guid> guidresults = null;
 							IEnumerable<dynamic> results = null;
 							switch (execution.Action)
 							{
 								case ApiExecutionAction.PatchCatalog:
 									sql = @"
-select	a.Id, 
-		a.Uid, 
-		a.Object, 
-		a.ObjectId,
-		adv.DisplayValue, 
-		ap.[Segments],
-		cast(t.DefaultPermissions as bit) as DefaultPermissions,
-		t.Uid as AssetTypeUid,
-		t.Name as AssetType 
+select distinct
+		a.Uid
 from	api.ExecutionCatalogItem l 
-		inner join Asset a on a.Id = l.Id and l.ExecutionId = @Id and l.[Type] = 'A' and l.Success = 1 and l.IsDelete = 0 and l.ExecutionId = @id 
-		inner join AssetType t on t.Id = a.AssetTypeId 
-		inner join AssetDisplayValue adv on adv.AssetId = a.Id 
-		left join AssetPath ap on ap.Id = a.Id ";
-									results = await company.QueryAsync(sql, new { id = message.ExecutionId });
-									foreach (var result in results)
-									{
-										var indexObject = new IndexObjectModel
-										{
-											CompanyID = message.CompanyID,
-											Category = SearchIndexer.GetCategoryFromObject(result.Object),
-											ID = result.ObjectId,
-											To = (action == ApiExecutionAction.PostAssets ? QueueAction.AddToIndex : QueueAction.UpdateInIndex),
-											RelativeUrl = $"/asset/{result.Uid.ToString().ToLower()}",
-											AssetID = result.Id,
-											ItemUniqueID = result.Id.ToString(),
-											Uid = result.Uid,
-											AssetType = result.AssetType,
-											AssetTypeUid = result.AssetTypeUid,
-											DefaultPermissions = result.DefaultPermissions,
-											Fields = new Dictionary<string, string> { { "Name", result.DisplayValue } }
-										};
-										list.Add(indexObject);
-									}
+		inner join Asset a on a.Id = l.Id and l.[Type] = 'A' and l.Success = 1 and l.IsDelete = 0 and l.ExecutionId = @id";
+									guidresults = await company.QueryAsync<Guid>(sql, new { id = message.ExecutionId });
+									searchUpserts.AddRange(guidresults);
 									break;
 								case ApiExecutionAction.PostAssets:
 								case ApiExecutionAction.PutAssets:
+								case ApiExecutionAction.PostGroups:
+								case ApiExecutionAction.PutGroups:
+								case ApiExecutionAction.UpsertUsers:
 									sql = @"
-select	a.Id, 
-		a.Uid, 
-		a.Object, 
-		a.ObjectId,
-		adv.DisplayValue, 
-		ap.[Segments],
-		cast(t.DefaultPermissions as bit) as DefaultPermissions,
-		t.Uid as AssetTypeUid,
-		t.Name as AssetType 
+select distinct
+		a.Uid
 from	api.ExecutionLog l 
 inner join api.Execution e on e.Id = l.ExecutionId and l.ExecutionId = @id 
 cross apply openjson(l.Payload) with (AssetId int) p 
-inner join Asset a on a.ID = p.AssetId 
-inner join AssetType t on t.Id = a.AssetTypeId 
-inner join AssetDisplayValue adv on adv.AssetId = a.Id 
-left join AssetPath ap on ap.Id = a.Id ";
-									results = await company.QueryAsync(sql, new { id = message.ExecutionId });
-									foreach (var result in results)
-									{
-										var indexObject = new IndexObjectModel
-										{
-											CompanyID = message.CompanyID,
-											Category = SearchIndexer.GetCategoryFromObject(result.Object),
-											ID = result.ObjectId,
-											To = (action == ApiExecutionAction.PostAssets ? QueueAction.AddToIndex : QueueAction.UpdateInIndex),
-											RelativeUrl = $"/asset/{result.Uid.ToString().ToLower()}",
-											AssetID = result.Id,
-											ItemUniqueID = result.Id.ToString(),
-											Uid = result.Uid,
-											AssetType = result.AssetType,
-											AssetTypeUid = result.AssetTypeUid,
-											DefaultPermissions = result.DefaultPermissions,
-											Fields = new Dictionary<string, string> { { "Name", result.DisplayValue } }
-										};
-										list.Add(indexObject);
-									}
-									break;
-								case ApiExecutionAction.PostGroups:
-								case ApiExecutionAction.PutGroups:
-									sql = @"
-select	a.Id, 
-		a.Uid, 
-		a.Name,
-		p.AssetId
-from	api.ExecutionLog l 
-inner join api.Execution e on e.Id = l.ExecutionId and l.ExecutionId = @id 
-cross apply openjson(l.Payload) with (ID int, AssetId bigint) p 
-inner join [Group] a on a.ID = p.ID";
-									results = await company.QueryAsync(sql, new { id = message.ExecutionId });
-									foreach (var result in results)
-									{
-										var indexObject = new IndexObjectModel
-										{
-											CompanyID = message.CompanyID,
-											Category = SearchIndexer.GetCategoryFromObject("Group"),
-											ID = result.Id,
-											To = (action == ApiExecutionAction.PostGroups ? QueueAction.AddToIndex : QueueAction.UpdateInIndex),
-											RelativeUrl = $"/group/{result.Id}",
-											AssetID = result.AssetId,
-											ItemUniqueID = result.Id.ToString(),
-											Uid = result.Uid,
-											AssetType = "Group",
-											DefaultPermissions = true,
-											Fields = new Dictionary<string, string> { { "Name", result.Name } }
-										};
-										list.Add(indexObject);
-									}
+inner join Asset a on a.ID = p.AssetId ";
+									guidresults = await company.QueryAsync<Guid>(sql, new { id = message.ExecutionId });
+									searchUpserts.AddRange(guidresults);
 									break;
 								case ApiExecutionAction.DeleteAssets:
 									sql = @"
@@ -206,11 +127,11 @@ where l.ExecutionId = @Id;";
 								case ApiExecutionAction.DeleteGroups:
 									sql = @"
 select	p.Object, 
-		p.ObjectId,
+		p.ID as ObjectId,
 		p.AssetId
 from	api.ExecutionLog l
 		inner join api.Execution e on e.Id = l.ExecutionId 
-		cross apply openjson(l.Payload) with (AssetId int, Object varchar(50), ObjectId int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
+		cross apply openjson(l.Payload) with (AssetId int, Object varchar(50), ID int, ObjectName nvarchar(250), TypeName nvarchar(250)) p
 where l.ExecutionId = @Id;";
 									results = await company.QueryAsync(sql, new { id = message.ExecutionId });
 									foreach (var result in results)
@@ -229,9 +150,45 @@ where l.ExecutionId = @Id;";
 										list.Add(indexObject);
 									}
 									break;
+								case ApiExecutionAction.Miscellaneous:
+									if (execution.Route.StartsWith("/api/v2/process/"))
+									{
+										sql = @"
+select distinct
+		eda.Uid
+from	api.ExecutionDiagramAsset eda 
+inner join api.Execution e on eda.ExecutionID = e.ExecutionID and e.id = @id
+where	eda.Action in ('Insert', 'Update') ";
+										guidresults = await company.QueryAsync<Guid>(sql, new { id = message.ExecutionId });
+										searchUpserts.AddRange(guidresults);
+										sql = @"
+select distinct
+		eda.Uid
+from	api.ExecutionDiagramAsset eda 
+inner join api.Execution e on eda.ExecutionID = e.ExecutionID and e.id = @id
+where	eda.Action = 'Delete' ";
+										guidresults = await company.QueryAsync<Guid>(sql, new { id = message.ExecutionId });
+										searchDeletes.AddRange(guidresults);
+									}
+									break;
 								default:
 									//do nothing
 									break;
+							}
+						}
+
+						if (searchUpserts.Any() || searchDeletes.Any())
+						{
+							var indexer = new SearchIndexer(company, message.CompanyID, Search);
+
+							if (searchUpserts.Any())
+							{
+								indexer.IndexAssets(searchUpserts);
+							}
+
+							if (searchDeletes.Any())
+							{
+								indexer.RemoveAssets(searchDeletes);
 							}
 						}
 					}
@@ -240,21 +197,6 @@ where l.ExecutionId = @Id;";
 					{
 						switch (action)
 						{
-							case ApiExecutionAction.PatchCatalog:
-								Search.AddToIndex(list);
-								break;
-							case ApiExecutionAction.PostAssets:
-								Search.AddToIndex(list);
-								break;
-							case ApiExecutionAction.PutAssets:
-								Search.UpdateInIndex(list);
-								break;
-							case ApiExecutionAction.PostGroups:
-								Search.AddToIndex(list);
-								break;
-							case ApiExecutionAction.PutGroups:
-								Search.UpdateInIndex(list);
-								break;
 							case ApiExecutionAction.DeleteAssets:
 								Search.RemoveFromIndex(list);
 								break;
