@@ -536,7 +536,8 @@ namespace d360.web.Controllers.V2
 		   SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
 		   SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
 		   SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
 		{
@@ -549,11 +550,6 @@ namespace d360.web.Controllers.V2
 
 			var validGroups = await membershipRepository.GetGroups(kvpGroupUid);
 			List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
-			}
 
 			if (validGroups.Total != 1)
 			{
@@ -869,18 +865,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 
 		]
 		public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-				}
-
 				var group = (await Company.QueryAsync<Group>(@"
 					select G.* from [Group] G 
 					inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
@@ -953,7 +945,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteUsers(List<DeleteUserModel> users)
 		{
@@ -961,11 +954,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-				}
-
 				if (users == null || users.Count() == 0)
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
@@ -1031,40 +1019,22 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
 		{
-			var prefix = "Membership.PostUsers => ";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-			}
-
 			if (users == null || users.Count == 0)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
 			users.ForEach(u => u.IsNew = true);
 
-			try
-			{
-				var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
-				var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
+			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
+			var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
 				
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-			}
-			catch (Exception ex)
-			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-			}
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -1095,20 +1065,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostBulkUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
 		{
-			var prefix = "Membership.PostBulkUsers => ";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-			}
-
 			if (users == null || users.Count == 0)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
 			var execution = getApiExecution(users.Count, action: ApiExecutionAction.UpsertUsers);
@@ -1273,20 +1237,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PutBulkUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
 		{
-			var prefix = "Membership.PutBulkUsers => ";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.AccessDenied)).ConfigureAwait(false);
-			}
-
 			if (users == null || users.Count == 0)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest)).ConfigureAwait(false);
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.NoUserRequest);
 			}
 
 			users.ForEach(u => u.IsNew = false);
@@ -1302,7 +1260,6 @@ namespace d360.web.Controllers.V2
 
 			var executionInfo = await membershipRepository.UpsertBulkUsers(execution, model);
 			return await sendExecutionProcessingResponse(executionInfo);
-
 		}
 
 		/// <summary>
@@ -1508,16 +1465,11 @@ namespace d360.web.Controllers.V2
 			SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-			}
-
 			if (groups.Count() < 1)
 			{
 				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
@@ -1562,26 +1514,21 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-			}
-
 			if (groups.Count < 1)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
+				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest);
 			}
 
 			var isValid = groups.All(x => x.Uid.HasValue);
 
 			if (!isValid)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired));
+				return errorMessageResponse(HttpStatusCode.BadRequest, ActionApiMessages.UidNotEmptyAndRequired);
 			}
 
 			var execution = getApiExecution(groups.Count, action: ApiExecutionAction.PutGroups);
@@ -1602,31 +1549,26 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> AddGroup(List<UpdateGroupModel> groups)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-			}
-
 			if (groups.Count < 1)
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NoGroupRequest));
+				return errorMessageArgumentResponse(ApiMessages.NoGroupRequest);
 			}
 
 			if (groups.Any(x => string.IsNullOrEmpty(x.Name)))
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.NameMissingInGroupPayload));
+				return errorMessageArgumentResponse(ApiMessages.NameMissingInGroupPayload);
 			}
 
 			foreach (var g in groups.FindAll(x => x.Uid.HasValue && x.Uid != Guid.Empty))
 			{
 				if (Company.Assets.Any(a => a.uid == g.Uid))
 				{
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.OneMoreUidExists));
+					return errorMessageArgumentResponse(ApiMessages.OneMoreUidExists);
 				}
 			}
 

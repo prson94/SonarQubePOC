@@ -159,15 +159,11 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A success message.", typeof(ConfirmResponse)),
+			RequireAdminPermissions
 
 		]
 		public async Task<IHttpActionResult> CancelExecution(Guid executionID)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-			}
-
 			var response = new ConfirmResponse();
 			var execution = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == executionID);
 
@@ -204,14 +200,9 @@ namespace d360.web.Controllers.V2
 
 			response.message = string.Format(ApiMessages.ExecutionCancel, executionID.ToString());
 
-			if (isDone)
-			{
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
-			}
-			else
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel)).ConfigureAwait(false);
-			}
+			return isDone ?
+				Ok(response) : 
+				errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InvalidRequest, ApiMessages.ExecutionWrongWhenCancel);
 		}
 
 		/// <summary>
@@ -361,6 +352,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("externalId", "Filter by external ID.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("component", "Filter by component.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("status", "Filter by component status. Allowed values are START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION", DataType = "string", ParameterType = "query", Required = false),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetConnectorStatus()
 		{
@@ -371,11 +363,6 @@ namespace d360.web.Controllers.V2
 			string status = null;
 			string component = null;
 			DateTime SqlDateTimeMin = (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue;
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-			}
 
 			string isValid = isPageSizeAndNumValid(queryParams);
 
@@ -466,21 +453,13 @@ namespace d360.web.Controllers.V2
 
 			#endregion
 
-			try
+			var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);				
+			if (executions.StatusCode != HttpStatusCode.OK)
 			{
-				var executions = await AssetRepository.GetConnectorStatusItems(queryParams, _startDate, _endDate, externalId, component, status);
-				
-				if (executions.StatusCode != HttpStatusCode.OK)
-				{
-					return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
-				}
+				return errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message);
+			}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions))).ConfigureAwait(false);
-			}
-			catch (Exception e)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
-			}
+			return Ok(executions);
 		}
 
 		#endregion
@@ -505,6 +484,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_order", "The name of the field to order results by. Options are DateStarted, DateCompleted, Action, AssetTypeName, RequestedByName. Default is DateStarted desc", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetLoads()
 		{
@@ -519,11 +499,6 @@ namespace d360.web.Controllers.V2
 			string filterValue = "";
 			string countSql = "select count(1) from";
 			string defaultSelect = "select	* from";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-			}
 
 			string isValid = isPageSizeAndNumValid(queryParams);
 
@@ -656,23 +631,17 @@ namespace d360.web.Controllers.V2
 										cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
 										cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T ) X ";
 
-			try
-			{
-				var sql = defaultSelect + LoadDetailBaseSql + whereSql + orderBySql + offsetSql;
-				var totalSql = countSql + LoadDetailBaseSql;
-				var total = Company.Query<int>(totalSql).FirstOrDefault();
-				var results = Company.Query<LoadDetailV2>(sql, new { filterValue });
-				model.pageNum = _pageNum;
-				model.pageSize = _pageSize;
-				model.items = results;
-				model.total = total;
+			var sql = defaultSelect + LoadDetailBaseSql + whereSql + orderBySql + offsetSql;
+			var totalSql = countSql + LoadDetailBaseSql;
+			var total = Company.Query<int>(totalSql).FirstOrDefault();
+			var results = Company.Query<LoadDetailV2>(sql, new { filterValue });
+			model.pageNum = _pageNum;
+			model.pageSize = _pageSize;
+			model.items = results;
+			model.total = total;
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
-			}
-			catch (Exception e)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
-			}
+			return Ok(model);
+
 		}
 
 		/// <summary>
@@ -694,6 +663,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_order", "The name of the field to order results by. Options are RowIndex, Status, StatusMessage. Default is RowIndex desc", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the fields.", DataType = "string", ParameterType = "query", Required = false),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetLoadItemDetails(Guid loadUid)
 		{
@@ -716,11 +686,6 @@ namespace d360.web.Controllers.V2
 			StringBuilder countSql = new StringBuilder("select	count(1) ");
 			string temptable = "";
 			string Droptemptable = "";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-			}
 
 			string isValid = isPageSizeAndNumValid(queryParams);
 
@@ -1034,16 +999,12 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetLoadByUid(Guid loadUid)
 		{
 			List<string> v2ApiActions = new List<string> { "P", "R", "U" };
 			string countSql = "";
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-			}
 
 			var load = Company.Filter<Load>(i => i.uid == loadUid).FirstOrDefault();
 
@@ -1187,28 +1148,21 @@ namespace d360.web.Controllers.V2
 											 "
 											+ countSql + " where L.uid = @loadUid ) X ";
 
-			try
-			{
-				var results = Company.Query<SingleLoadDetail>(LoadDetailBaseSql, new { loadUid }).ToList();
+			var results = Company.Query<SingleLoadDetail>(LoadDetailBaseSql, new { loadUid }).ToList();
 
-				if (load != null && load.DateCompleted.HasValue && load.DateStarted.HasValue)
+			if (load != null && load.DateCompleted.HasValue && load.DateStarted.HasValue)
+			{
+				var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
+
+				var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
+
+				if (results.Count > 0)
 				{
-					var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
-
-					var minutesMessage = (minutes == 0 ? "less than a minute" : minutes + " minute(s)");
-
-					if (results.Count > 0)
-					{
-						results[0].ElapsedTime = minutesMessage;
-					}
+					results[0].ElapsedTime = minutesMessage;
 				}
+			}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-			}
-			catch (Exception e)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
-			}
+			return Ok(results);
 		}
 		
 		/// <summary>
@@ -1229,6 +1183,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+			RequireAdminPermissions
 
 		]
 		public async Task<IHttpActionResult> AddLoad(Guid? assetTypeUid = null, Guid? intersectTypeUid = null, BulkLoadType type = BulkLoadType.Promotion, string notes = "")
@@ -1237,11 +1192,6 @@ namespace d360.web.Controllers.V2
 			{
 				var assetType = Company.AssetTypes.Where(r => r.uid == assetTypeUid).FirstOrDefault();
 				var intersectType = Company.IntersectTypes.Where(i => i.uid == intersectTypeUid).FirstOrDefault();
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
 
 				if (type == BulkLoadType.Promotion)
 				{

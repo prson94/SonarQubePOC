@@ -27,104 +27,92 @@ namespace d360.web.Controllers
 		#region Field Generation
 
 		/// <param name="id">ResourceTypeID</param>
-		[Route("Resource_AddFields"), NonNullableParameters]
+		[Route("Resource_AddFields"), NonNullableParameters, RequireAdminPermissions]
 		public async Task<JsonResult> Resource_AddFields(int id)
 		{
-			var list = new List<EditableField>();
-
-			if (!Company.CurrentResourceIsAdmin)
+			var list = new List<EditableField>
 			{
-				return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
-
-			list.Add(new EditableField
-			{
-				Row = 1, 
-				Column = 1,
-				Required = true,
-				FieldName = "FirstName", 
-				Name = "First Name", 
-				FieldType = DataType.Text.ToString(), 
-				Validations = checkAndAddValidation(fieldType: "Text",
+				new EditableField
+				{
+					Row = 1,
+					Column = 1,
+					Required = true,
+					FieldName = "FirstName",
+					Name = "First Name",
+					FieldType = DataType.Text.ToString(),
+					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "First Name",
 										required: true,
 										pattern: "",
 										minLength: 1,
-										maxLength: 250) 
-			});
-			
-			list.Add(new EditableField 
-			{
-				Row = 1, 
-				Column = 2, 
-				Required = true, 
-				FieldName = "LastName",
-				Name = "Last Name",
-				FieldType = DataType.Text.ToString(),
-				Validations = checkAndAddValidation(fieldType: "Text",
+										maxLength: 250)
+				},
+				new EditableField
+				{
+					Row = 1,
+					Column = 2,
+					Required = true,
+					FieldName = "LastName",
+					Name = "Last Name",
+					FieldType = DataType.Text.ToString(),
+					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Last Name",
 										required: true,
 										pattern: "",
 										minLength: 1,
 										maxLength: 250)
-			});
-			
-			list.Add(new EditableField 
-			{ 
-				Row = 2,
-				Column = 1, 
-				Required = true,
-				FieldName = "Email",
-				Name = "Email/Username",
-				FieldType = DataType.Text.ToString(),
-				Validations = checkAndAddValidation(fieldType: "Text",
+				},
+				new EditableField
+				{
+					Row = 2,
+					Column = 1,
+					Required = true,
+					FieldName = "Email",
+					Name = "Email/Username",
+					FieldType = DataType.Text.ToString(),
+					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Email",
 										required: true,
 										pattern: "",
 										minLength: 1,
-										maxLength: 500) 
-			});
-			
-			list.Add(new EditableField 
-			{ 
-				Row = 2, 
-				Column = 2, 
-				Required = true, 
-				FieldName = "Password", 
-				Name = "Password",
-				FieldType = DataType.Password.ToString(),
-				Validations = checkAndAddValidation(fieldType: "Text",
+										maxLength: 500)
+				},
+				new EditableField
+				{
+					Row = 2,
+					Column = 2,
+					Required = true,
+					FieldName = "Password",
+					Name = "Password",
+					FieldType = DataType.Password.ToString(),
+					Validations = checkAndAddValidation(fieldType: "Text",
 										friendlyName: "Password",
 										required: true,
 										pattern: passwordRegex,
 										minLength: null,
 										maxLength: null,
-										validationMessage: passwordRegexMessage) 
-			});
-			
-			list.Add(new EditableField
-			{ 
-				Row = 3,
-				Column = 1,
-				Required = true, 
-				FieldName = "IsAdministrator",
-				Name = "Administrator?", 
-				FieldType = DataType.Boolean.ToString() 
-			});
+										validationMessage: passwordRegexMessage)
+				},
+				new EditableField
+				{
+					Row = 3,
+					Column = 1,
+					Required = true,
+					FieldName = "IsAdministrator",
+					Name = "Administrator?",
+					FieldType = DataType.Boolean.ToString()
+				}
+			};
 
 			list = await loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
 			return Json(list, JsonRequestBehavior.AllowGet);
 		}
-
+		
+		[RequireAdminPermissions]
 		/// <param name="id">ResourceID</param>
 		public async Task<JsonResult> Resource_EditFields(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var list = new List<EditableField>();
 			var a = Community.GetById<Resource>(id, i => i.CompanyResources);
 			var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = (i.Name).ToString() }).ToList();
@@ -292,16 +280,11 @@ namespace d360.web.Controllers
 		#region Form Get/Post
 
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("ResetResourcePassword")]
+		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("ResetResourcePassword"), RequireAdminPermissions]
 		public JsonResult ResetResourcePassword(FormCollection form)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-				}
-
 				if (!form.HasKeys())
 				{
 					throw new NoFormDataException(FormControllerApiMessage.Resource);

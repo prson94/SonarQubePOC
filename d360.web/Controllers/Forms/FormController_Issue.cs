@@ -9,6 +9,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.model;
+using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 
@@ -20,14 +21,9 @@ namespace d360.web.Controllers
     {
         #region Issue Types
 
-        [Route("IssueTypeRelation_AddFields"), NonNullableParameters]
+        [Route("IssueTypeRelation_AddFields"), NonNullableParameters, RequireAdminPermissions]
         public JsonResult IssueTypeRelation_AddFields(int issueTypeId)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-            }
-
             var list = new List<EditableField>
             {
                 new EditableField 
@@ -62,16 +58,11 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("IssueType_EditFields"), NonNullableParameters]
+        [Route("IssueType_EditFields"), NonNullableParameters, RequireAdminPermissions]
         public JsonResult IssueType_EditFields(int id)
         {
             var list = new List<EditableField>();
             var a = Company.GetById<IssueType>(id);
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-            }
 
             list.Add(new EditableField 
             { 
@@ -112,14 +103,9 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("IssueType_AddFields"), NonNullableParameters]
+        [Route("IssueType_AddFields"), NonNullableParameters, RequireAdminPermissions]
         public JsonResult IssueType_AddFields()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-            }
-
             var list = new List<EditableField>
             {
                 new EditableField 

@@ -1,8 +1,10 @@
 ﻿using Autofac;
 using d360.web.Handlers.Exceptions;
 using d360.web.Utilities;
+using Microsoft.ApplicationInsights.Extensibility;
 using System;
 using System.Deployment.Internal.CodeSigning;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Web;
@@ -123,13 +125,20 @@ namespace d360.web
             //GOV-14022 remove the X-Frame-Options from the forms / password reset we add this in the web.config this avoids it appearing 2x
             System.Web.Helpers.AntiForgeryConfig.SuppressXFrameOptionsHeader = true;
 
-            Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey = System.Web.Configuration.WebConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            
-            GlobalConfiguration.Configure(WebApiConfig.Register);
+			TelemetryConfiguration.Active.ConnectionString = System.Web.Configuration.WebConfigurationManager.AppSettings["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+			DisableAppInsightsIfInDebug();
+
+			GlobalConfiguration.Configure(WebApiConfig.Register);
             CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription), "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
         }
 
-        private bool CheckUrlValidity(string urlwithparameter)
+		[Conditional("DEBUG")]
+		private static void DisableAppInsightsIfInDebug()
+		{
+			TelemetryConfiguration.Active.DisableTelemetry = true;
+		}
+
+		private bool CheckUrlValidity(string urlwithparameter)
         {
             string url = urlwithparameter;
             bool returnVar = false;

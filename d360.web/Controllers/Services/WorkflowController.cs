@@ -1426,7 +1426,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[HttpDelete, Route("deleteItemsByUid")]
-		public HttpResponseMessage DeleteWorkflowItemsByUid([FromBody] List<Guid> items)
+		public IHttpActionResult DeleteWorkflowItemsByUid([FromBody] List<Guid> items)
 		{
 			long[] itemIds = { };
 			if (items.Any())
@@ -1437,14 +1437,9 @@ namespace d360.web.Controllers.Services
 			return DeleteWorkfowItems(itemIds);
 		}
 
-		[HttpDelete, Route("deleteItems")]
-		public HttpResponseMessage DeleteWorkfowItems([FromBody] long[] items)
+		[HttpDelete, Route("deleteItems"), RequireAdminPermissions]
+		public IHttpActionResult DeleteWorkfowItems([FromBody] long[] items)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			if (items.Length > 0)
 			{
 				string inclause = string.Join(",", items.Select((_, i) => "@p" + i.ToString()).ToArray());
@@ -1464,7 +1459,7 @@ namespace d360.web.Controllers.Services
 				_ = Company.Database.Connection.Execute(sql, parameters);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, items.Length);
+			return Ok(items.Length);
 		}
 
 		[Route("activitytypes"), HttpGet]
@@ -1499,29 +1494,22 @@ namespace d360.web.Controllers.Services
 			return TransitionType.Always.GetList();
 		}
 
-		[Route("admintypes"), HttpGet]
-		public HttpResponseMessage GetWorkflowAdminTypes()
+		[Route("admintypes"), HttpGet, RequireAdminPermissions]
+		public IHttpActionResult GetWorkflowAdminTypes()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			var types = Company.Query<dynamic>(QueryConstants.WorkflowList).ToList();
-
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("types"), HttpGet]
-		public HttpResponseMessage GetWorkflowTypes()
+		public IHttpActionResult GetWorkflowTypes()
 		{
 			var types = Company.Query<dynamic>(QueryConstants.WorkflowList).ToList();
-
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("types/{objectID:int}/{objectType}"), HttpGet]
-		public HttpResponseMessage GetWorkflowTypesForObject(int objectID, string objectType)
+		public IHttpActionResult GetWorkflowTypesForObject(int objectID, string objectType)
 		{
 			string sql = @"select t.ID
 					,t.Name
@@ -1552,30 +1540,30 @@ namespace d360.web.Controllers.Services
 				}
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("item/detailByUid/{itemUid:Guid}"), HttpGet]
-		public HttpResponseMessage GetItemDetailByUid(Guid itemUid)
+		public IHttpActionResult GetItemDetailByUid(Guid itemUid)
 		{
 			var item = Company.WorkflowItems.AsNoTracking().Where(x => x.UID == itemUid).Select(x => x.ID).FirstOrDefault();
 
 			if (item == default)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
 			}
 
 			return GetItemDetail(item);
 		}
 
 		[Route("item/detail/{itemId:int}"), HttpGet]
-		public HttpResponseMessage GetItemDetail(long itemId)
+		public IHttpActionResult GetItemDetail(long itemId)
 		{
 			var item = Company.WorkflowItems.Include(x => x.Version).Where(x => x.ID == itemId).FirstOrDefault();
 
 			if (item == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.WorkflowInstanceNotFound);
+				return errorMessageNotFoundResponse(WorkflowApiMessages.WorkflowInstanceNotFound);
 			}
 
 			// get the itemsteps for this workflow instance
@@ -1628,20 +1616,18 @@ namespace d360.web.Controllers.Services
 				objectDetails = Company.GetObjectDetail(item.Object, item.ObjectID);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK,
-				new
-				{
-					Item = item,
-					Workflow = workflow,
-					ItemSteps = itemSteps,
-					Steps = steps,
-					ObjectDetails = objectDetails,
-					ActionAsset = actionAsset
-				});
+			return Ok(new {
+				Item = item,
+				Workflow = workflow,
+				ItemSteps = itemSteps,
+				Steps = steps,
+				ObjectDetails = objectDetails,
+				ActionAsset = actionAsset
+			});
 		}
 
 		[Route("item/details/{workflowId:int}/{itemId:int}"), HttpGet]
-		public HttpResponseMessage GetItemDetailsForWorkflow(int workflowId, int itemId)
+		public IHttpActionResult GetItemDetailsForWorkflow(int workflowId, int itemId)
 		{
 			string sql = @"		select
 									vs.name as 'Name',
@@ -1668,11 +1654,11 @@ namespace d360.web.Controllers.Services
 
 			var types = Company.Query<dynamic>(sql, new { workflowId, itemId }).ToList();
 
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("objecttypes"), HttpGet]
-		public HttpResponseMessage GetObjectTypes(ChangeType changeType)
+		public IHttpActionResult GetObjectTypes(ChangeType changeType)
 		{
 			var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
 
@@ -1703,11 +1689,11 @@ namespace d360.web.Controllers.Services
 					break;
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, types);
+			return Ok(types);
 		}
 
 		[Route("scoretypes/{id:int}/{type}"), HttpGet]
-		public HttpResponseMessage GetScoreTypes(string type, int id)
+		public IHttpActionResult GetScoreTypes(string type, int id)
 		{
 			var results = Company.Query<ScoreType>(@"select distinct ScoreType 
 				from metrics.allocation A
@@ -1716,11 +1702,11 @@ namespace d360.web.Controllers.Services
 				.Select(s => new { label = s.GetDisplayName(), value = (int)s })
 				.ToList();
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		[Route("type/{id:int}/{uid:Guid}"), HttpGet]
-		public HttpResponseMessage GetWorkflowType(int id, Guid? uid)
+		public IHttpActionResult GetWorkflowType(int id, Guid? uid)
 		{
 			core.entities.Workflow.Type type;
 
@@ -1735,7 +1721,7 @@ namespace d360.web.Controllers.Services
 
 			if (type == null || (type.State != State.Active && type.State != State.InActive))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
 			}
 
 			var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
@@ -1744,15 +1730,15 @@ namespace d360.web.Controllers.Services
 			model.Type = type;
 			model.CurrentVersion = currentVersion;
 
-			return Request.CreateResponse(HttpStatusCode.OK, model);
+			return Ok(model);
 		}
 
 		[Route("fieldtypes/{type}/{id:int}"), HttpGet]
-		public HttpResponseMessage GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
+		public IHttpActionResult GetFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
 		{
 			var fields = getFieldTypes(id, type, allowHtml, additionalFields);
 
-			return Request.CreateResponse(HttpStatusCode.OK, fields);
+			return Ok(fields);
 		}
 
 		private List<FieldType> getFieldTypes(int id, string type, bool allowHtml = false, string additionalFields = "")
@@ -1826,342 +1812,445 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("diagram/clone"), HttpPost]
-		public HttpResponseMessage CloneWorkflowDiagramModel(core.entities.Workflow.Type workflowType)
+		public IHttpActionResult CloneWorkflowDiagramModel(core.entities.Workflow.Type workflowType)
 		{
-			try
+			var otype = Company.Filter<core.entities.Workflow.Type>(i => i.UID == workflowType.UID).SingleOrDefault();
+
+			if (otype == null || (otype.State != State.Active && otype.State != State.InActive))
 			{
-				var otype = Company.Filter<core.entities.Workflow.Type>(i => i.UID == workflowType.UID).SingleOrDefault();
+				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, workflowType.UID.ToString()));
+			}
 
-				if (otype == null || (otype.State != State.Active && otype.State != State.InActive))
-				{
-					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeUIDNotFound, workflowType.UID.ToString()));
-				}
+			//Workflow type creation
+			var @type = new core.entities.Workflow.Type
+			{
+				ID = 0,
+				CreatedBy = Company.CurrentResourceID,
+				CreatedOn = DateTime.UtcNow,
+				UpdatedBy = Company.CurrentResourceID,
+				UpdatedOn = DateTime.UtcNow,
+				Name = otype.Name + " (Copy)",
+				Description = otype.Description,
+				State = otype.State
+			};
 
-				//Workflow type creation
-				var @type = new core.entities.Workflow.Type
+			Company.Add(@type);
+			Company.SaveChanges();
+
+			var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
+			var omodel = GetWorkflowDiagram(0, workflowType.UID, currentVersion?.Version);
+
+			var @version = new WorkflowVersion
+			{
+				ID = 0,
+				TypeID = @type.ID,
+				CreatedBy = Company.CurrentResourceID,
+				CreatedOn = DateTime.UtcNow,
+				UpdatedBy = Company.CurrentResourceID,
+				UpdatedOn = DateTime.UtcNow,
+				Version = 1
+			};
+
+			Company.Add(@version);
+			Company.SaveChanges();
+
+			var @event = new WorkflowEventRegistration
+			{
+				ID = 0,
+				AssetTypeID = omodel.Event.AssetTypeID,
+				Object = omodel.Event.Object,
+				ObjectID = omodel.Event.ObjectID,
+				TypeID = @type.ID,
+				ChangeType = omodel.Event.ChangeType,
+				Condition = omodel?.Event?.Condition ?? "",
+				Settings = omodel?.Event?.Settings ?? "",
+				State = State.Active
+			};
+
+			Company.Add(@event);
+			Company.SaveChanges();
+			Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+
+			omodel.Nodes.ForEach(n =>
+			{
+				int.TryParse(n.Key, out int key);
+
+				var step = new WorkflowVersionStep
 				{
 					ID = 0,
-					CreatedBy = Company.CurrentResourceID,
-					CreatedOn = DateTime.UtcNow,
-					UpdatedBy = Company.CurrentResourceID,
-					UpdatedOn = DateTime.UtcNow,
-					Name = otype.Name + " (Copy)",
-					Description = otype.Description,
-					State = otype.State
-				};
-
-				Company.Add(@type);
-				Company.SaveChanges();
-
-				var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
-				var omodel = GetWorkflowDiagram(0, workflowType.UID, currentVersion?.Version);
-
-				var @version = new WorkflowVersion
-				{
-					ID = 0,
-					TypeID = @type.ID,
-					CreatedBy = Company.CurrentResourceID,
-					CreatedOn = DateTime.UtcNow,
-					UpdatedBy = Company.CurrentResourceID,
-					UpdatedOn = DateTime.UtcNow,
-					Version = 1
-				};
-
-				Company.Add(@version);
-				Company.SaveChanges();
-
-				var @event = new WorkflowEventRegistration
-				{
-					ID = 0,
-					AssetTypeID = omodel.Event.AssetTypeID,
-					Object = omodel.Event.Object,
-					ObjectID = omodel.Event.ObjectID,
-					TypeID = @type.ID,
-					ChangeType = omodel.Event.ChangeType,
-					Condition = omodel?.Event?.Condition ?? "",
-					Settings = omodel?.Event?.Settings ?? "",
+					Name = n.Name,
+					StepType = n.StepType,
+					ActivityType = n.ActivityType,
+					XPosition = n.XPosition,
+					YPosition = n.YPosition,
+					VersionID = @version.ID,
+					Settings = n.Settings,
 					State = State.Active
 				};
 
-				Company.Add(@event);
-				Company.SaveChanges();
-				Dictionary<int, int> keyMapping = new Dictionary<int, int>();
-
-				omodel.Nodes.ForEach(n =>
+				if (string.IsNullOrEmpty(n.Fields))
 				{
-					int.TryParse(n.Key, out int key);
-
-					var step = new WorkflowVersionStep
-					{
-						ID = 0,
-						Name = n.Name,
-						StepType = n.StepType,
-						ActivityType = n.ActivityType,
-						XPosition = n.XPosition,
-						YPosition = n.YPosition,
-						VersionID = @version.ID,
-						Settings = n.Settings,
-						State = State.Active
-					};
-
-					if (string.IsNullOrEmpty(n.Fields))
-					{
-						step.Fields = null;
-					}
-					else
-					{
-						step.Fields = n.Fields;
-					}
-
-					Company.Add(step);
-					Company.SaveChanges();
-					keyMapping.Add(key, step.ID);
-				});
-
-				//2nd loop to handle mappings
-				omodel.Nodes.ForEach(n =>
+					step.Fields = null;
+				}
+				else
 				{
-					MapNodeSettingsAndTokens(n, keyMapping);
-				});
-				Company.SaveChanges();
-
-				if (omodel?.Links?.Count > 0)
-				{
-					omodel.Links.ForEach(l =>
-					{
-						int.TryParse(l.FromKey, out int from);
-						int.TryParse(l.ToKey, out int to);
-
-						var link = new WorkflowVersionStepTransition
-						{
-							FromVersionStepID = keyMapping[from],
-							ToVersionStepID = keyMapping[to],
-							Name = l.Name,
-							TransitionType = l.TransitionType
-						};
-						//need to map new form conditions to their appropriate step id's 
-
-						l.Condition = MapWorkflowConditionsFromXml(l.Condition, keyMapping);
-
-						link.Condition = l.Condition;
-						link.Settings = l.Settings;
-						link.FromPortID = l.FromPortID;
-						link.ToPortID = l.ToPortID;
-						link.State = State.Active;
-
-						Company.Add(link);
-
-					});
-
-					Company.SaveChanges();
+					step.Fields = n.Fields;
 				}
 
-				return Request.CreateResponse(HttpStatusCode.OK, @type.UID);
-			}
-			catch (Exception e)
+				Company.Add(step);
+				Company.SaveChanges();
+				keyMapping.Add(key, step.ID);
+			});
+
+			//2nd loop to handle mappings
+			omodel.Nodes.ForEach(n =>
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e);
+				MapNodeSettingsAndTokens(n, keyMapping);
+			});
+			Company.SaveChanges();
+
+			if (omodel?.Links?.Count > 0)
+			{
+				omodel.Links.ForEach(l =>
+				{
+					int.TryParse(l.FromKey, out int from);
+					int.TryParse(l.ToKey, out int to);
+
+					var link = new WorkflowVersionStepTransition
+					{
+						FromVersionStepID = keyMapping[from],
+						ToVersionStepID = keyMapping[to],
+						Name = l.Name,
+						TransitionType = l.TransitionType
+					};
+					//need to map new form conditions to their appropriate step id's 
+
+					l.Condition = MapWorkflowConditionsFromXml(l.Condition, keyMapping);
+
+					link.Condition = l.Condition;
+					link.Settings = l.Settings;
+					link.FromPortID = l.FromPortID;
+					link.ToPortID = l.ToPortID;
+					link.State = State.Active;
+
+					Company.Add(link);
+
+				});
+
+				Company.SaveChanges();
 			}
+
+			return Ok(@type.UID);
 		}
 
 		[Route("diagram/save"), HttpPost]
-		public HttpResponseMessage PostWorkflowDiagramModel(WorkflowDiagramModel model)
+		public IHttpActionResult PostWorkflowDiagramModel(WorkflowDiagramModel model)
 		{
 			int versionID = 0;
 			bool newVersion = false;
 
-			try
+			if (model.Type != null)
 			{
-				if (model.Type != null)
+				#region Type
+
+				if (model.Type.ID < 1)
 				{
-					#region Type
+					var type = new core.entities.Workflow.Type();
+					var version = new WorkflowVersion();
 
-					if (model.Type.ID < 1)
+					type.ID = 0;
+					type.CreatedBy = Company.CurrentResourceID;
+					type.CreatedOn = DateTime.UtcNow;
+					type.UpdatedBy = Company.CurrentResourceID;
+					type.UpdatedOn = DateTime.UtcNow;
+					type.Name = model.Type.Name;
+					type.Description = model.Type.Description;
+					type.State = model.Type.State;
+
+					Company.Add(type);
+					Company.SaveChanges();
+
+					model.Type.ID = type.ID;
+
+					version.ID = 0;
+					version.TypeID = type.ID;
+					version.CreatedBy = Company.CurrentResourceID;
+					version.CreatedOn = DateTime.UtcNow;
+					version.UpdatedBy = Company.CurrentResourceID;
+					version.UpdatedOn = DateTime.UtcNow;
+					version.Version = 1;
+
+					Company.Add(version);
+					Company.SaveChanges();
+
+					versionID = version.ID;
+
+					if (model.Type.PublishedVersionID != null)
 					{
-						var type = new core.entities.Workflow.Type();
-						var version = new WorkflowVersion();
-
-						type.ID = 0;
-						type.CreatedBy = Company.CurrentResourceID;
-						type.CreatedOn = DateTime.UtcNow;
-						type.UpdatedBy = Company.CurrentResourceID;
-						type.UpdatedOn = DateTime.UtcNow;
-						type.Name = model.Type.Name;
-						type.Description = model.Type.Description;
-						type.State = model.Type.State;
-
-						Company.Add(type);
+						type.PublishedVersionID = versionID;
 						Company.SaveChanges();
+					}
+				}
+				else
+				{
+					var type = Company.WorkflowTypes.Find(model.Type.ID);
+					bool isActiveStatusChanged = type.State != model.Type.State;
 
-						model.Type.ID = type.ID;
+					type.Name = model.Type.Name;
+					type.Description = model.Type.Description;
+					type.State = model.Type.State;
+					type.UpdatedOn = DateTime.UtcNow;
+					type.UpdatedBy = Company.CurrentResourceID;
 
-						version.ID = 0;
-						version.TypeID = type.ID;
-						version.CreatedBy = Company.CurrentResourceID;
-						version.CreatedOn = DateTime.UtcNow;
-						version.UpdatedBy = Company.CurrentResourceID;
-						version.UpdatedOn = DateTime.UtcNow;
-						version.Version = 1;
+					var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
+					int version = currentVersion.Version;
 
-						Company.Add(version);
-						Company.SaveChanges();
+					versionID = currentVersion.ID;
 
-						versionID = version.ID;
-
-						if (model.Type.PublishedVersionID != null)
+					//Create new workflow version for every save except when we are changing status from active to inactive or vice versa
+					bool isSameVersion = currentVersion.ID == type.PublishedVersionID;
+					if (model.Nodes.Count > 0 && model.Links.Count > 0 && (isSameVersion || model.Type.PublishedVersionID == -1) && !isActiveStatusChanged)
+					{
+						if (isSameVersion)
 						{
-							type.PublishedVersionID = versionID;
+							currentVersion = new WorkflowVersion
+							{
+								TypeID = type.ID,
+								CreatedBy = Company.CurrentResourceID,
+								CreatedOn = DateTime.UtcNow,
+								UpdatedBy = Company.CurrentResourceID,
+								UpdatedOn = DateTime.UtcNow,
+								Version = version + 1
+							};
+
+							Company.WorkflowVersions.Add(currentVersion);
 							Company.SaveChanges();
+
+							newVersion = true;
+							versionID = currentVersion.ID;
 						}
+
+						//set new published version
+						if (model.Type.PublishedVersionID == -1)
+						{
+							type.PublishedVersionID = currentVersion.ID;
+						}
+					}
+
+					Company.SaveChanges();
+				}
+
+				#endregion
+
+				#region Event
+
+				if (model.Event != null)
+				{
+					if (model.Event.ID < 1)
+					{
+						var @event = new WorkflowEventRegistration
+						{
+							ID = 0,
+							Object = model.Event.Object,
+							ObjectID = model.Event.ObjectID,
+							TypeID = model.Type.ID,
+							ChangeType = model.Event.ChangeType,
+							Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString(),
+							Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString(),
+							State = State.Active
+						};
+
+						switch (@event.Object)
+						{
+							case "IntersectType":
+								@event.IntersectTypeID = @event.ObjectID;
+								break;
+							case "IssueType":
+								@event.IssueTypeID = @event.ObjectID;
+								break;
+							default:
+								var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
+								if (assetType != null)
+								{
+									@event.AssetTypeID = assetType.ID;
+								}
+								assetType = null;
+								break;
+						}
+
+						Company.Add(@event);
+						Company.SaveChanges();
 					}
 					else
 					{
-						var type = Company.WorkflowTypes.Find(model.Type.ID);
-						bool isActiveStatusChanged = type.State != model.Type.State;
+						var @event = Company.WorkflowEventRegistrations.Find(model.Event.ID);
 
-						type.Name = model.Type.Name;
-						type.Description = model.Type.Description;
-						type.State = model.Type.State;
-						type.UpdatedOn = DateTime.UtcNow;
-						type.UpdatedBy = Company.CurrentResourceID;
+						@event.Object = model.Event.Object;
+						@event.ObjectID = model.Event.ObjectID;
 
-						var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).FirstOrDefault();
-						int version = currentVersion.Version;
-
-						versionID = currentVersion.ID;
-
-						//Create new workflow version for every save except when we are changing status from active to inactive or vice versa
-						bool isSameVersion = currentVersion.ID == type.PublishedVersionID;
-						if (model.Nodes.Count > 0 && model.Links.Count > 0 && (isSameVersion || model.Type.PublishedVersionID == -1) && !isActiveStatusChanged)
+						switch (@event.Object)
 						{
-							if (isSameVersion)
-							{
-								currentVersion = new WorkflowVersion
+							case "IntersectType":
+								@event.IntersectTypeID = @event.ObjectID;
+								@event.AssetTypeID = null;
+								@event.IssueTypeID = null;
+								break;
+							case "IssueType":
+								@event.IssueTypeID = @event.ObjectID;
+								@event.AssetTypeID = null;
+								@event.IntersectTypeID = null;
+								break;
+							default:
+								var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
+								@event.IntersectTypeID = null;
+								@event.IssueTypeID = null;
+
+								if (assetType != null)
 								{
-									TypeID = type.ID,
-									CreatedBy = Company.CurrentResourceID,
-									CreatedOn = DateTime.UtcNow,
-									UpdatedBy = Company.CurrentResourceID,
-									UpdatedOn = DateTime.UtcNow,
-									Version = version + 1
-								};
+									@event.AssetTypeID = assetType.ID;
+								}
 
-								Company.WorkflowVersions.Add(currentVersion);
-								Company.SaveChanges();
-
-								newVersion = true;
-								versionID = currentVersion.ID;
-							}
-
-							//set new published version
-							if (model.Type.PublishedVersionID == -1)
-							{
-								type.PublishedVersionID = currentVersion.ID;
-							}
+								assetType = null;
+								break;
 						}
+
+						@event.TypeID = model.Type.ID;
+						@event.ChangeType = model.Event.ChangeType;
+
+						@event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
+						@event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
+
+						Company.SaveChanges();
+					}
+				}
+
+				#endregion
+
+				List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
+				Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+
+				if (newVersion)
+				{
+					#region Create New Version
+
+					if (model?.Nodes?.Count > 0)
+					{
+						model.Nodes.ForEach(n =>
+						{
+							int.TryParse(n.Key, out int id);
+
+							var step = new WorkflowVersionStep
+							{
+								ID = 0,
+								Name = n.Name ?? "",
+								StepType = n.StepType,
+								ActivityType = n.ActivityType,
+								XPosition = n.XPosition,
+								YPosition = n.YPosition,
+								VersionID = versionID,
+								Settings = FormatMessageBodyTemplate(fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString()),
+								State = State.Active
+							};
+
+							if (string.IsNullOrEmpty(n.Fields))
+							{
+								step.Fields = null;
+							}
+							else
+							{
+								step.Fields = FormatFormDescription(fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
+							}
+
+							Company.Add(step);
+							Company.SaveChanges();
+							keyMapping.Add(id, step.ID);
+						});
+
+						//2nd loop to handle mappings
+						model.Nodes.ForEach(n =>
+						{
+							MapNodeSettingsAndTokens(n, keyMapping);
+						});
 
 						Company.SaveChanges();
 					}
 
-					#endregion
-
-					#region Event
-
-					if (model.Event != null)
+					if (model?.Links?.Count > 0)
 					{
-						if (model.Event.ID < 1)
+						model.Links.ForEach(l =>
 						{
-							var @event = new WorkflowEventRegistration
+							int.TryParse(l.FromKey, out int from);
+							int.TryParse(l.ToKey, out int to);
+
+							var link = new WorkflowVersionStepTransition
 							{
-								ID = 0,
-								Object = model.Event.Object,
-								ObjectID = model.Event.ObjectID,
-								TypeID = model.Type.ID,
-								ChangeType = model.Event.ChangeType,
-								Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString(),
-								Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString(),
-								State = State.Active
+								FromVersionStepID = keyMapping[from],
+								ToVersionStepID = keyMapping[to],
+								Name = l.Name
 							};
 
-							switch (@event.Object)
-							{
-								case "IntersectType":
-									@event.IntersectTypeID = @event.ObjectID;
-									break;
-								case "IssueType":
-									@event.IssueTypeID = @event.ObjectID;
-									break;
-								default:
-									var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
-									if (assetType != null)
-									{
-										@event.AssetTypeID = assetType.ID;
-									}
-									assetType = null;
-									break;
-							}
+							link.FromVersionStepID = keyMapping[from];
+							link.ToVersionStepID = keyMapping[to];
+							link.Name = l.Name ?? "";
+							link.TransitionType = l.TransitionType;
 
-							Company.Add(@event);
-							Company.SaveChanges();
-						}
-						else
-						{
-							var @event = Company.WorkflowEventRegistrations.Find(model.Event.ID);
+							//need to map new form conditions to their appropriate step id's 
+							l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
 
-							@event.Object = model.Event.Object;
-							@event.ObjectID = model.Event.ObjectID;
+							link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
+							link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
+							link.FromPortID = l.FromPortID;
+							link.ToPortID = l.ToPortID;
+							link.State = State.Active;
 
-							switch (@event.Object)
-							{
-								case "IntersectType":
-									@event.IntersectTypeID = @event.ObjectID;
-									@event.AssetTypeID = null;
-									@event.IssueTypeID = null;
-									break;
-								case "IssueType":
-									@event.IssueTypeID = @event.ObjectID;
-									@event.AssetTypeID = null;
-									@event.IntersectTypeID = null;
-									break;
-								default:
-									var assetType = Company.AssetTypes.SingleOrDefault(a => a.Object == @event.Object && a.ObjectID == @event.ObjectID);
-									@event.IntersectTypeID = null;
-									@event.IssueTypeID = null;
-
-									if (assetType != null)
-									{
-										@event.AssetTypeID = assetType.ID;
-									}
-
-									assetType = null;
-									break;
-							}
-
-							@event.TypeID = model.Type.ID;
-							@event.ChangeType = model.Event.ChangeType;
-
-							@event.Condition = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
-							@event.Settings = JsonConvert.DeserializeXNode(model.Event.Settings).ToString();
-
-							Company.SaveChanges();
-						}
+							Company.Add(link);
+						});
 					}
 
 					#endregion
+				}
+				else
+				{
+					#region Modify Existing Version
 
-					List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
-					Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+					var existingSteps = Company.WorkflowVersionSteps.Where(s =>
+						s.State == State.Active
+						&& s.VersionID == versionID)
+						.ToList();
 
-					if (newVersion)
+					var existingLinks = new List<WorkflowVersionStepTransition>();
+
+					existingSteps.ForEach(s =>
 					{
-						#region Create New Version
-
-						if (model?.Nodes?.Count > 0)
+						var transition = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == s.ID && t.State == State.Active);
+						if (transition != null)
 						{
-							model.Nodes.ForEach(n =>
-							{
-								int.TryParse(n.Key, out int id);
+							existingLinks.AddRange(transition);
+						}
+					});
 
+					existingLinks.ForEach(l =>
+					{
+						if (existingSteps.Count(s => s.ID == l.ToVersionStepID) < 1)
+						{
+							l.State = State.Deleted;
+							var fromLinks = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == l.ToVersionStepID && t.State == State.Active).ToList();
+
+							fromLinks.ForEach(f => { f.State = State.Deleted; });
+						}
+					});
+
+					Company.SaveChanges();
+
+					if (model?.Nodes?.Count > 0)
+					{
+						model.Nodes.ForEach(n =>
+						{
+							int.TryParse(n.Key, out int id);
+
+							//new step
+							if (id < 0)
+							{
 								var step = new WorkflowVersionStep
 								{
 									ID = 0,
@@ -2187,30 +2276,78 @@ namespace d360.web.Controllers.Services
 								Company.Add(step);
 								Company.SaveChanges();
 								keyMapping.Add(id, step.ID);
-							});
-
-							//2nd loop to handle mappings
-							model.Nodes.ForEach(n =>
+							}
+							//modify exsiting step
+							else if (id > 0)
 							{
-								MapNodeSettingsAndTokens(n, keyMapping);
-							});
+								var node = Company.WorkflowVersionSteps.Find(id);
 
-							Company.SaveChanges();
-						}
-
-						if (model?.Links?.Count > 0)
-						{
-							model.Links.ForEach(l =>
-							{
-								int.TryParse(l.FromKey, out int from);
-								int.TryParse(l.ToKey, out int to);
-
-								var link = new WorkflowVersionStepTransition
+								var existing = existingSteps.Find(s => s.ID == id);
+								if (existing != null)
 								{
-									FromVersionStepID = keyMapping[from],
-									ToVersionStepID = keyMapping[to],
-									Name = l.Name
-								};
+									existingSteps.Remove(existing);
+								}
+
+								if (node != null)
+								{
+									node.ActivityType = n.ActivityType;
+									node.Name = n.Name ?? "";
+									node.StepType = n.StepType;
+									node.XPosition = n.XPosition;
+									node.YPosition = n.YPosition;
+									node.VersionID = versionID;
+									node.Settings = FormatMessageBodyTemplate(fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
+
+									if (string.IsNullOrEmpty(n.Fields))
+									{
+										node.Fields = null;
+									}
+									else
+									{
+										node.Fields = FormatFormDescription(fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
+									}
+
+									keyMapping.Add(id, id);
+								}
+							}
+						});
+
+						Company.SaveChanges();
+
+						//2nd loop to handle mappings
+						model.Nodes.ForEach(n =>
+						{
+							MapNodeSettingsAndTokens(n, keyMapping);
+						});
+
+						Company.SaveChanges();
+					}
+
+					if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
+					{
+						//mark anything left as deleted
+						existingSteps.ForEach(s => s.State = State.Deleted);
+						Company.SaveChanges();
+					}
+
+					if (model?.Links?.Count > 0)
+					{
+						model.Links.ForEach(l =>
+						{
+							int.TryParse(l.FromKey, out int from);
+							int.TryParse(l.ToKey, out int to);
+
+							bool fromNew = from < 0;
+							bool toNew = to < 0;
+
+							var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to && v.State == State.Active);
+
+							if (fromNew || toNew || link == null)
+							{
+								if (link == null)
+								{
+									link = new WorkflowVersionStepTransition();
+								}
 
 								link.FromVersionStepID = keyMapping[from];
 								link.ToVersionStepID = keyMapping[to];
@@ -2227,210 +2364,45 @@ namespace d360.web.Controllers.Services
 								link.State = State.Active;
 
 								Company.Add(link);
-							});
-						}
-
-						#endregion
-					}
-					else
-					{
-						#region Modify Existing Version
-
-						var existingSteps = Company.WorkflowVersionSteps.Where(s =>
-							s.State == State.Active
-							&& s.VersionID == versionID)
-							.ToList();
-
-						var existingLinks = new List<WorkflowVersionStepTransition>();
-
-						existingSteps.ForEach(s =>
-						{
-							var transition = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == s.ID && t.State == State.Active);
-							if (transition != null)
-							{
-								existingLinks.AddRange(transition);
 							}
-						});
-
-						existingLinks.ForEach(l =>
-						{
-							if (existingSteps.Count(s => s.ID == l.ToVersionStepID) < 1)
+							else
 							{
-								l.State = State.Deleted;
-								var fromLinks = Company.WorkflowVersionStepTransitions.Where(t => t.FromVersionStepID == l.ToVersionStepID && t.State == State.Active).ToList();
-
-								fromLinks.ForEach(f => { f.State = State.Deleted; });
-							}
-						});
-
-						Company.SaveChanges();
-
-						if (model?.Nodes?.Count > 0)
-						{
-							model.Nodes.ForEach(n =>
-							{
-								int.TryParse(n.Key, out int id);
-
-								//new step
-								if (id < 0)
+								var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
+								if (existing != null)
 								{
-									var step = new WorkflowVersionStep
-									{
-										ID = 0,
-										Name = n.Name ?? "",
-										StepType = n.StepType,
-										ActivityType = n.ActivityType,
-										XPosition = n.XPosition,
-										YPosition = n.YPosition,
-										VersionID = versionID,
-										Settings = FormatMessageBodyTemplate(fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString()),
-										State = State.Active
-									};
-
-									if (string.IsNullOrEmpty(n.Fields))
-									{
-										step.Fields = null;
-									}
-									else
-									{
-										step.Fields = FormatFormDescription(fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
-									}
-
-									Company.Add(step);
-									Company.SaveChanges();
-									keyMapping.Add(id, step.ID);
+									existingLinks.Remove(existing);
 								}
-								//modify exsiting step
-								else if (id > 0)
+
+								if (link != null)
 								{
-									var node = Company.WorkflowVersionSteps.Find(id);
-
-									var existing = existingSteps.Find(s => s.ID == id);
-									if (existing != null)
-									{
-										existingSteps.Remove(existing);
-									}
-
-									if (node != null)
-									{
-										node.ActivityType = n.ActivityType;
-										node.Name = n.Name ?? "";
-										node.StepType = n.StepType;
-										node.XPosition = n.XPosition;
-										node.YPosition = n.YPosition;
-										node.VersionID = versionID;
-										node.Settings = FormatMessageBodyTemplate(fieldTypes, JsonConvert.DeserializeXNode(n.Settings).ToString());
-
-										if (string.IsNullOrEmpty(n.Fields))
-										{
-											node.Fields = null;
-										}
-										else
-										{
-											node.Fields = FormatFormDescription(fieldTypes, JsonConvert.DeserializeXNode(n.Fields).ToString());
-										}
-
-										keyMapping.Add(id, id);
-									}
-								}
-							});
-
-							Company.SaveChanges();
-
-							//2nd loop to handle mappings
-							model.Nodes.ForEach(n =>
-							{
-								MapNodeSettingsAndTokens(n, keyMapping);
-							});
-
-							Company.SaveChanges();
-						}
-
-						if (existingSteps.Count > 0 && model?.Nodes?.Count > 0)
-						{
-							//mark anything left as deleted
-							existingSteps.ForEach(s => s.State = State.Deleted);
-							Company.SaveChanges();
-						}
-
-						if (model?.Links?.Count > 0)
-						{
-							model.Links.ForEach(l =>
-							{
-								int.TryParse(l.FromKey, out int from);
-								int.TryParse(l.ToKey, out int to);
-
-								bool fromNew = from < 0;
-								bool toNew = to < 0;
-
-								var link = Company.WorkflowVersionStepTransitions.SingleOrDefault(v => v.FromVersionStepID == from && v.ToVersionStepID == to && v.State == State.Active);
-
-								if (fromNew || toNew || link == null)
-								{
-									if (link == null)
-									{
-										link = new WorkflowVersionStepTransition();
-									}
-
-									link.FromVersionStepID = keyMapping[from];
-									link.ToVersionStepID = keyMapping[to];
 									link.Name = l.Name ?? "";
 									link.TransitionType = l.TransitionType;
+									link.FromPortID = l.FromPortID;
+									link.ToPortID = l.ToPortID;
 
 									//need to map new form conditions to their appropriate step id's 
 									l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
 
 									link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
 									link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
-									link.FromPortID = l.FromPortID;
-									link.ToPortID = l.ToPortID;
-									link.State = State.Active;
-
-									Company.Add(link);
 								}
-								else
-								{
-									var existing = existingLinks.Find(t => t.FromVersionStepID == link.FromVersionStepID && t.ToVersionStepID == link.ToVersionStepID);
-									if (existing != null)
-									{
-										existingLinks.Remove(existing);
-									}
+							}
+						});
 
-									if (link != null)
-									{
-										link.Name = l.Name ?? "";
-										link.TransitionType = l.TransitionType;
-										link.FromPortID = l.FromPortID;
-										link.ToPortID = l.ToPortID;
-
-										//need to map new form conditions to their appropriate step id's 
-										l.Condition = MapWorkflowConditions(l.Condition, keyMapping);
-
-										link.Condition = JsonConvert.DeserializeXNode(l.Condition).ToString();
-										link.Settings = JsonConvert.DeserializeXNode(l.Settings).ToString();
-									}
-								}
-							});
-
-							Company.SaveChanges();
-						}
-
-						if (existingLinks.Count > 0 && model?.Links?.Count > 0)
-						{
-							existingLinks.ForEach(l => l.State = State.Deleted);
-							Company.SaveChanges();
-						}
-
-						#endregion
+						Company.SaveChanges();
 					}
-				}
 
-				return Request.CreateResponse(HttpStatusCode.OK, model.Type.ID);
+					if (existingLinks.Count > 0 && model?.Links?.Count > 0)
+					{
+						existingLinks.ForEach(l => l.State = State.Deleted);
+						Company.SaveChanges();
+					}
+
+					#endregion
+				}
 			}
-			catch (Exception ex)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex);
-			}
+
+			return Ok(model.Type.ID);
 		}
 
 		private List<FieldType> GetFieldsForDiagramModel(WorkflowDiagramModel model)
@@ -2628,7 +2600,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("type/{id:int}/{uid:Guid}/delete")]
-		public HttpResponseMessage DeleteWorkflow(int id, Guid? uid)
+		public IHttpActionResult DeleteWorkflow(int id, Guid? uid)
 		{
 			core.entities.Workflow.Type type;
 
@@ -2643,12 +2615,12 @@ namespace d360.web.Controllers.Services
 
 			if (type == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString()));
 			}
 
 			if (type.State == State.Deleted)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.WorkflowIDAlreadyDeleted, id.ToString()));
+				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.WorkflowIDAlreadyDeleted, id.ToString()));
 			}
 
 			type.State = State.Deleted;
@@ -2656,37 +2628,33 @@ namespace d360.web.Controllers.Services
 			type.UpdatedBy = Company.CurrentResourceID;
 			Company.SaveChanges();
 
-			return Request.CreateResponse(HttpStatusCode.OK, id);
+			return Ok(id);
 		}
 
 		[Route("type/{id:int}/versions")]
-		public HttpResponseMessage GetVersions(int id)
+		public IHttpActionResult GetVersions(int id)
 		{
-			return Request.CreateResponse(HttpStatusCode.OK, Company.WorkflowVersions.Where(v => v.TypeID == id).ToList());
+			return Ok(Company.WorkflowVersions.Where(v => v.TypeID == id).ToList());
 		}
 
 		[Route("typeByUid/{typeUID:Guid}/myinstances")]
-		public HttpResponseMessage GetAssignedWorkflowInstancesByUid(Guid typeUID, int version, int versionStepId, Guid? resourceUid)
+		public IHttpActionResult GetAssignedWorkflowInstancesByUid(Guid typeUID, int version, int versionStepId, Guid? resourceUid)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
-
 			if (type == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+				return errorMessageArgumentResponse(string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
 			}
-
 
 			var resourceId = 0;
 
 			if (resourceUid.HasValue)
 			{
 				var resource = Company.GlobalReportingResources.Where(GR => GR.Uid == resourceUid.Value).FirstOrDefault();
-
 				if (resource == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+					return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
 				}
-
 				resourceId = resource.ResourceID;
 			}
 
@@ -2694,95 +2662,88 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("type/{typeId:int}/myinstances")]
-		public HttpResponseMessage GetAssignedWorkflowInstances(long typeId, int version, int stepId, int resourceId = 0)
+		public IHttpActionResult GetAssignedWorkflowInstances(long typeId, int version, int stepId, int resourceId = 0)
 		{
-			try
-			{
-				//get workflow instances of the type specified assigned to the current user
-				var sql = @"    select
-									wt.name as 'WorkflowName'
-									,wi.[object] as 'Object'
-									,wi.[objectid] as 'ObjectID'
-									,wi.startedOn as 'StartedOn'
-									,wi.startedBy as 'StartedByResourceID'
-									,wi.id as 'ItemID'
-									,gr.firstName + ' ' + gr.lastName as 'StartedBy'
-									,case 
-										when wi.[object] = 'Issue' then it.Name
-										else assettype.name
-									end as 'TypeName'
-									,assettype.[Object] as 'ObjectType'
-									,assettype.ObjectID as 'ObjectTypeID'	                                
-									,case 
-										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
-											FROM [Intersect] I
-											left join AssetDetail SA on SA.ID = I.SubjectAssetID
-											left join AssetDetail OA on OA.ID = I.ObjectAssetID
-											WHERE	I.ID = wi.objectid), '(unknown relationship)')
-										else coalesce(ADV.DisplayValue,'(unknown)')
-									end as 'ObjectName'
-									,wis.id as 'ItemStepID'
-									,wvs.name as 'StepName'
-									,wvs.steptype as 'StepType'
-									,wvs.activitytype as 'ActivityType'
-									,cod.[object] as 'IssueObject'
-									,cod.[objectid] as 'IssueObjectID'
-									,CODV.DisplayValue as 'IssueObjectName'  
-									,case 
-										when wi.[object] = 'Issue' then CODV.DisplayValue
-										when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
-											FROM [Intersect] I
-											left join AssetDetail SA on SA.ID = I.SubjectAssetID
-											left join AssetDetail OA on OA.ID = I.ObjectAssetID
-											WHERE	I.ID = wi.objectid), '(unknown relationship)')
-										else coalesce(ADV.DisplayValue,'(unknown)')
-									end as Name,
-									wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
-									itemCount.assignedCount as 'countAssigned'
-								from
-									[workflow].[type] wt
-									inner join [workflow].[version] wv on (wt.id = wv.typeid)
-									inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-									left join Asset ass on ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]
-									left join AssetDisplayValue ADV on ADV.AssetID = ass.ID
-									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
-									inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
-									inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-									inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
-									outer apply( 
-										SELECT count(*) as 'assignedCount' from [workflow].[itemassignment] 
-											WIC WHERE WIC.itemid = wi.id and (WIC.itemstepid = wis.id or WIC.itemstepid is null)
-										) itemCount(assignedCount)                                    
-									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
-									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-									left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
-									left join AssetDisplayValue CODV on CODV.AssetID = cod.ID
-									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
-								where
-									wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
-									and wv.[version]=@verid and wvs.id = @sid  
-									order by StartedOn desc";
+			//get workflow instances of the type specified assigned to the current user
+			var sql = @"    select
+								wt.name as 'WorkflowName'
+								,wi.[object] as 'Object'
+								,wi.[objectid] as 'ObjectID'
+								,wi.startedOn as 'StartedOn'
+								,wi.startedBy as 'StartedByResourceID'
+								,wi.id as 'ItemID'
+								,gr.firstName + ' ' + gr.lastName as 'StartedBy'
+								,case 
+									when wi.[object] = 'Issue' then it.Name
+									else assettype.name
+								end as 'TypeName'
+								,assettype.[Object] as 'ObjectType'
+								,assettype.ObjectID as 'ObjectTypeID'	                                
+								,case 
+									when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+										FROM [Intersect] I
+										left join AssetDetail SA on SA.ID = I.SubjectAssetID
+										left join AssetDetail OA on OA.ID = I.ObjectAssetID
+										WHERE	I.ID = wi.objectid), '(unknown relationship)')
+									else coalesce(ADV.DisplayValue,'(unknown)')
+								end as 'ObjectName'
+								,wis.id as 'ItemStepID'
+								,wvs.name as 'StepName'
+								,wvs.steptype as 'StepType'
+								,wvs.activitytype as 'ActivityType'
+								,cod.[object] as 'IssueObject'
+								,cod.[objectid] as 'IssueObjectID'
+								,CODV.DisplayValue as 'IssueObjectName'  
+								,case 
+									when wi.[object] = 'Issue' then CODV.DisplayValue
+									when wi.[object] = 'Intersect' then coalesce((SELECT COALESCE(SA.DisplayValue, '') + ' / ' + COALESCE(OA.DisplayValue, '')
+										FROM [Intersect] I
+										left join AssetDetail SA on SA.ID = I.SubjectAssetID
+										left join AssetDetail OA on OA.ID = I.ObjectAssetID
+										WHERE	I.ID = wi.objectid), '(unknown relationship)')
+									else coalesce(ADV.DisplayValue,'(unknown)')
+								end as Name,
+								wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
+								itemCount.assignedCount as 'countAssigned'
+							from
+								[workflow].[type] wt
+								inner join [workflow].[version] wv on (wt.id = wv.typeid)
+								inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+								left join Asset ass on ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid]
+								left join AssetDisplayValue ADV on ADV.AssetID = ass.ID
+								left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
+								inner join [workflow].[itemstep] wis on(wis.itemid = wi.id and wis.completedon is null)
+								inner join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+								inner join [workflow].[itemassignment] wia on (wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r and (wia.itemstepid = wis.id or wia.itemstepid is null))
+								outer apply( 
+									SELECT count(*) as 'assignedCount' from [workflow].[itemassignment] 
+										WIC WHERE WIC.itemid = wi.id and (WIC.itemstepid = wis.id or WIC.itemstepid is null)
+									) itemCount(assignedCount)                                    
+								inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
+								left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
+								left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
+								left join AssetDisplayValue CODV on CODV.AssetID = cod.ID
+								left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
+							where
+								wt.id = @typeId and wi.completedon is null and wvs.steptype = 2 and wvs.activitytype = 3 
+								and wv.[version]=@verid and wvs.id = @sid  
+								order by StartedOn desc";
 
-				var workflow = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
+			var workflow = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-				var items = Company.Query<dynamic>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId });
+			var items = Company.Query<dynamic>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId });
 
-				return Request.CreateResponse(new { items, workflow });
-			}
-			catch (Exception ex)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
-			}
+			return Ok(new { items, workflow });
 		}
 
 		[Route("typeByUid/{typeUID:Guid}/myinstances/summary")]
-		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(Guid typeUID, int version, int stepId, Guid? resourceUID)
+		public IHttpActionResult GetAssignedWorkflowInstancesHeader(Guid typeUID, int version, int stepId, Guid? resourceUID)
 		{
 			var type = Company.WorkflowTypes.Where(wt => wt.UID == typeUID).FirstOrDefault();
 
 			if (type == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
+				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.InvalidGuid, typeUID, "typeUID"));
 			}
 
 			var resourceId = 0;
@@ -2793,63 +2754,55 @@ namespace d360.web.Controllers.Services
 
 				if (resource == null)
 				{
-					return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+					return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
 				}
 
 				resourceId = resource.ResourceID;
 			}
 
-
 			return GetAssignedWorkflowInstancesHeader(type.ID, version, stepId, resourceId);
 		}
 
 		[Route("type/{typeId:int}/myinstances/summary")]
-		public HttpResponseMessage GetAssignedWorkflowInstancesHeader(int typeId, int version, int stepId, int resourceId = 0)
+		public IHttpActionResult GetAssignedWorkflowInstancesHeader(int typeId, int version, int stepId, int resourceId = 0)
 		{
-			try
-			{
-				//get workflow instances of the type specified assigned to the current user
-				var sql = @"    select
-									top 1 wi.[object] as 'ObjectName',
-									wvs.name as 'StepName',
-									case when wi.[object] = 'Issue' then it.Name
-									else assettype.name
-									end as 'TypeName' ,
-									wv.[version] as 'Version',
-									case when wvs.Settings.value('/settings[1]/SendFormEmail[1]/text()[1]','varchar(10)') = 'true' then
-										cast(1 as bit)
-									else
-										cast(0 as bit)
-									end as 'SendFormEmail'
-								from
-									[workflow].[type] wt
-									inner join [workflow].[version] wv on (wt.id = wv.typeid)
-									inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
-									left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
-									left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
-									left join [workflow].[itemstep] wis on(wis.itemid = wi.id )
-									left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
-									left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
-									inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
-									left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
-									left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
-									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
-								where
-									wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
-									and wv.[version]=@verid and wvs.id = @sid";
+			//get workflow instances of the type specified assigned to the current user
+			var sql = @"    select
+								top 1 wi.[object] as 'ObjectName',
+								wvs.name as 'StepName',
+								case when wi.[object] = 'Issue' then it.Name
+								else assettype.name
+								end as 'TypeName' ,
+								wv.[version] as 'Version',
+								case when wvs.Settings.value('/settings[1]/SendFormEmail[1]/text()[1]','varchar(10)') = 'true' then
+									cast(1 as bit)
+								else
+									cast(0 as bit)
+								end as 'SendFormEmail'
+							from
+								[workflow].[type] wt
+								inner join [workflow].[version] wv on (wt.id = wv.typeid)
+								inner join [workflow].[item] wi on (wv.id = wi.versionid)	                                
+								left join [dbo].asset ass on(ass.[object] = wi.[object] and ass.[objectid] = wi.[objectid])
+								left join [dbo].assettype assettype on(ass.assettypeid = assettype.id)
+								left join [workflow].[itemstep] wis on(wis.itemid = wi.id )
+								left join [workflow].[itemassignment] wia on(wia.itemid = wi.id and wia.resourceobject = 'Resource' and wia.resourceobjectid = @r)
+								left join [workflow].[versionstep] wvs on(wvs.id = wis.stepid)
+								inner join [reporting].global_resource gr on (wi.startedBy = gr.resourceid)
+								left outer join [dbo].[issue] iss on(wi.[objectid] = iss.id and wi.[object] = 'Issue')
+								left outer join [dbo].[asset] cod on (iss.AssetID = cod.ID) 
+								left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
+							where
+								wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
+								and wv.[version]=@verid and wvs.id = @sid";
 
-				var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId }).FirstOrDefault();
+			var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId }).FirstOrDefault();
 
-				return Request.CreateResponse(new { item });
-			}
-			catch (Exception ex)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
-			}
+			return Ok(new { item });
 		}
 
 		[Route("type/{typeId:int}/haspendingitems"), HttpGet]
-		public HttpResponseMessage HasPendingWorkflowsItems(int typeId)
+		public IHttpActionResult HasPendingWorkflowsItems(int typeId)
 		{
 			var sql = $@"		Select count(*)        from workflow.type t
 							inner join workflow.version v on v.typeid = t.id
@@ -2858,7 +2811,7 @@ namespace d360.web.Controllers.Services
 							where  t.State =1 and t.id= {typeId}";
 			int result = Company.Query<int>(sql).SingleOrDefault();
 
-			return Request.CreateResponse(HttpStatusCode.OK, result != 0);
+			return Ok(result != 0);
 		}
 
 		[Route("procedures"), HttpGet]
@@ -2868,7 +2821,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("typelist"), HttpGet]
-		public HttpResponseMessage GetWorkflowsByTypeList(string types, string filteredObject = null, int? filteredObjectId = null)
+		public IHttpActionResult GetWorkflowsByTypeList(string types, string filteredObject = null, int? filteredObjectId = null)
 		{
 			string issueSql = "", typeSql = "t.id in ({0}) and";
 
@@ -2911,12 +2864,12 @@ namespace d360.web.Controllers.Services
 			var sql = string.Format(QueryConstants.WorkflowTypeList, typeSql, issueSql);
 			var results = Company.Query<dynamic>(sql, new { filteredObject, filteredObjectId }).ToList();
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 
 		[Route("versionstep/history/{id:int}"), HttpGet]
-		public HttpResponseMessage GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
+		public IHttpActionResult GetWorkflowVersionStepHistory(int id, string filteredObject = null, int? filteredObjectId = null)
 		{
 			var sql = QueryConstants.WorkflowVersionStepHistory;
 
@@ -2944,7 +2897,7 @@ namespace d360.web.Controllers.Services
 				r.FieldsObject = XmlToDynamic(r.Fields);
 			});
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		[Route("versionstep/history/{id:int}/excel.xls"), HttpGet]
@@ -3034,7 +2987,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
-		public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
+		public IHttpActionResult GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
 		{
 			bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
 
@@ -3054,7 +3007,7 @@ namespace d360.web.Controllers.Services
 
 			var results = Company.Query<dynamic>(sql);
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		private string BuildWorkflowVersionStepFormLookupSQL(string objectType, int objectId, bool hasIssueObject = false)
@@ -3092,7 +3045,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("versionstep/events/{id:int}")]
-		public HttpResponseMessage GetWorkflowVersionStepEventInfo(int id)
+		public IHttpActionResult GetWorkflowVersionStepEventInfo(int id)
 		{
 			var results = Company.Query<dynamic>(@"select 
 								max(s.id) as VersionStepID, max(s.Name) as Name, 
@@ -3103,11 +3056,11 @@ namespace d360.web.Controllers.Services
 							where v.id = @id
 							group by s.id", new { id }).ToList();
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
 		[Route("openactions"), HttpGet]
-		public HttpResponseMessage GetWorkflowActions(string types)
+		public IHttpActionResult GetWorkflowActions(string types)
 		{
 			var resourceId = Company.CurrentResourceID;
 
@@ -3122,17 +3075,12 @@ namespace d360.web.Controllers.Services
 			var sql = string.Format(QueryConstants.WorkflowAssignments, types);
 			var results = Company.Query<dynamic>(sql, new { resourceId }).ToList();
 
-			return Request.CreateResponse(HttpStatusCode.OK, results);
+			return Ok(results);
 		}
 
-		[Route("lastexecution/{id:int}/{uid:Guid}"), HttpDelete]
-		public HttpResponseMessage DeleteLastExecution(int id, Guid? uid)
+		[Route("lastexecution/{id:int}/{uid:Guid}"), HttpDelete, RequireAdminPermissions]
+		public IHttpActionResult DeleteLastExecution(int id, Guid? uid)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.Forbidden, new Exception(ApiMessages.AccessDenied));
-			}
-
 			if (id == 0 && uid.HasValue && uid.Value != Guid.Empty)
 			{
 				id = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault().ID;
@@ -3140,7 +3088,7 @@ namespace d360.web.Controllers.Services
 
 			if (!Company.WorkflowEventRegistrations.Any(x => x.TypeID == id))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id.ToString())));
+				return errorMessageNotFoundResponse(string.Format(WorkflowApiMessages.WorkflowtypeidNotFound, id));
 			}
 
 			var workflow = Company.WorkflowEventRegistrations.First(x => x.TypeID == id);
@@ -3148,17 +3096,17 @@ namespace d360.web.Controllers.Services
 
 			Company.SaveChanges();
 
-			return Request.CreateResponse(HttpStatusCode.OK, workflow);
+			return Ok(workflow);
 		}
 
 		[Route("item/{itemId:int}"), HttpGet]
-		public HttpResponseMessage GetWorkflowItemSteps(int itemId)
+		public IHttpActionResult GetWorkflowItemSteps(int itemId)
 		{
 			var item = Company.WorkflowItems.FirstOrDefault(i => i.ID == itemId);
 
 			if (item == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception(WorkflowApiMessages.ItemNotFound));
+				return errorMessageNotFoundResponse(WorkflowApiMessages.ItemNotFound);
 			}
 
 			var results = Company.Query<WorkflowItemStepDetail>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
@@ -3182,7 +3130,7 @@ namespace d360.web.Controllers.Services
 				stepList.Add(result);
 			}
 
-			return Request.CreateResponse(HttpStatusCode.OK, stepList);
+			return Ok(stepList);
 		}
 		private void SetWorkFlowStepRelationshipAssets(dynamic form)
 		{
@@ -4226,7 +4174,7 @@ namespace d360.web.Controllers.Services
 		}
 
 		[Route("resources"), HttpGet]
-		public HttpResponseMessage GetResources()
+		public IHttpActionResult GetResources()
 		{
 			var queryParams = Request.GetQueryStrings();
 			queryParams.TryGetValue("gbfilter", out string gbFilter);
@@ -4251,19 +4199,15 @@ namespace d360.web.Controllers.Services
 			var total = Company.Query<int>(countSql, dbArgs).First();
 			var results = Company.Query<dynamic>(sql, dbArgs);
 
-			return Request.CreateResponse(HttpStatusCode.OK, new
-			{
-				total,
-				results
-			});
+			return Ok(new { total, results });
 		}
 
 		[Route("ReassignWorkflowResource/bulk")]
-		public async Task<HttpResponseMessage> BulkReassignForm(BulkWorkflowReassignModel model)
+		public async Task<IHttpActionResult> BulkReassignForm(BulkWorkflowReassignModel model)
 		{
 			if (model == null || ((model.ItemStepUIDs == null || model.ItemStepUIDs.Count < 1) && (model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)))
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			if (model.ItemStepUIDs.Count >= 1)
@@ -4275,38 +4219,31 @@ namespace d360.web.Controllers.Services
 
 			return response;
 		}
-
-		public async Task<HttpResponseMessage> BulkReassignFormByItemStepId(BulkWorkflowReassignModel model)
+		
+		[RequireAdminPermissions]
+		public async Task<IHttpActionResult> BulkReassignFormByItemStepId(BulkWorkflowReassignModel model)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.Forbidden, WorkflowApiMessages.NoPermissionBulkReassign);
-			}
-
 			if (model == null || model.ItemStepIDs == null || model.ItemStepIDs.Count < 1)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == model.NewAssigneeResourceID);
 
 			if (model.NewAssigneeResourceID < 0 || resource == null)
 			{
-				return Request.CreateErrorResponse(HttpStatusCode.BadRequest, WorkflowApiMessages.InvalidResourceID);
+				return errorMessageArgumentResponse(WorkflowApiMessages.InvalidResourceID);
 			}
 
 			var itemSteps = Company.WorkflowItemSteps.Where(x => model.ItemStepIDs.Contains(x.ID)).Include(x => x.Item).Include(x => x.Step).Include(x => x.Step.Version).Include(x => x.Step.Version.Type).ToList();
 
-			try
-			{
-				await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
-			}
-			catch (Exception ex)
-			{
-				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
-			}
+			await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
 
-			return Request.CreateResponse(HttpStatusCode.OK, new { type = ApiMessages.Success, message = WorkflowApiMessages.WorkflowReassignSuccess, title = ApiMessages.Success });
+			return Ok(new { 
+				type = ApiMessages.Success, 
+				message = WorkflowApiMessages.WorkflowReassignSuccess, 
+				title = ApiMessages.Success 
+			});
 		}
 
 		#region Helper Methods

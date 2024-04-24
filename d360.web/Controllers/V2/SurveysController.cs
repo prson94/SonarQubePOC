@@ -61,82 +61,52 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
-
-        ]
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetSurveysResultsAsync(string surveyTypeUid)
         {
-            var prefix = "Surveys.GetSurveysResultsAsync => ";
-            string errorMessage;
+            Guid surveyUid = Guid.Parse(surveyTypeUid);
+            var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (survey == null)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+                return errorMessageNotFoundResponse(string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid));
             }
 
-            try
+            var queryParams = Request.GetQueryNameValuePairs();
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
             {
-                Guid surveyUid = Guid.Parse(surveyTypeUid);
-                var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
-
-                if (survey == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid))).ConfigureAwait(false);
-                }
-
-                var queryParams = Request.GetQueryNameValuePairs();
-                string isValid = isPageSizeAndNumValid(queryParams);
-
-                if (!string.IsNullOrEmpty(isValid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-                }
-
-                if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
-                {
-                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
-
-                    var asset = AssetRepository.GetAssetByUID(uid);
-
-                    if (asset == null)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
-                    }
-                }
-
-                if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
-                {
-                    DateTime date = DateTime.MinValue;
-                    var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
-
-                    if (!DateTime.TryParse(paramDate, out date))
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate)).ConfigureAwait(false);
-                    }
-                }
-
-                var response = SurveyRepository.GetSurveysResult(surveyUid, queryParams);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                return errorMessageArgumentResponse(isValid);
             }
-            catch (Exception ex)
+
+            if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
             {
-                HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                string errorTitle = ApiMessages.UnknownError;
+                Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
 
-                if (ex is FormatException)
+                var asset = AssetRepository.GetAssetByUID(uid);
+
+                if (asset == null)
                 {
-                    errorMessage = errorMessage.Replace("Guid", "Uid");
-                    errorCode = HttpStatusCode.BadRequest;
-                    errorTitle = ApiMessages.InvalidRequest;
+                    return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, uid.ToString()));
                 }
-
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(errorCode, errorTitle, errorMessage)).ConfigureAwait(false);
             }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
+            {
+                DateTime date = DateTime.MinValue;
+                var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
+
+                if (!DateTime.TryParse(paramDate, out date))
+                {
+                    return errorMessageArgumentResponse(SurverysApiMessages.InvalidValueAsOfDate);
+                }
+            }
+
+            var response = SurveyRepository.GetSurveysResult(surveyUid, queryParams);
+
+            return Ok(response);
         }
 
 		/// <summary>
@@ -536,87 +506,56 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
-
-        ]
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetSurveysResultsSummaryAsync(string surveyTypeUid)
         {
-            var prefix = "Surveys.GetSurveysResultsAsync => ";
-            string errorMessage;
+            Guid surveyUid = Guid.Parse(surveyTypeUid);
+            var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (survey == null)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+                return errorMessageNotFoundResponse(string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid));
             }
 
-            try
+            var queryParams = Request.GetQueryNameValuePairs();
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
             {
-                Guid surveyUid = Guid.Parse(surveyTypeUid);
-                var survey = SurveyRepository.GetSurveyTypeByUid(surveyUid);
-
-                if (survey == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, surveyTypeUid))).ConfigureAwait(false);
-                }
-
-                var queryParams = Request.GetQueryNameValuePairs();
-                string isValid = isPageSizeAndNumValid(queryParams);
-
-                if (!string.IsNullOrEmpty(isValid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
-                }
-
-                if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
-                {
-                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
-
-                    var asset = AssetRepository.GetAssetByUID(uid);
-
-                    if (asset == null)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
-                    }
-
-                    if (asset.AssetType.ID != survey.AssetTypeID)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, SurverysApiMessages.AssetTypeNotSurvey)).ConfigureAwait(false);
-                    }
-                }
-
-                if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
-                {
-                    DateTime date = DateTime.MinValue;
-                    var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
-
-                    if (!DateTime.TryParse(paramDate, out date))
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, SurverysApiMessages.InvalidValueAsOfDate)).ConfigureAwait(false);
-                    }
-                }
-
-                var response = SurveyRepository.GetSurveyResultSummary(surveyUid, queryParams);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                return errorMessageArgumentResponse(isValid);
             }
-            catch (Exception ex)
+
+            if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
             {
-                HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                string errorTitle = ApiMessages.UnknownError;
+                Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
 
-                if (ex is FormatException)
+                var asset = AssetRepository.GetAssetByUID(uid);
+
+                if (asset == null)
                 {
-                    errorMessage = errorMessage.Replace("Guid", "Uid");
-                    errorCode = HttpStatusCode.BadRequest;
-                    errorTitle = ApiMessages.InvalidRequest;
+                    return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, uid.ToString()));
                 }
 
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(errorCode, errorTitle, errorMessage));
+                if (asset.AssetType.ID != survey.AssetTypeID)
+                {
+                    return errorMessageNotFoundResponse(SurverysApiMessages.AssetTypeNotSurvey);
+                }
             }
+
+            if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
+            {
+                DateTime date = DateTime.MinValue;
+                var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
+
+                if (!DateTime.TryParse(paramDate, out date))
+                {
+                    return errorMessageArgumentResponse(SurverysApiMessages.InvalidValueAsOfDate);
+                }
+            }
+
+            var response = SurveyRepository.GetSurveyResultSummary(surveyUid, queryParams);
+            return Ok(response);
         }
 
         /// <summary>
@@ -646,67 +585,46 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Survey Type with Uid {uid} not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "User with Uid {uid} not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset with Uid {uid} not found.", typeof(ErrorResponse)),
-        ]
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteSurveyResultsAsync()
         {
-            var prefix = "Surveys.DeleteSurveyResultsAsync => ";
-            string errorMessage;
+            var queryParams = Request.GetQueryNameValuePairs();
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (!validator.IsRequiredGuidExistForDeleteSurveyResult(queryParams))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+                return errorMessageArgumentResponse(SurverysApiMessages.SurveyResourceAssetUidPopulated);
             }
 
-            try
+            if (!validator.IsValidSurveyType(queryParams))
             {
-                var queryParams = Request.GetQueryNameValuePairs();
+                return errorMessageNotFoundResponse(string.Format(SurverysApiMessages.SurveyUidNotFound, GetUidFromQueryParams(queryParams, "SurveyTypeUid")));
+            }
 
-                if (!validator.IsRequiredGuidExistForDeleteSurveyResult(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.SurveyResourceAssetUidPopulated)).ConfigureAwait(false);
-                }
+            if (!validator.IsValidAsset(queryParams))
+            {
+                return errorMessageNotFoundResponse(string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")));
+            }
 
-                if (!validator.IsValidSurveyType(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(SurverysApiMessages.SurveyUidNotFound, GetUidFromQueryParams(queryParams, "SurveyTypeUid")))).ConfigureAwait(false);
-                }
+            if (!validator.IsValidResource(queryParams))
+            {
+                return errorMessageNotFoundResponse(string.Format(ActionApiMessages.UserUidNotFound, GetUidFromQueryParams(queryParams, "ResourceUid")));
+            }
 
-                if (!validator.IsValidAsset(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, GetUidFromQueryParams(queryParams, "AssetUid")))).ConfigureAwait(false);
-                }
+            if (!validator.IsValidDate(queryParams, "StartDateRange"))
+            {
+                return errorMessageArgumentResponse(SurverysApiMessages.NotvalidStartDateRange);
+            }
 
-                if (!validator.IsValidResource(queryParams))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.UserUidNotFound, GetUidFromQueryParams(queryParams, "ResourceUid")))).ConfigureAwait(false);
-                }
+            if (!validator.IsValidDate(queryParams, "EndDateRange"))
+            {
+                return errorMessageArgumentResponse(SurverysApiMessages.NotavalidEndDateRange);
+            }
 
-                if (!validator.IsValidDate(queryParams, "StartDateRange"))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.NotvalidStartDateRange)).ConfigureAwait(false);
-                }
-
-                if (!validator.IsValidDate(queryParams, "EndDateRange"))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid, SurverysApiMessages.NotavalidEndDateRange)).ConfigureAwait(false);
-                }
-
-                int count = SurveyRepository.DeleteSurveyResults(queryParams);
-                var result = new SurveyAPIDeleteResultsResponseModel { Message = string.Format(SurverysApiMessages.ResultRemoved, count.ToString()), Success = true };
+            int count = SurveyRepository.DeleteSurveyResults(queryParams);
+            var result = new SurveyAPIDeleteResultsResponseModel { Message = string.Format(SurverysApiMessages.ResultRemoved, count.ToString()), Success = true };
                 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
-            }
-
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
+            return Ok(result);
         }
 
         /// <summary>

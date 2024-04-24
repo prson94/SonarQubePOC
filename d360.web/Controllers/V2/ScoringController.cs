@@ -116,79 +116,63 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public IHttpActionResult PostAllocation(AllocationApiUpsertModel model)
 		{
-			const string ERROR_HEADING = "Error adding allocation";
-
-			try
+			if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.InvalidAssetTypeUid);
-				}
-
-				List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
-
-				if (!scoreTypes.Contains(model.scoreType))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ApiMessages.InvalidScoreType);
-				}
-
-				var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
-
-				List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
-
-				if (assetType == null)
-				{
-					return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
-				}
-
-				if (!allowedClasses.Contains(assetType.Class))
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ActionApiMessages.AssettypeInvalidClass);
-				}
-
-				MetricAllocation alloc = ScoringRepository.GetAllocationByModel(model);
-
-				if (alloc != null && alloc.State == State.Active)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.ScoreExists);
-				}
-
-				if (model.lowerThreshold == null)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.LowerThreshold);
-				}
-
-				if (model.upperThreshold == null)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperThreshold);
-				}
-
-				if (model.lowerThreshold >= model.upperThreshold)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.UpperGtLower);
-				}
-				if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RangeLimitThreshold);
-				}
-
-				AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
+				return errorMessageArgumentResponse(ActionApiMessages.InvalidAssetTypeUid);
 			}
-			catch
+
+			List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
+
+			if (!scoreTypes.Contains(model.scoreType))
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(ApiMessages.InvalidScoreType);
 			}
+
+			var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
+
+			List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
+
+			if (assetType == null)
+			{
+				return errorMessageArgumentResponse(string.Format(ActionApiMessages.AssetTypeNotFound, model.assetTypeUid.ToString()));
+			}
+
+			if (!allowedClasses.Contains(assetType.Class))
+			{
+				return errorMessageArgumentResponse(ActionApiMessages.AssettypeInvalidClass);
+			}
+
+			MetricAllocation alloc = ScoringRepository.GetAllocationByModel(model);
+
+			if (alloc != null && alloc.State == State.Active)
+			{
+				return errorMessageArgumentResponse(ScoreApiMessages.ScoreExists);
+			}
+			if (model.lowerThreshold == null)
+			{
+				return errorMessageArgumentResponse(ScoreApiMessages.LowerThreshold);
+			}
+			if (model.upperThreshold == null)
+			{
+				return errorMessageArgumentResponse(ScoreApiMessages.UpperThreshold);
+			}
+			if (model.lowerThreshold >= model.upperThreshold)
+			{
+				return errorMessageArgumentResponse(ScoreApiMessages.UpperGtLower);
+			}
+			if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
+			{
+				return errorMessageArgumentResponse(ScoreApiMessages.RangeLimitThreshold);
+			}
+
+			AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
 		}
 
 		/// <summary>
@@ -203,7 +187,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your allocation was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to update this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public IHttpActionResult PutAllocation(Guid allocationUid, AllocationApiUpsertModel model)
 		{
@@ -211,11 +196,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				MetricAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
 				if (alloc == null)
@@ -287,9 +267,8 @@ namespace d360.web.Controllers.V2
 					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RangeLimitThreshold);
 				}
 
-				AllocationApiGetModel allocation = ScoringRepository.UpdateAllocation(model, alloc);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocation));
+				var allocation = ScoringRepository.UpdateAllocation(model, alloc);
+				return Ok(allocation);
 			}
 			catch
 			{
@@ -309,41 +288,28 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public IHttpActionResult DeleteAllocation(Guid allocationUid)
 		{
-			const string ERROR_HEADING = "Error deleting allocation";
+			var alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
-			try
+			if (alloc == null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				var alloc = ScoringRepository.GetAllocationByUid(allocationUid);
-
-				if (alloc == null)
-				{
-					return errorMessageResponse(HttpStatusCode.NotFound, ERROR_HEADING, string.Format(ScoreApiMessages.AllocationNotExists, allocationUid.ToString()));
-				}
-
-				var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
-
-				if (hasActiveMeasures)
-				{
-					return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, ScoreApiMessages.RestrictDeleteScore);
-				}
-
-				ScoringRepository.DeleteAllocation(alloc);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = ScoreApiMessages.AllocationDeleteMessage }));
+				return errorMessageNotFoundResponse(string.Format(ScoreApiMessages.AllocationNotExists, allocationUid.ToString()));
 			}
-			catch
+
+			var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
+
+			if (hasActiveMeasures)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageArgumentResponse(ScoreApiMessages.RestrictDeleteScore);
 			}
+
+			ScoringRepository.DeleteAllocation(alloc);
+
+			return Ok(new ConfirmResponse { message = ScoreApiMessages.AllocationDeleteMessage });
 		}
 
 		/// <summary>

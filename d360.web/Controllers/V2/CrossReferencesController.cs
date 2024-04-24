@@ -45,14 +45,10 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_externalId", "The external ID of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_dataSource", "The data source of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_type", "The type of the cross reference record(s) to request.", DataType = "string", ParameterType = "query", Required = false),
-        ]
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> Get()
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
             var queryParams = Request.GetQueryNameValuePairs();
             var assetCrossReferences = await Catalog.ReadCrossReferencesAsync(queryParams);
 
@@ -70,15 +66,11 @@ namespace d360.web.Controllers.V2
             Route("{assetUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the public unique identifier (assetUid) of the asset.", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
-        ]
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetByUid(string assetUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("_assetuid", assetUid)
@@ -101,15 +93,11 @@ namespace d360.web.Controllers.V2
             Route("{type}/{externalId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type and identifier of the asset.", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
-        ]
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetByTypeID(string type, string externalId)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("_type", type),
@@ -132,15 +120,11 @@ namespace d360.web.Controllers.V2
             Route("type/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the external type.", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>))
-        ]
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetByType(string type)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("_type", type)
@@ -162,15 +146,11 @@ namespace d360.web.Controllers.V2
             Route("datasource/{dataSource}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset cross references based on the data source.", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Access Denied", typeof(List<AssetCrossReference>))
-        ]
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access Denied", typeof(List<AssetCrossReference>)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> GetByDataSource(string dataSource)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("_datasource", dataSource)
@@ -193,15 +173,11 @@ namespace d360.web.Controllers.V2
             Route(""),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Asset cross reference model does not contain required fields.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.Conflict, "Asset cross reference already exists.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.Conflict, "Asset cross reference already exists.", typeof(AssetCrossReference)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> Post(AssetCrossReference model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-            }
-
 			var response = await Catalog.CreateCrossReferenceAsync(model);
 			return (response.IsSuccess) ?
 				ResponseMessage(Request.CreateResponse(response.GetHttpStatusCode(), response.Data)) :
@@ -219,15 +195,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("bulk"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(List<AssetCrossReference>)),
-            SwaggerResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist.", typeof(List<AssetCrossReference>))
-        ]
+            SwaggerResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist.", typeof(List<AssetCrossReference>)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PostBulk(List<AssetCrossReference> models)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-            }
-
             var execution = getApiExecution(models.Count, action: ApiExecutionAction.PostCrossReferences);
             await Catalog.CreateCrossReferencesAsync(execution, models);
 			var results = await Catalog.ReadCrossReferenceResultsAsync(execution.ExecutionID);
@@ -251,15 +223,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PutByXrefUid(Guid uid, string dataSource, string type, string externalId, AssetCrossReference model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			model.DataSource = dataSource;
 			model.Type = type;
 			model.ExternalID = externalId;
@@ -289,15 +257,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PutByUid(Guid uid, AssetCrossReference model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			model.uid = uid;
 			var response = await Catalog.UpdateCrossReferenceAsync(model);
 
@@ -322,15 +286,11 @@ namespace d360.web.Controllers.V2
             Route("{uid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteByUid(Guid uid)
         {
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
 			var queryParams = new List<KeyValuePair<string, string>>
 			{
 				new KeyValuePair<string, string>("_assetuid", uid.ToString())
@@ -360,15 +320,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteByDataSourceAndType(string dataSource, string type)
         {
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
             {
 				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasourceType);
@@ -403,15 +359,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteByType(string type)
         {
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			if (string.IsNullOrEmpty(type))
 			{
 				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingType);
@@ -445,15 +397,11 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference))
-        ]
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)), 
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteByDataSource(string dataSource)
         {
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			if (string.IsNullOrEmpty(dataSource))
 			{
 				return errorMessageResponse(HttpStatusCode.NotAcceptable, ApiMessages.RequestMissingDatasource);
@@ -487,16 +435,12 @@ namespace d360.web.Controllers.V2
             Route("batch"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to add Asset Cross Reference", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 
-        ]
+		]
         public async Task<IHttpActionResult> PostBatchCrossReferenceAsync(List<AssetCrossReference> crossReferences)
         {
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			if (crossReferences == null)
             {
                 crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;

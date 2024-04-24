@@ -327,20 +327,16 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "List of indexable Categories and Asset Types", typeof(List<IndexableType>)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
+			ApiExplorerSettings(IgnoreApi = true),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetIndexableTypes()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-			}
-
-			List<IndexableType> types = Company.Query<IndexableType>(
+			List<IndexableType> types = (await Company.QueryAsync<IndexableType>(
 				@"SELECT at.Name, at.Class, at.Uid as AssetTypeUid, P.[Path] as AssetTypePath
 				FROM [dbo].[AssetType] at
 				cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P 
-				WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)").ToList();
+				WHERE EXISTS (SELECT 1 FROM [dbo].[Asset] a WHERE a.AssetTypeId = at.ID)")).ToList();
 			types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
 			List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
@@ -358,7 +354,7 @@ namespace d360.web.Controllers.V2
 			//Reclassify Reference/ReferenceItemType
 			classes.Where((c) => c.Class == 9).ToList().ForEach((c) => c.Class = 14);
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, classes))).ConfigureAwait(false);
+			return Ok(classes);
 		}
 
 		/// <summary>
