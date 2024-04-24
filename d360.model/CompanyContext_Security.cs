@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
@@ -255,25 +256,57 @@ namespace d360.model
 
 		private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results, int timeout = 3600)
 		{
-			string sqlToExecute = "";
-			string declareVar = "";
+			string sqlToExecute;
+			string declareVar;
+			bool runCompleted = false;
+			int retryCount = 0;
 
-			using (SqlTransaction transaction = Connection.BeginTransaction())
+			sqlToExecute = "select Uid from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
+			var assetTypeUid = (await Connection.QueryAsync<Guid?>(
+				sqlToExecute,
+				new { rule.Object, rule.ObjectID }
+			)).SingleOrDefault();
+
+			// Set Flag IsAssetForRescoring ,asset for rescoring purposes.
+			sqlToExecute = @"
+select count(1) from 
+(
+select  top 1 R.ID
+from    ResponsibilityTypeRelationRule R
+		inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+		inner join metrics.Allocation Al on Al.AssetTypeUid = @assetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+		and ( 
+			(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+			(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+			) 
+		and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+		and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
+		and V.Definition <> '{}'
+where R.ID = @ID
+) a";
+			var IsAssetForRescoring = (await Connection.QueryAsync<bool>(sqlToExecute, new { assetTypeUid, today = DateTime.UtcNow.Date, rule.ID })).FirstOrDefault();
+
+
+			while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
 			{
-				try
+				using (SqlTransaction transaction = Connection.BeginTransaction())
 				{
-					string thenSql = GetThenResultsSql(rule, false, transaction, false, "", false);
-					var whenQueryData = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
-					declareVar = whenQueryData.DeclareVariable;
+					try
+					{
+						string thenSql = GetThenResultsSql(rule, false, transaction, false, "", false);
+						var whenQueryData = await GetWhenResultsSql(rule, transaction, false, false).ConfigureAwait(false);
+						declareVar = whenQueryData.DeclareVariable;
 
-					thenSql = string.Format(thenSql, "");
+						thenSql = string.Format(thenSql, "");
 
-					//create impacted assets temporary table.
-					sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)";
-					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
+						//create impacted assets temporary table.
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
-					//merge into the asset table 
-					sqlToExecute = $@"
+						//merge into the asset table 
+						sqlToExecute = $@"
 							{declareVar}
 
 							{whenQueryData.TempTableQuery}
@@ -292,27 +325,29 @@ namespace d360.model
 							inner join #tempdatarule S on S.AssetID = T.AssetID
 							where T.RuleID = @ruleId;
 
+							delete T
+							{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetID into #changes" : "")}
+							from [dbo].[ResponsibilityRuleResultAsset] T
+							left join #tempdatarule S on S.AssetID = T.AssetID
+							where T.RuleID = @ruleId and S.AssetID is null;
+
 							merge [dbo].[ResponsibilityRuleResultAsset] as T
-									using	#tempdatarule S
-									on		@ruleId = T.RuleID and S.AssetID = T.AssetID
-									when	not matched by target then
-											insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
-									when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-											delete
-									output  $action as ActionType, 
-											iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
-											iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
-									into #changes;
+							using	#tempdatarule S
+							on		@ruleId = T.RuleID and S.AssetID = T.AssetID
+							when	not matched by target then
+							insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
+							{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetID into #changes" : "")};
 
-									drop table if exists #tempdatarule;
-									";
-					whenQueryData.DbParameters.Add("ruleId", rule.ID);
-					await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: timeout);
+							
+							drop table if exists #tempdatarule;
+							";
+						whenQueryData.DbParameters.Add("ruleId", rule.ID);
+						await Connection.ExecuteAsync(sqlToExecute, whenQueryData.DbParameters, transaction: transaction, commandTimeout: timeout);
 
-					//merge into the resource table
-					if (thenSql != null && thenSql.Length > 0)
-					{
-						sqlToExecute = $@"
+						//merge into the resource table
+						if (thenSql != null && thenSql.Length > 0)
+						{
+							sqlToExecute = $@"
 							drop table if exists #tempdataruleThen;
 					
 							select *
@@ -333,73 +368,74 @@ namespace d360.model
 							
 							drop table if exists #tempdataruleThen;
 						";
-						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
-					}
+							await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
+						}
 
-					// Get impacted assets, for rescoring purposes.
-					sqlToExecute = @"
+						// Get impacted assets, for rescoring purposes.
+						sqlToExecute = @"
 select  A.Uid
 from    #changes C 
-		inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
-		inner join AssetType T on T.ID = A.AssetTypeID
-		inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
-		inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-		and ( 
-			(@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-			(@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-			) 
-		and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-		and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-		and V.Definition <> '{}'
+		inner join Asset A on A.ID = C.AssetID 
+		inner join AssetType T on T.ID = A.AssetTypeID and T.Uid = @assetTypeUid
+where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT') 
 group by A.Uid";
-					var assets = Connection.Query<Guid>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction).ToList();
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { assetTypeUid, IsAssetForRescoring }, transaction: transaction)).ToList();
 
-					//drop impacted assets temporary table.
-					sqlToExecute = "drop table if exists #changes";
-					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
+						//drop impacted assets temporary table.
+						sqlToExecute = "drop table if exists #changes";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
 
-					//First time a rule runs, queue the asset type for search re-indexing
-					if (rule.LastRunOn == null)
-					{
-						sqlToExecute = "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
-						AssetType assetType = Connection.Query<AssetType>(
-							sqlToExecute,
-							new { rule.Object, rule.ObjectID },
-							transaction: transaction
-						).SingleOrDefault();
-
-						Enqueue(constants.Queue.Search, new ReindexModel
+						//First time a rule runs, queue the asset type for search re-indexing
+						if (rule.LastRunOn == null)
 						{
-							CompanyID = CurrentCompanyID,
-							AssetTypeUid = assetType.uid,
-							Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
-						});
+							Enqueue(constants.Queue.Search, new ReindexModel
+							{
+								CompanyID = CurrentCompanyID,
+								AssetTypeUid = assetTypeUid,
+								Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
+							});
+						}
+
+						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
+
+						transaction.Commit();
+
+						if (assets != null && assets.Count > 0)
+						{
+							CreateRescoreRequests(assets, ScoreType.Governance);    // Trigger a rescore only when you commit the transaction.
+						}
+
+						runCompleted = true;
 					}
-
-					await MarkResponsibilityRuleAsRan(rule.ID, transaction);
-
-					transaction.Commit();
-
-					CreateRescoreRequests(assets, ScoreType.Governance);    // Trigger a rescore only when you commit the transaction.
-				}
-				catch (Exception ex)
-				{
-					try
+					catch (Exception ex)
 					{
-						if (transaction != null)
+						if (!ex.GetFullExceptionData().Contains("deadlocked"))
 						{
-							transaction.Rollback();
+							retryCount = API_V2_RETRY_LIMIT;
+						}
+
+						try
+						{
+							if (transaction != null)
+							{
+								transaction.Rollback();
+							}
+						}
+						catch
+						{
+							//possible invalid rule ignore
+						}
+						retryCount++;
+
+						if (retryCount > API_V2_RETRY_LIMIT)
+						{
+							throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+						}
+						else
+						{
+							Thread.Sleep(API_V2_RETRY_INTERVAL * retryCount);
 						}
 					}
-					catch
-					{
-						//possible invalid rule ignore
-					}
-
-					throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
 				}
 			}
 		}
@@ -407,86 +443,23 @@ group by A.Uid";
 		private async Task ProcessRuleForAssetType(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results)
 		{
 			string sqlToExecute = "";
+			bool runCompleted = false;
+			int retryCount = 0;
 
-			using (SqlTransaction transaction = Connection.BeginTransaction())
-			{
-				try
-				{
-					string thenSql = GetThenResultsSql(rule, false, transaction, false);
-					thenSql = string.Format(thenSql, "");
+			sqlToExecute = "select Uid from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
+			var assetTypeUid = (await Connection.QueryAsync<Guid?>(
+				sqlToExecute,
+				new { rule.Object, rule.ObjectID }
+			)).SingleOrDefault();
 
-					//create impacted assets temporary table.
-					sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)";
-					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
-
-					//merge into the asset table 
-					sqlToExecute = @"
-							drop table if exists #tempdataruleAT;
-
-							create table #tempdataruleAT(AssetTypeID int,RuleID int);
-							create clustered index cx_tempdataruleAT on #tempdataruleAT(AssetTypeID,RuleID);
-
-							insert into #tempdataruleAT (AssetTypeID, RuleID)
-							select	T.ID as AssetTypeID,		
-									R.ID as RuleID
-							from	AssetType T
-							inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
-							where	R.ID = @ruleId;
-
-							update T
-							set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
-							from [dbo].[ResponsibilityRuleResultAsset] as T
-							inner join #tempdataruleAT S on S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
-							where T.RuleID = @ruleId;
-
-							merge   [dbo].[ResponsibilityRuleResultAsset] as T
-							using	#tempdataruleAT as S
-							on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
-							when	not matched by target then
-									insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
-							when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-									delete
-							output  $action as ActionType, 
-									iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
-									iif($action = 'DELETE', deleted.AssetTypeID, inserted.AssetTypeID)
-							into #changes;
-
-							drop table if exists #tempdataruleAT";
-					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
-
-					//merge into the resource table
-					sqlToExecute = $@"
-							drop table if exists #tempdataruleThenAT;
-					
-							select *
-							into #tempdataruleThenAT
-							from ({thenSql}) a;
-
-							create clustered index cx_tempdataruleThenAT on #tempdataruleThenAT(RuleID,SecurityAsset,SecurityAssetID);
-
-							merge   [dbo].[ResponsibilityRuleResultSecurityAsset] as T
-							using	#tempdataruleThenAT as S
-							on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
-							when	matched then
-									update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
-							when	not matched by target then
-									insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
-							when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-									delete;
-
-							drop table if exists #tempdataruleThenAT;
-							";
-					await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
-
-					// Get impacted assets, for rescoring purposes.
-					sqlToExecute = @"
-select  A.Uid
-from    #changes C 
-		inner join AssetType T on T.ID = C.AssetTypeID 
-		inner join Asset A on A.AssetTypeID = T.ID 
-		inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
+			// Set Flag IsAssetForRescoring ,asset for rescoring purposes.
+			sqlToExecute = @"
+select count(1) from 
+(
+select  top 1 R.ID
+from    ResponsibilityTypeRelationRule R 
 		inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+		inner join metrics.Allocation Al on Al.AssetTypeUid = @assetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
 		inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
 		inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
 			and ( 
@@ -496,51 +469,150 @@ from    #changes C
 			and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
 			and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
 			and V.Definition <> '{}'
-group by A.Uid";
-					var assets = Connection.Query<Guid>(sqlToExecute, new { today = DateTime.UtcNow.Date }, transaction: transaction).ToList();
+where R.ID = @ID
+) a ";
+			var IsAssetForRescoring = (await Connection.QueryAsync<bool>(sqlToExecute, new { assetTypeUid, today = DateTime.UtcNow.Date, rule.ID })).FirstOrDefault();
 
-					// Drop impacted assets temporary table.
-					sqlToExecute = "drop table if exists #changes";
-					await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
+			while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+			{
 
-					//First time a rule runs, queue the asset type for search re-indexing
-					if (rule.LastRunOn == null)
-					{
-						sqlToExecute = "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID";
-						AssetType assetType = Connection.Query<AssetType>(
-							sqlToExecute,
-							new { rule.Object, rule.ObjectID },
-							transaction: transaction
-						).SingleOrDefault();
-						Enqueue(constants.Queue.Search, new ReindexModel
-						{
-							CompanyID = CurrentCompanyID,
-							AssetTypeUid = assetType.uid,
-							Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
-						});
-					}
-
-					await MarkResponsibilityRuleAsRan(rule.ID, transaction);
-
-					transaction.Commit();
-
-					CreateRescoreRequests(assets, ScoreType.Governance); // Trigger a rescore only when you commit the transaction.
-				}
-				catch (Exception ex)
+				using (SqlTransaction transaction = Connection.BeginTransaction())
 				{
 					try
 					{
-						if (transaction != null)
-						{
-							transaction.Rollback();
-						}
-					}
-					catch
-					{
-						// ignore invalid rules
-					}
+						string thenSql = GetThenResultsSql(rule, false, transaction, false);
+						thenSql = string.Format(thenSql, "");
 
-					throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+						//create impacted assets temporary table.
+						sqlToExecute = "create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
+
+						//merge into the asset table 
+						sqlToExecute = @$"
+								drop table if exists #tempdataruleAT;
+
+								create table #tempdataruleAT(AssetTypeID int,RuleID int);
+								create clustered index cx_tempdataruleAT on #tempdataruleAT(AssetTypeID,RuleID);
+
+								insert into #tempdataruleAT (AssetTypeID, RuleID)
+								select	T.ID as AssetTypeID,		
+										R.ID as RuleID
+								from	AssetType T
+								inner join ResponsibilityTypeRelationRule R on R.Object = T.Object and R.ObjectID = T.ObjectID							                
+								where	R.ID = @ruleId;
+
+								update T
+								set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+								from [dbo].[ResponsibilityRuleResultAsset] as T
+								inner join #tempdataruleAT S on S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
+								where T.RuleID = @ruleId;
+
+								delete T
+								{(IsAssetForRescoring ? "OUTPUT 'DELETE',@ruleId,DELETED.AssetTypeID into #changes" : "")}
+								from [dbo].[ResponsibilityRuleResultAsset] T
+								left join #tempdataruleAT S on S.AssetTypeID = T.AssetTypeID
+								where T.RuleID = @ruleId and S.AssetTypeID is null;
+
+
+								merge   [dbo].[ResponsibilityRuleResultAsset] as T
+								using	#tempdataruleAT as S
+								on		S.RuleID = T.RuleID and S.AssetTypeID = T.AssetTypeID
+								when	not matched by target then
+										insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
+								{(IsAssetForRescoring ? $@"output  $action as ActionType,inserted.RuleID,inserted.AssetTypeID into #changes" : "")};
+
+								drop table if exists #tempdataruleAT";
+						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
+
+						//merge into the resource table
+						sqlToExecute = $@"
+								drop table if exists #tempdataruleThenAT;
+					
+								select *
+								into #tempdataruleThenAT
+								from ({thenSql}) a;
+
+								create clustered index cx_tempdataruleThenAT on #tempdataruleThenAT(RuleID,SecurityAsset,SecurityAssetID);
+
+								merge   [dbo].[ResponsibilityRuleResultSecurityAsset] as T
+								using	#tempdataruleThenAT as S
+								on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
+								when	matched then
+										update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+								when	not matched by target then
+										insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
+								when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
+										delete;
+
+								drop table if exists #tempdataruleThenAT;
+								";
+						await Connection.ExecuteAsync(sqlToExecute, new { ruleId = rule.ID }, transaction: transaction);
+
+						// Get impacted assets, for rescoring purposes.
+						sqlToExecute = @"
+	select  A.Uid
+	from    #changes C 
+			inner join AssetType T on T.ID = C.AssetTypeID 
+			inner join Asset A on A.AssetTypeID = T.ID 
+	where cast(@IsAssetForRescoring as bit) = 1 and C.ActionType in ('DELETE', 'INSERT')
+	group by A.Uid";
+						var assets = (await Connection.QueryAsync<Guid>(sqlToExecute, new { IsAssetForRescoring }, transaction: transaction)).ToList();
+
+						// Drop impacted assets temporary table.
+						sqlToExecute = "drop table if exists #changes";
+						await Connection.ExecuteAsync(sqlToExecute, transaction: transaction);
+
+						//First time a rule runs, queue the asset type for search re-indexing
+						if (rule.LastRunOn == null)
+						{
+							Enqueue(constants.Queue.Search, new ReindexModel
+							{
+								CompanyID = CurrentCompanyID,
+								AssetTypeUid = assetTypeUid,
+								Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
+							});
+						}
+
+						await MarkResponsibilityRuleAsRan(rule.ID, transaction);
+
+						transaction.Commit();
+
+						if (assets != null && assets.Count() > 0)
+						{
+							CreateRescoreRequests(assets, ScoreType.Governance); // Trigger a rescore only when you commit the transaction.
+						}
+						runCompleted = true;
+					}
+					catch (Exception ex)
+					{
+						if (!ex.GetFullExceptionData().Contains("deadlocked"))
+						{
+							retryCount = API_V2_RETRY_LIMIT;
+						}
+
+						try
+						{
+							if (transaction != null)
+							{
+								transaction.Rollback();
+							}
+						}
+						catch
+						{
+							// ignore invalid rules
+						}
+						retryCount++;
+
+						if (retryCount > API_V2_RETRY_LIMIT)
+						{
+							throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+						}
+						else
+						{
+							Thread.Sleep(API_V2_RETRY_INTERVAL * retryCount);
+						}
+
+					}
 				}
 			}
 		}

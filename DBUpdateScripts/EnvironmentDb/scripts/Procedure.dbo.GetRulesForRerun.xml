@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v1.5">
+  <changeSet author="tduric,puneet" id="Procedure.dbo.GetRulesForRerun-v1.6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -246,6 +246,7 @@ select RTRR.*
 from @ruleIds R
 inner join ResponsibilityTypeRelationRule RTRR on RTRR.ID = R.ID
 where IsProcess = 1
+order by Object,ObjectID,Name
 	option(recompile)
 
 end
