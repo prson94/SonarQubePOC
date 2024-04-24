@@ -277,11 +277,11 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetWorkflowsAsync(WorkflowApiState? Active = null)
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
-			var isValid = isPageSizeAndNumValid(queryParams);
+			var pageSizeNumErrorMessage = isPageSizeAndNumValid(queryParams);
 
-			if (!string.IsNullOrEmpty(isValid))
+			if (!string.IsNullOrEmpty(pageSizeNumErrorMessage))
 			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageNum + "; " + ApiMessages.Invalid_PageSize);
+				return errorMessageResponse(HttpStatusCode.BadRequest, pageSizeNumErrorMessage);
 			}
 
 			if (!validator.IsValidGuidCountForGetWorkflowModel(queryParams))
