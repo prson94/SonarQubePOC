@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet author="Pappas" id="Sequence.Deletions-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop sequence if exists [integration].[Execution_Seq] 
+]]>
+  </sql>
+ </changeSet>
+
+ <changeSet author="Pappas" id="Schema.Deletions-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop schema if exists [analytics]
+GO
+drop schema if exists [asset]
+GO
+drop schema if exists [cache]
+GO
+drop schema if exists fusion
+GO
+drop schema if exists [integration]
+GO
+drop schema if exists [lineage]
+GO
+drop schema if exists [overlay]
+GO
+drop schema if exists [quality]
+GO
+drop schema if exists [relation]
+GO
+drop schema if exists [report]
+GO
+drop schema if exists [responsibility]
+GO
+drop schema if exists [tile]
+GO
+drop schema if exists [validate] 
+]]>
+  </sql>
+ </changeSet>
+
+	<changeSet author="Pappas" id="Types.Deletions-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
+drop type if exists [dbo].AssetBrowserImpactTable
+GO
+drop type if exists [dbo].AssetEffectiveDate
+GO
+drop type if exists [dbo].LineageTable
+GO
+drop type if exists [dbo].LineageTechnicalTable
+GO
+drop type if exists [dbo].RelationshipTypeTable
+GO
+drop type if exists [utility].FieldValue
+]]>
+		</sql>
+	</changeSet>
+
+</databaseChangeLog>

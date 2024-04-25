@@ -126,5 +126,25 @@ GO
 		]]>
     </sql>
   </changeSet>
-   
+
+ <changeSet author="Pappas" id="Table.Deletions.OldAnalytics-v1">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop table if exists [analytics].[Statistic]
+GO
+drop table if exists [analytics].[UserAgent]
+GO
+drop table if exists [analytics].[Object]
+GO
+drop table if exists [analytics].[Ip]
+GO
+drop table if exists [analytics].[Host]
+GO
+drop table if exists [analytics].[BrowserLanguage]
+GO
+drop table if exists [analytics].[Action]
+]]>
+  </sql>
+ </changeSet>
+
 </databaseChangeLog>

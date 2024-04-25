@@ -13,23 +13,15 @@
 	<include file="scripts/FullTextStopList.xml"/>
 	
 	<!-- Types (object-based naming) -->
-	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
-	<include file="scripts/Udt.dbo.AssetEffectiveDate.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
 	<include file="scripts/Udt.dbo.AuditFieldTable.xml"/>
+	<include file="scripts/Udt.dbo.FavoritesObjectDetailsRequest.xml"/>
 	<include file="scripts/Udt.dbo.Ids.xml"/>
 	<include file="scripts/Udt.dbo.IDTable.xml"/>
-	<include file="scripts/Udt.dbo.IntegrationAssetHashType.xml"/>
-	<include file="scripts/Udt.dbo.LineageTable.xml"/>
-	<include file="scripts/Udt.dbo.LineageTechnicalTable.xml"/>
-	<include file="scripts/Udt.dbo.ObjectFields.xml"/>
 	<include file="scripts/Udt.dbo.ObjectsTable.xml"/>
-	<include file="scripts/Udt.dbo.RelationshipTypeTable.xml"/>
-	<include file="scripts/Udt.dbo.UidTable.xml"/>
-	<include file="scripts/Udt.dbo.FavoritesObjectDetailsRequest.xml"/>
-	<include file="scripts/Udt.utility.FieldValue.xml"/>
 	<include file="scripts/Udt.dbo.ParentIntersect.xml"/>
-  
+	<include file="scripts/Udt.dbo.UidTable.xml"/>
+	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ValidateCatalogItemProperty.xml"/>
 	<include file="scripts/Function.dbo.XMLRemoveInValidChar.xml"/>
@@ -73,10 +65,7 @@
 	<include file="scripts/Table.dbo.CommentRelation.xml"/>
 	<include file="scripts/Table.dbo.CommentVote.xml"/>
 	<include file="scripts/Table.dbo.Favorite.xml"/>
-	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDefinition.xml"/>
-	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDisplayField.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeLookup.xml"/>
-	<include file="scripts/Table.dbo.FieldTypeLookup_backup.xml"/>
 	<include file="scripts/Table.dbo.Field.xml"/>
 	<include file="scripts/Table.dbo.FieldJsonProperty.xml"/>
 	<include file="scripts/Table.dbo.FieldValue.xml"/>
@@ -232,7 +221,6 @@
 	<include file="scripts/View.dbo.FollowDetail.xml"/>
 	<include file="scripts/View.dbo.IntersectDetail.xml"/>
 	<include file="scripts/View.dbo.RandomNumber.xml"/>
-	<include file="scripts/View.cache.Relationships.xml"/>
 	<include file="scripts/Function.utility.DeriveIntersectTypeName.xml"/>		<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeChildrenByID.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
@@ -256,34 +244,7 @@
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
 	<include file="scripts/Function.graph.GetPathAsJson.xml"/>		<!--dependency-->
-	
-	<!-- Views: REPORTING -->
-	<include file="scripts/View.reporting.Asset_All.xml"/>
-	<include file="scripts/View.reporting.Global_ModelInterRelationships.xml"/>
-	<include file="scripts/View.reporting.Glossary_All.xml"/>
-	<include file="scripts/View.reporting.Glossary_Fields.xml"/>
-	<include file="scripts/View.reporting.Issue_All.xml"/>
-	<include file="scripts/View.reporting.Model_All.xml"/>
-	<include file="scripts/View.reporting.Model_Fields.xml"/>
-	<include file="scripts/View.reporting.Policy_All.xml"/>
-	<include file="scripts/View.reporting.Reference_All.xml"/>
-	<include file="scripts/View.reporting.Reference_Fields.xml"/>
-	<include file="scripts/View.reporting.Relationship_All.xml"/>
-	<include file="scripts/View.reporting.Relationship_Asset.xml"/>
-	<include file="scripts/View.reporting.Relationship_Fields.xml"/>
-	<include file="scripts/View.reporting.Resource_All.xml"/>
-	<include file="scripts/View.reporting.Responsibility_All.xml"/>
-	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
-	<include file="scripts/View.reporting.Rules_All.xml"/>
-	<include file="scripts/View.reporting.Rules_Fields.xml"/>
-	<include file="scripts/View.reporting.WorkflowForms.xml"/>
-	<include file="scripts/View.reporting.Workflows.xml"/>
-	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
-
-	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
-
-	<include file="scripts/View.Deletions.xml"/>
-	
+		
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ResponsibilityDetailByAssetTypeID.xml"/>	
@@ -314,7 +275,6 @@
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
-	
 
 	<!-- Overhauled Scoring -->	
 	<include file="scripts/Function.metrics.BuildConditionJson.xml"/>
@@ -393,7 +353,9 @@
 
     <include file="scripts/Function.Deletions.xml"/>
 	<include file="scripts/Procedure.Deletions.xml"/>
-	<include file="scripts/Table.Deletions.xml"/>	  
+	<include file="scripts/View.Deletions.xml"/>
+	<include file="scripts/Table.Deletions.xml"/>
+	<include file="scripts/Other.Deletions.xml"/>
 	
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
