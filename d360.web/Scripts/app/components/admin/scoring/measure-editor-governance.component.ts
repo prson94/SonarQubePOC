@@ -98,7 +98,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 		super(fieldsService, metricsService, messagesService, settingsService, helpService, cdRef);
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
+	ngOnChanges(changes: SimpleChanges): void {
         let requiredLoad = false;
         if (changes['uid'] && (changes['uid'].currentValue !== changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
@@ -418,9 +418,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     }
 
     cancel() {
+		this.model = null;
         this.load();
         this.onCancel.emit(this.model.Name);
-        this.model = null;
     }
 
     checkModelChanged() {
