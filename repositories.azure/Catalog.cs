@@ -529,7 +529,7 @@ order by	lvl";
 			bool ignoreCounts = false;
 			foreach (var queryitem in queryParams)
 			{
-				switch (queryitem.Key.ToLower())
+				switch (queryitem.Key.ToLowerInvariant())
 				{
 					case "exceptuid":
 						try
@@ -542,16 +542,16 @@ order by	lvl";
 						}
 						break;
 					case "ignorecounts":
-						if (queryitem.Value.ToLower() == "true")
+						if (queryitem.Value.ToLowerInvariant() == "true")
 						{
 							ignoreCounts = true;
 						}
 						break;
 					case "value":
-						value = $"%{queryitem.Value.ToLower()}%";
+						value = $"%{queryitem.Value.ToLowerInvariant()}%";
 						break;
 					case "maxnumberofresults":
-						int size = 200;
+						int size;
 						if (int.TryParse(queryitem.Value, out size))
 						{
 							maxNumberOfResults = size;
@@ -560,6 +560,8 @@ order by	lvl";
 						{
 							throw new ArgumentNullException(TagErrors.InvalidPageSize);
 						}
+						break;
+					default:
 						break;
 				}
 			}
