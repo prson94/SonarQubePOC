@@ -662,7 +662,7 @@ namespace d360.model
 			}
 		}
 
-		private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
+		private async Task<bool> SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
 		{
 			if (!string.IsNullOrEmpty(item.Fields))
 			{
@@ -714,7 +714,9 @@ namespace d360.model
 				item.Settings = root.ToString();
 			}
 
-			await SaveChangesAsync();
+			var changes = await SaveChangesAsync();
+
+			return changes >= 0;
 		}
 
 		private void SaveItemAssignments(IEnumerable<GlobalReportingResource> users, long itemId, long itemStepId)
@@ -789,7 +791,7 @@ namespace d360.model
 			}
 		}
 
-		private async Task SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+		private async Task<bool> SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
 		{		
 			if (settings == null)
 			{
@@ -904,7 +906,7 @@ namespace d360.model
 					Log.LogError(ex, $"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]");
 				}
 
-				await SaveHttpResponseResultsAsync(item, requestSettings, response);
+				return await SaveHttpResponseResultsAsync(item, requestSettings, response);
 			}
 		}
 
@@ -2341,8 +2343,7 @@ namespace d360.model
 							isStepCompleted = true;
 							break;
 						case WorkflowActivityType.HTTPRequest:
-							await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
-							isStepCompleted = true;
+							isStepCompleted = await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);							
 							break;
 						case WorkflowActivityType.HTTPResponse:
 							await ParseHttpResponseAsync(itemStep, stepSettings);
