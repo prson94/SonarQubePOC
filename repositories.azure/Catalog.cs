@@ -561,8 +561,6 @@ order by	lvl";
 							throw new ArgumentNullException(TagErrors.InvalidPageSize);
 						}
 						break;
-					default:
-						break;
 				}
 			}
 
