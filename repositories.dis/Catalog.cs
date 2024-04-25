@@ -52,6 +52,11 @@ namespace repositories.dis
 			throw new NotImplementedException();
 		}
 
+		public Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			throw new NotImplementedException();
+		}
+
 		public Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid)
 		{
 			throw new NotImplementedException();

@@ -518,6 +518,89 @@ order by	lvl";
 			return results.ToList();
 		}
 
+
+		public async Task<RepositoryResponse<List<dynamic>>> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			string value = "";
+			var response = new RepositoryResponse<List<dynamic>>(null, 200, true, "");
+
+			Guid exceptUid = Guid.Empty;
+			int maxNumberOfResults = 200;
+			bool ignoreCounts = false;
+			foreach (var queryitem in queryParams)
+			{
+				switch (queryitem.Key.ToLower())
+				{
+					case "exceptuid":
+						try
+						{
+							exceptUid = Guid.Parse(queryitem.Value);
+						}
+						catch
+						{
+							exceptUid = Guid.Empty;
+						}
+						break;
+					case "ignorecounts":
+						if (queryitem.Value.ToLower() == "true")
+						{
+							ignoreCounts = true;
+						}
+						break;
+					case "value":
+						value = $"%{queryitem.Value.ToLower()}%";
+						break;
+					case "maxnumberofresults":
+						int size = 200;
+						if (int.TryParse(queryitem.Value, out size))
+						{
+							maxNumberOfResults = size;
+						}
+						else
+						{
+							throw new ArgumentNullException(TagErrors.InvalidPageSize);
+						}
+						break;
+				}
+			}
+
+			string sql;
+
+
+			if (!ignoreCounts)
+			{
+				sql = $@"
+				drop table if exists #temptagdata
+
+				select top {maxNumberOfResults} T.ID, T.Value as name, T.uid as code , cast(0 as bigint) [count]
+				into #temptagdata
+				from Tag T 
+				where State = 1 and T.Value like @value and T.uid != @exceptUid;
+
+				update t
+				set [count] = (select count(1) from AssetTag atg where atg.TagID = t.ID)
+				from #temptagdata t
+
+				select name,code,[count]
+				from #temptagdata t
+				order by name
+				";
+			}
+			else
+			{
+				sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
+						where State = 1 and T.Value like @value and T.uid != @exceptUid
+						order by name";
+			}
+			IEnumerable<dynamic> results;
+			using (var connection = ConnectionProvider.Connect())
+			{
+				results = await connection.QueryAsync<dynamic>(sql, new { value, exceptUid });
+			}
+			response.Data = results.ToList();
+			return response;
+		}
+
 		public async Task<RepositoryResponse<IEnumerable<AssetTagList>>> ReadAssetBreadcrumbsByTagAsync(Guid tagUid)
 		{
 			var response = new RepositoryResponse<IEnumerable<AssetTagList>>(null, 200, true, "");
