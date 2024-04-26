@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -156,6 +157,67 @@ namespace repositories.azure
 			}
 
 			return defaultValue;
+		}
+
+		public static bool ValidateForQueryParameter<T>(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, ref string parameterValue)
+		{
+			bool isValid = true;
+			parameterValue = "";
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
+			{
+				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
+				if (!string.IsNullOrEmpty(rawValue))
+				{
+					parameterValue = rawValue;
+					if (typeof(T).Name == "Guid")
+					{
+						Guid parsedValue;
+						if (Guid.TryParse(rawValue, out parsedValue))
+						{
+							if (parsedValue == null || parsedValue == Guid.Empty)
+							{
+								isValid = false;
+							}
+						}
+						else
+						{
+							isValid = false;
+						}
+
+					}
+					else
+					{
+						if (filterPropertyName == "_direction")
+						{
+							string[] allowedDirections = new string[] { "asc", "desc" };
+
+							if (!allowedDirections.Contains(rawValue.Trim().ToLower()))
+							{
+								isValid = false;
+							}
+						}
+					}
+				}
+			}
+			return isValid;
+		}
+
+		public static bool ValidateForQueryParameterFromList(this IEnumerable<KeyValuePair<string, string>> queryParams, string filterPropertyName, List<string> ValidFieldList, ref string parameterValue)
+		{
+			bool isValid = true;
+			if (queryParams.ToList().Any(q => q.Key.ToLower() == filterPropertyName))
+			{
+				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == filterPropertyName).Value ?? "").Trim();
+				if (!string.IsNullOrEmpty(rawValue))
+				{
+					parameterValue = rawValue;
+					if (!ValidFieldList.Contains(rawValue))
+					{
+						isValid = false;
+					}
+				}
+			}
+			return isValid;
 		}
 	}
 }
