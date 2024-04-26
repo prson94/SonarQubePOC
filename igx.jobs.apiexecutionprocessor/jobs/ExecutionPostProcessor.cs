@@ -1064,7 +1064,9 @@ or (coalesce(f.FieldValue,'') <> coalesce(pv.Value,'') COLLATE SQL_Latin1_Genera
 						try
 						{
 							companyConnection.Execute("exec api.MergeAssetPaths @executionId, @class, @begin, @end, null, @isInsert",
-							sqlParameters, transaction: trans, commandTimeout: 3600);
+							
+							//Timeout after 2.5 hours if there is a big hierarchy to be calculated
+							sqlParameters, transaction: trans, commandTimeout: 9000);
 
 							trans.Commit();
 						}
