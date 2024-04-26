@@ -189,7 +189,7 @@ namespace repositories.azure
 					{
 						if (filterPropertyName == "_direction")
 						{
-							string[] allowedDirections = new string[] { "asc", "desc" };
+							string[] allowedDirections = ["asc","desc"];
 
 							if (!allowedDirections.Contains(rawValue.Trim().ToLower()))
 							{
