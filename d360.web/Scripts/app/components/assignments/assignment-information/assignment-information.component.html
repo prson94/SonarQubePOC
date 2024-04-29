@@ -1,5 +1,5 @@
 <d3s-assignment-detail-links [workflowItemUid]="assignmentItem?.WorkflowItemUid"
-							 *ngIf="showLinks && assignmentItem && canActivateAssignmentDetails"></d3s-assignment-detail-links>
+							 *ngIf="showLinks && assignmentItem"></d3s-assignment-detail-links>
 <d3s-loading [isLoading]="isAssignmentItemLoading || isWorkflowStepDetailLoading"></d3s-loading>
 <button igButton type="button" [hidden]="isWorkflowStepDetailLoading"
 		*ngIf="showCompleteAssignment && workflowStepDetail?.ItemSettings?.hasPendingForms && workflowStepDetail?.IsAssignedLoginUser && !(workflowStepDetail?.CompletedOn) && isCurrentUserAssigned"
