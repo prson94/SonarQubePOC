@@ -1163,17 +1163,19 @@ inner join AssetPath P on P.ID = A.ID
 				}
 			}
 
+
+			bool triggerWorkflow = load.ShouldTriggerWorkflow.HasValue ? load.ShouldTriggerWorkflow.Value : false;
 			if (putAssets.Any())
 			{
 				ApiExecution execution = getPromoteApiExecution(load, putAssets.Count, ApiExecutionAction.PutAssets);
-				ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
+				ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, triggerWorkflow);
 				load.PutExecutionID = executionInfo.ExecutionID;
 			}
 
 			if (postAssets.Any())
 			{
 				ApiExecution execution = getPromoteApiExecution(load, postAssets.Count, ApiExecutionAction.PostAssets);
-				ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
+				ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, triggerWorkflow);
 				load.PostExecutionID = executionInfo.ExecutionID;
 			}
 

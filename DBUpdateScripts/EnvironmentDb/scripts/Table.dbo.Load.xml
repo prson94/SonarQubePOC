@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Table.dbo.Load-v3">
+  <changeSet author="TDuric" id="Table.dbo.Load-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,6 +27,7 @@ BEGIN
 		[AssetTypeUid] [uniqueidentifier] NULL,
 		[PutExecutionID] [uniqueidentifier] NULL,
 		[PostExecutionID] [uniqueidentifier] NULL,
+		[ShouldTriggerWorkflow] bit NULL,
 		CONSTRAINT [PK_Load] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
@@ -44,6 +45,11 @@ END
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Load' and COLUMN_NAME = 'uid')
 begin
 	alter table [dbo].[Load] add [uid] UniqueIdentifier not null constraint DF_Load_Uid default(NewID());
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Load' and COLUMN_NAME = 'ShouldTriggerWorkflow')
+begin
+	alter table [dbo].[Load] add [ShouldTriggerWorkflow] bit NULL
 end
 		]]>
     </sql>

@@ -8,50 +8,53 @@ using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract]
-    public class Load : BaseIntObject, IIntObject
-    {
-        #region Properties
+	[DataContract]
+	public class Load : BaseIntObject, IIntObject
+	{
+		#region Properties
 
-        [DataMember]
-        [Column(TypeName = "varchar"), StringLength(2)]
-        public string Action { get; set; }
+		[DataMember]
+		[Column(TypeName = "varchar"), StringLength(2)]
+		public string Action { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(10)]
-        public string Extension { get; set; }
+		[DataMember, Column(TypeName = "varchar"), StringLength(10)]
+		public string Extension { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
+		[DataMember, Column(TypeName = "varchar"), StringLength(50)]
+		public string Object { get; set; }
 
-        [DataMember]
-        public int ObjectID { get; set; }
+		[DataMember]
+		public int ObjectID { get; set; }
 
-        [DataMember]
-        public byte[] File { get; set; }
+		[DataMember]
+		public byte[] File { get; set; }
 
-        [DataMember]
-        public string Notes { get; set; }
+		[DataMember]
+		public string Notes { get; set; }
 
-        [DataMember]
-        public DateTime? DateStarted { get; set; }
+		[DataMember]
+		public DateTime? DateStarted { get; set; }
 
-        [DataMember]
-        public DateTime? DateCompleted { get; set; }
+		[DataMember]
+		public DateTime? DateCompleted { get; set; }
 
-        [DataMember]
-        public int? UpdatedBy { get; set; }
+		[DataMember]
+		public int? UpdatedBy { get; set; }
 
-        [DataMember]
-        public Guid? AssetTypeUid { get; set; }
+		[DataMember]
+		public Guid? AssetTypeUid { get; set; }
 
-        [DataMember]
-        public Guid? IntersectTypeUid { get; set; }
+		[DataMember]
+		public Guid? IntersectTypeUid { get; set; }
 
-        [DataMember]
-        public Guid? PutExecutionID { get; set; }
+		[DataMember]
+		public Guid? PutExecutionID { get; set; }
 
-        [DataMember]
-        public Guid? PostExecutionID { get; set; }
+		[DataMember]
+		public Guid? PostExecutionID { get; set; }
+
+		[DataMember]
+		public bool? ShouldTriggerWorkflow {get;set;}
 
         [DataMember]
         public Guid uid { get; set; } = Guid.NewGuid();

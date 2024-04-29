@@ -1,66 +1,82 @@
-﻿<header i18n>Upload a Spreadsheet Job</header>
-<div class="clear"></div>
-<div class="form-instructions" i18n>Please ensure that you have column headers in your spreadsheet.</div>
-<form #form="ngForm" (ngSubmit)="save()">
-    <div class="row">
-        <div class="col s12">
-            <div class="FieldNameRequired" i18n>Action</div>
-            <p-dropdown [options]="actions" [(ngModel)]="selectedAction" (onChange)="loadTypes()" [style]="{'width':'98%'}" name="Action"></p-dropdown>
-        </div>
-        <div class="col s12" *ngIf="selectedAction && selectedAction != '' && selectedAction != 'O'">
-            <div class="FieldNameRequired" i18n>Type</div>
-            <div *ngIf="isLoadingTypes">
-                <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
-            </div>
-            <div *ngIf="!isLoadingTypes" class="d3s-type-dropdown">
-                <p-dropdown [filter]="true"
-                            [options]="types"
-                            [(ngModel)]="selectedType"
-                            [style]="{'width':'98%'}"
-                            (onChange)="loadColumns()"
-                            name="Type">
-                    <ng-template let-item pTemplate="item">
-                        <div [innerText]="item.label"></div>
-                    </ng-template>
+﻿<div class="bulk-load-component">
+	<h3 i18n>Upload a Spreadsheet Job</h3>
+	<div class="clear"></div>
+	<form #form="ngForm"
+		  (ngSubmit)="save()">
+		<div class="upload-form">
+			<div class="form-column">
+				<div class="FieldName" i18n>Action</div>
+				<p-dropdown igDropdown [options]="actions" [ngModelOptions]="{standalone: true}" [(ngModel)]="selectedAction" (onChange)="loadTypes()" name="Action" required></p-dropdown>
+			</div>
+			<div class="form-column" *ngIf="selectedAction && selectedAction != '' && selectedAction != 'O'">
+				<div class="FieldName" i18n>Type</div>
+				<div *ngIf="isLoadingTypes">
+					<div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
+				</div>
+				<div *ngIf="!isLoadingTypes" class="d3s-type-dropdown">
+					<p-dropdown igDropdown
+								[ngModelOptions]="{standalone: true}"
+								[filter]="true"
+								[options]="types"
+								required
+								[(ngModel)]="selectedType"
+								(onChange)="loadColumns()"
+								name="Type">
+						<ng-template let-item pTemplate="item">
+							<div [innerText]="item.label"></div>
+						</ng-template>
 
-                    <ng-template let-item pTemplate="selectedItem">
-                        <div [innerText]="item.label"></div>
-                    </ng-template>
-                </p-dropdown>
-            </div>
-        </div>
-        <div class="col s12" *ngIf="showDetail()">
-            <div class="FieldName" i18n>Notes</div>
-            <textarea [(ngModel)]="notes" name="Notes"></textarea>
-        </div>
-        <div class="col s12" *ngIf="showDetail()">
-            <div class="FieldName" i18n>Expected columns based on the type you selected (Bold columns are required)</div>
-            <div *ngIf="isLoadingColumns">
-                <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
-            </div>
-            <div *ngIf="!isLoadingColumns" style="overflow-x:auto;">
-                <table style="border-collapse:initial; border-spacing:10px;">
-                    <tr>
-                        <td *ngFor="let col of columns" [class.required]="col.Required" [style.font-weight]="col.Required ? 'bold' : 'normal'" style="margin:5px; padding: 10px">{{col.Name}}</td>
-                    </tr>
-                </table>
-            </div>
-            <br /><br />
-            <a [href]="getTemplateDownloadUri()" i18n>Download Spreadsheet</a>. (<ng-container i18n>Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.</ng-container>)
-        </div>
-        <div class="col s12" *ngIf="showDetail()">
-            <div class="row">&nbsp;</div>
-            <div class="FieldName" i18n>File</div>
-            <div>
-                <input type="file" #fileInput (change)="changeFile($event);" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" name="File" formenctype="multipart/form-data" />
-            </div>
-        </div>
-        <div *ngIf="errorMessage.length > 0" class="col s12">
-            <span style="color:maroon;" i18n>An error occurred while uploading the file: {{errorMessage}}</span>
-        </div>
-        <div class="col s12" style="padding-top:15px;">
-            <button igButton class="ig-button-primary" margin type="submit" label="{{saveLabel}}" [disabled]="!file || !showDetail()" [loading]="isSaving"></button>
-            <button igButton class="ig-button-secondary" label="{{cancelLabel}}" (click)="cancel()"></button>
-        </div>
-    </div>
-</form>
+						<ng-template let-item pTemplate="selectedItem">
+							<div [innerText]="item.label"></div>
+						</ng-template>
+					</p-dropdown>
+				</div>
+			</div>
+			<div class="form-column" *ngIf="showDetail()">
+				<div class="FieldName" i18n>Notes</div>
+				<textarea igTextArea [(ngModel)]="notes" name="Notes"></textarea>
+			</div>
+			<div class="form-column" *ngIf="showDetail()">
+				<div class="FieldName" i18n>Expected columns based on the type you selected (Bold columns are required)</div>
+				<div *ngIf="isLoadingColumns">
+					<div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
+				</div>
+				<div *ngIf="!isLoadingColumns" style="overflow-x:auto;">
+					<table style="border-collapse:initial; border-spacing:10px;">
+						<tr>
+							<td *ngFor="let col of columns" [class.required]="col.Required" [style.font-weight]="col.Required ? 'bold' : 'normal'" style="margin:5px; padding: 10px">{{col.Name}}</td>
+						</tr>
+					</table>
+				</div>
+				<br />
+				<a [href]="getTemplateDownloadUri()" i18n>Download Spreadsheet</a>
+				<br />
+
+				<ig-message-box>
+					<span i18n>
+						Please ensure that you have column headers in your spreadsheet.<br />
+						Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.
+					</span>
+				</ig-message-box>
+				<br />
+			</div>
+			<div class="form-column file-input" *ngIf="showDetail()">
+				<label i18n>File</label>
+				<input type="file" #fileInput (change)="changeFile($event);" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" name="File" formenctype="multipart/form-data" />
+			</div>
+			<br />
+			<p-checkbox  *ngIf="selectedAction && (selectedAction === 'R' || selectedAction === 'P')" igCheckbox [binary]="true" [ngModelOptions]="{standalone: true}" [(ngModel)]="triggerWorkflow" label="Enable workflow for this bulk load task?"></p-checkbox>
+
+			<div *ngIf="errorMessage.length > 0" class="form-column">
+				<span style="color:maroon;" i18n>An error occurred while uploading the file: {{errorMessage}}</span>
+			</div>
+
+		</div>
+
+		<div class="form-column form-buttons">
+			<button igButton class="ig-button-secondary" label="{{cancelLabel}}" (click)="cancel()"></button>
+			<button igButton class="ig-button-primary" margin type="submit" label="{{saveLabel}}" [disabled]="!file || !showDetail()" [loading]="isSaving"></button>
+		</div>
+	</form>
+
+</div>

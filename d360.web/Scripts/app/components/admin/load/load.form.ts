@@ -6,174 +6,176 @@ import { FormHelper } from '../../../models/form.model';
 import { includes } from "lodash-es";
 
 @Component({
-    selector: 'd3s-load-form',
-    templateUrl: './load.form.html',
-    providers: [LoadService],
+	selector: 'd3s-load-form',
+	templateUrl: './load.form.html',
+	providers: [LoadService],
+	styleUrls: ['load.form.less']
 })
 
 export class LoadForm implements OnInit, OnChanges {
-    @Input() title: string = $localize`Upload a Spreadsheet Job`;
-    @Output() onComplete = new EventEmitter();
-    @Output() onSuccess = new EventEmitter();
-    @Output() onError = new EventEmitter();
-    @Output() onCancel = new EventEmitter();
-    @Output() onLoadComplete = new EventEmitter();
+	@Input() title: string = $localize`Upload a Spreadsheet Job`;
+	@Output() onComplete = new EventEmitter();
+	@Output() onSuccess = new EventEmitter();
+	@Output() onError = new EventEmitter();
+	@Output() onCancel = new EventEmitter();
+	@Output() onLoadComplete = new EventEmitter();
 
 	@ViewChild('fileInput') fileInput: ElementRef;
 
-    isLoading = false;
-    isLoadingColumns = false;
-    isLoadingTypes = false;
-    isSaving = false;
-    actions: SelectItem[];
-    selectedAction: string;
-    types: SelectItem[];
-    selectedType: string;
-    notes: string;
-    columns: LoadColumn[];
-    file: File;
-    errorMessage = "";
+	isLoading = false;
+	isLoadingColumns = false;
+	isLoadingTypes = false;
+	isSaving = false;
+	actions: SelectItem[];
+	selectedAction: string;
+	types: SelectItem[];
+	selectedType: string;
+	notes: string;
+	columns: LoadColumn[];
+	file: File;
+	errorMessage = "";
+	saveLabel = $localize`Save`;
+	cancelLabel = $localize`Cancel`;
+	public triggerWorkflow = false;
+	constructor(private loadService: LoadService) {
+	}
 
-    saveLabel = $localize`Save`;
-    cancelLabel = $localize`Cancel`;
+	ngOnInit() {
+		this.load();
+	}
 
-    constructor(private loadService: LoadService) {
-    }
+	ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+		for (const p in changes) {
+			if (p === 'id') {
+				this.load();
+			}
+		}
+	}
 
-    ngOnInit() {
-        this.load();
-    }
+	private load(): void {
+		this.actions = this.loadService.getActionOptions();
+		this.selectedAction = this.actions[0].value;
+		this.loadTypes();
+		this.onLoadComplete.emit(null);
+	}
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (const p in changes) {
-            if (p === 'id') {
-                this.load();
-            }
-        }
-    }
+	loadTypes(): void {
+		this.isLoadingTypes = true;
+		this.selectedType = '';
+		this.loadService.getTypeOptions(this.selectedAction).subscribe(
+			(data) => {
+				this.types = data;
 
-    private load(): void {
-        this.actions = this.loadService.getActionOptions();
-        this.selectedAction = this.actions[0].value;
-        this.loadTypes();
-        this.onLoadComplete.emit(null);
-    }
+				if (this.types && this.types.length > 0) {
+					this.selectedType = this.types[0].value;
+					this.loadColumns();
+				}
 
-    loadTypes(): void {
-        this.isLoadingTypes = true;
-        this.selectedType = '';
-        this.loadService.getTypeOptions(this.selectedAction).subscribe(
-            (data) => {
-                this.types = data;
+				this.isLoadingTypes = false;
+			}
+		);
+	}
 
-                if (this.types && this.types.length > 0) {
-                    this.selectedType = this.types[0].value;
-                    this.loadColumns();
-                }
+	private loadColumns(): void {
+		let id, type;
 
-                this.isLoadingTypes = false;
-            }
-        );
-    }
+		try {
+			id = parseInt(this.selectedType.split('|')[1]);
+			type = this.selectedType.split('|')[0];
+		} catch (e) {
+			return;
+		}
 
-    private loadColumns(): void {
-        let id, type;
+		this.isLoadingColumns = true;
 
-        try {
-            id = parseInt(this.selectedType.split('|')[1]);
-            type = this.selectedType.split('|')[0];
-        } catch (e) {
-            return;
-        }
+		this.loadService.getExpectedColumns(this.selectedAction, type, id).subscribe(
+			(data) => {
+				this.columns = data;
 
-        this.isLoadingColumns = true;
+				this.isLoadingColumns = false;
+			}
+		);
+	}
 
-        this.loadService.getExpectedColumns(this.selectedAction, type, id).subscribe(
-            (data) => {
-                this.columns = data;
+	private isRequiredColumn(col: string) {
+		let type = this.selectedType.split('|')[0];
 
-                this.isLoadingColumns = false;
-            }
-        );
-    }
+		if (type == null) { return true; }
+		type = type.toLowerCase();
+		col = col.toLowerCase();
 
-    private isRequiredColumn(col: string) {
-        let type = this.selectedType.split('|')[0];
+		if (this.selectedAction === 'P' && type === 'artifacttype') {
+			if (includes(['name', 'subject area'], col) || col.startsWith('parent ')) { return true; }
+			return false;
+		}
+		if (this.selectedAction === 'P' && type === 'domain') {
+			if (includes(['name', 'code'], col)) { return true; }
+			return false;
+		}
+		if (this.selectedAction === 'P' && type === 'domaintype') {
+			if (includes(['name', 'domain group'], col)) { return true; }
+			return false;
+		}
+		return true;
+	}
 
-        if (type == null) {return true;}
-        type = type.toLowerCase();
-        col = col.toLowerCase();
+	showDetail() {
+		return (this.selectedAction && this.selectedAction !== '' && this.selectedType && this.selectedType !== '');
+	}
 
-        if (this.selectedAction === 'P' && type === 'artifacttype') {
-            if (includes(['name', 'subject area'], col) || col.startsWith('parent ')) {return true;}
-            return false;
-        }
-        if (this.selectedAction === 'P' && type === 'domain') {
-            if (includes(['name', 'code'], col)) {return true;}
-            return false;
-        }
-        if (this.selectedAction === 'P' && type === 'domaintype') {
-            if (includes(['name', 'domain group'], col)) {return true;}
-            return false;
-        }
-        return true;
-    }
+	private getTemplateDownloadUri() {
+		let id, type;
+		try {
+			id = parseInt(this.selectedType.split('|')[1]);
+			type = this.selectedType.split('|')[0];
+		} catch (e) {
+			return null;
+		}
+		return `form/Load_ExpectedColumns_ToExcel?action=${this.selectedAction}&id=${id}&type=${type}`;
+	}
 
-    showDetail() {
-        return (this.selectedAction && this.selectedAction !== '' && this.selectedType && this.selectedType !== '');
-    }
+	private changeFile(e) {
+		this.file = e.srcElement.files[0];
+	}
 
-    private getTemplateDownloadUri() {
-        let id, type;
-        try {
-            id = parseInt(this.selectedType.split('|')[1]);
-            type = this.selectedType.split('|')[0];
-        } catch (e) {
-            return null;
-        }
-        return `form/Load_ExpectedColumns_ToExcel?action=${this.selectedAction}&id=${id}&type=${type}`;
-    }
+	cancel(): void {
+		this.onCancel.emit(null);
+		this.isSaving = false;
+	}
 
-    private changeFile(e) {
-        this.file = e.srcElement.files[0];
-    }
+	save(): void {
+		const model = new LoadFilePostModel();
 
-    cancel(): void {
-        this.onCancel.emit(null);
-    }
+		this.errorMessage = "";
+		if (this.file) {
+			this.isSaving = true;
+			FormHelper.getDataUrl(this.file)
+				.then(
+					(s) => {
+						model.File = s;
+						model.LoadAction = this.selectedAction;
+						model.Type = this.selectedType;
+						model.Notes = this.notes;
+					}
+				)
+				.then(() => {
+					this.loadService.postLoad(model, this.triggerWorkflow).subscribe(
+						(data) => {
+							if (data["type"] === 'error') {
+								this.onError.emit(null);
+								this.errorMessage = data["message"];
+								this.fileInput.nativeElement.value = null;
+							} else {
+								this.onSuccess.emit(null);
+							}
+							this.isSaving = false;
+							this.onComplete.emit(null);
+							this.cancel();
+						}
+					);
+				}
+				);
+		}
 
-    save(): void {
-        const model = new LoadFilePostModel();
-
-        this.errorMessage = "";
-        this.isSaving = true;
-
-        if (this.file) {
-            FormHelper.getDataUrl(this.file)
-                .then(
-                    (s) => {
-                        model.File = s;
-                        model.LoadAction = this.selectedAction;
-                        model.Type = this.selectedType;
-                        model.Notes = this.notes;
-                    }
-                )
-                .then(() => {
-                    this.loadService.postLoad(model).subscribe(
-                        (data) => {
-                            if (data["type"] === 'error') {
-                                this.onError.emit(null);
-                                this.errorMessage = data["message"];
-                                this.fileInput.nativeElement.value = null;
-                            } else {
-                                this.onSuccess.emit(null);
-                            }
-                            this.isSaving = false;
-                            this.onComplete.emit(null);
-                        }
-                    );
-                }
-                );
-        }
-    }
+	}
 }

@@ -23,6 +23,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SearchFieldModule } from "../../shared/controls/search-field/search-field.component";
 
 import { TableModule } from 'primeng/table';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     imports: [
@@ -39,7 +43,8 @@ import { TableModule } from 'primeng/table';
         DropdownModule,
         InputTextModule,
         SharedModule,
-        TableModule,
+		TableModule,
+		CheckboxModule,
 
         //d3s        
         CoreModule,
@@ -47,7 +52,11 @@ import { TableModule } from 'primeng/table';
         SharedDeleteFormModule,                
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
-        TilesModule,
+		TilesModule,
+
+		SiteModalModule,
+		IgMessageBoxModule,
+		DirectivesModule
     ],
     declarations: [
         BulkLoadItemComponent,
