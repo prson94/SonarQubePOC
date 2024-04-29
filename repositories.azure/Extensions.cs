@@ -102,7 +102,7 @@ namespace repositories.azure
 			return value;
 		}
 
-		public static int CheckForPageNumber(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagesize", int defaultPageNum = 1)
+		public static int CheckForPageNumber(this IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName = "_pagenum", int defaultPageNum = 1)
 		{
 			int value = defaultPageNum;
 
