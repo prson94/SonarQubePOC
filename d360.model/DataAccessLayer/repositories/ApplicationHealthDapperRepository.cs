@@ -20,7 +20,7 @@ namespace d360.model.DataAccessLayer
 
             var result = new ApplicationHealthDetailsEntity
             {
-                QueueTaskCount = await grid.ReadSingleAsync<int>(),
+                QueueTaskCount = 0,
                 ApiExecutionPendingCount = await grid.ReadSingleAsync<int>(),
                 WorkflowItemPendingCount = await grid.ReadSingleAsync<int>()
             };
