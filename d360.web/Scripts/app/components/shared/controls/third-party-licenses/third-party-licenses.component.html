@@ -1,0 +1,94 @@
+﻿<div>
+    <d3s-loading [isLoading]="loading"></d3s-loading>
+    <div *ngIf="loadError" [innerText]="loadErrorMessage"></div>
+    <ng-container *ngIf="!loading">
+        <div>
+            <div *ngIf="!isErrorVisible">
+                <p-accordion>
+                    <p-accordionTab [header]="componentLicensesHeader">
+                        <div class="card">
+                            <p-treeTable [value]="componentLicenses" [columns]="cols1">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <!-- to hide version number we cannot iterate through the columns -->
+                                        <th class="row-header" scope="col">{{ cols1[0].header }}</th>
+                                        <th class="row-header" scope="col">{{ cols1[1].header }}</th>
+                                        <th class="row-header" scope="col" *ngIf="versionNumberVisible">{{ cols1[2].header }}</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+                                    <tr *ngIf="!rowData.summary">
+                                        <td>{{ rowData[cols1[0].field] }}</td>
+                                        <td>{{ rowData[cols1[1].field] }}</td>
+                                        <td *ngIf="versionNumberVisible">{{ rowData[cols1[2].field] }}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-treeTable>
+                        </div>
+                    </p-accordionTab>
+                    <p-accordionTab [header]="licenseInformationHeader">
+                        <!-- second table -->
+                        <div class="card">
+                            <p-treeTable [value]="licenseTexts" [columns]="cols2">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <!-- to hide version number we cannot iterate through the columns -->
+                                        <th class="row-header" scope="col">{{ cols2[0].header }}</th>
+                                        <th class="row-header" scope="col" *ngIf="versionNumberVisible">{{ cols2[1].header }}</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+                                    <tr *ngIf="!rowData.summary">
+                                        <td>
+                                            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                            {{ rowData[cols2[0].field] }}
+                                        </td>
+                                        <td *ngIf="versionNumberVisible">{{ rowData[cols2[1].field] }}</td>
+                                    </tr>
+                                    <tr *ngIf="!!rowData.summary">
+                                        <td colspan="2">
+                                            <div innerHtml="{{ rowData.summary }}"></div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-treeTable>
+                        </div>
+                    </p-accordionTab>
+                    <p-accordionTab [header]="copyrightInformationHeader">
+                        <!-- third table -->
+                        <div class="card">
+                            <p-treeTable [value]="componentCopyrightTexts" [columns]="cols3">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <!-- to hide version number we cannot iterate through the columns -->
+                                        <th class="row-header" scope="col">{{ cols3[0].header }}</th>
+                                        <th class="row-header" scope="col" *ngIf="versionNumberVisible">{{ cols3[1].header }}</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+                                    <tr *ngIf="!rowData.summary">
+                                        <td>
+                                            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                                            {{ rowData[cols3[0].field] }}
+                                        </td>
+                                        <td *ngIf="versionNumberVisible">{{ rowData[cols3[1].field] }}</td>
+                                    </tr>
+                                    <tr *ngIf="!!rowData.summary">
+                                        <td colspan="2">
+                                            <div innerHtml="{{ rowData.summary }}"></div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-treeTable>
+                        </div>
+                    </p-accordionTab>
+                </p-accordion>
+            </div>
+
+            <div *ngIf="isErrorVisible">
+                <div class="alert alert-danger mb-3">{{errorMessage}}</div>
+            </div>
+        </div>
+
+    </ng-container>
+</div>

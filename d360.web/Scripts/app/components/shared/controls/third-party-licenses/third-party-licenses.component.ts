@@ -1,4 +1,5 @@
-﻿import { CommonModule } from "@angular/common";
+﻿/* eslint-disable no-prototype-builtins */
+import { CommonModule } from "@angular/common";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -12,18 +13,38 @@ import {
 } from "@angular/core";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CoreModule } from "../../core.module";
-import { ThirdPartyLibraryListModule } from "@precisely/prism-ng/third-party-library-list";
-import { LicenseInformationModel } from "@precisely/prism-ng/third-party-library-list/Models/third-party-license-model";
+import { AccordionModule } from 'primeng/accordion';
+import { TreeTableModule } from 'primeng/treetable';
+import { LicenseInformationModel } from "../../../../models/third-party-license-model";
+
+/*global $localize*/
+
+interface colType {
+	field: string;
+	header: string;
+}
+
+interface licenseType {
+	expanded: boolean;
+	data: {
+		projectName?: string;
+		versionName?: string;
+		licenseName?: string;
+		componentVersionSummary?: string;
+		componentVersionName?: string;
+		originFullName?: string;
+		copyrightTexts?: string[];
+	};
+	children: {
+		data: {
+			summary: string;
+		}
+	}[];
+}
 
 @Component({
     selector: "ig-thirdpartylicenses",
-    template: `<div>
-    <d3s-loading [isLoading]="loading"></d3s-loading>
-    <div *ngIf="loadError" [innerText]="loadErrorMessage"></div>
-    <ng-container *ngIf="!loading">
-        <png-third-party-library-list [licenseInformation]="licensemodel"></png-third-party-library-list>
-    </ng-container>
-    </div>`,
+    templateUrl: 'third-party-licenses.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -34,9 +55,23 @@ export class ThirdPartyLicenses implements OnInit, OnChanges {
 
     public licensemodel: LicenseInformationModel;
     public loadError: boolean = false;
-    public loading: boolean = true;
+	public loading: boolean = true;
+	public isErrorVisible: boolean = false;
 
-    loadErrorMessage: string = "Third Party License information could not be loaded.";
+
+	cols1: colType[];
+	cols2: colType[];
+	cols3: colType[];
+	componentLicenses: licenseType[];
+	licenseTexts: licenseType[];
+	componentCopyrightTexts: licenseType[];
+
+	componentLicensesHeader: string = $localize`Component Licenses`;
+	licenseInformationHeader: string = $localize`License Information`;
+	copyrightInformationHeader: string = $localize`Copyright Information`;
+	errorMessage: string = $localize`There's been an error.`;
+
+	loadErrorMessage: string = $localize`Third Party License information could not be loaded.`;
 
     constructor(public ref: ChangeDetectorRef, private http: HttpClient) { }
 
@@ -59,24 +94,120 @@ export class ThirdPartyLicenses implements OnInit, OnChanges {
             const headers = new HttpHeaders({ "Content-Type": "application/json" });
             this.http.get<LicenseInformationModel>(this.src, { headers }).subscribe(
                 (res) => {
-                    this.licensemodel = res;
+					this.licensemodel = res;
+					if (this.licensemodel && Object.keys(this.licensemodel).length !== 0) {
+						this.isErrorVisible = false;
+						this.getLicenseInfo(this.licensemodel);
+					} else {
+						this.isErrorVisible = true;
+					}
+
                     this.loading = false;
                     this.ref.markForCheck();
                 },
-                (err) => {
+                () => {
                     this.loadError = true;
                     this.ref.markForCheck();
                 }
             );
         }
     }
+
+	getLicenseInfo(data: LicenseInformationModel) {
+		if (data.hasOwnProperty('componentLicenses')) {
+			this.componentLicenses = data.componentLicenses.map((cL) => {
+				return {
+					expanded: true,
+					data: {
+						projectName: cL.component.projectName,
+						versionName: cL.component.versionName,
+						licenseName: cL.licenses[0]?.name ?? ''
+					},
+					children: [
+						{
+							data: {
+								summary: cL.component.projectName
+							}
+						}
+					]
+				};
+			});
+		}
+		if (data.hasOwnProperty('licenseTexts')) {
+			this.licenseTexts = data.licenseTexts.map((lT) => {
+				return {
+					expanded: false,
+					data: {
+						licenseName: lT.name,
+						versionName: lT.components[0].versionName
+					},
+					children: [
+						{
+							data: {
+								summary:
+									$localize`License Text` +
+									':\n' +
+									'<span>' +
+									lT.text.replace(/\n/g, '<br>') +
+									'</span>'
+							}
+						}
+					]
+				};
+			});
+		}
+		if (data.hasOwnProperty('componentCopyrightTexts')) {
+			this.componentCopyrightTexts = data.componentCopyrightTexts.map((cT) => {
+				return {
+					expanded: false,
+					data: {
+						componentVersionSummary: cT.componentVersionSummary.projectName,
+						componentVersionName: cT.componentVersionSummary.versionName,
+						originFullName: cT.originFullName,
+						copyrightTexts: cT.copyrightTexts
+					},
+					children: [
+						{
+							data: {
+								summary:
+									$localize`License Text` +
+									': ' +
+									cT.originFullName +
+									'<br>' +
+									$localize`Copyright Texts` +
+									': <p>' +
+									cT.copyrightTexts.map((t) => t.replace(/\n/g, '<br>')).join('</p><p>') +
+									'</p>'
+							}
+						}
+					]
+				};
+			});
+		}
+
+		this.cols1 = [
+			{ field: 'projectName', header: $localize`Component Name` },
+			{ field: 'licenseName', header: $localize`License` },
+			{ field: 'versionName', header: $localize`Version Number` }
+		];
+		this.cols2 = [
+			{ field: 'licenseName', header: $localize`License Name` },
+			{ field: 'versionName', header: $localize`License Version` }
+		];
+		this.cols3 = [
+			{ field: 'componentVersionSummary', header: $localize`Component Version Summary` },
+			{ field: 'componentVersionName', header: $localize`Component Version` }
+		];
+	}
+
 }
 
 @NgModule({
     imports: [
-        CommonModule,
-        CoreModule,
-        ThirdPartyLibraryListModule
+		CommonModule,
+		AccordionModule,
+		TreeTableModule,
+        CoreModule
     ],
     declarations: [ThirdPartyLicenses],
     exports: [ThirdPartyLicenses]
