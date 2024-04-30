@@ -32,18 +32,18 @@ namespace d360.core
 					if(RESOURCE_NAME == null)
 					{
 						assembly = Assembly.GetEntryAssembly();
-						RESOURCE_NAME = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
-						
-						// if still null use the default
-						if (RESOURCE_NAME == null)
-						{
-							_antiSamyPolicy = Policy.GetInstance();
-						}
-						else
-						{
-							_antiSamyPolicy = Policy.GetInstance(assembly.GetManifestResourceStream(RESOURCE_NAME));
-						}						
-					}					
+						RESOURCE_NAME = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));																
+					}
+
+					// if still null use the default
+					if (RESOURCE_NAME == null)
+					{
+						_antiSamyPolicy = Policy.GetInstance();
+					}
+					else
+					{
+						_antiSamyPolicy = Policy.GetInstance(assembly.GetManifestResourceStream(RESOURCE_NAME));
+					}
 				}
 
 				return _antiSamyPolicy;
