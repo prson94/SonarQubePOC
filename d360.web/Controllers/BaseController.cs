@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.core.resources;
 using d360.core.validators;
 using d360.extensions;
 using d360.featureflags;
@@ -355,12 +356,12 @@ namespace d360.web.Controllers
 
 		protected internal IHttpActionResult errorMessageArgumentResponse(string message)
 		{
-			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, message, message));
+			return ResponseMessage(ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.BadRequest, message));
 		}
 
 		protected internal IHttpActionResult errorMessageNotFoundResponse(string message)
 		{
-			return ResponseMessage(ReturnApiError(HttpStatusCode.NotFound, message, message));
+			return ResponseMessage(ReturnApiError(HttpStatusCode.NotFound, ApiMessages.NotFound, message));
 		}
 
 		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
