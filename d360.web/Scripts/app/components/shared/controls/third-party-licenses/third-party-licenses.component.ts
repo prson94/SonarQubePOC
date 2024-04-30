@@ -19,6 +19,29 @@ import { LicenseInformationModel } from "../../../../models/third-party-license-
 
 /*global $localize*/
 
+interface colType {
+	field: string;
+	header: string;
+}
+
+interface licenseType {
+	expanded: boolean;
+	data: {
+		projectName?: string;
+		versionName?: string;
+		licenseName?: string;
+		componentVersionSummary?: string;
+		componentVersionName?: string;
+		originFullName?: string;
+		copyrightTexts?: string[];
+	};
+	children: {
+		data: {
+			summary: string;
+		}
+	}[];
+}
+
 @Component({
     selector: "ig-thirdpartylicenses",
     templateUrl: 'third-party-licenses.component.html',
@@ -35,12 +58,13 @@ export class ThirdPartyLicenses implements OnInit, OnChanges {
 	public loading: boolean = true;
 	public isErrorVisible: boolean = false;
 
-	cols1: any[];
-	cols2: any[];
-	cols3: any[];
-	componentLicenses: any[];
-	licenseTexts: any[];
-	componentCopyrightTexts: any[];
+
+	cols1: colType[];
+	cols2: colType[];
+	cols3: colType[];
+	componentLicenses: licenseType[];
+	licenseTexts: licenseType[];
+	componentCopyrightTexts: licenseType[];
 
 	componentLicensesHeader: string = $localize`Component Licenses`;
 	licenseInformationHeader: string = $localize`License Information`;
