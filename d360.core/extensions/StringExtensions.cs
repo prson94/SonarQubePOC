@@ -16,18 +16,36 @@ namespace d360.core
 		private readonly static AntiSamy sanatizer = new AntiSamy();
 
 		private static Policy _antiSamyPolicy;
+
+		private static string RESOURCE_NAME;
+
 		public static Policy AntiSamyPolicy
 		{
 			get
 			{
-				if (_antiSamyPolicy == null)
-				{
+				if (_antiSamyPolicy == null || RESOURCE_NAME == null)
+				{					
 					Assembly assembly = Assembly.GetExecutingAssembly();
 
-					string resourceName = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
+					RESOURCE_NAME = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
 
-					_antiSamyPolicy = Policy.GetInstance(assembly.GetManifestResourceStream(resourceName));
+					if(RESOURCE_NAME == null)
+					{
+						assembly = Assembly.GetEntryAssembly();
+						RESOURCE_NAME = assembly.GetManifestResourceNames().Single(str => str.EndsWith("antisamy-govern.xml"));
+						
+						// if still null use the default
+						if (RESOURCE_NAME == null)
+						{
+							_antiSamyPolicy = Policy.GetInstance();
+						}
+						else
+						{
+							_antiSamyPolicy = Policy.GetInstance(assembly.GetManifestResourceStream(RESOURCE_NAME));
+						}						
+					}					
 				}
+
 				return _antiSamyPolicy;
 			}
 		}
