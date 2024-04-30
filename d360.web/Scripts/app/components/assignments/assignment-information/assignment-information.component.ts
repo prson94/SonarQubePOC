@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AssignmentItem, AssignmentItemStep, StepState, WorkflowStepDetail } from '../../../models/workflow.model';
-import { FeatureFlagService } from '../../../guards/feature-flag.service';
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 
 @Component({
@@ -40,8 +39,6 @@ export class AssignmentInformationComponent {
 	isWorkflowStepDetailLoading: boolean = false;
 	workflowStepDetail: WorkflowStepDetail;
 
-	protected canActivateAssignmentDetails: boolean = false;
-
 	private assignmentItemStep: AssignmentItemStep;
 	private _workflowItemUid: string;
 
@@ -52,8 +49,7 @@ export class AssignmentInformationComponent {
 	public itemState: { title: string, body: string } = { title: "", body: "" };
 
 	constructor(private workflowService: WorkflowService,
-		private cdRef: ChangeDetectorRef, featureFlagService: FeatureFlagService) {
-		this.canActivateAssignmentDetails = featureFlagService.canActivateAssignmentDetails();
+		private cdRef: ChangeDetectorRef) {
 	}
 
 	loadAssignmentItem(workflowItemUid: string): void {

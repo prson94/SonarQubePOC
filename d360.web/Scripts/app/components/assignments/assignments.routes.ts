@@ -6,7 +6,6 @@ import { ByWorkflowVersionListComponent } from './by-workflow-version-list/by-wo
 import {
 	AssignmentDetailsContainerComponent
 } from './assignment-details-container/assignment-details-container.component';
-import { AssignmentDetailsGuard } from '../../guards/feature-flag.service';
 
 const routes: Routes = [
 	{
@@ -18,7 +17,6 @@ const routes: Routes = [
 			{
 				path: ':assignmentUid',
 				component: AssignmentDetailsContainerComponent,
-				canActivate: [AssignmentDetailsGuard]
 			}
 		]
 	}
