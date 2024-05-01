@@ -20,7 +20,8 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
     selectedRow: LoadDetail;
     objectType = 'Load';
     formMode: FormMode = FormMode.Default;
-    FormMode = FormMode;
+	FormMode = FormMode;
+	isModalVisible = false;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,

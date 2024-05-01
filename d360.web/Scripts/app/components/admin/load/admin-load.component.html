@@ -1,68 +1,71 @@
 ﻿<div class="row">
-    <div class="col s12 m6 l4">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div *ngIf="!isLoading" class="tile tile-detail">
-            <header>
-                <ng-container i18n>History</ng-container>
-                <d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasRefresh]="true" (refreshClick)="refreshGrid()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
-            </header>
+	<div class="col s12 m6 l4">
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+		<div *ngIf="!isLoading" class="tile tile-detail">
+			<header>
+				<ng-container i18n>History</ng-container>
+				<d3s-tile-actions [hasAdd]="true" (addClick)="isModalVisible = true;" [hasRefresh]="true" (refreshClick)="refreshGrid()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+			</header>
 
-            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt [value]="loads" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Action','ObjectName','DateCompleted']" [paginator]="true" [rows]="25" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedRow">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th [pSortableColumn]="'Action'" style="width:   30% ">
-                            <ng-container i18n>Action</ng-container>
-                            <d3s-sortIcon [field]="'Action'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'ObjectName'" style="width:   40% ">
-                            <ng-container i18n>Target</ng-container>
-                            <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
-                        </th>
-                        <th [pSortableColumn]="'DateCompleted'" style="width:   30% ">
-                            <ng-container i18n>Date Completed</ng-container>
-                            <d3s-sortIcon [field]="'DateCompleted'"></d3s-sortIcon>
-                        </th>
-                    </tr>
-                    <tr [hidden]="showSimpleFilter">
-                        <th><d3s-column-filter [field]="'Action'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'DateCompleted'" [datatype]="'text'"></d3s-column-filter></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>{{item.Action}}</td>
-                        <td>
-                            <d3s-preview-tooltip *ngIf="item.ObjectID > 0" [objectType]="item.Object" [objectId]="item.ObjectID">{{item.ObjectName}}</d3s-preview-tooltip>
-                            <span *ngIf="item.ObjectID <= 0">{{item.ObjectName}}</span>
-                        </td>
-                        <td>
-                            {{item.DateCompleted | date:'short'}}
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
-        </div>
-    </div>
-    <div class="col s12 m6 l8" [ngSwitch]="formMode">
-        <div *ngSwitchCase="FormMode.Adding">
-            <div class="tile tile-detail">
-                <d3s-load-form (onCancel)="formMode = FormMode.Default;" (onSuccess)="formMode = FormMode.Default; load();"></d3s-load-form>
-            </div>
-        </div>
-        <div *ngSwitchDefault>
-            <ng-template [ngIf]="selectedRow">
-                <div class="tile tile-detail">
-                    <object-detail #objectDetails [objectType]="objectType" [objectID]="selectedRow?.ID"></object-detail>
-                </div>
-                <div class="tile tile-detail">
-                    <d3s-bulk-load-item [id]="selectedRow?.ID" (refreshClick)="objectDetails.load()"></d3s-bulk-load-item>
-                </div>
-            </ng-template>
-        </div>
-    </div>
+			<input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
+			<p-table #dt [value]="loads" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Action','ObjectName','DateCompleted']" [paginator]="true" [rows]="25" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedRow">
+				<ng-template pTemplate="header">
+					<tr>
+						<th [pSortableColumn]="'Action'" style="width:   30% ">
+							<ng-container i18n>Action</ng-container>
+							<d3s-sortIcon [field]="'Action'"></d3s-sortIcon>
+						</th>
+						<th [pSortableColumn]="'ObjectName'" style="width:   40% ">
+							<ng-container i18n>Target</ng-container>
+							<d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
+						</th>
+						<th [pSortableColumn]="'DateCompleted'" style="width:   30% ">
+							<ng-container i18n>Date Completed</ng-container>
+							<d3s-sortIcon [field]="'DateCompleted'"></d3s-sortIcon>
+						</th>
+					</tr>
+					<tr [hidden]="showSimpleFilter">
+						<th><d3s-column-filter [field]="'Action'" [datatype]="'text'"></d3s-column-filter></th>
+						<th><d3s-column-filter [field]="'ObjectName'" [datatype]="'text'"></d3s-column-filter></th>
+						<th><d3s-column-filter [field]="'DateCompleted'" [datatype]="'text'"></d3s-column-filter></th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-item>
+					<tr [pSelectableRow]="item">
+						<td>{{item.Action}}</td>
+						<td>
+							<d3s-preview-tooltip *ngIf="item.ObjectID > 0" [objectType]="item.Object" [objectId]="item.ObjectID">{{item.ObjectName}}</d3s-preview-tooltip>
+							<span *ngIf="item.ObjectID <= 0">{{item.ObjectName}}</span>
+						</td>
+						<td>
+							{{item.DateCompleted | date:'short'}}
+						</td>
+					</tr>
+				</ng-template>
+				<ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+					<d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+				</ng-template>
+			</p-table>
+		</div>
+	</div>
+	<div class="col s12 m6 l8">
+		<div>
+			<ng-template [ngIf]="selectedRow">
+				<div class="tile tile-detail">
+					<object-detail #objectDetails [objectType]="objectType" [objectID]="selectedRow?.ID"></object-detail>
+				</div>
+				<div class="tile tile-detail">
+					<d3s-bulk-load-item [id]="selectedRow?.ID" (refreshClick)="objectDetails.load()"></d3s-bulk-load-item>
+				</div>
+			</ng-template>
+		</div>
+	</div>
 </div>
+
+<d3s-modal #modal
+		   additionalClasses="modal-dyn-editor asset-editor modal-form medium-large-dialog"
+		   [showTitle]="false"
+		   (onClose)="isModalVisible = false"
+		   [isVisible]="isModalVisible">
+	<d3s-load-form (onCancel)="isModalVisible = false;" (onSuccess)="load();"></d3s-load-form>
+</d3s-modal>

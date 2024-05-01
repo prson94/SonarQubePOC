@@ -25,6 +25,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.ModelBinding;
 using System.Web.Mvc;
  
 namespace d360.web.Controllers
@@ -934,6 +935,14 @@ order by Sort, title";
 			try
 			{
 				Stream inputStream = Request.InputStream;
+				bool triggerWorkflow = false;
+
+				var _triggerWorkflow = Request.QueryString["triggerWorkflow"];
+				if (!string.IsNullOrEmpty(_triggerWorkflow))
+				{
+					bool.TryParse(_triggerWorkflow, out triggerWorkflow);
+				}
+
 				string postJson = new StreamReader(inputStream).ReadToEnd();
 				LoadFilePostModel model = JsonConvert.DeserializeObject<LoadFilePostModel>(postJson);
 
@@ -1234,6 +1243,7 @@ order by Sort, title";
 
 				if (errorMessages.Count == 0)
 				{
+					load.ShouldTriggerWorkflow = triggerWorkflow;
 					load.File = null;
 					Company.Add(load);
 					await Storage.CreateFile($"{constants.Storage.BulkLoads}", $"{Company.CurrentCompanyID}/load_{load.ID}.{load.Extension}", new MemoryStream(byteArray));
