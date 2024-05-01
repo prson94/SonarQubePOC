@@ -5,18 +5,62 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.Deletions.v7">
-  <comment></comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-drop view if exists [reporting].[RuleImplementations_Results];
-drop view if exists [utility].[ArtifactAssetParent];
-drop view if exists [utility].[FieldValue];
-		]]>
-    </sql>
-  </changeSet>
-  
+ <changeSet author="Pappas" id="View.Deletions.v8">
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+drop view if exists [reporting].[RuleImplementations_Results]
+GO
+drop view if exists [utility].[ArtifactAssetParent]
+GO
+drop view if exists [utility].[FieldValue]
+GO
+drop view if exists [reporting].[Asset_All]
+GO
+drop view if exists [reporting].[Global_ModelInterRelationships]
+GO
+drop view if exists [reporting].[Glossary_All]
+GO
+drop view if exists [reporting].[Glossary_Fields]
+GO
+drop view if exists [reporting].[Issue_All]
+GO
+drop view if exists [reporting].[Metric_All]
+GO
+drop view if exists [reporting].[Model_All]
+GO
+drop view if exists [reporting].[Model_Fields]
+GO
+drop view if exists [reporting].[Policy_All]
+GO
+drop view if exists [reporting].[Reference_All]
+GO
+drop view if exists [reporting].[Reference_Fields]
+GO
+drop view if exists [reporting].[Relationship_All]
+GO
+drop view if exists [reporting].[Relationship_Asset]
+GO
+drop view if exists [reporting].[Relationship_Fields]
+GO
+drop view if exists [reporting].[Resource_All]
+GO
+drop view if exists [reporting].[Responsibility_All]
+GO
+drop view if exists [reporting].[ResponsibilityTypeMap]
+GO
+drop view if exists [reporting].[Rules_All]
+GO
+drop view if exists [reporting].[Rules_Fields]
+GO
+drop view if exists [reporting].[Users]
+GO
+drop view if exists [reporting].[WorkflowForms]
+GO
+drop view if exists [reporting].[Workflows]
+GO
+drop view if exists [reporting].[WorkflowSteps]
+]]>
+  </sql>
+ </changeSet>
+
 </databaseChangeLog>
