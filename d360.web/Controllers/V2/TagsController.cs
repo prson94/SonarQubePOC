@@ -265,6 +265,18 @@ namespace d360.web.Controllers.V2
 				}
 			}
 
+
+			var uidscascade = model.Where(x=>x.cascade == true).Select(o => o.uid).ToList();
+
+			if (uidscascade.Count > 0)
+			{
+				var cascadeErrorMessage = tagRepository.CheckTagAssetbyUids(uidscascade);
+				if (!string.IsNullOrWhiteSpace(cascadeErrorMessage))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, cascadeErrorMessage);
+				}
+			}
+
 			var uids = model.Select(o => o.uid).ToList();
 			var response = await Catalog.RemoveTagsAsync(uids);
 			return (response.IsSuccess) ?

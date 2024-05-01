@@ -151,6 +151,27 @@ namespace d360.model.DataAccessLayer
 			return await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 		}
 
+		public string CheckTagAssetbyUids(List<Guid> uids)
+		{
+			string retvalue = null;
+
+			string sql = $@"
+select top 1 cast(t.uid as nvarchar(50)) uid
+from tag t
+inner join assettag att on t.id = att.TagID
+where t.uid in @uids
+";
+
+			string taguid = CompanyContext.Query<string>(sql, new { uids} , ApiTimeout).FirstOrDefault();
+
+			if (!string.IsNullOrEmpty(taguid))
+			{
+				retvalue = string.Format(TagErrors.DeleteCascadeTagRelateAsset, taguid);
+			}
+
+			return retvalue;
+		}
+
 		public Tag GetTagByUid(Guid uid)
 		{
 			return CompanyContext.Tags.FirstOrDefault(x => x.uid == uid);
