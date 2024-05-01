@@ -266,7 +266,7 @@ namespace d360.web.Controllers.V2
 			}
 
 
-			var uidscascade = model.Where(x=>x.cascade == true).Select(o => o.uid).ToList();
+			var uidscascade = model.Where(x=>x.cascade == false).Select(o => o.uid).ToList();
 
 			if (uidscascade.Count > 0)
 			{
