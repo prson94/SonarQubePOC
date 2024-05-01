@@ -10,8 +10,10 @@ namespace repositories
     public interface ITagRepository
     {
         Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
-        
-        bool DoesTagExists(string value, Guid? tagTypeUid);
+
+		string CheckTagAssetbyUids(List<Guid> uids);
+
+		bool DoesTagExists(string value, Guid? tagTypeUid);
         
         bool DoesTagExists(Guid tagUid);
 
