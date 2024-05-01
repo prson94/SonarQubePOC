@@ -211,7 +211,7 @@ namespace repositories.azure
 				if (!string.IsNullOrEmpty(rawValue))
 				{
 					parameterValue = rawValue;
-					if (!ValidFieldList.Contains(rawValue))
+					if (!ValidFieldList.Contains(rawValue.ToLowerInvariant()))
 					{
 						isValid = false;
 					}
