@@ -6,7 +6,6 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.EMMA;
-using DocumentFormat.OpenXml.Wordprocessing;
 using repositories.resources;
 using System;
 using System.Collections.Generic;
