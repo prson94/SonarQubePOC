@@ -1630,8 +1630,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "One or more semantic types were not found based on the provided qualifiers.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PatchSemanticTypes(List<PatchSemantic> requestModels)
         {
             const string ERROR_HEADING = "Error patching semantic types";
@@ -1642,11 +1643,6 @@ namespace d360.web.Controllers.V2
 				{
 					return await sendConflictNotAccessible();
 				}
-
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                }
 
                 var responseModels = await SemanticsRepository.PatchSemanticsAsync(requestModels);
 
@@ -1683,8 +1679,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding semantic types.", typeof(List<GetSemantic>)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PostSemanticTypes(List<PostSemantic> requestModels)
         {
             const string ERROR_HEADING = "Error adding semantic types";
@@ -1695,11 +1692,6 @@ namespace d360.web.Controllers.V2
 				{
 					return await sendConflictNotAccessible();
 				}
-
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                }
 
                 var responseModels = await SemanticsRepository.PostSemanticsAsync(requestModels);
 
@@ -1737,19 +1729,15 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "One or more semantic types were not found based on the provided qualifiers.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to update these semantic types is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> PutSemanticTypes(List<PutSemantic> requestModels)
         {
 			if (!SemanticTypesEnabled)
 			{
 				return await sendConflictNotAccessible();
 			}
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return errorMessageResponse(HttpStatusCode.Forbidden, "Error updating semantic types", ApiMessages.EndpointNotAuthorizedMessage);
-            }
 
             var reponseModels = await SemanticsRepository.PutSemanticsAsync(requestModels);
 
@@ -1771,19 +1759,15 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Your semantic type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this semantic type is invalid, possibly due to being used on one or more data profiles.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
         public async Task<IHttpActionResult> DeleteSemanticType(string qualifier)
         {
 			if (!SemanticTypesEnabled)
 			{
 				return await sendConflictNotAccessible();
 			}
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return errorMessageResponse(HttpStatusCode.Forbidden, "Error deleting semantic type", ApiMessages.EndpointNotAuthorizedMessage);
-            }
 
             var status = await SemanticsRepository.DeleteSemanticAsync(qualifier);
 

@@ -233,7 +233,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not autheorized to make this change.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate what was incorrect about your request.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric or parent metric was not found.", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric or parent metric was not found.", typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public IHttpActionResult UpsertAsset(MetricAssetEditModel model)
 		{
@@ -248,39 +249,34 @@ namespace d360.web.Controllers.V2
 					model.ParentUid = null;
 				}
 
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new WorkStatusException(HttpStatusCode.Unauthorized, MetricsApiMessages.NotAllowUpdateMetric);
-				}
-
 				if (string.IsNullOrEmpty(model.Name) || (model.Name + "").Trim() == "")
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NameNotEmpty);
+					return errorMessageArgumentResponse(MetricsApiMessages.NameNotEmpty);
 				}
 
 				if (model.Description != null)
 				{
 					if (model.Description?.Length > 4000)
 					{
-						throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsApiMessages.DescriptionLengthValidation, model.Description.Length));
+						return errorMessageArgumentResponse(string.Format(MetricsApiMessages.DescriptionLengthValidation, model.Description.Length));
 					}
 				}
 
 				if (model.ParentUid.HasValue && model.IsGroup)
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(Validation.MaxLevelForMeasure, 2));
+					return errorMessageArgumentResponse(string.Format(Validation.MaxLevelForMeasure, 2));
 				}
 
 				if (model.AllocationUid == Guid.Empty)
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NoAllocationAssetTypeScoreType);
+					return errorMessageArgumentResponse(MetricsApiMessages.NoAllocationAssetTypeScoreType);
 				}
 
 				var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
 
 				if (allocation == null)
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NoAllocationForUid);
+					return errorMessageArgumentResponse(MetricsApiMessages.NoAllocationForUid);
 				}
 				else
 				{
@@ -289,7 +285,7 @@ namespace d360.web.Controllers.V2
 
 				if (!model.Allocation.IsExternallyCalculated && model.Weight <= 0 || model.Weight > 1)
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.WeightDecimalValidation);
+					return errorMessageArgumentResponse(MetricsApiMessages.WeightDecimalValidation);
 				}
 
 				if (model.ParentUid != null && model.ParentUid != Guid.Empty)
@@ -298,17 +294,17 @@ namespace d360.web.Controllers.V2
 
 					if (parent == null)
 					{
-						throw new WorkStatusException(HttpStatusCode.NotFound, MetricsApiMessages.ParentMetricNotFound);
+						return errorMessageNotFoundResponse(MetricsApiMessages.ParentMetricNotFound);
 					}
 
 					if (!parent.IsGroup)
 					{
-						throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.IsGroupTrueParentMetric);
+						return errorMessageArgumentResponse(MetricsApiMessages.IsGroupTrueParentMetric);
 					}
 
 					if (model.IsGroup || parent.ParentUid != null)
 					{
-						throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(Validation.MaxLevelForMeasure, 2));
+						return errorMessageArgumentResponse(string.Format(Validation.MaxLevelForMeasure, 2));
 					}
 				}
 
@@ -341,14 +337,14 @@ namespace d360.web.Controllers.V2
 
 				if (model.IsGroup && model.ConditionGroups.Count > 0)
 				{
-					throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.GroupNotHaveCondition);
+					return errorMessageArgumentResponse(MetricsApiMessages.GroupNotHaveCondition);
 				}
 
 				var dupes = model.ConditionGroups.GroupBy(i => i.Position).Where(i => i.Count() > 1).Select(i => new { Position = i.Key, Count = i.Count() }).ToList();
 				if (dupes.Any())
 				{
 					string dupstring = string.Join(", ", dupes.Select(i => i.Position.ToString()));
-					throw new WorkStatusException(HttpStatusCode.BadRequest, string.Format(MetricsApiMessages.DuplicateConditionGroup, dupstring));
+					return errorMessageArgumentResponse(string.Format(MetricsApiMessages.DuplicateConditionGroup, dupstring));
 				}
 
 				foreach (var cond in model.ConditionGroups)
@@ -357,22 +353,22 @@ namespace d360.web.Controllers.V2
 					{
 						if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
 						{
-							throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.UseSingleCondition);
+							return errorMessageArgumentResponse(MetricsApiMessages.UseSingleCondition);
 						}
 						else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
 						{
-							throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionNotEmpty);
+							return errorMessageArgumentResponse(MetricsApiMessages.ConditionNotEmpty);
 						}
 						else
 						{
 							if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
 							{
-								throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionFieldTypeNameNotEmpty);
+								return errorMessageArgumentResponse(MetricsApiMessages.ConditionFieldTypeNameNotEmpty);
 							}
 
 							if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
 							{
-								throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionIntersectTypeUidNotValid);
+								return errorMessageArgumentResponse(MetricsApiMessages.ConditionIntersectTypeUidNotValid);
 							}
 						}
 
@@ -380,7 +376,7 @@ namespace d360.web.Controllers.V2
 						{
 							if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
 							{
-								throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionValueMaxChar250);
+								return errorMessageArgumentResponse(MetricsApiMessages.ConditionValueMaxChar250);
 							}
 						}
 					}
@@ -754,39 +750,19 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiRequestModel>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public IHttpActionResult PostBulkMetricsToStagingAsync(List<InternalScoreResultApiRequestModel> model)
 		{
-			try
+			if (model == null || model.Count < 1)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.Forbidden, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				if (model == null || model.Count < 1)
-				{
-					return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
-				}
-
-				var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
-
-				return ResponseMessage(
-					Request.CreateResponse(
-						HttpStatusCode.OK,
-						ScoringRepository.PostScoreResults(ScoreType.Governance, execution, model)
-					)
-				);
+				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
-			catch (GenericException ex)
-			{
-				return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
-			}
+
+			var execution = getApiExecution(model.Count, action: ApiExecutionAction.Miscellaneous);
+
+			return Ok(ScoringRepository.PostScoreResults(ScoreType.Governance, execution, model));
 		}
 
 		/// <summary>

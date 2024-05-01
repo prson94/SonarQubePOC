@@ -178,16 +178,12 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/octet-stream"),
 			SwaggerResponse(HttpStatusCode.OK, "Exported related data of asset type to Excel.", typeof(List<PredicateTypeApiViewModel>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> AssetTypeDataExportToExcel(string assetTypeUid, CancellationToken cancellationToken)
 		{
 			Guid guid;
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
-			}
 
 			if (!Guid.TryParse(assetTypeUid, out guid))
 			{
@@ -1219,7 +1215,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
 		{
@@ -1227,11 +1224,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-				}
-
 				if (model.Class == AssetTypeClass.Glossary)
 				{
 					model.Class = AssetTypeClass.BusinessAsset;
@@ -1499,7 +1491,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formated or has failed validation.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeUpsert model)
 		{
@@ -1507,11 +1500,6 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-				}
-
 				var govRoleUid = await GetCachedSettingValueById<Guid>(Setting.GovernanceRoleReferenceListUid);
 				var validator = new AssetTypeValidator(Company, govRoleUid);
 
@@ -1973,15 +1961,11 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(AssetsCountModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetEnvironmentAssetCountsAsync()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, AssetsApiMessages.EnvironmentLevelAssetCountNotAllowed);
-			};
-
 			return Ok(await AssetRepository.GetAssetsCounts());
 		}
 
@@ -2630,34 +2614,13 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetPossibleAssetTypesForNavigation()
 		{
-			var prefix = "Assets.GetPossibleAssetTypesForNavigation => ";
-			string errorMessage;
-
-			try
-			{
-				//if the user is not an admin make sure they cannot read this data as this is used only in site nav administration
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
-				}
-
-				var assetTypes = await AssetRepository.GetPossibleNavigationTypes();
-
-				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, assetTypes)));
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
-			}
+			var assetTypes = await AssetRepository.GetPossibleNavigationTypes();
+			return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, assetTypes)));
 		}
 
 		#region Batch
@@ -2910,15 +2873,11 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteBulkAssetTypesAsync(AssetTypeDeletes assetTypes)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, AssetsApiMessages.RemoveAssetTypeNotAllowed));
-			}
-
 			var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
 			var errorMessage = "";
 
@@ -2987,15 +2946,11 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to delete this asset type is invalid, possibly due to an deletion already in progress.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
+			ApiExplorerSettings(IgnoreApi = true), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteSingleAssetTypesAsync(AssetTypeSingleDelete assetType)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, AssetsApiMessages.RemoveAssetTypeNotAllowed));
-			}
-
 			var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
 			string errorMessage;
 
@@ -3513,18 +3468,14 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset type for the given uid was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> GetAssetUids(Guid assetTypeUid)
 		{
 			var queryParams = Request.GetQueryNameValuePairs();
 
 			const int maxPageSize = 100000;
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage)));
-			}
 
 			var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 

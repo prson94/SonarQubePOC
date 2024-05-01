@@ -25,14 +25,9 @@ namespace d360.web.Controllers
 
 		#region Field Generation
 
-		[Route("Predicate_AddFields")]
+		[Route("Predicate_AddFields"), RequireAdminPermissions]
 		public JsonResult Predicate_AddFields()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
-
 			var list = new List<EditableField>();
 
 			var functionalTypes = PredicateType.DataLineage.GetAsList()
@@ -87,7 +82,7 @@ namespace d360.web.Controllers
 		}
 
 		/// <param name="id">PredicateID</param>
-		[Route("Predicate_EditFields"), NonNullableParameters]
+		[Route("Predicate_EditFields"), NonNullableParameters, RequireAdminPermissions]
 		public JsonResult Predicate_EditFields(int id)
 		{
 			var list = new List<EditableField>();
@@ -98,11 +93,6 @@ namespace d360.web.Controllers
 				.Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
 				.Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
 				.ToList();
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
 
 			list.Add(new EditableField 
 			{

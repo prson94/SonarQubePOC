@@ -1637,49 +1637,28 @@ namespace d360.web.Controllers
 
 		#region Loads
 
-		[HttpGet, Route("loads")]
+		[HttpGet, Route("loads"), RequireAdminPermissions]
 		public IEnumerable<LoadDetail> GetLoads()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			return Company.GetLoadDetails();
 		}
 
-		[HttpGet, Route("loads/{id:int}/columns")]
+		[HttpGet, Route("loads/{id:int}/columns"), RequireAdminPermissions]
 		public IEnumerable<dynamic> GetLoadColumns(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			return Company.GetLoadColumnDetails(id);
 		}
 
-		[HttpGet, Route("loads/{id:int}/items")]
+		[HttpGet, Route("loads/{id:int}/items"), RequireAdminPermissions]
 		public IEnumerable<dynamic> GetLoadItems(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			return Company.GetLoadItemDetails(id);
 		}
 
-		[HttpGet, Route("loads/{id:int}/uid")]
+		[HttpGet, Route("loads/{id:int}/uid"), RequireAdminPermissions]
 		public Guid GetLoadUid(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			var load = Company.GetById<Load>(id);
-
 			return load.uid;
 		}
 
@@ -2366,14 +2345,9 @@ namespace d360.web.Controllers
 			new { id });
 		}
 
-		[Route("ownership/{type}/{id:int}/responsibilitytypes")]
+		[Route("ownership/{type}/{id:int}/responsibilitytypes"), RequireAdminPermissions]
 		public HttpResponseMessage GetResponsibilityTypesByObject(SystemObjects type, int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			var sType = type.ToString();
 
 			return Request.CreateResponse(HttpStatusCode.OK,
@@ -5239,14 +5213,9 @@ where v.id = {0}", id)).FirstOrDefault();
 
 		#region Surveys
 
-		[Route("surveys")]
+		[Route("surveys"), RequireAdminPermissions]
 		public IQueryable<SurveyType> GetSurveyTypes()
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.Forbidden));
-			}
-
 			return Company.Table<SurveyType>();
 		}
 

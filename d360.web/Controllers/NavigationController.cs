@@ -278,14 +278,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public JsonNetResult AddFolderItem(SiteNav item)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 			try
@@ -327,14 +322,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public JsonNetResult RemoveFolderItem(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -364,14 +354,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public async Task<JsonNetResult> RemoveFolder(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -415,14 +400,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public async Task<JsonNetResult> AddFolder(AddSiteNavModel model)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -498,14 +478,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, Route("MoveUp"), NonNullableParameters]
+		[HttpPut, Route("MoveUp"), NonNullableParameters, RequireAdminPermissions]
 		public JsonNetResult MoveUp(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -542,14 +517,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, Route("MoveDown"), NonNullableParameters]
+		[HttpPut, Route("MoveDown"), NonNullableParameters, RequireAdminPermissions]
 		public JsonNetResult MoveDown(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -585,14 +555,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, Route("MoveToTop"), NonNullableParameters]
+		[HttpPut, Route("MoveToTop"), NonNullableParameters, RequireAdminPermissions]
 		public JsonNetResult MoveToTop(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -625,14 +590,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, Route("MoveToBottom"), NonNullableParameters]
+		[HttpPut, Route("MoveToBottom"), NonNullableParameters, RequireAdminPermissions]
 		public JsonNetResult MoveToBottom(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -661,14 +621,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, Route("EditFolder")]
+		[HttpPut, Route("EditFolder"), RequireAdminPermissions]
 		public async Task<JsonNetResult> EditFolder(EditSiteNavModel folder)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 
@@ -797,14 +752,9 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
+		[HttpPut, Route("SiteNavFolderMove"), NonNullableParameters, RequireAdminPermissions]
 		public JsonNetResult SiteNavFolderMove(int targetFolderId, int adjacentFolderId)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
-
 			var success = true;
 			string message;
 			try
@@ -928,14 +878,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public JsonNetResult SetSiteNavPermissions(SiteNav nav)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
-
 			if (nav == null || nav.ID < 1)
 			{
 				return jsonNetException(new Exception(FormControllerApiMessage.ModelPassedToMethodInvalid));
@@ -973,15 +918,10 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
+		[HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken, RequireAdminPermissions]
 		public JsonNetResult AddSiteNavPermission(SiteNavPermission perm)
 		{
 			var nav = Company.GetById<SiteNav>(perm.SiteNavID);
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
 
 			if (nav == null)
 			{
@@ -1010,14 +950,9 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpDelete, Route("permissions/remove")]
+		[HttpDelete, Route("permissions/remove"), RequireAdminPermissions]
 		public JsonNetResult RemoveSiteNavPermission(SiteNavPermission perm)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
-
 			perm = Company.SiteNavPermissions.Where(p => p.SiteNavID == perm.SiteNavID && p.Object == perm.Object && p.ObjectID == perm.ObjectID).FirstOrDefault();
 
 			if (perm != null)

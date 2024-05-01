@@ -123,53 +123,34 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<PredicateDeleteResult>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete predicates due to lack of administrative permissions.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeletePredicates(PredicateDeletes predicates)
 		{
-			var prefix = "Relationships.DeletePredicate => ";
-			string errorMessage;
-
-			try
+			if (predicates == null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-				}
-
-				if (predicates == null)
-				{
-					predicates = readRequestJsonContent<PredicateDeletes>(Request, true).Result;
-				}
-
-				if (predicates == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (predicates.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
-				}
-
-				if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.DeletePredicates);
-
-				List<PredicateDeleteResult> results = RelationshipRepository.DeletePredicates(predicates, execution);
-				
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+				predicates = readRequestJsonContent<PredicateDeletes>(Request, true).Result;
 			}
-			catch (Exception ex)
+
+			if (predicates == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
 			}
+
+			if (predicates.Count == 0)
+			{
+				return errorMessageArgumentResponse(RelationshipsApiMessages.PredicateRequired);
+			}
+
+			if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+			}
+
+			var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.DeletePredicates);
+			var results = RelationshipRepository.DeletePredicates(predicates, execution);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -189,65 +170,47 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<PredicateUpsertResult>)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add predicates.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> UpsertPredicates(PredicateUpserts predicates)
 		{
-			var prefix = "Relationships.InsertPredicate => ";
-			string errorMessage;
-
-			try
+			if (predicates == null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-				}
-
-				if (predicates == null)
-				{
-					predicates = readRequestJsonContent<PredicateUpserts>(Request, true).Result;
-				}
-
-				if (predicates == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (predicates.Count == 0)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
-				}
-
-				if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
-				}
-
-				foreach (var pred in predicates)
-				{
-					if (pred.Name.Length > 100)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.InvalidNameLength)).ConfigureAwait(false);
-					}
-
-					if (pred.Inverse.Length > 250)
-					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.InvalidInverseLength)).ConfigureAwait(false);
-					}
-				}
-
-				var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.UpsertPredicates);
-				List<PredicateUpsertResult> results = RelationshipRepository.UpsertPredicates(predicates, execution);
-				
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
+				predicates = readRequestJsonContent<PredicateUpserts>(Request, true).Result;
 			}
-			catch (Exception ex)
+
+			if (predicates == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
 			}
+
+			if (predicates.Count == 0)
+			{
+				return errorMessageArgumentResponse(RelationshipsApiMessages.PredicateRequired);
+			}
+
+			if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			foreach (var pred in predicates)
+			{
+				if (pred.Name.Length > 100)
+				{
+					return errorMessageArgumentResponse(RelationshipsApiMessages.InvalidNameLength);
+				}
+
+				if (pred.Inverse.Length > 250)
+				{
+					return errorMessageArgumentResponse(RelationshipsApiMessages.InvalidInverseLength);
+				}
+			}
+
+			var execution = getApiExecution(predicates.Count, action: ApiExecutionAction.UpsertPredicates);
+			var results = RelationshipRepository.UpsertPredicates(predicates, execution);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -719,99 +682,80 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The default is 5000 and the maximum value is 100,000.", DataType = "integer", ParameterType = "query", Required = false),
 			SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("_owner", "An optional exact match filter on the owner of the relationship.", DataType = "string", ParameterType = "query", Required = false),
+			RequireAdminPermissions
 		]
-		public async Task<HttpResponseMessage> GetRelationshipUidsAsync(Guid RelationshipTypeUid)
+		public async Task<IHttpActionResult> GetRelationshipUidsAsync(Guid RelationshipTypeUid)
 		{
-			var prefix = "Relationships.GetRelationshipUidsAsync => ";
-			string errorMessage;
+			var queryParams = Request.GetQueryNameValuePairs().ToList();
+			int pageSize = 5000;
+			int pageNum = 1;
+			bool includeTotal = true;
+			string owner = null;
 
-			try
+			if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				var queryParams = Request.GetQueryNameValuePairs().ToList();
-				int pageSize = 5000;
-				int pageNum = 1;
-				bool includeTotal = true;
-				string owner = null;
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
 					
-					if (!int.TryParse(value, out pageNum))
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageNum);
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_pagesize"))
+				if (!int.TryParse(value, out pageNum))
 				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value;
-
-					if (!int.TryParse(value, out pageSize))
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageSize);
-					}
-
-					if (pageSize > 100000)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages._PageSizeLimit);
-					}
-
-					if (pageSize <= 0)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages._PageSizePassedZeroLess);
-					}
+					return errorMessageArgumentResponse(ApiMessages.Invalid_PageNum);
 				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_includetotal"))
-				{
-					var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value;
-
-					if (!bool.TryParse(value, out includeTotal))
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.Invalid_includeTotal);
-					}
-				}
-
-				if (queryParams.Any(x => x.Key.ToLower() == "_owner"))
-				{
-					owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
-					
-					if (owner.Length > 100)
-					{
-						return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.Invalid_owner);
-					}
-				}
-
-				if (RelationshipTypeUid == Guid.Empty)
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.PassedValidRelationTypeUid);
-				}
-
-				int intersectTypeID = await (Company.QueryFirstOrDefaultAsync<int>("select id from [intersecttype] where [uid] = @uid", new { uid = RelationshipTypeUid }));
-
-				if (intersectTypeID <= 0)
-				{
-					return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.PassedValidForExistingRelationType);
-				}
-
-				var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
-				HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
-				
-				return response;
 			}
-			catch (Exception ex)
+
+			if (queryParams.Any(x => x.Key.ToLower() == "_pagesize"))
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value;
 
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+				if (!int.TryParse(value, out pageSize))
+				{
+					return errorMessageArgumentResponse(ApiMessages.Invalid_PageSize);
+				}
+
+				if (pageSize > 100000)
+				{
+					return errorMessageArgumentResponse(ApiMessages._PageSizeLimit);
+				}
+
+				if (pageSize <= 0)
+				{
+					return errorMessageArgumentResponse(ApiMessages._PageSizePassedZeroLess);
+				}
 			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "_includetotal"))
+			{
+				var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value;
+
+				if (!bool.TryParse(value, out includeTotal))
+				{
+					return errorMessageArgumentResponse(RelationshipsApiMessages.Invalid_includeTotal);
+				}
+			}
+
+			if (queryParams.Any(x => x.Key.ToLower() == "_owner"))
+			{
+				owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
+					
+				if (owner.Length > 100)
+				{
+					return errorMessageArgumentResponse(RelationshipsApiMessages.Invalid_owner);
+				}
+			}
+
+			if (RelationshipTypeUid == Guid.Empty)
+			{
+				return errorMessageArgumentResponse(RelationshipsApiMessages.PassedValidRelationTypeUid);
+			}
+
+			int intersectTypeID = await (Company.QueryFirstOrDefaultAsync<int>("select id from [intersecttype] where [uid] = @uid", new { uid = RelationshipTypeUid }));
+
+			if (intersectTypeID <= 0)
+			{
+				return errorMessageArgumentResponse(RelationshipsApiMessages.PassedValidForExistingRelationType);
+			}
+
+			var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -829,49 +773,31 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
+			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostRelationshipTypesAsync(List<RelationshipTypeInsert> relationshiptypes)
 		{
-			var prefix = "Relationships.PostRelationshipTypesAsync => ";
-			string errorMessage;
-
-			try
+			if (relationshiptypes == null)
 			{
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-				}
-
-				if (relationshiptypes == null)
-				{
-					relationshiptypes = readRequestJsonContent<List<RelationshipTypeInsert>>(Request).Result;
-				}
-
-				if (relationshiptypes == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
-				var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
-				Company.CreateRollupPathChangedExecution();
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				relationshiptypes = readRequestJsonContent<List<RelationshipTypeInsert>>(Request).Result;
 			}
-			catch (Exception ex)
+
+			if (relationshiptypes == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
 			}
+
+			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+			}
+
+			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
+			var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
+			Company.CreateRollupPathChangedExecution();
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -880,54 +806,37 @@ namespace d360.web.Controllers.V2
 		/// <param name="relationshiptypes">A list of relationship types you want to update.</param>
 		/// <returns>>An HTTP status code and message.</returns>
 		[
-		   HttpPut,
-		   Route("types"),
-		   SwaggerRequestExample(typeof(RelationshipTypeUpdate), typeof(RelationshipTypeUpdateExample)),
-		   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-		   SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
-		   SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
+			HttpPut,
+			Route("types"),
+			SwaggerRequestExample(typeof(RelationshipTypeUpdate), typeof(RelationshipTypeUpdateExample)),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>)),
+			RequireAdminPermissions
 	   ]
 		public async Task<IHttpActionResult> PutRelationshipTypesAsync(List<RelationshipTypeUpdate> relationshiptypes)
 		{
-			var prefix = "Relationships.PutRelationshipTypesAsync => ";
-
-			try
+			if (relationshiptypes == null)
 			{
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-				}
-
-				if (relationshiptypes == null)
-				{
-					relationshiptypes = readRequestJsonContent<List<RelationshipTypeUpdate>>(Request).Result;
-				}
-
-				if (relationshiptypes == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
-				var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
-				Company.CreateRollupPathChangedExecution();
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				relationshiptypes = readRequestJsonContent<List<RelationshipTypeUpdate>>(Request).Result;
 			}
-			catch (Exception ex)
+
+			if (relationshiptypes == null)
 			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
 			}
+
+			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()));
+			}
+
+			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
+			var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
+			Company.CreateRollupPathChangedExecution();
+
+			return Ok(results);
 		}
 
 		/// <summary>
@@ -936,55 +845,37 @@ namespace d360.web.Controllers.V2
 		/// <param name="relationshiptypes">The list of relationship types for deletion.</param>
 		/// <returns>>An HTTP status code and message.</returns>
 		[
-		   HttpDelete,
-		   Route("types"),
-		   SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
-		   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-		   SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
-		   SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
+			HttpDelete,
+			Route("types"),
+			SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>)),
+			RequireAdminPermissions
 	   ]
 		public async Task<IHttpActionResult> DeleteRelationshipTypesAsync(List<RelationshipTypeDelete> relationshiptypes)
 		{
-			var prefix = "Relationships.DeleteRelationshipTypesAsync => ";
-			string errorMessage;
-
-			try
+			if (relationshiptypes == null)
 			{
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
-				}
-
-				if (relationshiptypes == null)
-				{
-					relationshiptypes = readRequestJsonContent<List<RelationshipTypeDelete>>(Request).Result;
-				}
-
-				if (relationshiptypes == null)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-				}
-
-				if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
-				}
-
-				var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
-				var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
-				Company.CreateRollupPathChangedExecution();
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				relationshiptypes = readRequestJsonContent<List<RelationshipTypeDelete>>(Request).Result;
 			}
-			catch (Exception ex)
+
+			if (relationshiptypes == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return errorMessageArgumentResponse(ApiMessages.JSONValidMessage);
 			}
+
+			if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				return errorMessageArgumentResponse(string.Format(RelationshipsApiMessages.RelationshipTypeLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
+
+			var execution = getApiExecution(relationshiptypes.Count, action: ApiExecutionAction.Miscellaneous);
+			var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
+			Company.CreateRollupPathChangedExecution();
+
+			return Ok(results);
 		}
 
 		/// <summary>

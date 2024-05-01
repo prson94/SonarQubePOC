@@ -929,7 +929,7 @@ order by Sort, title";
 
 		#endregion
 
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad"), RequireAdminPermissions]
 		public async Task<JsonResult> AddLoad()
 		{
 			try
@@ -945,11 +945,6 @@ order by Sort, title";
 
 				string postJson = new StreamReader(inputStream).ReadToEnd();
 				LoadFilePostModel model = JsonConvert.DeserializeObject<LoadFilePostModel>(postJson);
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-				}
 
 				// Perform checks to make sure fields are populated.
 				if (string.IsNullOrEmpty(model.Type))
@@ -1270,17 +1265,9 @@ order by Sort, title";
 			}
 		}
 
-		[Route("loads/{uid}/Errors.xlsx"), FileDownload, HttpGet]
+		[Route("loads/{uid}/Errors.xlsx"), FileDownload, HttpGet, RequireAdminPermissions]
 		public FileResult ErrorLoadFile(Guid uid)
 		{
-			//only admins can access this route
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				Response.StatusCode = (int)HttpStatusCode.Forbidden;
-
-				return null;
-			}
-
 			var load = Company.Loads.FirstOrDefault(x => x.uid == uid);
 
 			var itemSql = @"select RowIndex, StatusMessage from LoadItem where LoadID = @id and Status = 0 order by RowIndex asc";
@@ -1406,17 +1393,9 @@ order by Sort, title";
 			return ExcelDocumentAsFile(document);
 		}
 
-		[Route("loads/{uid}/all.xlsx"), FileDownload, HttpGet]
+		[Route("loads/{uid}/all.xlsx"), FileDownload, HttpGet, RequireAdminPermissions]
 		public FileResult FullLoadFile(Guid uid)
 		{
-			//only admins can access this route
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				Response.StatusCode = (int)HttpStatusCode.Forbidden;
-
-				return null;
-			}
-
 			var load = Company.Loads.FirstOrDefault(x => x.uid == uid);
 			var bytes = load.File;
 
@@ -1791,14 +1770,9 @@ order by Sort, title";
 
 		#region Shortcut
 
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("shortcut/add")]
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("shortcut/add"), RequireAdminPermissions]
 		public async Task<JsonResult> AddShortcut(Shortcut shortcut)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
-			}
-
 			if (string.IsNullOrEmpty(shortcut.Name))
 			{
 				return jsonException(FormControllerApiMessage.ShortCutRequireName, HttpStatusCode.BadRequest);
@@ -1855,15 +1829,9 @@ order by Sort, title";
 			return jsonSuccess(FormControllerApiMessage.ShortcutAdded, shortcut.ID.ToString(), "add", HttpStatusCode.OK);
 		}
 
-		[HttpPut, Route("shortcut/edit")]
+		[HttpPut, Route("shortcut/edit"), RequireAdminPermissions]
 		public async Task<JsonResult> EditShortcut(Shortcut shortcut)
 		{
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
-			}
-
 			var existing = Company.GetById<Shortcut>(shortcut.ID);
 
 			if (existing == null)
@@ -1963,14 +1931,9 @@ order by Sort, title";
 			return true;
 		}
 
-		[HttpDelete, Route("shortcut/delete/{id:int}")]
+		[HttpDelete, Route("shortcut/delete/{id:int}"), RequireAdminPermissions]
 		public async Task<JsonResult> DeleteShortcut(int id)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonException(FormControllerApiMessage.NoPremissionEditShortCuts, HttpStatusCode.Forbidden);
-			}
-
 			var existing = Company.GetById<Shortcut>(id);
 
 			if (existing == null)

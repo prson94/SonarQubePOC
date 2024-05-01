@@ -45,7 +45,7 @@ export class GovernRequestInterceptor implements HttpInterceptor {
     }
 
     private handleError(error: Response): Observable<never> {
-           if ((error.status === 401 || error.status === 403) && (window.location.href.match(/\?/g) || []).length < 2) {
+           if ((error.status === 401) && (window.location.href.match(/\?/g) || []).length < 2) {
                 console.log('The authentication session expires or the user is not authorized. Forcing refresh of the current page.');
                 window.location.href = '/slo';
             }

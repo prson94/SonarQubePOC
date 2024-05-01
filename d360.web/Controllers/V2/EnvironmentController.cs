@@ -78,16 +78,11 @@ namespace d360.web.Controllers.V2
 			_storage = storage;
 		}
 
-		[HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
+		[HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
 		public async Task<HttpResponseMessage> GetRebuilds()
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-				}
-
 				var currentStatusList = await Company.GetRebuildJobStatuses(12);
 				var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
 				currentStatusList.ForEach(i =>
@@ -103,16 +98,11 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
+		[HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true), RequireAdminPermissions]
 		public async Task<HttpResponseMessage> Rebuild(CompanyRebuildJobRequest model)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-				}
-
 				if (model == null)
 				{
 					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
@@ -437,15 +427,11 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPut,
 			Route("settings"),
-			ApiExplorerSettings(IgnoreApi = true)
+			ApiExplorerSettings(IgnoreApi = true),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> UpdateSetting(CompanySettingApiUpdateModel model)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
 			if (model == null)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
@@ -464,15 +450,11 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPut,
 			Route("settings/batch"),
-			ApiExplorerSettings(IgnoreApi = true)
+			ApiExplorerSettings(IgnoreApi = true),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> UpdateSettings(List<CompanySettingApiUpdateModel> models)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
 			if (models == null || models.Count == 0)
 			{
 				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
@@ -573,24 +555,19 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("_resourceUid", "Filter by the provided resource uid", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_assetUid", "Filter by the provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_assetTypeUid", "Filter by the provided asset type uid", DataType = "string", ParameterType = "query", Required = false),
+			RequireAdminPermissions
 
 		]
 		public async Task<IHttpActionResult> GetUsageDetails()
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin.")).ConfigureAwait(false);
-				}
-
 				var queryParams = Request.GetQueryNameValuePairs();
 				string isValid = isPageSizeAndNumValid(queryParams);
 				if (!string.IsNullOrEmpty(isValid))
 				{
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
 				}
-
 
 				var dbArgs = new DynamicParameters();
 
@@ -1162,17 +1139,13 @@ select	r.uid as ResourceUid,
 		   SwaggerProduces("application/json"),
 		   SwaggerResponse(HttpStatusCode.OK, "Adds new help menu items.", typeof(List<HelpMenuItemMessage>)),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> AddHelpMenuItems(List<AddHelpMenuItem> items)
 		{
 			List<int> visibilties = new List<int> { 1, 2, 3 };
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage));
-			}
 
 			try
 			{
@@ -1256,17 +1229,13 @@ select	r.uid as ResourceUid,
 		   SwaggerProduces("application/json"),
 		   SwaggerResponse(HttpStatusCode.OK, "Updates already exisiting help menu items.", typeof(List<HelpMenuItemMessage>)),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> UpdateHelpMenuItems(List<UpdateHelpMenuItem> items)
 		{
 			List<int> visibilties = new List<int> { 1, 2, 3 };
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage));
-			}
 
 			try
 			{
@@ -1365,16 +1334,12 @@ select	r.uid as ResourceUid,
 		   SwaggerProduces("application/json"),
 		   SwaggerResponse(HttpStatusCode.OK, "Deletes currently created help menu items.", typeof(List<HelpMenuItemMessage>)),
 		   SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteHelpMenuItems(List<DeleteMenuItem> items)
 		{
 			List<Guid> uids = new List<Guid>();
 			List<HelpMenuItemMessage> result = new List<HelpMenuItemMessage>();
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, HelpMenuErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage));
-			}
 
 			try
 			{
@@ -1861,17 +1826,13 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(GetTheme)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostTheme(PostTheme requestModel, [FromUri] bool validationOnly = false)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				if (!string.IsNullOrEmpty(requestModel.CustomCss))
 				{
 					if (!IsCustomCssEnabled)
@@ -1912,17 +1873,13 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PutTheme(Guid uid, PutTheme requestModel)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				if (!string.IsNullOrEmpty(requestModel.CustomCss))
 				{
 					if (!IsCustomCssEnabled)
@@ -1959,17 +1916,13 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> MarkThemeAsCurrent(Guid uid)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				var success = await ThemeRepository.MarkThemeAsCurrentAsync(uid);
 				if (success)
 				{
@@ -2003,17 +1956,13 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this theme is invalid, possibly due to being set as the current theme.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public IHttpActionResult DeleteTheme(Guid uid)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				var status = ThemeRepository.Delete(uid);
 
 				return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
@@ -2040,34 +1989,16 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> ConvertCssToBase64()
 		{
-			const string ERROR_HEADING = "Error converting css";
+			string css = await Request.Content.ReadAsStringAsync();
+			var cssBytes = Encoding.UTF8.GetBytes(css);
+			var responseModel = Convert.ToBase64String(cssBytes);
 
-			try
-			{
-				string css = await Request.Content.ReadAsStringAsync();
-
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				var cssBytes = System.Text.Encoding.UTF8.GetBytes(css);
-				var responseModel = Convert.ToBase64String(cssBytes);
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
-			}
-			catch (GenericException ex)
-			{
-				throw ex;
-			}
-			catch
-			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
-			}
+			return Ok(responseModel);
 		}
 
 		/// <summary>
@@ -2082,7 +2013,8 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> ConvertImageToDataUrl()
 		{
@@ -2090,11 +2022,6 @@ select	r.uid as ResourceUid,
 
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
 				var c = await Request.Content.ReadAsMultipartAsync();
 				var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
 
@@ -2136,62 +2063,45 @@ select	r.uid as ResourceUid,
 			SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> Base64Images(Guid uid)
 		{
-			const string ERROR_HEADING = "Error converting css";
-
-			try
+			var theme = Company.Themes.AsNoTracking().FirstOrDefault(x => x.Uid == uid);
+			var response = new ThemeBase64Data();
+			if (theme.HomePageBackgroundExtension != null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
+				using (var stream = new MemoryStream())
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+					await _storage.GetFileStream("themes", url, stream);
+					response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
 				}
-
-				var theme = Company.Themes.AsNoTracking().FirstOrDefault(x => x.Uid == uid);
-				var response = new ThemeBase64Data();
-				if (theme.HomePageBackgroundExtension != null)
-				{
-					using (var stream = new MemoryStream())
-					{
-						var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
-						await _storage.GetFileStream("themes", url, stream);
-						response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
-					}
-				}
-
-				if (theme.BrowserIconExtension != null)
-				{
-					using (var stream = new MemoryStream())
-					{
-
-						var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
-						await _storage.GetFileStream("themes", url, stream);
-						response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
-					}
-				}
-
-				if (theme.HeaderLogoExtension != null)
-				{
-					using (var stream = new MemoryStream())
-					{
-						var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
-						await _storage.GetFileStream("themes", url, stream);
-						response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
-					}
-				}
-
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
 			}
-			catch (GenericException ex)
+
+			if (theme.BrowserIconExtension != null)
 			{
-				throw ex;
+				using (var stream = new MemoryStream())
+				{
+
+					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+					await _storage.GetFileStream("themes", url, stream);
+					response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
+				}
 			}
-			catch
+
+			if (theme.HeaderLogoExtension != null)
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+				using (var stream = new MemoryStream())
+				{
+					var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+					await _storage.GetFileStream("themes", url, stream);
+					response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
+				}
 			}
+
+			return Ok(response);
 		}
 
 

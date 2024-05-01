@@ -297,15 +297,11 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<TagApiModel>)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-			ApiExplorerSettings(IgnoreApi = true)
+			ApiExplorerSettings(IgnoreApi = true),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> ConsolidateTags(string parentUid, List<string> childrenUids)
 		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			Guid _parentUid;
 			if (!Guid.TryParse(parentUid, out _parentUid))
 			{
@@ -698,7 +694,8 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The specified tag type was saved, returns the properties of the created tag type.", typeof(TagTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not allowed to perform this action.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PostTagType(TagTypeApiUpsertModel model)
 		{
@@ -706,11 +703,6 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageArgumentResponse(ApiMessages.ErrorInvalidDatasetMessage);
 			}
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
-			}
-
 			var response = await Catalog.CreateTagTypeAsync(model.Value);
 			return (response.IsSuccess) ?
 				Ok(response.Data) :
@@ -731,7 +723,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "The specified tag type was updated, returns the properties of the created tag type.", typeof(TagTypeApiModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag type was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> PutTagType(string tagTypeUid, TagTypeApiUpsertModel model)
 		{
@@ -744,11 +737,6 @@ namespace d360.web.Controllers.V2
 			if (model == null)
 			{
 				return errorMessageArgumentResponse(ApiMessages.Invalid);
-			}
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
 			}
 
 			var response = await Catalog.UpdateTagTypeAsync(tagTypeId, model.Value);
@@ -777,7 +765,8 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag type provided is invalid.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag type was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteTagTypeById(string tagTypeUid, bool cascade = false)
 		{
@@ -790,11 +779,6 @@ namespace d360.web.Controllers.V2
 			{
 				return errorMessageNotFoundResponse(string.Format(TagsApiMessages.TagTypeUidNotFound, _tagTypeUid));
 			}
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
-			}
-
 			var response = await Catalog.RemoveTagTypesAsync(new List<Guid> { _tagTypeUid });
 			return response.IsSuccess ?
 				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagTypeRemoved, TagsApiMessages.TagTypeRemoveMessage) :

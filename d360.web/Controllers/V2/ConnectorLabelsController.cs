@@ -338,8 +338,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the connector label provided is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the connector label was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)), 
+			RequireAdminPermissions
+		]
         public IHttpActionResult DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
         {
 
@@ -349,11 +350,6 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorDeleteLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, label.uid.ToString()));
                 }
-            }
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.ForbiddenUserNotAuthorizedMessage));
             }
 
             try
@@ -458,15 +454,11 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ConnectorLabelApiModel>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
+            ApiExplorerSettings(IgnoreApi = true), 
+			RequireAdminPermissions
+		]
         public IHttpActionResult ConsolidateLabels(string parentUid, List<string> childrenUids)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
             try
             {
 

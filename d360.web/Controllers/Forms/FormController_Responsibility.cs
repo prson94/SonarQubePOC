@@ -326,16 +326,11 @@ namespace d360.web.Controllers
 			};
 		}
 
-		[HttpPut, ValidateInput(false), ActionName("ResponsibilityType"), Route("ResponsibilityType")]
+		[HttpPut, ValidateInput(false), ActionName("ResponsibilityType"), Route("ResponsibilityType"), RequireAdminPermissions]
 		public JsonResult PutResponsibilityType(ResponsibilityType model)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-				}
-
 				var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
 				
 				if (existing == null)
@@ -404,16 +399,11 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityType"), Route("ResponsibilityType")]
+		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityType"), Route("ResponsibilityType"), RequireAdminPermissions]
 		public JsonResult PostResponsibilityType(ResponsibilityType model)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-				}
-
 				//setting all permission as default
 				int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
 				model.ResponsibilityTypeRelations.ToList().
@@ -694,38 +684,20 @@ order by	case
 
 		#region Form Get/Post
 
-		[HttpDelete, Route("DeleteResponsibilityTypeRelationRuleDateByID"), NonNullableParameters]
+		[HttpDelete, Route("DeleteResponsibilityTypeRelationRuleDateByID"), NonNullableParameters, RequireAdminPermissions]
 		public JsonResult DeleteResponsibilityTypeRelationRuleDateByID(int id)
 		{
-			try
+			var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
+
+			if (model == null)
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-				}
-
-				var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
-
-				if (model == null)
-				{
-					throw new NotFoundException(FormControllerApiMessage.ResponsibilityTypeRule);
-				}
-
-				model.LastRunOn = null;
-				Company.Update(model);
-
-				return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.ItemDate), id.ToString(), "edit", HttpStatusCode.OK);
+				return jsonException(FormControllerApiMessage.ResponsibilityTypeRule, HttpStatusCode.NotFound);
 			}
-			catch (BaseException ex)
-			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				SendException(ex);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			model.LastRunOn = null;
+			Company.Update(model);
+
+			return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.ItemDate), id.ToString(), "edit", HttpStatusCode.OK);
 		}
 
         [HttpGet, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), NonNullableParameters]
@@ -742,16 +714,11 @@ order by	case
             };
         }
 
-		[HttpPut, ValidateInput(false), ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
+		[HttpPut, ValidateInput(false), ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), RequireAdminPermissions]
 		public async Task<JsonResult> PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-				}
-
 				var existing = Company.GetById<ResponsibilityTypeRelationRule>(model.ID);
 
 				if (existing == null)
@@ -839,16 +806,11 @@ order by	case
 			}
 		}
 
-		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
+		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), RequireAdminPermissions]
 		public async Task<JsonResult> PostResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-				}
-
 				model.SetRawFromDefinition();
 
 				if (model.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null && (x.Operator == null || !(x.Operator == Operator.Populated || x.Operator == Operator.NotPopulated))).Count() > 0)
