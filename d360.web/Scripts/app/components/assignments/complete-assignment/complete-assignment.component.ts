@@ -440,7 +440,7 @@ export class CompleteAssignmentComponent extends BaseComponent implements OnInit
 					name.length + url.length === 0 ? '' : name + '|' + url;
 			} else if (x.FieldType === WorkflowFormFieldType.List && x.AllowMultipleValues) {
 				x.Values = this.workflowForm.form.controls[`input_${i}`].value
-			} else if (x.FieldType === WorkflowFormFieldType.RelationshipType) {
+			} else if (x.FieldType === WorkflowFormFieldType.RelationshipType && this.workflowForm.form.controls[`input_${i}`].value) {
 				x.Value = this.workflowForm.form.controls[`input_${i}`].value.map(f => f.Value).join();
 			} else if (Array.isArray(x.Value)) {
 				x.Value = x.Value.join();
