@@ -6,6 +6,7 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.Wordprocessing;
 using repositories.resources;
 using System;
 using System.Collections.Generic;
@@ -865,6 +866,12 @@ from	Tag t
 
 			response.Data.pageNum = queryParams.CheckForPageNumber();
 			response.Data.pageSize = queryParams.CheckForPageSize();
+
+			if (response.Data.pageSize > 250)
+			{
+				response.Data.pageSize = 250; // max page size is 250 people.
+			}
+
 			bool includeTotal = queryParams.CheckForIncludeTotal();
 
 			if (queryFilters.Count > 0)
