@@ -366,6 +366,22 @@ namespace d360.core.entities
 			}
 		}
 
+		public string SQLSimpleStatementExcludeFieldJoin
+		{
+			get
+			{
+				var sb = new StringBuilder();
+				foreach (var statement in joins.OrderBy(x => x.Sort).Select(x => x.SimpleStatement ?? x.SQLStatement).Distinct())
+				{
+					if (!statement.Contains("left join Field"))
+					{
+						sb.AppendLine(statement);
+					}
+				}
+				return sb.ToString();
+			}
+		}
+
 		public DynamicQueryJoins Clone()
 		{
 			var clone = new DynamicQueryJoins();

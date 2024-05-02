@@ -1736,7 +1736,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				|| useSimpleFilterTempTable
 				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
-			string GetBaseQuery(bool excludeFilterQueries = false)
+
+			string GetBaseQuery(bool excludeFilterQueries = false, bool removefieldjoin = false)
 			{
 				bool needsNodeData = OrderMainQuery.ToLower().Contains("node.") || whereSql.ToLower().Contains("node.") || includedJoins.SQLJoinStatement.ToLower().Contains("node.");
 
@@ -1748,7 +1749,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{includedJoins.SQLSimpleStatement}
+				{(!removefieldjoin ? includedJoins.SQLSimpleStatement : includedJoins.SQLSimpleStatementExcludeFieldJoin)}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1790,13 +1791,47 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						{simpleFiltersTempTablesQuery}
 
 						insert into #filtered_results
-						{GetBaseQuery()};
+						{GetBaseQuery(false, true)};
 
 						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
 
 						exec CachedAssetFiltersProvider 'SET', @userId, @requesthash, @assetTypeId, @filteringDuration
 					end";
 			}
+
+			string getBQuery = GetBaseQuery(true, false);
+
+			string checkFilterRecordsNotEqualAssetRecords = $@"
+			insert into #tempasset
+				{GetBaseQuery(true)}
+			{OrderMainQuery}
+			{pagingSql[1]}; ";
+
+			string checkFilterRecordsEqualAssetRecords = $@"
+			declare @FilterQueriesEqualAsset int = 0;
+			if exists (select 1 from asset a left join #filtered_results fr on fr.AssetId = a.ID where A.AssetTypeID = @assettypeid  and fr.AssetId is null)
+				begin
+					set @FilterQueriesEqualAsset = 0;	
+				end
+			else
+				begin
+					set @FilterQueriesEqualAsset = 1;	
+				end
+				if (@FilterQueriesEqualAsset = 1)
+					begin
+						insert into #tempasset
+						{getBQuery.Replace("inner join #filtered_results fr on fr.AssetId = a.ID", "")}
+						{OrderMainQuery}
+						{pagingSql[1]};
+					end
+				else
+					begin
+						insert into #tempasset
+						{getBQuery}
+						{OrderMainQuery}
+						{pagingSql[1]};
+					end
+			";
 
 			string TempTableScriptStr = string.Join("\n ", TempTableScriptList.Distinct());
 
@@ -1811,10 +1846,8 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 				create index ix_tempasset on #tempasset	(AssetId);
 
-				insert into #tempasset
-				{GetBaseQuery(true)}
-				{OrderMainQuery}
-				{pagingSql[1]};";
+				{(containsAnyFilter ? checkFilterRecordsEqualAssetRecords : checkFilterRecordsNotEqualAssetRecords)}
+				";
 
 			#endregion
 			string countSQL = "";
