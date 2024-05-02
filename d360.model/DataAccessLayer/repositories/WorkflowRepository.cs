@@ -516,8 +516,8 @@ namespace d360.model.DataAccessLayer
 		private IEnumerable<WorkflowAssignmentApiViewModel> GetWorkflowAssignmentApiViewModels(IList<string> emails)
 		{
 
-			var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
-			var assignments = CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
+			var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email IN @emails";
+			var assignments = CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, new { emails }, timeout: ApiTimeout).ToList();
 
 			return assignments;
 		}
