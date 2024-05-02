@@ -3256,9 +3256,9 @@ namespace d360.web.Controllers.Services
 						from ResponsibilityDetail rd
 						 inner join reporting.Global_Resource R on
 						 rd.resourceId = r.resourceId 
-						 where r.email  IN ('{string.Join("','", emails)}')
-						 and ((rd.AssetID = {assetId}) or (rd.AssetID = 0 and rd.AssetTypeID ={asset.AssetTypeID}) and rd.IsVisible=1)
-						and rd.ResponsibilityTypeID IN ( {string.Join(",", responsiblities)}))
+						 where r.email IN @emails
+						 and ((rd.AssetID = @assetId) or (rd.AssetID = 0 and rd.AssetTypeID = @AssetTypeID) and rd.IsVisible=1)
+						and rd.ResponsibilityTypeID IN @responsiblities)
 
 						SELECT cte.FullName,cte.ResourceID,cte.email,
 							STRING_AGG(cte.ResponsibilityTypeName, ', ') WITHIN GROUP (ORDER BY cte.ResponsibilityTypeName asc) as Responsibility
@@ -3269,10 +3269,10 @@ namespace d360.web.Controllers.Services
 			{
 				sql = $@"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
 						From reporting.Global_Resource R  
-						where state=1 and email in ('{string.Join("','", emails)}')";
+						where state=1 and email in @emails";
 			}
 
-			return Company.Query<EmailedResourceResponsibility>(sql).ToList();
+			return Company.Query<EmailedResourceResponsibility>(sql, new { assetId, asset.AssetTypeID, responsiblities, emails }).ToList();
 		}
 		private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
 		{
