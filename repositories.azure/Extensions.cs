@@ -134,7 +134,7 @@ namespace repositories.azure
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
 				{
-					var option = options.SingleOrDefault(c => c.QueryStringPropertyName == rawValue);
+					var option = options.SingleOrDefault(c => c.QueryStringPropertyName == rawValue.ToLowerInvariant());
 					if (option != null)
 					{
 						defaultColumn = option.DatabaseColumn;
@@ -152,7 +152,7 @@ namespace repositories.azure
 				var rawValue = (queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName).Value ?? "").Trim();
 				if (!string.IsNullOrEmpty(rawValue))
 				{
-					defaultValue = rawValue == "desc" ? "desc" : "asc";
+					defaultValue = rawValue.ToLowerInvariant() == "desc" ? "desc" : "asc";
 				}
 			}
 
@@ -211,7 +211,7 @@ namespace repositories.azure
 				if (!string.IsNullOrEmpty(rawValue))
 				{
 					parameterValue = rawValue;
-					if (!ValidFieldList.Contains(rawValue))
+					if (!ValidFieldList.Contains(rawValue.ToLowerInvariant()))
 					{
 						isValid = false;
 					}
