@@ -354,9 +354,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     }
 
     cancel() {
+        this.model = null;
         this.load();
         this.onCancel.emit(this.model.Name);
-        this.model = null;
     }
 
     checkModelChanged() {
