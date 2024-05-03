@@ -452,7 +452,7 @@ namespace d360.model.DataAccessLayer
 								itemstep.CompletedOn,
 								case 
 									when 
-										ItemStep.CompletedOn is not null then 'Complete'
+										ItemStep.CompletedOn is not null and itemstate.id < 3 then 'Complete'
 									when 
 										ItemState.name is null or itemstate.id < 3 then 'Pending'
 									when	
@@ -1322,7 +1322,7 @@ namespace d360.model.DataAccessLayer
 										,WI.CompletedOn
 										,case 
 											when 
-												WI.CompletedOn is not null then 'Complete'
+												WI.CompletedOn is not null and itemstate.id < 3 then 'Complete'
 											when 
 												ItemState.name is null or itemstate.id < 3 then 'Pending'
 											when	
@@ -1586,7 +1586,7 @@ namespace d360.model.DataAccessLayer
 							WI.CompletedOn,
 							case 
 								when 
-									WI.CompletedOn is not null then 'Complete'
+									WI.CompletedOn is not null and itemstate.id < 3 then 'Complete'
 								when 
 									ItemState.name is null or itemstate.id < 3 then 'Pending'
 								when	
