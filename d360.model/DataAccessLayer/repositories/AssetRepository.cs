@@ -1737,7 +1737,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				|| advancedFilterTempTableInfos.TempTableSQL() != String.Empty;
 
 
-			string GetBaseQuery(bool excludeFilterQueries = false, bool removefieldjoin = false)
+			string GetBaseQuery(bool excludeFilterQueries = false)
 			{
 				bool needsNodeData = OrderMainQuery.ToLower().Contains("node.") || whereSql.ToLower().Contains("node.") || includedJoins.SQLJoinStatement.ToLower().Contains("node.");
 
@@ -1749,7 +1749,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 				{(!excludeFilterQueries && useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{(!removefieldjoin ? includedJoins.SQLSimpleStatement : includedJoins.SQLSimpleStatementExcludeFieldJoin)}
+				{includedJoins.SQLSimpleStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1791,7 +1791,7 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 						{simpleFiltersTempTablesQuery}
 
 						insert into #filtered_results
-						{GetBaseQuery(false, true)};
+						{GetBaseQuery()};
 
 						declare @filteringDuration int = DATEDIFF(MS,@StartTime,GETDATE());
 
@@ -1799,11 +1799,11 @@ WHERE NR.Object = A.Object and NR.ObjectId = A.ObjectId) as SynonymAllocationStr
 					end";
 			}
 
-			string getBQuery = GetBaseQuery(true, false);
+			string getBQuery = GetBaseQuery(true);
 
 			string checkFilterRecordsNotEqualAssetRecords = $@"
 			insert into #tempasset
-				{GetBaseQuery(true)}
+			{getBQuery}
 			{OrderMainQuery}
 			{pagingSql[1]}; ";
 
