@@ -142,6 +142,17 @@ namespace d360.web.Controllers.V2
 				return errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied);
 			}
 
+			if (!cascade)
+			{
+				List<Guid> uidscascade = new List<Guid> { _tagUid};
+				var cascadeErrorMessage = tagRepository.CheckTagAssetbyUids(uidscascade);
+				if (!string.IsNullOrWhiteSpace(cascadeErrorMessage))
+				{
+					return errorMessageResponse(HttpStatusCode.BadRequest, cascadeErrorMessage);
+				}
+			}
+
+
 			var response = await Catalog.RemoveTagsAsync(new List<Guid> { _tagUid });
 			return (response.IsSuccess) ? 
 				successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage) :
