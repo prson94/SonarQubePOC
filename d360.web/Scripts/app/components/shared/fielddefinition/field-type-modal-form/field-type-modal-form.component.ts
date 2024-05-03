@@ -30,7 +30,7 @@ export enum FormState {
 	encapsulation: ViewEncapsulation.None,
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit,OnDestroy {
+export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnInit, OnDestroy {
 	@Input() isModalVisible: boolean = false;
 	@Input() assetTypeName: string;
 	@Input() assetTypeClass: AssetTypeClass;
@@ -494,7 +494,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 			AllowMultipleValues: [null],
 			ShowIfEmpty: [null],
 			CounterPrefix: [null, { validators: [Validators.maxLength(10), Validators.pattern(/^[a-zA-Z0-9-_]*$/)] }],
-			CounterInitialIndex: [null],
+			CounterInitialIndex: [null, { validators: [this.counterInitialValueValidator()] }],
 			ColumnWidth: [null],
 			SortOrder: [null],
 			SortByAscending: ['true'],
@@ -671,7 +671,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				this.changeFormSub.unsubscribe();
 			}
 
-			this.fieldTypeForm.controls["Name"].disable({emitEvent:false});
+			this.fieldTypeForm.controls["Name"].disable({ emitEvent: false });
 
 
 			forkJoin(
@@ -826,8 +826,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 				}
 				setTimeout(() => {
 					this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
-						this.isEditFormUpdated=true;					
-				});
+						this.isEditFormUpdated = true;
+					});
 				}, 200);
 			});
 		}
@@ -865,7 +865,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	close() {
-		
+
 		this.setDefaultFormValues();
 		if (this.relationLookupEditor) {
 			this.relationLookupEditor.resetForm();
@@ -875,8 +875,8 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		}
 		setTimeout(() => {
 			this.changeFormSub = this.fieldTypeForm.valueChanges.subscribe(() => {
-				this.isEditFormUpdated=false;					
-		});
+				this.isEditFormUpdated = false;
+			});
 		}, 200);
 		this.selectedFieldType = null;
 		this.onClose.emit();
@@ -971,10 +971,10 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		props.forEach((prop) => {
 			if (this.isSettingDisabled(prop)) {
-				this.fieldTypeForm.get(prop).disable({ emitEvent: false});
+				this.fieldTypeForm.get(prop).disable({ emitEvent: false });
 			}
 			else {
-				this.fieldTypeForm.get(prop).enable({ emitEvent: false});
+				this.fieldTypeForm.get(prop).enable({ emitEvent: false });
 			}
 		});
 	}
@@ -1137,6 +1137,26 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		};
 	}
 
+	counterInitialValueValidator(): ValidatorFn {
+		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
+			if (control.value == null || !this.selectedFieldType) {
+				return {};
+			}
+			const hasValueChanged = this.editedFieldType.Type[this.selectedFieldType].CounterInitialIndex !== control.value;
+
+			if (this.isEditing && !hasValueChanged) {
+				return {};
+			}
+
+			if (+control.value < this.numberOfAssetsForType) {
+				return {
+					minValue: { value: control.value }
+				};
+			}
+			return null;
+		};
+	}
+
 	incrementValidation(): ValidatorFn {
 		return (control: AbstractControl): { [key: string]: Record<string, unknown> } | null => {
 			if (control.value == null) {
@@ -1215,7 +1235,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 	}
 
 	get showIsListable(): boolean {
-		this.fieldTypeForm.get('IsListable').enable({emitEvent: false});
+		this.fieldTypeForm.get('IsListable').enable({ emitEvent: false });
 
 		if (this.assetTypeClass === AssetTypeClass.DiagramAsset) {
 			return false;
@@ -1223,7 +1243,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 
 		//in case of Code field for reference types show IsListable selection
 		if (this.selectedFieldType === 'System' && this.isReferenceItemType) {
-			this.fieldTypeForm.get('IsListable').disable({emitEvent: false});
+			this.fieldTypeForm.get('IsListable').disable({ emitEvent: false });
 			return true;
 		}
 
@@ -1393,7 +1413,7 @@ export class ConfigurationFieldTypeModalFormComponent implements OnChanges, OnIn
 		if (item.value === 'Relationship' && (!this.relationshipItems || this.relationshipItems.length === 0)) {
 			return $localize`No relationships are currently defined for this asset type`;
 		}
-		
+
 		if (item.value === 'ComputedRelationshipLookup'
 			&& (!this.fieldFromRelationshipItems || this.fieldFromRelationshipItems.length === 0)
 			&& (!this.cardinalRelationships || this.cardinalRelationships.length === 0)
