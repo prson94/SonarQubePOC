@@ -79,7 +79,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request. Parameter name: _direction.
         /// </summary>
         public static string InvalidDirection {
             get {
@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request. Parameter name: _order.
         /// </summary>
         public static string InvalidOrderBy {
             get {
@@ -205,7 +205,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request..
+        ///   Looks up a localized string similar to Invalid value [{0}] passed in the request. Parameter name: uid.
         /// </summary>
         public static string InvalidTagUid {
             get {

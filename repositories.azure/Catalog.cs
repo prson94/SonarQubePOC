@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -811,7 +812,7 @@ order by    P.[Path];";
 		{
 			var response = new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(
 				new PagedApiBaseViewModel<TagApiModel>(), 200, true, "");
-
+			string parameterValue = "";
 			var dbArgs = new DynamicParameters();
 			var queryFilters = new List<string>();
 			var validOrderFields = new List<SortColumnOption> { 
@@ -824,6 +825,26 @@ order by    P.[Path];";
 				new SortColumnOption("updatedbyuid", "u.[Uid]"),
 				new SortColumnOption("tagtypeuid", "tt.[Uid]")
 			};
+
+
+			#region Validate Paramter
+				if (!queryParams.ValidateForQueryParameter<Guid>("uid",ref parameterValue))
+				{
+					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidTagUid, parameterValue));
+				}
+				
+				var validOrderFieldsList = validOrderFields.Select(x => x.QueryStringPropertyName).ToList();
+
+				if (!queryParams.ValidateForQueryParameterFromList("_order", validOrderFieldsList, ref parameterValue))
+				{
+					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidOrderBy, parameterValue));
+				}
+
+				if (!queryParams.ValidateForQueryParameter<string>("_direction", ref parameterValue))
+				{
+					return new RepositoryResponse<PagedApiBaseViewModel<TagApiModel>>(new PagedApiBaseViewModel<TagApiModel>(), (int)HttpStatusCode.BadRequest, false, string.Format(TagErrors.InvalidDirection, parameterValue));
+				}
+			#endregion
 
 			var countSql = $@"select count(1) 
 from	Tag t
