@@ -2242,6 +2242,8 @@ namespace d360.model
 			}
 			else if (!transitionPassed && transition.TransitionType == TransitionType.Condition)
 			{
+				Thread.Sleep(500 + randomNumberGenerator.Next(1000));
+
 				WorkflowItemStep fromItemStep = WorkflowItemSteps.Where(i => i.ItemID == itemID && i.StepID == transition.FromVersionStepID).FirstOrDefault();
 
 				if (!WorkflowItemStepTransitions.Any(i => i.FromItemStepID == fromItemStep.ID))
