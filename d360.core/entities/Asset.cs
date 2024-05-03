@@ -377,6 +377,10 @@ namespace d360.core.entities
 					{
 						sb.AppendLine(statement);
 					}
+					else if (statement.Contains("left join FieldJsonProperty FJP"))
+					{
+						sb.AppendLine(statement);
+					}
 				}
 				return sb.ToString();
 			}
