@@ -404,13 +404,19 @@ where	ExecutionID = @executionID
 						response = new RepositoryResponse<TagApiModel>(null, 201, true, "");
 						response.Data = await connection.QuerySingleAsync<TagApiModel>(
 							$@"
-declare @tagId int;
+declare @tagId int,
+@auditID int;
+
 insert into Tag ([uid], [Value], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy], [State], [TagTypeId])
 values (@uid, @value, @dt, @u, @dt, @u, @State, @tagTypeId);
 select @tagId = SCOPE_IDENTITY();
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 values ('Tag', @tagId, @Value, @u, @dt, 'Created', 'Tag', @tagId, 'Tags', @Value, 'Tag created', 1);
+select @auditID = SCOPE_IDENTITY();
+
+insert into reporting.Global_FieldAudit ( AuditID, FieldTypeID, FieldName, Value, PreviousValue )
+values (@auditID,0,'Name',@Value,Null)
 
 {TAG_API_MODEL_SQL_WITHOUT_WHERE} where t.ID = @tagId;", 
 							new { tagTypeId, value, uid = Guid.NewGuid(), state = (int)State.Active, u = CurrentUserId, dt = DateTime.UtcNow });
@@ -1276,6 +1282,9 @@ drop table if exists #tbl;
 					{
 						await connection.ExecuteAsync(
 							@"
+declare @PreviousValue nvarchar(max),
+@auditID int;
+
 declare @dt datetime = getutcdate();
 update	Tag
 set		[Value] = @value,
@@ -1287,7 +1296,73 @@ declare @version int;
 select @version = COALESCE(max([Version]),0)+1 from reporting.Global_Audit where Object = 'Tag' and ObjectID = @tagId;
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
-values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);", 
+values ('Tag', @tagId, @value, @userId, @dt, 'Updated', 'Tag', @tagId, 'Tags', @value, 'Tag updated', @version);
+
+select @auditID = SCOPE_IDENTITY();
+
+select	top 1
+@PreviousValue = [Value]
+from	reporting.Global_Audit a
+inner join reporting.Global_FieldAudit f on f.AuditID  = a.ID and  f.FieldName in ('Name','Tag Name') and f.FieldTypeID = 0
+where 	a.Object = 'Tag'
+and 	a.ObjectID = @tagId
+and		a.id != @auditID
+order by a.id desc;
+
+insert into reporting.Global_FieldAudit ( AuditID, FieldTypeID, FieldName, Value, PreviousValue )
+values(@auditID,0,'Name', @value,@PreviousValue);
+
+---Asset log generate
+
+drop table if exists #TempTagValues;
+create table #TempTagValues(AssetId bigint,Object varchar(50), ObjectID int,NewValues nvarchar(max),PreviousValue nvarchar(max));
+create clustered index cx_TempTagValues on #TempTagValues (Object,ObjectID);
+
+
+
+insert into #TempTagValues(AssetId, Object, ObjectID)
+select distinct atg.AssetID,A.Object,A.ObjectID
+from AssetTag atg
+inner join asset a on atg.AssetId = A.ID
+where tagid = @tagId
+
+update tta
+set NewValues = (select substring(string_Agg(T.Value, ', ') within group  (order by TA.id asc),1,4000)
+				from AssetTag TA   
+				inner join Tag T on T.ID = TA.TagID
+				where TA.AssetID = tta.AssetId)
+from #TempTagValues tta;
+
+
+update tta
+set PreviousValue = (select top 1 i_p.[Value]
+					from reporting.Global_Audit i_a
+					inner join reporting.Global_FieldAudit i_p on i_a.ID = i_p.AuditID and i_p.FieldTypeID = 0 and i_p.FieldName = 'Tags'
+					where  i_a.Object = tta.Object and i_a.ObjectID = tta.ObjectID and  i_p.[Value] is not null 
+					order by i_a.ID desc)
+from #TempTagValues tta;
+
+
+create table #tbl (ID bigint, Object varchar(50), ObjectID int);
+create clustered index cx_tbl on #tbl (Object,ObjectID);
+
+insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
+output inserted.ID, inserted.Object, inserted.ObjectID into #tbl
+select tta.Object,tta.ObjectID,substring(adv.DisplayValue,1,250),@userId,@dt,'Assigned','Tag',0,'Tags','Tag','Tag assigned',mv.[Version]
+from #TempTagValues tta
+inner join AssetDisplayValue adv on adv.AssetId = tta.Assetid
+cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version] 
+			from reporting.Global_Audit ga
+			where ga.Object =  tta.Object and ga.ObjectID =  tta.ObjectID) mv;
+
+insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
+select t.Id,0,'Tags',tta.NewValues,tta.PreviousValue
+from #TempTagValues tta
+inner join #tbl t on tta.object = t.object and tta.objectID = t.objectID;
+
+drop table if exists #tbl;
+drop table if exists #TempTagValues;
+", 
 							new { tagId, value, userId = CurrentUserId });
 
 						response = new RepositoryResponse<bool>(true, 200, true, "Tag updated.");

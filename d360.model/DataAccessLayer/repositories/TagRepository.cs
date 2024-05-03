@@ -156,7 +156,7 @@ namespace d360.model.DataAccessLayer
 			string retvalue = null;
 
 			string sql = $@"
-select top 1 cast(t.uid as nvarchar(50)) uid
+select top 1 lower(cast(t.uid as nvarchar(50))) uid
 from tag t
 inner join assettag att on t.id = att.TagID
 where t.uid in @uids
