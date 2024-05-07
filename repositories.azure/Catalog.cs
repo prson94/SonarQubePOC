@@ -1315,7 +1315,7 @@ values(@auditID,0,'Name', @value,@PreviousValue);
 ---Asset log generate
 
 drop table if exists #TempTagValues;
-create table #TempTagValues(AssetId bigint,Object varchar(50), ObjectID int,NewValues nvarchar(max),PreviousValue nvarchar(max));
+create table #TempTagValues(AssetId bigint,Object varchar(50), ObjectID int);
 create clustered index cx_TempTagValues on #TempTagValues (Object,ObjectID);
 
 
@@ -1326,29 +1326,12 @@ from AssetTag atg
 inner join asset a on atg.AssetId = A.ID
 where tagid = @tagId
 
-update tta
-set NewValues = (select substring(string_Agg(T.Value, ', ') within group  (order by TA.id asc),1,4000)
-				from AssetTag TA   
-				inner join Tag T on T.ID = TA.TagID
-				where TA.AssetID = tta.AssetId)
-from #TempTagValues tta;
-
-
-update tta
-set PreviousValue = (select top 1 i_p.[Value]
-					from reporting.Global_Audit i_a
-					inner join reporting.Global_FieldAudit i_p on i_a.ID = i_p.AuditID and i_p.FieldTypeID = 0 and i_p.FieldName = 'Tags'
-					where  i_a.Object = tta.Object and i_a.ObjectID = tta.ObjectID and  i_p.[Value] is not null 
-					order by i_a.ID desc)
-from #TempTagValues tta;
-
-
 create table #tbl (ID bigint, Object varchar(50), ObjectID int);
 create clustered index cx_tbl on #tbl (Object,ObjectID);
 
 insert into reporting.Global_Audit ([Object], ObjectID, ObjectName, ResourceID, [Date], [Action], [ActionObject], ActionObjectId, ActionObjectTypeName, ActionObjectName, ActionDescription, [Version]) 
 output inserted.ID, inserted.Object, inserted.ObjectID into #tbl
-select tta.Object,tta.ObjectID,substring(adv.DisplayValue,1,250),@userId,@dt,'Assigned','Tag',0,'Tags','Tag','Tag assigned',mv.[Version]
+select tta.Object,tta.ObjectID,substring(adv.DisplayValue,1,250),@userId,@dt,'Updated','Tag',@tagId,'Tags',@value,'Tag Updated',mv.[Version]
 from #TempTagValues tta
 inner join AssetDisplayValue adv on adv.AssetId = tta.Assetid
 cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version] 
@@ -1356,9 +1339,8 @@ cross apply (select coalesce(max(ga.[Version]),0)+1 as [Version]
 			where ga.Object =  tta.Object and ga.ObjectID =  tta.ObjectID) mv;
 
 insert into reporting.Global_FieldAudit (AuditID, FieldTypeID, FieldName, [Value], PreviousValue)
-select t.Id,0,'Tags',tta.NewValues,tta.PreviousValue
-from #TempTagValues tta
-inner join #tbl t on tta.object = t.object and tta.objectID = t.objectID;
+select t.Id,0,'Tags', @value,@PreviousValue
+from #tbl t;
 
 drop table if exists #tbl;
 drop table if exists #TempTagValues;
