@@ -104,7 +104,6 @@ namespace d360.web
 				builder.RegisterType<DependencyInjectionTypeServiceProvider>().As<ITypeServiceProvider>().SingleInstance();
 				builder.RegisterType<FavoriteRouteMatcherService>().SingleInstance();
 				builder.RegisterType<RequestValidator>().As<IRequestValidator>().InstancePerRequest();
-				builder.RegisterType<ApplicationUriProvider>().As<IApplicationUriProvider>().InstancePerRequest();
 
 				builder.RegisterControllers(typeof(MvcApplication).Assembly);
 				builder.RegisterMediatR(typeof(MvcApplication).Assembly);

@@ -49,23 +49,5 @@ namespace igx.UnitTests.ServicesTests
                 testClass.TargetSite.Should().Be(default);
             }
         }
-
-        [Theory, AutoData]
-        public virtual void ConstructorWithMessageAndExceptionTest(string message, Exception innerException)
-        {
-            var testClass = (T)Activator.CreateInstance(typeof(T), message, innerException);
-            using (new AssertionScope())
-            {
-                testClass.Message.Should().Be(message);
-                testClass.InnerException.Should().BeSameAs(innerException);
-                testClass.Data.Should().NotBeNull();
-                testClass.Data.Count.Should().Be(0);
-                testClass.HResult.Should().Be(-2146233088);
-                testClass.HelpLink.Should().Be(default);
-                testClass.Source.Should().Be(default);
-                testClass.StackTrace.Should().Be(default);
-                testClass.TargetSite.Should().Be(default);
-            }
-        }
     }
 }

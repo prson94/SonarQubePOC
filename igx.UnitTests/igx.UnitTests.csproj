@@ -99,7 +99,6 @@
     <Compile Include="ServicesTests\Exceptions\ExceptionWithDefaultConstructorsTestBase.cs" />
     <Compile Include="ServicesTests\Exceptions\ForbiddenBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\NotFoundBusinessLayerExceptionTests.cs" />
-    <Compile Include="ServicesTests\Exceptions\RecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />

@@ -218,15 +218,8 @@ namespace igx.UnitTests
             return dbSetMock;
         }
 
-        public IApplicationUriProvider GetApplicationUriProvider()
-        {
-            var mock = new Mock<IApplicationUriProvider>();
-            return mock.Object;
-        }
-
         public ICoreComponentSet GetCoreComponentSet()
         {
-            //var mock = new Mock<CoreComponentSet>(GetCommunity(), GetCompany(), GetSettingsRepository(), new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
             var mock = new Mock<ICoreComponentSet>();
 			mock.Setup(s => s.Cache).Returns(GetCache());
 			mock.Setup(s => s.Catalogs).Returns(GetCatalogs());

@@ -19,11 +19,5 @@ namespace d360.web.Utilities
 				throw exceptionFactory();
 			}
 		}
-
-		public static void IsFalse<TException>(bool value, Func<TException> exceptionFactory)
-			where TException : Exception
-		{
-			IsTrue(!value, exceptionFactory);
-		}
 	}
 }
