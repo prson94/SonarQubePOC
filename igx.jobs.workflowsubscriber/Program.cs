@@ -22,16 +22,9 @@ namespace igx.jobs.workflowsubscriber
 #if DEBUG
 						q.BatchSize = 1;
 #endif
-					}).AddServiceBus();
-				})
-				.ConfigureGovernLogging()
-				.ConfigureWebJobs(c => {
-					c.AddServiceBus(s =>
-					{
-						s.MaxAutoLockRenewalDuration = new TimeSpan(0, 5, 0); // auto renew messages for 5 additional minutes.                    
-						s.MaxConcurrentCalls = 25; // up to 25 concurrent calls.
 					});
 				})
+				.ConfigureGovernLogging()
 				.ConfigureServices((context, services) => {
 					services.AddScoped<IQueueSource, AzureQueueSource>(s => {
 						return new AzureQueueSource
