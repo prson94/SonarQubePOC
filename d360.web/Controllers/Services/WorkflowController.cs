@@ -3272,7 +3272,7 @@ namespace d360.web.Controllers.Services
 						where state=1 and email in @emails";
 			}
 
-			return Company.Query<EmailedResourceResponsibility>(sql, new { assetId, asset.AssetTypeID, responsiblities, emails }).ToList();
+			return Company.Query<EmailedResourceResponsibility>(sql, new { assetId, asset?.AssetTypeID, responsiblities, emails }).ToList();
 		}
 		private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
 		{
