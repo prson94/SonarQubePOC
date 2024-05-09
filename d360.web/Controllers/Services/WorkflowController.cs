@@ -591,32 +591,17 @@ namespace d360.web.Controllers.Services
 						int intVal = 0;
 
 						if (field.AllowMultipleValues)
-						{
-							List<string> values = new List<string>();
+						{						
 
+							displayVal = "";
+							val = "";
 							if (field.Values != null)
 							{
-								values = field.Values.Select(x => x.Value).ToList();
+															
+								val = string.Join(",", field.Values.Select(x => x.Value).ToList());
+								displayVal = string.Join(",", field.Values.Select(x => x.Text).ToList());
 							}
 							
-							displayVal = "";
-							foreach (var v in values)
-							{
-								if (fieldType != null && int.TryParse(v, out intVal))
-								{
-									var lookup = Company.FieldLookupValues.Where(x => x.LookupObjectID == fieldType.LookupObjectID && x.Value == intVal && x.LookupObjectType == fieldType.LookupObjectType).FirstOrDefault();
-
-									if (!string.IsNullOrEmpty(displayVal))
-									{
-										displayVal += ",";
-									}
-
-									if (lookup != null)
-									{
-										displayVal += lookup.Text;
-									}
-								}
-							}
 						}
 						else
 						{
