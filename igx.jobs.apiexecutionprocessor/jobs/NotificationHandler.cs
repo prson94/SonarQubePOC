@@ -57,7 +57,7 @@ namespace igx.jobs.apiexecutionprocessor
 						"select * from Comment where ID = @CommentId; " +
 						resourceSql +
 						"select GR.FirstName + ' ' + GR.LastName as ResourceName from reporting.Global_Resource gr inner join Comment c on c.CreatedBy = gr.ResourceID and c.ID = @CommentId;" +
-						"select * from AssetDetail d inner join Comment c on c.ID = @CommentId and c.AssetID = d.ID;",
+						"select d.* from AssetDetail d inner join Comment c on c.ID = @CommentId and c.AssetID = d.ID;",
 						new { CommentId = info.Payload }
 					);
 					var comment = await query.ReadFirstAsync<Comment>();
