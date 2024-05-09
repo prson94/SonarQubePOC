@@ -1,7 +1,4 @@
-﻿using d360.core.entities;
-using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using d360.core.security;
 using System.Threading.Tasks;
 
 namespace repositories
@@ -10,6 +7,8 @@ namespace repositories
 	{
 		Platform Platform { get; }
 
+		Task<RepositoryResponse<Role>> CreateRole(CreateRole model);
 
+		Task<RepositoryResponse<Rule>> CreateRule(CreateRule model);
 	}
 }
